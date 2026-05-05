@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuthoringStore, type KuisItem } from '@/store/authoring-store';
-import { useInteractiveStore } from '@/store/interactive-store';
 
 interface QuizWidgetProps {
   dataIdx?: number;

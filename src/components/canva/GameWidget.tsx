@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { useInteractiveStore } from '@/store/interactive-store';
 
 interface GameWidgetProps {
   dataIdx?: number;
@@ -48,7 +47,10 @@ export default function GameWidget({ dataIdx, compact = false, onComplete }: Gam
       {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} onComplete={onComplete} />}
-      {!['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard'].includes(gameType) && (
+      {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} onComplete={onComplete} />}
+      {!['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'].includes(gameType) && (
         <GenericGameWidget data={mod} compact={compact} />
       )}
     </div>
@@ -95,7 +97,7 @@ function TrueFalseGame({ data, compact, onComplete }: { data: Record<string, unk
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <div className="text-xl font-black text-cyan-400">{pct}%</div>
         <div className="text-[9px] text-cyan-300/60 mt-1">{score}/{validSoal.length} benar</div>
-        <button onClick={() => { setCurrentQ(0); setScore(0); setSelected(null); setAnswered(false); setPhase('play'); }}
+        <button onClick={() => { setCurrentQ(0); setScore(0); setSelected(null); setAnswered(false); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -188,6 +190,7 @@ function MemoryGame({ data, compact, onComplete }: { data: Record<string, unknow
     setMatched(new Set());
     setMoves(0);
     setPhase('play');
+    reported.current = false;
   };
 
   if (validPairs.length === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} />;
@@ -288,7 +291,7 @@ function MatchingGame({ data, compact, onComplete }: { data: Record<string, unkn
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Cocok!</div>
-        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setPhase('play'); }}
+        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -423,7 +426,7 @@ function SortingGame({ data, compact, onComplete }: { data: Record<string, unkno
       }));
       const newSorted = { ...sorted, [catId]: [...(sorted[catId] || []), itemText] };
       const totalSorted = Object.values(newSorted).flat().length;
-      if (totalSorted + 1 === validItems.length) setPhase('done');
+      if (totalSorted === validItems.length) setPhase('done');
     } else {
       setWrong(catId);
       setTimeout(() => setWrong(null), 500);
@@ -441,7 +444,7 @@ function SortingGame({ data, compact, onComplete }: { data: Record<string, unkno
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Tersortir!</div>
-        <button onClick={() => { setSorted({}); setPhase('play'); }}
+        <button onClick={() => { setSorted({}); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -619,7 +622,7 @@ function TeamBuzzerGame({ data, compact, onComplete }: { data: Record<string, un
         <span className="text-2xl">🏆</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">{winner} Menang!</div>
         <div className="text-[9px] text-cyan-400/60 mt-0.5">{timA}: {scoreA} | {timB}: {scoreB}</div>
-        <button onClick={() => { setCurrentQ(0); setScoreA(0); setScoreB(0); setBuzzed(null); setCorrect(null); setPhase('play'); }}
+        <button onClick={() => { setCurrentQ(0); setScoreA(0); setScoreB(0); setBuzzed(null); setCorrect(null); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -735,6 +738,7 @@ function WordSearchGame({ data, compact, onComplete }: { data: Record<string, un
     setSelectedCells([]);
     setIsSelecting(false);
     setPhase('play');
+    reported.current = false;
     // Re-generate grid
     const g: string[][] = Array.from({ length: ukuran }, () => Array(ukuran).fill(''));
     const directions = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1]];
@@ -877,6 +881,418 @@ function FlashcardGame({ data, compact, onComplete }: { data: Record<string, unk
             Selanjutnya →
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CROSSWORD GAME (Teka Silang)
+   ═══════════════════════════════════════════════════════════════ */
+function CrosswordGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
+  const kata = (data.kata as Array<Record<string, unknown>>) || [];
+  const ukuran = (data.ukuran as number) || 12;
+  const validKata = kata.filter(k => k.teks && String(k.teks).trim());
+  const [userGrid, setUserGrid] = useState<Record<string, string>>({});
+  const [revealed, setRevealed] = useState<Set<string>>(new Set());
+  const [checked, setChecked] = useState(false);
+  const [phase, setPhase] = useState<'play' | 'done'>('play');
+  const reported = useRef(false);
+
+  // Build crossword grid
+  const gridData = useMemo(() => {
+    const SIZE = ukuran;
+    const grid: Array<Array<{ letter: string; num: number; wordIds: number[] }>> = [];
+    for (let r = 0; r < SIZE; r++) {
+      grid[r] = [];
+      for (let c = 0; c < SIZE; c++) grid[r][c] = { letter: '', num: 0, wordIds: [] };
+    }
+    let wordId = 0, clueNum = 1;
+    const acrossClues: Array<{ num: number; hint: string; text: string; startR: number; startC: number }> = [];
+    const downClues: Array<{ num: number; hint: string; text: string; startR: number; startC: number }> = [];
+
+    validKata.forEach(w => {
+      const text = String(w.teks || '').toUpperCase().replace(/[^A-Z\u00C0-\u024F]/g, '');
+      if (!text) return;
+      const hint = String(w.petunjuk || w.hint || '');
+      let dir = String(w.arah || 'across') as 'across' | 'down';
+      let startR = w.baris != null ? Number(w.baris) - 1 : null;
+      let startC = w.kolom != null ? Number(w.kolom) - 1 : null;
+
+      // Auto-place
+      if (startR === null || startC === null) {
+        for (let att = 0; att < 200; att++) {
+          const tr = Math.floor(Math.random() * SIZE);
+          const tc = Math.floor(Math.random() * SIZE);
+          const td: 'across' | 'down' = Math.random() > 0.5 ? 'across' : 'down';
+          let fits = true;
+          for (let i = 0; i < text.length; i++) {
+            const nr = td === 'down' ? tr + i : tr;
+            const nc = td === 'across' ? tc + i : tc;
+            if (nr >= SIZE || nc >= SIZE) { fits = false; break; }
+            if (grid[nr][nc].letter !== '' && grid[nr][nc].letter !== text[i]) { fits = false; break; }
+          }
+          if (fits) { startR = tr; startC = tc; dir = td; break; }
+        }
+        if (startR === null) return;
+      }
+
+      const wid = wordId++;
+      for (let i = 0; i < text.length; i++) {
+        const nr = dir === 'down' ? startR! + i : startR!;
+        const nc = dir === 'across' ? startC! + i : startC!;
+        if (nr >= SIZE || nc >= SIZE) break;
+        grid[nr][nc].letter = text[i];
+        grid[nr][nc].wordIds.push(wid);
+        if (i === 0 && grid[nr][nc].num === 0) grid[nr][nc].num = clueNum;
+      }
+      const clue = { num: clueNum, hint: hint || text.charAt(0) + '...', text, startR: startR!, startC: startC! };
+      if (dir === 'across') acrossClues.push(clue); else downClues.push(clue);
+      clueNum++;
+    });
+
+    return { grid, SIZE, acrossClues, downClues };
+  }, [validKata, ukuran]);
+
+  const { grid, SIZE: gridSize, acrossClues, downClues } = gridData;
+
+  // Check if all complete
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
+      reported.current = true;
+      onComplete(validKata.length, validKata.length);
+    }
+  }, [phase]);
+
+  const handleCellInput = (r: number, c: number) => {
+    const letter = prompt('Masukkan huruf:');
+    if (letter && letter.trim()) {
+      const newGrid = { ...userGrid, [`${r},${c}`]: letter.trim().toUpperCase().charAt(0) };
+      setUserGrid(newGrid);
+      setChecked(false);
+    }
+  };
+
+  // Check if all crossword cells are correctly filled
+  const checkComplete = () => {
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        if (grid[r][c].letter && userGrid[`${r},${c}`] !== grid[r][c].letter) return false;
+      }
+    }
+    return true;
+  };
+
+  const handleCheck = () => {
+    setChecked(true);
+    setTimeout(() => setChecked(false), 1500);
+    if (checkComplete()) setPhase('done');
+  };
+
+  const handleReveal = () => {
+    const empties: string[] = [];
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        if (grid[r][c].letter && userGrid[`${r},${c}`] !== grid[r][c].letter && !revealed.has(`${r},${c}`)) {
+          empties.push(`${r},${c}`);
+        }
+      }
+    }
+    if (empties.length > 0) {
+      const pick = empties[Math.floor(Math.random() * empties.length)];
+      const newRevealed = new Set(revealed);
+      newRevealed.add(pick);
+      setRevealed(newRevealed);
+      const [r, c] = pick.split(',').map(Number);
+      setUserGrid(prev => ({ ...prev, [`${r},${c}`]: grid[r][c].letter }));
+    }
+  };
+
+  if (validKata.length === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} />;
+
+  if (phase === 'done') {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
+        <span className="text-2xl">🎉</span>
+        <div className="text-[11px] font-bold text-cyan-300 mt-1">Teka Silang Selesai!</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKata.length} kata terisi</div>
+        <button onClick={() => { setUserGrid({}); setRevealed(new Set()); setChecked(false); setPhase('play'); reported.current = false; }}
+          className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
+      </div>
+    );
+  }
+
+  const cellSize = compact ? 16 : gridSize <= 10 ? 22 : 16;
+
+  return (
+    <div className="h-full flex flex-col bg-cyan-500/10 p-2">
+      <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
+        <span className="font-bold">🔤 Teka Silang</span>
+        <span>{validKata.length} kata</span>
+      </div>
+      <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
+        {/* Grid */}
+        <div className="flex-shrink-0 overflow-auto" style={{ display: 'grid', gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`, gap: 1 }}>
+          {grid.map((row, r) => row.map((cell, c) => {
+            if (!cell.letter) return <div key={`${r}-${c}`} className="rounded bg-black/30" style={{ width: cellSize, height: cellSize }} />;
+            const val = userGrid[`${r},${c}`] || '';
+            const isRevealed = revealed.has(`${r},${c}`);
+            let cls = 'bg-white/10 border border-white/10 cursor-pointer';
+            if (checked) {
+              if (val === cell.letter) cls = 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300';
+              else if (val) cls = 'bg-red-500/20 border-red-400/40 text-red-300';
+            }
+            if (isRevealed) cls = 'bg-amber-500/20 border-amber-400/40 text-amber-300';
+            return (
+              <button key={`${r}-${c}`} onClick={() => handleCellInput(r, c)}
+                className={`rounded flex items-center justify-center font-bold transition-colors ${compact ? 'text-[7px]' : 'text-[9px]'} ${cls}`}
+                style={{ width: cellSize, height: cellSize, position: 'relative' }}>
+                {cell.num > 0 && <span className="absolute top-0 left-0.5 text-[5px] text-white/40 font-bold">{cell.num}</span>}
+                {val}
+              </button>
+            );
+          }))}
+        </div>
+        {/* Clues */}
+        <div className="flex-1 min-w-[60px] overflow-y-auto space-y-0.5">
+          {acrossClues.length > 0 && (
+            <>
+              <div className="text-[7px] font-bold text-cyan-400/60 uppercase tracking-wider mt-1">Mendatar →</div>
+              {acrossClues.map((cl, i) => (
+                <div key={`a${i}`} className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer">{cl.num}. {cl.hint}</div>
+              ))}
+            </>
+          )}
+          {downClues.length > 0 && (
+            <>
+              <div className="text-[7px] font-bold text-cyan-400/60 uppercase tracking-wider mt-1">Menurun ↓</div>
+              {downClues.map((cl, i) => (
+                <div key={`d${i}`} className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer">{cl.num}. {cl.hint}</div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+      <div className="flex gap-2 mt-1">
+        <button onClick={handleCheck} className="px-2 py-0.5 bg-cyan-500/20 hover:bg-cyan-500/40 rounded text-[8px] font-bold text-cyan-200 border border-cyan-500/30 transition-colors">Cek</button>
+        <button onClick={handleReveal} className="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-500/40 rounded text-[8px] font-bold text-amber-200 border border-amber-500/30 transition-colors">Buka 1</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FILL-IN-THE-BLANK GAME (Isian)
+   ═══════════════════════════════════════════════════════════════ */
+function FillBlankGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
+  const soal = (data.soal as Array<Record<string, unknown>>) || [];
+  const validSoal = soal.filter(s => s.teks && s.jawaban);
+  const [currentQ, setCurrentQ] = useState(0);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
+  const [phase, setPhase] = useState<'play' | 'result'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => {
+    if (phase === 'result' && !reported.current && onComplete) {
+      reported.current = true;
+      onComplete(score, validSoal.length);
+    }
+  }, [phase]);
+
+  const handleSubmit = useCallback(() => {
+    if (answered || !userInput.trim()) return;
+    const userAns = userInput.trim().toLowerCase();
+    const correctAns = String(validSoal[currentQ].jawaban || '').toLowerCase();
+    const acceptList = correctAns.split('/').map(a => a.trim());
+    const isCorrect = acceptList.includes(userAns);
+    setLastCorrect(isCorrect);
+    if (isCorrect) setScore(s => s + 1);
+    setAnswered(true);
+
+    setTimeout(() => {
+      if (currentQ + 1 < validSoal.length) {
+        setCurrentQ(q => q + 1);
+        setAnswered(false);
+        setUserInput('');
+        setLastCorrect(null);
+      } else {
+        setPhase('result');
+      }
+    }, 1500);
+  }, [answered, userInput, currentQ, validSoal]);
+
+  if (validSoal.length === 0) return <EmptyState icon="✏️" label="Isian" compact={compact} />;
+
+  if (phase === 'result') {
+    const pct = Math.round((score / validSoal.length) * 100);
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
+        <div className="text-xl font-black text-cyan-400">{pct}%</div>
+        <div className="text-[9px] text-cyan-300/60 mt-1">{score}/{validSoal.length} benar</div>
+        <button onClick={() => { setCurrentQ(0); setScore(0); setAnswered(false); setUserInput(''); setLastCorrect(null); setPhase('play'); reported.current = false; }}
+          className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
+      </div>
+    );
+  }
+
+  const q = validSoal[currentQ];
+  const prog = ((currentQ + 1) / validSoal.length * 100);
+
+  // Format question with blank marker
+  const qText = String(q.teks || '');
+  const blankMark = '___';
+  const parts = qText.split(blankMark);
+
+  return (
+    <div className="h-full flex flex-col bg-cyan-500/10 p-2">
+      {/* Progress bar */}
+      <div className="h-1 bg-cyan-500/15 rounded-full overflow-hidden mb-2">
+        <div className="h-full bg-cyan-400 transition-all duration-400" style={{ width: `${prog}%` }} />
+      </div>
+      <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
+        <span className="font-bold">Soal {currentQ + 1}/{validSoal.length}</span>
+        <span>Skor: {score}</span>
+      </div>
+      <p className={`text-cyan-100 font-bold flex-1 min-h-0 overflow-y-auto mb-2 ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
+        {parts.length > 1 ? (
+          <>{String(parts[0])}<span className="inline-block min-w-[50px] border-b-2 border-dashed border-cyan-400/40 mx-1">{answered ? '(jawaban)' : ''}</span>{String(parts.slice(1).join(''))}</>
+        ) : String(qText)}
+      </p>
+      <input
+        type="text" value={userInput} onChange={e => setUserInput(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
+        disabled={answered}
+        placeholder="Ketik jawaban..."
+        className={`w-full px-3 py-2 rounded-lg border text-[11px] font-semibold outline-none transition-all ${
+          answered
+            ? lastCorrect ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300' : 'border-red-400/40 bg-red-500/10 text-red-300'
+            : 'border-white/15 bg-white/5 text-white focus:border-cyan-400/50 focus:bg-white/10'
+        }`}
+      />
+      {String(q.petunjuk || '') && !answered && (
+        <div className="text-[8px] text-amber-400/70 mt-1 italic">💡 Petunjuk: {String(q.petunjuk)}</div>
+      )}
+      {answered && (
+        <div className={`text-[9px] mt-1 font-bold ${lastCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
+          {lastCorrect ? '✅ Benar!' : `❌ Salah. Jawaban: ${String(q.jawaban)}`}
+        </div>
+      )}
+      {!answered && (
+        <button onClick={handleSubmit} disabled={!userInput.trim()}
+          className="mt-2 px-4 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/40 disabled:opacity-40 rounded-lg text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30 cursor-pointer">
+          Jawab
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DRAG & DROP GAME (Seret & Letakkan)
+   ═══════════════════════════════════════════════════════════════ */
+function DragDropGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
+  const items = ((data.items as Array<Record<string, unknown>>) || []).filter(i => i.teks);
+  const targets = ((data.target || data.targets) as Array<Record<string, unknown>>) || [];
+  const [placed, setPlaced] = useState<Record<string, Array<{ teks: string }>>>({});
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'play' | 'done'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
+      reported.current = true;
+      onComplete(items.length, items.length);
+    }
+  }, [phase]);
+
+  const unplaced = items.filter(it => !Object.values(placed).flat().find(p => p.teks === it.teks));
+
+  const handleItemSelect = (teks: string) => {
+    setSelectedItem(teks);
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!selectedItem) return;
+    const item = items.find(it => it.teks === selectedItem);
+    if (!item) return;
+    const correctTarget = String(item.target || item.kategori || '');
+    if (correctTarget === targetId) {
+      const newPlaced = { ...placed, [targetId]: [...(placed[targetId] || []), { teks: selectedItem }] };
+      setPlaced(newPlaced);
+      setSelectedItem(null);
+      if (Object.values(newPlaced).flat().length === items.length) setPhase('done');
+    } else {
+      setSelectedItem(null);
+    }
+  };
+
+  const handleRemove = (targetId: string, teks: string) => {
+    const newPlaced = { ...placed };
+    newPlaced[targetId] = (newPlaced[targetId] || []).filter(it => it.teks !== teks);
+    if (!newPlaced[targetId].length) delete newPlaced[targetId];
+    setPlaced(newPlaced);
+  };
+
+  if (items.length === 0 || targets.length === 0) return <EmptyState icon="🖐️" label="Seret & Letakkan" compact={compact} />;
+
+  if (phase === 'done') {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
+        <span className="text-2xl">🎉</span>
+        <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Terpasang!</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{items.length} item ditempatkan</div>
+        <button onClick={() => { setPlaced({}); setSelectedItem(null); setPhase('play'); reported.current = false; }}
+          className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-cyan-500/10 p-2">
+      <div className="text-[9px] font-bold text-cyan-400 mb-1">🖐️ Seret & Letakkan</div>
+      {/* Draggable items */}
+      <div className="flex flex-wrap gap-1 mb-2 min-h-[20px]">
+        {unplaced.map((it, i) => (
+          <button key={i} onClick={() => handleItemSelect(String(it.teks))}
+            className={`text-[9px] px-2 py-1 rounded-md border font-semibold transition-all ${
+              selectedItem === it.teks
+                ? 'bg-cyan-500/30 border-cyan-400/50 text-cyan-200 ring-1 ring-cyan-400/30'
+                : 'bg-cyan-500/15 border-cyan-500/25 text-cyan-300 hover:bg-cyan-500/30 cursor-pointer'
+            }`}>
+            {String(it.teks)}
+          </button>
+        ))}
+        {unplaced.length === 0 && <span className="text-[8px] text-white/25">Semua item sudah ditempatkan</span>}
+      </div>
+      {/* Drop targets */}
+      <div className="flex-1 min-h-0 space-y-2 overflow-y-auto">
+        {targets.map((tgt, i) => {
+          const tid = String(tgt.id || tgt.label || `t${i}`);
+          const tgtItems = placed[tid] || [];
+          const isActive = selectedItem !== null;
+          return (
+            <div key={i}
+              onClick={() => handleDrop(tid)}
+              className={`rounded-lg border-2 border-dashed p-2 min-h-[32px] transition-all ${
+                isActive ? 'border-cyan-400/30 bg-cyan-500/5 cursor-pointer hover:border-cyan-400/50' : 'border-white/10 bg-white/3'
+              }`}>
+              <div className="text-[9px] font-bold text-white/50 mb-1">{String(tgt.label || tid)}</div>
+              <div className="flex flex-wrap gap-1 min-h-[16px]">
+                {tgtItems.length > 0 ? tgtItems.map((it, j) => (
+                  <span key={j} onClick={e => { e.stopPropagation(); handleRemove(tid, it.teks); }}
+                    className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-semibold cursor-pointer hover:bg-red-500/20 hover:border-red-400/30 hover:text-red-300 transition-colors">
+                    {it.teks}
+                  </span>
+                )) : (
+                  <span className="text-[7px] text-white/20 italic">Letakkan item di sini...</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

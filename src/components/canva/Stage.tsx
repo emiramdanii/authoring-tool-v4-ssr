@@ -22,6 +22,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     addElement,
     updateElement,
     updateTemplateData,
+    showGrid,
+    gridSize,
+    snapEnabled,
+    snapValue,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
@@ -65,8 +69,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     const dyPct = dy / scale / stageH * 100;
 
     if (dragState.current.type === 'move') {
-      const newX = Math.max(0, Math.min(90, dragState.current.origX + dxPct));
-      const newY = Math.max(0, Math.min(90, dragState.current.origY + dyPct));
+      const rawX = Math.max(0, Math.min(90, dragState.current.origX + dxPct));
+      const rawY = Math.max(0, Math.min(90, dragState.current.origY + dyPct));
+      const newX = snapEnabled ? snapValue(rawX) : rawX;
+      const newY = snapEnabled ? snapValue(rawY) : rawY;
       updateElement(dragState.current.elId, { x: newX, y: newY });
     } else if (dragState.current.type === 'resize') {
       const dir = dragState.current.dir!;
@@ -90,9 +96,20 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
         newH = Math.max(8, orig.h - dyPct);
       }
 
+      // Apply snap if enabled
+      if (snapEnabled) {
+        newX = snapValue(newX);
+        newY = snapValue(newY);
+        newW = snapValue(newW);
+        newH = snapValue(newH);
+        // Ensure minimums after snap
+        newW = Math.max(10, newW);
+        newH = Math.max(8, newH);
+      }
+
       updateElement(dragState.current.elId, { x: newX, y: newY, w: newW, h: newH });
     }
-  }, [baseScale, zoom, stageW, stageH, updateElement, onMouseMove]);
+  }, [baseScale, zoom, stageW, stageH, updateElement, onMouseMove, snapEnabled, snapValue]);
 
   const handleMouseUp = useCallback(() => {
     dragState.current = null;
@@ -207,6 +224,14 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             className="absolute inset-0 pointer-events-none"
             style={{ background: `rgba(14,28,47,${(page.overlay || 20) / 100})` }}
           />
+
+          {/* Grid Overlay (custom mode only) */}
+          {!isTemplateMode && showGrid && (
+            <div className="absolute inset-0 pointer-events-none" style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)`,
+              backgroundSize: `${gridSize}% ${gridSize}%`,
+            }} />
+          )}
 
           {/* Template Mode: Render full-page template */}
           {isTemplateMode && (

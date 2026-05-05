@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import type { NavConfig, PageTemplateType } from './types';
 import { getPaletteColor } from '@/lib/color-palette';
-import { TEMPLATE_TYPES } from './types';
+import { TEMPLATE_TYPES, LAYOUT_PRESETS } from './types';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
 
 export default function RightPanel() {
@@ -22,6 +22,14 @@ export default function RightPanel() {
     setTemplateType,
     updateTemplateData,
     rightPanelOpen,
+    showGrid,
+    gridSize,
+    snapEnabled,
+    toggleGrid,
+    setGridSize,
+    toggleSnap,
+    applyLayoutPreset,
+    currentLayoutPreset,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
@@ -61,6 +69,93 @@ export default function RightPanel() {
           ))}
         </select>
       </Section>
+
+      {/* ── Layout Presets (custom mode only) ────────────────────── */}
+      {!isTemplateMode && (
+        <Section title="📐 Layout Preset" collapsed={collapsed.layout} onToggle={() => toggleCollapse('layout')}>
+          <div className="text-[8px] text-zinc-500 mb-1.5">Pilih layout untuk mengatur posisi elemen</div>
+          <div className="grid grid-cols-3 gap-1">
+            {LAYOUT_PRESETS.map(p => {
+              const isActive = currentLayoutPreset()?.id === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => applyLayoutPreset(p.id)}
+                  className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-center transition-all ${
+                    isActive
+                      ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                      : 'bg-zinc-800/40 border-zinc-700/30 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+                  }`}
+                  title={p.desc}
+                >
+                  <span className="text-sm">{p.icon}</span>
+                  <span className="text-[7px] font-bold leading-tight">{p.name}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Mini preview of selected layout */}
+          {currentLayoutPreset() && currentLayoutPreset()!.slots.length > 0 && (
+            <div className="mt-2 p-2 rounded-lg bg-zinc-800/40 border border-zinc-700/20">
+              <div className="text-[8px] text-zinc-500 mb-1">{currentLayoutPreset()!.desc}</div>
+              <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+                {currentLayoutPreset()!.slots.map((slot, i) => (
+                  <div
+                    key={i}
+                    className="absolute rounded-sm border border-amber-500/20 bg-amber-500/5"
+                    style={{
+                      left: `${slot.x}%`,
+                      top: `${slot.y}%`,
+                      width: `${slot.w}%`,
+                      height: `${slot.h}%`,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* ── Grid & Snap (custom mode only) ──────────────────────── */}
+      {!isTemplateMode && (
+        <Section title="🔲 Grid & Snap" collapsed={collapsed.grid} onToggle={() => toggleCollapse('grid')}>
+          <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showGrid}
+              onChange={toggleGrid}
+              className="accent-amber-500 w-3 h-3"
+            />
+            <span className="text-[9px] text-zinc-400">Tampilkan Grid</span>
+          </label>
+          <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={snapEnabled}
+              onChange={toggleSnap}
+              className="accent-amber-500 w-3 h-3"
+            />
+            <span className="text-[9px] text-zinc-400">Snap ke Grid</span>
+          </label>
+          <div className="mt-1">
+            <label className="text-[9px] text-zinc-500 block mb-1">Ukuran Grid: {gridSize}%</label>
+            <input
+              type="range"
+              min={2}
+              max={20}
+              step={1}
+              value={gridSize}
+              onChange={e => setGridSize(parseInt(e.target.value))}
+              className="w-full h-1 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-amber-500"
+            />
+            <div className="flex justify-between text-[7px] text-zinc-600 mt-0.5">
+              <span>Halus (2%)</span>
+              <span>Kasar (20%)</span>
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* ── Background ──────────────────────────────────────────── */}
       <Section title="🖼️ Background" collapsed={collapsed.bg} onToggle={() => toggleCollapse('bg')}>

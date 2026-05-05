@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ export default function Toolbar() {
   const openPlay = useInteractiveStore((s) => s.openPlay);
   const closePlay = useInteractiveStore((s) => s.closePlay);
 
+  const [exporting, setExporting] = useState(false);
   const isInteractive = mode === 'interactive';
   const page = pages[currentPageIndex];
   const label = page?.label || 'Untitled';
@@ -40,31 +42,52 @@ export default function Toolbar() {
   };
 
   const handleExport = () => {
-    const html = exportPageHTML();
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `canva-page-${currentPageIndex + 1}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast.success('Halaman diekspor sebagai HTML');
+    setExporting(true);
+    toast.loading('Mengekspor halaman...', { id: 'export-page' });
+    // Use requestAnimationFrame to allow the UI to update before the synchronous export
+    requestAnimationFrame(() => {
+      try {
+        const html = exportPageHTML();
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `canva-page-${currentPageIndex + 1}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        toast.success('Halaman diekspor sebagai HTML', { id: 'export-page' });
+      } catch (err) {
+        toast.error('Gagal mengekspor halaman', { id: 'export-page' });
+      } finally {
+        setExporting(false);
+      }
+    });
   };
 
   const handleExportSlideshow = () => {
-    const html = exportSlideshowHTML();
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'canva-slideshow.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast.success('Slideshow diekspor (' + pages.length + ' halaman)');
+    setExporting(true);
+    toast.loading(`Mengekspor ${pages.length} halaman...`, { id: 'export-slideshow' });
+    requestAnimationFrame(() => {
+      try {
+        const html = exportSlideshowHTML();
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'canva-slideshow.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        toast.success(`Slideshow diekspor (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-slideshow' });
+      } catch (err) {
+        toast.error('Gagal mengekspor slideshow', { id: 'export-slideshow' });
+      } finally {
+        setExporting(false);
+      }
+    });
   };
 
   // ── Interactive mode toolbar (minimal) ─────────────────────
@@ -161,8 +184,8 @@ export default function Toolbar() {
           <span className="hidden xl:inline text-[10px] font-semibold">Preview Desain</span>
         </span>
       </button>
-      <button onClick={handleExport} title="Export Halaman HTML" className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors">📤</button>
-      <button onClick={handleExportSlideshow} title="Export Slideshow Interaktif" className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors">🎞</button>
+      <button onClick={handleExport} disabled={exporting} title="Export Halaman HTML" className={`p-1.5 rounded transition-colors ${exporting ? 'opacity-50 cursor-wait text-zinc-500' : 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{exporting ? '⏳' : '📤'}</button>
+      <button onClick={handleExportSlideshow} disabled={exporting} title="Export Slideshow Interaktif" className={`p-1.5 rounded transition-colors ${exporting ? 'opacity-50 cursor-wait text-zinc-500' : 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{exporting ? '⏳' : '🎞'}</button>
       <button
         onClick={() => { if (confirm('Bersihkan semua elemen di halaman ini?')) clearStage(); }}
         title="Bersihkan"

@@ -120,8 +120,10 @@ function TemplatesContent() {
                 <button
                   key={t.id}
                   onClick={() => addTemplatePage(t.id)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/30 hover:border-amber-500/20 transition-all group cursor-pointer active:scale-95"
+                  className="relative flex flex-col items-center gap-1 p-2 rounded-lg bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/30 hover:border-amber-500/20 transition-all group cursor-pointer active:scale-95 overflow-hidden"
                 >
+                  {/* Color accent top border */}
+                  <div className="absolute top-0 left-0 right-0 h-0.5 opacity-60 group-hover:opacity-100 transition-opacity" style={{ background: t.color }} />
                   <span className="text-xl group-hover:scale-110 transition-transform">{t.icon}</span>
                   <span className="text-[10px] font-bold text-zinc-300">{t.name}</span>
                   <span className="text-[7px] text-zinc-500 text-center leading-tight">{t.desc}</span>

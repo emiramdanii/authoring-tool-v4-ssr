@@ -168,3 +168,125 @@ export const DEFAULT_NAV_CONFIG: NavConfig = {
   showProgress: true,
   navbarStyle: 'colorful',
 };
+
+// ── Layout Presets ──────────────────────────────────────────────
+
+export interface LayoutSlot {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface LayoutPreset {
+  id: string;
+  name: string;
+  icon: string;
+  desc: string;
+  slots: LayoutSlot[];
+}
+
+/**
+ * Layout presets for quickly arranging elements on the canvas.
+ * Each preset defines named slots with x/y/w/h percentages.
+ * When applied, elements are repositioned to fill each slot in order.
+ */
+export const LAYOUT_PRESETS: LayoutPreset[] = [
+  {
+    id: 'free',
+    name: 'Bebas',
+    icon: '✋',
+    desc: 'Posisi bebas tanpa pengaturan',
+    slots: [],
+  },
+  {
+    id: 'full',
+    name: 'Penuh',
+    icon: '⬜',
+    desc: '1 elemen memenuhi halaman',
+    slots: [{ x: 2, y: 2, w: 96, h: 96 }],
+  },
+  {
+    id: 'headline',
+    name: 'Headline',
+    icon: '📰',
+    desc: 'Judul di atas, konten di bawah',
+    slots: [
+      { x: 2, y: 2, w: 96, h: 18 },   // Header/title
+      { x: 2, y: 22, w: 96, h: 76 },   // Main content
+    ],
+  },
+  {
+    id: 'sidebar',
+    name: 'Sidebar',
+    icon: '📐',
+    desc: 'Konten utama + sidebar kanan',
+    slots: [
+      { x: 2, y: 2, w: 66, h: 96 },    // Main
+      { x: 70, y: 2, w: 28, h: 96 },   // Sidebar
+    ],
+  },
+  {
+    id: '2col',
+    name: '2 Kolom',
+    icon: '▥',
+    desc: 'Dua kolom sejajar',
+    slots: [
+      { x: 2, y: 2, w: 47, h: 96 },
+      { x: 51, y: 2, w: 47, h: 96 },
+    ],
+  },
+  {
+    id: '3col',
+    name: '3 Kolom',
+    icon: '▤',
+    desc: 'Tiga kolom sejajar',
+    slots: [
+      { x: 2, y: 2, w: 30, h: 96 },
+      { x: 35, y: 2, w: 30, h: 96 },
+      { x: 68, y: 2, w: 30, h: 96 },
+    ],
+  },
+  {
+    id: 'quiz-layout',
+    name: 'Kuis',
+    icon: '❓',
+    desc: 'Judul kecil + area kuis besar',
+    slots: [
+      { x: 2, y: 2, w: 96, h: 12 },    // Quiz header
+      { x: 2, y: 16, w: 96, h: 82 },   // Quiz body
+    ],
+  },
+  {
+    id: 'media-text',
+    name: 'Media + Teks',
+    icon: '🖼️',
+    desc: 'Media kiri, teks kanan',
+    slots: [
+      { x: 2, y: 2, w: 48, h: 96 },    // Media/visual
+      { x: 52, y: 2, w: 46, h: 96 },   // Text content
+    ],
+  },
+  {
+    id: 'quad',
+    name: '2×2 Grid',
+    icon: '⊞',
+    desc: 'Empat kuadran',
+    slots: [
+      { x: 2, y: 2, w: 47, h: 47 },
+      { x: 51, y: 2, w: 47, h: 47 },
+      { x: 2, y: 51, w: 47, h: 47 },
+      { x: 51, y: 51, w: 47, h: 47 },
+    ],
+  },
+  {
+    id: 'hero-cta',
+    name: 'Hero + CTA',
+    icon: '🚀',
+    desc: 'Hero besar + tombol CTA',
+    slots: [
+      { x: 2, y: 2, w: 96, h: 72 },    // Hero area
+      { x: 25, y: 78, w: 50, h: 16 },   // CTA button centered
+    ],
+  },
+];
