@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuthoringStore, type KuisItem } from '@/store/authoring-store';
+import { useInteractiveStore } from '@/store/interactive-store';
 
 interface QuizWidgetProps {
   dataIdx?: number;
   compact?: boolean;  // small preview in canvas editor
+  onComplete?: (score: number, maxScore: number) => void;  // score callback
 }
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-export default function QuizWidget({ dataIdx, compact = false }: QuizWidgetProps) {
+export default function QuizWidget({ dataIdx, compact = false, onComplete }: QuizWidgetProps) {
   const kuis = useAuthoringStore((s) => s.kuis);
 
   // Get all quiz items - if dataIdx is set, use only that item; otherwise use all
@@ -23,8 +25,17 @@ export default function QuizWidget({ dataIdx, compact = false }: QuizWidgetProps
   const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
   const [phase, setPhase] = useState<'quiz' | 'result'>('quiz');
+  const scoreReported = useRef(false);
 
   const total = allQuestions.length;
+
+  // Report score to interactive store when quiz completes
+  useEffect(() => {
+    if (phase === 'result' && !scoreReported.current && onComplete) {
+      scoreReported.current = true;
+      onComplete(score, total);
+    }
+  }, [phase, score, total, onComplete]);
 
   const handleAnswer = useCallback((optIdx: number) => {
     if (answered || !allQuestions[currentQ]) return;
@@ -52,6 +63,7 @@ export default function QuizWidget({ dataIdx, compact = false }: QuizWidgetProps
     setSelectedOpt(null);
     setAnswered(false);
     setPhase('quiz');
+    scoreReported.current = false;
   }, []);
 
   // No questions state

@@ -8,6 +8,7 @@ import { getPaletteColor } from '@/lib/color-palette';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import { useInteractiveStore } from '@/store/interactive-store';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE TEMPLATE — Full-page template renderer with editable zones
@@ -431,6 +432,16 @@ function HasilTemplate({ td, palette, isSelected, onEditField }: SubTemplateProp
   const totalKuis = (td.totalKuis as number) || 0;
   const namaBab = String(td.namaBab || '');
 
+  // Live score from interactive store
+  const mode = useInteractiveStore((s) => s.mode);
+  const totalPct = useInteractiveStore((s) => s.totalPct);
+  const totalScore = useInteractiveStore((s) => s.totalScore);
+  const totalMax = useInteractiveStore((s) => s.totalMax);
+
+  const pct = mode === 'interactive' ? totalPct() : 0;
+  const level = pct >= 85 ? 'Sangat Baik' : pct >= 70 ? 'Baik' : pct > 0 ? 'Perlu Latihan' : '';
+  const levelColor = pct >= 85 ? '#34d399' : pct >= 70 ? '#f9c82e' : '#f87171';
+
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
       {/* Trophy */}
@@ -447,21 +458,27 @@ function HasilTemplate({ td, palette, isSelected, onEditField }: SubTemplateProp
         placeholder="Judul Hasil"
       />
 
-      {/* Score Circle */}
+      {/* Score Circle — live in interactive mode */}
       <div className="relative w-24 h-24 rounded-full flex items-center justify-center mb-4"
         style={{
-          background: `conic-gradient(${accent} 0%, ${accent}20 0%)`,
+          background: `conic-gradient(${levelColor || accent} ${pct}%, ${accent}20 ${pct}%)`,
           boxShadow: `0 0 40px ${accent}30`,
+          transition: 'background 1s ease-out',
         }}>
         <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center">
-          <span className="text-2xl font-black" style={{ color: accent }}>0%</span>
+          <span className="text-2xl font-black" style={{ color: pct > 0 ? levelColor : accent }}>{pct}%</span>
         </div>
       </div>
+
+      {/* Level */}
+      {level && (
+        <div className="text-sm font-bold mb-2" style={{ color: levelColor }}>{level}</div>
+      )}
 
       {/* Info */}
       {totalKuis > 0 && (
         <div className="text-[10px] text-white/50 mb-3">
-          {totalKuis} soal kuis telah diselesaikan
+          {mode === 'interactive' ? `${totalScore()}/${totalMax()} poin` : `${totalKuis} soal kuis tersedia`}
         </div>
       )}
 

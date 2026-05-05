@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useInteractiveStore } from '@/store/interactive-store';
 import type { CanvaElement, ResizeDir } from './types';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
@@ -289,12 +290,23 @@ function StageElement({
   onStartResize: (dir: ResizeDir, startX: number, startY: number) => void;
 }) {
   const { updateElement, deleteElement, saveTextContent } = useCanvaStore();
+  const interactiveMode = useInteractiveStore((s) => s.mode);
+  const reportScore = useInteractiveStore((s) => s.reportScore);
+  const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const textRef = useRef<HTMLDivElement>(null);
   const isInteractive = element.type === 'kuis' || element.type === 'game';
+  const isInteractiveMode = interactiveMode === 'interactive';
+
+  // Score callback for interactive mode
+  const handleComplete = useCallback((score: number, maxScore: number) => {
+    reportScore({ elementId: element.id, pageIndex: currentPageIndex, score, maxScore, completed: true });
+  }, [element.id, currentPageIndex, reportScore]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect();
+    // In interactive mode, never drag — elements are clickable
+    if (isInteractiveMode) return;
     if (!isInteractive || !isSelected) {
       onStartDrag(e.clientX, e.clientY);
     }
@@ -333,7 +345,7 @@ function StageElement({
 
   return (
     <div
-      className={`absolute group ${isSelected ? 'ring-2 ring-amber-400 ring-offset-0 z-10' : 'z-0'} ${element.hidden ? 'hidden' : ''}`}
+      className={`absolute group ${isSelected && !isInteractiveMode ? 'ring-2 ring-amber-400 ring-offset-0 z-10' : 'z-0'} ${element.hidden ? 'hidden' : ''}`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,
@@ -343,7 +355,8 @@ function StageElement({
       }}
       onMouseDown={handleMouseDown}
     >
-      {/* Handle bar — always draggable */}
+      {/* Handle bar — always draggable (hidden in interactive mode) */}
+      {!isInteractiveMode && (
       <div
         className={`absolute left-0 right-0 flex items-center justify-between px-1 rounded-t text-[9px] font-bold z-20 transition-all ${
           isSelected
@@ -362,14 +375,15 @@ function StageElement({
           </button>
         )}
       </div>
+      )}
 
       {/* Body */}
       <div className="w-full h-full overflow-hidden rounded-sm">
         {element.type === 'kuis' && (
-          <QuizWidget dataIdx={element.dataIdx} compact />
+          <QuizWidget dataIdx={element.dataIdx} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
         )}
         {element.type === 'game' && (
-          <GameWidget dataIdx={element.dataIdx} compact />
+          <GameWidget dataIdx={element.dataIdx} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
         )}
         {element.type === 'materi' && (
           <ModuleElementPreview dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
@@ -407,8 +421,8 @@ function StageElement({
         )}
       </div>
 
-      {/* Resize handles (8-direction) */}
-      {isSelected && (
+      {/* Resize handles (8-direction) — hidden in interactive mode */}
+      {isSelected && !isInteractiveMode && (
         <>
           {resizeHandles.map(h => (
             <div

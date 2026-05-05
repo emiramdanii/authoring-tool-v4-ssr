@@ -2,20 +2,39 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useInteractiveStore } from '@/store/interactive-store';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
 import IconRail from './IconRail';
 import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
+import InteractiveNav from './InteractiveNav';
 
 export default function CanvaBuilder() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mode = useInteractiveStore((s) => s.mode);
+  const isInteractive = mode === 'interactive';
 
   // ── Load state from localStorage on mount ────────────────────
   useEffect(() => {
     useCanvaStore.getState().loadFromStorage();
   }, []);
+
+  // ── Sync interactive page index with canva pages ─────────────
+  useEffect(() => {
+    useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
+  }, [useCanvaStore((s) => s.pages.length)]);
+
+  // ── When entering interactive mode, go to first page ─────────
+  useEffect(() => {
+    if (isInteractive) {
+      const { goInteractivePage } = useInteractiveStore.getState();
+      const { goPage } = useCanvaStore.getState();
+      goInteractivePage(0);
+      goPage(0);
+    }
+  }, [isInteractive]);
 
   // ── Auto-save to localStorage on changes (debounced) ────────
   useEffect(() => {
@@ -37,6 +56,7 @@ export default function CanvaBuilder() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const store = useCanvaStore.getState();
+      const iStore = useInteractiveStore.getState();
       const target = e.target as HTMLElement;
 
       // Don't intercept when editing text
@@ -44,6 +64,30 @@ export default function CanvaBuilder() {
         return;
       }
 
+      // ── Interactive mode shortcuts ──────────────────────────
+      if (iStore.mode === 'interactive') {
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          iStore.nextInteractivePage();
+          const next = iStore.interactivePageIdx + 1;
+          if (next < store.pages.length) store.goPage(next);
+          return;
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          iStore.prevInteractivePage();
+          const prev = iStore.interactivePageIdx - 1;
+          if (prev >= 0) store.goPage(prev);
+          return;
+        }
+        if (e.key === 'Escape') {
+          iStore.setMode('design');
+          return;
+        }
+        return; // Don't process design shortcuts in interactive mode
+      }
+
+      // ── Design mode shortcuts ──────────────────────────────
       // Delete selected element
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (store.selectedElId) {
@@ -110,27 +154,35 @@ export default function CanvaBuilder() {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-zinc-950 text-zinc-200 overflow-hidden">
+    <div className={`h-screen w-screen flex flex-col overflow-hidden transition-colors duration-300 ${
+      isInteractive ? 'bg-zinc-950 text-zinc-200' : 'bg-zinc-950 text-zinc-200'
+    }`}>
       {/* Top Toolbar */}
       <Toolbar />
 
       {/* Main builder row */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Icon Rail */}
-        <IconRail />
-
-        {/* Left Panel */}
-        <LeftPanel />
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+        {/* Design-mode only panels */}
+        {!isInteractive && (
+          <>
+            <IconRail />
+            <LeftPanel />
+          </>
+        )}
 
         {/* Stage Canvas Area */}
-        <Stage onMouseMove={handleMouseMove} />
+        <div className="flex-1 relative">
+          <Stage onMouseMove={handleMouseMove} />
+          {/* Interactive navigation overlay */}
+          <InteractiveNav />
+        </div>
 
-        {/* Right Panel */}
-        <RightPanel />
+        {/* Design-mode only right panel */}
+        {!isInteractive && <RightPanel />}
       </div>
 
-      {/* Status Bar */}
-      <StatusBar mousePos={mousePos} />
+      {/* Status Bar (design mode only) */}
+      {!isInteractive && <StatusBar mousePos={mousePos} />}
     </div>
   );
 }

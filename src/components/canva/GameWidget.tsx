@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useInteractiveStore } from '@/store/interactive-store';
 
 interface GameWidgetProps {
   dataIdx?: number;
   compact?: boolean;
+  onComplete?: (score: number, maxScore: number) => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN GAME WIDGET — routes to specific game renderers
    ═══════════════════════════════════════════════════════════════ */
-export default function GameWidget({ dataIdx, compact = false }: GameWidgetProps) {
+export default function GameWidget({ dataIdx, compact = false, onComplete }: GameWidgetProps) {
   const modules = useAuthoringStore((s) => s.modules);
 
   // Get the specific module data
@@ -37,15 +39,15 @@ export default function GameWidget({ dataIdx, compact = false }: GameWidgetProps
       className="h-full overflow-hidden rounded border border-cyan-500/20"
       onClick={(e) => e.stopPropagation()}
     >
-      {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} />}
-      {gameType === 'memory' && <MemoryGame data={mod} compact={compact} />}
-      {gameType === 'matching' && <MatchingGame data={mod} compact={compact} />}
+      {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'memory' && <MemoryGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'matching' && <MatchingGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'roda' && <RodaGame data={mod} compact={compact} />}
-      {gameType === 'sorting' && <SortingGame data={mod} compact={compact} />}
+      {gameType === 'sorting' && <SortingGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} />}
-      {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} />}
-      {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} />}
-      {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} />}
+      {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} onComplete={onComplete} />}
       {!['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard'].includes(gameType) && (
         <GenericGameWidget data={mod} compact={compact} />
       )}
@@ -56,7 +58,7 @@ export default function GameWidget({ dataIdx, compact = false }: GameWidgetProps
 /* ═══════════════════════════════════════════════════════════════
    TRUE/FALSE GAME
    ═══════════════════════════════════════════════════════════════ */
-function TrueFalseGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function TrueFalseGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks);
   const [currentQ, setCurrentQ] = useState(0);
@@ -64,6 +66,9 @@ function TrueFalseGame({ data, compact }: { data: Record<string, unknown>; compa
   const [answered, setAnswered] = useState(false);
   const [selected, setSelected] = useState<boolean | null>(null);
   const [phase, setPhase] = useState<'play' | 'result'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; onComplete(score, validSoal.length); } }, [phase]);
 
   const handleAnswer = useCallback((benar: boolean) => {
     if (answered || !validSoal[currentQ]) return;
@@ -135,7 +140,7 @@ function TrueFalseGame({ data, compact }: { data: Record<string, unknown>; compa
 /* ═══════════════════════════════════════════════════════════════
    MEMORY MATCH GAME
    ═══════════════════════════════════════════════════════════════ */
-function MemoryGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function MemoryGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
   const validPairs = pasangan.filter(p => p.kiri || p.kanan);
 
@@ -152,6 +157,9 @@ function MemoryGame({ data, compact }: { data: Record<string, unknown>; compact:
   const [matched, setMatched] = useState<Set<number>>(new Set());
   const [moves, setMoves] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validPairs.length, validPairs.length); } }, [phase]);
 
   const handleFlip = useCallback((cardId: number) => {
     if (flipped.length === 2 || flipped.includes(cardId) || matched.has(cardId)) return;
@@ -238,7 +246,7 @@ function MemoryGame({ data, compact }: { data: Record<string, unknown>; compact:
 /* ═══════════════════════════════════════════════════════════════
    MATCHING GAME (Pasangkan)
    ═══════════════════════════════════════════════════════════════ */
-function MatchingGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function MatchingGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
   const validPairs = pasangan.filter(p => p.kiri || p.kanan);
 
@@ -251,6 +259,9 @@ function MatchingGame({ data, compact }: { data: Record<string, unknown>; compac
   const [matchedRight, setMatchedRight] = useState<Set<number>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validPairs.length, validPairs.length); } }, [phase]);
 
   const handleLeftClick = (idx: number) => {
     if (matchedLeft.has(idx)) return;
@@ -391,7 +402,7 @@ function RodaGame({ data, compact }: { data: Record<string, unknown>; compact: b
 /* ═══════════════════════════════════════════════════════════════
    SORTING GAME (Urutkan / Klasifikasi)
    ═══════════════════════════════════════════════════════════════ */
-function SortingGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function SortingGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const kategori = (data.kategori as Array<Record<string, unknown>>) || [];
   const items = (data.items as Array<Record<string, unknown>>) || [];
   const validItems = items.filter(i => i.teks);
@@ -399,6 +410,9 @@ function SortingGame({ data, compact }: { data: Record<string, unknown>; compact
   const [sorted, setSorted] = useState<Record<string, string[]>>({});
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const [wrong, setWrong] = useState<string | null>(null);
+  const reported = useRef(false);
+
+  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validItems.length, validItems.length); } }, [phase]);
 
   const handleDrop = useCallback((itemText: string, catId: string) => {
     const correctCat = validItems.find(i => i.teks === itemText)?.kategori as string;
@@ -559,7 +573,7 @@ function SpinWheelGame({ data, compact }: { data: Record<string, unknown>; compa
 /* ═══════════════════════════════════════════════════════════════
    TEAM BUZZER GAME
    ═══════════════════════════════════════════════════════════════ */
-function TeamBuzzerGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function TeamBuzzerGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks);
   const timA = (data.timA as string) || 'Tim A';
@@ -571,6 +585,9 @@ function TeamBuzzerGame({ data, compact }: { data: Record<string, unknown>; comp
   const [buzzed, setBuzzed] = useState<'A' | 'B' | null>(null);
   const [correct, setCorrect] = useState<'A' | 'B' | null>(null);
   const [phase, setPhase] = useState<'play' | 'result'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; const total = validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0); onComplete(scoreA + scoreB, total); } }, [phase]);
 
   const handleBuzz = (team: 'A' | 'B') => {
     if (buzzed) return;
@@ -658,7 +675,7 @@ function TeamBuzzerGame({ data, compact }: { data: Record<string, unknown>; comp
 /* ═══════════════════════════════════════════════════════════════
    WORD SEARCH GAME
    ═══════════════════════════════════════════════════════════════ */
-function WordSearchGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function WordSearchGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const kataList = (data.kata as string[]) || [];
   const ukuran = (data.ukuran as number) || 10;
   const validKata = kataList.filter(k => k.trim());
@@ -668,6 +685,9 @@ function WordSearchGame({ data, compact }: { data: Record<string, unknown>; comp
   const [selectedCells, setSelectedCells] = useState<Array<[number, number]>>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
+  const reported = useRef(false);
+
+  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validKata.length, validKata.length); } }, [phase]);
 
   // Generate grid on mount
   useEffect(() => {
@@ -815,11 +835,15 @@ function WordSearchGame({ data, compact }: { data: Record<string, unknown>; comp
 /* ═══════════════════════════════════════════════════════════════
    FLASHCARD GAME
    ═══════════════════════════════════════════════════════════════ */
-function FlashcardGame({ data, compact }: { data: Record<string, unknown>; compact: boolean }) {
+function FlashcardGame({ data, compact, onComplete }: { data: Record<string, unknown>; compact: boolean; onComplete?: (s: number, m: number) => void }) {
   const kartu = (data.kartu as Array<Record<string, unknown>>) || [];
   const validCards = kartu.filter(k => k.depan || k.belakang);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const reported = useRef(false);
+
+  // Report completion when user has viewed all cards
+  useEffect(() => { if (currentIdx === validCards.length - 1 && flipped && !reported.current && onComplete) { reported.current = true; onComplete(validCards.length, validCards.length); } }, [currentIdx, flipped]);
 
   if (validCards.length === 0) return <EmptyState icon="🃏" label="Flashcard" compact={compact} />;
 
