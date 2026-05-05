@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import type { LeftTab, PageTemplateType } from './types';
+import type { LeftTab, PageTemplateType, CanvaElement } from './types';
 import { TEMPLATE_TYPES, GRADIENT_PRESETS } from './types';
 import { toast } from 'sonner';
 
@@ -314,8 +314,13 @@ function PagesContent() {
 /* ── Elements Tab ───────────────────────────────────────────── */
 
 function ElementsContent() {
-  const { addElement, pages, currentPageIndex } = useCanvaStore();
+  const { addElement, addKuisElement, addGameElement, pages, currentPageIndex } = useCanvaStore();
   const page = pages[currentPageIndex];
+  const authStore = useAuthoringStore();
+  const kuis = authStore.kuis.filter(k => k.q.trim());
+  const GAME_TYPES_LIST = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'];
+  const games = authStore.modules.filter((m: Record<string, unknown>) => GAME_TYPES_LIST.includes(m.type as string));
+  const materiModules = authStore.modules.filter((m: Record<string, unknown>) => !GAME_TYPES_LIST.includes(m.type as string));
 
   // If template mode, suggest switching to custom
   if (page?.templateType && page.templateType !== 'custom') {
@@ -340,21 +345,137 @@ function ElementsContent() {
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  const elemCards = [
-    { id: 'kuis', icon: '❓', name: 'Kuis', note: 'Soal pilihan ganda', color: '#f5c842' },
-    { id: 'game', icon: '🎮', name: 'Game', note: 'Game interaktif', color: '#3ecfcf' },
-    { id: 'materi', icon: '📝', name: 'Materi', note: 'Konten materi', color: '#a78bfa' },
-    { id: 'modul', icon: '🧩', name: 'Modul', note: 'Modul aktivitas', color: '#34d399' },
+  // Basic elements always available
+  const basicElems = [
     { id: 'teks', icon: '🔤', name: 'Teks', note: 'Teks bebas', color: '#e2e8f0' },
     { id: 'shape', icon: '⬜', name: 'Shape', note: 'Kotak/warna', color: '#6366f1' },
   ];
 
   return (
     <div className="space-y-3">
+      {/* ── Data-driven elements: Kuis ─────── */}
+      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">❓ Kuis ({kuis.length} soal)</div>
+      {kuis.length > 0 ? (
+        <button
+          draggable
+          onClick={() => addElement('kuis')}
+          onDragStart={e => handleDragStart(e, 'kuis')}
+          className="card-hover accent-top w-full flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-grab active:scale-95 transition-transform"
+          style={{ '--accent-color': '#f5c842' } as React.CSSProperties}
+        >
+          <span className="text-xl">❓</span>
+          <div className="flex-1 text-left">
+            <div className="text-[11px] font-bold text-amber-300">Kuis Interaktif</div>
+            <div className="text-[9px] text-amber-400/60">{kuis.length} soal pilihan ganda</div>
+          </div>
+          <Plus size={14} className="text-amber-400" />
+        </button>
+      ) : (
+        <div className="text-[9px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">
+          Belum ada soal kuis. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-amber-400 underline">Isi di panel Konten → Evaluasi</button>
+        </div>
+      )}
+
+      {/* ── Data-driven elements: Games ─────── */}
+      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🎮 Game ({games.length})</div>
+      {games.length > 0 ? (
+        <div className="space-y-1.5">
+          {games.map((g, i) => {
+            const gIdx = authStore.modules.indexOf(g as (typeof authStore.modules)[0]);
+            const iconMap: Record<string, string> = {
+              truefalse: '✅', memory: '🧠', matching: '🔀', roda: '🎡',
+              sorting: '🔢', spinwheel: '🎡', teambuzzer: '🏆', wordsearch: '🔍',
+              flashcard: '🃏', crossword: '🔤', fillblank: '✏️', dragdrop: '🖐️',
+            };
+            return (
+              <button
+                key={i}
+                draggable
+                onClick={() => addGameElement(gIdx)}
+                onDragStart={e => handleDragStart(e, 'game')}
+                className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-teal-500/10 border border-teal-500/20 cursor-grab active:scale-95 transition-transform"
+              >
+                <span className="text-lg">{iconMap[g.type as string] || '🎮'}</span>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="text-[11px] font-bold text-teal-300 truncate">{(g.title as string) || (g.type as string)}</div>
+                  <div className="text-[9px] text-teal-400/60">{g.type as string}</div>
+                </div>
+                <Plus size={12} className="text-teal-400" />
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-[9px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">
+          Belum ada game. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
+        </div>
+      )}
+
+      {/* ── Data-driven elements: Materi/Modul ─────── */}
+      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🧩 Modul ({materiModules.length})</div>
+      {materiModules.length > 0 ? (
+        <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
+          {materiModules.map((m, i) => {
+            const mIdx = authStore.modules.indexOf(m as (typeof authStore.modules)[0]);
+            const moduleIconMap: Record<string, string> = {
+              materi: '📖', infografis: '📊', accordion: '🗂️', 'tab-icons': '📑',
+              'icon-explore': '🔍', timeline: '📅', hero: '🚀', kutipan: '💬',
+              langkah: '👣', statistik: '📈', polling: '🗳️', embed: '🔗',
+              comparison: '⚖️', 'card-showcase': '🎴', 'hotspot-image': '🗺️',
+              video: '🎥', 'studi-kasus': '🔬', debat: '🗣️',
+            };
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  const store = useCanvaStore.getState();
+                  const pages = store.pages;
+                  const page = pages[store.currentPageIndex];
+                  if (!page) return;
+                  const typeInfo = { icon: moduleIconMap[m.type as string] || '🧩', name: (m.title as string) || (m.type as string) };
+                  const el: CanvaElement = {
+                    id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                    type: 'modul',
+                    icon: typeInfo.icon,
+                    label: typeInfo.name,
+                    x: 5, y: 10, w: 90, h: 60,
+                    opacity: 100,
+                    dataIdx: mIdx,
+                    layoutVariant: (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A',
+                  };
+                  const newPages = [...pages];
+                  newPages[store.currentPageIndex] = {
+                    ...page,
+                    elements: [...page.elements, el],
+                  };
+                  store._pushHistory();
+                  useCanvaStore.setState({ pages: newPages, selectedElId: el.id });
+                }}
+                className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 active:scale-95 transition-transform"
+              >
+                <span className="text-lg">{moduleIconMap[m.type as string] || '🧩'}</span>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="text-[11px] font-bold text-emerald-300 truncate">{(m.title as string) || (m.type as string)}</div>
+                  <div className="text-[9px] text-emerald-400/60">{m.type as string}</div>
+                </div>
+                <Plus size={12} className="text-emerald-400" />
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-[9px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">
+          Belum ada modul. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-emerald-400 underline">Tambah di panel Konten → Modul</button>
+        </div>
+      )}
+
+      <div className="section-divider" />
+
+      {/* ── Basic elements ─────── */}
       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Elemen Dasar</div>
       <div className="text-[9px] text-slate-500">Klik untuk tambah, atau seret ke canvas</div>
       <div className="grid grid-cols-2 gap-2">
-        {elemCards.map(t => (
+        {basicElems.map(t => (
           <button
             key={t.id}
             draggable

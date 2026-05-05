@@ -17,12 +17,16 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
+  Zap,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import type { NavConfig, PageTemplateType } from './types';
 
-import { TEMPLATE_TYPES, LAYOUT_PRESETS, LAYER_COLORS } from './types';
+import { TEMPLATE_TYPES, LAYOUT_PRESETS, LAYER_COLORS, ELEM_TYPES } from './types';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { toast } from 'sonner';
 
 export default function RightPanel() {
   const {
@@ -394,12 +398,11 @@ export default function RightPanel() {
             </>
           )}
 
-          {/* Data reference */}
+          {/* Data reference — dropdown with module names */}
           {(selectedEl.type === 'kuis' || selectedEl.type === 'game' || selectedEl.type === 'modul') && (
-            <PropInput
-              label="Data"
-              value={selectedEl.dataIdx ?? -1}
-              min={-1}
+            <DataIdxSelector
+              elementType={selectedEl.type}
+              currentIdx={selectedEl.dataIdx ?? -1}
               onChange={v => updateElement(selectedEl.id, { dataIdx: v })}
             />
           )}
@@ -452,6 +455,19 @@ export default function RightPanel() {
             </span>
           </div>
 
+          {/* Refresh Data button — re-populate templateData from authoring store */}
+          <button
+            onClick={() => {
+              const store = useCanvaStore.getState();
+              store.setTemplateType(page.templateType);
+              toast.success('Data template diperbarui dari panel authoring');
+            }}
+            className="btn-accent w-full justify-center py-2 mt-2"
+          >
+            <Zap size={12} />
+            Refresh Data dari Authoring
+          </button>
+
           {/* Quick edit for common template fields */}
           {page.templateData && (
             <div className="mt-2 space-y-1">
@@ -495,6 +511,77 @@ export default function RightPanel() {
               Halaman {currentPageIndex + 1}/{pages.length} &middot; {page.templateType || 'custom'}
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Data Index Selector (dropdown with module names) ──────── */
+
+function DataIdxSelector({ elementType, currentIdx, onChange }: {
+  elementType: string;
+  currentIdx: number;
+  onChange: (idx: number) => void;
+}) {
+  const modules = useAuthoringStore((s) => s.modules);
+  const kuis = useAuthoringStore((s) => s.kuis.filter(k => k.q.trim()));
+
+  // Build options based on element type
+  let options: { idx: number; label: string; icon: string }[] = [];
+
+  if (elementType === 'kuis') {
+    options = [{ idx: -1, label: `Semua soal (${kuis.length})`, icon: '❓' }];
+  } else if (elementType === 'game') {
+    const gameModules = modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
+    options = gameModules.map((m, i) => {
+      const mIdx = modules.indexOf(m);
+      const iconMap: Record<string, string> = {
+        truefalse: '✅', memory: '🧠', matching: '🔀', roda: '🎡',
+        sorting: '🔢', spinwheel: '🎡', teambuzzer: '🏆', wordsearch: '🔍',
+        flashcard: '🃏', crossword: '🔤', fillblank: '✏️', dragdrop: '🖐️',
+      };
+      return { idx: mIdx, label: String(m.title || m.type), icon: iconMap[m.type as string] || '🎮' };
+    });
+    if (options.length === 0) {
+      options = [{ idx: -1, label: 'Belum ada game', icon: '🎮' }];
+    }
+  } else {
+    // modul / materi — show non-game modules
+    const materiModules = modules.filter(m => !(GAME_TYPES as readonly string[]).includes(m.type as string));
+    options = materiModules.map((m) => {
+      const mIdx = modules.indexOf(m);
+      const iconMap: Record<string, string> = {
+        materi: '📖', infografis: '📊', accordion: '🗂️', 'tab-icons': '📑',
+        'icon-explore': '🔍', timeline: '📅', hero: '🚀', kutipan: '💬',
+        langkah: '👣', statistik: '📈', polling: '🗳️', embed: '🔗',
+        comparison: '⚖️', 'card-showcase': '🎴', 'hotspot-image': '🗺️',
+        video: '🎥', 'studi-kasus': '🔬', debat: '🗣️',
+      };
+      return { idx: mIdx, label: String(m.title || m.type), icon: iconMap[m.type as string] || '🧩' };
+    });
+    if (options.length === 0) {
+      options = [{ idx: -1, label: 'Belum ada modul', icon: '🧩' }];
+    }
+  }
+
+  return (
+    <div className="mb-2">
+      <label className="text-[10px] text-slate-500 block mb-1">Pilih Data</label>
+      <select
+        value={currentIdx}
+        onChange={e => onChange(parseInt(e.target.value))}
+        className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+      >
+        {options.map(opt => (
+          <option key={opt.idx} value={opt.idx}>
+            {opt.icon} {opt.label}
+          </option>
+        ))}
+      </select>
+      {currentIdx === -1 && elementType !== 'kuis' && (
+        <div className="text-[8px] text-amber-400/60 mt-1">
+          Pilih modul spesifik atau tambah data di panel Konten
         </div>
       )}
     </div>
