@@ -5,7 +5,6 @@ import {
   Wrench,
   FileText,
   Layers,
-  Zap,
   Plus,
   Copy,
   Trash2,
@@ -22,10 +21,8 @@ import {
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { LeftTab, CanvaElement } from './types';
-import { TEMPLATE_TYPES, RATIOS, GRADIENT_PRESETS } from './types';
+import { TEMPLATE_TYPES, RATIOS } from './types';
 import {
-  GAME_TYPE_ICON_MAP,
-  MODULE_TYPE_ICON_MAP,
   TEMPLATE_BADGE_MAP,
   ELEMENT_TYPE_COLORS,
   getModuleIcon,
@@ -33,6 +30,7 @@ import {
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-export-helpers';
 import { toast } from 'sonner';
+import PageTypeCreator from './PageTypeCreator';
 
 // Phase 1: 3 tabs instead of 5
 const TABS: { id: LeftTab; label: string; icon: React.ReactNode }[] = [
@@ -103,7 +101,7 @@ export default function LeftPanel() {
    ══════════════════════════════════════════════════════════════════ */
 
 function RakitContent() {
-  const { addTemplatePage, autoRakit, pages, currentPageIndex, addElement, addKuisElement, addGameElement } = useCanvaStore();
+  const { addTemplatePage, pages, currentPageIndex, addElement, addKuisElement, addGameElement } = useCanvaStore();
   const authStore = useAuthoringStore();
   const page = pages[currentPageIndex];
   const meta = authStore.meta;
@@ -161,14 +159,8 @@ function RakitContent() {
 
   return (
     <div className="space-y-3">
-      {/* Auto Rakit Button */}
-      <button
-        onClick={autoRakit}
-        className="btn-primary w-full py-2.5 justify-center text-[11px]"
-      >
-        <Zap size={14} />
-        Auto Rakit Halaman
-      </button>
+      {/* Auto-Generate via Page Type Creator */}
+      <PageTypeCreator />
 
       {/* Data status pills */}
       <div className="text-[8px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">

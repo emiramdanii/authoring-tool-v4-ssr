@@ -13,6 +13,7 @@ import type {
   NavConfig,
   LayoutPreset,
 } from '@/components/canva/types';
+import type { PageTypeDefinition } from '@/store/page-types';
 
 // ── Snapshot type for undo/redo ────────────────────────────────
 export type Snapshot = {
@@ -120,6 +121,9 @@ export interface CanvaState {
 
   // ── Actions: Auto Rakit ──────────────────────────────────────
   autoRakit: () => void;
+
+  // ── Actions: Auto Generate (Page Type) ──────────────────────
+  generateFromPageType: (pageType: PageTypeDefinition, config: Record<string, number | string | boolean>) => void;
 
   // ── Actions: Persistence ─────────────────────────────────────
   saveToStorage: () => void;
