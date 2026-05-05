@@ -846,6 +846,16 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
           const gameIdx = el.dataIdx;
           return `<div id="${elId}" data-game-idx="${gameIdx}" style="${style};background:rgba(56,217,217,.08);border:1px solid rgba(56,217,217,.2);border-radius:8px;overflow:hidden;display:flex;flex-direction:column"></div>`;
         }
+        if (el.type === 'modul' || el.type === 'materi') {
+          const allMods = useAuthoringStore.getState().modules;
+          const modIdx = el.dataIdx;
+          const mod = (modIdx != null && modIdx >= 0 && modIdx < allMods.length) ? allMods[modIdx] : null;
+          const variant = (el.layoutVariant as LayoutVariant) || (mod?.layoutVariant as LayoutVariant) || 'A';
+          if (mod) {
+            return `<div style="${style};overflow-y:auto;padding:8px">${renderModuleToStyledHTML(mod, variant)}</div>`;
+          }
+          return `<div style="${style};display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px"><div style="font-size:1.5rem">🧩</div><div style="font-size:10px;color:rgba(167,139,250,.6);margin-top:4px">Modul</div></div>`;
+        }
         return `<div style="${style};display:flex;align-items:center;justify-content:center"><div style="font-size:1.5rem">${el.icon || ''}</div></div>`;
       })
       .join('\n    ');
@@ -853,7 +863,8 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
     return `<!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${page.label}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e0c15}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e0c15;font-family:'Nunito',sans-serif}
 .slide{position:relative;width:${ratio.w}px;height:${ratio.h}px;overflow:hidden;${bgStyle}${paletteCSS ? ';' + paletteCSS : ''}}
 .qbar{height:3px;background:rgba(245,200,66,.2);border-radius:2px;overflow:hidden;margin-bottom:6px}.qbar-fill{height:100%;background:#f5c842;transition:width .4s ease}
 .qhead{display:flex;justify-content:space-between;font-size:10px;color:#f5c842;margin-bottom:4px}

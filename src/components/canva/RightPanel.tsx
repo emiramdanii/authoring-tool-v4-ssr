@@ -5,6 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import type { NavConfig, PageTemplateType } from './types';
 import { getPaletteColor } from '@/lib/color-palette';
 import { TEMPLATE_TYPES } from './types';
+import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
 
 export default function RightPanel() {
   const {
@@ -246,6 +247,30 @@ export default function RightPanel() {
               min={-1}
               onChange={v => updateElement(selectedEl.id, { dataIdx: v })}
             />
+          )}
+
+          {/* Layout Variant Picker for modul/materi elements */}
+          {(selectedEl.type === 'modul' || selectedEl.type === 'materi') && (
+            <div className="mt-2 mb-1">
+              <label className="text-[10px] text-zinc-500 block mb-1">Layout Variant</label>
+              <div className="flex gap-1">
+                {LAYOUT_VARIANTS.map(v => {
+                  const current = (selectedEl.layoutVariant as LayoutVariant) || 'A';
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => updateElement(selectedEl.id, { layoutVariant: v.id })}
+                      className={`px-2 py-1 rounded text-[9px] font-bold transition-colors ${
+                        current === v.id ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                      }`}
+                      title={v.desc}
+                    >
+                      {v.icon} {v.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           <button
