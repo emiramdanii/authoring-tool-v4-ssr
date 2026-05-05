@@ -20,6 +20,7 @@ interface PageTemplateProps {
   page: CanvaPage;
   isSelected: boolean;
   onEditField: (key: string, value: string) => void;
+  interactive?: boolean; // When true, widgets are playable with score tracking
 }
 
 interface SubTemplateProps {
@@ -27,29 +28,30 @@ interface SubTemplateProps {
   palette: ColorPalette | null;
   isSelected: boolean;
   onEditField: (key: string, value: string) => void;
+  interactive?: boolean;
 }
 
-export default function PageTemplate({ page, isSelected, onEditField }: PageTemplateProps) {
+export default function PageTemplate({ page, isSelected, onEditField, interactive }: PageTemplateProps) {
   const td = page.templateData;
   const palette = page.colorPalette;
 
   switch (page.templateType) {
     case 'cover':
-      return <CoverTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <CoverTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'dokumen':
-      return <DokumenTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <DokumenTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'materi':
-      return <MateriTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <MateriTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'kuis':
-      return <KuisTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <KuisTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'game':
-      return <GameTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <GameTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'hasil':
-      return <HasilTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <HasilTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'hero':
-      return <HeroTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <HeroTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'skenario':
-      return <SkenarioTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} />;
+      return <SkenarioTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     default:
       return null;
   }
@@ -313,9 +315,15 @@ function MateriTemplate({ td, palette, isSelected, onEditField }: SubTemplatePro
 
 // ── Kuis Template ─────────────────────────────────────────────
 
-function KuisTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+function KuisTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f5c842');
   const kuisData = (td.kuis as Array<Record<string, unknown>>) || [];
+  const reportScore = useInteractiveStore((s) => s.reportScore);
+  const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
+
+  const handleComplete = useCallback((score: number, maxScore: number) => {
+    reportScore({ elementId: 'kuis-template', pageIndex: interactivePageIdx, score, maxScore, completed: true });
+  }, [reportScore, interactivePageIdx]);
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
@@ -336,16 +344,12 @@ function KuisTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps
           />
           <div className="text-[9px] text-white/40">{kuisData.length} soal</div>
         </div>
-        <div className="ml-auto px-2 py-1 rounded-lg text-[9px] font-bold"
-          style={{ background: `${accent}15`, color: accent }}>
-          ⭐ 0
-        </div>
       </div>
 
-      {/* Quiz Widget */}
+      {/* Quiz Widget — full-size in interactive mode */}
       <div className="flex-1 min-h-0 px-3 pb-3">
         {kuisData.length > 0 ? (
-          <QuizWidget compact />
+          <QuizWidget compact={!interactive} onComplete={interactive ? handleComplete : undefined} />
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">❓</span>
@@ -359,9 +363,15 @@ function KuisTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps
 
 // ── Game Template ─────────────────────────────────────────────
 
-function GameTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+function GameTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--c', '#3ecfcf');
   const games = (td.games as Array<Record<string, unknown>>) || [];
+  const reportScore = useInteractiveStore((s) => s.reportScore);
+  const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
+
+  const handleComplete = useCallback((score: number, maxScore: number) => {
+    reportScore({ elementId: 'game-template', pageIndex: interactivePageIdx, score, maxScore, completed: true });
+  }, [reportScore, interactivePageIdx]);
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
@@ -382,21 +392,17 @@ function GameTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps
           />
           <div className="text-[9px] text-white/40">{games.length} game tersedia</div>
         </div>
-        <div className="ml-auto px-2 py-1 rounded-lg text-[9px] font-bold"
-          style={{ background: `${accent}15`, color: accent }}>
-          🏆 0
-        </div>
       </div>
 
-      {/* Game selection or widget */}
+      {/* Game selection or widget — full-size in interactive mode */}
       <div className="flex-1 min-h-0 px-3 pb-3">
         {games.length > 0 ? (
           <div className="space-y-2">
             {/* Show first game as main widget */}
-            <GameWidget dataIdx={getGameModuleIndex(games[0])} compact />
+            <GameWidget dataIdx={getGameModuleIndex(games[0])} compact={!interactive} onComplete={interactive ? handleComplete : undefined} />
 
-            {/* Show other games as selectable cards */}
-            {games.length > 1 && (
+            {/* Show other games as selectable cards (hidden in interactive mode) */}
+            {!interactive && games.length > 1 && (
               <div className="flex gap-1.5 overflow-x-auto pb-1">
                 {games.map((g, i) => (
                   <button key={i}
@@ -427,18 +433,17 @@ function GameTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps
 
 // ── Hasil Template ────────────────────────────────────────────
 
-function HasilTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+function HasilTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--g', '#34d399');
   const totalKuis = (td.totalKuis as number) || 0;
   const namaBab = String(td.namaBab || '');
 
   // Live score from interactive store
-  const mode = useInteractiveStore((s) => s.mode);
   const totalPct = useInteractiveStore((s) => s.totalPct);
   const totalScore = useInteractiveStore((s) => s.totalScore);
   const totalMax = useInteractiveStore((s) => s.totalMax);
 
-  const pct = mode === 'interactive' ? totalPct() : 0;
+  const pct = interactive ? totalPct() : 0;
   const level = pct >= 85 ? 'Sangat Baik' : pct >= 70 ? 'Baik' : pct > 0 ? 'Perlu Latihan' : '';
   const levelColor = pct >= 85 ? '#34d399' : pct >= 70 ? '#f9c82e' : '#f87171';
 
@@ -478,7 +483,7 @@ function HasilTemplate({ td, palette, isSelected, onEditField }: SubTemplateProp
       {/* Info */}
       {totalKuis > 0 && (
         <div className="text-[10px] text-white/50 mb-3">
-          {mode === 'interactive' ? `${totalScore()}/${totalMax()} poin` : `${totalKuis} soal kuis tersedia`}
+          {interactive ? `${totalScore()}/${totalMax()} poin` : `${totalKuis} soal kuis tersedia`}
         </div>
       )}
 

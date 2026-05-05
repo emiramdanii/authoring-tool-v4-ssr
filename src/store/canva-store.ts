@@ -1034,19 +1034,184 @@ document.querySelectorAll('[id^=game_]').forEach(function(el){
       return get().exportPageHTML(i)
         .replace(/.*<body>/s, '')
         .replace(/<\/body>.*/s, '')
-        .replace(/<div class="slide">/, `<div class="slide" data-slide="${i}" style="display:${i === 0 ? 'block' : 'none'};${pageBg}">${pageOverlay}`);
+        .replace(/<div class="slide">/, `<div class="slide" data-slide="${i}" data-template="${p.templateType || 'custom'}" style="display:${i === 0 ? 'block' : 'none'};${pageBg}">${pageOverlay}`);
     }).join('\n');
 
     return `<!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Canva Slideshow</title><style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e0c15}
-.slide{position:relative;width:${ratio.w}px;height:${ratio.h}px;overflow:hidden}
-.nav{position:fixed;bottom:20px;display:flex;gap:8px;z-index:999}.nav button{padding:8px 20px;border:none;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:14px;backdrop-filter:blur(8px)}.nav button:hover{background:rgba(255,255,255,.2)}.slide-num{position:fixed;top:20px;right:20px;color:rgba(255,255,255,.5);font-size:12px;z-index:999}</style></head>
+<title>Interactive Slideshow</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e1c2f;font-family:'Nunito',sans-serif;flex-direction:column;padding:0 0 64px 0}
+.slide{position:relative;width:${ratio.w}px;height:${ratio.h}px;overflow:hidden;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+#progress-wrap{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,.06);z-index:1001}
+#progress-fill{height:100%;background:linear-gradient(90deg,#f9c12e,#3ecfcf);transition:width .3s ease;border-radius:0 2px 2px 0}
+#nav-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 20px;background:rgba(14,28,47,.96);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.06);z-index:1001}
+.nav-btn{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.nav-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.22)}
+.nav-btn:disabled{opacity:.25;cursor:default}
+#dots{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:all .3s;border:none;padding:0}
+.dot.active{background:#f9c12e;transform:scale(1.4);box-shadow:0 0 8px rgba(249,193,46,.4)}
+.dot.scored{box-shadow:0 0 0 2px rgba(52,211,153,.5);background:rgba(52,211,153,.35)}
+.dot.scored.active{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.5)}
+#score-badge{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34d399;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0}
+#page-label{position:fixed;top:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.35);font-size:11px;z-index:1001;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.qbar{height:3px;background:rgba(245,200,66,.2);border-radius:2px;overflow:hidden;margin-bottom:6px}.qbar-fill{height:100%;background:#f5c842;transition:width .4s ease}
+.qhead{display:flex;justify-content:space-between;font-size:10px;color:#f5c842;margin-bottom:4px}
+.qq{font-size:13px;font-weight:700;color:#f5c842;margin-bottom:6px;line-height:1.3}
+.qopt{display:block;width:100%;text-align:left;padding:6px 8px;margin:2px 0;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(245,200,66,.9);font-size:11px;cursor:pointer;transition:all .2s}
+.qopt:hover{background:rgba(255,255,255,.1)}.qopt.correct{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.4);color:#6ee7b7}
+.qopt.wrong{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:#fca5a5}.qopt.disabled{opacity:.3;cursor:default}
+.qex{font-size:10px;color:#60a5fa;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:4px 8px;margin-top:4px}
+.qresult{text-align:center;padding:12px}.qresult .score{font-size:28px;font-weight:900}.qresult .level{font-size:11px;margin-top:2px}
+.qresult button{margin-top:8px;padding:6px 16px;border:1px solid rgba(245,200,66,.3);border-radius:8px;background:rgba(245,200,66,.2);color:#f5c842;font-size:11px;font-weight:700;cursor:pointer}
+.qresult button:hover{background:rgba(245,200,66,.4)}
+</style></head>
 <body>
+<div id="progress-wrap"><div id="progress-fill" style="width:0%"></div></div>
+<div id="page-label"></div>
 ${slidesHtml}
-<div class="nav"><button onclick="prevSlide()">← Prev</button><button onclick="nextSlide()">Next →</button></div>
-<div class="slide-num" id="slideNum">1/${pages.length}</div>
-<script>let cur=0;const total=${pages.length};const slides=document.querySelectorAll('.slide');function showSlide(n){slides.forEach((s,i)=>s.style.display=i===n?'block':'none');document.getElementById('slideNum').textContent=(n+1)+'/'+total}function nextSlide(){cur=(cur+1)%total;showSlide(cur)}function prevSlide(){cur=(cur-1+total)%total;showSlide(cur)}document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nextSlide();if(e.key==='ArrowLeft')prevSlide()});<\/script></body></html>`;
+<div id="nav-bar">
+<button class="nav-btn" id="btn-prev" onclick="prevSlide()">&#9664;</button>
+<div id="dots"></div>
+<button class="nav-btn" id="btn-next" onclick="nextSlide()">&#9654;</button>
+<div id="score-badge">&#11088; <span id="score-val">&mdash;</span></div>
+</div>
+<script>
+var cur=0;
+var total=${pages.length};
+var SCORE={};
+var slides=document.querySelectorAll('.slide');
+
+function showSlide(n){
+  cur=n;
+  slides.forEach(function(s,i){s.style.display=i===n?'block':'none'});
+  updateDots();
+  updateProgress();
+  updateNavButtons();
+  updatePageLabel();
+}
+function nextSlide(){if(cur<total-1)showSlide(cur+1)}
+function prevSlide(){if(cur>0)showSlide(cur-1)}
+
+function reportScore(pageIdx,score,max){
+  SCORE[pageIdx]={score:score,max:max,pct:max>0?Math.round(score/max*100):0};
+  updateScoreBadge();
+  updateHasil();
+  updateDots();
+}
+
+function updateScoreBadge(){
+  var ts=0,tm=0;
+  Object.keys(SCORE).forEach(function(k){ts+=SCORE[k].score;tm+=SCORE[k].max});
+  var el=document.getElementById('score-val');
+  if(el)el.textContent=tm>0?Math.round(ts/tm*100)+'%':'\\u2014';
+}
+
+function updateHasil(){
+  var ts=0,tm=0;
+  Object.keys(SCORE).forEach(function(k){ts+=SCORE[k].score;tm+=SCORE[k].max});
+  var pctEl=document.getElementById('hasil-score-pct');
+  var detailEl=document.getElementById('hasil-score-detail');
+  if(pctEl){
+    var pct=tm>0?Math.round(ts/tm*100):0;
+    pctEl.textContent=pct+'%';
+    pctEl.style.color=pct>=85?'#34d399':pct>=70?'#f9c12e':'#f87171';
+    var circle=pctEl.parentElement;
+    if(circle){
+      circle.style.borderColor=pct>=85?'rgba(52,211,153,.5)':pct>=70?'rgba(249,193,46,.5)':'rgba(248,113,113,.5)';
+      circle.style.background=pct>=85?'rgba(52,211,153,.08)':pct>=70?'rgba(249,193,46,.08)':'rgba(248,113,113,.08)';
+    }
+  }
+  if(detailEl){
+    detailEl.textContent=tm>0?ts+' dari '+tm+' jawaban benar':'Kerjakan kuis untuk melihat skor';
+  }
+}
+
+function updateDots(){
+  var dotsContainer=document.getElementById('dots');
+  if(!dotsContainer)return;
+  var dots=dotsContainer.querySelectorAll('.dot');
+  dots.forEach(function(d,i){
+    d.className='dot';
+    if(i===cur)d.classList.add('active');
+    if(SCORE[i])d.classList.add('scored');
+  });
+}
+
+function updateProgress(){
+  var fill=document.getElementById('progress-fill');
+  if(fill)fill.style.width=((cur+1)/total*100)+'%';
+}
+
+function updateNavButtons(){
+  var prev=document.getElementById('btn-prev');
+  var next=document.getElementById('btn-next');
+  if(prev)prev.disabled=cur===0;
+  if(next)next.disabled=cur===total-1;
+}
+
+function updatePageLabel(){
+  var el=document.getElementById('page-label');
+  if(!el)return;
+  var tmpl=slides[cur]?slides[cur].getAttribute('data-template'):'';
+  var labels={cover:'Cover',materi:'Materi',kuis:'Kuis',game:'Game',hasil:'Hasil',dokumen:'Dokumen',hero:'Hero',skenario:'Skenario',custom:'Custom'};
+  el.textContent=(labels[tmpl]||tmpl||'Slide')+' \\u2022 '+(cur+1)+'/'+total;
+}
+
+function buildDots(){
+  var c=document.getElementById('dots');
+  if(!c)return;
+  c.innerHTML='';
+  for(var i=0;i<total;i++){
+    var d=document.createElement('button');
+    d.className='dot'+(i===0?' active':'');
+    d.setAttribute('aria-label','Slide '+(i+1));
+    d.addEventListener('click',(function(idx){return function(){showSlide(idx)}})(i));
+    c.appendChild(d);
+  }
+}
+
+function initScoreBridge(){
+  var observer=new MutationObserver(function(mutations){
+    mutations.forEach(function(m){
+      m.addedNodes.forEach(function(node){
+        if(node.nodeType!==1)return;
+        var results=node.classList&&node.classList.contains('qresult')?[node]:[];
+        if(!results.length&&node.querySelectorAll){
+          var found=node.querySelectorAll('.qresult');
+          if(found.length)results=Array.prototype.slice.call(found);
+        }
+        results.forEach(function(result){
+          var quizEl=result.parentElement;
+          if(!quizEl)return;
+          var slide=quizEl.closest?quizEl.closest('.slide'):null;
+          if(!slide)return;
+          var slideIdx=parseInt(slide.getAttribute('data-slide'));
+          if(isNaN(slideIdx))return;
+          var text=result.textContent||'';
+          var m1=text.match(/Skor:\\s*(\\d+)\\s*dari\\s*(\\d+)/);
+          var m2=text.match(/(\\d+)\\/(\\d+)\\s*benar/);
+          if(m1)reportScore(slideIdx,parseInt(m1[1]),parseInt(m1[2]));
+          else if(m2)reportScore(slideIdx,parseInt(m2[1]),parseInt(m2[2]));
+        });
+      });
+    });
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
+}
+
+buildDots();
+initScoreBridge();
+showSlide(0);
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight')nextSlide();
+  if(e.key==='ArrowLeft')prevSlide();
+});
+<\/script></body></html>`;
   },
 }));
 
@@ -1117,13 +1282,13 @@ function renderTemplateExportHTML(page: CanvaPage): string | null {
     case 'hasil': {
       const totalKuis = (td.totalKuis as number) || 0;
       return `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px">
-        <div style="font-size:48px;margin-bottom:16px">🏆</div>
-        <div style="font-size:28px;font-weight:900;color:#34d399;margin-bottom:8px">Hasil Belajar</div>
-        <div style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:20px">${totalKuis > 0 ? totalKuis + ' soal kuis telah diselesaikan' : 'Terima kasih telah belajar!'}</div>
-        <div style="width:120px;height:120px;border-radius:50%;border:4px solid rgba(52,211,153,.4);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
-          <div style="font-size:36px;font-weight:900;color:#34d399" id="hasil-score">0%</div>
+        <div style="font-size:56px;margin-bottom:12px">🏆</div>
+        <div style="font-size:28px;font-weight:900;color:#34d399;margin-bottom:6px">Hasil Belajar</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px" id="hasil-score-detail">${totalKuis > 0 ? totalKuis + ' soal kuis telah diselesaikan' : 'Kerjakan kuis untuk melihat skor'}</div>
+        <div style="width:140px;height:140px;border-radius:50%;border:5px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;margin-bottom:20px;background:rgba(52,211,153,.06)">
+          <div style="font-size:42px;font-weight:900;color:#34d399" id="hasil-score-pct">0%</div>
         </div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)">Skor akan muncul setelah mengerjakan kuis</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.35)">Skor diperbarui secara langsung</div>
       </div>`;
     }
 

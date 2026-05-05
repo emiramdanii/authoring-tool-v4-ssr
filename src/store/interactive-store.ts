@@ -22,6 +22,8 @@ interface InteractiveState {
   mode: 'design' | 'interactive';
   setMode: (mode: 'design' | 'interactive') => void;
   toggleMode: () => void;
+  openPlay: () => void;
+  closePlay: () => void;
 
   // ── Navigation ─────────────────────────────────────────────
   interactivePageIdx: number;
@@ -62,6 +64,14 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
   toggleMode: () => {
     const next = get().mode === 'design' ? 'interactive' : 'design';
     get().setMode(next);
+  },
+
+  openPlay: () => {
+    set({ mode: 'interactive', interactivePageIdx: 0, scores: [] });
+  },
+
+  closePlay: () => {
+    set({ mode: 'design' });
   },
 
   // ── Navigation ─────────────────────────────────────────────
