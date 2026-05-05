@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { toast } from 'sonner';
@@ -18,7 +18,19 @@ import {
   Plus,
   PanelRight,
   X,
+  ChevronDown,
+  Save,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react';
+
+// ═══════════════════════════════════════════════════════════════
+// Phase 2: Toolbar cleanup
+// - Export → dropdown (Preview + Export Page + Export Slideshow)
+// - Save indicator ("Tersimpan" / "Menyimpan...")
+// - Clear moved inside Export dropdown (safer, less accidental clicks)
+// - Ratio badge clickable → dropdown for ratio selection
+// ═══════════════════════════════════════════════════════════════
 
 export default function Toolbar() {
   const {
@@ -27,6 +39,7 @@ export default function Toolbar() {
     zoom,
     zoomDelta,
     ratioId,
+    setRatio,
     clearStage,
     exportPageHTML,
     exportSlideshowHTML,
@@ -45,15 +58,44 @@ export default function Toolbar() {
   const closePlay = useInteractiveStore((s) => s.closePlay);
 
   const [exporting, setExporting] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [ratioOpen, setRatioOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const ratioRef = useRef<HTMLDivElement>(null);
+
   const isInteractive = mode === 'interactive';
   const page = pages[currentPageIndex];
   const label = page?.label || 'Untitled';
+
+  // ── Save indicator state ────────────────────────────────────
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
+
+  // Auto-save: watch for page changes
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      useCanvaStore.getState().saveToStorage();
+      setSaveStatus('saved');
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [pages, ratioId]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) setExportOpen(false);
+      if (ratioRef.current && !ratioRef.current.contains(e.target as Node)) setRatioOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const handlePreview = () => {
     const html = exportPageHTML();
     const win = window.open('', '_blank');
     if (win) { win.document.write(html); win.document.close(); }
     toast.success('Preview dibuka di tab baru');
+    setExportOpen(false);
   };
 
   const handleExport = () => {
@@ -78,6 +120,7 @@ export default function Toolbar() {
         setExporting(false);
       }
     });
+    setExportOpen(false);
   };
 
   const handleExportSlideshow = () => {
@@ -102,6 +145,12 @@ export default function Toolbar() {
         setExporting(false);
       }
     });
+    setExportOpen(false);
+  };
+
+  const handleClear = () => {
+    if (confirm('Bersihkan semua elemen di halaman ini? Tindakan ini bisa di-undo.')) clearStage();
+    setExportOpen(false);
   };
 
   // ── Interactive mode toolbar (minimal) ─────────────────────
@@ -205,51 +254,111 @@ export default function Toolbar() {
       </div>
       <div className="section-divider h-5 w-px mx-1" />
 
-      {/* ── Action group: Preview, Export, Slideshow, Clear ──── */}
-      <div className="flex items-center gap-0.5">
+      {/* ── Export Dropdown (merged Preview + Export Page + Export Slideshow + Clear) ── */}
+      <div className="relative" ref={exportRef}>
         <button
-          onClick={handlePreview}
-          title="Preview Desain Canva (buka di tab baru)"
-          className="btn-ghost focus-ring"
-        >
-          <Eye size={14} />
-          <span className="hidden xl:inline text-[9px] text-slate-600 ml-0.5">Preview</span>
-        </button>
-        <button
-          onClick={handleExport}
+          onClick={() => setExportOpen(!exportOpen)}
           disabled={exporting}
-          title="Export Halaman HTML"
-          className={`btn-ghost focus-ring ${exporting ? 'opacity-50 cursor-wait' : ''}`}
+          className={`btn-ghost focus-ring flex items-center gap-0.5 ${exporting ? 'opacity-50' : ''}`}
+          title="Export & Aksi"
         >
           <Download size={14} />
+          <span className="hidden md:inline text-[9px]">Export</span>
+          <ChevronDown size={10} className={`transition-transform ${exportOpen ? 'rotate-180' : ''}`} />
         </button>
-        <button
-          onClick={handleExportSlideshow}
-          disabled={exporting}
-          title="Export Slideshow Interaktif"
-          className={`btn-ghost focus-ring ${exporting ? 'opacity-50 cursor-wait' : ''}`}
-        >
-          <Film size={14} />
-        </button>
-        <button
-          onClick={() => { if (confirm('Bersihkan semua elemen di halaman ini?')) clearStage(); }}
-          title="Bersihkan"
-          className="btn-danger focus-ring !p-1.5 !gap-0"
-        >
-          <Trash2 size={13} />
-        </button>
+        {exportOpen && (
+          <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+            <button
+              onClick={handlePreview}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
+            >
+              <Eye size={14} className="text-slate-400" />
+              <div>
+                <div className="text-[11px] text-slate-200 font-semibold">Preview di Tab Baru</div>
+                <div className="text-[8px] text-slate-500">Buka desain di tab baru</div>
+              </div>
+            </button>
+            <button
+              onClick={handleExport}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
+            >
+              <Download size={14} className="text-amber-400" />
+              <div>
+                <div className="text-[11px] text-slate-200 font-semibold">Export Halaman HTML</div>
+                <div className="text-[8px] text-slate-500">Download halaman saat ini</div>
+              </div>
+            </button>
+            <button
+              onClick={handleExportSlideshow}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
+            >
+              <Film size={14} className="text-teal-400" />
+              <div>
+                <div className="text-[11px] text-slate-200 font-semibold">Export Slideshow Interaktif</div>
+                <div className="text-[8px] text-slate-500">{pages.length} halaman dengan skor & kuis</div>
+              </div>
+            </button>
+            <div className="section-divider mx-3" />
+            <button
+              onClick={handleClear}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-red-500/10 transition-colors text-left"
+            >
+              <Trash2 size={14} className="text-red-400/60" />
+              <div>
+                <div className="text-[11px] text-red-400/70 font-semibold">Bersihkan Halaman</div>
+                <div className="text-[8px] text-slate-500">Hapus semua elemen (bisa undo)</div>
+              </div>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ── Ratio badge ──────────────────────────────────────── */}
-      <span className="px-2 py-0.5 rounded-md bg-slate-800/60 text-amber-400 font-mono text-[10px] ml-1">
-        {ratioId}
-      </span>
+      {/* ── Ratio badge (clickable dropdown) ────────────────── */}
+      <div className="relative" ref={ratioRef}>
+        <button
+          onClick={() => setRatioOpen(!ratioOpen)}
+          className="px-2 py-0.5 rounded-md bg-slate-800/60 text-amber-400 font-mono text-[10px] ml-1 hover:bg-slate-700/60 transition-colors flex items-center gap-0.5"
+        >
+          {ratioId}
+          <ChevronDown size={8} className={`transition-transform ${ratioOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {ratioOpen && (
+          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+            {[
+              { id: '16:9', name: '16:9', desc: 'Landscape PPT' },
+              { id: '9:16', name: '9:16', desc: 'Portrait HP' },
+              { id: '1:1', name: '1:1', desc: 'Square Post' },
+              { id: 'A4', name: 'A4', desc: 'Dokumen LKS' },
+              { id: '4:3', name: '4:3', desc: 'Presentasi Lama' },
+            ].map(r => (
+              <button
+                key={r.id}
+                onClick={() => { setRatio(r.id); setRatioOpen(false); }}
+                className={`w-full px-3 py-2 flex items-center justify-between hover:bg-slate-800/50 transition-colors ${
+                  ratioId === r.id ? 'text-amber-400 bg-amber-500/5' : 'text-slate-300'
+                }`}
+              >
+                <span className="text-[11px] font-mono font-bold">{r.name}</span>
+                <span className="text-[8px] text-slate-500">{r.desc}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* ── Keyboard hints (very subtle, xl only) ────────────── */}
-      <div className="hidden xl:flex items-center gap-2 ml-2 text-[9px] text-slate-600">
-        <span>Del=hapus</span>
-        <span>Arrow=nudge</span>
-        <span>Ctrl+Z=undo</span>
+      {/* ── Save indicator ─────────────────────────────────────── */}
+      <div className="flex items-center gap-1 ml-2">
+        {saveStatus === 'saved' ? (
+          <>
+            <CheckCircle2 size={12} className="text-emerald-500/60" />
+            <span className="text-[9px] text-emerald-500/60 hidden lg:inline">Tersimpan</span>
+          </>
+        ) : (
+          <>
+            <Loader2 size={12} className="text-amber-400/60 animate-spin" />
+            <span className="text-[9px] text-amber-400/60 hidden lg:inline">Menyimpan...</span>
+          </>
+        )}
       </div>
 
       {/* ── Right group: Zoom + Panel toggle ─────────────────── */}

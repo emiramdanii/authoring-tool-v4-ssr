@@ -12,22 +12,34 @@ import {
   Settings2,
   Trash2,
   Edit3,
-  Layers,
   ChevronDown,
   ChevronRight,
   Eye,
   EyeOff,
   Zap,
+  Copy,
+  Layers,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { NavConfig, PageTemplateType } from './types';
 
-import { TEMPLATE_TYPES, LAYOUT_PRESETS, ELEM_TYPES } from './types';
+import { TEMPLATE_TYPES, LAYOUT_PRESETS, GRADIENT_PRESETS } from './types';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import { GAME_TYPES } from '@/lib/canva-export-helpers';
-import { GAME_TYPE_ICON_MAP, MODULE_TYPE_ICON_MAP, ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
+import { GAME_TYPE_ICON_MAP, MODULE_TYPE_ICON_MAP, ELEMENT_TYPE_COLORS, TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { toast } from 'sonner';
+
+// ═══════════════════════════════════════════════════════════════
+// Phase 2: RightPanel redesign — 5 sections instead of 9
+// Structure:
+//   1. 📋 Properti Elemen — ALWAYS visible when element selected (not collapsible)
+//   2. 🖼️ Background — BG + Gradient merged from LeftPanel
+//   3. 🎨 Palet Warna — only if palette exists
+//   4. 🧭 Navigasi — navbar config
+//   5. ⚙️ Pengaturan Halaman — Tipe Halaman + Layout + Grid/Snap + Template Edit
+// Removed: Layer mini (already in LeftPanel Layer tab)
+// ═══════════════════════════════════════════════════════════════
 
 export default function RightPanel() {
   const {
@@ -55,7 +67,7 @@ export default function RightPanel() {
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
-  // Phase 1: Also search overlayElements for the selected element
+  // Also search overlayElements for the selected element
   const selectedEl = page?.elements.find(e => e.id === selectedElId)
     || page?.overlayElements?.find(e => e.id === selectedElId);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +85,12 @@ export default function RightPanel() {
   };
 
   // ── Collapsible section state ────────────────────────────────
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+    bg: false,
+    palette: false,
+    nav: true,
+    settings: true,
+  });
   const toggleCollapse = (key: string) => setCollapsed(p => ({ ...p, [key]: !p[key] }));
 
   if (!rightPanelOpen) return null;
@@ -81,122 +98,144 @@ export default function RightPanel() {
   return (
     <div className="w-60 min-w-[240px] flex flex-col glass-panel overflow-y-auto custom-scrollbar">
 
-      {/* ── Section 1: Page Template Type ──────────────────────── */}
-      <Section
-        icon={<LayoutTemplate size={12} />}
-        title="Tipe Halaman"
-        collapsed={collapsed.template}
-        onToggle={() => toggleCollapse('template')}
-      >
-        <select
-          value={page?.templateType || 'custom'}
-          onChange={(e) => setTemplateType(e.target.value as PageTemplateType)}
-          className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
-        >
-          {TEMPLATE_TYPES.map(t => (
-            <option key={t.id} value={t.id}>{t.icon} {t.name} — {t.desc}</option>
-          ))}
-        </select>
-      </Section>
-
-      {/* ── Section 2: Layout Presets (custom mode only) ────────── */}
-      {!isTemplateMode && (
-        <Section
-          icon={<LayoutGrid size={12} />}
-          title="Layout Preset"
-          collapsed={collapsed.layout}
-          onToggle={() => toggleCollapse('layout')}
-        >
-          <div className="text-[8px] text-slate-500 mb-1.5">Pilih layout untuk mengatur posisi elemen</div>
-          <div className="grid grid-cols-3 gap-1.5">
-            {LAYOUT_PRESETS.map(p => {
-              const isActive = currentLayoutPreset()?.id === p.id;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => applyLayoutPreset(p.id)}
-                  className={`card-hover flex flex-col items-center gap-0.5 rounded-xl p-2 border text-center transition-all ${
-                    isActive
-                      ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
-                      : 'border-slate-700/20 text-slate-400'
-                  }`}
-                  title={p.desc}
-                >
-                  <span className="text-sm">{p.icon}</span>
-                  <span className="text-[7px] font-bold leading-tight">{p.name}</span>
-                </button>
-              );
-            })}
+      {/* ═══ Section 1: Properti Elemen — ALWAYS VISIBLE (not collapsible) ═══ */}
+      {selectedEl && (
+        <div className="border-b border-amber-500/10">
+          <div className="px-3 py-2 flex items-center gap-1.5 bg-amber-500/5">
+            <Settings2 size={12} className="text-amber-400" />
+            <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">Properti Elemen</span>
           </div>
-          {/* Mini preview of selected layout */}
-          {currentLayoutPreset() && currentLayoutPreset()!.slots.length > 0 && (
-            <div className="mt-2 bg-slate-800/40 rounded-xl p-2">
-              <div className="text-[8px] text-slate-500 mb-1">{currentLayoutPreset()!.desc}</div>
-              <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
-                {currentLayoutPreset()!.slots.map((slot, i) => (
-                  <div
-                    key={i}
-                    className="absolute rounded-sm border border-amber-500/20 bg-amber-500/5"
-                    style={{
-                      left: `${slot.x}%`,
-                      top: `${slot.y}%`,
-                      width: `${slot.w}%`,
-                      height: `${slot.h}%`,
-                    }}
+          <div className="px-3 pb-3 pt-2 space-y-1">
+            {/* Element badge */}
+            <div className="flex items-center gap-2 mb-2">
+              <div
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ background: ELEMENT_TYPE_COLORS[selectedEl.type] || '#888' }}
+              />
+              <span className="text-[11px] font-bold text-slate-200 truncate">
+                {selectedEl.icon} {selectedEl.label || selectedEl.type}
+              </span>
+              {/* Quick duplicate */}
+              <button
+                onClick={() => {
+                  const store = useCanvaStore.getState();
+                  const pages = store.pages;
+                  const page = pages[store.currentPageIndex];
+                  if (!page) return;
+                  const newEl: typeof selectedEl = {
+                    ...selectedEl,
+                    id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                    x: selectedEl.x + 2,
+                    y: selectedEl.y + 2,
+                  };
+                  store._pushHistory();
+                  const isOverlay = (page.overlayElements || []).some(oe => oe.id === selectedEl.id);
+                  const newPages = [...pages];
+                  if (isOverlay) {
+                    newPages[store.currentPageIndex] = {
+                      ...page,
+                      overlayElements: [...(page.overlayElements || []), newEl],
+                    };
+                  } else {
+                    newPages[store.currentPageIndex] = {
+                      ...page,
+                      elements: [...page.elements, newEl],
+                    };
+                  }
+                  useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id });
+                  toast.success('Elemen diduplikasi');
+                }}
+                className="btn-ghost w-6 h-6 ml-auto"
+                title="Duplikat elemen"
+              >
+                <Copy size={10} />
+              </button>
+            </div>
+
+            {/* Position & size */}
+            <PropInput label="X" value={Math.round(selectedEl.x)} onChange={v => updateElement(selectedEl.id, { x: v })} />
+            <PropInput label="Y" value={Math.round(selectedEl.y)} onChange={v => updateElement(selectedEl.id, { y: v })} />
+            <PropInput label="Lebar" value={Math.round(selectedEl.w)} onChange={v => updateElement(selectedEl.id, { w: v })} />
+            <PropInput label="Tinggi" value={Math.round(selectedEl.h)} onChange={v => updateElement(selectedEl.id, { h: v })} />
+            <PropInput label="Opacity" value={selectedEl.opacity || 100} min={0} max={100} onChange={v => updateElement(selectedEl.id, { opacity: v })} />
+
+            {/* Teks-specific props */}
+            {selectedEl.type === 'teks' && (
+              <>
+                <PropInput label="Font" value={selectedEl.fontSize || 20} min={8} max={72} onChange={v => updateElement(selectedEl.id, { fontSize: v })} />
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] text-slate-500 w-14">Warna</span>
+                  <input
+                    type="color"
+                    value={selectedEl.textColor?.startsWith('#') ? selectedEl.textColor : '#ffffff'}
+                    onChange={e => updateElement(selectedEl.id, { textColor: e.target.value })}
+                    className="flex-1 h-7 rounded-lg border border-slate-700/30 cursor-pointer bg-slate-800/60"
                   />
-                ))}
+                </div>
+              </>
+            )}
+
+            {/* Shape-specific props */}
+            {selectedEl.type === 'shape' && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] text-slate-500 w-14">Warna</span>
+                  <input
+                    type="color"
+                    value={selectedEl.color?.startsWith('#') ? selectedEl.color : '#ffffff'}
+                    onChange={e => updateElement(selectedEl.id, { color: e.target.value })}
+                    className="flex-1 h-7 rounded-lg border border-slate-700/30 cursor-pointer bg-slate-800/60"
+                  />
+                </div>
+                <PropInput label="Radius" value={selectedEl.radius || 8} min={0} max={50} onChange={v => updateElement(selectedEl.id, { radius: v })} />
+              </>
+            )}
+
+            {/* Data reference — dropdown with module names */}
+            {(selectedEl.type === 'kuis' || selectedEl.type === 'game' || selectedEl.type === 'modul') && (
+              <DataIdxSelector
+                elementType={selectedEl.type}
+                currentIdx={selectedEl.dataIdx ?? -1}
+                onChange={v => updateElement(selectedEl.id, { dataIdx: v })}
+              />
+            )}
+
+            {/* Layout Variant Picker for modul/materi elements */}
+            {(selectedEl.type === 'modul' || selectedEl.type === 'materi') && (
+              <div className="mt-2 mb-1">
+                <label className="text-[10px] text-slate-500 block mb-1">Layout Variant</label>
+                <div className="flex gap-1">
+                  {LAYOUT_VARIANTS.map(v => {
+                    const current = (selectedEl.layoutVariant as LayoutVariant) || 'A';
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => updateElement(selectedEl.id, { layoutVariant: v.id })}
+                        className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-colors ${
+                          current === v.id ? 'bg-amber-500 text-slate-900' : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/60'
+                        }`}
+                        title={v.desc}
+                      >
+                        {v.icon} {v.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
-        </Section>
-      )}
+            )}
 
-      {/* ── Section 3: Grid & Snap (custom mode only) ─────────── */}
-      {!isTemplateMode && (
-        <Section
-          icon={<Grid3X3 size={12} />}
-          title="Grid & Snap"
-          collapsed={collapsed.grid}
-          onToggle={() => toggleCollapse('grid')}
-        >
-          <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showGrid}
-              onChange={toggleGrid}
-              className="accent-amber-500 w-3 h-3"
-            />
-            <span className="text-[9px] text-slate-400">Tampilkan Grid</span>
-          </label>
-          <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={snapEnabled}
-              onChange={toggleSnap}
-              className="accent-amber-500 w-3 h-3"
-            />
-            <span className="text-[9px] text-slate-400">Snap ke Grid</span>
-          </label>
-          <div className="mt-1">
-            <label className="text-[9px] text-slate-500 block mb-1">Ukuran Grid: {gridSize}%</label>
-            <input
-              type="range"
-              min={2}
-              max={20}
-              step={1}
-              value={gridSize}
-              onChange={e => setGridSize(parseInt(e.target.value))}
-              className="w-full"
-            />
-            <div className="flex justify-between text-[7px] text-slate-600 mt-0.5">
-              <span>Halus (2%)</span>
-              <span>Kasar (20%)</span>
-            </div>
+            <button
+              onClick={deleteSelected}
+              className="btn-danger w-full mt-3"
+            >
+              <Trash2 size={12} />
+              Hapus Elemen
+            </button>
           </div>
-        </Section>
+        </div>
       )}
 
-      {/* ── Section 4: Background ──────────────────────────────── */}
+      {/* ═══ Section 2: Background + Gradient (merged) ═══ */}
       <Section
         icon={<ImageIcon size={12} />}
         title="Background"
@@ -258,9 +297,29 @@ export default function RightPanel() {
             )}
           </div>
         </div>
+
+        {/* Gradient Presets — moved from LeftPanel Tab Template */}
+        <div className="mt-3">
+          <label className="text-[10px] text-slate-500 block mb-1.5">Gradient Presets</label>
+          <div className="grid grid-cols-5 gap-1">
+            {GRADIENT_PRESETS.map(g => (
+              <button
+                key={g.id}
+                onClick={() => setBgColor(g.css)}
+                className={`w-full aspect-square rounded-lg border transition-all hover:scale-110 ${
+                  page?.bgColor === g.css
+                    ? 'border-amber-400 ring-1 ring-amber-400/50'
+                    : 'border-slate-700/30 hover:border-slate-600'
+                }`}
+                style={{ background: g.css }}
+                title={g.name}
+              />
+            ))}
+          </div>
+        </div>
       </Section>
 
-      {/* ── Section 5: Color Palette ──────────────────────────── */}
+      {/* ═══ Section 3: Color Palette ═══ */}
       {page?.colorPalette && page.colorPalette.colors.length > 0 && (
         <Section
           icon={<Palette size={12} />}
@@ -293,7 +352,7 @@ export default function RightPanel() {
         </Section>
       )}
 
-      {/* ── Section 6: Navigation Config ──────────────────────── */}
+      {/* ═══ Section 4: Navigation Config ═══ */}
       <Section
         icon={<Compass size={12} />}
         title="Navigasi"
@@ -348,162 +407,149 @@ export default function RightPanel() {
             onChange={e => updateNavConfig({ navbarStyle: e.target.value as NavConfig['navbarStyle'] })}
             className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
           >
-            <option value="colorful">🌈 Colorful</option>
-            <option value="minimal">☐ Minimal</option>
-            <option value="glass">🔮 Glass</option>
+            <option value="colorful">Colorful</option>
+            <option value="minimal">Minimal</option>
+            <option value="glass">Glass</option>
           </select>
         </div>
       </Section>
 
-      {/* ── Section 7: Element Properties (all modes — Phase 1 fix) ── */}
-      {selectedEl && (
-        <Section
-          icon={<Settings2 size={12} />}
-          title="Properti Elemen"
-          collapsed={collapsed.props}
-          onToggle={() => toggleCollapse('props')}
-        >
-          <PropInput label="X" value={Math.round(selectedEl.x)} onChange={v => updateElement(selectedEl.id, { x: v })} />
-          <PropInput label="Y" value={Math.round(selectedEl.y)} onChange={v => updateElement(selectedEl.id, { y: v })} />
-          <PropInput label="Lebar" value={Math.round(selectedEl.w)} onChange={v => updateElement(selectedEl.id, { w: v })} />
-          <PropInput label="Tinggi" value={Math.round(selectedEl.h)} onChange={v => updateElement(selectedEl.id, { h: v })} />
-          <PropInput label="Opacity" value={selectedEl.opacity || 100} min={0} max={100} onChange={v => updateElement(selectedEl.id, { opacity: v })} />
-
-          {/* Teks-specific props */}
-          {selectedEl.type === 'teks' && (
-            <>
-              <PropInput label="Font" value={selectedEl.fontSize || 20} min={8} max={72} onChange={v => updateElement(selectedEl.id, { fontSize: v })} />
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] text-slate-500 w-14">Warna</span>
-                <input
-                  type="color"
-                  value={selectedEl.textColor?.startsWith('#') ? selectedEl.textColor : '#ffffff'}
-                  onChange={e => updateElement(selectedEl.id, { textColor: e.target.value })}
-                  className="flex-1 h-7 rounded-lg border border-slate-700/30 cursor-pointer bg-slate-800/60"
-                />
-              </div>
-            </>
-          )}
-
-          {/* Shape-specific props */}
-          {selectedEl.type === 'shape' && (
-            <>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] text-slate-500 w-14">Warna</span>
-                <input
-                  type="color"
-                  value={selectedEl.color?.startsWith('#') ? selectedEl.color : '#ffffff'}
-                  onChange={e => updateElement(selectedEl.id, { color: e.target.value })}
-                  className="flex-1 h-7 rounded-lg border border-slate-700/30 cursor-pointer bg-slate-800/60"
-                />
-              </div>
-              <PropInput label="Radius" value={selectedEl.radius || 8} min={0} max={50} onChange={v => updateElement(selectedEl.id, { radius: v })} />
-            </>
-          )}
-
-          {/* Data reference — dropdown with module names */}
-          {(selectedEl.type === 'kuis' || selectedEl.type === 'game' || selectedEl.type === 'modul') && (
-            <DataIdxSelector
-              elementType={selectedEl.type}
-              currentIdx={selectedEl.dataIdx ?? -1}
-              onChange={v => updateElement(selectedEl.id, { dataIdx: v })}
-            />
-          )}
-
-          {/* Layout Variant Picker for modul/materi elements */}
-          {(selectedEl.type === 'modul' || selectedEl.type === 'materi') && (
-            <div className="mt-2 mb-1">
-              <label className="text-[10px] text-slate-500 block mb-1">Layout Variant</label>
-              <div className="flex gap-1">
-                {LAYOUT_VARIANTS.map(v => {
-                  const current = (selectedEl.layoutVariant as LayoutVariant) || 'A';
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => updateElement(selectedEl.id, { layoutVariant: v.id })}
-                      className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-colors ${
-                        current === v.id ? 'bg-amber-500 text-slate-900' : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/60'
-                      }`}
-                      title={v.desc}
-                    >
-                      {v.icon} {v.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={deleteSelected}
-            className="btn-danger w-full mt-3"
+      {/* ═══ Section 5: Pengaturan Halaman (merged: Tipe + Layout + Grid + Template Edit) ═══ */}
+      <Section
+        icon={<LayoutTemplate size={12} />}
+        title="Pengaturan Halaman"
+        collapsed={collapsed.settings}
+        onToggle={() => toggleCollapse('settings')}
+      >
+        {/* Jenis Halaman */}
+        <div className="mb-3">
+          <label className="text-[10px] text-slate-500 block mb-1">Jenis Halaman</label>
+          <select
+            value={page?.templateType || 'custom'}
+            onChange={(e) => setTemplateType(e.target.value as PageTemplateType)}
+            className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
           >
-            <Trash2 size={12} />
-            Hapus Elemen
-          </button>
-        </Section>
-      )}
+            {TEMPLATE_TYPES.map(t => (
+              <option key={t.id} value={t.id}>{t.icon} {t.name} — {t.desc}</option>
+            ))}
+          </select>
+        </div>
 
-      {/* ── Section 8: Template Edit Info (template mode) ──────── */}
-      {isTemplateMode && (
-        <Section
-          icon={<Edit3 size={12} />}
-          title="Edit Template"
-          collapsed={collapsed.templateEdit}
-          onToggle={() => toggleCollapse('templateEdit')}
-        >
-          <div className="rounded-xl bg-slate-800/40 border border-slate-700/20 p-2.5">
-            <span className="text-[8px] text-slate-500">
-              Klik langsung teks di canvas untuk mengedit. Data otomatis diambil dari panel authoring.
-            </span>
+        {/* Layout Presets (custom mode only) */}
+        {!isTemplateMode && (
+          <div className="mb-3">
+            <label className="text-[10px] text-slate-500 block mb-1">Layout Preset</label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {LAYOUT_PRESETS.map(p => {
+                const isActive = currentLayoutPreset()?.id === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => applyLayoutPreset(p.id)}
+                    className={`card-hover flex flex-col items-center gap-0.5 rounded-xl p-2 border text-center transition-all ${
+                      isActive
+                        ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                        : 'border-slate-700/20 text-slate-400'
+                    }`}
+                    title={p.desc}
+                  >
+                    <span className="text-sm">{p.icon}</span>
+                    <span className="text-[7px] font-bold leading-tight">{p.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+        )}
 
-          {/* Refresh Data button — re-populate templateData from authoring store */}
-          <button
-            onClick={() => {
-              const store = useCanvaStore.getState();
-              store.setTemplateType(page.templateType);
-              toast.success('Data template diperbarui dari panel authoring');
-            }}
-            className="btn-accent w-full justify-center py-2 mt-2"
-          >
-            <Zap size={12} />
-            Refresh Data dari Authoring
-          </button>
-
-          {/* Quick edit for common template fields */}
-          {page.templateData && (
-            <div className="mt-2 space-y-1">
-              {Object.entries(page.templateData)
-                .filter(([_, v]) => typeof v === 'string' && v.length < 100)
-                .slice(0, 5)
-                .map(([key, value]) => (
-                  <div key={key}>
-                    <label className="text-[8px] text-slate-500 block mb-0.5">{key}</label>
-                    <input
-                      type="text"
-                      value={String(value)}
-                      onChange={e => updateTemplateData(key, e.target.value)}
-                      className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
-                    />
-                  </div>
-                ))}
+        {/* Grid & Snap (custom mode only) */}
+        {!isTemplateMode && (
+          <div className="mb-3">
+            <label className="text-[10px] text-slate-500 block mb-1.5">Grid & Snap</label>
+            <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showGrid}
+                onChange={toggleGrid}
+                className="accent-amber-500 w-3 h-3"
+              />
+              <span className="text-[9px] text-slate-400">Tampilkan Grid</span>
+            </label>
+            <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={snapEnabled}
+                onChange={toggleSnap}
+                className="accent-amber-500 w-3 h-3"
+              />
+              <span className="text-[9px] text-slate-400">Snap ke Grid</span>
+            </label>
+            <div className="mt-1">
+              <label className="text-[9px] text-slate-500 block mb-1">Ukuran Grid: {gridSize}%</label>
+              <input
+                type="range"
+                min={2}
+                max={20}
+                step={1}
+                value={gridSize}
+                onChange={e => setGridSize(parseInt(e.target.value))}
+                className="w-full"
+              />
+              <div className="flex justify-between text-[7px] text-slate-600 mt-0.5">
+                <span>Halus (2%)</span>
+                <span>Kasar (20%)</span>
+              </div>
             </div>
-          )}
-        </Section>
-      )}
+          </div>
+        )}
 
-      {/* ── Section 9: Layers Mini ─────────────────────────────── */}
-      {!isTemplateMode && (
-        <Section
-          icon={<Layers size={12} />}
-          title="Layer"
-          collapsed={collapsed.layers}
-          onToggle={() => toggleCollapse('layers')}
-        >
-          <LayerMiniList />
-        </Section>
-      )}
+        {/* Template Edit (template mode only) */}
+        {isTemplateMode && (
+          <div className="mb-2">
+            <div className="text-[10px] font-bold text-amber-400 mb-1.5">
+              {TEMPLATE_BADGE_MAP[page.templateType]?.icon || ''} {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType} Template
+            </div>
+            <div className="rounded-xl bg-slate-800/40 border border-slate-700/20 p-2 mb-2">
+              <span className="text-[8px] text-slate-500">
+                Klik langsung teks di canvas untuk mengedit. Data otomatis diambil dari panel authoring.
+              </span>
+            </div>
+
+            {/* Refresh Data button */}
+            <button
+              onClick={() => {
+                const store = useCanvaStore.getState();
+                store.setTemplateType(page.templateType);
+                toast.success('Data template diperbarui dari panel authoring');
+              }}
+              className="btn-accent w-full justify-center py-2 mb-2"
+            >
+              <Zap size={12} />
+              Refresh Data dari Authoring
+            </button>
+
+            {/* Quick edit for common template fields */}
+            {page.templateData && (
+              <div className="space-y-1">
+                {Object.entries(page.templateData)
+                  .filter(([_, v]) => typeof v === 'string' && v.length < 100)
+                  .slice(0, 5)
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <label className="text-[8px] text-slate-500 block mb-0.5">{key}</label>
+                      <input
+                        type="text"
+                        value={String(value)}
+                        onChange={e => updateTemplateData(key, e.target.value)}
+                        className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+                      />
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Section>
 
       {/* ── Page Info (always visible at bottom) ───────────────── */}
       {page && (
@@ -511,7 +557,7 @@ export default function RightPanel() {
           <div className="section-divider" />
           <div className="p-2">
             <div className="text-[9px] text-slate-600">
-              Halaman {currentPageIndex + 1}/{pages.length} &middot; {page.templateType || 'custom'}
+              Halaman {currentPageIndex + 1}/{pages.length} &middot; {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType}
             </div>
           </div>
         </div>
@@ -534,7 +580,7 @@ function DataIdxSelector({ elementType, currentIdx, onChange }: {
   let options: { idx: number; label: string; icon: string }[] = [];
 
   if (elementType === 'kuis') {
-    options = [{ idx: -1, label: `Semua soal (${kuis.length})`, icon: '❓' }];
+    options = [{ idx: -1, label: `Semua soal (${kuis.length})`, icon: '?' }];
   } else if (elementType === 'game') {
     const gameModules = modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
     options = gameModules.map((m, i) => {
@@ -579,7 +625,7 @@ function DataIdxSelector({ elementType, currentIdx, onChange }: {
   );
 }
 
-/* ── Collapsible Section (Redesigned) ──────────────────────────── */
+/* ── Collapsible Section ──────────────────────────────────────── */
 
 function Section({
   icon,
@@ -620,7 +666,7 @@ function Section({
   );
 }
 
-/* ── PropInput (Redesigned) ────────────────────────────────────── */
+/* ── PropInput ─────────────────────────────────────────────────── */
 
 function PropInput({ label, value, min, max, onChange }: {
   label: string;
@@ -640,51 +686,6 @@ function PropInput({ label, value, min, max, onChange }: {
         onChange={e => onChange(parseFloat(e.target.value) || 0)}
         className="flex-1 h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
       />
-    </div>
-  );
-}
-
-/* ── LayerMiniList (Redesigned) ────────────────────────────────── */
-
-function LayerMiniList() {
-  const { pages, currentPageIndex, selectedElId, selectElement, toggleElementVisibility } = useCanvaStore();
-  const page = pages[currentPageIndex];
-  if (!page) return null;
-
-  // Phase 1: Include overlayElements in the layer list
-  const elements = [...page.elements, ...(page.overlayElements || [])].reverse();
-
-  return (
-    <div className="space-y-0.5 max-h-48 overflow-y-auto custom-scrollbar">
-      {elements.length === 0 && (
-        <div className="text-[9px] text-slate-600 text-center py-2">Kosong</div>
-      )}
-      {elements.map(el => {
-        const isActive = el.id === selectedElId;
-        const color = ELEMENT_TYPE_COLORS[el.type] || '#888';
-        const isOverlay = (page.overlayElements || []).some(oe => oe.id === el.id);
-        return (
-          <div
-            key={el.id}
-            onClick={() => selectElement(el.id)}
-            className={`flex items-center gap-1.5 px-1.5 py-1 rounded-lg cursor-pointer transition-colors ${
-              isActive ? 'nav-active' : 'text-slate-500 hover:bg-slate-800/40'
-            }`}
-          >
-            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-            <span className="text-[9px] flex-1 truncate">
-              {isOverlay && <span className="text-amber-400/60 text-[7px]">⬆</span>}
-              {el.icon} {el.label || el.type}
-            </span>
-            <button
-              onClick={e => { e.stopPropagation(); toggleElementVisibility(el.id); }}
-              className="text-slate-600 hover:text-slate-400 transition-colors"
-            >
-              {el.hidden ? <EyeOff size={10} /> : <Eye size={10} />}
-            </button>
-          </div>
-        );
-      })}
     </div>
   );
 }
