@@ -435,6 +435,48 @@ export default function RightPanel() {
           </select>
         </div>
 
+        {/* Phase 3: Template Layout Variant picker */}
+        {isTemplateMode && (page?.templateType === 'cover' || page?.templateType === 'materi') && (
+          <div className="mb-3">
+            <label className="text-[10px] text-slate-500 block mb-1.5">Varian Tampilan</label>
+            <div className="flex gap-1.5">
+              {(page?.templateType === 'cover'
+                ? [
+                    { id: 'A', label: 'Centered', icon: '⬜' },
+                    { id: 'B', label: 'Left Align', icon: '▐▌' },
+                    { id: 'C', label: 'Split', icon: '◧◨' },
+                  ]
+                : [
+                    { id: 'A', label: 'Vertical', icon: '☰' },
+                    { id: 'B', label: 'Grid 2-Col', icon: '▥' },
+                  ]
+              ).map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => {
+                    const store = useCanvaStore.getState();
+                    const newPages = [...store.pages];
+                    newPages[store.currentPageIndex] = {
+                      ...newPages[store.currentPageIndex],
+                      templateVariant: v.id as 'A' | 'B' | 'C',
+                    };
+                    store._pushHistory();
+                    useCanvaStore.setState({ pages: newPages });
+                  }}
+                  className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] font-bold transition-colors ${
+                    (page?.templateVariant || 'A') === v.id
+                      ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                      : 'bg-slate-800/40 border border-slate-700/20 text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  <span className="text-sm">{v.icon}</span>
+                  <span>{v.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Layout Presets (custom mode only) */}
         {!isTemplateMode && (
           <div className="mb-3">

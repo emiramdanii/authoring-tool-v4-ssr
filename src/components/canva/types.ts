@@ -83,6 +83,9 @@ export interface CanvaPage {
   // ── Overlay elements (v3 — Phase 1) ──
   // Elements rendered ON TOP of template pages, allowing hybrid mode
   overlayElements: CanvaElement[];
+  // ── Template layout variant (Phase 3) ──
+  // Different visual layouts for the same template type (A/B/C)
+  templateVariant?: 'A' | 'B' | 'C';
 }
 
 export type LeftTab = 'rakit' | 'halaman' | 'layer';

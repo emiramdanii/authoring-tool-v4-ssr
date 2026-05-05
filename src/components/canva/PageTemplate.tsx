@@ -30,19 +30,21 @@ interface SubTemplateProps {
   isSelected: boolean;
   onEditField: (key: string, value: string) => void;
   interactive?: boolean;
+  variant?: 'A' | 'B' | 'C'; // Phase 3: Template layout variant
 }
 
 export default function PageTemplate({ page, isSelected, onEditField, interactive }: PageTemplateProps) {
   const td = page.templateData;
   const palette = page.colorPalette;
+  const variant = page.templateVariant || 'A'; // Phase 3: Default to variant A
 
   switch (page.templateType) {
     case 'cover':
-      return <CoverTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <CoverTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'dokumen':
       return <DokumenTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'materi':
-      return <MateriTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <MateriTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'kuis':
       return <KuisTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'game':
@@ -100,64 +102,184 @@ function EditableText({
 }
 
 // ── Cover Template ────────────────────────────────────────────
+// Phase 3: 3 variants — A (centered), B (left-aligned), C (split icon+text)
 
-function CoverTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+function CoverTemplate({ td, palette, isSelected, onEditField, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const bg = getPaletteColor(palette, '--bg', '#0f172a');
+  const cyan = getPaletteColor(palette, '--c', '#3ecfcf');
+  const green = getPaletteColor(palette, '--g', '#34d399');
 
+  // ── Variant A: Centered (original) ──
+  if (variant === 'A') {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
+        style={{ background: `linear-gradient(180deg, ${bg} 0%, ${bg}dd 100%)` }}>
+
+        {/* Decorative top bar */}
+        <div className="absolute top-0 left-0 right-0 h-1.5"
+          style={{ background: `linear-gradient(90deg, ${accent}, ${cyan}, ${accent})` }} />
+
+        {/* Icon */}
+        <div className="text-5xl mb-4"
+          style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,.3))' }}>
+          {String(td.icon || '📚')}
+        </div>
+
+        {/* Title */}
+        <EditableText
+          value={String(td.title || '')}
+          fieldKey="title"
+          isSelected={isSelected}
+          onEdit={onEditField}
+          className="font-black text-white leading-tight"
+          style={{ fontSize: 'clamp(18px, 3.5%, 32px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
+          placeholder="Judul Pertemuan"
+        />
+
+        {/* Subtitle */}
+        <EditableText
+          value={String(td.subtitle || '')}
+          fieldKey="subtitle"
+          isSelected={isSelected}
+          onEdit={onEditField}
+          className="mt-2"
+          style={{ fontSize: 'clamp(10px, 1.8%, 16px)', color: 'rgba(255,255,255,.7)' }}
+          placeholder="Subjudul / Deskripsi"
+        />
+
+        {/* Badge */}
+        {Boolean(td.mapel || td.kelas) && (
+          <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
+            style={{
+              background: `${accent}20`,
+              border: `1px solid ${accent}40`,
+              color: accent,
+            }}>
+            {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+          </div>
+        )}
+
+        {/* Decorative bottom */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
+          {[accent, cyan, green].map((c, i) => (
+            <div key={i} className="w-8 h-1 rounded-full" style={{ background: c, opacity: 0.6 }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Variant B: Left-aligned ──
+  if (variant === 'B') {
+    return (
+      <div className="absolute inset-0 flex flex-col justify-center p-8 pl-12"
+        style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg}cc 100%)` }}>
+
+        {/* Decorative left bar */}
+        <div className="absolute top-0 left-0 bottom-0 w-1.5"
+          style={{ background: `linear-gradient(180deg, ${accent}, ${cyan}, ${green})` }} />
+
+        {/* Badge at top */}
+        {Boolean(td.mapel || td.kelas) && (
+          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold w-fit"
+            style={{
+              background: `${accent}20`,
+              border: `1px solid ${accent}40`,
+              color: accent,
+            }}>
+            {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+          </div>
+        )}
+
+        {/* Icon + Title */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="text-4xl" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,.3))' }}>
+            {String(td.icon || '📚')}
+          </div>
+          <EditableText
+            value={String(td.title || '')}
+            fieldKey="title"
+            isSelected={isSelected}
+            onEdit={onEditField}
+            className="font-black text-white leading-tight"
+            style={{ fontSize: 'clamp(16px, 3.2%, 30px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
+            placeholder="Judul Pertemuan"
+          />
+        </div>
+
+        {/* Subtitle */}
+        <EditableText
+          value={String(td.subtitle || '')}
+          fieldKey="subtitle"
+          isSelected={isSelected}
+          onEdit={onEditField}
+          className="mt-1"
+          style={{ fontSize: 'clamp(10px, 1.6%, 14px)', color: 'rgba(255,255,255,.6)' }}
+          placeholder="Subjudul / Deskripsi"
+        />
+
+        {/* Decorative accent dots bottom right */}
+        <div className="absolute bottom-4 right-6 flex gap-1.5">
+          {[accent, cyan, green].map((c, i) => (
+            <div key={i} className="w-2 h-2 rounded-full" style={{ background: c, opacity: 0.5 }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Variant C: Split layout (icon left, text right) ──
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
-      style={{ background: `linear-gradient(180deg, ${bg} 0%, ${bg}dd 100%)` }}>
+    <div className="absolute inset-0 flex"
+      style={{ background: bg }}>
 
-      {/* Decorative top bar */}
-      <div className="absolute top-0 left-0 right-0 h-1.5"
-        style={{ background: `linear-gradient(90deg, ${accent}, ${getPaletteColor(palette, '--c', '#3ecfcf')}, ${accent})` }} />
-
-      {/* Icon */}
-      <div className="text-5xl mb-4 animate-bounce"
-        style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,.3))' }}>
-        {String(td.icon || '📚')}
+      {/* Left panel: Icon + gradient background */}
+      <div className="w-2/5 flex flex-col items-center justify-center relative"
+        style={{ background: `linear-gradient(135deg, ${accent}15, ${cyan}10)` }}>
+        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${bg}80, ${bg}40)` }} />
+        <div className="relative text-6xl mb-4" style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,.4))' }}>
+          {String(td.icon || '📚')}
+        </div>
+        {/* Badge */}
+        {Boolean(td.mapel || td.kelas) && (
+          <div className="relative px-3 py-1 rounded-full text-[9px] font-bold"
+            style={{ background: `${accent}30`, border: `1px solid ${accent}50`, color: accent }}>
+            {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+          </div>
+        )}
+        {/* Decorative dots */}
+        <div className="absolute bottom-4 flex gap-1">
+          {[accent, cyan, green].map((c, i) => (
+            <div key={i} className="w-6 h-1 rounded-full" style={{ background: c, opacity: 0.4 }} />
+          ))}
+        </div>
       </div>
 
-      {/* Title */}
-      <EditableText
-        value={String(td.title || '')}
-        fieldKey="title"
-        isSelected={isSelected}
-        onEdit={onEditField}
-        className="font-black text-white leading-tight"
-        style={{ fontSize: 'clamp(18px, 3.5%, 32px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
-        placeholder="Judul Pertemuan"
-      />
+      {/* Right panel: Text content */}
+      <div className="w-3/5 flex flex-col justify-center p-8">
+        <EditableText
+          value={String(td.title || '')}
+          fieldKey="title"
+          isSelected={isSelected}
+          onEdit={onEditField}
+          className="font-black text-white leading-tight mb-3"
+          style={{ fontSize: 'clamp(20px, 4%, 36px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
+          placeholder="Judul Pertemuan"
+        />
 
-      {/* Subtitle */}
-      <EditableText
-        value={String(td.subtitle || '')}
-        fieldKey="subtitle"
-        isSelected={isSelected}
-        onEdit={onEditField}
-        className="mt-2"
-        style={{ fontSize: 'clamp(10px, 1.8%, 16px)', color: 'rgba(255,255,255,.7)' }}
-        placeholder="Subjudul / Deskripsi"
-      />
+        <EditableText
+          value={String(td.subtitle || '')}
+          fieldKey="subtitle"
+          isSelected={isSelected}
+          onEdit={onEditField}
+          className=""
+          style={{ fontSize: 'clamp(11px, 2%, 18px)', color: 'rgba(255,255,255,.65)', lineHeight: 1.5 }}
+          placeholder="Subjudul / Deskripsi"
+        />
 
-      {/* Badge */}
-      {Boolean(td.mapel || td.kelas) && (
-        <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
-          style={{
-            background: `${accent}20`,
-            border: `1px solid ${accent}40`,
-            color: accent,
-          }}>
-          {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
-        </div>
-      )}
-
-      {/* Decorative bottom */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
-        {[accent, getPaletteColor(palette, '--c', '#3ecfcf'), getPaletteColor(palette, '--g', '#34d399')].map((c, i) => (
-          <div key={i} className="w-8 h-1 rounded-full" style={{ background: c, opacity: 0.6 }} />
-        ))}
+        {/* Divider accent */}
+        <div className="mt-4 w-16 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${accent}, ${cyan})` }} />
       </div>
     </div>
   );
@@ -239,13 +361,85 @@ function DokumenTemplate({ td, palette, isSelected, onEditField }: SubTemplatePr
 }
 
 // ── Materi Template ───────────────────────────────────────────
+// Phase 3: 2 variants — A (vertical list), B (2-column grid)
 
-function MateriTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+function MateriTemplate({ td, palette, isSelected, onEditField, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#a78bfa');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const blok = (td.blok as Array<Record<string, unknown>>) || [];
   const modules = (td.modules as Array<Record<string, unknown>>) || [];
 
+  // ── Variant A: Vertical list (original) ──
+  if (variant === 'A') {
+    return (
+      <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+            style={{ background: `${accent}20` }}>📝</div>
+          <div>
+            <EditableText
+              value="Materi Pembelajaran"
+              fieldKey="materiTitle"
+              isSelected={isSelected}
+              onEdit={onEditField}
+              className="font-black text-white text-sm"
+              placeholder="Judul Materi"
+            />
+            <div className="text-[9px] text-white/40">{blok.length} blok • {modules.length} modul</div>
+          </div>
+        </div>
+
+        {/* Materi Blocks */}
+        {blok.length > 0 && (
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+            {blok.map((b, i) => (
+              <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
+                {Boolean(b.judul) && <div className="text-[10px] font-bold text-white mb-0.5">{String(b.judul)}</div>}
+                {Boolean(b.isi) && <div className="text-[8px] text-white/70 leading-relaxed line-clamp-3">{String(b.isi)}</div>}
+                {Boolean(b.icon) && <span className="text-sm mr-1">{String(b.icon)}</span>}
+                {Array.isArray(b.butir) && (
+                  <div className="space-y-0.5 mt-1">
+                    {(b.butir as string[]).slice(0, 4).map((item, j) => (
+                      <div key={j} className="text-[8px] text-white/60 flex items-start gap-1">
+                        <span className="text-[7px] mt-0.5">•</span>
+                        <span className="line-clamp-1">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Module Cards */}
+        {modules.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {modules.slice(0, 3).map((m, i) => (
+              <PresetModuleCard
+                key={i}
+                mode="canvas"
+                module={m as Parameters<typeof PresetModuleCard>[0]['module']}
+                layoutVariant={(m.layoutVariant as LayoutVariant) || 'A'}
+                compact
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {blok.length === 0 && modules.length === 0 && (
+          <div className="flex-1 flex flex-col items-center justify-center text-white/30">
+            <span className="text-3xl mb-2">📝</span>
+            <span className="text-[10px]">Tambah materi di panel Konten → Materi</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Variant B: 2-column grid layout ──
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
       {/* Header */}
@@ -265,40 +459,43 @@ function MateriTemplate({ td, palette, isSelected, onEditField }: SubTemplatePro
         </div>
       </div>
 
-      {/* Materi Blocks */}
+      {/* 2-column grid */}
       {blok.length > 0 && (
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
-          {blok.map((b, i) => (
-            <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
-              {Boolean(b.judul) && <div className="text-[10px] font-bold text-white mb-0.5">{String(b.judul)}</div>}
-              {Boolean(b.isi) && <div className="text-[8px] text-white/70 leading-relaxed line-clamp-3">{String(b.isi)}</div>}
-              {Boolean(b.icon) && <span className="text-sm mr-1">{String(b.icon)}</span>}
-              {Array.isArray(b.butir) && (
-                <div className="space-y-0.5 mt-1">
-                  {(b.butir as string[]).slice(0, 4).map((item, j) => (
-                    <div key={j} className="text-[8px] text-white/60 flex items-start gap-1">
-                      <span className="text-[7px] mt-0.5">•</span>
-                      <span className="line-clamp-1">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2">
+            {blok.map((b, i) => (
+              <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
+                {Boolean(b.icon) && <span className="text-lg">{String(b.icon)}</span>}
+                {Boolean(b.judul) && <div className="text-[9px] font-bold text-white mb-0.5">{String(b.judul)}</div>}
+                {Boolean(b.isi) && <div className="text-[7px] text-white/70 leading-relaxed line-clamp-4">{String(b.isi)}</div>}
+                {Array.isArray(b.butir) && (
+                  <div className="space-y-0.5 mt-1">
+                    {(b.butir as string[]).slice(0, 3).map((item, j) => (
+                      <div key={j} className="text-[7px] text-white/60 flex items-start gap-0.5">
+                        <span className="text-[6px] mt-0.5">•</span>
+                        <span className="line-clamp-1">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Module Cards — using PresetModuleCard in canvas mode */}
+      {/* Module Cards — horizontal scroll in variant B */}
       {modules.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {modules.slice(0, 3).map((m, i) => (
-            <PresetModuleCard
-              key={i}
-              mode="canvas"
-              module={m as Parameters<typeof PresetModuleCard>[0]['module']}
-              layoutVariant={(m.layoutVariant as LayoutVariant) || 'A'}
-              compact
-            />
+        <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+          {modules.slice(0, 4).map((m, i) => (
+            <div key={i} className="flex-shrink-0 w-40">
+              <PresetModuleCard
+                mode="canvas"
+                module={m as Parameters<typeof PresetModuleCard>[0]['module']}
+                layoutVariant={(m.layoutVariant as LayoutVariant) || 'A'}
+                compact
+              />
+            </div>
           ))}
         </div>
       )}
