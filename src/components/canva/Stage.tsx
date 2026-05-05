@@ -1,14 +1,23 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import type { CanvaElement, ResizeDir } from './types';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import InlineEditToolbar from './InlineEditToolbar';
+
+// ═══════════════════════════════════════════════════════════════
+// STAGE — Canvas editing area with snap feedback & multi-select
+// Phase 4 improvements:
+// - Snap visual feedback (dashed guide lines when snapping)
+// - Multi-select elements (Shift+click)
+// - Ctrl+A select all, Delete bulk delete
+// ═══════════════════════════════════════════════════════════════
 
 export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
   const {
@@ -18,7 +27,12 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     zoom,
     tool,
     selectedElId,
+    selectedElIds,
     selectElement,
+    toggleElementSelection,
+    selectAllElements,
+    clearSelection,
+    deleteSelectedElements,
     addElement,
     updateElement,
     updateTemplateData,
@@ -37,6 +51,9 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const [stageW, setStageW] = useState(ratio.w);
   const [stageH, setStageH] = useState(ratio.h);
 
+  // Phase 4: Snap guide lines state
+  const [snapLines, setSnapLines] = useState<{ x?: number; y?: number }[]>([]);
+
   // Drag & resize state
   const dragState = useRef<{
     type: 'move' | 'resize';
@@ -49,6 +66,79 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     origH?: number;
     dir?: ResizeDir;
   } | null>(null);
+
+  // Phase 4: Keyboard shortcuts for multi-select
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.contentEditable === 'true' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      // Ctrl+A / Cmd+A — select all elements
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        selectAllElements();
+        return;
+      }
+      // Delete / Backspace — delete selected elements
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedElIds.length > 1) {
+          e.preventDefault();
+          deleteSelectedElements();
+          return;
+        }
+      }
+      // Escape — clear selection
+      if (e.key === 'Escape') {
+        clearSelection();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedElIds, selectAllElements, deleteSelectedElements, clearSelection]);
+
+  // Phase 4: Helper to compute snap lines during drag
+  const computeSnapLines = useCallback((elId: string, newX: number, newY: number, newW?: number, newH?: number) => {
+    if (!snapEnabled || !page) return [];
+    const lines: { x?: number; y?: number }[] = [];
+    const el = page.elements.find(e => e.id === elId) || page.overlayElements?.find(e => e.id === elId);
+    if (!el) return [];
+
+    const w = newW ?? el.w;
+    const h = newH ?? el.h;
+    const elCenterX = newX + w / 2;
+    const elCenterY = newY + h / 2;
+    const elRight = newX + w;
+    const elBottom = newY + h;
+
+    // Check alignment with other elements
+    const allEls = [...page.elements, ...(page.overlayElements || [])].filter(e => e.id !== elId && !e.hidden);
+    for (const other of allEls) {
+      const oCenterX = other.x + other.w / 2;
+      const oCenterY = other.y + other.h / 2;
+      const oRight = other.x + other.w;
+      const oBottom = other.y + other.h;
+
+      // Vertical snap lines (X alignment)
+      if (Math.abs(newX - other.x) < 1) lines.push({ x: other.x });
+      if (Math.abs(elRight - oRight) < 1) lines.push({ x: oRight });
+      if (Math.abs(elCenterX - oCenterX) < 1) lines.push({ x: oCenterX });
+
+      // Horizontal snap lines (Y alignment)
+      if (Math.abs(newY - other.y) < 1) lines.push({ y: other.y });
+      if (Math.abs(elBottom - oBottom) < 1) lines.push({ y: oBottom });
+      if (Math.abs(elCenterY - oCenterY) < 1) lines.push({ y: oCenterY });
+    }
+
+    // Check grid snap lines
+    const snappedX = snapValue(newX);
+    const snappedY = snapValue(newY);
+    if (Math.abs(snappedX - newX) < 0.5) lines.push({ x: snappedX });
+    if (Math.abs(snappedY - newY) < 0.5) lines.push({ y: snappedY });
+
+    return lines;
+  }, [snapEnabled, page, snapValue]);
 
   // Track mouse position
   const handleAreaMouseMove = useCallback((e: React.MouseEvent) => {
@@ -74,6 +164,12 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       const newX = snapEnabled ? snapValue(rawX) : rawX;
       const newY = snapEnabled ? snapValue(rawY) : rawY;
       updateElement(dragState.current.elId, { x: newX, y: newY });
+
+      // Phase 4: Update snap lines
+      if (snapEnabled) {
+        const lines = computeSnapLines(dragState.current.elId, newX, newY);
+        setSnapLines(lines);
+      }
     } else if (dragState.current.type === 'resize') {
       const dir = dragState.current.dir!;
       const orig = {
@@ -108,11 +204,18 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       }
 
       updateElement(dragState.current.elId, { x: newX, y: newY, w: newW, h: newH });
+
+      // Phase 4: Update snap lines during resize
+      if (snapEnabled) {
+        const lines = computeSnapLines(dragState.current.elId, newX, newY, newW, newH);
+        setSnapLines(lines);
+      }
     }
-  }, [baseScale, zoom, stageW, stageH, updateElement, onMouseMove, snapEnabled, snapValue]);
+  }, [baseScale, zoom, stageW, stageH, updateElement, onMouseMove, snapEnabled, snapValue, computeSnapLines]);
 
   const handleMouseUp = useCallback(() => {
     dragState.current = null;
+    setSnapLines([]); // Phase 4: Clear snap lines
   }, []);
 
   useEffect(() => {
@@ -153,7 +256,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   // Handle click on stage background
   const handleStageBgClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.id !== 'cm-stage-wrap' && target.id !== 'cm-stage-bg' && target.id !== 'cm-canvas-area' && target.id !== 'cm-stage-bg-overlay') return;
+    if (target.id !== 'cm-stage-wrap' && target.id !== 'cm-stage-bg' && target.id !== 'cm-canvas-area' && target.id !== 'cm-stage-bg-overlay' && !target.closest('[data-snap-line]')) return;
 
     if (tool === 'text') {
       const rect = stageWrapRef.current?.getBoundingClientRect();
@@ -181,11 +284,15 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const selectedEl = page?.elements.find(e => e.id === selectedElId)
     || page?.overlayElements?.find(e => e.id === selectedElId);
 
+  // Phase 4: Check if an element is in multi-select
+  const isMultiSelected = (elId: string) => selectedElIds.includes(elId) && selectedElIds.length > 1;
+
   if (!page) return null;
 
   return (
     <div
       ref={canvasAreaRef}
+      id="cm-canvas-area"
       className="flex-1 bg-zinc-950 overflow-auto flex items-center justify-center"
       style={{ cursor: tool === 'text' ? 'text' : 'default' }}
       onMouseMove={handleAreaMouseMove}
@@ -237,6 +344,40 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             }} />
           )}
 
+          {/* Phase 4: Snap Guide Lines — dashed lines at snap positions */}
+          {snapLines.length > 0 && (
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 40 }}>
+              {snapLines.map((line, i) => (
+                <div key={i}>
+                  {line.x != null && (
+                    <div
+                      data-snap-line
+                      className="absolute top-0 bottom-0"
+                      style={{
+                        left: `${line.x}%`,
+                        width: 1,
+                        borderLeft: '1px dashed rgba(56,217,217,0.6)',
+                        boxShadow: '0 0 4px rgba(56,217,217,0.3)',
+                      }}
+                    />
+                  )}
+                  {line.y != null && (
+                    <div
+                      data-snap-line
+                      className="absolute left-0 right-0"
+                      style={{
+                        top: `${line.y}%`,
+                        height: 1,
+                        borderTop: '1px dashed rgba(56,217,217,0.6)',
+                        boxShadow: '0 0 4px rgba(56,217,217,0.3)',
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Template Mode: Render full-page template */}
           {isTemplateMode && (
             <PageTemplate
@@ -253,8 +394,15 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
                 <StageElement
                   key={el.id}
                   element={el}
-                  isSelected={el.id === selectedElId}
-                  onSelect={() => selectElement(el.id)}
+                  isSelected={el.id === selectedElId || isMultiSelected(el.id)}
+                  isMultiSelected={isMultiSelected(el.id)}
+                  onSelect={(shiftKey) => {
+                    if (shiftKey) {
+                      toggleElementSelection(el.id);
+                    } else {
+                      selectElement(el.id);
+                    }
+                  }}
                   onStartDrag={(startX, startY) => {
                     dragState.current = {
                       type: 'move',
@@ -290,8 +438,15 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
                 <StageElement
                   key={el.id}
                   element={el}
-                  isSelected={el.id === selectedElId}
-                  onSelect={() => selectElement(el.id)}
+                  isSelected={el.id === selectedElId || isMultiSelected(el.id)}
+                  isMultiSelected={isMultiSelected(el.id)}
+                  onSelect={(shiftKey) => {
+                    if (shiftKey) {
+                      toggleElementSelection(el.id);
+                    } else {
+                      selectElement(el.id);
+                    }
+                  }}
                   onStartDrag={(startX, startY) => {
                     dragState.current = {
                       type: 'move',
@@ -334,10 +489,17 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
               Template: {page.templateType}
             </div>
           )}
+
+          {/* Phase 4: Multi-select info badge */}
+          {selectedElIds.length > 1 && (
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none z-50">
+              {selectedElIds.length} elemen terpilih • Shift+klik untuk tambah • Del untuk hapus
+            </div>
+          )}
         </div>
 
         {/* Phase 3: Inline Edit Toolbar — floating above selected element */}
-        {selectedEl && selectedElId && (
+        {selectedEl && selectedElId && selectedElIds.length <= 1 && (
           <InlineEditToolbar
             element={selectedEl}
             scale={scale}
@@ -353,13 +515,15 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 function StageElement({
   element,
   isSelected,
+  isMultiSelected,
   onSelect,
   onStartDrag,
   onStartResize,
 }: {
   element: CanvaElement;
   isSelected: boolean;
-  onSelect: () => void;
+  isMultiSelected: boolean;
+  onSelect: (shiftKey: boolean) => void;
   onStartDrag: (startX: number, startY: number) => void;
   onStartResize: (dir: ResizeDir, startX: number, startY: number) => void;
 }) {
@@ -378,7 +542,7 @@ function StageElement({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect();
+    onSelect(e.shiftKey);
     // In interactive mode, never drag — elements are clickable
     if (isInteractiveMode) return;
     if (!isInteractive || !isSelected) {
@@ -389,7 +553,7 @@ function StageElement({
   const handleBarMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!isSelected) onSelect();
+    if (!isSelected) onSelect(e.shiftKey);
     onStartDrag(e.clientX, e.clientY);
   };
 
@@ -417,9 +581,16 @@ function StageElement({
     { dir: 'r', style: { top: '50%', right: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
   ];
 
+  // Phase 4: Different ring colors for single vs multi-select
+  const ringClass = isMultiSelected
+    ? 'ring-2 ring-blue-400 ring-offset-0 z-10'
+    : isSelected && !isInteractiveMode
+      ? 'ring-2 ring-amber-400 ring-offset-0 z-10'
+      : 'z-0';
+
   return (
     <div
-      className={`absolute group ${isSelected && !isInteractiveMode ? 'ring-2 ring-amber-400 ring-offset-0 z-10' : 'z-0'} ${element.hidden ? 'hidden' : ''}`}
+      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''}`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,
@@ -434,13 +605,15 @@ function StageElement({
       <div
         className={`absolute left-0 right-0 flex items-center justify-between px-1 rounded-t text-[9px] font-bold z-20 transition-all ${
           isSelected
-            ? '-top-5 bg-amber-500/90 text-amber-950'
+            ? isMultiSelected
+              ? '-top-5 bg-blue-500/90 text-blue-950'
+              : '-top-5 bg-amber-500/90 text-amber-950'
             : '-top-4 bg-black/60 text-white/80 opacity-0 group-hover:opacity-100'
         }`}
         onMouseDown={handleBarMouseDown}
       >
         <span className="truncate cursor-grab">{element.icon} {element.label || element.type}</span>
-        {isSelected && (
+        {isSelected && !isMultiSelected && (
           <button
             onClick={e => { e.stopPropagation(); deleteElement(element.id); }}
             className="ml-1 hover:text-red-700 transition-colors"
@@ -496,7 +669,8 @@ function StageElement({
       </div>
 
       {/* Resize handles (8-direction) — Phase 3: larger 4x4 (16px) touch targets */}
-      {isSelected && !isInteractiveMode && (
+      {/* Phase 4: Only show resize handles for single-selected element (not multi) */}
+      {isSelected && !isInteractiveMode && !isMultiSelected && (
         <>
           {resizeHandles.map(h => (
             <div

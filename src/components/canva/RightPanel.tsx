@@ -142,7 +142,7 @@ export default function RightPanel() {
                       elements: [...page.elements, newEl],
                     };
                   }
-                  useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id });
+                  useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id, selectedElIds: [newEl.id] });
                   toast.success('Elemen diduplikasi');
                 }}
                 className="btn-ghost w-6 h-6 ml-auto"

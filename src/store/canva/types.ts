@@ -33,6 +33,8 @@ export interface CanvaState {
   tool: Tool;
   leftTab: LeftTab;
   selectedElId: string | null;
+  // Phase 4: Multi-select — array of selected element IDs
+  selectedElIds: string[];
   rightPanelOpen: boolean;
   toggleRightPanel: () => void;
   // Grid & Snap
@@ -89,6 +91,11 @@ export interface CanvaState {
   addKuisElement: (idx: number) => void;
   addGameElement: (idx: number) => void;
   selectElement: (elId: string | null) => void;
+  // Phase 4: Multi-select actions
+  toggleElementSelection: (elId: string) => void;
+  selectAllElements: () => void;
+  clearSelection: () => void;
+  deleteSelectedElements: () => void;
   updateElement: (elId: string, props: Partial<CanvaElement>) => void;
   deleteElement: (elId: string) => void;
   deleteSelected: () => void;

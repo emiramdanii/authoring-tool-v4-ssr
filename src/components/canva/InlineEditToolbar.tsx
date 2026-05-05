@@ -76,7 +76,7 @@ export default function InlineEditToolbar({ element, scale }: InlineEditToolbarP
         elements: [...page.elements, newEl],
       };
     }
-    useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id });
+    useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id, selectedElIds: [newEl.id] });
     toast.success('Elemen diduplikasi');
   }, [element, isOverlay]);
 

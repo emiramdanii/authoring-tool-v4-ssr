@@ -93,19 +93,24 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   nudgeSelected: (dx, dy) => {
-    const { selectedElId, pages, currentPageIndex } = get();
-    if (!selectedElId) return;
+    const { selectedElIds, pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
-    const el = page.elements.find(e => e.id === selectedElId);
-    if (!el) return;
+    // Phase 4: Support multi-select nudge
+    const idsToNudge = selectedElIds.length > 0 ? selectedElIds : (get().selectedElId ? [get().selectedElId!] : []);
+    if (idsToNudge.length === 0) return;
     get()._pushHistory();
-    const newX = Math.max(0, Math.min(95, el.x + dx));
-    const newY = Math.max(0, Math.min(95, el.y + dy));
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      elements: page.elements.map(e => e.id === selectedElId ? { ...e, x: newX, y: newY } : e),
+      elements: page.elements.map(e => {
+        if (!idsToNudge.includes(e.id)) return e;
+        return { ...e, x: Math.max(0, Math.min(95, e.x + dx)), y: Math.max(0, Math.min(95, e.y + dy)) };
+      }),
+      overlayElements: (page.overlayElements || []).map(e => {
+        if (!idsToNudge.includes(e.id)) return e;
+        return { ...e, x: Math.max(0, Math.min(95, e.x + dx)), y: Math.max(0, Math.min(95, e.y + dy)) };
+      }),
     };
     set({ pages: newPages });
   },
@@ -124,7 +129,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     get()._pushHistory();
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], elements: [] };
-    set({ pages: newPages, selectedElId: null });
+    set({ pages: newPages, selectedElId: null, selectedElIds: [] });
     toast.success('Stage dibersihkan');
   },
 });

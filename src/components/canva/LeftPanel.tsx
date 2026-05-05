@@ -148,7 +148,7 @@ function RakitContent() {
       };
     }
     store._pushHistory();
-    useCanvaStore.setState({ pages: newPages, selectedElId: el.id });
+    useCanvaStore.setState({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
     toast.success(`${typeInfo.name} ditambahkan`);
   };
 

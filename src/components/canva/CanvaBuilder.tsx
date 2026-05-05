@@ -56,9 +56,9 @@ export default function CanvaBuilder() {
         return;
       }
 
-      // Delete selected element
+      // Delete selected element(s)
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (store.selectedElId) {
+        if (store.selectedElId || store.selectedElIds.length > 0) {
           e.preventDefault();
           store.deleteSelected();
         }
@@ -78,9 +78,9 @@ export default function CanvaBuilder() {
         return;
       }
 
-      // Arrow keys: nudge selected element
+      // Arrow keys: nudge selected element(s)
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        if (!store.selectedElId) return;
+        if (!store.selectedElId && store.selectedElIds.length === 0) return;
         e.preventDefault();
         const step = e.shiftKey ? 5 : 1;
         switch (e.key) {

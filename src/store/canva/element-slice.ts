@@ -15,6 +15,7 @@ import { createElId } from './constants';
 export type ElementSlice = Pick<
   CanvaState,
   | 'addElement' | 'addKuisElement' | 'addGameElement' | 'selectElement'
+  | 'toggleElementSelection' | 'selectAllElements' | 'clearSelection' | 'deleteSelectedElements'
   | 'updateElement' | 'deleteElement' | 'deleteSelected'
   | 'toggleElementVisibility' | 'saveTextContent' | 'moveElementZ'
 >;
@@ -73,7 +74,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       };
     }
     get()._pushHistory();
-    set({ pages: newPages, selectedElId: el.id });
+    set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
     toast.success(`${typeInfo?.name || type} ditambahkan`);
   },
 
@@ -102,7 +103,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
         elements: [...page.elements, el],
       };
     }
-    set({ pages: newPages, selectedElId: el.id });
+    set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
   },
 
   addGameElement: (idx) => {
@@ -130,10 +131,61 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
         elements: [...page.elements, el],
       };
     }
-    set({ pages: newPages, selectedElId: el.id });
+    set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
   },
 
-  selectElement: (elId) => set({ selectedElId: elId }),
+  selectElement: (elId) => set({ selectedElId: elId, selectedElIds: elId ? [elId] : [] }),
+
+  // Phase 4: Multi-select — toggle element in/out of selection
+  toggleElementSelection: (elId) => {
+    const { selectedElIds, selectedElId } = get();
+    if (selectedElIds.includes(elId)) {
+      // Remove from selection
+      const newIds = selectedElIds.filter(id => id !== elId);
+      set({
+        selectedElIds: newIds,
+        selectedElId: newIds.length > 0 ? newIds[0] : null,
+      });
+    } else {
+      // Add to selection
+      const newIds = [...selectedElIds, elId];
+      set({
+        selectedElIds: newIds,
+        selectedElId: elId, // Most recently clicked becomes primary
+      });
+    }
+  },
+
+  // Phase 4: Select all elements on current page
+  selectAllElements: () => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    const allIds = [
+      ...page.elements.map(e => e.id),
+      ...(page.overlayElements || []).map(e => e.id),
+    ];
+    set({ selectedElIds: allIds, selectedElId: allIds.length > 0 ? allIds[0] : null });
+  },
+
+  // Phase 4: Clear all selections
+  clearSelection: () => set({ selectedElIds: [], selectedElId: null }),
+
+  // Phase 4: Delete all selected elements
+  deleteSelectedElements: () => {
+    const { pages, currentPageIndex, selectedElIds } = get();
+    const page = pages[currentPageIndex];
+    if (!page || selectedElIds.length === 0) return;
+    get()._pushHistory();
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: page.elements.filter(e => !selectedElIds.includes(e.id)),
+      overlayElements: (page.overlayElements || []).filter(e => !selectedElIds.includes(e.id)),
+    };
+    set({ pages: newPages, selectedElIds: [], selectedElId: null });
+    toast.success(`${selectedElIds.length} elemen dihapus`);
+  },
 
   updateElement: (elId, props) => {
     const { pages, currentPageIndex } = get();
@@ -161,7 +213,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
   },
 
   deleteElement: (elId) => {
-    const { pages, currentPageIndex, selectedElId } = get();
+    const { pages, currentPageIndex, selectedElId, selectedElIds } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
     get()._pushHistory();
@@ -172,15 +224,21 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       elements: page.elements.filter(e => e.id !== elId),
       overlayElements: (page.overlayElements || []).filter(e => e.id !== elId),
     };
+    // Phase 4: Also remove from multi-select
+    const newSelectedIds = selectedElIds.filter(id => id !== elId);
     set({
       pages: newPages,
-      selectedElId: selectedElId === elId ? null : selectedElId,
+      selectedElId: selectedElId === elId ? (newSelectedIds.length > 0 ? newSelectedIds[0] : null) : selectedElId,
+      selectedElIds: newSelectedIds,
     });
   },
 
   deleteSelected: () => {
-    const { selectedElId, deleteElement } = get();
-    if (selectedElId) {
+    const { selectedElIds, deleteSelectedElements, selectedElId, deleteElement } = get();
+    // Phase 4: If multi-select, use bulk delete
+    if (selectedElIds.length > 1) {
+      deleteSelectedElements();
+    } else if (selectedElId) {
       deleteElement(selectedElId);
       toast.success('Elemen dihapus');
     }

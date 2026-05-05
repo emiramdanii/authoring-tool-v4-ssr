@@ -27,6 +27,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     tool: 'select',
     leftTab: 'rakit',
     selectedElId: null,
+    selectedElIds: [], // Phase 4: Multi-select
     rightPanelOpen: true,
     showGrid: false,
     gridSize: 5,

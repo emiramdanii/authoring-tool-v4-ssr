@@ -72,6 +72,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           selectedElId: null,
+          selectedElIds: [], // Phase 4: Reset multi-select on load
           rightPanelOpen: true,
           leftTab,
         });
