@@ -367,7 +367,72 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
     if (!page) return;
     get()._pushHistory();
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, templateType };
+
+    // Populate templateData when switching to a template type
+    const authStore = useAuthoringStore.getState();
+    const meta = authStore.meta;
+    const newPage = { ...page, templateType, templateData: page.templateData || {} };
+
+    switch (templateType) {
+      case 'cover':
+        newPage.templateData = {
+          title: meta.judulPertemuan || 'Judul Pertemuan',
+          subtitle: meta.subjudul || 'Subjudul',
+          icon: meta.ikon || '📚',
+          mapel: meta.mapel || '',
+          kelas: meta.kelas || '',
+          namaBab: meta.namaBab || '',
+        };
+        newPage.bgColor = '#0f172a';
+        break;
+      case 'dokumen':
+        newPage.templateData = { cp: authStore.cp, tp: authStore.tp, atp: authStore.atp };
+        break;
+      case 'materi':
+        newPage.templateData = {
+          blok: authStore.materi.blok,
+          modules: authStore.modules.filter((m: Record<string, unknown>) =>
+            ['materi', 'infografis', 'accordion', 'tab-icons', 'icon-explore', 'timeline'].includes(m.type as string)
+          ),
+        };
+        break;
+      case 'kuis':
+        newPage.templateData = { kuis: authStore.kuis.filter(k => k.q.trim()) };
+        break;
+      case 'game': {
+        const GAME_TYPES = ['truefalse', 'memory', 'matching', 'roda', 'sorting', 'spinwheel', 'teambuzzer', 'wordsearch', 'flashcard'];
+        newPage.templateData = {
+          games: authStore.modules.filter((m: Record<string, unknown>) => GAME_TYPES.includes(m.type as string)),
+        };
+        break;
+      }
+      case 'hasil':
+        newPage.templateData = { totalKuis: authStore.kuis.filter(k => k.q.trim()).length, namaBab: meta.namaBab || '' };
+        break;
+      case 'skenario':
+        newPage.templateData = { skenario: authStore.skenario };
+        break;
+      case 'hero': {
+        const heroModules = authStore.modules.filter((m: Record<string, unknown>) => m.type === 'hero');
+        const heroData = heroModules[0] as Record<string, unknown> | undefined;
+        newPage.templateData = {
+          title: (heroData?.title as string) || meta.judulPertemuan || 'Hero Banner',
+          subtitle: (heroData?.subjudul as string) || meta.subjudul || '',
+          icon: (heroData?.icon as string) || meta.ikon || '🚀',
+          gradient: (heroData?.gradient as string) || 'sunset',
+          cta: (heroData?.cta as string) || '',
+        };
+        break;
+      }
+      case 'custom':
+        newPage.templateData = {};
+        break;
+    }
+
+    // Re-populate placeholder elements for export compat
+    populateTemplateElements(newPage);
+
+    newPages[currentPageIndex] = newPage;
     set({ pages: newPages, selectedElId: null });
   },
 
@@ -813,6 +878,10 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
       ? `background-image:url('${page.bgDataUrl}');background-size:cover;background-position:center`
       : `background:${page.bgColor || '#1a1a2e'}`;
 
+    // Overlay for background images
+    const overlayPct = page.bgDataUrl ? (page.overlay ?? 20) : 0;
+    const overlayDiv = overlayPct > 0 ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${overlayPct / 100});pointer-events:none;z-index:0"></div>` : '';
+
     // CSS variables from color palette
     const paletteCSS = page.colorPalette?.mapping
       ? Object.entries(page.colorPalette.mapping).map(([k, v]) => `${k}:${v}`).join(';')
@@ -877,7 +946,7 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
 .qresult button{margin-top:8px;padding:6px 16px;border:1px solid rgba(245,200,66,.3);border-radius:8px;background:rgba(245,200,66,.2);color:#f5c842;font-size:11px;font-weight:700;cursor:pointer}
 .qresult button:hover{background:rgba(245,200,66,.4)}
 </style></head>
-<body><div class="slide">${elementsHTML}</div>
+<body><div class="slide">${overlayDiv}${elementsHTML}</div>
 <script>
 const KUIS_DATA=${kuisJSON};
 const MODULES_DATA=${modulesJSON};
@@ -957,12 +1026,21 @@ document.querySelectorAll('[id^=game_]').forEach(function(el){
   exportSlideshowHTML: () => {
     const { pages } = get();
     const ratio = RATIOS.find(r => r.id === get().ratioId) || RATIOS[0];
-    const slidesHtml = pages.map((p, i) => get().exportPageHTML(i).replace(/.*<body>/s, '').replace(/<\/body>.*/s, '').replace(/<div class="slide">/, `<div class="slide" data-slide="${i}" style="display:${i === 0 ? 'block' : 'none'}">`)).join('\n');
+    const slidesHtml = pages.map((p, i) => {
+      const pageBg = p.bgDataUrl
+        ? `background-image:url('${p.bgDataUrl}');background-size:cover;background-position:center`
+        : `background:${p.bgColor || '#1a1a2e'}`;
+      const pageOverlay = p.bgDataUrl ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${(p.overlay ?? 20) / 100});pointer-events:none;z-index:0"></div>` : '';
+      return get().exportPageHTML(i)
+        .replace(/.*<body>/s, '')
+        .replace(/<\/body>.*/s, '')
+        .replace(/<div class="slide">/, `<div class="slide" data-slide="${i}" style="display:${i === 0 ? 'block' : 'none'};${pageBg}">${pageOverlay}`);
+    }).join('\n');
 
     return `<!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Canva Slideshow</title><style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e0c15}
-.slide{position:relative;width:${ratio.w}px;height:${ratio.h}px;overflow:hidden;${pages[0]?.bgDataUrl ? `background-image:url('${pages[0].bgDataUrl}');background-size:cover` : `background:${pages[0]?.bgColor || '#1a1a2e'}`}}
+.slide{position:relative;width:${ratio.w}px;height:${ratio.h}px;overflow:hidden}
 .nav{position:fixed;bottom:20px;display:flex;gap:8px;z-index:999}.nav button{padding:8px 20px;border:none;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:14px;backdrop-filter:blur(8px)}.nav button:hover{background:rgba(255,255,255,.2)}.slide-num{position:fixed;top:20px;right:20px;color:rgba(255,255,255,.5);font-size:12px;z-index:999}</style></head>
 <body>
 ${slidesHtml}
@@ -1046,6 +1124,71 @@ function renderTemplateExportHTML(page: CanvaPage): string | null {
           <div style="font-size:36px;font-weight:900;color:#34d399" id="hasil-score">0%</div>
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,.4)">Skor akan muncul setelah mengerjakan kuis</div>
+      </div>`;
+    }
+
+    case 'dokumen': {
+      const cp = td.cp as Record<string, unknown> | undefined;
+      const tpItems = (td.tp as Array<Record<string, unknown>>) || [];
+      const cpHTML = cp?.capaianFase
+        ? `<div style="padding:12px;border-radius:8px;background:rgba(249,200,46,.06);border:1px solid rgba(249,200,46,.15);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#f9c82e;margin-bottom:4px">Capaian Pembelajaran</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.7);line-height:1.5">${esc(cp.capaianFase)}</div>
+          </div>`
+        : '';
+      const tpHTML = tpItems.length > 0
+        ? `<div style="font-size:11px;font-weight:700;color:#3ecfcf;margin-bottom:6px">Tujuan Pembelajaran</div>
+            ${tpItems.map((tp, i) => `<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 8px;border-radius:4px;background:rgba(255,255,255,.03);margin-bottom:4px">
+              <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;background:${String(tp.color || '#3ecfcf')}30;color:${String(tp.color || '#3ecfcf')};flex-shrink:0">${i + 1}</div>
+              <div><span style="font-size:9px;font-weight:700;color:${String(tp.color || '#3ecfcf')}">${esc(tp.verb)}</span><span style="font-size:9px;color:rgba(255,255,255,.6);margin-left:4px">${esc(tp.desc)}</span></div>
+            </div>`).join('')}`
+        : '';
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(249,200,46,.12)">📋</div>
+          <div><div style="font-size:14px;font-weight:900;color:#fff">Dokumen Kurikulum</div><div style="font-size:9px;color:rgba(255,255,255,.4)">Capaian Pembelajaran • Tujuan Pembelajaran</div></div>
+        </div>
+        ${cpHTML}${tpHTML}
+        ${!cp?.capaianFase && tpItems.length === 0 ? '<div style="text-align:center;padding:40px;color:#6e90b5">Isi data CP & TP di panel Dokumen</div>' : ''}
+      </div>`;
+    }
+
+    case 'hero': {
+      const heroTitle = esc(td.title);
+      const heroSub = esc(td.subtitle);
+      const heroIcon = td.icon || '🚀';
+      const heroCta = esc(td.cta);
+      return `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a)">
+        <div style="font-size:48px;margin-bottom:12px">${heroIcon}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5);margin-bottom:8px">${heroTitle}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:20px">${heroSub}</div>
+        ${heroCta ? `<div style="padding:10px 24px;border-radius:12px;font-weight:700;font-size:14px;background:#f9c82e;color:#000">${heroCta}</div>` : ''}
+      </div>`;
+    }
+
+    case 'skenario': {
+      const skenario = (td.skenario as Array<Record<string, unknown>>) || [];
+      const chaptersHTML = skenario.map((ch, i) => {
+        const choices = (ch.choices as Array<Record<string, unknown>>) || [];
+        const choicesHTML = choices.map((c, j) =>
+          `<div style="display:inline-block;padding:2px 6px;border-radius:4px;font-size:8px;background:${c.good ? 'rgba(52,211,153,.1)' : 'rgba(248,113,113,.1)'};color:${c.good ? '#34d399' : '#f87171'}">${String(c.icon || '🤔')} ${esc(c.label || 'Pilihan ' + (j + 1))}</div>`
+        ).join(' ');
+        return `<div style="padding:8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="font-size:14px">${String(ch.charEmoji || '🧑')}</span>
+            <span style="font-size:10px;font-weight:700;color:#fff">Babak ${i + 1}</span>
+            ${ch.title ? `<span style="font-size:8px;color:rgba(255,255,255,.4)">${esc(ch.title)}</span>` : ''}
+          </div>
+          ${ch.choicePrompt ? `<div style="font-size:8px;color:rgba(255,255,255,.5);font-style:italic;margin-bottom:4px">${esc(ch.choicePrompt)}</div>` : ''}
+          ${choicesHTML ? `<div style="display:flex;gap:4px;flex-wrap:wrap">${choicesHTML}</div>` : ''}
+        </div>`;
+      }).join('');
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(244,114,182,.12)">🎭</div>
+          <div><div style="font-size:14px;font-weight:900;color:#f472b6">Skenario Interaktif</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${skenario.length} babak</div></div>
+        </div>
+        ${chaptersHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah skenario di panel Konten</div>'}
       </div>`;
     }
 

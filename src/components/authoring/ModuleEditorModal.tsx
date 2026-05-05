@@ -1042,7 +1042,7 @@ function SortingEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <input className={INPUT_CLS} placeholder="Teks item…" value={(item.teks as string) || ''} onChange={(e) => ui!('items', i, 'teks', e.target.value)} />
             <select className={`${SELECT_CLS} w-36`} value={(item.kategori as string) || ''} onChange={(e) => ui!('items', i, 'kategori', e.target.value)}>
               <option value="">Pilih kategori</option>
-              {kategori.map((k, ci) => <option key={ci} value={k.id}>{k.label}</option>)}
+              {kategori.map((k, ci) => <option key={ci} value={String(k.id)}>{String(k.label)}</option>)}
             </select>
             <button onClick={() => ri!('items', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>

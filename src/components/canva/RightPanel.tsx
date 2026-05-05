@@ -104,12 +104,20 @@ export default function RightPanel() {
         {/* BG Color */}
         <div className="mt-2">
           <label className="text-[10px] text-zinc-500 block mb-1">Warna BG</label>
-          <input
-            type="color"
-            value={page?.bgColor?.startsWith('#') ? page.bgColor : '#1a1a2e'}
-            onChange={e => setBgColor(e.target.value)}
-            className="w-full h-7 rounded-md border border-zinc-700 cursor-pointer bg-zinc-800"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={page?.bgColor?.startsWith('#') ? page.bgColor : '#1a1a2e'}
+              onChange={e => setBgColor(e.target.value)}
+              className="w-full h-7 rounded-md border border-zinc-700 cursor-pointer bg-zinc-800 flex-1"
+            />
+            {page?.bgColor && !page.bgColor.startsWith('#') && (
+              <div className="w-7 h-7 rounded-md border border-zinc-700 flex-shrink-0"
+                style={{ background: page.bgColor }}
+                title="Gradient aktif — klik warna untuk override"
+              />
+            )}
+          </div>
         </div>
       </Section>
 

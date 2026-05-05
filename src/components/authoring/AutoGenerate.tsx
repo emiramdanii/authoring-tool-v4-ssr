@@ -341,7 +341,7 @@ function genATP(tps: TpItem[], meta: { namaBab?: string; durasi?: string }, pert
     grouped.get(p)!.push(tp);
   }
 
-  const pertemuanList = [];
+  const pertemuanList: Array<{ judul: string; tp: string; durasi: string; kegiatan: string; penilaian: string }> = [];
   const kegiatanTemplates = [
     'Apersepsi → Eksplorasi konsep → Diskusi kelompok → Presentasi',
     'Tanya jawab → Pemaparan materi → Latihan soal → Refleksi',
@@ -1131,7 +1131,7 @@ export default function AutoGenerate() {
       </div>
 
       {/* ── Parsed Stats ────────────────────────────────────── */}
-      {parsedStats && (
+      {parsedStats && parsed && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
           <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-green-500/20 text-green-400 text-xs flex items-center justify-center font-bold">✓</span>

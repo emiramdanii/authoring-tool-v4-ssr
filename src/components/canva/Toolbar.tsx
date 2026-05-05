@@ -40,8 +40,10 @@ export default function Toolbar() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `canva-page-${currentPageIndex + 1}.html`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast.success('Halaman diekspor sebagai HTML');
   };
 
@@ -52,8 +54,10 @@ export default function Toolbar() {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'canva-slideshow.html';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast.success('Slideshow diekspor (' + pages.length + ' halaman)');
   };
 

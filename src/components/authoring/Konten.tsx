@@ -1215,7 +1215,7 @@ function ModulesTab() {
 
       {/* Modals */}
       <ModulePickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={handlePick} />
-      <ModuleEditorModal open={editorIndex !== null} moduleIndex={editorIndex} onClose={() => setEditorIndex(null)} />
+      <ModuleEditorModal open={editorIndex !== null} moduleIndex={editorIndex ?? 0} onClose={() => setEditorIndex(null)} />
     </div>
   );
 }

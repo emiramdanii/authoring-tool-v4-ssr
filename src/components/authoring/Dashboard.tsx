@@ -110,7 +110,7 @@ export default function Dashboard() {
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-zinc-900 to-zinc-900/80 border border-zinc-800 rounded-xl p-5 relative">
         <button
-          onClick={(e) => { const el = e.currentTarget.closest('.relative'); if (el) el.style.display = 'none'; }}
+          onClick={(e) => { const el = e.currentTarget.closest('.relative'); if (el) (el as HTMLElement).style.display = 'none'; }}
           className="absolute top-3 right-3 text-zinc-500 hover:text-zinc-300 text-sm w-6 h-6 flex items-center justify-center rounded"
         >
           ✕

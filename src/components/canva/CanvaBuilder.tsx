@@ -17,12 +17,16 @@ export default function CanvaBuilder() {
     useCanvaStore.getState().loadFromStorage();
   }, []);
 
-  // ── Auto-save to localStorage on changes ─────────────────────
+  // ── Auto-save to localStorage on changes (debounced) ────────
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     const unsub = useCanvaStore.subscribe(() => {
-      useCanvaStore.getState().saveToStorage();
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        useCanvaStore.getState().saveToStorage();
+      }, 1500);
     });
-    return unsub;
+    return () => { clearTimeout(timer); unsub(); };
   }, []);
 
   const handleMouseMove = useCallback((x: number, y: number) => {

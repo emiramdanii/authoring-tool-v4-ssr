@@ -616,7 +616,7 @@ function TeamBuzzerGame({ data, compact }: { data: Record<string, unknown>; comp
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
       <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
         <span className="font-bold">Soal {currentQ + 1}/{validSoal.length}</span>
-        <span>+{q.poin || 10} poin</span>
+        <span>+{(q.poin as number) || 10} poin</span>
       </div>
       <p className={`text-cyan-100 font-bold flex-1 min-h-0 overflow-y-auto mb-1 ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
         {q.teks as string}

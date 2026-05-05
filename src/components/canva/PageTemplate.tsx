@@ -21,6 +21,13 @@ interface PageTemplateProps {
   onEditField: (key: string, value: string) => void;
 }
 
+interface SubTemplateProps {
+  td: Record<string, unknown>;
+  palette: ColorPalette | null;
+  isSelected: boolean;
+  onEditField: (key: string, value: string) => void;
+}
+
 export default function PageTemplate({ page, isSelected, onEditField }: PageTemplateProps) {
   const td = page.templateData;
   const palette = page.colorPalette;
@@ -90,7 +97,7 @@ function EditableText({
 
 // ── Cover Template ────────────────────────────────────────────
 
-function CoverTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function CoverTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const bg = getPaletteColor(palette, '--bg', '#0f172a');
 
@@ -131,7 +138,7 @@ function CoverTemplate({ td, palette, isSelected, onEditField }: PageTemplatePro
       />
 
       {/* Badge */}
-      {(td.mapel || td.kelas) && (
+      {Boolean(td.mapel || td.kelas) && (
         <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
           style={{
             background: `${accent}20`,
@@ -154,7 +161,7 @@ function CoverTemplate({ td, palette, isSelected, onEditField }: PageTemplatePro
 
 // ── Dokumen Template (CP/TP/ATP) ─────────────────────────────
 
-function DokumenTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function DokumenTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const cp = td.cp as Record<string, unknown> | undefined;
@@ -229,7 +236,7 @@ function DokumenTemplate({ td, palette, isSelected, onEditField }: PageTemplateP
 
 // ── Materi Template ───────────────────────────────────────────
 
-function MateriTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function MateriTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#a78bfa');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const blok = (td.blok as Array<Record<string, unknown>>) || [];
@@ -259,9 +266,9 @@ function MateriTemplate({ td, palette, isSelected, onEditField }: PageTemplatePr
         <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
           {blok.map((b, i) => (
             <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
-              {b.judul && <div className="text-[10px] font-bold text-white mb-0.5">{String(b.judul)}</div>}
-              {b.isi && <div className="text-[8px] text-white/70 leading-relaxed line-clamp-3">{String(b.isi)}</div>}
-              {b.icon && <span className="text-sm mr-1">{String(b.icon)}</span>}
+              {Boolean(b.judul) && <div className="text-[10px] font-bold text-white mb-0.5">{String(b.judul)}</div>}
+              {Boolean(b.isi) && <div className="text-[8px] text-white/70 leading-relaxed line-clamp-3">{String(b.isi)}</div>}
+              {Boolean(b.icon) && <span className="text-sm mr-1">{String(b.icon)}</span>}
               {Array.isArray(b.butir) && (
                 <div className="space-y-0.5 mt-1">
                   {(b.butir as string[]).slice(0, 4).map((item, j) => (
@@ -305,7 +312,7 @@ function MateriTemplate({ td, palette, isSelected, onEditField }: PageTemplatePr
 
 // ── Kuis Template ─────────────────────────────────────────────
 
-function KuisTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function KuisTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f5c842');
   const kuisData = (td.kuis as Array<Record<string, unknown>>) || [];
 
@@ -351,7 +358,7 @@ function KuisTemplate({ td, palette, isSelected, onEditField }: PageTemplateProp
 
 // ── Game Template ─────────────────────────────────────────────
 
-function GameTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function GameTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--c', '#3ecfcf');
   const games = (td.games as Array<Record<string, unknown>>) || [];
 
@@ -419,7 +426,7 @@ function GameTemplate({ td, palette, isSelected, onEditField }: PageTemplateProp
 
 // ── Hasil Template ────────────────────────────────────────────
 
-function HasilTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function HasilTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--g', '#34d399');
   const totalKuis = (td.totalKuis as number) || 0;
   const namaBab = String(td.namaBab || '');
@@ -482,7 +489,7 @@ function HasilTemplate({ td, palette, isSelected, onEditField }: PageTemplatePro
 
 // ── Hero Template ─────────────────────────────────────────────
 
-function HeroTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function HeroTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
 
   return (
@@ -515,7 +522,7 @@ function HeroTemplate({ td, palette, isSelected, onEditField }: PageTemplateProp
       />
 
       {/* CTA Button */}
-      {td.cta && (
+      {Boolean(td.cta) && (
         <div className="mt-5 px-5 py-2 rounded-xl font-bold text-sm"
           style={{ background: accent, color: '#000' }}>
           {String(td.cta)}
@@ -523,7 +530,7 @@ function HeroTemplate({ td, palette, isSelected, onEditField }: PageTemplateProp
       )}
 
       {/* Chips */}
-      {td.chips && (
+      {Boolean(td.chips) && (
         <div className="flex gap-2 mt-3">
           {String(td.chips).split(',').map((chip, i) => (
             <span key={i} className="px-2 py-0.5 rounded-full text-[8px] font-bold"
@@ -539,7 +546,7 @@ function HeroTemplate({ td, palette, isSelected, onEditField }: PageTemplateProp
 
 // ── Skenario Template ─────────────────────────────────────────
 
-function SkenarioTemplate({ td, palette, isSelected, onEditField }: PageTemplateProps) {
+function SkenarioTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--r', '#f472b6');
   const skenario = (td.skenario as Array<Record<string, unknown>>) || [];
 
@@ -571,9 +578,9 @@ function SkenarioTemplate({ td, palette, isSelected, onEditField }: PageTemplate
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm">{String(ch.charEmoji || '🧑')}</span>
                 <span className="text-[10px] font-bold text-white">Babak {i + 1}</span>
-                {ch.title && <span className="text-[8px] text-white/40 truncate">{String(ch.title)}</span>}
+                {Boolean(ch.title) && <span className="text-[8px] text-white/40 truncate">{String(ch.title)}</span>}
               </div>
-              {ch.choicePrompt && (
+              {Boolean(ch.choicePrompt) && (
                 <div className="text-[8px] text-white/50 italic">{String(ch.choicePrompt)}</div>
               )}
               {Array.isArray(ch.choices) && (
@@ -629,6 +636,12 @@ function getGameIcon(type: string): string {
 
 function getGameModuleIndex(game: Record<string, unknown>): number {
   const modules = useAuthoringStore.getState().modules;
-  const idx = modules.findIndex(m => m === game);
+  // Use property-based comparison instead of reference equality
+  // since localStorage reload breaks object identity
+  const idx = modules.findIndex(m =>
+    m.type === game.type &&
+    m.title === game.title &&
+    (m as Record<string, unknown>).teks === game.teks
+  );
   return idx >= 0 ? idx : -1;
 }

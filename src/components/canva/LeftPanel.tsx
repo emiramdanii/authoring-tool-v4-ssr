@@ -5,6 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { LeftTab, PageTemplateType } from './types';
 import { TEMPLATE_TYPES, GRADIENT_PRESETS } from './types';
+import { toast } from 'sonner';
 
 const TABS: { id: LeftTab; label: string; icon: string }[] = [
   { id: 'templates', label: 'Template', icon: '🧩' },
@@ -154,11 +155,7 @@ function TemplatesContent() {
 }
 
 function toastGradient(name: string) {
-  const el = document.createElement('div');
-  el.textContent = `🎨 Gradient "${name}" diterapkan`;
-  el.className = 'fixed bottom-4 right-4 px-3 py-2 rounded-lg bg-zinc-800 text-zinc-200 text-xs font-bold z-50 shadow-lg border border-zinc-700';
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2000);
+  toast.success(`🎨 Gradient "${name}" diterapkan`);
 }
 
 /* ── Pages Tab ──────────────────────────────────────────────── */

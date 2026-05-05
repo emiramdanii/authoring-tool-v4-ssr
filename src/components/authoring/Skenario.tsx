@@ -32,8 +32,8 @@ const INPUT_CLS =
 const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 
 // ── Helper: field label ─────────────────────────────────────────
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-zinc-400 mb-1.5">{children}</label>;
+function FieldLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <label className={`block text-xs font-medium text-zinc-400 mb-1.5 ${className || ''}`}>{children}</label>;
 }
 
 // ── Helper: bg theme info ───────────────────────────────────────

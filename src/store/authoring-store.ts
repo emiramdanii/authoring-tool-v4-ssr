@@ -956,4 +956,4 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
   },
 }));
 
-export { VERB_OPTIONS, COLOR_OPTIONS };
+export { COLOR_OPTIONS };
