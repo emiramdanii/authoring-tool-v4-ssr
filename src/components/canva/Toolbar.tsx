@@ -4,6 +4,21 @@ import { useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { toast } from 'sonner';
+import {
+  Play,
+  Undo2,
+  Redo2,
+  MousePointer2,
+  Type,
+  Eye,
+  Download,
+  Film,
+  Trash2,
+  Minus,
+  Plus,
+  PanelRight,
+  X,
+} from 'lucide-react';
 
 export default function Toolbar() {
   const {
@@ -44,7 +59,6 @@ export default function Toolbar() {
   const handleExport = () => {
     setExporting(true);
     toast.loading('Mengekspor halaman...', { id: 'export-page' });
-    // Use requestAnimationFrame to allow the UI to update before the synchronous export
     requestAnimationFrame(() => {
       try {
         const html = exportPageHTML();
@@ -93,19 +107,27 @@ export default function Toolbar() {
   // ── Interactive mode toolbar (minimal) ─────────────────────
   if (isInteractive) {
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900/80 border-b border-zinc-700/50 text-xs select-none">
-        <span className="text-sm">🎮</span>
-        <span className="font-bold text-emerald-400 min-w-0 truncate max-w-[140px]">{label}</span>
-        <div className="w-px h-5 bg-zinc-700 mx-1" />
-        <span className="text-[10px] text-emerald-400/70 ml-1">
+      <div className="flex items-center gap-1 px-3 py-1.5 glass-panel-strong select-none">
+        {/* Green dot indicator */}
+        <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot" />
+        {/* Page label */}
+        <span className="text-xs font-semibold text-emerald-300 min-w-0 truncate max-w-[140px]">
+          {label}
+        </span>
+        <div className="section-divider h-5 w-px mx-1" />
+        {/* Navigation hint */}
+        <span className="text-[10px] text-emerald-400/60 ml-1">
           ← → navigasi • Esc tutup
         </span>
         <div className="flex-1" />
+        {/* Close button */}
         <button
           onClick={closePlay}
-          className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 transition-colors"
+          className="btn-danger focus-ring"
+          title="Tutup mode interaktif (Esc)"
         >
-          ✕ Tutup
+          <X size={12} />
+          <span className="hidden sm:inline">Tutup</span>
         </button>
       </div>
     );
@@ -113,112 +135,154 @@ export default function Toolbar() {
 
   // ── Design mode toolbar ────────────────────────────────────
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900/80 border-b border-zinc-700/50 text-xs select-none">
-      {/* Logo + Title */}
-      <span className="text-sm">🎨</span>
-      <span className="font-bold text-zinc-100 min-w-0 truncate max-w-[140px]">{label}</span>
-      <div className="w-px h-5 bg-zinc-700 mx-1" />
+    <div className="flex items-center gap-1 px-3 py-1.5 glass-panel-strong select-none">
 
-      {/* ▶ Play Button — Main feature */}
+      {/* ── Left group: Logo/Brand ────────────────────────────── */}
+      <div className="flex items-center gap-2">
+        <span className="w-1 h-1 rounded-full bg-amber-400" />
+        <span className="text-xs font-semibold text-slate-200 min-w-0 truncate max-w-[140px]">
+          {label}
+        </span>
+      </div>
+      <div className="section-divider h-5 w-px mx-1" />
+
+      {/* ── Play Button (MAIN action) ────────────────────────── */}
       <button
         onClick={openPlay}
         title="Play Preview — Preview interaktif dengan kuis, game, dan skor"
-        className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25 hover:border-emerald-500/50 shadow-lg shadow-emerald-500/5"
+        className="btn-success focus-ring"
       >
-        ▶ Play
+        <Play size={13} fill="currentColor" />
+        <span>Play</span>
       </button>
-      <div className="w-px h-5 bg-zinc-700 mx-1" />
+      <div className="section-divider h-5 w-px mx-1" />
 
-      {/* Undo/Redo */}
-      <button
-        onClick={undo}
-        disabled={!canUndo()}
-        title="Undo (Ctrl+Z)"
-        className={`p-1 rounded transition-colors ${canUndo() ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800' : 'text-zinc-700 cursor-not-allowed'}`}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-      </button>
-      <button
-        onClick={redo}
-        disabled={!canRedo()}
-        title="Redo (Ctrl+Y)"
-        className={`p-1 rounded transition-colors ${canRedo() ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800' : 'text-zinc-700 cursor-not-allowed'}`}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
-      </button>
-      <div className="w-px h-5 bg-zinc-700 mx-1" />
-
-      {/* Tool buttons */}
-      <button
-        onClick={() => setTool('select')}
-        className={`px-2 py-1 rounded text-[11px] font-medium transition-colors ${
-          tool === 'select'
-            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-        }`}
-        title="Pilih (V)"
-      >
-        ↖ Pilih
-      </button>
-      <button
-        onClick={() => setTool('text')}
-        className={`px-2 py-1 rounded text-[11px] font-medium transition-colors ${
-          tool === 'text'
-            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-        }`}
-        title="Teks (T)"
-      >
-        T Teks
-      </button>
-      <div className="w-px h-5 bg-zinc-700 mx-1" />
-
-      {/* Action buttons */}
-      <button
-        onClick={handlePreview}
-        title="Preview Desain Canva (buka di tab baru)"
-        className="p-1.5 rounded hover:bg-amber-500/10 text-amber-400 hover:text-amber-300 transition-colors border border-transparent hover:border-amber-500/30"
-      >
-        <span className="flex items-center gap-1">
-          <span>🎨</span>
-          <span className="hidden xl:inline text-[10px] font-semibold">Preview Desain</span>
-        </span>
-      </button>
-      <button onClick={handleExport} disabled={exporting} title="Export Halaman HTML" className={`p-1.5 rounded transition-colors ${exporting ? 'opacity-50 cursor-wait text-zinc-500' : 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{exporting ? '⏳' : '📤'}</button>
-      <button onClick={handleExportSlideshow} disabled={exporting} title="Export Slideshow Interaktif" className={`p-1.5 rounded transition-colors ${exporting ? 'opacity-50 cursor-wait text-zinc-500' : 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{exporting ? '⏳' : '🎞'}</button>
-      <button
-        onClick={() => { if (confirm('Bersihkan semua elemen di halaman ini?')) clearStage(); }}
-        title="Bersihkan"
-        className="p-1.5 rounded hover:bg-zinc-800 text-red-400 hover:text-red-300 transition-colors"
-      >
-        🗑
-      </button>
-
-      {/* Ratio badge */}
-      <span className="px-2 py-0.5 rounded bg-zinc-800 text-amber-400 font-bold text-[10px] ml-1">{ratioId}</span>
-
-      {/* Tip */}
-      <div className="hidden xl:flex items-center gap-1 ml-2 text-[9px] text-emerald-500/60 bg-emerald-500/5 rounded px-1.5 py-0.5 border border-emerald-500/10">
-        <span>▶ Play untuk preview interaktif</span>
+      {/* ── History group: Undo / Redo ───────────────────────── */}
+      <div className="flex items-center gap-0.5">
+        <button
+          onClick={undo}
+          disabled={!canUndo()}
+          title="Undo (Ctrl+Z)"
+          className={`btn-ghost focus-ring ${!canUndo() ? 'opacity-30 cursor-not-allowed' : ''}`}
+        >
+          <Undo2 size={14} />
+        </button>
+        <button
+          onClick={redo}
+          disabled={!canRedo()}
+          title="Redo (Ctrl+Y)"
+          className={`btn-ghost focus-ring ${!canRedo() ? 'opacity-30 cursor-not-allowed' : ''}`}
+        >
+          <Redo2 size={14} />
+        </button>
       </div>
-      <div className="hidden lg:flex items-center gap-2 ml-2 text-[9px] text-zinc-600">
+      <div className="section-divider h-5 w-px mx-1" />
+
+      {/* ── Tool group: Select / Text ────────────────────────── */}
+      <div className="flex items-center gap-0.5">
+        <button
+          onClick={() => setTool('select')}
+          className={`focus-ring rounded-lg p-1.5 transition-all ${
+            tool === 'select'
+              ? 'nav-active'
+              : 'btn-ghost'
+          }`}
+          title="Select (V)"
+        >
+          <MousePointer2 size={14} />
+        </button>
+        <button
+          onClick={() => setTool('text')}
+          className={`focus-ring rounded-lg p-1.5 transition-all ${
+            tool === 'text'
+              ? 'nav-active'
+              : 'btn-ghost'
+          }`}
+          title="Text (T)"
+        >
+          <Type size={14} />
+        </button>
+      </div>
+      <div className="section-divider h-5 w-px mx-1" />
+
+      {/* ── Action group: Preview, Export, Slideshow, Clear ──── */}
+      <div className="flex items-center gap-0.5">
+        <button
+          onClick={handlePreview}
+          title="Preview Desain Canva (buka di tab baru)"
+          className="btn-ghost focus-ring"
+        >
+          <Eye size={14} />
+          <span className="hidden xl:inline text-[9px] text-slate-600 ml-0.5">Preview</span>
+        </button>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          title="Export Halaman HTML"
+          className={`btn-ghost focus-ring ${exporting ? 'opacity-50 cursor-wait' : ''}`}
+        >
+          <Download size={14} />
+        </button>
+        <button
+          onClick={handleExportSlideshow}
+          disabled={exporting}
+          title="Export Slideshow Interaktif"
+          className={`btn-ghost focus-ring ${exporting ? 'opacity-50 cursor-wait' : ''}`}
+        >
+          <Film size={14} />
+        </button>
+        <button
+          onClick={() => { if (confirm('Bersihkan semua elemen di halaman ini?')) clearStage(); }}
+          title="Bersihkan"
+          className="btn-danger focus-ring !p-1.5 !gap-0"
+        >
+          <Trash2 size={13} />
+        </button>
+      </div>
+
+      {/* ── Ratio badge ──────────────────────────────────────── */}
+      <span className="px-2 py-0.5 rounded-md bg-slate-800/60 text-amber-400 font-mono text-[10px] ml-1">
+        {ratioId}
+      </span>
+
+      {/* ── Keyboard hints (very subtle, xl only) ────────────── */}
+      <div className="hidden xl:flex items-center gap-2 ml-2 text-[9px] text-slate-600">
         <span>Del=hapus</span>
         <span>Arrow=nudge</span>
         <span>Ctrl+Z=undo</span>
       </div>
 
-      {/* Zoom controls */}
-      <div className="flex items-center gap-1 ml-auto">
+      {/* ── Right group: Zoom + Panel toggle ─────────────────── */}
+      <div className="flex items-center gap-0.5 ml-auto">
+        {/* Right panel toggle */}
         <button
           onClick={toggleRightPanel}
           title={rightPanelOpen ? 'Sembunyikan Panel Kanan' : 'Tampilkan Panel Kanan'}
-          className={`p-1.5 rounded transition-colors ${rightPanelOpen ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200'}`}
+          className={`btn-ghost focus-ring ${rightPanelOpen ? '!text-amber-400' : ''}`}
         >
-          ☰
+          <PanelRight size={14} />
         </button>
-        <button onClick={() => zoomDelta(-0.1)} className="w-6 h-6 flex items-center justify-center rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm transition-colors" title="Zoom out">−</button>
-        <span className="text-zinc-400 text-[11px] font-mono w-10 text-center">{Math.round(zoom * 100)}%</span>
-        <button onClick={() => zoomDelta(0.1)} className="w-6 h-6 flex items-center justify-center rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm transition-colors" title="Zoom in">+</button>
+
+        <div className="section-divider h-5 w-px mx-1" />
+
+        {/* Zoom controls */}
+        <button
+          onClick={() => zoomDelta(-0.1)}
+          className="btn-ghost focus-ring"
+          title="Zoom out"
+        >
+          <Minus size={13} />
+        </button>
+        <span className="text-[11px] font-mono text-slate-400 w-10 text-center select-none">
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          onClick={() => zoomDelta(0.1)}
+          className="btn-ghost focus-ring"
+          title="Zoom in"
+        >
+          <Plus size={13} />
+        </button>
       </div>
     </div>
   );

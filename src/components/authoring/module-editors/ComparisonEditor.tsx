@@ -1,0 +1,60 @@
+'use client';
+
+import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS, ColorPicker } from './shared';
+
+export function ComparisonEditor({ mod, uf, ai, ri, ui }: EdProps) {
+  const kolom = (mod.kolom as Array<Record<string, unknown>>) || [];
+  const baris = (mod.baris as Array<Record<string, unknown>>) || [];
+  return (
+    <div className="space-y-4">
+      <div>
+        <FieldLabel>Intro</FieldLabel>
+        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+      </div>
+      <div>
+        <FieldLabel>Kolom</FieldLabel>
+        <div className="flex gap-2">
+          {kolom.map((k, i) => (
+            <div key={i} className="flex-1 p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 space-y-1">
+              <div className="flex items-center gap-1">
+                <input className={`${INPUT_CLS} w-12`} value={(k.icon as string) || ''} onChange={(e) => ui!('kolom', i, 'icon', e.target.value)} placeholder="📌" />
+                <input className={INPUT_CLS} placeholder="Judul kolom…" value={(k.judul as string) || ''} onChange={(e) => ui!('kolom', i, 'judul', e.target.value)} />
+                <ColorPicker value={(k.warna as string) || '#3ecfcf'} onChange={(v) => ui!('kolom', i, 'warna', v)} />
+              </div>
+            </div>
+          ))}
+          <button onClick={() => ai!('kolom', { icon: '', judul: '', warna: '#60a5fa' })} className="text-xs text-amber-500">＋ Kolom</button>
+        </div>
+      </div>
+      <div>
+        <FieldLabel>Baris Perbandingan ({baris.length})</FieldLabel>
+        {baris.map((b, i) => {
+          const nilai = (b.nilai as string[]) || [''];
+          return (
+            <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <input className={`${INPUT_CLS} w-12`} value={(b.icon as string) || ''} onChange={(e) => ui!('baris', i, 'icon', e.target.value)} placeholder="📌" />
+                <input className={INPUT_CLS} placeholder="Label baris…" value={(b.label as string) || ''} onChange={(e) => ui!('baris', i, 'label', e.target.value)} />
+                <button onClick={() => ri!('baris', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+              </div>
+              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${kolom.length}, 1fr)` }}>
+                {kolom.map((_, ci) => (
+                  <input key={ci} className={INPUT_CLS} value={nilai[ci] || ''} onChange={(e) => {
+                    const n = [...nilai];
+                    n[ci] = e.target.value;
+                    ui!('baris', i, 'nilai', n);
+                  }} placeholder={`Kolom ${ci + 1}`} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        <button onClick={() => ai!('baris', { label: '', icon: '', nilai: kolom.map(() => '') })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Baris</button>
+      </div>
+      <div>
+        <FieldLabel>Pertanyaan Refleksi</FieldLabel>
+        <input className={INPUT_CLS} placeholder="Apa pendapatmu?" value={(mod.tanya as string) || ''} onChange={(e) => uf('tanya', e.target.value)} />
+      </div>
+    </div>
+  );
+}

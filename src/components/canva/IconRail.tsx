@@ -2,33 +2,41 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import type { LeftTab } from './types';
+import { Puzzle, FileText, Package, Proportions, Layers, type LucideIcon } from 'lucide-react';
 
-const RAIL_ITEMS: { id: LeftTab; icon: string; title: string; divider?: boolean }[] = [
-  { id: 'templates', icon: '🧩', title: 'Template' },
-  { id: 'pages', icon: '📄', title: 'Halaman', divider: true },
-  { id: 'elems', icon: '📦', title: 'Elemen' },
-  { id: 'ratio', icon: '📐', title: 'Rasio' },
-  { id: 'layers', icon: '🔲', title: 'Layer', divider: true },
+interface RailItem {
+  id: LeftTab;
+  icon: LucideIcon;
+  title: string;
+  divider?: boolean;
+}
+
+const RAIL_ITEMS: RailItem[] = [
+  { id: 'templates', icon: Puzzle, title: 'Template' },
+  { id: 'pages', icon: FileText, title: 'Halaman', divider: true },
+  { id: 'elems', icon: Package, title: 'Elemen' },
+  { id: 'ratio', icon: Proportions, title: 'Rasio' },
+  { id: 'layers', icon: Layers, title: 'Layer', divider: true },
 ];
 
 export default function IconRail() {
   const { leftTab, setLeftTab } = useCanvaStore();
 
   return (
-    <div className="flex flex-col items-center gap-1 py-2 px-1 bg-zinc-900/60 border-r border-zinc-700/50">
-      {RAIL_ITEMS.map((item, i) => (
+    <div className="flex flex-col items-center gap-1 py-3 px-1.5 glass-panel panel-inner-glow">
+      {RAIL_ITEMS.map((item) => (
         <div key={item.id}>
-          {item.divider && <div className="w-8 h-px bg-zinc-700/50 mb-1" />}
+          {item.divider && <div className="section-divider w-8 my-1.5" />}
           <button
             onClick={() => setLeftTab(item.id)}
-            title={item.title}
-            className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-all ${
+            data-tip={item.title}
+            className={`tooltip-trigger focus-ring w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
               leftTab === item.id
-                ? 'bg-amber-500/20 text-amber-400 shadow-sm shadow-amber-500/10'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60'
+                ? 'nav-active'
+                : 'btn-ghost text-slate-500 hover:text-slate-200'
             }`}
           >
-            {item.icon}
+            <item.icon size={18} />
           </button>
         </div>
       ))}

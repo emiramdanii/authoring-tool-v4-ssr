@@ -117,21 +117,25 @@ export default function CanvaBuilder() {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-zinc-950 text-zinc-200">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-950 text-slate-200 focus-ring">
       {/* Top Toolbar */}
       <Toolbar />
 
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         <IconRail />
-        <LeftPanel />
+        <div className="border-r border-slate-800/60 shadow-[1px_0_8px_-2px_rgba(0,0,0,0.35)]">
+          <LeftPanel />
+        </div>
 
-        {/* Stage Canvas Area */}
-        <div className="flex-1 relative">
+        {/* Stage Canvas Area — recessed with inner shadow */}
+        <div className="flex-1 relative shadow-[inset_0_0_32px_-8px_rgba(0,0,0,0.4)] bg-slate-950/50">
           <Stage onMouseMove={handleMouseMove} />
         </div>
 
-        <RightPanel />
+        <div className="border-l border-slate-800/60 shadow-[-1px_0_8px_-2px_rgba(0,0,0,0.35)]">
+          <RightPanel />
+        </div>
       </div>
 
       {/* Status Bar */}

@@ -10,6 +10,7 @@ import GameWidget from './GameWidget';
 import InteractiveNav from './InteractiveNav';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import type { CanvaElement } from './types';
+import { Gamepad2, Trophy, X } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
@@ -52,12 +53,12 @@ function PlayOverlayHeader() {
   const hasScore = totalMax() > 0;
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-700/50">
+    <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-slate-700/50">
       <div className="flex items-center gap-3">
-        <span className="text-sm">🎮</span>
+        <Gamepad2 size={14} className="text-emerald-400" />
         <span className="text-xs font-bold text-emerald-400">Mode Interaktif</span>
-        <span className="text-[10px] text-zinc-500">•</span>
-        <span className="text-[10px] text-zinc-400 truncate max-w-[200px]">
+        <span className="text-[10px] text-slate-600">•</span>
+        <span className="text-[10px] text-slate-200 font-semibold truncate max-w-[200px]">
           {page?.label || `Halaman ${interactivePageIdx + 1}`}
         </span>
       </div>
@@ -65,22 +66,23 @@ function PlayOverlayHeader() {
       <div className="flex items-center gap-3">
         {/* Score badge in header */}
         {hasScore && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/25">
-            <span className="text-xs">🏆</span>
-            <span className="text-xs font-black text-amber-300">{totalScore()}/{totalMax()}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <Trophy size={12} className="text-emerald-300" />
+            <span className="text-xs font-black text-emerald-300">{totalScore()}/{totalMax()}</span>
           </div>
         )}
 
-        <div className="hidden sm:flex items-center gap-2 text-[9px] text-zinc-600">
+        <div className="hidden sm:flex items-center gap-2 text-[10px] text-slate-500">
           <span>← → navigasi</span>
           <span>Esc tutup</span>
         </div>
 
         <button
           onClick={closePlay}
-          className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 transition-colors"
+          className="btn-danger flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold"
         >
-          ✕ Tutup
+          <X size={14} />
+          <span>Tutup</span>
         </button>
       </div>
     </div>
@@ -154,7 +156,7 @@ function PlayCanvas() {
   if (!page) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <div className="text-zinc-500 text-sm">Tidak ada halaman</div>
+        <div className="text-slate-500 text-sm">Tidak ada halaman</div>
       </div>
     );
   }
@@ -164,7 +166,7 @@ function PlayCanvas() {
   return (
     <div ref={canvasRef} className="w-full h-full flex items-center justify-center">
       <div
-        className="relative overflow-hidden shadow-2xl shadow-black/50"
+        className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-slate-700/30"
         style={{
           width: ratio.w,
           height: ratio.h,
@@ -215,8 +217,8 @@ function PlayCanvas() {
             {/* Empty state */}
             {page.elements.length === 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div className="text-zinc-600 text-sm mb-2">Halaman kosong</div>
-                <div className="text-zinc-700 text-xs">Kembali ke mode desain untuk menambahkan konten</div>
+                <div className="text-slate-600 text-sm mb-2">Halaman kosong</div>
+                <div className="text-slate-700 text-xs">Kembali ke mode desain untuk menambahkan konten</div>
               </div>
             )}
           </div>
@@ -245,9 +247,11 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
     [element.id, pageIndex, reportScore]
   );
 
+  const isInteractive = element.type === 'kuis' || element.type === 'game';
+
   return (
     <div
-      className="absolute"
+      className={`absolute ${isInteractive ? 'ring-2 ring-emerald-400/50 rounded' : ''}`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,

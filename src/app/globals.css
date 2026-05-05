@@ -121,7 +121,80 @@
   }
 }
 
-/* Custom scrollbar for Canva panels */
+/* ═══════════════════════════════════════════════════════════════
+   MPI v5.Z — Custom Design System
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Glass Panel Effect ──────────────────────────────────────── */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.glass-panel-strong {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* ── Subtle Inner Glow for Panels ────────────────────────────── */
+.panel-inner-glow {
+  box-shadow:
+    inset 0 1px 0 0 rgba(148, 163, 184, 0.06),
+    0 0 0 0 transparent;
+}
+
+/* ── Active Item Indicator ───────────────────────────────────── */
+.nav-active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
+}
+
+/* ── Card Hover Effect ───────────────────────────────────────── */
+.card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(251, 191, 36, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────── */
+.tooltip-trigger {
+  position: relative;
+}
+.tooltip-trigger::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  color: #e2e8f0;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+}
+.tooltip-trigger:hover::after {
+  opacity: 1;
+}
+
+/* ── Custom Scrollbar ────────────────────────────────────────── */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -129,33 +202,38 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(148, 163, 184, 0.12);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(148, 163, 184, 0.25);
 }
 
-/* Range input styling */
+/* ── Range Input Styling ─────────────────────────────────────── */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: #3f3f46;
+  background: rgba(51, 65, 85, 0.6);
   border-radius: 4px;
   outline: none;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
   cursor: pointer;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+  transition: box-shadow 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
 
-/* Color input */
+/* ── Color Input ─────────────────────────────────────────────── */
 input[type="color"] {
   -webkit-appearance: none;
   border: none;
@@ -165,6 +243,170 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 2px;
 }
 input[type="color"]::-webkit-color-swatch {
-  border: 1px solid #3f3f46;
-  border-radius: 4px;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 6px;
+}
+
+/* ── Select Input ────────────────────────────────────────────── */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  padding-right: 24px;
+}
+
+/* ── Section Divider ─────────────────────────────────────────── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent);
+}
+
+/* ── Accent Top Bar for Cards ────────────────────────────────── */
+.accent-top {
+  position: relative;
+  overflow: hidden;
+}
+.accent-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-color, #fbbf24);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+.accent-top:hover::before {
+  opacity: 1;
+}
+
+/* ── Smooth Page Transitions ─────────────────────────────────── */
+.page-transition {
+  animation: fadeSlideIn 0.2s ease-out;
+}
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Pulse Dot (for dirty indicator) ─────────────────────────── */
+.pulse-dot {
+  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Focus Ring ──────────────────────────────────────────────── */
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.5);
+  outline-offset: 1px;
+}
+
+/* ── Button Base Styles ──────────────────────────────────────── */
+.btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  color: rgba(148, 163, 184, 0.7);
+  transition: all 0.15s ease;
+}
+.btn-ghost:hover {
+  background: rgba(30, 41, 59, 0.6);
+  color: #e2e8f0;
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-accent:hover {
+  background: rgba(251, 191, 36, 0.18);
+  border-color: rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(251, 191, 36, 0.2);
+}
+.btn-primary:hover {
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-success:hover {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.08);
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+/* ── Number Input ────────────────────────────────────────────── */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

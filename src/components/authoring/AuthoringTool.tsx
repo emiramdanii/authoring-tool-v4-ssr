@@ -2,6 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import {
+  Home,
+  FileText,
+  BookOpen,
+  Palette,
+  Sparkles,
+  FolderOpen,
+  ArrowLeftRight,
+  Smartphone,
+  Clock,
+  Save,
+  Download,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Eye,
+  MapPin,
+} from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 
@@ -18,10 +35,10 @@ import LivePreview from './LivePreview';
 const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-zinc-950">
+    <div className="h-full w-full flex items-center justify-center bg-slate-950">
       <div className="text-center">
-        <div className="text-4xl mb-4 animate-pulse">🎨</div>
-        <div className="text-zinc-400 text-sm">Memuat Canva Editor...</div>
+        <Palette className="mx-auto mb-4 size-10 text-amber-400 animate-pulse" />
+        <div className="text-slate-400 text-sm">Memuat Canva Editor...</div>
       </div>
     </div>
   ),
@@ -30,23 +47,23 @@ const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
 // ── Navigation items ─────────────────────────────────────────────
 interface NavItem {
   id: PanelId;
-  icon: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
-  { id: 'dokumen', icon: '📐', label: 'Dokumen' },
-  { id: 'konten', icon: '📚', label: 'Konten' },
-  { id: 'canva', icon: '🎨', label: 'Canva' },
-  { id: 'autogen', icon: '⚡', label: 'Auto-Generate' },
+  { id: 'dashboard', icon: Home, label: 'Dashboard' },
+  { id: 'dokumen', icon: FileText, label: 'Dokumen' },
+  { id: 'konten', icon: BookOpen, label: 'Konten' },
+  { id: 'canva', icon: Palette, label: 'Canva' },
+  { id: 'autogen', icon: Sparkles, label: 'Auto-Generate' },
 ];
 
 const NAV_ITEMS_2: NavItem[] = [
-  { id: 'projects', icon: '📁', label: 'Proyek' },
-  { id: 'import', icon: '📥', label: 'Import/Export' },
-  { id: 'preview', icon: '📱', label: 'Preview Aplikasi' },
-  { id: 'versions', icon: '🕐', label: 'Riwayat' },
+  { id: 'projects', icon: FolderOpen, label: 'Proyek' },
+  { id: 'import', icon: ArrowLeftRight, label: 'Import/Export' },
+  { id: 'preview', icon: Smartphone, label: 'Preview Aplikasi' },
+  { id: 'versions', icon: Clock, label: 'Riwayat' },
 ];
 
 const PANEL_TITLES: Record<PanelId, string> = {
@@ -171,81 +188,112 @@ export default function AuthoringTool() {
   }, [tourStep, dismissTour]);
 
   return (
-    <div className="h-screen w-screen flex bg-zinc-950 text-zinc-200 overflow-hidden">
+    <div className="h-screen w-screen flex bg-slate-950 text-slate-200 overflow-hidden">
       {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside
         className={`${
           sidebarOpen ? 'w-56' : 'w-14'
-        } flex-shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col transition-all duration-200`}
+        } flex-shrink-0 glass-panel-strong flex flex-col transition-all duration-300 ease-in-out`}
         style={{ minHeight: '100vh' }}
       >
         {/* Logo */}
-        <div className="px-4 py-4 border-b border-zinc-800">
+        <div className="px-4 py-4">
           {sidebarOpen ? (
             <div>
-              <div className="text-sm font-bold text-zinc-100">Authoring Tool</div>
-              <div className="text-[0.65rem] text-zinc-500 mt-0.5">Media Pembelajaran Interaktif</div>
-              <span className="inline-block mt-1 text-[0.6rem] font-semibold bg-amber-500/15 text-amber-400 px-1.5 py-0.5 rounded">
-                v3.0
+              <div className="text-sm font-bold text-amber-400">Authoring Tool</div>
+              <div className="text-[0.65rem] text-slate-500 mt-0.5">Media Pembelajaran Interaktif</div>
+              <span className="inline-block mt-1.5 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-amber-500/20">
+                v5.Z
               </span>
             </div>
           ) : (
-            <div className="text-center text-lg">📝</div>
+            <div className="flex items-center justify-center">
+              <span className="text-amber-400 font-bold text-lg">Z</span>
+            </div>
           )}
         </div>
 
+        <div className="section-divider" />
+
         {/* Navigation */}
-        <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActivePanel(item.id)}
-              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${
-                activePanel === item.id
-                  ? 'bg-amber-500/15 text-amber-400 font-semibold'
-                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-              }`}
-              title={item.label}
-            >
-              <span className="text-base flex-shrink-0">{item.icon}</span>
-              {sidebarOpen && <span>{item.label}</span>}
-            </button>
-          ))}
+        <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActivePanel(item.id)}
+                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
+                  activePanel === item.id
+                    ? 'nav-active font-semibold'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                }`}
+                title={item.label}
+              >
+                <Icon size={18} className="flex-shrink-0" />
+                {sidebarOpen && <span>{item.label}</span>}
+              </button>
+            );
+          })}
 
           {/* Divider */}
-          <div className="my-2 border-t border-zinc-800" />
+          <div className="section-divider my-2" />
 
-          {NAV_ITEMS_2.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActivePanel(item.id)}
-              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${
-                activePanel === item.id
-                  ? 'bg-amber-500/15 text-amber-400 font-semibold'
-                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-              }`}
-              title={item.label}
-            >
-              <span className="text-base flex-shrink-0">{item.icon}</span>
-              {sidebarOpen && <span>{item.label}</span>}
-            </button>
-          ))}
+          {NAV_ITEMS_2.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActivePanel(item.id)}
+                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
+                  activePanel === item.id
+                    ? 'nav-active font-semibold'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                }`}
+                title={item.label}
+              >
+                <Icon size={18} className="flex-shrink-0" />
+                {sidebarOpen && <span>{item.label}</span>}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Bottom Actions */}
-        {sidebarOpen && (
-          <div className="px-3 py-3 border-t border-zinc-800 space-y-1.5">
+        {sidebarOpen ? (
+          <div className="px-3 py-3 space-y-1.5">
+            <div className="section-divider mb-2" />
             <button
               onClick={saveToStorage}
-              className="w-full px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="btn-primary w-full text-xs"
             >
-              💾 Simpan Semua
+              <Save size={14} />
+              Simpan Semua
             </button>
             <button
               onClick={exportJSON}
-              className="w-full px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="btn-accent w-full text-xs"
             >
-              📤 Export JSON
+              <Download size={14} />
+              Export JSON
+            </button>
+          </div>
+        ) : (
+          <div className="px-2 py-3 space-y-2 flex flex-col items-center">
+            <div className="section-divider w-full mb-2" />
+            <button
+              onClick={saveToStorage}
+              className="tooltip-trigger focus-ring"
+              data-tip="Simpan"
+            >
+              <Save size={16} className="text-amber-400" />
+            </button>
+            <button
+              onClick={exportJSON}
+              className="tooltip-trigger focus-ring"
+              data-tip="Export JSON"
+            >
+              <Download size={16} className="text-amber-300/70" />
             </button>
           </div>
         )}
@@ -255,23 +303,23 @@ export default function AuthoringTool() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* ── Header ───────────────────────────────────────── */}
         {!isCanva && !isPreview && (
-          <header className="h-12 flex-shrink-0 bg-zinc-900 border-b border-zinc-800 flex items-center gap-3 px-4">
+          <header className="h-12 flex-shrink-0 glass-panel-strong flex items-center gap-3 px-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-zinc-400 hover:text-zinc-200 transition-colors text-lg w-7 h-7 flex items-center justify-center rounded hover:bg-zinc-800"
+              className="btn-ghost"
             >
-              {sidebarOpen ? '☰' : '▶'}
+              {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
             </button>
 
-            <div className="text-sm font-medium text-zinc-200">
+            <div className="text-sm font-medium text-slate-200">
               {PANEL_TITLES[activePanel]}
-              <span className="text-zinc-500 font-normal"> / {meta.judulPertemuan || 'Proyek Baru'}</span>
+              <span className="text-slate-500 font-normal"> / {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
             {/* Dirty indicator */}
             <div
-              className={`w-2 h-2 rounded-full flex-shrink-0 transition-opacity duration-300 ${
-                dirty ? 'bg-amber-400 opacity-100' : 'opacity-0'
+              className={`w-2 h-2 rounded-full flex-shrink-0 bg-amber-400 transition-opacity duration-300 ${
+                dirty ? 'pulse-dot opacity-100' : 'opacity-0'
               }`}
               title="Perubahan belum disimpan"
             />
@@ -279,31 +327,31 @@ export default function AuthoringTool() {
             <div className="ml-auto flex items-center gap-2">
               <button
                 onClick={() => setActivePanel('preview')}
-                className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs rounded-lg transition-colors flex items-center gap-1.5 border border-emerald-500/20"
+                className="btn-success"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
+                <Eye size={14} />
                 Preview Aplikasi
               </button>
               <button
                 onClick={() => setActivePanel('canva')}
-                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+                className="btn-ghost"
               >
-                🎨 Canva
+                <Palette size={14} />
+                Canva
               </button>
               <button
                 onClick={() => setActivePanel('import')}
-                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-lg transition-colors"
+                className="btn-ghost"
               >
-                📥 Import
+                <ArrowLeftRight size={14} />
+                Import
               </button>
               <button
                 onClick={saveToStorage}
-                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold rounded-lg transition-colors"
+                className="btn-primary"
               >
-                💾 Simpan
+                <Save size={14} />
+                Simpan
               </button>
             </div>
           </header>
@@ -312,7 +360,7 @@ export default function AuthoringTool() {
         {/* ── Content ──────────────────────────────────────── */}
         <main
           className={`flex-1 overflow-y-auto ${
-            isCanva || isPreview ? '' : 'bg-zinc-950'
+            isCanva || isPreview ? '' : 'bg-slate-950'
           }`}
         >
           {renderPanel()}
@@ -326,19 +374,19 @@ export default function AuthoringTool() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
           {/* Tooltip Card */}
-          <div className="relative z-10 w-full max-w-sm mx-4">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden">
+          <div className="relative z-10 w-full max-w-sm mx-4 page-transition">
+            <div className="bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
               {/* Step icon + badge */}
               <div className="bg-amber-500/10 px-5 pt-5 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-lg">
-                    📍
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                    <MapPin size={20} className="text-amber-400" />
                   </div>
                   <div>
                     <div className="text-xs font-medium text-amber-400/70">
                       Langkah {tourStep + 1} dari {TOUR_STEPS.length}
                     </div>
-                    <h3 className="text-base font-bold text-zinc-100">
+                    <h3 className="text-base font-bold text-slate-100">
                       {TOUR_STEPS[tourStep].title}
                     </h3>
                   </div>
@@ -347,7 +395,7 @@ export default function AuthoringTool() {
 
               {/* Description */}
               <div className="px-5 py-4">
-                <p className="text-sm text-zinc-300 leading-relaxed">
+                <p className="text-sm text-slate-300 leading-relaxed">
                   {TOUR_STEPS[tourStep].desc}
                 </p>
               </div>
@@ -360,7 +408,7 @@ export default function AuthoringTool() {
                     className={`block h-1.5 rounded-full transition-all duration-300 ${
                       i === tourStep
                         ? 'w-5 bg-amber-500'
-                        : 'w-1.5 bg-zinc-600'
+                        : 'w-1.5 bg-slate-600'
                     }`}
                   />
                 ))}
@@ -370,13 +418,13 @@ export default function AuthoringTool() {
               <div className="px-5 pb-5 pt-3 flex items-center gap-3">
                 <button
                   onClick={dismissTour}
-                  className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                  className="btn-ghost px-4 py-2 text-xs font-medium"
                 >
                   Lewati
                 </button>
                 <button
                   onClick={nextTourStep}
-                  className="flex-1 px-4 py-2 text-xs font-semibold text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
+                  className="btn-primary flex-1"
                 >
                   {tourStep < TOUR_STEPS.length - 1 ? 'Berikutnya →' : 'Mulai ✨'}
                 </button>
