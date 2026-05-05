@@ -37,6 +37,8 @@ export interface CanvaElement {
   radius?: number;
   // Data reference (kuis/game/modul)
   dataIdx?: number;
+  // Layout variant for module rendering
+  layoutVariant?: 'A' | 'B' | 'C' | 'D';
 }
 
 // ── Template System Types ─────────────────────────────────────

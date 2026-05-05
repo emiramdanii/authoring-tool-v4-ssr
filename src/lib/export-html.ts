@@ -7,6 +7,8 @@ import type {
   MetaState, CpState, TpItem, AtpState, AlurItem,
   KuisItem, MateriState, MateriBlok,
 } from '@/store/authoring-store';
+import { renderModuleToStyledHTML } from './render-module-html';
+import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
 
 // ── Fungsi Norma Preset Data (hardcoded, matches data.js PRESETS.fungsi) ──
 const FUNGSI_NORMA = [
@@ -152,6 +154,12 @@ export function generateExportHtml(state: ExportState): string {
 
   // ── Materi Blok HTML ────────────────────────────────────────────
   const materiHtml = materiBlok.length ? renderMateriBlok(materiBlok) : '';
+
+  // ── Modules HTML (pre-rendered via renderModuleToStyledHTML) ────
+  const allModules = [...(state.modules || []), ...(state.games || [])];
+  const modulesPreRendered = allModules.length
+    ? allModules.map(mod => renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')).join('\n')
+    : '';
 
   // ── Determine next screen logic ──────────────────────────────────
   const hasModules = state.modules && state.modules.length > 0;
@@ -402,7 +410,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="nav-prog"><div class="nav-prog-fill" style="width:45%"></div></div>
     <span class="nav-score">0 ⭐</span>
   </nav>
-  <div class="main" id="modulesContainer"></div>
+  <div class="main">${modulesPreRendered || '<div class="card" style="text-align:center;padding:30px;color:var(--muted)">Belum ada modul.</div>'}
+    <div class="btn-row btn-center mt20"><button class="btn btn-y" onclick="goScreen('${hasSkenario ? 's-sk' : hasMateri ? 's-materi' : hasKuis ? 's-kuis' : 's-hasil'}')">Lanjut →</button><button class="btn btn-ghost" onclick="goScreen('s-cp')">← Kembali</button></div>
+  </div>
 </div>
 
 <!-- ═══ MATERI & FUNGSI ═══ -->
@@ -479,7 +489,6 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 const CHAPTERS = ${skJS};
 const KUIS_SOAL = ${kuisJS};
 const FUNGSI = ${fungsiJS};
-const MODULES_DATA = ${JSON.stringify(state.modules || [])};
 const HAS_SKENARIO = ${hasSkenario};
 const HAS_MATERI = ${hasMateri};
 const HAS_KUIS = ${hasKuis};
@@ -492,7 +501,6 @@ function goScreen(id){
   const el = document.getElementById(id);
   if(el){ el.classList.add('active'); window.scrollTo(0,0); }
   if(id==='s-sk')  initSk();
-  if(id==='s-modules') renderModules();
   if(id==='s-materi') initFtab();
   if(id==='s-kuis')   renderKuis();
 }
@@ -694,185 +702,8 @@ function launchConfetti(){
   setTimeout(()=>w.innerHTML='',5000);
 }
 
-// ── MODULES RENDERER ──────────────────────────────
-function renderModules(){
-  const c = document.getElementById('modulesContainer');
-  if(!MODULES_DATA.length){ c.innerHTML='<div class="card" style="text-align:center;padding:30px;color:var(--muted)">Belum ada modul.</div>'; return; }
-  c.innerHTML = MODULES_DATA.map((m,i) => {
-    const title = m.title || 'Modul '+(i+1);
-    const type = m.type || '';
-    let body = '';
-    switch(type){
-      case 'video': body = renderModVideo(m); break;
-      case 'flashcard': body = renderModFlashcard(m); break;
-      case 'infografis': body = renderModInfografis(m); break;
-      case 'matching': body = renderModMatching(m); break;
-      case 'hero': body = renderModHero(m); break;
-      case 'kutipan': body = renderModKutipan(m); break;
-      case 'langkah': body = renderModLangkah(m); break;
-      case 'accordion': body = renderModAccordion(m); break;
-      case 'statistik': body = renderModStatistik(m); break;
-      case 'polling': body = renderModPolling(m); break;
-      case 'embed': body = renderModEmbed(m); break;
-      case 'tab-icons': body = renderModTabIcons(m); break;
-      case 'icon-explore': body = renderModIconExplore(m); break;
-      case 'comparison': body = renderModComparison(m); break;
-      case 'card-showcase': body = renderModCardShowcase(m); break;
-      case 'timeline': body = renderModTimeline(m); break;
-      case 'studi-kasus': body = renderModStudiKasus(m); break;
-      case 'debat': body = renderModDebat(m); break;
-      case 'truefalse': body = renderModTrueFalse(m); break;
-      case 'memory': body = renderModMemory(m); break;
-      case 'roda': body = renderModRoda(m); break;
-      case 'sorting': body = renderModSorting(m); break;
-      case 'spinwheel': body = renderModSpinwheel(m); break;
-      case 'teambuzzer': body = renderModTeambuzzer(m); break;
-      case 'wordsearch': body = renderModWordsearch(m); break;
-      case 'hotspot-image': body = renderModHotspot(m); break;
-      case 'materi': body = '<div style="color:var(--muted);font-size:.84rem">Materi blok ditampilkan di tab Materi.</div>'; break;
-      default: body = '<div style="color:var(--muted);font-size:.84rem">Tipe modul tidak dikenali.</div>';
-    }
-    return '<div class="card mt14" id="mod-'+i+'"><div class="h2" style="font-size:1.2rem">'+esc(title)+'</div>'+body+'</div>';
-  }).join('') + '<div class="btn-row btn-center mt20"><button class="btn btn-y" onclick="goScreen(\\''+(HAS_SKENARIO?'s-sk':HAS_MATERI?'s-materi':HAS_KUIS?'s-kuis':'s-hasil')+'\\')">Lanjut →</button><button class="btn btn-ghost" onclick="goScreen(\\'s-cp\\')">← Kembali</button></div>';
-}
-function renderModVideo(m){
-  const url=m.url||''; const platform=m.platform||'youtube';
-  let embed=url;
-  if(platform==='youtube'&&url.includes('watch?v=')) embed='https://www.youtube.com/embed/'+url.split('watch?v=')[1].split('&')[0];
-  else if(platform==='youtube'&&url.includes('youtu.be/')) embed='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
-  const pertanyaan=(m.pertanyaan||[]);
-  return '<div style="margin-top:12px">'+(m.instruksi?'<p style="font-size:.84rem;color:var(--muted);margin-bottom:10px">'+esc(m.instruksi)+'</p>':'')+
-    (embed?'<iframe src="'+esc(embed)+'" style="width:100%;aspect-ratio:16/9;border:none;border-radius:12px;background:#000" allowfullscreen></iframe>':'<p style="color:var(--muted)">URL video belum diisi.</p>')+
-    (pertanyaan.length?'<div style="margin-top:14px"><div style="font-weight:800;font-size:.88rem;margin-bottom:8px">📝 Pertanyaan Refleksi</div>'+pertanyaan.map((p,i)=>'<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px"><p style="font-size:.84rem;font-weight:700">'+(i+1)+'. '+esc(p.teks||'')+'</p>'+(p.wajib?'<span style="font-size:.7rem;color:var(--r);font-weight:800">* Wajib dijawab</span>':'')+'</div>').join('')+'</div>':'')+'</div>';
-}
-function renderModFlashcard(m){
-  const kartu=m.kartu||[];
-  return '<p style="font-size:.84rem;color:var(--muted);margin-top:8px">'+(esc(m.instruksi)||'Klik kartu untuk membalik.')+'</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px">'+kartu.map((k,i)=>'<div class="fc-card" id="fc-'+i+'" onclick="this.classList.toggle(\\'flipped\\')" style="perspective:800px;min-height:140px;cursor:pointer"><div style="position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d" class="fc-inner"><div style="position:absolute;inset:0;backface-visibility:hidden;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center"><div style="font-size:.82rem;font-weight:700">'+esc(k.depan||'')+'</div>'+(k.hint?'<div style="font-size:.72rem;color:var(--muted);margin-top:6px">'+esc(k.hint)+'</div>':'')+'</div><div style="position:absolute;inset:0;backface-visibility:hidden;background:rgba(62,207,207,.08);border:1px solid rgba(62,207,207,.3);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;text-align:center;transform:rotateY(180deg)"><div style="font-size:.84rem;font-weight:700;color:var(--c)">'+esc(k.belakang||'')+'</div></div></div></div>').join('')+'</div><style>.fc-card.flipped .fc-inner{transform:rotateY(180deg)}</style>';
-}
-function renderModInfografis(m){
-  const kartu=m.kartu||[]; const layout=m.layout||'grid';
-  return (m.intro?'<p style="font-size:.84rem;color:var(--muted);margin-top:8px;line-height:1.6">'+esc(m.intro)+'</p>':'')+
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px">'+kartu.map(k=>'<div style="background:'+(k.color||'#3ecfcf')+'0a;border:1px solid '+(k.color||'#3ecfcf')+'22;border-radius:12px;padding:16px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:1.4rem">'+esc(k.icon||'📌')+'</span><span style="font-weight:900;font-size:.88rem;color:'+(k.color||'#3ecfcf')+'">'+esc(k.judul||'')+'</span></div><p style="font-size:.82rem;color:var(--muted);line-height:1.6">'+esc(k.isi||'')+'</p></div>').join('')+'</div>';
-}
-function renderModMatching(m){
-  const pasangan=m.pasangan||[];
-  const shuffled=pasangan.map((p,i)=>({...p,origIdx:i,side:Math.random()>.5?'left':'right'})).sort(()=>Math.random()-.5);
-  const leftItems=shuffled.filter(s=>s.side==='left');
-  const rightItems=shuffled.filter(s=>s.side==='right');
-  return '<p style="font-size:.84rem;color:var(--muted);margin-top:8px">'+(esc(m.instruksi)||'Cocokkan pasangan berikut.')+'</p><div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:8px;margin-top:12px;align-items:start">'+leftItems.map(l=>'<div style="background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:10px;padding:10px;font-size:.84rem;font-weight:700" data-mid="l-'+l.origIdx+'">'+esc(l.kiri||'')+'</div>').join('')+'<div></div>'+rightItems.map(r=>'<div style="background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:10px;padding:10px;font-size:.84rem;font-weight:700" data-mid="r-'+r.origIdx+'">'+esc(r.kanan||'')+'</div>').join('')+'</div><div id="matchResult" style="margin-top:12px"></div><button class="btn btn-y btn-sm mt14" onclick="checkMatching()">Periksa Jawaban</button>';
-}
-function renderModHero(m){
-  const gradients={sunset:'linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)',ocean:'linear-gradient(135deg,#0ea5e9,#6366f1)',forest:'linear-gradient(135deg,#22c55e,#14b8a6)',royal:'linear-gradient(135deg,#a855f7,#6366f1)',fire:'linear-gradient(135deg,#ef4444,#f97316)',aurora:'linear-gradient(135deg,#06b6d4,#a855f7,#ec4899)'};
-  const g=gradients[m.gradient]||gradients.sunset;
-  return '<div style="background:'+g+';border-radius:16px;padding:32px 24px;text-align:center;margin-top:12px;color:#fff"><div style="font-size:3rem;margin-bottom:8px">'+esc(m.icon||'🚀')+'</div>'+(m.subjudul?'<p style="font-size:.9rem;opacity:.9;margin-bottom:12px">'+esc(m.subjudul)+'</p>':'')+(m.cta?'<button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)">'+esc(m.cta)+'</button>':'')+(m.chips?'<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px">'+m.chips.split(',').map(c=>'<span class="chip" style="background:rgba(255,255,255,.15);color:#fff">'+esc(c.trim())+'</span>').join('')+'</div>':'')+'</div>';
-}
-function renderModKutipan(m){
-  const displays={card:'rgba(52,211,153,.05)',big:'rgba(249,193,46,.05)',minimal:'transparent'};
-  const bg=displays[m.display]||displays.card;
-  return '<div style="background:'+bg+';border-radius:14px;padding:24px;margin-top:12px;border-left:4px solid '+(m.accent||'#f9c82e')+'"><div style="font-size:2rem;margin-bottom:8px;opacity:.5">"</div><p style="font-size:1rem;font-style:italic;line-height:1.8">'+esc(m.quote||'')+'</p>'+(m.source?'<div style="margin-top:10px;font-size:.82rem;color:var(--muted)">— '+esc(m.source)+(m.title?', '+esc(m.title):'')+'</div>':'')+'</div>';
-}
-function renderModLangkah(m){
-  const steps=m.steps||[];
-  return (m.intro?'<p style="font-size:.84rem;color:var(--muted);margin-top:8px;line-height:1.6">'+esc(m.intro)+'</p>':'')+
-    '<div style="margin-top:12px">'+steps.map((s,i)=>'<div style="display:flex;gap:14px;margin-bottom:16px;align-items:flex-start"><div style="min-width:36px;height:36px;border-radius:50%;background:'+(s.color||'#3ecfcf')+'18;color:'+(s.color||'#3ecfcf')+';display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;flex-shrink:0">'+(i+1)+'</div><div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:1.1rem">'+esc(s.icon||'📌')+'</span><span style="font-weight:900;font-size:.9rem">'+esc(s.judul||'')+'</span></div><p style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:3px">'+esc(s.isi||'')+'</p></div></div>').join('')+'</div>';
-}
-function renderModAccordion(m){
-  const items=m.items||[];
-  return (m.intro?'<p style="font-size:.84rem;color:var(--muted);margin-top:8px;line-height:1.6">'+esc(m.intro)+'</p>':'')+
-    '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">'+items.map((item,i)=>'<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden"><button onclick="var c=this.nextElementSibling;c.style.display=c.style.display===\\'none\\'?\\'block\\':\\'none\\';this.querySelector(\\'.acc-arrow\\').classList.toggle(\\'rotated\\')" style="width:100%;padding:14px 16px;background:none;border:none;color:var(--text);font-size:.88rem;font-weight:800;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;font-family:Nunito,sans-serif"><span>'+esc(item.icon||'📌')+'</span>'+esc(item.judul||'Item '+(i+1))+'<span class="acc-arrow" style="margin-left:auto;transition:transform .2s;font-size:.7rem">▼</span></button><div style="display:none;padding:0 16px 14px;font-size:.84rem;color:var(--muted);line-height:1.7;border-top:1px solid var(--border)">'+esc(item.isi||'')+'</div></div>').join('')+'</div><style>.acc-arrow.rotated{transform:rotate(180deg)}</style>';
-}
-function renderModStatistik(m){
-  const items=m.items||[];
-  const layout=m.layout||'grid';
-  return (m.intro?'<p style="font-size:.84rem;color:var(--muted);margin-top:8px;line-height:1.6">'+esc(m.intro)+'</p>':'')+
-    '<div style="display:grid;grid-template-columns:'+(layout==='row'?'repeat(auto-fit,minmax(180px,1fr))':'repeat(auto-fit,minmax(140px,1fr))')+';gap:12px;margin-top:12px">'+items.map(it=>'<div style="background:'+(it.color||'#3ecfcf')+'0a;border:1px solid '+(it.color||'#3ecfcf')+'22;border-radius:12px;padding:16px;text-align:center"><div style="font-size:2rem">'+esc(it.icon||'📊')+'</div><div style="font-family:Fredoka One,cursive;font-size:1.6rem;color:'+(it.color||'#3ecfcf')+'">'+esc(it.angka||'')+(it.satuan?'<span style="font-size:.8rem;font-weight:600">'+esc(it.satuan)+'</span>':'')+'</div><div style="font-size:.78rem;color:var(--muted);margin-top:4px">'+esc(it.label||'')+'</div></div>').join('')+'</div>';
-}
-function renderModPolling(m){
-  const opsi=m.opsi||[];
-  return '<p style="font-size:.84rem;color:var(--muted);margin-top:8px">'+(esc(m.instruksi)||'Pilih salah satu opsi.')+'</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px" id="pollOptions">'+opsi.map((o,i)=>'<button onclick="votePoll('+i+')" style="background:'+(o.warna||'#3ecfcf')+'0a;border:2px solid '+(o.warna||'#3ecfcf')+'33;border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;font-family:Nunito,sans-serif;display:flex;align-items:center;gap:10px;transition:all .2s" class="poll-opt"><span style="font-size:1.2rem">'+esc(o.icon||'📊')+'</span><span style="font-size:.88rem;font-weight:700;color:var(--text)">'+esc(o.teks||'')+'</span></button>').join('')+'</div>';
-}
-function renderModEmbed(m){
-  return m.url?'<div style="margin-top:12px">'+(m.label?'<p style="font-size:.78rem;color:var(--muted);margin-bottom:6px">'+esc(m.label)+'</p>':'')+'<iframe src="'+esc(m.url)+'" style="width:100%;height:'+(m.height||400)+'px;border:none;border-radius:12px;background:#f0f0f0" allowfullscreen></iframe></div>':'<p style="color:var(--muted);margin-top:12px">URL embed belum diisi.</p>';
-}
-function renderModTabIcons(m){
-  const tabs=m.tabs||[];
-  return '<div style="margin-top:12px"><div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:14px;overflow-x:auto">'+tabs.map((t,i)=>'<button onclick="switchModTab('+i+')" class="mod-tab'+(i===0?' active':'')+'" id="modtab-'+i+'" style="padding:8px 16px;font-size:.78rem;font-weight:800;cursor:pointer;color:var(--muted);border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;font-family:Nunito,sans-serif;white-space:nowrap;transition:all .2s">'+esc(t.icon||'📌')+' '+esc(t.judul||'Tab '+(i+1))+'</button>').join('')+'</div>'+tabs.map((t,i)=>'<div class="mod-tab-content" id="modtabcontent-'+i+'" style="'+(i===0?'':'display:none;')+'animation:fadeIn .3s ease"><p style="font-size:.84rem;line-height:1.7;color:var(--muted)">'+esc(t.isi||'')+'</p></div>').join('')+'</div><style>.mod-tab.active{color:var(--y)!important;border-bottom-color:var(--y)!important;}</style>';
-}
-function renderModIconExplore(m){
-  const items=m.items||[];
-  return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:12px">'+items.map(it=>'<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s" onclick="var d=this.querySelector(\\'.ie-desc\\');d.style.display=d.style.display===\\'none\\'?\\'block\\':\\'none\\'"><div style="font-size:2rem;margin-bottom:6px">'+esc(it.icon||'🔍')+'</div><div style="font-size:.82rem;font-weight:800">'+esc(it.judul||'')+'</div><div class="ie-desc" style="display:none;font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.5">'+esc(it.isi||'')+'</div></div>').join('')+'</div>';
-}
-function renderModComparison(m){
-  const baris=m.baris||[];
-  if(!baris.length) return '<p style="color:var(--muted);margin-top:12px">Belum ada data perbandingan.</p>';
-  const headers=baris[0]||[];
-  return '<div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr>'+(m.headers||headers||[]).map(h=>'<th style="padding:10px 14px;background:rgba(249,193,46,.1);border:1px solid var(--border);text-align:left;font-weight:800">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+baris.slice(1).map(row=>'<tr>'+row.map(cell=>'<td style="padding:10px 14px;border:1px solid var(--border)">'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
-}
-function renderModCardShowcase(m){
-  const cards=m.cards||[];
-  return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:12px">'+cards.map(c=>'<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden"><div style="height:120px;background:'+(c.bgGrad||'linear-gradient(135deg,var(--y),var(--c))')+';display:flex;align-items:center;justify-content:center;font-size:3rem">'+esc(c.icon||'🃏')+'</div><div style="padding:14px"><div style="font-weight:900;font-size:.9rem">'+esc(c.judul||'')+'</div><p style="font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:4px">'+esc(c.isi||'')+'</p></div></div>').join('')+'</div>';
-}
-function renderModTimeline(m){
-  const events=m.events||[];
-  return (m.intro?'<p style="font-size:.84rem;color:var(--muted);margin-top:8px;line-height:1.6">'+esc(m.intro)+'</p>':'')+
-    '<div style="margin-top:12px">'+events.map((ev,i)=>'<div style="display:flex;gap:14px;margin-bottom:16px;align-items:flex-start"><div style="min-width:36px;height:36px;border-radius:50%;background:var(--c)18;color:var(--c);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">'+esc(ev.icon||'📌')+'</div><div><div style="font-size:.72rem;font-weight:900;color:var(--y);margin-bottom:2px">'+esc(ev.tahun||'')+'</div><div style="font-weight:900;font-size:.88rem">'+esc(ev.judul||'')+'</div><p style="font-size:.8rem;color:var(--muted);line-height:1.5;margin-top:3px">'+esc(ev.isi||'')+'</p></div></div>').join('')+'</div>';
-}
-function renderModStudiKasus(m){
-  const pertanyaan=m.pertanyaan||[];
-  return '<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px"><p style="font-size:.88rem;line-height:1.8">'+esc(m.teks||'')+'</p>'+(m.sumber?'<p style="font-size:.72rem;color:var(--muted);margin-top:8px">Sumber: '+esc(m.sumber)+'</p>':'')+'</div>'+(pertanyaan.length?'<div style="margin-top:14px"><div style="font-weight:800;font-size:.88rem;margin-bottom:8px">📝 Pertanyaan Analisis</div>'+pertanyaan.map((p,i)=>'<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px"><span style="font-size:.7rem;font-weight:900;color:var(--p);background:var(--p)18;padding:2px 8px;border-radius:99px">'+esc(p.level||'C2')+'</span><p style="font-size:.84rem;margin-top:6px;font-weight:700">'+esc(p.teks||p.label||'')+'</p></div>').join('')+'</div>':'');
-}
-function renderModDebat(m){
-  const pA=m.pihakA||{}; const pB=m.pihakB||{};
-  return '<div style="background:rgba(255,255,255,.04);border-radius:12px;padding:16px;margin-top:12px"><div style="font-weight:900;font-size:.92rem;margin-bottom:8px">🗣️ Mosi:</div><p style="font-size:.86rem;line-height:1.7">'+esc(m.pertanyaan||'')+'</p>'+(m.konteks?'<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.03);border-radius:8px"><span style="font-size:.72rem;font-weight:800;color:var(--muted)">KONTEKS:</span><p style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.6">'+esc(m.konteks)+'</p></div>':'')+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><div style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:14px"><div style="font-weight:900;font-size:.88rem;color:var(--g);margin-bottom:6px">✅ '+esc(pA.label||'Pro')+'</div></div><div style="background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.2);border-radius:12px;padding:14px"><div style="font-weight:900;font-size:.88rem;color:var(--r);margin-bottom:6px">❌ '+esc(pB.label||'Kontra')+'</div></div></div>';
-}
-function renderModTrueFalse(m){
-  const soal=m.soal||[];
-  return '<p style="font-size:.84rem;color:var(--muted);margin-top:8px">'+(esc(m.instruksi)||'Tentukan benar atau salah.')+'</p><div style="margin-top:12px">'+soal.map((s,i)=>'<div class="card mt14" style="padding:14px"><p style="font-size:.86rem;font-weight:700;margin-bottom:10px">'+(i+1)+'. '+esc(s.teks||'')+'</p><div style="display:flex;gap:8px"><button onclick="tfAnswer(this,'+i+',true,'+s.jawaban+')" class="btn btn-sm btn-ghost tf-btn" style="flex:1;justify-content:center">✅ Benar</button><button onclick="tfAnswer(this,'+i+',false,'+s.jawaban+')" class="btn btn-sm btn-ghost tf-btn" style="flex:1;justify-content:center">❌ Salah</button></div><div id="tf-fb-'+i+'" style="display:none;margin-top:8px;font-size:.8rem;font-weight:700;padding:8px 12px;border-radius:8px"></div></div>').join('')+'</div>';
-}
-function renderModMemory(m){
-  const pasangan=m.pasangan||[];
-  const cards=pasangan.flatMap((p,i)=>[{id:i,type:'a',text:p.a},{id:i,type:'b',text:p.b}]);
-  const shuffled=cards.sort(()=>Math.random()-.5);
-  return '<div style="margin-top:12px"><p style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Cocokkan pasangan kartu!</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">'+shuffled.map((c,i)=>'<div class="mem-card" id="mem-'+i+'" onclick="memFlip('+i+')" style="aspect-ratio:1;background:var(--card);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.78rem;font-weight:700;padding:8px;text-align:center;perspective:800px;transition:all .3s">'+esc(c.text)+'</div>').join('')+'</div></div>';
-}
-function renderModRoda(m){
-  const opsi=m.opsi||[];
-  if(!opsi.length) return '<p style="color:var(--muted);margin-top:12px">Belum ada opsi.</p>';
-  const colors=['#f9c12e','#3ecfcf','#ff6b6b','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
-  return '<div style="text-align:center;margin-top:12px"><svg id="rodaSvg" viewBox="0 0 200 200" style="width:240px;height:240px;margin:0 auto;display:block;cursor:pointer" onclick="spinRoda()"><g transform="translate(100,100)">'+opsi.map((o,i)=>{const a1=(i/opsi.length)*360;const a2=((i+1)/opsi.length)*360;const r1=a1*Math.PI/180;const r2=a2*Math.PI/180;const col=colors[i%colors.length];return '<path d="M0,0 L'+(100*Math.cos(r1))+','+(100*Math.sin(r1))+' A100,100 0 0,1 '+(100*Math.cos(r2))+','+(100*Math.sin(r2))+' Z" fill="'+col+'" stroke="#0e1c2f" stroke-width="2"/><text x="'+(60*Math.cos((r1+r2)/2))+'" y="'+(60*Math.sin((r1+r2)/2))+'" fill="#0e1c2f" font-size="10" font-weight="800" text-anchor="middle" dominant-baseline="middle">'+esc(String(o).substring(0,12))+'</text>';}).join('')+'</g></svg><div id="rodaResult" style="margin-top:14px;font-size:1rem;font-weight:900;min-height:40px"></div><button class="btn btn-y btn-sm mt8" onclick="spinRoda()">🎡 Putar Roda!</button></div>';
-}
-function renderModSorting(m){
-  const items=m.items||[]; const kategori=m.kategori||[];
-  return '<p style="font-size:.84rem;color:var(--muted);margin-top:8px">'+(esc(m.instruksi)||'Kelompokkan item ke kategori yang tepat.')+'</p>'+(kategori.length?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px">'+kategori.map(k=>'<div style="background:'+(k.color||'#3ecfcf')+'0a;border:2px dashed '+(k.color||'#3ecfcf')+'33;border-radius:12px;padding:14px;min-height:80px"><div style="font-weight:900;font-size:.85rem;color:'+(k.color||'#3ecfcf')+';margin-bottom:8px">'+esc(k.judul||'')+'</div><div class="sort-zone" data-cat="'+esc(k.judul||'')+'"></div></div>').join('')+'</div>':'')+(items.length?'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px" id="sortItems">'+items.map((it,i)=>'<span class="sort-item" data-idx="'+i+'" style="background:var(--card);border:1px solid var(--border);border-radius:99px;padding:6px 14px;font-size:.8rem;font-weight:700;cursor:grab">'+esc(it.text||it)+'</span>').join('')+'</div>':'');
-}
-function renderModSpinwheel(m){
-  const items=m.items||[];
-  if(!items.length) return '<p style="color:var(--muted);margin-top:12px">Belum ada item.</p>';
-  const colors=['#f9c12e','#3ecfcf','#ff6b6b','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
-  return '<div style="text-align:center;margin-top:12px"><svg id="swSvg" viewBox="0 0 200 200" style="width:240px;height:240px;margin:0 auto;display:block;cursor:pointer" onclick="spinWheel()"><g transform="translate(100,100)">'+items.map((it,i)=>{const a1=(i/items.length)*360;const a2=((i+1)/items.length)*360;const r1=a1*Math.PI/180;const r2=a2*Math.PI/180;const col=colors[i%colors.length];return '<path d="M0,0 L'+(100*Math.cos(r1))+','+(100*Math.sin(r1))+' A100,100 0 0,1 '+(100*Math.cos(r2))+','+(100*Math.sin(r2))+' Z" fill="'+col+'" stroke="#0e1c2f" stroke-width="2"/><text x="'+(60*Math.cos((r1+r2)/2))+'" y="'+(60*Math.sin((r1+r2)/2))+'" fill="#0e1c2f" font-size="10" font-weight="800" text-anchor="middle" dominant-baseline="middle">'+esc(String(it.question||it.text||it).substring(0,12))+'</text>';}).join('')+'</g><circle cx="100" cy="100" r="15" fill="#0e1c2f" stroke="var(--y)" stroke-width="3"/></svg><div id="swResult" style="margin-top:14px;font-size:.9rem;font-weight:700;min-height:60px"></div><button class="btn btn-y btn-sm mt8" onclick="spinWheel()">🎡 Putar!</button></div>';
-}
-function renderModTeambuzzer(m){
-  const teams=m.teams||[];
-  return '<div style="margin-top:12px"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">'+teams.map((t,i)=>'<div style="background:'+(t.color||'#3ecfcf')+'12;border:2px solid '+(t.color||'#3ecfcf')+'33;border-radius:14px;padding:20px;text-align:center"><div style="font-size:1.5rem">'+esc(t.icon||'🏆')+'</div><div style="font-weight:900;font-size:.9rem;margin-top:4px">'+esc(t.name||'Tim '+(i+1))+'</div><div style="font-family:Fredoka One,cursive;font-size:2rem;color:'+(t.color||'#3ecfcf')+';margin-top:6px" id="team-score-'+i+'">'+(t.score||0)+'</div><button onclick="buzzTeam('+i+')" class="btn btn-sm mt8" style="background:'+(t.color||'#3ecfcf')+';color:#0e1c2f">🔔 BUZZER!</button></div>').join('')+'</div><div id="buzzerResult" style="margin-top:12px;text-align:center;min-height:40px"></div></div>';
-}
-function renderModWordsearch(m){
-  const kata=m.kata||[];
-  return '<div style="text-align:center;margin-top:12px"><p style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Temukan kata tersembunyi!</p><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px">'+kata.map(k=>'<span class="chip" style="background:rgba(249,193,46,.12);color:var(--y)">'+esc(k)+'</span>').join('')+'</div><div id="wsGrid" style="display:inline-grid;grid-template-columns:repeat('+Math.ceil(Math.sqrt(kata.join('').length*3))+',1fr);gap:2px;max-width:400px;margin:0 auto"></div></div>';
-}
-function renderModHotspot(m){
-  const hotspots=m.hotspots||[];
-  const img=m.imageUrl||'';
-  return '<div style="position:relative;margin-top:12px;border-radius:12px;overflow:hidden">'+(img?'<img src="'+esc(img)+'" style="width:100%;display:block" onerror="this.style.display=\\'none\\'" />':'<div style="background:var(--card);height:200px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Gambar belum diisi</div>')+'<div style="position:relative">'+hotspots.map((h,i)=>'<div style="position:absolute;left:'+(h.x||0)+'%;top:'+(h.y||0)+'%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;background:var(--y);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)" onclick="var t=this.nextElementSibling;t.style.display=t.style.display===\\'none\\'?\\'block\\':\\'none\\'">'+(i+1)+'</div><div style="display:none;position:absolute;left:'+(h.x||0)+'%;top:'+(h.y||0)+'%;transform:translate(-50%,20px);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;width:200px;font-size:.78rem;color:var(--muted);z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.4)">'+esc(h.text||h.judul||'')+'</div>').join('')+'</div></div>';
-}
-// Module helper functions
-function switchModTab(i){document.querySelectorAll('.mod-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.mod-tab-content').forEach(c=>c.style.display='none');document.getElementById('modtab-'+i).classList.add('active');document.getElementById('modtabcontent-'+i).style.display='block';}
-function checkMatching(){var ok=true;document.querySelectorAll('[data-mid^="l-"]').forEach(function(l){var idx=l.getAttribute('data-mid').split('-')[1];var r=document.querySelector('[data-mid="r-'+idx+'"]');if(r){if(l.style.borderColor==='var(--g)')l.style.borderColor='var(--border)';if(r.style.borderColor==='var(--g)')r.style.borderColor='var(--border)';}});var res=document.getElementById('matchResult');if(res)res.innerHTML='<span style="color:var(--g)">✔ Jawaban tersimpan!</span>';}
-function tfAnswer(btn,qi,ans,correct){var p=btn.parentNode;var fb=document.getElementById('tf-fb-'+qi);var btns=p.querySelectorAll('.tf-btn');btns.forEach(function(b){b.disabled=true;b.style.opacity='.5';});fb.style.display='block';if(ans===correct){btn.style.borderColor='var(--g)';btn.style.color='var(--g)';fb.style.background='rgba(52,211,153,.1)';fb.style.color='var(--g)';fb.textContent='✅ Benar! '+(btns[0].closest('.card').__penjelasan||'');}else{btn.style.borderColor='var(--r)';btn.style.color='var(--r)';fb.style.background='rgba(255,107,107,.1)';fb.style.color='var(--r)';fb.textContent='❌ Salah.';btns[ans?0:1].style.borderColor='var(--g)';btns[ans?0:1].style.color='var(--g)';}}
-function votePoll(i){var opts=document.querySelectorAll('.poll-opt');opts.forEach(function(o,j){o.style.borderColor=j===i?'var(--y)':'var(--border)';o.style.background=j===i?'rgba(249,193,46,.12)':'rgba(255,255,255,.04)';});}
-function memFlip(i){var el=document.getElementById('mem-'+i);if(el){el.style.background=el.style.background==='transparent'?'var(--card)':'transparent';el.style.color=el.style.color==='transparent'?'var(--text)':'transparent';}}
-function spinRoda(){var svg=document.getElementById('rodaSvg');if(svg){svg.style.transition='transform 3s cubic-bezier(0.17,0.67,0.12,0.99)';svg.style.transform='rotate('+(1440+Math.random()*360)+'deg)';}var res=document.getElementById('rodaResult');if(res)res.textContent='🎡 Memutar...';setTimeout(function(){if(res)res.textContent='✅ Selesai!';},3200);}
-function spinWheel(){var svg=document.getElementById('swSvg');if(svg){svg.style.transition='transform 3s cubic-bezier(0.17,0.67,0.12,0.99)';svg.style.transform='rotate('+(1440+Math.random()*360)+'deg)';}var res=document.getElementById('swResult');if(res)res.textContent='🎡 Memutar...';setTimeout(function(){if(res)res.textContent='✅ Selesai!';},3200);}
-function buzzTeam(i){var el=document.getElementById('team-score-'+i);if(el){var cur=parseInt(el.textContent)||0;el.textContent=cur+10;}var res=document.getElementById('buzzerResult');if(res){res.textContent='🔔 Tim '+(i+1)+' menjawab!';res.style.animation='none';setTimeout(function(){res.style.animation='fadeIn .3s ease';},10);}}
+// ── Modules are now pre-rendered server-side via renderModuleToStyledHTML ──
+// No client-side renderModules() needed — HTML is already in the DOM.
 
 // Init
 document.addEventListener('DOMContentLoaded', function(){});

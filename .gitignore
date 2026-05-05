@@ -52,3 +52,7 @@ prompt
 server.log
 # Skills directory
 /skills/
+# dev artifacts
+agent-ctx/
+package-lock.json
+worklog.md

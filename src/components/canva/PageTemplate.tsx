@@ -7,6 +7,7 @@ import type { CanvaPage, ColorPalette } from './types';
 import { getPaletteColor } from '@/lib/color-palette';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
+import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE TEMPLATE — Full-page template renderer with editable zones
@@ -276,17 +277,17 @@ function MateriTemplate({ td, palette, isSelected, onEditField }: PageTemplatePr
         </div>
       )}
 
-      {/* Module Cards */}
+      {/* Module Cards — using PresetModuleCard in canvas mode */}
       {modules.length > 0 && (
         <div className="mt-2 space-y-1">
           {modules.slice(0, 3).map((m, i) => (
-            <div key={i} className="flex items-center gap-2 p-1.5 rounded-lg bg-white/5">
-              <span className="text-sm">{getModuleIcon(String(m.type))}</span>
-              <div className="min-w-0">
-                <div className="text-[9px] font-bold text-white truncate">{String(m.title || m.type)}</div>
-                <div className="text-[7px] text-white/40">{String(m.type)}</div>
-              </div>
-            </div>
+            <PresetModuleCard
+              key={i}
+              mode="canvas"
+              module={m as Parameters<typeof PresetModuleCard>[0]['module']}
+              layoutVariant={(m.layoutVariant as LayoutVariant) || 'A'}
+              compact
+            />
           ))}
         </div>
       )}

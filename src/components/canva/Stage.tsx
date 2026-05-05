@@ -2,10 +2,12 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import type { CanvaElement, ResizeDir } from './types';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
+import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 
 export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
   const {
@@ -370,16 +372,10 @@ function StageElement({
           <GameWidget dataIdx={element.dataIdx} compact />
         )}
         {element.type === 'materi' && (
-          <div className="p-2 h-full bg-purple-500/10 rounded border border-purple-500/20">
-            <span className="text-2xl">📝</span>
-            <div className="text-[9px] text-purple-300/60 mt-1">Materi Pembelajaran</div>
-          </div>
+          <ModuleElementPreview dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
         )}
         {element.type === 'modul' && (
-          <div className="flex flex-col items-center justify-center h-full bg-emerald-500/10 rounded border border-emerald-500/20 p-2">
-            <span className="text-2xl">🧩</span>
-            <span className="text-[10px] font-bold text-emerald-300 mt-1">Modul</span>
-          </div>
+          <ModuleElementPreview dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
         )}
         {element.type === 'teks' && (
           <div
@@ -424,6 +420,33 @@ function StageElement({
           ))}
         </>
       )}
+    </div>
+  );
+}
+
+/* ── Module Element Preview (uses PresetModuleCard) ──────────── */
+
+function ModuleElementPreview({ dataIdx, layoutVariant }: { dataIdx?: number; layoutVariant?: LayoutVariant }) {
+  const modules = useAuthoringStore((s) => s.modules);
+  const mod = dataIdx != null && dataIdx >= 0 && dataIdx < modules.length ? modules[dataIdx] : null;
+
+  if (!mod) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full bg-emerald-500/10 rounded border border-emerald-500/20 p-2">
+        <span className="text-2xl">🧩</span>
+        <span className="text-[10px] font-bold text-emerald-300 mt-1">Modul</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-auto p-1">
+      <PresetModuleCard
+        mode="canvas"
+        module={mod}
+        compact
+        layoutVariant={layoutVariant || (mod.layoutVariant as LayoutVariant) || 'A'}
+      />
     </div>
   );
 }

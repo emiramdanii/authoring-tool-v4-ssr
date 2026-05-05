@@ -4,6 +4,8 @@
 
 import { create } from 'zustand';
 import { toast } from 'sonner';
+import { renderModuleToStyledHTML } from '@/lib/render-module-html';
+import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
 import {
   type CanvaPage,
   type CanvaElement,
@@ -998,6 +1000,28 @@ function renderTemplateExportHTML(page: CanvaPage): string | null {
         <div style="font-size:32px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5);margin-bottom:8px">${title}</div>
         <div style="font-size:16px;color:rgba(255,255,255,.7);margin-bottom:20px">${subtitle}</div>
         ${mapel ? `<div style="display:inline-block;padding:6px 16px;border-radius:20px;background:rgba(249,200,46,.2);border:1px solid rgba(249,200,46,.3);color:#f9c82e;font-size:13px;font-weight:700">${mapel} ${kelas ? '• Kelas ' + kelas : ''}</div>` : ''}
+      </div>`;
+    }
+
+    case 'materi': {
+      const modules = (td.modules as Array<Record<string, unknown>>) || [];
+      const modulesHTML = modules.map(mod =>
+        renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')
+      ).join('');
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="font-size:18px;font-weight:900;color:#e8f2ff;margin-bottom:16px">📝 Materi Pembelajaran</div>
+        ${modulesHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Belum ada modul materi.</div>'}
+      </div>`;
+    }
+
+    case 'game': {
+      const games = (td.games as Array<Record<string, unknown>>) || [];
+      const gamesHTML = games.map(mod =>
+        renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')
+      ).join('');
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="font-size:18px;font-weight:900;color:#3ecfcf;margin-bottom:16px">🎮 Game Interaktif</div>
+        ${gamesHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Belum ada game.</div>'}
       </div>`;
     }
 

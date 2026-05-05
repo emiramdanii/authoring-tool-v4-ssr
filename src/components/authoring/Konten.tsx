@@ -6,6 +6,7 @@ import type { MateriBlok, KuisItem } from '@/store/authoring-store';
 import Skenario from './Skenario';
 import ModuleEditorModal from './ModuleEditorModal';
 import { useDragSort } from '@/hooks/use-drag-sort';
+import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/PresetModuleCard';
 
 // ── Sub-tab type ─────────────────────────────────────────────────
 type KontenTab = 'materi' | 'skenario' | 'modules' | 'kuis';
@@ -1036,7 +1037,27 @@ function ModulePickerModal({
 }
 
 
-// ── Module List Card ──────────────────────────────────────────
+// ── Layout Variant Picker ─────────────────────────────────────
+function LayoutVariantPicker({ value, onChange }: { value: LayoutVariant; onChange: (v: LayoutVariant) => void }) {
+  return (
+    <div className="flex gap-1">
+      {LAYOUT_VARIANTS.map(v => (
+        <button
+          key={v.id}
+          onClick={() => onChange(v.id as LayoutVariant)}
+          className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+            value === v.id ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+          }`}
+          title={v.desc}
+        >
+          {v.icon} {v.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Module List Card (using PresetModuleCard) ────────────────
 function ModuleCard({
   mod,
   idx,
@@ -1045,6 +1066,7 @@ function ModuleCard({
   onMoveUp,
   onMoveDown,
   onRemove,
+  onVariantChange,
 }: {
   mod: Record<string, unknown>;
   idx: number;
@@ -1053,74 +1075,54 @@ function ModuleCard({
   onMoveUp: () => void;
   onMoveDown: () => void;
   onRemove: () => void;
+  onVariantChange: (variant: LayoutVariant) => void;
 }) {
-  const info = moduleTypeInfo(mod.type as string);
-  const isGame = ['truefalse', 'memory', 'roda', 'sorting', 'spinwheel', 'teambuzzer', 'wordsearch'].includes(mod.type as string);
+  const variant = (mod.layoutVariant as LayoutVariant) || 'A';
 
   return (
-    <div
-      className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-all hover:border-zinc-700"
-      style={{ borderLeftWidth: '3px', borderLeftColor: info.color }}
-    >
-      <div className="flex items-center gap-3 px-4 py-3">
-        {/* Icon */}
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
-          style={{ backgroundColor: info.color + '18' }}
+    <div className="space-y-1.5">
+      {/* Beautiful preset card */}
+      <PresetModuleCard
+        mode="edit"
+        module={mod}
+        layoutVariant={variant}
+        onEdit={onEdit}
+      />
+
+      {/* Controls row: variant picker + action buttons */}
+      <div className="flex items-center gap-2 px-1">
+        <LayoutVariantPicker value={variant} onChange={onVariantChange} />
+        <div className="flex-1" />
+        <button
+          onClick={onMoveUp}
+          disabled={idx === 0}
+          className="p-1 text-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors text-xs"
+          title="Pindah ke atas"
         >
-          {info.icon}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-zinc-200 truncate">
-              {(mod.title as string) || info.label}
-            </span>
-            {isGame && (
-              <span className="text-[0.6rem] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
-                GAME
-              </span>
-            )}
-          </div>
-          <div className="text-xs text-zinc-500 mt-0.5">
-            {modulePreview(mod)}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <button
-            onClick={onMoveUp}
-            disabled={idx === 0}
-            className="p-1.5 text-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors text-xs"
-            title="Pindah ke atas"
-          >
-            ↑
-          </button>
-          <button
-            onClick={onMoveDown}
-            disabled={idx === total - 1}
-            className="p-1.5 text-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors text-xs"
-            title="Pindah ke bawah"
-          >
-            ↓
-          </button>
-          <button
-            onClick={onEdit}
-            className="p-1.5 text-zinc-600 hover:text-amber-400 rounded-md hover:bg-zinc-800 transition-colors text-sm"
-            title="Edit modul"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={onRemove}
-            className="p-1.5 text-zinc-600 hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors text-sm"
-            title="Hapus modul"
-          >
-            🗑️
-          </button>
-        </div>
+          ↑
+        </button>
+        <button
+          onClick={onMoveDown}
+          disabled={idx === total - 1}
+          className="p-1 text-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors text-xs"
+          title="Pindah ke bawah"
+        >
+          ↓
+        </button>
+        <button
+          onClick={onEdit}
+          className="p-1 text-zinc-600 hover:text-amber-400 rounded-md hover:bg-zinc-800 transition-colors text-sm"
+          title="Edit modul"
+        >
+          ✏️
+        </button>
+        <button
+          onClick={onRemove}
+          className="p-1 text-zinc-600 hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors text-sm"
+          title="Hapus modul"
+        >
+          🗑️
+        </button>
       </div>
     </div>
   );
@@ -1132,6 +1134,7 @@ function ModulesTab() {
   const addModule = useAuthoringStore((s) => s.addModule);
   const removeModule = useAuthoringStore((s) => s.removeModule);
   const moveModule = useAuthoringStore((s) => s.moveModule);
+  const updateModuleField = useAuthoringStore((s) => s.updateModuleField);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editorIndex, setEditorIndex] = useState<number | null>(null);
@@ -1186,6 +1189,7 @@ function ModulesTab() {
               onMoveUp={() => moveModule(i, i - 1)}
               onMoveDown={() => moveModule(i, i + 1)}
               onRemove={() => handleRemove(i)}
+              onVariantChange={(v) => updateModuleField(i, 'layoutVariant', v)}
             />
           ))}
         </div>

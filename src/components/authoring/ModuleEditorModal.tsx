@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
+import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/PresetModuleCard';
 
 // ── Shared constants ──────────────────────────────────────────
 const INPUT_CLS =
@@ -109,6 +110,38 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
               <p className="text-sm text-zinc-400">Skenario memiliki editor khusus di tab <strong className="text-amber-400">Skenario</strong>.</p>
             </div>
           )}
+
+          {/* ── Live Preview Panel ── */}
+          <div className="border-t border-zinc-800 pt-4 mt-2">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-bold text-zinc-200">👁️ Pratinjau Langsung</h4>
+              {/* Layout Variant Picker */}
+              <div className="flex gap-1">
+                {LAYOUT_VARIANTS.map(v => {
+                  const currentVariant = (mod.layoutVariant as LayoutVariant) || 'A';
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => uf('layoutVariant', v.id)}
+                      className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+                        currentVariant === v.id ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                      }`}
+                      title={v.desc}
+                    >
+                      {v.icon} {v.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-800 overflow-auto max-h-80">
+              <PresetModuleCard
+                mode="edit"
+                module={mod}
+                layoutVariant={(mod.layoutVariant as LayoutVariant) || 'A'}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
