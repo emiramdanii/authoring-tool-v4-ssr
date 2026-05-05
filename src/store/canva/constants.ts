@@ -20,6 +20,7 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
     colorPalette: null,
     navConfig: { ...DEFAULT_NAV_CONFIG },
     templateData: {},
+    overlayElements: [],
   };
 }
 

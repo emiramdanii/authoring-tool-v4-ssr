@@ -5,10 +5,11 @@
 import { toast } from 'sonner';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
-import type { CanvaElement } from '@/components/canva/types';
+import type { CanvaElement, PageTemplateType } from '@/components/canva/types';
 import { ELEM_TYPES } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { getModuleIcon, getGameIcon } from '@/lib/canva-icon-maps';
 import { createElId } from './constants';
 
 export type ElementSlice = Pick<
@@ -17,6 +18,11 @@ export type ElementSlice = Pick<
   | 'updateElement' | 'deleteElement' | 'deleteSelected'
   | 'toggleElementVisibility' | 'saveTextContent' | 'moveElementZ'
 >;
+
+// ── Helper: determine if page is in template mode ──────────────
+function isTemplatePage(templateType: PageTemplateType | undefined): boolean {
+  return !!templateType && templateType !== 'custom';
+}
 
 export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> = (set, get) => ({
   addElement: (type, x, y) => {
@@ -54,10 +60,18 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       }
     }
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      elements: [...page.elements, el],
-    };
+    // Phase 1: Template pages use overlayElements; custom pages use elements
+    if (isTemplatePage(page.templateType)) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: [...(page.overlayElements || []), el],
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: [...page.elements, el],
+      };
+    }
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id });
     toast.success(`${typeInfo?.name || type} ditambahkan`);
@@ -77,10 +91,17 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       opacity: 100,
     };
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      elements: [...page.elements, el],
-    };
+    if (isTemplatePage(page.templateType)) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: [...(page.overlayElements || []), el],
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: [...page.elements, el],
+      };
+    }
     set({ pages: newPages, selectedElId: el.id });
   },
 
@@ -98,10 +119,17 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       opacity: 100,
     };
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      elements: [...page.elements, el],
-    };
+    if (isTemplatePage(page.templateType)) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: [...(page.overlayElements || []), el],
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: [...page.elements, el],
+      };
+    }
     set({ pages: newPages, selectedElId: el.id });
   },
 
@@ -112,12 +140,23 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const page = pages[currentPageIndex];
     if (!page) return;
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      elements: page.elements.map(el =>
-        el.id === elId ? { ...el, ...props } : el
-      ),
-    };
+    // Check if element is in overlayElements or regular elements
+    const isInOverlay = (page.overlayElements || []).some(e => e.id === elId);
+    if (isInOverlay) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: (page.overlayElements || []).map(el =>
+          el.id === elId ? { ...el, ...props } : el
+        ),
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: page.elements.map(el =>
+          el.id === elId ? { ...el, ...props } : el
+        ),
+      };
+    }
     set({ pages: newPages });
   },
 
@@ -127,9 +166,11 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     if (!page) return;
     get()._pushHistory();
     const newPages = [...pages];
+    // Remove from both overlayElements and elements to be safe
     newPages[currentPageIndex] = {
       ...page,
       elements: page.elements.filter(e => e.id !== elId),
+      overlayElements: (page.overlayElements || []).filter(e => e.id !== elId),
     };
     set({
       pages: newPages,
@@ -149,10 +190,12 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
-    const idx = page.elements.findIndex(e => e.id === elId);
+    const isInOverlay = (page.overlayElements || []).some(e => e.id === elId);
+    const elements = isInOverlay ? (page.overlayElements || []) : page.elements;
+    const idx = elements.findIndex(e => e.id === elId);
     if (idx === -1) return;
     get()._pushHistory();
-    const els = [...page.elements];
+    const els = [...elements];
     const el = els[idx];
     els.splice(idx, 1);
     let newIdx = idx;
@@ -162,7 +205,11 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     else if (direction === 'bottom') newIdx = 0;
     els.splice(newIdx, 0, el);
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, elements: els };
+    if (isInOverlay) {
+      newPages[currentPageIndex] = { ...page, overlayElements: els };
+    } else {
+      newPages[currentPageIndex] = { ...page, elements: els };
+    }
     set({ pages: newPages });
   },
 
@@ -171,12 +218,22 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const page = pages[currentPageIndex];
     if (!page) return;
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      elements: page.elements.map(el =>
-        el.id === elId ? { ...el, hidden: !el.hidden } : el
-      ),
-    };
+    const isInOverlay = (page.overlayElements || []).some(e => e.id === elId);
+    if (isInOverlay) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: (page.overlayElements || []).map(el =>
+          el.id === elId ? { ...el, hidden: !el.hidden } : el
+        ),
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: page.elements.map(el =>
+          el.id === elId ? { ...el, hidden: !el.hidden } : el
+        ),
+      };
+    }
     set({ pages: newPages });
   },
 

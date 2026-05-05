@@ -242,6 +242,43 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             />
           )}
 
+          {/* Phase 1: Overlay elements on template pages — always render on top */}
+          {isTemplateMode && (page.overlayElements || []).length > 0 && (
+            <div className="absolute inset-0" style={{ zIndex: 10 }}>
+              {(page.overlayElements || []).map(el => (
+                <StageElement
+                  key={el.id}
+                  element={el}
+                  isSelected={el.id === selectedElId}
+                  onSelect={() => selectElement(el.id)}
+                  onStartDrag={(startX, startY) => {
+                    dragState.current = {
+                      type: 'move',
+                      elId: el.id,
+                      startX,
+                      startY,
+                      origX: el.x,
+                      origY: el.y,
+                    };
+                  }}
+                  onStartResize={(dir, startX, startY) => {
+                    dragState.current = {
+                      type: 'resize',
+                      elId: el.id,
+                      startX,
+                      startY,
+                      origX: el.x,
+                      origY: el.y,
+                      origW: el.w,
+                      origH: el.h,
+                      dir,
+                    };
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Custom Mode: Render individual elements */}
           {!isTemplateMode && (
             <div className="absolute inset-0">

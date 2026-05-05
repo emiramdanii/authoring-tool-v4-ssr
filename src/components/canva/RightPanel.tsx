@@ -23,9 +23,10 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { NavConfig, PageTemplateType } from './types';
 
-import { TEMPLATE_TYPES, LAYOUT_PRESETS, LAYER_COLORS, ELEM_TYPES } from './types';
+import { TEMPLATE_TYPES, LAYOUT_PRESETS, ELEM_TYPES } from './types';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPE_ICON_MAP, MODULE_TYPE_ICON_MAP, ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
 import { toast } from 'sonner';
 
 export default function RightPanel() {
@@ -54,7 +55,9 @@ export default function RightPanel() {
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
-  const selectedEl = page?.elements.find(e => e.id === selectedElId);
+  // Phase 1: Also search overlayElements for the selected element
+  const selectedEl = page?.elements.find(e => e.id === selectedElId)
+    || page?.overlayElements?.find(e => e.id === selectedElId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isTemplateMode = page?.templateType && page.templateType !== 'custom';
 
@@ -352,8 +355,8 @@ export default function RightPanel() {
         </div>
       </Section>
 
-      {/* ── Section 7: Element Properties (custom mode) ────────── */}
-      {!isTemplateMode && selectedEl && (
+      {/* ── Section 7: Element Properties (all modes — Phase 1 fix) ── */}
+      {selectedEl && (
         <Section
           icon={<Settings2 size={12} />}
           title="Properti Elemen"
@@ -536,12 +539,7 @@ function DataIdxSelector({ elementType, currentIdx, onChange }: {
     const gameModules = modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
     options = gameModules.map((m, i) => {
       const mIdx = modules.indexOf(m);
-      const iconMap: Record<string, string> = {
-        truefalse: '✅', memory: '🧠', matching: '🔀', roda: '🎡',
-        sorting: '🔢', spinwheel: '🎡', teambuzzer: '🏆', wordsearch: '🔍',
-        flashcard: '🃏', crossword: '🔤', fillblank: '✏️', dragdrop: '🖐️',
-      };
-      return { idx: mIdx, label: String(m.title || m.type), icon: iconMap[m.type as string] || '🎮' };
+      return { idx: mIdx, label: String(m.title || m.type), icon: GAME_TYPE_ICON_MAP[m.type as string] || '🎮' };
     });
     if (options.length === 0) {
       options = [{ idx: -1, label: 'Belum ada game', icon: '🎮' }];
@@ -551,14 +549,7 @@ function DataIdxSelector({ elementType, currentIdx, onChange }: {
     const materiModules = modules.filter(m => !(GAME_TYPES as readonly string[]).includes(m.type as string));
     options = materiModules.map((m) => {
       const mIdx = modules.indexOf(m);
-      const iconMap: Record<string, string> = {
-        materi: '📖', infografis: '📊', accordion: '🗂️', 'tab-icons': '📑',
-        'icon-explore': '🔍', timeline: '📅', hero: '🚀', kutipan: '💬',
-        langkah: '👣', statistik: '📈', polling: '🗳️', embed: '🔗',
-        comparison: '⚖️', 'card-showcase': '🎴', 'hotspot-image': '🗺️',
-        video: '🎥', 'studi-kasus': '🔬', debat: '🗣️',
-      };
-      return { idx: mIdx, label: String(m.title || m.type), icon: iconMap[m.type as string] || '🧩' };
+      return { idx: mIdx, label: String(m.title || m.type), icon: MODULE_TYPE_ICON_MAP[m.type as string] || '🧩' };
     });
     if (options.length === 0) {
       options = [{ idx: -1, label: 'Belum ada modul', icon: '🧩' }];
@@ -660,7 +651,8 @@ function LayerMiniList() {
   const page = pages[currentPageIndex];
   if (!page) return null;
 
-  const elements = [...page.elements].reverse();
+  // Phase 1: Include overlayElements in the layer list
+  const elements = [...page.elements, ...(page.overlayElements || [])].reverse();
 
   return (
     <div className="space-y-0.5 max-h-48 overflow-y-auto custom-scrollbar">
@@ -669,7 +661,8 @@ function LayerMiniList() {
       )}
       {elements.map(el => {
         const isActive = el.id === selectedElId;
-        const color = LAYER_COLORS[el.type] || '#888';
+        const color = ELEMENT_TYPE_COLORS[el.type] || '#888';
+        const isOverlay = (page.overlayElements || []).some(oe => oe.id === el.id);
         return (
           <div
             key={el.id}
@@ -679,7 +672,10 @@ function LayerMiniList() {
             }`}
           >
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-            <span className="text-[9px] flex-1 truncate">{el.icon} {el.label || el.type}</span>
+            <span className="text-[9px] flex-1 truncate">
+              {isOverlay && <span className="text-amber-400/60 text-[7px]">⬆</span>}
+              {el.icon} {el.label || el.type}
+            </span>
             <button
               onClick={e => { e.stopPropagation(); toggleElementVisibility(el.id); }}
               className="text-slate-600 hover:text-slate-400 transition-colors"

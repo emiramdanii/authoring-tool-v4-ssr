@@ -4,11 +4,20 @@
 
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
-import type { CanvaPage, CanvaElement } from '@/components/canva/types';
+import type { CanvaPage, CanvaElement, LeftTab } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { exportPageHTML as generatePageHTML } from '@/lib/canva-export-page';
 import { exportSlideshowHTML as generateSlideshowHTML } from '@/lib/canva-export-slideshow';
 import { CANVA_STORAGE_KEY } from './constants';
+
+// ── Legacy tab name migration map ──────────────────────────────
+const TAB_MIGRATION: Record<string, LeftTab> = {
+  templates: 'rakit',
+  elems: 'rakit',
+  ratio: 'halaman',
+  pages: 'halaman',
+  layers: 'layer',
+};
 
 export type PersistenceSlice = Pick<
   CanvaState,
@@ -40,6 +49,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           colorPalette: p.colorPalette || null,
           navConfig: p.navConfig || { ...DEFAULT_NAV_CONFIG },
           templateData: p.templateData || {},
+          // Phase 1: Ensure overlayElements array exists
+          overlayElements: (p.overlayElements || []).map((el: CanvaElement) => ({
+            ...el,
+            opacity: el.opacity ?? 100,
+            hidden: el.hidden ?? false,
+          })),
           // Ensure elements have valid positions
           elements: (p.elements || []).map((el: CanvaElement) => ({
             ...el,
@@ -47,12 +62,18 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             hidden: el.hidden ?? false,
           })),
         }));
+        // Migrate legacy leftTab names
+        let leftTab: LeftTab = 'rakit';
+        if (data.leftTab) {
+          leftTab = TAB_MIGRATION[data.leftTab] || 'rakit';
+        }
         set({
           pages,
           ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           selectedElId: null,
           rightPanelOpen: true,
+          leftTab,
         });
         return true;
       }

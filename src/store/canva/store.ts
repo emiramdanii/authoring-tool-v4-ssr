@@ -25,7 +25,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ratioId: '16:9',
     zoom: 1.0,
     tool: 'select',
-    leftTab: 'templates',
+    leftTab: 'rakit',
     selectedElId: null,
     rightPanelOpen: true,
     showGrid: false,

@@ -9,6 +9,7 @@ import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { getModuleIcon as _getModuleIcon, getGameIcon as _getGameIcon } from '@/lib/canva-icon-maps';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE TEMPLATE — Full-page template renderer with editable zones
@@ -633,27 +634,24 @@ function SkenarioTemplate({ td, palette, isSelected, onEditField }: SubTemplateP
 
 // ── Utility helpers ───────────────────────────────────────────
 
+// Phase 1: Use shared icon maps from canva-icon-maps.ts
+// (removed local duplicates of getModuleIcon / getGameIcon)
+// Import is at the top of this file
+
+// Keep local aliases for backward compat within this file
+// (some local template icons differ slightly from the shared map)
 function getModuleIcon(type: string): string {
-  const icons: Record<string, string> = {
-    materi: '📝', video: '🎬', infografis: '📊', flashcard: '🃏',
-    'studi-kasus': '🔬', debat: '⚖️', timeline: '📅', matching: '🔀',
-    hero: '🚀', kutipan: '💬', langkah: '📌', accordion: '📂',
-    statistik: '📈', polling: '🗳️', embed: '🌐', 'tab-icons': '📑',
-    'icon-explore': '🔍', comparison: '⚖️', 'card-showcase': '🎴',
-    'hotspot-image': '📍', truefalse: '✅❌', memory: '🧠',
-    roda: '🎡', sorting: '🔢', spinwheel: '🎡',
-    teambuzzer: '🏆', wordsearch: '🔍', skenario: '🎭',
+  // Local overrides for template-specific display
+  const localOverrides: Record<string, string> = {
+    video: '🎬', flashcard: '🃏', langkah: '📌', accordion: '📂',
+    embed: '🌐', 'hotspot-image': '📍', truefalse: '✅❌',
+    skenario: '🎭',
   };
-  return icons[type] || '🧩';
+  return localOverrides[type] || _getModuleIcon(type);
 }
 
 function getGameIcon(type: string): string {
-  const icons: Record<string, string> = {
-    truefalse: '✅', memory: '🧠', matching: '🔀', roda: '🎡',
-    sorting: '🔢', spinwheel: '🎡', teambuzzer: '🏆',
-    wordsearch: '🔍', flashcard: '🃏',
-  };
-  return icons[type] || '🎮';
+  return _getGameIcon(type);
 }
 
 function getGameModuleIndex(game: Record<string, unknown>): number {

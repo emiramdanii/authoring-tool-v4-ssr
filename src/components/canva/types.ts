@@ -80,9 +80,14 @@ export interface CanvaPage {
   navConfig: NavConfig;
   // Template-specific data binding
   templateData: Record<string, unknown>;
+  // ── Overlay elements (v3 — Phase 1) ──
+  // Elements rendered ON TOP of template pages, allowing hybrid mode
+  overlayElements: CanvaElement[];
 }
 
-export type LeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers';
+export type LeftTab = 'rakit' | 'halaman' | 'layer';
+/** @deprecated Legacy tab names — used only for localStorage migration */
+export type LegacyLeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers';
 export type Tool = 'select' | 'text';
 export type ResizeDir = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | 'tm' | 'bm';
 

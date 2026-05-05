@@ -2,7 +2,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import type { LeftTab } from './types';
-import { Puzzle, FileText, Package, Proportions, Layers, type LucideIcon } from 'lucide-react';
+import { Wrench, FileText, Layers, type LucideIcon } from 'lucide-react';
 
 interface RailItem {
   id: LeftTab;
@@ -11,12 +11,11 @@ interface RailItem {
   divider?: boolean;
 }
 
+// Phase 1: Reduced from 5 tabs to 3: Rakit, Halaman, Layer
 const RAIL_ITEMS: RailItem[] = [
-  { id: 'templates', icon: Puzzle, title: 'Template' },
-  { id: 'pages', icon: FileText, title: 'Halaman', divider: true },
-  { id: 'elems', icon: Package, title: 'Elemen' },
-  { id: 'ratio', icon: Proportions, title: 'Rasio' },
-  { id: 'layers', icon: Layers, title: 'Layer', divider: true },
+  { id: 'rakit', icon: Wrench, title: 'Rakit' },
+  { id: 'halaman', icon: FileText, title: 'Halaman', divider: true },
+  { id: 'layer', icon: Layers, title: 'Layer', divider: true },
 ];
 
 export default function IconRail() {
