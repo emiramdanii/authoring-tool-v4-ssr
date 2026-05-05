@@ -1,14 +1,14 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import type { CanvaElement, ResizeDir } from './types';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import InlineEditToolbar from './InlineEditToolbar';
 
 export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
   const {
@@ -177,6 +177,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const scale = baseScale * zoom;
   const isTemplateMode = page && page.templateType && page.templateType !== 'custom';
 
+  // Find selected element (for inline edit toolbar)
+  const selectedEl = page?.elements.find(e => e.id === selectedElId)
+    || page?.overlayElements?.find(e => e.id === selectedElId);
+
   if (!page) return null;
 
   return (
@@ -331,6 +335,14 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
         </div>
+
+        {/* Phase 3: Inline Edit Toolbar — floating above selected element */}
+        {selectedEl && selectedElId && (
+          <InlineEditToolbar
+            element={selectedEl}
+            scale={scale}
+          />
+        )}
       </div>
     </div>
   );
@@ -393,16 +405,16 @@ function StageElement({
     }
   };
 
-  // 8-direction resize handles
+  // 8-direction resize handles — Phase 3: larger handles (16px) for better touch target
   const resizeHandles: { dir: ResizeDir; style: React.CSSProperties; cursor: string }[] = [
-    { dir: 'tl', style: { top: -5, left: -5 }, cursor: 'nwse-resize' },
-    { dir: 'tr', style: { top: -5, right: -5 }, cursor: 'nesw-resize' },
-    { dir: 'bl', style: { bottom: -5, left: -5 }, cursor: 'nesw-resize' },
-    { dir: 'br', style: { bottom: -5, right: -5 }, cursor: 'nwse-resize' },
-    { dir: 'tm', style: { top: -5, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
-    { dir: 'bm', style: { bottom: -5, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
-    { dir: 'l', style: { top: '50%', left: -5, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
-    { dir: 'r', style: { top: '50%', right: -5, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
+    { dir: 'tl', style: { top: -7, left: -7 }, cursor: 'nwse-resize' },
+    { dir: 'tr', style: { top: -7, right: -7 }, cursor: 'nesw-resize' },
+    { dir: 'bl', style: { bottom: -7, left: -7 }, cursor: 'nesw-resize' },
+    { dir: 'br', style: { bottom: -7, right: -7 }, cursor: 'nwse-resize' },
+    { dir: 'tm', style: { top: -7, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
+    { dir: 'bm', style: { bottom: -7, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
+    { dir: 'l', style: { top: '50%', left: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
+    { dir: 'r', style: { top: '50%', right: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
   ];
 
   return (
@@ -483,14 +495,14 @@ function StageElement({
         )}
       </div>
 
-      {/* Resize handles (8-direction) — hidden in interactive mode */}
+      {/* Resize handles (8-direction) — Phase 3: larger 4x4 (16px) touch targets */}
       {isSelected && !isInteractiveMode && (
         <>
           {resizeHandles.map(h => (
             <div
               key={h.dir}
               onMouseDown={e => handleResizeMouseDown(e, h.dir)}
-              className="absolute w-2.5 h-2.5 bg-amber-400 border border-amber-600 rounded-sm z-30"
+              className="absolute w-4 h-4 bg-amber-400 border border-amber-600 rounded-sm z-30 hover:bg-amber-300 transition-colors"
               style={{ ...h.style, cursor: h.cursor }}
             />
           ))}

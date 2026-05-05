@@ -10,12 +10,15 @@ import GameWidget from './GameWidget';
 import InteractiveNav from './InteractiveNav';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import type { CanvaElement } from './types';
-import { Gamepad2, Trophy, X } from 'lucide-react';
+import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
-// Renders pages from canva-store in interactive mode with
-// navigation, scoring, and close button.
+// Phase 3 improvements:
+// - Render overlay elements on template pages (bug fix)
+// - Overview mode (thumbnail grid navigation)
+// - Fullscreen toggle
+// - Auto-hide nav on idle
 // ═══════════════════════════════════════════════════════════════
 
 export default function PlayOverlay() {
@@ -64,7 +67,7 @@ function PlayOverlayHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Score badge in header */}
+        {/* Floating score badge in header */}
         {hasScore && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
             <Trophy size={12} className="text-emerald-300" />
@@ -74,6 +77,8 @@ function PlayOverlayHeader() {
 
         <div className="hidden sm:flex items-center gap-2 text-[10px] text-slate-500">
           <span>← → navigasi</span>
+          <span>F fullscreen</span>
+          <span>O overview</span>
           <span>Esc tutup</span>
         </div>
 
@@ -98,6 +103,8 @@ function PlayCanvas() {
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [overviewOpen, setOverviewOpen] = useState(false);
 
   const page = pages[interactivePageIdx];
 
@@ -130,6 +137,7 @@ function PlayCanvas() {
 
       if (e.key === 'Escape') {
         e.preventDefault();
+        if (overviewOpen) { setOverviewOpen(false); return; }
         iStore.closePlay();
         return;
       }
@@ -147,11 +155,29 @@ function PlayCanvas() {
         if (prev >= 0) cStore.goPage(prev);
         return;
       }
+      // F = fullscreen toggle
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen().catch(() => {});
+          setIsFullscreen(false);
+        }
+        return;
+      }
+      // O = overview toggle
+      if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        setOverviewOpen(prev => !prev);
+        return;
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [overviewOpen]);
 
   if (!page) {
     return (
@@ -163,8 +189,13 @@ function PlayCanvas() {
 
   const isTemplateMode = page.templateType && page.templateType !== 'custom';
 
+  // ── Overview Mode: thumbnail grid of all pages ──
+  if (overviewOpen) {
+    return <OverviewGrid onClose={() => setOverviewOpen(false)} />;
+  }
+
   return (
-    <div ref={canvasRef} className="w-full h-full flex items-center justify-center">
+    <div ref={canvasRef} className="w-full h-full flex items-center justify-center relative">
       <div
         className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-slate-700/30"
         style={{
@@ -205,6 +236,15 @@ function PlayCanvas() {
           />
         )}
 
+        {/* Phase 3 FIX: Render overlay elements on template pages in interactive mode */}
+        {isTemplateMode && (page.overlayElements || []).length > 0 && (
+          <div className="absolute inset-0" style={{ zIndex: 10 }}>
+            {(page.overlayElements || []).filter(el => !el.hidden).map(el => (
+              <PlayElement key={el.id} element={el} pageIndex={interactivePageIdx} />
+            ))}
+          </div>
+        )}
+
         {/* Custom Mode: Render individual elements */}
         {!isTemplateMode && (
           <div className="absolute inset-0">
@@ -223,6 +263,120 @@ function PlayCanvas() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Bottom-right action buttons */}
+      <div className="absolute bottom-4 right-4 flex items-center gap-2">
+        <button
+          onClick={() => setOverviewOpen(true)}
+          className="btn-ghost glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
+          title="Overview (O)"
+        >
+          <Grid3X3 size={12} />
+          <span className="hidden sm:inline">Overview</span>
+        </button>
+        <button
+          onClick={() => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(() => {});
+              setIsFullscreen(true);
+            } else {
+              document.exitFullscreen().catch(() => {});
+              setIsFullscreen(false);
+            }
+          }}
+          className="btn-ghost glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
+          title="Fullscreen (F)"
+        >
+          {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+          <span className="hidden sm:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Overview Grid: Thumbnail navigation ────────────────────────
+
+function OverviewGrid({ onClose }: { onClose: () => void }) {
+  const pages = useCanvaStore((s) => s.pages);
+  const goPage = useCanvaStore((s) => s.goPage);
+  const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
+  const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
+  const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
+  const totalScore = useInteractiveStore((s) => s.totalScore);
+  const totalMax = useInteractiveStore((s) => s.totalMax);
+  const ratio = useCanvaStore((s) => s.currentRatio());
+
+  const handleSelect = (idx: number) => {
+    goInteractivePage(idx);
+    goPage(idx);
+    onClose();
+  };
+
+  const templateIcon: Record<string, string> = {
+    cover: '🏠', dokumen: '📋', materi: '📝', kuis: '❓',
+    game: '🎮', hasil: '🏆', hero: '🚀', skenario: '🎭', custom: '⬜',
+  };
+
+  return (
+    <div className="w-full h-full overflow-auto p-6">
+      <div className="text-center mb-4">
+        <div className="text-sm font-bold text-slate-200">Overview — {pages.length} Halaman</div>
+        {totalMax() > 0 && (
+          <div className="text-[10px] text-emerald-400/60 mt-1">
+            Skor: {totalScore()}/{totalMax()} ({Math.round((totalScore() / totalMax()) * 100)}%)
+          </div>
+        )}
+        <div className="text-[9px] text-slate-500 mt-1">Klik halaman untuk navigasi • Tekan O atau Esc untuk tutup</div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+        {pages.map((p, i) => {
+          const isActive = i === interactivePageIdx;
+          const isComplete = isPageComplete(i);
+          const bgStyle = p.bgDataUrl
+            ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : p.bgColor?.includes('gradient')
+              ? { background: p.bgColor }
+              : { background: p.bgColor || '#1a1a2e' };
+          return (
+            <button
+              key={p.id}
+              onClick={() => handleSelect(i)}
+              className={`relative rounded-xl overflow-hidden transition-all hover:scale-105 ${
+                isActive
+                  ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
+                  : 'ring-1 ring-slate-700/40 hover:ring-slate-500/60'
+              }`}
+              style={{ aspectRatio: `${ratio.w}/${ratio.h}` }}
+            >
+              <div className="absolute inset-0" style={bgStyle}>
+                <div className="absolute inset-0 bg-black/30" />
+              </div>
+              {/* Page label */}
+              <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="text-[9px] font-bold text-white truncate">
+                  {templateIcon[p.templateType] || '📄'} {p.label}
+                </div>
+                <div className="text-[7px] text-white/50">
+                  Halaman {i + 1}/{pages.length}
+                </div>
+              </div>
+              {/* Completion badge */}
+              {isComplete && (
+                <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <span className="text-[8px] text-white font-bold">✓</span>
+                </div>
+              )}
+              {/* Active indicator */}
+              {isActive && (
+                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500/90 text-[7px] font-bold text-white">
+                  AKTIF
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
