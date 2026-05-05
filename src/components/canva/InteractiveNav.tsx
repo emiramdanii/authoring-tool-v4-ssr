@@ -46,7 +46,7 @@ export default function InteractiveNav() {
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-50">
+    <div className="flex-shrink-0 z-50">
       {/* Progress bar */}
       <div className="h-1 bg-slate-800/80">
         <div

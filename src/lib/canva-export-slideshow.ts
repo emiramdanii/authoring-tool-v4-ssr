@@ -40,7 +40,7 @@ export function exportSlideshowHTML(pages: CanvaPage[], ratioId: string): string
     const templateBody = renderTemplateExportHTML(p, i);
 
     // Element-based body for custom pages
-    const elementsHTML = templateBody || renderElementsHTML(p, i, allModules, allGameModules, 'quiz_', 'game_');
+    const elementsHTML = templateBody || renderElementsHTML(p, i, allModules, allGameModules);
 
     return `<div class="slide" data-slide="${i}" data-template="${p.templateType || 'custom'}" style="display:${i === 0 ? 'block' : 'none'};${pageBg};position:relative;overflow:hidden;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)">${pageOverlay}${paletteCSS ? `<style>:root{${paletteCSS}}</style>` : ''}${elementsHTML}</div>`;
   }).join('\n');
@@ -201,37 +201,7 @@ function buildDots(){
   }
 }
 
-function initScoreBridge(){
-  var observer=new MutationObserver(function(mutations){
-    mutations.forEach(function(m){
-      m.addedNodes.forEach(function(node){
-        if(node.nodeType!==1)return;
-        var results=node.classList&&node.classList.contains('qresult')?[node]:[];
-        if(!results.length&&node.querySelectorAll){
-          var found=node.querySelectorAll('.qresult');
-          if(found.length)results=Array.prototype.slice.call(found);
-        }
-        results.forEach(function(result){
-          var quizEl=result.parentElement;
-          if(!quizEl)return;
-          var slide=quizEl.closest?quizEl.closest('.slide'):null;
-          if(!slide)return;
-          var slideIdx=parseInt(slide.getAttribute('data-slide'));
-          if(isNaN(slideIdx))return;
-          var text=result.textContent||'';
-          var m1=text.match(/Skor:\\s*(\\d+)\\s*dari\\s*(\\d+)/);
-          var m2=text.match(/(\\d+)\\/(\\d+)\\s*benar/);
-          if(m1)reportScore(slideIdx,parseInt(m1[1]),parseInt(m1[2]));
-          else if(m2)reportScore(slideIdx,parseInt(m2[1]),parseInt(m2[2]));
-        });
-      });
-    });
-  });
-  observer.observe(document.body,{childList:true,subtree:true});
-}
-
 buildDots();
-initScoreBridge();
 showSlide(0);
 scaleSlide();
 

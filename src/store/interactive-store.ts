@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { create } from 'zustand';
+import { useCanvaStore } from '@/store/canva-store';
 
 // ── Score Entry ────────────────────────────────────────────────
 
@@ -68,6 +69,8 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
 
   openPlay: () => {
     set({ mode: 'interactive', interactivePageIdx: 0, scores: [] });
+    // Sync canva store to first page
+    try { useCanvaStore.getState().goPage(0); } catch { /* canva store may not be ready */ }
   },
 
   closePlay: () => {

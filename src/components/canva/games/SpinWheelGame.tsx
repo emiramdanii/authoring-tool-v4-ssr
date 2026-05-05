@@ -7,7 +7,7 @@ import type { GameComponentProps } from './shared';
 /* ═══════════════════════════════════════════════════════════════
    SPIN WHEEL (Roda Pertanyaan)
    ═══════════════════════════════════════════════════════════════ */
-export function SpinWheelGame({ data, compact }: GameComponentProps) {
+export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks);
   const [rotation, setRotation] = useState(0);
@@ -29,6 +29,7 @@ export function SpinWheelGame({ data, compact }: GameComponentProps) {
       const sliceAngle = 360 / validSoal.length;
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
       setResult(validSoal[Math.min(idx, validSoal.length - 1)]);
+      if (onComplete) onComplete(1, 1);
     }, 2500);
   };
 

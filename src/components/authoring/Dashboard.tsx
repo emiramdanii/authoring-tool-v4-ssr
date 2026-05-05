@@ -4,6 +4,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 
 export default function Dashboard() {
   const meta = useAuthoringStore((s) => s.meta);
+  const cp = useAuthoringStore((s) => s.cp);
   const tp = useAuthoringStore((s) => s.tp);
   const atp = useAuthoringStore((s) => s.atp);
   const alur = useAuthoringStore((s) => s.alur);
@@ -33,7 +34,7 @@ export default function Dashboard() {
 
   const checks = [
     { label: 'Identitas media diisi', done: !!(meta.judulPertemuan && meta.kelas) },
-    { label: 'Capaian Pembelajaran', done: !!useAuthoringStore.getState().cp.capaianFase },
+    { label: 'Capaian Pembelajaran', done: !!cp.capaianFase },
     { label: 'Tujuan Pembelajaran (min 1)', done: tp.length > 0 },
     { label: 'ATP / Pertemuan (min 1)', done: atp.pertemuan.length > 0 },
     { label: 'Alur Pembelajaran (min 3)', done: alur.length >= 3 },

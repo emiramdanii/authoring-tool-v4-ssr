@@ -53,9 +53,9 @@ export default function GameWidget({ dataIdx, compact = false, onComplete }: Gam
       {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'memory' && <MemoryGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'matching' && <MatchingGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'roda' && <RodaGame data={mod} compact={compact} />}
+      {gameType === 'roda' && <RodaGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'sorting' && <SortingGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} />}
+      {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} onComplete={onComplete} />}

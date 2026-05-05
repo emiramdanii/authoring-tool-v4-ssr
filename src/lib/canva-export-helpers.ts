@@ -104,6 +104,39 @@ export function buildGameData(
         (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
       });
     }
+    // Custom pages: scan elements for quiz/game
+    if (!p.templateType || p.templateType === 'custom') {
+      let gameIdx = 0;
+      p.elements.forEach(el => {
+        if (el.type === 'kuis') {
+          const dataIdx = el.dataIdx ?? -1;
+          const kuisSource = dataIdx >= 0 && dataIdx < allKuis.length
+            ? [allKuis[dataIdx]]
+            : allKuis;
+          if (kuisSource.length > 0) {
+            (gameData.quizzes as Record<string, unknown>)[String(i)] = kuisSource.map(k => ({
+              q: (k as Record<string, unknown>).q || '',
+              opts: (k as Record<string, unknown>).opts || [],
+              ans: (k as Record<string, unknown>).ans ?? 0,
+              ex: (k as Record<string, unknown>).ex || '',
+            }));
+          }
+        }
+        if (el.type === 'game') {
+          const dataIdx = el.dataIdx ?? -1;
+          const gameSource = dataIdx >= 0 && dataIdx < allGameModules.length
+            ? [allGameModules[dataIdx]]
+            : allGameModules;
+          gameSource.forEach(g => {
+            const gType = g.type as string;
+            const dataKey = gType === 'roda' ? 'roda' : gType === 'spinwheel' ? 'spinwheel' : gType;
+            const compositeKey = i + '-' + gameIdx;
+            (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
+            gameIdx++;
+          });
+        }
+      });
+    }
   });
 
   // Remove empty categories
@@ -275,7 +308,6 @@ export function renderElementsHTML(
   allModules: Array<Record<string, unknown>>,
   allGameModules: Array<Record<string, unknown>>,
   quizPrefix: string = 'quiz-engine-',
-  gamePrefix: string = 'game_',
 ): string {
   return (page.elements || [])
     .filter(el => !el.hidden)
@@ -359,8 +391,12 @@ export function buildPageGameData(
         }
       }
       if (el.type === 'kuis') {
-        if (allKuis.length > 0) {
-          (gameData.quizzes as Record<string, unknown>)[String(pageIdx)] = allKuis.map(k => ({
+        const dataIdx = el.dataIdx ?? -1;
+        const kuisSource = dataIdx >= 0 && dataIdx < allKuis.length
+          ? [allKuis[dataIdx]]
+          : allKuis;
+        if (kuisSource.length > 0) {
+          (gameData.quizzes as Record<string, unknown>)[String(pageIdx)] = kuisSource.map(k => ({
             q: k.q || '', opts: k.opts || [], ans: k.ans ?? 0, ex: k.ex || '',
           }));
         }

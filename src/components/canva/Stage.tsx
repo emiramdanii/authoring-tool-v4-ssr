@@ -453,8 +453,8 @@ function StageElement({
             <div
               key={h.dir}
               onMouseDown={e => handleResizeMouseDown(e, h.dir)}
-              className={`absolute w-2.5 h-2.5 bg-amber-400 border border-amber-600 rounded-sm z-30 cursor-${h.cursor}`}
-              style={h.style}
+              className="absolute w-2.5 h-2.5 bg-amber-400 border border-amber-600 rounded-sm z-30"
+              style={{ ...h.style, cursor: h.cursor }}
             />
           ))}
         </>

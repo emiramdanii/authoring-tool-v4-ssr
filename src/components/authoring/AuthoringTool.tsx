@@ -91,7 +91,10 @@ const TOUR_STEPS = [
 // ── Main Component ──────────────────────────────────────────────
 export default function AuthoringTool() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showTour, setShowTour] = useState(() => localStorage.getItem('at_tour_done') === null);
+  const [showTour, setShowTour] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('at_tour_done') === null;
+  });
   const [tourStep, setTourStep] = useState(0);
   const activePanel = useAuthoringStore((s) => s.activePanel);
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);

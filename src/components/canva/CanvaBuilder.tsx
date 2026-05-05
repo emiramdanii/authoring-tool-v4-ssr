@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
 import IconRail from './IconRail';
@@ -43,6 +44,10 @@ export default function CanvaBuilder() {
   // ── Keyboard shortcuts (design mode only) ──────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle shortcuts when Canva panel is active
+      const activePanel = useAuthoringStore.getState().activePanel;
+      if (activePanel !== 'canva') return;
+
       const store = useCanvaStore.getState();
       const target = e.target as HTMLElement;
 

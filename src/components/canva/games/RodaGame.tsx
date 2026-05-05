@@ -7,11 +7,12 @@ import type { GameComponentProps } from './shared';
 /* ═══════════════════════════════════════════════════════════════
    RODA PUTAR (Spinning Wheel)
    ═══════════════════════════════════════════════════════════════ */
-export function RodaGame({ data, compact }: GameComponentProps) {
+export function RodaGame({ data, compact, onComplete }: GameComponentProps) {
   const opsi = (data.opsi as string[]) || [];
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const reported = useState(false)[1]; // track if score reported
 
   const colors = ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c', '#60a5fa', '#f472b6'];
 
@@ -28,6 +29,7 @@ export function RodaGame({ data, compact }: GameComponentProps) {
       const sliceAngle = 360 / opsi.length;
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
       setResult(opsi[Math.min(idx, opsi.length - 1)]);
+      if (onComplete) onComplete(1, 1);
     }, 2500);
   };
 
