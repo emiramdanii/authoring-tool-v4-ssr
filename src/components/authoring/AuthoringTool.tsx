@@ -10,7 +10,6 @@ import {
   Sparkles,
   FolderOpen,
   ArrowLeftRight,
-  Smartphone,
   Clock,
   Save,
   Download,
@@ -62,7 +61,7 @@ const NAV_ITEMS: NavItem[] = [
 const NAV_ITEMS_2: NavItem[] = [
   { id: 'projects', icon: FolderOpen, label: 'Proyek' },
   { id: 'import', icon: ArrowLeftRight, label: 'Import/Export' },
-  { id: 'preview', icon: Smartphone, label: 'Preview Aplikasi' },
+  { id: 'preview', icon: Eye, label: 'Live Preview' },
   { id: 'versions', icon: Clock, label: 'Riwayat' },
 ];
 
@@ -74,7 +73,7 @@ const PANEL_TITLES: Record<PanelId, string> = {
   autogen: 'Auto-Generate',
   projects: 'Kelola Proyek',
   import: 'Import / Export',
-  preview: 'Preview Aplikasi Siswa',
+  preview: 'Live Preview',
   versions: 'Riwayat Versi',
 };
 
@@ -206,7 +205,7 @@ export default function AuthoringTool() {
               <div className="text-sm font-bold text-amber-400">Authoring Tool</div>
               <div className="text-[0.65rem] text-slate-500 mt-0.5">Media Pembelajaran Interaktif</div>
               <span className="inline-block mt-1.5 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-amber-500/20">
-                v5.Z
+                v6
               </span>
             </div>
           ) : (
@@ -333,7 +332,7 @@ export default function AuthoringTool() {
                 className="btn-success"
               >
                 <Eye size={14} />
-                Preview Aplikasi
+                Preview
               </button>
               <button
                 onClick={() => setActivePanel('canva')}
