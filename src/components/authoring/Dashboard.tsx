@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 
 export default function Dashboard() {
   const meta = useAuthoringStore((s) => s.meta);
@@ -212,6 +213,11 @@ export default function Dashboard() {
                 if (isPresetMode && !confirm('Preset akan menimpa data saat ini. Lanjutkan?')) return;
                 if (!isPresetMode && (meta.judulPertemuan || tp.length > 0 || kuis.length > 0) && !confirm('Preset akan menimpa data proyek saat ini. Lanjutkan?')) return;
                 applyFullPreset(p.key);
+                // Auto-rakit after preset then navigate to canva
+                setTimeout(() => {
+                  useCanvaStore.getState().autoRakit();
+                  useAuthoringStore.getState().setActivePanel('canva');
+                }, 100);
               }}
               className={`rounded-lg p-3 text-center transition-colors cursor-pointer ${
                 isPresetMode && activePreset === p.key

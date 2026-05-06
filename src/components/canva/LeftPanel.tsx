@@ -101,7 +101,7 @@ export default function LeftPanel() {
    ══════════════════════════════════════════════════════════════════ */
 
 function RakitContent() {
-  const { addTemplatePage, pages, currentPageIndex, addElement, addKuisElement, addGameElement } = useCanvaStore();
+  const { addTemplatePage, pages, currentPageIndex, addElement, addKuisElement, addGameElement, autoRakit } = useCanvaStore();
   const authStore = useAuthoringStore();
   const page = pages[currentPageIndex];
   const meta = authStore.meta;
@@ -159,6 +159,16 @@ function RakitContent() {
 
   return (
     <div className="space-y-3">
+      {/* ⚡ Auto Rakit — prominent button at top */}
+      <button
+        onClick={() => autoRakit()}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/10 border border-amber-500/30 hover:border-amber-400/50 hover:from-amber-500/30 hover:to-amber-600/20 text-amber-300 font-bold text-sm transition-all active:scale-95"
+      >
+        <span className="text-lg">⚡</span>
+        <span>Auto Rakit</span>
+        <span className="text-[8px] text-amber-400/60 font-semibold ml-1">dari data authoring</span>
+      </button>
+
       {/* Auto-Generate via Page Type Creator */}
       <PageTypeCreator />
 
