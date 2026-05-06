@@ -1108,7 +1108,7 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       alur: alur ? deepClone(alur.steps) : [],
       kuis: kuis ? deepClone(kuis.soal) : [],
       skenario: skenario ? deepClone(skenario) : [],
-      materi: materi ? { blok: deepClone(materi) } : { blok: [] },
+      materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
       modules: modules ? deepClone(modules) : [],
       games: [],
       dirty: false,
