@@ -79,6 +79,7 @@ export function buildGameData(
     quizzes: {}, truefalse: {}, memory: {}, matching: {},
     sorting: {}, roda: {}, spinwheel: {}, teambuzzer: {},
     wordsearch: {}, flashcard: {}, crossword: {}, fillblank: {}, dragdrop: {},
+    skenario: {},
   };
 
   pages.forEach((p, i) => {
@@ -103,6 +104,13 @@ export function buildGameData(
         const compositeKey = i + '-' + gi; // pageIdx-gameIdx
         (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
       });
+    }
+    // Skenario data for skenario pages
+    if (p.templateType === 'skenario') {
+      const skenarioData = (p.templateData.skenario as Array<Record<string, unknown>>) || [];
+      if (skenarioData.length > 0) {
+        (gameData.skenario as Record<string, unknown>)[String(i)] = skenarioData;
+      }
     }
     // Custom pages: scan elements for quiz/game
     if (!p.templateType || p.templateType === 'custom') {
@@ -271,27 +279,13 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
 
     case 'skenario': {
       const skenario = (td.skenario as Array<Record<string, unknown>>) || [];
-      const chaptersHTML = skenario.map((ch, i) => {
-        const choices = (ch.choices as Array<Record<string, unknown>>) || [];
-        const choicesHTML = choices.map((c, j) =>
-          `<div style="display:inline-block;padding:2px 6px;border-radius:4px;font-size:8px;background:${c.good ? 'rgba(52,211,153,.1)' : 'rgba(248,113,113,.1)'};color:${c.good ? '#34d399' : '#f87171'}">${String(c.icon || '🤔')} ${esc(c.label || 'Pilihan ' + (j + 1))}</div>`
-        ).join(' ');
-        return `<div style="padding:8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:8px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-            <span style="font-size:14px">${String(ch.charEmoji || '🧑')}</span>
-            <span style="font-size:10px;font-weight:700;color:#fff">Babak ${i + 1}</span>
-            ${ch.title ? `<span style="font-size:8px;color:rgba(255,255,255,.4)">${esc(ch.title)}</span>` : ''}
-          </div>
-          ${ch.choicePrompt ? `<div style="font-size:8px;color:rgba(255,255,255,.5);font-style:italic;margin-bottom:4px">${esc(ch.choicePrompt)}</div>` : ''}
-          ${choicesHTML ? `<div style="display:flex;gap:4px;flex-wrap:wrap">${choicesHTML}</div>` : ''}
-        </div>`;
-      }).join('');
+      // Interactive skenario engine — container will be populated by JS
       return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
           <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(244,114,182,.12)">🎭</div>
           <div><div style="font-size:14px;font-weight:900;color:#f472b6">Skenario Interaktif</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${skenario.length} babak</div></div>
         </div>
-        ${chaptersHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah skenario di panel Konten</div>'}
+        <div id="sk-engine-${pageIdx}" style="min-height:200px"></div>
       </div>`;
     }
 
@@ -353,6 +347,7 @@ export function buildPageGameData(
     quizzes: {}, truefalse: {}, memory: {}, matching: {},
     sorting: {}, roda: {}, spinwheel: {}, teambuzzer: {},
     wordsearch: {}, flashcard: {}, crossword: {}, fillblank: {}, dragdrop: {},
+    skenario: {},
   };
 
   // Quiz data for kuis pages
