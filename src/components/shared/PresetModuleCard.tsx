@@ -487,29 +487,42 @@ function PreviewPetunjuk({ mod, variant, compact }: { mod: M; variant: LayoutVar
   const langkah = arr<Record<string, unknown>>(mod.langkah);
   if (!langkah.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada langkah petunjuk.</div>;
   const max = compact ? 3 : variant === 'C' ? 6 : 4;
+  const accent = T.c;
 
   if (variant === 'D') {
     return (
       <div className="space-y-1">
         {langkah.slice(0, max).map((l, i) => (
-          <div key={i} className="flex items-start gap-1.5" style={{ borderLeft: `3px solid ${T.c}`, paddingLeft: 8 }}>
-            <span className="text-[10px]">{str(l.icon, '📌')}</span>
-            <span className="text-[11px] font-semibold" style={{ color: T.text }}>{str(l.judul)}</span>
+          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
+            <div className="flex-shrink-0 min-w-[20px] h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: accent + '25', color: accent }}>{i + 1}</div>
+            <div>
+              <span className="text-[11px] font-semibold" style={{ color: T.text }}>{str(l.icon, '📌')} {str(l.judul)}</span>
+              {!compact && str(l.isi) && <div className="text-[10px]" style={{ color: T.muted }}>{str(l.isi).slice(0, 60)}</div>}
+            </div>
           </div>
         ))}
       </div>
     );
   }
 
+  const intro = str(mod.intro);
+
   return (
-    <div className="grid grid-cols-2 gap-2">
-      {langkah.slice(0, max).map((l, i) => (
-        <div key={i} className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className={`${compact ? 'text-base' : 'text-2xl'} mb-1`}>{str(l.icon, '📌')}</div>
-          <div className="font-extrabold text-xs mb-0.5" style={{ color: T.text }}>{str(l.judul)}</div>
-          {!compact && str(l.isi) && <div className="text-[10px] leading-relaxed" style={{ color: T.muted }}>{str(l.isi)}</div>}
-        </div>
-      ))}
+    <div>
+      {intro && <div className="text-[13px] mb-3 px-0.5 leading-relaxed" style={{ color: T.muted }}>{intro}</div>}
+      <div className="grid grid-cols-2 gap-2.5">
+        {langkah.slice(0, max).map((l, i) => {
+          const stepColor = str(l.color, accent);
+          return (
+            <div key={i} className="relative rounded-xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${stepColor}0a, ${stepColor}04)`, border: `1px solid ${stepColor}22`, borderLeft: `3px solid ${stepColor}`, padding: '14px 12px 12px' }}>
+              <div className="absolute top-2 right-2 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-extrabold text-white shadow-sm" style={{ background: stepColor, boxShadow: `0 2px 6px ${stepColor}40` }}>{i + 1}</div>
+              <div className={`${compact ? 'text-base' : 'text-2xl'} mb-1.5`}>{str(l.icon, '📌')}</div>
+              <div className="font-extrabold text-xs mb-0.5 pr-6" style={{ color: T.text }}>{str(l.judul)}</div>
+              {!compact && str(l.isi) && <div className="text-[10px] leading-relaxed" style={{ color: T.muted }}>{str(l.isi)}</div>}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -521,13 +534,15 @@ function PreviewDiskusi({ mod, variant, compact }: { mod: M; variant: LayoutVari
   const pertanyaan = arr<Record<string, unknown>>(mod.pertanyaan);
   if (!pertanyaan.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada pertanyaan diskusi.</div>;
   const max = compact ? 2 : 3;
+  const accent = T.g;
 
   if (variant === 'D') {
     return (
       <div className="space-y-1">
         {pertanyaan.slice(0, max).map((p, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.g}`, paddingLeft: 8 }}>
-            <span className="text-[11px]" style={{ color: T.text }}>💬 {str(p.teks).slice(0, 80)}</span>
+          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
+            <div className="flex-shrink-0 min-w-[20px] h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: accent + '25', color: accent }}>{i + 1}</div>
+            <span className="text-[11px]" style={{ color: T.text }}>{str(p.teks).slice(0, 80)}</span>
           </div>
         ))}
       </div>
@@ -535,13 +550,27 @@ function PreviewDiskusi({ mod, variant, compact }: { mod: M; variant: LayoutVari
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {pertanyaan.slice(0, max).map((p, i) => (
-        <div key={i} className="rounded-xl p-3" style={{ background: 'rgba(62,207,207,0.07)', border: '1px solid rgba(62,207,207,0.25)' }}>
-          {str(p.label) && <div className="font-extrabold text-xs mb-1" style={{ color: T.c }}>{str(p.icon || '💬')} {str(p.label)}</div>}
+        <div key={i} className="relative rounded-xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${accent}08, ${accent}03)`, border: `1px solid ${accent}22`, borderLeft: `4px solid ${accent}`, padding: 14 }}>
+          {/* Top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: `linear-gradient(90deg, ${accent}, ${accent}50, transparent)` }} />
+          {/* Header with number badge */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="min-w-[26px] h-[26px] rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: accent + '20', color: accent, border: `1px solid ${accent}30` }}>{i + 1}</div>
+            {str(p.label) ? (
+              <div className="text-[11px] font-extrabold tracking-wide" style={{ color: accent }}>{str(p.icon || '💬')} {str(p.label)}</div>
+            ) : (
+              <div className="text-[11px] font-extrabold tracking-wide" style={{ color: accent }}>{str(p.icon || '💬')} Pertanyaan {i + 1}</div>
+            )}
+          </div>
           <p className="text-xs font-bold leading-relaxed" style={{ color: T.text }}>{str(p.teks)}</p>
           {str(p.petunjuk) && <div className="text-[10px] italic mt-1" style={{ color: T.muted }}>{str(p.petunjuk)}</div>}
-          {!compact && <div className="mt-2 rounded-lg p-2 text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: T.muted }}>Tuliskan jawabanmu di sini…</div>}
+          {!compact && (
+            <div className="mt-2.5 rounded-lg p-2.5 text-[10px]" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.09)', color: T.muted }}>
+              Tuliskan jawabanmu di sini…
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -555,13 +584,18 @@ function PreviewReview({ mod, variant, compact }: { mod: M; variant: LayoutVaria
   const kartu = arr<Record<string, unknown>>(mod.kartu);
   if (!kartu.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada konten review.</div>;
   const max = compact ? 2 : 4;
+  const accent = T.y;
 
   if (variant === 'D') {
     return (
       <div className="space-y-1">
         {kartu.slice(0, max).map((k, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.y}`, paddingLeft: 8 }}>
-            <span className="text-[11px]" style={{ color: T.text }}>{str(k.icon, '🔄')} {str(k.judul)}</span>
+          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
+            <span className="text-xs">{str(k.icon, '🔄')}</span>
+            <div>
+              <span className="text-[11px] font-semibold" style={{ color: T.text }}>{str(k.judul)}</span>
+              {!compact && str(k.isi) && <div className="text-[10px]" style={{ color: T.muted }}>{str(k.isi).slice(0, 60)}</div>}
+            </div>
           </div>
         ))}
       </div>
@@ -569,12 +603,17 @@ function PreviewReview({ mod, variant, compact }: { mod: M; variant: LayoutVaria
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2.5">
       {kartu.slice(0, max).map((k, i) => {
-        const color = str(k.warna, T.y);
+        const color = str(k.warna, accent);
         return (
-          <div key={i} className="rounded-xl p-3" style={{ background: color + '07', border: `1px solid ${color}25` }}>
-            <div className={`${compact ? 'text-sm' : 'text-xl'} mb-1`}>{str(k.icon, '✅')}</div>
+          <div key={i} className="relative rounded-xl overflow-hidden" style={{ background: `linear-gradient(160deg, ${color}10, ${color}05)`, border: `1px solid ${color}22`, padding: 14 }}>
+            {/* Decorative circle */}
+            <div className="absolute -top-2.5 -right-2.5 w-12 h-12 rounded-full" style={{ background: color + '0a' }} />
+            {/* Icon area */}
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-2.5" style={{ background: color + '18', border: `1px solid ${color}20` }}>
+              {str(k.icon, '✅')}
+            </div>
             <div className="font-extrabold text-xs mb-0.5" style={{ color: T.text }}>{str(k.judul)}</div>
             {!compact && str(k.isi) && <div className="text-[10px] leading-relaxed" style={{ color: T.muted }}>{str(k.isi)}</div>}
           </div>
@@ -591,13 +630,15 @@ function PreviewRefleksi({ mod, variant, compact }: { mod: M; variant: LayoutVar
   const pertanyaan = arr<Record<string, unknown>>(mod.pertanyaan);
   if (!pertanyaan.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada pertanyaan refleksi.</div>;
   const max = compact ? 2 : 3;
+  const accent = T.p;
 
   if (variant === 'D') {
     return (
       <div className="space-y-1">
         {pertanyaan.slice(0, max).map((p, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.p}`, paddingLeft: 8 }}>
-            <span className="text-[11px]" style={{ color: T.text }}>💭 {str(p.teks).slice(0, 80)}</span>
+          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
+            <div className="flex-shrink-0 min-w-[20px] h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: accent + '25', color: accent }}>{i + 1}</div>
+            <span className="text-[11px]" style={{ color: T.text }}>{str(p.teks).slice(0, 80)}</span>
           </div>
         ))}
       </div>
@@ -605,12 +646,22 @@ function PreviewRefleksi({ mod, variant, compact }: { mod: M; variant: LayoutVar
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {pertanyaan.slice(0, max).map((p, i) => (
-        <div key={i} className="rounded-xl p-3" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-          <label className="text-[11px] font-extrabold block mb-1" style={{ color: T.text }}>{str(p.icon || '💭')} {str(p.teks)}</label>
-          {str(p.petunjuk) && <div className="text-[10px] mb-1" style={{ color: T.muted }}>{str(p.petunjuk)}</div>}
-          {!compact && <div className="rounded-lg p-2 text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: T.muted }}>Tuliskan refleksimu…</div>}
+        <div key={i} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${accent}20`, background: `linear-gradient(160deg, ${accent}08, transparent)` }}>
+          {/* Gradient accent header */}
+          <div className="flex items-center gap-2 px-3.5 py-2.5" style={{ background: `linear-gradient(135deg, ${accent}20, ${accent}08)`, borderBottom: `1px solid ${accent}15` }}>
+            <div className="min-w-[24px] h-[24px] rounded-md flex items-center justify-center text-[10px] font-black" style={{ background: accent + '30', color: accent, border: `1px solid ${accent}35` }}>{i + 1}</div>
+            <label className="text-[12px] font-extrabold block" style={{ color: T.text }}>{str(p.icon || '💭')} {str(p.teks)}</label>
+          </div>
+          <div className="px-3.5 py-3">
+            {str(p.petunjuk) && <div className="text-[10px] italic mb-2" style={{ color: T.muted }}>{str(p.petunjuk)}</div>}
+            {!compact && (
+              <div className="rounded-lg p-2.5 text-[10px]" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.09)', color: T.muted }}>
+                Tuliskan refleksimu…
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
