@@ -12,7 +12,7 @@ export const GAME_TYPE_ICON_MAP: Record<string, string> = {
   matching: '🔀',
   roda: '🎡',
   sorting: '🔢',
-  spinwheel: '🎡',
+  spinwheel: '🎰',
   teambuzzer: '🏆',
   wordsearch: '🔍',
   flashcard: '🃏',

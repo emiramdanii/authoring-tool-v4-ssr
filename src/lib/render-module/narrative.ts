@@ -151,7 +151,7 @@ export function bodyPetunjuk(mod: M, v: LayoutVariant): string {
   }
   const intro = str(mod.intro);
   const introHtml = intro ? `<div style="font-size:.82rem;color:${T.muted};margin-bottom:12px;line-height:1.6;font-family:'Nunito',sans-serif;padding:0 2px">${esc(intro)}</div>` : '';
-  const cols = v === 'C' ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+  const cols = v === 'C' ? 'repeat(3,1fr)' : v === 'B' ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
   return introHtml + `<div style="display:grid;grid-template-columns:${cols};gap:10px">` +
     langkah.map((l, i) => {
       const stepColor = str(l.color, accent);
@@ -178,7 +178,6 @@ export function bodyDiskusi(mod: M, v: LayoutVariant): string {
     ).join('');
   }
   return pertanyaan.map((p, i) => {
-    const did = 'dk_' + Math.random().toString(36).slice(2, 8);
     return `<div style="background:linear-gradient(135deg,${accent}08,${accent}03);border:1px solid ${accent}22;border-left:4px solid ${accent};border-radius:13px;padding:16px;margin-bottom:10px;overflow:hidden;position:relative">` +
       `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,${accent},${accent}50,transparent)"></div>` +
       `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
@@ -206,7 +205,7 @@ export function bodyReview(mod: M, v: LayoutVariant): string {
         `</div></div>`
     ).join('');
   }
-  const cols = v === 'C' ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+  const cols = v === 'C' ? 'repeat(3,1fr)' : v === 'B' ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
   return `<div style="display:grid;grid-template-columns:${cols};gap:10px">` +
     kartu.map(k => {
       const color = str(k.warna, accent);

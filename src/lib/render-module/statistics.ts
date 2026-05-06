@@ -20,6 +20,7 @@ export function bodyStatistik(mod: M, v: LayoutVariant): string {
     ).join('');
   }
   const cols = v === 'B' ? 'repeat(4,1fr)' : v === 'C' ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+  // A & C share 2-col but differ in icon/number size (C is bigger)
   return `<div style="display:grid;grid-template-columns:${cols};gap:8px">` +
     items.slice(0, max).map(it =>
       `<div style="border-radius:10px;padding:10px;text-align:center;background:${str(it.color, T.o)}12;border:1px solid ${str(it.color, T.o)}25">` +

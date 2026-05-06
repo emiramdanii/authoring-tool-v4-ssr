@@ -9,9 +9,9 @@ import type { CanvaPage, PageTemplateType } from '@/components/canva/types';
 import type { MateriBlok } from '@/store/authoring-store';
 
 // ── Shared constants (used by canva-store + export modules) ────
-export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
+export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','crossword','fillblank','dragdrop'] as const;
 export const MATERI_MODULE_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline'] as const;
-export const MATERI_RAKIT_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline','hero','kutipan','langkah','statistik','petunjuk','diskusi','review','refleksi','skenario','debat','studi-kasus','comparison','card-showcase','hotspot-image','polling','embed','flashcard'] as const;
+export const MATERI_RAKIT_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline','hero','kutipan','langkah','statistik','petunjuk','diskusi','review','refleksi','skenario','debat','studi-kasus','comparison','card-showcase','hotspot-image','polling','embed','video','flashcard'] as const;
 
 // ── Helper: Get hero data from authoring store ─────────────────
 
@@ -250,7 +250,7 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       }
       // Build tab bar + game panels for each game
       const tabBtns = games.map((g, i) => {
-        const icon = g.type === 'truefalse' ? '✅' : g.type === 'memory' ? '🧠' : g.type === 'matching' ? '🔀' : g.type === 'roda' ? '🎡' : g.type === 'sorting' ? '🔢' : g.type === 'spinwheel' ? '🎡' : g.type === 'teambuzzer' ? '🏆' : g.type === 'wordsearch' ? '🔍' : g.type === 'flashcard' ? '🃏' : g.type === 'crossword' ? '🔤' : g.type === 'fillblank' ? '✏️' : g.type === 'dragdrop' ? '🖐️' : '🎮';
+        const icon = g.type === 'truefalse' ? '✅' : g.type === 'memory' ? '🧠' : g.type === 'matching' ? '🔀' : g.type === 'roda' ? '🎡' : g.type === 'sorting' ? '🔢' : g.type === 'spinwheel' ? '🎰' : g.type === 'teambuzzer' ? '🏆' : g.type === 'wordsearch' ? '🔍' : g.type === 'flashcard' ? '🃏' : g.type === 'crossword' ? '🔤' : g.type === 'fillblank' ? '✏️' : g.type === 'dragdrop' ? '🖐️' : '🎮';
         const name = (g.title as string) || (g.type as string);
         return `<button class="game-tab-btn${i === 0 ? ' active' : ''}" data-tab="g${i}" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(62,207,207,.2);background:${i === 0 ? 'rgba(62,207,207,.2)' : 'rgba(255,255,255,.04)'};color:${i === 0 ? '#3ecfcf' : 'rgba(255,255,255,.5)'};font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s">${icon} ${esc(name)}</button>`;
       }).join('');

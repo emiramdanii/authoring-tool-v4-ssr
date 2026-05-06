@@ -17,10 +17,8 @@ export function bodyMatching(mod: M, v: LayoutVariant): string {
   }
   return `<div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:8px;align-items:start">` +
     pasangan.map(p =>
-      `<div style="background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(p.kiri))}</div>`
-    ).join('') +
-    `<div></div>` +
-    pasangan.map(p =>
+      `<div style="background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(p.kiri))}</div>` +
+      `<div style="display:flex;align-items:center;justify-content:center;color:${T.muted};font-size:14px">\u2194</div>` +
       `<div style="background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(p.kanan))}</div>`
     ).join('') +
     `</div>`;
