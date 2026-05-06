@@ -234,3 +234,31 @@ Stage Summary:
 - All 28 module/game types have HTML renderers for student export
 - Guided Tour, CP Suggest, Form Validation all migrated
 - Build: ✅ Passed | Push: ✅ Success
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Pull git repo and continue preset render fixes + feature enhancements
+
+Work Log:
+- Pulled latest repo from GitHub (commit 30d6b97)
+- Installed npm dependencies and verified build passes
+- Audited all render-module files (narrative.ts, content.ts, interactive.ts, games.ts, statistics.ts)
+- Audited PresetModuleCard.tsx (1547 lines, 35 module types, 15+ Preview components)
+- Identified mismatches between canva (PresetModuleCard) and export (render-module) rendering
+- Fixed Petunjuk render: aligned grid cols (2-col default, 3-col variant C) between canva & export
+- Fixed Review render: aligned 2-col grid + max 4 items between canva and export
+- Fixed Diskusi render: added variant C max items (5), ensured export matches canva
+- Fixed Refleksi render: added variant C max items (5), ensured export matches canva
+- Fixed Infografis render: variant B now uses compact row layout in export matching canva
+- Added Slideshow preview button (Film icon, teal-400) directly in Toolbar main area
+- Verified postMessage 2-way navigation in LivePreview (already implemented)
+- Fixed duplicate closing brace in PreviewReview component
+- Build: ✅ Compiled successfully
+- Push: ✅ commit e1ec705 pushed to origin/main
+
+Stage Summary:
+- All preset renders now aligned between canva (PresetModuleCard) and export (render-module)
+- Grid cols, max items, variant handling consistent across both rendering paths
+- Toolbar now has 3 preview buttons: Play (interactive), Slideshow (new tab), Live (panel)
+- 4 files modified, 29 insertions, 12 deletions
