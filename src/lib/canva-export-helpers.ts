@@ -6,6 +6,7 @@
 import { renderModuleToStyledHTML } from '@/lib/render-module-html';
 import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
 import type { CanvaPage, PageTemplateType } from '@/components/canva/types';
+import type { MateriBlok } from '@/store/authoring-store';
 
 // ── Shared constants (used by canva-store + export modules) ────
 export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
@@ -24,6 +25,50 @@ export function getHeroData(authStore: { modules: Array<Record<string, unknown>>
     gradient: (heroData?.gradient as string) || 'sunset',
     cta: (heroData?.cta as string) || '',
   };
+}
+
+// ── Helper: Render materi blok as inline-styled HTML for slideshow export ──
+
+export function renderMateriBlokInline(blok: MateriBlok[]): string {
+  const esc = (s: string | undefined) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const cardStyle = 'padding:12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:10px';
+  const h2Style = 'font-size:12px;font-weight:800;color:#e8f2ff;margin-bottom:6px';
+
+  return blok.map((b) => {
+    switch (b.tipe) {
+      case 'teks':
+        return `<div style="${cardStyle}"><div style="${h2Style}">${esc(b.judul)}</div><p style="font-size:10px;color:rgba(255,255,255,.65);line-height:1.6">${esc(b.isi)}</p></div>`;
+      case 'definisi':
+        return `<div style="${cardStyle};border-left:3px solid #3ecfcf"><div style="${h2Style}">📖 ${esc(b.judul)}</div><div style="padding:8px;border-radius:6px;background:rgba(62,207,207,.08);border:1px solid rgba(62,207,207,.15);font-size:10px;color:rgba(255,255,255,.7);line-height:1.6">${esc(b.isi)}</div></div>`;
+      case 'poin':
+        return `<div style="${cardStyle}"><div style="${h2Style}">📌 ${esc(b.judul)}</div><ul style="list-style:none;padding:0;margin:0">${(b.butir || []).map(i => `<li style="padding:4px 0;font-size:10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:6px"><span style="color:#f9c82e;font-weight:900">→</span> ${esc(i)}</li>`).join('')}</ul></div>`;
+      case 'highlight':
+        return `<div style="${cardStyle};border-left:3px solid ${esc(b.warna || '#f9c82e')};background:${esc(b.warna || '#f9c82e')}0a"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:1.5rem">${esc(b.icon || '⚡')}</span><div style="${h2Style};font-size:11px">${esc(b.judul)}</div></div><p style="font-size:10px;color:rgba(255,255,255,.65);line-height:1.6">${esc(b.isi)}</p></div>`;
+      case 'compare':
+        return `<div style="${cardStyle}"><div style="${h2Style}">⚖️ ${esc(b.judul)}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px"><div style="font-weight:800;font-size:10px;margin-bottom:4px">${esc(b.kiri?.icon || '')} ${esc(b.kiri?.judul || '')}</div><p style="font-size:9px;color:rgba(255,255,255,.55);line-height:1.5">${esc(b.kiri?.isi || '')}</p></div><div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px"><div style="font-weight:800;font-size:10px;margin-bottom:4px">${esc(b.kanan?.icon || '')} ${esc(b.kanan?.judul || '')}</div><p style="font-size:9px;color:rgba(255,255,255,.55);line-height:1.5">${esc(b.kanan?.isi || '')}</p></div></div></div>`;
+      case 'kutipan':
+        return `<div style="${cardStyle};border-left:3px solid #3ecfcf;background:rgba(62,207,207,.04)"><div style="font-size:1.2rem;margin-bottom:4px">💬</div><p style="font-size:10px;font-style:italic;color:rgba(255,255,255,.7);line-height:1.6">"${esc(b.isi)}"</p>${b.judul ? `<div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:4px">— ${esc(b.judul)}</div>` : ''}</div>`;
+      case 'tabel':
+        return `<div style="${cardStyle}"><div style="${h2Style}">📊 ${esc(b.judul)}</div><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:9px"><thead>${(b.baris?.[0] || []).map((h) => `<th style="padding:6px 8px;background:rgba(249,193,46,.1);border:1px solid rgba(255,255,255,.1);text-align:left;font-weight:800">${esc(h)}</th>`).join('')}</thead><tbody>${(b.baris || []).slice(1).map(row => `<tr>${row.map(cell => `<td style="padding:6px 8px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6)">${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      case 'timeline':
+        return `<div style="${cardStyle}"><div style="${h2Style}">🗓️ ${esc(b.judul)}</div><div style="margin-top:8px">${(b.langkah || []).map((s) => `<div style="display:flex;gap:10px;margin-bottom:10px;align-items:flex-start"><div style="width:28px;height:28px;border-radius:50%;background:rgba(62,207,207,.15);color:#3ecfcf;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">${esc(s.icon)}</div><div><div style="font-weight:800;font-size:10px">${esc(s.judul)}</div><p style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.4;margin-top:2px">${esc(s.isi)}</p></div></div>`).join('')}</div></div>`;
+      case 'studi':
+        return `<div style="${cardStyle};border-left:3px solid #34d399;background:rgba(52,211,153,.04)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:1.5rem">${esc(b.karakter || '🧑')}</span><div><div style="${h2Style};font-size:11px">🧠 ${esc(b.judul || 'Studi Kasus')}</div><div style="font-size:8px;color:rgba(255,255,255,.4)">Situasi: ${esc(b.situasi)}</div></div></div><div style="padding:8px;border-radius:6px;background:rgba(62,207,207,.06);border:1px solid rgba(62,207,207,.12);font-size:10px;color:rgba(255,255,255,.6)">${esc(b.pertanyaan)}</div>${b.pesan ? `<div style="background:rgba(255,255,255,.04);border-radius:8px;padding:8px;margin-top:8px"><span style="font-weight:800;color:#34d399;font-size:9px">💬 Pesan:</span><p style="font-size:9px;color:rgba(255,255,255,.5);margin-top:3px;line-height:1.5">${esc(b.pesan)}</p></div>` : ''}</div>`;
+      case 'infobox':
+        return `<div style="${cardStyle};border-left:3px solid ${b.style === 'warning' ? '#f87171' : '#3ecfcf'}"><div style="font-weight:800;font-size:10px;margin-bottom:4px">${esc(b.judul)}</div><p style="font-size:9px;color:rgba(255,255,255,.55);line-height:1.6">${esc(b.isi)}</p></div>`;
+      case 'checklist':
+        return `<div style="${cardStyle}"><div style="${h2Style}">✅ ${esc(b.judul)}</div><ul style="list-style:none;padding:0;margin:0">${(b.butir || []).map(i => `<li style="padding:4px 0;font-size:10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid #3ecfcf;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px">✓</span> ${esc(i)}</li>`).join('')}</ul></div>`;
+      case 'statistik':
+        return `<div style="${cardStyle}"><div style="${h2Style}">📈 ${esc(b.judul)}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:8px">${(b.items || []).map(it => `<div style="background:${esc(it.warna || '#3ecfcf')}0a;border:1px solid ${esc(it.warna || '#3ecfcf')}22;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.3rem">${esc(it.icon || '📊')}</div><div style="font-size:1.3rem;font-weight:900;color:${esc(it.warna || '#3ecfcf')}">${esc(it.angka || '')}${it.satuan ? `<span style="font-size:.7rem;font-weight:600">${esc(it.satuan)}</span>` : ''}</div><div style="font-size:8px;color:rgba(255,255,255,.4);margin-top:2px">${esc(it.label || '')}</div></div>`).join('')}</div></div>`;
+      case 'gambar':
+        return b.isi ? `<div style="${cardStyle}">${b.judul ? `<div style="${h2Style}">🖼️ ${esc(b.judul)}</div>` : ''}<img src="${esc(b.isi)}" alt="${esc(b.judul || 'Gambar')}" style="width:100%;border-radius:8px;margin-top:6px" onerror="this.style.display='none'" /></div>` : '';
+      default:
+        if (b.judul || b.isi) {
+          return `<div style="${cardStyle}">${b.judul ? `<div style="${h2Style}">${esc(b.judul)}</div>` : ''}${b.isi ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5">${esc(b.isi)}</p>` : ''}</div>`;
+        }
+        return '';
+    }
+  }).join('');
 }
 
 // ── Helper: Populate template elements for backward compat ────
@@ -186,12 +231,15 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
 
     case 'materi': {
       const modules = (td.modules as Array<Record<string, unknown>>) || [];
+      const blok = (td.blok as MateriBlok[]) || [];
       const modulesHTML = modules.map(mod =>
         renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')
       ).join('');
+      const blokHTML = blok.length > 0 ? renderMateriBlokInline(blok) : '';
+      const allContent = modulesHTML + blokHTML;
       return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
         <div style="font-size:18px;font-weight:900;color:#e8f2ff;margin-bottom:16px">📝 Materi Pembelajaran</div>
-        ${modulesHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Belum ada modul materi.</div>'}
+        ${allContent || '<div style="text-align:center;padding:40px;color:#6e90b5">Belum ada modul materi.</div>'}
       </div>`;
     }
 
