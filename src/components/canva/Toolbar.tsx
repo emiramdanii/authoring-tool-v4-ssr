@@ -222,6 +222,16 @@ export default function Toolbar() {
         <span>Play</span>
       </button>
 
+      {/* ── Slideshow Preview Button (opens in new tab) ── */}
+      <button
+        onClick={handlePreviewSlideshow}
+        title="Preview Slideshow — Buka preview interaktif semua halaman di tab baru"
+        className="btn-ghost focus-ring flex items-center gap-0.5 !text-teal-400 hover:!text-teal-300"
+      >
+        <Film size={14} />
+        <span className="hidden md:inline text-[9px] font-semibold">Slideshow</span>
+      </button>
+
       {/* ── Live Preview Button → Navigate to Preview Panel ── */}
       <button
         onClick={() => setActivePanel('preview')}

@@ -21,14 +21,16 @@ export function bodyInfografis(mod: M, v: LayoutVariant): string {
     (kartu.length > max ? `<div style="font-size:10px;color:${T.muted};font-family:'Nunito',sans-serif">+${kartu.length - max} lagi</div>` : '');
   }
   if (v === 'B') {
+    // Match PresetModuleCard variant B: compact row items
     return kartu.slice(0, max).map(k =>
-      `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:${str(k.color, T.c)}18;border:1px solid ${str(k.color, T.c)}30;border-radius:8px">` +
+      `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:${str(k.color, T.c)}18;border:1px solid ${str(k.color, T.c)}30;border-radius:8px;margin-bottom:6px">` +
         `<span style="font-size:14px">${esc(str(k.icon, '📌'))}</span>` +
         `<span style="font-size:12px;font-weight:700;color:${str(k.color, T.c)};font-family:'Nunito',sans-serif">${esc(str(k.judul))}</span>` +
         `</div>`
     ).join('');
   }
-  const cols = v === 'C' ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+  // Match PresetModuleCard: always 2-col grid (same as canva)
+  const cols = 'repeat(2,1fr)';
   const pad = v === 'C' ? '14px' : '10px';
   return `<div style="display:grid;grid-template-columns:${cols};gap:8px">` +
     kartu.slice(0, max).map(k =>

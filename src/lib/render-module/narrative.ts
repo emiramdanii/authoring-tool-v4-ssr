@@ -151,11 +151,12 @@ export function bodyPetunjuk(mod: M, v: LayoutVariant): string {
   }
   const intro = str(mod.intro);
   const introHtml = intro ? `<div style="font-size:.82rem;color:${T.muted};margin-bottom:12px;line-height:1.6;font-family:'Nunito',sans-serif;padding:0 2px">${esc(intro)}</div>` : '';
-  const cols = v === 'C' ? 'repeat(3,1fr)' : v === 'B' ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
+  // Match PresetModuleCard: 2-col default, 3-col for variant C
+  const cols = v === 'C' ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
   return introHtml + `<div style="display:grid;grid-template-columns:${cols};gap:10px">` +
     langkah.map((l, i) => {
       const stepColor = str(l.color, accent);
-      return `<div style="position:relative;background:linear-gradient(135deg,${stepColor}0a,${stepColor}04);border:1px solid ${stepColor}22;border-left:3px solid ${stepColor};border-radius:12px;padding:16px 14px 14px;overflow:hidden">` +
+      return `<div style="position:relative;background:linear-gradient(135deg,${stepColor}0a,${stepColor}04);border:1px solid ${stepColor}22;border-left:3px solid ${stepColor};border-radius:12px;padding:14px 12px 12px;overflow:hidden">` +
         `<div style="position:absolute;top:8px;right:8px;min-width:22px;height:22px;border-radius:50%;background:${stepColor};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;font-family:'Nunito',sans-serif;box-shadow:0 2px 6px ${stepColor}40">${i + 1}</div>` +
         `<div style="font-size:1.6rem;margin-bottom:6px">${esc(str(l.icon, '📌'))}</div>` +
         `<div style="font-weight:800;font-size:.84rem;margin-bottom:3px;color:${T.text};font-family:'Nunito',sans-serif;padding-right:26px">${esc(str(l.judul))}</div>` +
@@ -177,8 +178,9 @@ export function bodyDiskusi(mod: M, v: LayoutVariant): string {
         `</div>`
     ).join('');
   }
-  return pertanyaan.map((p, i) => {
-    return `<div style="background:linear-gradient(135deg,${accent}08,${accent}03);border:1px solid ${accent}22;border-left:4px solid ${accent};border-radius:13px;padding:16px;margin-bottom:10px;overflow:hidden;position:relative">` +
+  const max = v === 'C' ? 5 : 3;
+  return pertanyaan.slice(0, max).map((p, i) => {
+    return `<div style="background:linear-gradient(135deg,${accent}08,${accent}03);border:1px solid ${accent}22;border-left:4px solid ${accent};border-radius:13px;padding:14px;margin-bottom:10px;overflow:hidden;position:relative">` +
       `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,${accent},${accent}50,transparent)"></div>` +
       `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
         `<div style="min-width:26px;height:26px;border-radius:8px;background:${accent}20;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:${accent};font-family:'Nunito',sans-serif;border:1px solid ${accent}30">${i + 1}</div>` +
@@ -205,11 +207,12 @@ export function bodyReview(mod: M, v: LayoutVariant): string {
         `</div></div>`
     ).join('');
   }
-  const cols = v === 'C' ? 'repeat(3,1fr)' : v === 'B' ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
-  return `<div style="display:grid;grid-template-columns:${cols};gap:10px">` +
-    kartu.map(k => {
+  // Match PresetModuleCard: always 2-col grid (same as canva)
+  const max = 4;
+  return `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">` +
+    kartu.slice(0, max).map(k => {
       const color = str(k.warna, accent);
-      return `<div style="background:linear-gradient(160deg,${color}10,${color}05);border:1px solid ${color}22;border-radius:13px;padding:16px;position:relative;overflow:hidden">` +
+      return `<div style="background:linear-gradient(160deg,${color}10,${color}05);border:1px solid ${color}22;border-radius:13px;padding:14px;position:relative;overflow:hidden">` +
         `<div style="position:absolute;top:-10px;right:-10px;width:48px;height:48px;border-radius:50%;background:${color}0a"></div>` +
         `<div style="width:44px;height:44px;border-radius:12px;background:${color}18;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:10px;border:1px solid ${color}20">${esc(str(k.icon, '✅'))}</div>` +
         `<div style="font-weight:800;font-size:.88rem;margin-bottom:5px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(k.judul))}</div>` +
@@ -231,7 +234,8 @@ export function bodyRefleksi(mod: M, v: LayoutVariant): string {
         `</div>`
     ).join('');
   }
-  return pertanyaan.map((p, i) =>
+  const max = v === 'C' ? 5 : 3;
+  return pertanyaan.slice(0, max).map((p, i) =>
     `<div style="border-radius:13px;padding:0;overflow:hidden;margin-bottom:10px;border:1px solid ${accent}20;background:linear-gradient(160deg,${accent}08,transparent)">` +
       `<div style="background:linear-gradient(135deg,${accent}20,${accent}08);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${accent}15">` +
         `<div style="min-width:24px;height:24px;border-radius:7px;background:${accent}30;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:${accent};font-family:'Nunito',sans-serif;border:1px solid ${accent}35">${i + 1}</div>` +

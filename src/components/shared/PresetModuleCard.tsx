@@ -509,11 +509,12 @@ function PreviewPetunjuk({ mod, variant, compact }: { mod: M; variant: LayoutVar
   }
 
   const intro = str(mod.intro);
+  const gridCols = variant === 'C' ? 'grid-cols-3' : 'grid-cols-2';
 
   return (
     <div>
       {intro && <div className="text-[13px] mb-3 px-0.5 leading-relaxed" style={{ color: T.muted }}>{intro}</div>}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className={`grid ${gridCols} gap-2.5`}>
         {langkah.slice(0, max).map((l, i) => {
           const stepColor = str(l.color, accent);
           return (
