@@ -65,6 +65,10 @@ const MODULE_META: ModuleTypeMeta[] = [
   { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', color: '#f9c82e', isGame: true },
   { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', color: '#60a5fa', isGame: true },
   { id: 'skenario', icon: '🎭', label: 'Skenario Interaktif', color: '#f9c82e' },
+  { id: 'petunjuk', icon: '📌', label: 'Petunjuk Penggunaan', color: '#3ecfcf' },
+  { id: 'diskusi', icon: '💬', label: 'Diskusi & Refleksi', color: '#34d399' },
+  { id: 'review', icon: '🔄', label: 'Review Pertemuan', color: '#f9c82e' },
+  { id: 'refleksi', icon: '💭', label: 'Refleksi & Portofolio', color: '#a78bfa' },
 ];
 
 function getModuleMeta(typeId: string): ModuleTypeMeta {
@@ -125,6 +129,7 @@ function getItemCount(mod: M): number {
     'card-showcase': 'cards', 'hotspot-image': 'hotspots',
     sorting: 'items', spinwheel: 'soal', teambuzzer: 'soal',
     wordsearch: 'kata', skenario: 'chapters', debat: 'pertanyaan',
+    petunjuk: 'langkah', diskusi: 'pertanyaan', review: 'kartu', refleksi: 'pertanyaan',
   };
   const key = keys[t];
   if (!key) return 0;
@@ -664,6 +669,84 @@ function bodyMateri(mod: M, v: LayoutVariant): string {
     ).join('') + `</div>`;
 }
 
+// ── PETUNJUK ──────────────────────────────────────────────────────
+function bodyPetunjuk(mod: M, v: LayoutVariant): string {
+  const langkah = arr<Record<string, unknown>>(mod.langkah);
+  if (!langkah.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada langkah petunjuk.</div>`;
+  if (v === 'D') {
+    return langkah.map(l =>
+      `<div style="padding:4px 0;border-left:3px solid ${T.c};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(l.icon, '📌'))} ${esc(str(l.judul))}</div>`
+    ).join('');
+  }
+  const cols = v === 'C' ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+  return `<div style="display:grid;grid-template-columns:${cols};gap:10px">` +
+    langkah.map(l =>
+      `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;text-align:center">` +
+        `<div style="font-size:1.8rem;margin-bottom:6px">${esc(str(l.icon, '📌'))}</div>` +
+        `<div style="font-weight:800;font-size:.86rem;margin-bottom:3px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(l.judul))}</div>` +
+        (str(l.isi) ? `<div style="font-size:.75rem;color:${T.muted};line-height:1.5;font-family:'Nunito',sans-serif">${esc(str(l.isi))}</div>` : '') +
+        `</div>`
+    ).join('') + `</div>`;
+}
+
+// ── DISKUSI ───────────────────────────────────────────────────────
+function bodyDiskusi(mod: M, v: LayoutVariant): string {
+  const pertanyaan = arr<Record<string, unknown>>(mod.pertanyaan);
+  if (!pertanyaan.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada pertanyaan diskusi.</div>`;
+  if (v === 'D') {
+    return pertanyaan.map(p =>
+      `<div style="padding:4px 0;border-left:3px solid ${T.g};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">💬 ${esc(str(p.teks)).slice(0, 80)}</div>`
+    ).join('');
+  }
+  return pertanyaan.map(p => {
+    return `<div style="background:rgba(62,207,207,0.07);border:1px solid rgba(62,207,207,0.25);border-radius:13px;padding:16px;margin-bottom:10px">` +
+      (str(p.label) ? `<div style="color:${T.c};font-weight:800;font-size:.86rem;margin-bottom:6px;font-family:'Nunito',sans-serif">${esc(str(p.icon || '💬'))} ${esc(str(p.label))}</div>` : '') +
+      `<p style="font-size:.86rem;line-height:1.6;font-weight:700;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(p.teks))}</p>` +
+      (str(p.petunjuk) ? `<div style="font-size:.78rem;color:${T.muted};margin-top:6px;font-style:italic;font-family:'Nunito',sans-serif">${esc(str(p.petunjuk))}</div>` : '') +
+      `<textarea placeholder="Tuliskan jawabanmu di sini…" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:9px;padding:9px;color:${T.text};font-family:'Nunito',sans-serif;font-size:.86rem;resize:vertical;min-height:70px;margin-top:8px"></textarea>` +
+      `</div>`;
+  }).join('');
+}
+
+// ── REVIEW ────────────────────────────────────────────────────────
+function bodyReview(mod: M, v: LayoutVariant): string {
+  const kartu = arr<Record<string, unknown>>(mod.kartu);
+  if (!kartu.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada konten review.</div>`;
+  if (v === 'D') {
+    return kartu.map(k =>
+      `<div style="padding:4px 0;border-left:3px solid ${T.y};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(k.icon, '🔄'))} ${esc(str(k.judul))}</div>`
+    ).join('');
+  }
+  const cols = v === 'C' ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+  return `<div style="display:grid;grid-template-columns:${cols};gap:10px">` +
+    kartu.map(k => {
+      const color = str(k.warna, T.y);
+      return `<div style="background:${color}07;border:1px solid ${color}25;border-radius:13px;padding:14px">` +
+        `<div style="font-size:1.4rem;margin-bottom:6px">${esc(str(k.icon, '✅'))}</div>` +
+        `<div style="font-weight:800;font-size:.88rem;margin-bottom:5px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(k.judul))}</div>` +
+        (str(k.isi) ? `<div style="font-size:.8rem;color:${T.muted};line-height:1.7;font-family:'Nunito',sans-serif">${esc(str(k.isi))}</div>` : '') +
+        `</div>`;
+    }).join('') + `</div>`;
+}
+
+// ── REFLEKSI ──────────────────────────────────────────────────────
+function bodyRefleksi(mod: M, v: LayoutVariant): string {
+  const pertanyaan = arr<Record<string, unknown>>(mod.pertanyaan);
+  if (!pertanyaan.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada pertanyaan refleksi.</div>`;
+  if (v === 'D') {
+    return pertanyaan.map(p =>
+      `<div style="padding:4px 0;border-left:3px solid ${T.p};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">💭 ${esc(str(p.teks)).slice(0, 80)}</div>`
+    ).join('');
+  }
+  return pertanyaan.map(p =>
+    `<div style="border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.08);margin-bottom:11px">` +
+      `<label style="font-size:.79rem;font-weight:800;display:block;margin-bottom:6px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(p.icon || '💭'))} ${esc(str(p.teks))}</label>` +
+      (str(p.petunjuk) ? `<div style="font-size:.75rem;color:${T.muted};margin-bottom:6px;font-family:'Nunito',sans-serif">${esc(str(p.petunjuk))}</div>` : '') +
+      `<textarea placeholder="Tuliskan refleksimu…" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:8px;color:${T.text};font-family:'Nunito',sans-serif;font-size:.82rem;resize:vertical;min-height:62px"></textarea>` +
+      `</div>`
+  ).join('');
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // FALLBACK RENDERER
 // ═══════════════════════════════════════════════════════════════════
@@ -723,6 +806,10 @@ function renderBody(mod: M, v: LayoutVariant): string {
     case 'teambuzzer': return bodyTeambuzzer(mod);
     case 'wordsearch': return bodyWordsearch(mod);
     case 'skenario': return bodySkenario(mod, v);
+    case 'petunjuk': return bodyPetunjuk(mod, v);
+    case 'diskusi': return bodyDiskusi(mod, v);
+    case 'review': return bodyReview(mod, v);
+    case 'refleksi': return bodyRefleksi(mod, v);
     case 'materi': return bodyMateri(mod, v);
     default: return bodyFallback(mod, meta, v);
   }

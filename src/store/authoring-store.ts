@@ -210,6 +210,17 @@ const PRESETS_ALUR: Record<string, AlurPreset> = {
       { fase: 'Penutup', durasi: '15 menit', judul: 'Kuis Tim & Refleksi', deskripsi: 'Kuis tim 5 soal antar kelompok. Siswa mengisi refleksi akhir. Guru memberi umpan balik dan menutup pembelajaran.' },
     ],
   },
+  'macam-norma-80menit': {
+    id: 'macam-norma-80menit', label: 'Macam-Macam Norma \u2013 2\u00D740 menit',
+    steps: [
+      { fase: 'Pendahuluan', durasi: '5 menit', judul: 'Review P1', deskripsi: 'Kumpulkan tugas P1, diskusi singkat norma keluarga. Bandingkan tabel norma keluarga antar anggota kelompok.' },
+      { fase: 'Inti', durasi: '25 menit', judul: 'Eksplorasi 4 Norma', deskripsi: 'Kartu detail 4 jenis norma (agama, kesusilaan, kesopanan, hukum) + tabel accordion perbandingan + diskusi berpasangan.' },
+      { fase: 'Inti', durasi: '15 menit', judul: 'Game Sortir Norma', deskripsi: 'Diskusi kelompok, lalu sortir perilaku ke kolom jenis norma yang tepat. Klasifikasi 12 perilaku.' },
+      { fase: 'Inti', durasi: '15 menit', judul: 'Hubungan Antarnorma', deskripsi: 'Analisis kasus konflik nilai antar norma + diskusi kelompok tentang hubungan norma agama dan hukum.' },
+      { fase: 'Inti', durasi: '12 menit', judul: 'Game Roda Norma', deskripsi: 'Tiap soal ada pertanyaan pemantik kelompok sebelum dijawab. 6 soal roda putar.' },
+      { fase: 'Penutup', durasi: '8 menit', judul: 'Refleksi & Penutup', deskripsi: 'Kartu kilat ringkasan + portofolio jawaban diskusi + komitmen diri + penugasan P3.' },
+    ],
+  },
   blank: { id: 'blank', label: 'Kosong – Isi Manual', steps: [] },
 };
 
@@ -312,13 +323,42 @@ const PRESETS_SKENARIO: Record<string, Array<Record<string, unknown>>> = {
       ],
     },
   ],
-  'macam-norma': [],
+  'macam-norma': [
+    {
+      title: '🔀 Review P1: Norma Keluarga',
+      bg: 'sbg-kampung',
+      charEmoji: '🤔',
+      charColor: '#e87070',
+      charPants: '#4a6a9a',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Kamu sudah mempelajari fungsi norma di Pertemuan 1. Sekarang bayangkan: di keluargamu ada peraturan "wajib makan bersama setiap Minggu".' },
+        { speaker: 'NARRATOR', text: 'Adikmu menolak karena ingin bermain game dengan temannya. Orang tuamu marah.' },
+      ],
+      choices: [
+        { icon: '🤝', label: 'Ajak diskusi', detail: 'Bicara dengan adikmu tentang pentingnya makan bersama dan cari solusi bersama', good: true, pts: 20, norma: 'Norma Kesopanan & Solidaritas Keluarga', level: 'good', resultTitle: 'Pilihan Terbaik! 🌟', resultBody: 'Dialog adalah cara norma kesopanan bekerja — menghormati perasaan semua pihak.', consequences: [{ icon: '✅', text: 'Hubungan keluarga tetap harmonis' }, { icon: '✅', text: 'Adikmu merasa dihargai dan lebih kooperatif' }, { icon: '💡', text: 'Norma keluarga ditegakkan dengan cara yang bijak, bukan paksaan' }] },
+        { icon: '😤', label: 'Paksa adik ikut', detail: 'Paksa adikmu agar ikut makan bersama sesuai aturan keluarga', good: false, pts: 5, norma: 'Norma tanpa dialog = pemaksaan', level: 'mid', resultTitle: 'Kurang Bijak 🤔', resultBody: 'Aturan tanpa dialog bisa menimbulkan perasaan tidak dihargai, meski tujuannya baik.', consequences: [{ icon: '🟡', text: 'Norma keluarga terpenuhi, tapi adikmu merasa dipaksa' }, { icon: '⚠️', text: 'Kepatuhan tanpa pemahaman tidak membentuk karakter' }] },
+        { icon: '🙅', label: 'Biarkan saja', detail: 'Tidak campur tangan, biarkan adikmu memilih sendiri', good: false, pts: 3, norma: 'Norma keluarga diabaikan', level: 'bad', resultTitle: 'Norma Melemah ⚠️', resultBody: 'Jika aturan keluarga bisa diabaikan tanpa konsekuensi, norma akan semakin lemah.', consequences: [{ icon: '❌', text: 'Norma keluarga kehilangan kekuatan mengikatnya' }, { icon: '❌', text: 'Adikmu belajar bahwa aturan bisa diabaikan' }] },
+      ],
+    },
+  ],
   blank: [],
 };
 
 // ── Preset Modules Data ─────────────────────────────────────────
 const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
   'hakikat-norma': [
+    {
+      type: 'petunjuk',
+      title: 'Cara Menggunakan Media Ini',
+      intro: 'Ikuti langkah-langkah berikut agar pembelajaran berjalan optimal',
+      langkah: [
+        { icon: '🎭', judul: 'Skenario Interaktif', isi: 'Hadapi 4 situasi nyata. Setiap pilihan punya konsekuensi — temukan sendiri kaitannya dengan norma!' },
+        { icon: '📖', judul: 'Baca & Eksplorasi', isi: 'Pelajari pengertian dan fungsi norma. Tandai tiap tab setelah dibaca agar tidak ada yang terlewat!' },
+        { icon: '💬', judul: 'Diskusi & Tulis', isi: 'Jawab pertanyaan diskusi — jawabanmu otomatis tersimpan dan akan tampil lagi di Refleksi sebagai portofoliomu' },
+        { icon: '🎮', judul: 'Game Fungsi Norma', isi: 'Uji pemahamanmu dengan 5 soal benar-salah. Setiap jawaban benar memberi penjelasan mendalam!' },
+      ],
+    },
     {
       type: 'tab-icons',
       title: '5 Fungsi Norma',
@@ -358,8 +398,46 @@ const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
         { teks: 'Pelanggaran norma tidak memiliki konsekuensi apapun', jawaban: false, penjelasan: 'Setiap norma memiliki sanksi — mulai dari rasa bersalah (internal) hingga hukuman resmi (eksternal).' },
       ],
     },
+    {
+      type: 'diskusi',
+      title: 'Diskusi Kelas',
+      intro: 'Jawab pertanyaan berikut — jawabanmu akan tersimpan untuk portofolio refleksi',
+      pertanyaan: [
+        { label: 'Diskusi Makhluk Sosial', icon: '💬', teks: 'Bayangkan kamu tinggal di sebuah pulau bersama 30 orang yang tidak saling mengenal, tanpa pemimpin dan tanpa aturan sama sekali. Apa yang akan terjadi dalam 1 minggu pertama? Apa masalah yang paling pertama muncul?', petunjuk: 'Jawabanmu akan tampil lagi di Refleksi sebagai portofoliomu' },
+        { label: 'Latihan Mandiri', icon: '✍️', teks: 'Dengan kata-katamu sendiri, jelaskan apa yang dimaksud norma dan mengapa norma dibutuhkan. Gunakan contoh dari kehidupan sehari-harimu!', petunjuk: 'Gunakan pengalaman pribadimu sebagai contoh' },
+      ],
+    },
+    {
+      type: 'refleksi',
+      title: 'Refleksi Akhir',
+      intro: 'Tuliskan refleksimu tentang pembelajaran hari ini',
+      pertanyaan: [
+        { teks: 'Apa yang paling kamu pelajari hari ini tentang hakikat norma?', petunjuk: 'Tulis 2-3 hal yang paling berkesan' },
+        { teks: 'Bagaimana kamu akan menerapkan pemahaman tentang norma dalam kehidupan sehari-hari?', petunjuk: 'Tulis rencana aksi nyata yang bisa kamu lakukan' },
+      ],
+    },
   ],
   'macam-norma': [
+    {
+      type: 'petunjuk',
+      title: 'Cara Belajar Hari Ini',
+      intro: 'Setiap aktivitas dilengkapi panduan diskusi dan pertanyaan pemantik',
+      langkah: [
+        { icon: '👥', judul: 'Diskusi Kelompok', isi: 'Setiap aktivitas dilengkapi panduan diskusi dan pertanyaan pemantik. Diskusikan dulu sebelum menjawab!' },
+        { icon: '🙏', judul: '4 Jenis Norma', isi: 'Pelajari kartu detail setiap norma. Bagi tugas membaca antar anggota kelompok!' },
+        { icon: '🔢', judul: 'Game Sortir Norma', isi: 'Klasifikasikan 12 perilaku ke jenis norma yang tepat. Diskusi kelompok dulu sebelum menjawab!' },
+        { icon: '🎡', judul: 'Roda Norma', isi: 'Putar roda dan jawab pertanyaan tentang macam-macam norma!' },
+      ],
+    },
+    {
+      type: 'review',
+      title: 'Ingat Kembali Pertemuan 1',
+      intro: 'Apa saja yang sudah dipelajari dan apa yang akan dipelajari hari ini?',
+      kartu: [
+        { icon: '✅', judul: 'Sudah dipelajari', isi: '• Manusia = makhluk sosial\n• Norma = aturan mengikat\n• 5 fungsi norma', warna: '#34d399' },
+        { icon: '🎯', judul: 'Hari ini', isi: '• 4 jenis norma & sumbernya\n• Sanksi tiap norma\n• Hubungan antarnorma', warna: '#3ecfcf' },
+      ],
+    },
     {
       type: 'icon-explore',
       title: '4 Jenis Norma',
@@ -426,6 +504,37 @@ const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
       ],
       tanya: 'Bagaimana hubungan antara norma agama dan norma hukum di Indonesia?',
     },
+    {
+      type: 'flashcard',
+      title: 'Kartu Kilat: Macam-Macam Norma',
+      instruksi: 'Ketuk kartu untuk melihat jawaban. Uji ingatanmu!',
+      kartu: [
+        { depan: 'Apa sumber norma agama?', belakang: 'Tuhan Yang Maha Esa melalui kitab suci dan wahyu. Bersifat universal bagi pemeluk agama tersebut.' },
+        { depan: 'Apa sanksi pelanggaran norma kesusilaan?', belakang: 'Rasa bersalah dan malu dari dalam diri sendiri. Sanksi bersifat internal karena berasal dari hati nurani.' },
+        { depan: 'Mengapa norma kesopanan berbeda antar daerah?', belakang: 'Karena norma kesopanan berasal dari adat istiadat dan kebiasaan masyarakat yang berbeda-beda di setiap daerah.' },
+        { depan: 'Apa yang membedakan norma hukum dari norma lainnya?', belakang: 'Norma hukum bersifat tertulis, tegas, berlaku bagi seluruh warga negara, dan ada aparat penegak hukum dengan sanksi denda/penjara.' },
+        { depan: 'Berikan contoh hubungan antara norma agama dan hukum!', belakang: 'Di Indonesia, norma agama melarang mencuri dan norma hukum juga mengaturnya dalam KUHP. Keduanya saling memperkuat.' },
+        { depan: 'Norma apa yang sanksinya paling tegas dan mengikat?', belakang: 'Norma Hukum — sanksinya berupa denda, penjara, atau pencabutan hak oleh negara melalui aparat penegak hukum.' },
+      ],
+    },
+    {
+      type: 'diskusi',
+      title: 'Diskusi Kelompok',
+      intro: 'Diskusikan pertanyaan berikut bersama kelompokmu',
+      pertanyaan: [
+        { label: 'Diskusi Perbandingan Norma Keluarga', icon: '📝', teks: 'Tuliskan 1-2 temuan menarik dari perbandingan tabel norma keluarga kelompokmu. Norma apa yang sama? Norma apa yang unik/berbeda?', petunjuk: 'Jawabanmu akan tampil lagi di Refleksi' },
+        { label: 'Diskusi Hubungan Antarnorma', icon: '💬', teks: 'Setelah semua presentasi: Norma mana yang paling berbeda dari yang kamu bayangkan sebelumnya? Mengapa sanksinya berbeda antar norma?', petunjuk: 'Diskusikan bersama kelompokmu' },
+      ],
+    },
+    {
+      type: 'refleksi',
+      title: 'Refleksi Akhir',
+      intro: 'Tuliskan refleksimu tentang pembelajaran hari ini',
+      pertanyaan: [
+        { teks: 'Norma mana yang paling sering kamu jumpai dalam kehidupan sehari-hari? Berikan contohnya!', petunjuk: 'Pikirkan norma yang kamu temui di rumah, sekolah, dan masyarakat' },
+        { teks: 'Mengapa keempat jenis norma saling melengkapi? Apa yang terjadi jika hanya ada satu jenis norma?', petunjuk: 'Gunakan contoh dari diskusi sebelumnya' },
+      ],
+    },
   ],
   blank: [],
 };
@@ -458,7 +567,7 @@ const PRESETS_MATERI: Record<string, Array<Record<string, unknown>>> = {
 // ── Full Preset Mapping ──────────────────────────────────────────
 const FULL_PRESET_MAP: Record<string, { meta: string; cp: string; tp: string; atp: string; alur: string; kuis: string; skenario: string; modules: string; materi: string }> = {
   'hakikat-norma': { meta: 'hakikat-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'hakikat-norma-80menit', kuis: 'norma-10-soal', skenario: 'hakikat-norma', modules: 'hakikat-norma', materi: 'hakikat-norma' },
-  'macam-norma': { meta: 'macam-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'hakikat-norma-80menit', kuis: 'norma-10-soal', skenario: 'macam-norma', modules: 'macam-norma', materi: 'macam-norma' },
+  'macam-norma': { meta: 'macam-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'macam-norma-80menit', kuis: 'norma-10-soal', skenario: 'macam-norma', modules: 'macam-norma', materi: 'macam-norma' },
   blank: { meta: 'blank', cp: 'blank', tp: 'blank', atp: 'blank', alur: 'blank', kuis: 'blank', skenario: 'blank', modules: 'blank', materi: 'blank' },
 };
 

@@ -110,6 +110,10 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
               <p className="text-sm text-zinc-400">Skenario memiliki editor khusus di tab <strong className="text-amber-400">Skenario</strong>.</p>
             </div>
           )}
+          {t === 'petunjuk' && <PetunjukEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
+          {t === 'diskusi' && <DiskusiEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
+          {t === 'review' && <ReviewEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
+          {t === 'refleksi' && <RefleksiEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
 
           {/* ── Live Preview Panel ── */}
           <div className="border-t border-zinc-800 pt-4 mt-2">
@@ -1140,6 +1144,116 @@ function WordsearchEditor({ mod, uf }: EdProps) {
           <option value={12}>12 x 12</option>
           <option value={15}>15 x 15</option>
         </select>
+      </div>
+    </div>
+  );
+}
+
+// ── 30. Petunjuk Editor ──────────────────────────────────
+function PetunjukEditor({ mod, uf, ai, ri, ui }: EdProps) {
+  const langkah = (mod.langkah as Array<Record<string, unknown>>) || [];
+  return (
+    <div className="space-y-4">
+      <div>
+        <FieldLabel>Intro</FieldLabel>
+        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Ikuti langkah-langkah berikut…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+      </div>
+      <div>
+        <FieldLabel>Langkah Petunjuk ({langkah.length})</FieldLabel>
+        {langkah.map((l, i) => (
+          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <input className={`${INPUT_CLS} w-16`} placeholder="📌" value={(l.icon as string) || ''} onChange={(e) => ui!('langkah', i, 'icon', e.target.value)} />
+              <input className={INPUT_CLS} placeholder="Judul langkah…" value={(l.judul as string) || ''} onChange={(e) => ui!('langkah', i, 'judul', e.target.value)} />
+              <button onClick={() => ri!('langkah', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            </div>
+            <textarea className={TEXTAREA_CLS} rows={2} placeholder="Deskripsi langkah…" value={(l.isi as string) || ''} onChange={(e) => ui!('langkah', i, 'isi', e.target.value)} />
+          </div>
+        ))}
+        <button onClick={() => ai!('langkah', { icon: '📌', judul: '', isi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Langkah</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 31. Diskusi Editor ───────────────────────────────────
+function DiskusiEditor({ mod, uf, ai, ri, ui }: EdProps) {
+  const pertanyaan = (mod.pertanyaan as Array<Record<string, unknown>>) || [];
+  return (
+    <div className="space-y-4">
+      <div>
+        <FieldLabel>Intro</FieldLabel>
+        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Jawab pertanyaan berikut…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+      </div>
+      <div>
+        <FieldLabel>Pertanyaan Diskusi ({pertanyaan.length})</FieldLabel>
+        {pertanyaan.map((p, i) => (
+          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <input className={`${INPUT_CLS} w-16`} placeholder="💬" value={(p.icon as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'icon', e.target.value)} />
+              <input className={`${INPUT_CLS} w-40`} placeholder="Label…" value={(p.label as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'label', e.target.value)} />
+              <button onClick={() => ri!('pertanyaan', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            </div>
+            <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pertanyaan…" value={(p.teks as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'teks', e.target.value)} />
+            <input className={INPUT_CLS} placeholder="Petunjuk jawaban…" value={(p.petunjuk as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'petunjuk', e.target.value)} />
+          </div>
+        ))}
+        <button onClick={() => ai!('pertanyaan', { icon: '💬', label: '', teks: '', petunjuk: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pertanyaan</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 32. Review Editor ───────────────────────────────────
+function ReviewEditor({ mod, uf, ai, ri, ui }: EdProps) {
+  const kartu = (mod.kartu as Array<Record<string, unknown>>) || [];
+  return (
+    <div className="space-y-4">
+      <div>
+        <FieldLabel>Intro</FieldLabel>
+        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Apa yang sudah dipelajari…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+      </div>
+      <div>
+        <FieldLabel>Kartu Review ({kartu.length})</FieldLabel>
+        {kartu.map((k, i) => (
+          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <input className={`${INPUT_CLS} w-16`} placeholder="✅" value={(k.icon as string) || ''} onChange={(e) => ui!('kartu', i, 'icon', e.target.value)} />
+              <input className={INPUT_CLS} placeholder="Judul kartu…" value={(k.judul as string) || ''} onChange={(e) => ui!('kartu', i, 'judul', e.target.value)} />
+              <ColorPicker value={(k.warna as string) || '#f9c82e'} onChange={(v) => ui!('kartu', i, 'warna', v)} />
+              <button onClick={() => ri!('kartu', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            </div>
+            <textarea className={TEXTAREA_CLS} rows={2} placeholder="Isi kartu…" value={(k.isi as string) || ''} onChange={(e) => ui!('kartu', i, 'isi', e.target.value)} />
+          </div>
+        ))}
+        <button onClick={() => ai!('kartu', { icon: '✅', judul: '', isi: '', warna: '#f9c82e' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Kartu</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 33. Refleksi Editor ─────────────────────────────────
+function RefleksiEditor({ mod, uf, ai, ri, ui }: EdProps) {
+  const pertanyaan = (mod.pertanyaan as Array<Record<string, unknown>>) || [];
+  return (
+    <div className="space-y-4">
+      <div>
+        <FieldLabel>Intro</FieldLabel>
+        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Tuliskan refleksimu…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+      </div>
+      <div>
+        <FieldLabel>Pertanyaan Refleksi ({pertanyaan.length})</FieldLabel>
+        {pertanyaan.map((p, i) => (
+          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <input className={`${INPUT_CLS} w-16`} placeholder="💭" value={(p.icon as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'icon', e.target.value)} />
+              <input className={INPUT_CLS} placeholder="Pertanyaan refleksi…" value={(p.teks as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'teks', e.target.value)} />
+              <button onClick={() => ri!('pertanyaan', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            </div>
+            <input className={INPUT_CLS} placeholder="Petunjuk jawaban…" value={(p.petunjuk as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'petunjuk', e.target.value)} />
+          </div>
+        ))}
+        <button onClick={() => ai!('pertanyaan', { icon: '💭', teks: '', petunjuk: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pertanyaan</button>
       </div>
     </div>
   );

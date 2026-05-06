@@ -42,6 +42,12 @@ export const MODULE_TYPE_ICON_MAP: Record<string, string> = {
   video: '🎥',
   'studi-kasus': '🔬',
   debat: '🗣️',
+  petunjuk: '📌',
+  diskusi: '💬',
+  review: '🔄',
+  refleksi: '💭',
+  skenario: '🎭',
+  flashcard: '🃏',
 };
 
 // ── Template type icons & colors ────────────────────────────────

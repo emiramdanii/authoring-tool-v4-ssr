@@ -127,17 +127,29 @@ export default function AuthoringTool() {
     return () => clearTimeout(timer);
   }, [dirty]);
 
-  // Keyboard shortcut: Ctrl+S to save
+  // Keyboard shortcut: Ctrl+S to save, Ctrl+P to toggle Live Preview
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         saveToStorage();
       }
+      // Ctrl+P → toggle Live Preview panel (only when not in text input)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        const target = e.target as HTMLElement;
+        if (target.contentEditable === 'true' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        const current = useAuthoringStore.getState().activePanel;
+        if (current === 'preview') {
+          setActivePanel('canva');
+        } else {
+          setActivePanel('preview');
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveToStorage]);
+  }, [saveToStorage, setActivePanel]);
 
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();

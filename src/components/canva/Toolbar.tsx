@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
 import {
   Play,
@@ -22,6 +23,7 @@ import {
   Save,
   CheckCircle2,
   Loader2,
+  MonitorPlay,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -56,6 +58,7 @@ export default function Toolbar() {
   const mode = useInteractiveStore((s) => s.mode);
   const openPlay = useInteractiveStore((s) => s.openPlay);
   const closePlay = useInteractiveStore((s) => s.closePlay);
+  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
 
   const [exporting, setExporting] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -94,7 +97,21 @@ export default function Toolbar() {
     const html = exportPageHTML();
     const win = window.open('', '_blank');
     if (win) { win.document.write(html); win.document.close(); }
-    toast.success('Preview dibuka di tab baru');
+    toast.success('Preview halaman dibuka di tab baru');
+    setExportOpen(false);
+  };
+
+  const handlePreviewSlideshow = () => {
+    requestAnimationFrame(() => {
+      try {
+        const html = exportSlideshowHTML();
+        const win = window.open('', '_blank');
+        if (win) { win.document.write(html); win.document.close(); }
+        toast.success(`Slideshow preview dibuka (${pages.length} halaman)`);
+      } catch (err) {
+        toast.error('Gagal membuat preview slideshow');
+      }
+    });
     setExportOpen(false);
   };
 
@@ -204,6 +221,16 @@ export default function Toolbar() {
         <Play size={13} fill="currentColor" />
         <span>Play</span>
       </button>
+
+      {/* ── Live Preview Button → Navigate to Preview Panel ── */}
+      <button
+        onClick={() => setActivePanel('preview')}
+        title="Live Preview — Buka panel Live Preview dengan mode Canvas/Template/Legacy, tema, dan device frame"
+        className="btn-ghost focus-ring flex items-center gap-0.5 !text-cyan-400 hover:!text-cyan-300"
+      >
+        <MonitorPlay size={14} />
+        <span className="hidden md:inline text-[9px] font-semibold">Live</span>
+      </button>
       <div className="section-divider h-5 w-px mx-1" />
 
       {/* ── History group: Undo / Redo ───────────────────────── */}
@@ -269,13 +296,23 @@ export default function Toolbar() {
         {exportOpen && (
           <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             <button
+              onClick={handlePreviewSlideshow}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
+            >
+              <MonitorPlay size={14} className="text-cyan-400" />
+              <div>
+                <div className="text-[11px] text-slate-200 font-semibold">▶ Preview Slideshow di Tab Baru</div>
+                <div className="text-[8px] text-slate-500">{pages.length} halaman interaktif lengkap</div>
+              </div>
+            </button>
+            <button
               onClick={handlePreview}
               className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
             >
               <Eye size={14} className="text-slate-400" />
               <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Preview di Tab Baru</div>
-                <div className="text-[8px] text-slate-500">Buka desain di tab baru</div>
+                <div className="text-[11px] text-slate-200 font-semibold">Preview Halaman di Tab Baru</div>
+                <div className="text-[8px] text-slate-500">Hanya halaman saat ini</div>
               </div>
             </button>
             <button

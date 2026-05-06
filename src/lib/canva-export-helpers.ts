@@ -3,7 +3,7 @@
 // Extracted from canva-store.ts for maintainability
 // ═══════════════════════════════════════════════════════════════
 
-import { renderModuleToStyledHTML } from '@/lib/render-module-html';
+import { renderModuleToStyledHTML } from '@/lib/render-module';
 import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
 import type { CanvaPage, PageTemplateType } from '@/components/canva/types';
 import type { MateriBlok } from '@/store/authoring-store';
@@ -11,7 +11,7 @@ import type { MateriBlok } from '@/store/authoring-store';
 // ── Shared constants (used by canva-store + export modules) ────
 export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
 export const MATERI_MODULE_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline'] as const;
-export const MATERI_RAKIT_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline','hero','kutipan','langkah','statistik'] as const;
+export const MATERI_RAKIT_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline','hero','kutipan','langkah','statistik','petunjuk','diskusi','review','refleksi','skenario','debat','studi-kasus','comparison','card-showcase','hotspot-image','polling','embed','flashcard'] as const;
 
 // ── Helper: Get hero data from authoring store ─────────────────
 

@@ -7,7 +7,7 @@ import { T } from './tokens';
 import { str, esc, getItemCount, getModuleMeta } from './helpers';
 import { bodyInfografis, bodyVideo, bodyFlashcard, bodyEmbed, bodyStudiKasus, bodyMateri } from './content';
 import { bodyAccordion, bodyTabIcons, bodyIconExplore, bodyComparison, bodyCardShowcase, bodyHotspotImage, bodyPolling } from './interactive';
-import { bodyTimeline, bodyHero, bodyKutipan, bodyLangkah, bodySkenario, bodyDebat } from './narrative';
+import { bodyTimeline, bodyHero, bodyKutipan, bodyLangkah, bodySkenario, bodyDebat, bodyPetunjuk, bodyDiskusi, bodyReview, bodyRefleksi } from './narrative';
 import { bodyStatistik } from './statistics';
 import { bodyMatching, bodyTrueFalse, bodyMemory, bodyRoda, bodySorting, bodySpinwheel, bodyTeambuzzer, bodyWordsearch } from './games';
 
@@ -70,6 +70,10 @@ export function renderBody(mod: M, v: LayoutVariant): string {
     case 'teambuzzer': return bodyTeambuzzer(mod);
     case 'wordsearch': return bodyWordsearch(mod);
     case 'skenario': return bodySkenario(mod, v);
+    case 'petunjuk': return bodyPetunjuk(mod, v);
+    case 'diskusi': return bodyDiskusi(mod, v);
+    case 'review': return bodyReview(mod, v);
+    case 'refleksi': return bodyRefleksi(mod, v);
     case 'materi': return bodyMateri(mod, v);
     default: return bodyFallback(mod, meta, v);
   }

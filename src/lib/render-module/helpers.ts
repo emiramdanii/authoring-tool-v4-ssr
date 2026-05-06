@@ -62,6 +62,10 @@ const MODULE_META: ModuleTypeMeta[] = [
   { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', color: '#f9c82e', isGame: true },
   { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', color: '#60a5fa', isGame: true },
   { id: 'skenario', icon: '🎭', label: 'Skenario Interaktif', color: '#f9c82e' },
+  { id: 'petunjuk', icon: '📌', label: 'Petunjuk Penggunaan', color: '#3ecfcf' },
+  { id: 'diskusi', icon: '💬', label: 'Diskusi & Refleksi', color: '#34d399' },
+  { id: 'review', icon: '🔄', label: 'Review Pertemuan', color: '#f9c82e' },
+  { id: 'refleksi', icon: '💭', label: 'Refleksi & Portofolio', color: '#a78bfa' },
 ];
 
 export function getModuleMeta(typeId: string): ModuleTypeMeta {
@@ -84,6 +88,7 @@ export function getItemCount(mod: M): number {
     'card-showcase': 'cards', 'hotspot-image': 'hotspots',
     sorting: 'items', spinwheel: 'soal', teambuzzer: 'soal',
     wordsearch: 'kata', skenario: 'chapters', debat: 'pertanyaan',
+    petunjuk: 'langkah', diskusi: 'pertanyaan', review: 'kartu', refleksi: 'pertanyaan',
   };
   const key = keys[t];
   if (!key) return 0;

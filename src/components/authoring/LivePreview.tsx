@@ -13,6 +13,9 @@ import {
   Smartphone,
   ChevronDown,
   Eye,
+  ExternalLink,
+  ArrowLeft,
+  X,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -40,6 +43,7 @@ const LAYOUT_THEMES: { id: LayoutTheme; icon: string; label: string }[] = [
 const SCREEN_OPTIONS = [
   { id: 's-cover', label: '🎬 Cover' },
   { id: 's-cp', label: '📋 CP / TP / ATP' },
+  { id: 's-modules', label: '📦 Modul' },
   { id: 's-sk', label: '🎭 Skenario' },
   { id: 's-materi', label: '📖 Materi & Fungsi' },
   { id: 's-kuis', label: '❓ Kuis' },
@@ -139,17 +143,23 @@ export default function LivePreview() {
   const [activeScreen, setActiveScreen] = useState('s-cover');
   const [activeSlide, setActiveSlide] = useState(0);
   const [htmlContent, setHtmlContent] = useState('');
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('template');
+  const [previewMode, setPreviewModeLocal] = useState<PreviewMode>('template');
   const [layoutTheme, setLayoutTheme] = useState<LayoutTheme>('default');
   const [building, setBuilding] = useState(false);
   const [modeOpen, setModeOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [lastBuildTime, setLastBuildTime] = useState(0);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const cachedHashRef = useRef<string>('');
   const modeRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
+  const userModeRef = useRef(false); // Track if user manually selected a mode
+  const initialDetectDone = useRef(false);
+
+  // ── Store subscriptions ────────────────────────────────────────
+  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
 
   // ── Authoring store subscriptions ──────────────────────────────
   const meta = useAuthoringStore((s) => s.meta);
@@ -168,7 +178,7 @@ export default function LivePreview() {
   const canvaPages = useCanvaStore((s) => s.pages);
   const canvaRatioId = useCanvaStore((s) => s.ratioId);
 
-  // ── Auto-detect mode ───────────────────────────────────────────
+  // ── Auto-detect mode (only on first load, not overriding user) ─
   const hasCanvasContent = canvaPages.some(
     (p) => p.elements && p.elements.length > 0
   );
@@ -178,10 +188,20 @@ export default function LivePreview() {
     return 'template';
   }, [hasCanvasContent]);
 
-  // Sync mode when auto-detect changes
+  // Only auto-detect on initial mount — don't override user's manual selection
   useEffect(() => {
-    setPreviewMode(detectedMode);
+    if (!initialDetectDone.current) {
+      initialDetectDone.current = true;
+      setPreviewModeLocal(detectedMode);
+    }
   }, [detectedMode]);
+
+  // Wrapper for setPreviewMode that tracks user intent
+  const setPreviewMode = useCallback((mode: PreviewMode) => {
+    userModeRef.current = true;
+    setPreviewModeLocal(mode);
+    cachedHashRef.current = ''; // force rebuild on mode change
+  }, []);
 
   // ── Compute dataHash ───────────────────────────────────────────
   const dataHash = useMemo(() => {
@@ -209,11 +229,11 @@ export default function LivePreview() {
         let html = '';
 
         if (previewMode === 'canvas') {
-          // Canvas mode → exportSlideshowHTML
+          // Canvas mode -> exportSlideshowHTML
           const store = useCanvaStore.getState();
           html = store.exportSlideshowHTML();
         } else if (previewMode === 'template') {
-          // Template mode → generateExportHtml + theme CSS
+          // Template mode -> generateExportHtml + theme CSS
           const state: ExportState = {
             meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
           };
@@ -223,7 +243,7 @@ export default function LivePreview() {
             html = html.replace('</head>', THEME_CSS[layoutTheme] + '\n</head>');
           }
         } else {
-          // Legacy mode → generateExportHtml as-is
+          // Legacy mode -> generateExportHtml as-is
           const state: ExportState = {
             meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
           };
@@ -232,6 +252,7 @@ export default function LivePreview() {
 
         setHtmlContent(html);
         cachedHashRef.current = dataHash;
+        setLastBuildTime(Date.now());
       } catch (err) {
         console.error('Failed to generate preview HTML:', err);
       } finally {
@@ -269,7 +290,7 @@ export default function LivePreview() {
 <script>
 (function(){
   ${isCanvasMode ? `
-  // ── Canvas mode: showSlide navigation ──────────────
+  // -- Canvas mode: showSlide navigation ----------------------
   var _origShow = window.showSlide;
   window.showSlide = function(n) {
     if (_origShow) _origShow(n);
@@ -287,7 +308,7 @@ export default function LivePreview() {
     if (typeof showSlide === 'function') showSlide(${activeSlide});
   }
   ` : `
-  // ── Template/Legacy mode: goScreen navigation ──────
+  // -- Template/Legacy mode: goScreen navigation -------------
   var _origGo = window.goScreen;
   window.goScreen = function(id) {
     if (_origGo) _origGo(id);
@@ -317,8 +338,7 @@ export default function LivePreview() {
 <\/script>`;
 
     return htmlContent.replace('</body>', navScript + '\n</body>');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [htmlContent]);
+  }, [htmlContent, activeScreen, activeSlide, previewMode]);
 
   // ── Listen for postMessage from iframe ─────────────────────────
   useEffect(() => {
@@ -346,6 +366,17 @@ export default function LivePreview() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // ── Keyboard shortcut: Escape to go back ──────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActivePanel('canva');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setActivePanel]);
+
   // ── Navigation handlers ────────────────────────────────────────
   const handleScreenSelect = (screenId: string) => {
     setActiveScreen(screenId);
@@ -368,6 +399,16 @@ export default function LivePreview() {
     rebuildHTML();
   };
 
+  // ── Open preview in new browser tab ────────────────────────────
+  const handleOpenInNewTab = useCallback(() => {
+    if (!htmlContent) return;
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(htmlContent);
+      win.document.close();
+    }
+  }, [htmlContent]);
+
   // ── Device info ────────────────────────────────────────────────
   const currentDevice = DEVICE_MODES.find((d) => d.id === deviceMode) || DEVICE_MODES[2];
 
@@ -383,6 +424,11 @@ export default function LivePreview() {
 
   const currentModeMeta = modeMeta[previewMode];
 
+  // ── Build time display ─────────────────────────────────────────
+  const buildTimeStr = lastBuildTime > 0
+    ? new Date(lastBuildTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : '';
+
   // ══════════════════════════════════════════════════════════════
   // RENDER
   // ══════════════════════════════════════════════════════════════
@@ -391,6 +437,18 @@ export default function LivePreview() {
     <div className="h-full flex flex-col bg-zinc-950">
       {/* ══ TOOLBAR ══════════════════════════════════════════════ */}
       <div className="flex-shrink-0 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 px-3 py-2 flex items-center gap-2 flex-wrap">
+
+        {/* ── Back button ────────────────────────────────────── */}
+        <button
+          onClick={() => setActivePanel('canva')}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          title="Kembali ke Canva (Esc)"
+        >
+          <ArrowLeft size={14} />
+          <span className="hidden sm:inline">Kembali</span>
+        </button>
+
+        <div className="w-px h-5 bg-zinc-700/50" />
 
         {/* ── Mode selector dropdown ──────────────────────────── */}
         <div className="relative" ref={modeRef}>
@@ -414,7 +472,6 @@ export default function LivePreview() {
                   onClick={() => {
                     if (!m.disabled) {
                       setPreviewMode(m.id);
-                      cachedHashRef.current = ''; // force rebuild
                       setModeOpen(false);
                     }
                   }}
@@ -539,8 +596,23 @@ export default function LivePreview() {
           </select>
         )}
 
-        {/* ── Right side: Rebuild + Status ────────────────────── */}
+        {/* ── Right side: Actions + Status ────────────────────── */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Open in new tab button */}
+          <button
+            onClick={handleOpenInNewTab}
+            disabled={!htmlContent}
+            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${
+              htmlContent
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'
+                : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
+            }`}
+            title="Buka di tab baru"
+          >
+            <ExternalLink size={11} />
+            <span className="hidden md:inline">Tab Baru</span>
+          </button>
+
           {/* Rebuild button */}
           <button
             onClick={handleForceRebuild}
@@ -564,7 +636,7 @@ export default function LivePreview() {
             </div>
           )}
 
-          {/* Auto-detect badge */}
+          {/* Sync status badge */}
           <div className="flex items-center gap-1.5">
             <div
               className={`w-1.5 h-1.5 rounded-full transition-colors ${
@@ -576,7 +648,14 @@ export default function LivePreview() {
             </span>
           </div>
 
-          <span className="text-[0.6rem] text-zinc-600 hidden lg:inline">
+          {/* Last build time */}
+          {buildTimeStr && (
+            <span className="text-[0.6rem] text-zinc-600 hidden lg:inline">
+              {buildTimeStr}
+            </span>
+          )}
+
+          <span className="text-[0.6rem] text-zinc-600 hidden xl:inline">
             Auto-refresh 500ms
           </span>
         </div>
@@ -600,13 +679,18 @@ export default function LivePreview() {
               {currentModeMeta.icon} {currentModeMeta.label}
               {previewMode === 'template' && layoutTheme !== 'default' && ` · ${LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.icon} ${layoutTheme}`}
             </span>
+            {deviceMode !== 'desktop' && (
+              <span className="bg-white/20 rounded px-2 py-0.5 text-[0.6rem]">
+                {currentDevice.icon && <currentDevice.icon size={10} className="inline -mt-0.5" />} {currentDevice.width}px
+              </span>
+            )}
           </span>
         </div>
 
         {/* Device frame */}
         <div className="flex-1 flex items-start justify-center overflow-auto p-4">
           <div
-            className={`transition-all duration-300 overflow-hidden ${
+            className={`transition-all duration-300 overflow-hidden relative ${
               currentDevice.width > 0
                 ? 'rounded-[2rem] border-[3px] border-zinc-700/50 shadow-2xl shadow-black/30'
                 : 'rounded-xl border border-zinc-800/50'
@@ -623,6 +707,13 @@ export default function LivePreview() {
             {currentDevice.width > 0 && currentDevice.id === 'mobile' && (
               <div className="flex justify-center py-1 bg-zinc-900">
                 <div className="w-20 h-4 bg-zinc-800 rounded-b-xl" />
+              </div>
+            )}
+
+            {/* Tablet camera indicator */}
+            {currentDevice.width > 0 && currentDevice.id === 'tablet' && (
+              <div className="flex justify-center py-0.5 bg-zinc-900">
+                <div className="w-3 h-3 bg-zinc-800 rounded-full border border-zinc-700/50" />
               </div>
             )}
 
@@ -643,6 +734,15 @@ export default function LivePreview() {
                     {currentModeMeta.icon} {currentModeMeta.label} mode
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Watermark for device frame */}
+            {currentDevice.width > 0 && (
+              <div className="absolute bottom-2 left-0 right-0 text-center">
+                <span className="text-[0.55rem] text-zinc-600 bg-zinc-900/80 px-2 py-0.5 rounded-full">
+                  {currentDevice.label} · {currentDevice.width}px
+                </span>
               </div>
             )}
           </div>

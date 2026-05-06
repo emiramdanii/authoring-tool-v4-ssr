@@ -73,31 +73,76 @@ export function generateExportHtml(state: ExportState): string {
 
   // ── Modules HTML (pre-rendered via renderModuleToStyledHTML) ────
   const allModules = [...(state.modules || []), ...(state.games || [])];
-  const modulesPreRendered = allModules.length
-    ? allModules.map(mod => renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')).join('\n')
+
+  // Separate petunjuk modules from content modules for better navigation
+  const petunjukModules = allModules.filter((m: Record<string, unknown>) => m.type === 'petunjuk');
+  const reviewModules = allModules.filter((m: Record<string, unknown>) => m.type === 'review');
+  const refleksiModules = allModules.filter((m: Record<string, unknown>) => m.type === 'refleksi');
+  const contentModules = allModules.filter((m: Record<string, unknown>) => !['petunjuk', 'review', 'refleksi'].includes(m.type as string));
+
+  const petunjukHtml = petunjukModules.length
+    ? petunjukModules.map(mod => renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')).join('\n')
+    : '';
+  const reviewHtml = reviewModules.length
+    ? reviewModules.map(mod => renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')).join('\n')
+    : '';
+  const modulesPreRendered = contentModules.length
+    ? contentModules.map(mod => renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')).join('\n')
+    : '';
+  const refleksiHtml = refleksiModules.length
+    ? refleksiModules.map(mod => renderModuleToStyledHTML(mod, (mod.layoutVariant as LayoutVariant) || 'A')).join('\n')
     : '';
 
   // ── Determine next screen logic ──────────────────────────────────
-  const hasModules = state.modules && state.modules.length > 0;
+  const hasPetunjuk = petunjukModules.length > 0;
+  const hasReview = reviewModules.length > 0;
+  const hasModules = contentModules.length > 0;
   const hasGames = state.games && state.games.length > 0;
   const hasSkenario = skData.length > 0;
   const hasMateri = materiBlok.length > 0;
   const hasKuis = kuisData.length > 0;
+  const hasRefleksi = refleksiModules.length > 0;
 
   // ── Inline JSON data ─────────────────────────────────────────────
   const skJS = JSON.stringify(skData);
   const kuisJS = JSON.stringify(kuisData.map(s => ({ q: s.q, opts: s.opts || ['', '', '', ''], ans: s.ans, ex: s.ex })));
   const fungsiJS = JSON.stringify(FUNGSI_NORMA);
 
+  // ── Cover next button → Petunjuk first, then CP ──────────────────
+  const coverNextScreen = hasPetunjuk ? 's-petunjuk' : 's-cp';
+
+  // ── Petunjuk next button → CP ────────────────────────────────────
+  const petunjukNextScreen = 's-cp';
+
   // ── CP Button ────────────────────────────────────────────────────
   let cpNextScreen = 's-sk';
-  if (hasModules) cpNextScreen = 's-modules';
+  if (hasReview) cpNextScreen = 's-review';
   else if (hasSkenario) cpNextScreen = 's-sk';
+  else if (hasModules) cpNextScreen = 's-modules';
   else if (hasMateri) cpNextScreen = 's-materi';
   else if (hasKuis) cpNextScreen = 's-kuis';
 
+  // ── Review next button ───────────────────────────────────────────
+  let reviewNextScreen = 's-sk';
+  if (hasSkenario) reviewNextScreen = 's-sk';
+  else if (hasModules) reviewNextScreen = 's-modules';
+  else if (hasMateri) reviewNextScreen = 's-materi';
+  else if (hasKuis) reviewNextScreen = 's-kuis';
+
+  // ── Modules next button ──────────────────────────────────────────
+  let modulesNextScreen = 's-hasil';
+  if (hasMateri) modulesNextScreen = 's-materi';
+  else if (hasKuis) modulesNextScreen = 's-kuis';
+  else if (hasRefleksi) modulesNextScreen = 's-refleksi';
+
   // ── Materi next button ───────────────────────────────────────────
-  const materiNextScreen = hasKuis ? 's-kuis' : 's-hasil';
+  const materiNextScreen = hasKuis ? 's-kuis' : hasRefleksi ? 's-refleksi' : 's-hasil';
+
+  // ── Kuis next button ─────────────────────────────────────────────
+  const kuisNextScreen = hasRefleksi ? 's-refleksi' : 's-hasil';
+
+  // ── Refleksi next button ─────────────────────────────────────────
+  const refleksiNextScreen = 's-hasil';
 
   // ── Build the complete HTML ──────────────────────────────────────
   return `<!DOCTYPE html>
@@ -125,9 +170,26 @@ ${EXPORT_CSS}
     </div>
     <div class="cover-title" style="font-family:'Fredoka One',cursive;font-size:clamp(1.7rem,5.5vw,2.8rem);line-height:1.1;margin:10px 0 6px;">${esc(M.judulPertemuan || 'Media Pembelajaran')}</div>
     <p class="sub" style="max-width:480px;margin:0 auto 24px">${esc(M.subjudul || '')}</p>
-    <button class="btn btn-y" onclick="goScreen('s-cp')">Mulai Belajar →</button>
+    <button class="btn btn-y" onclick="goScreen('${coverNextScreen}')">Mulai Belajar →</button>
   </div>
 </div>
+
+<!-- ═══ PETUNJUK ═══ -->
+${hasPetunjuk ? `
+<div class="screen" id="s-petunjuk">
+  <nav class="navbar">
+    <span class="nav-logo">${esc(M.namaBab || M.judulPertemuan || 'Media')}</span>
+    <div class="nav-prog"><div class="nav-prog-fill" style="width:8%"></div></div>
+    <span class="nav-score">0 ⭐</span>
+  </nav>
+  <div class="main">
+    ${petunjukHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${petunjukNextScreen}')">Lihat Tujuan Pembelajaran →</button>
+      <button class="btn btn-ghost" onclick="goScreen('s-cover')">← Kembali</button>
+    </div>
+  </div>
+</div>` : ''}
 
 <!-- ═══ CP / TP / ATP ═══ -->
 <div class="screen" id="s-cp">
@@ -170,10 +232,27 @@ ${EXPORT_CSS}
     </div>
     <div class="btn-row btn-center">
       <button class="btn btn-y" onclick="goScreen('${cpNextScreen}')">Mulai Pembelajaran →</button>
-      <button class="btn btn-ghost" onclick="goScreen('s-cover')">← Kembali</button>
+      <button class="btn btn-ghost" onclick="goScreen('${hasPetunjuk ? 's-petunjuk' : 's-cover'}')">← Kembali</button>
     </div>
   </div>
 </div>
+
+<!-- ═══ REVIEW ═══ -->
+${hasReview ? `
+<div class="screen" id="s-review">
+  <nav class="navbar">
+    <span class="nav-logo">${esc(M.namaBab || 'Media')}</span>
+    <div class="nav-prog"><div class="nav-prog-fill" style="width:25%"></div></div>
+    <span class="nav-score">0 ⭐</span>
+  </nav>
+  <div class="main">
+    ${reviewHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${reviewNextScreen}')">Lanjut →</button>
+      <button class="btn btn-ghost" onclick="goScreen('s-cp')">← Kembali</button>
+    </div>
+  </div>
+</div>` : ''}
 
 <!-- ═══ SKENARIO ═══ -->
 <div class="screen" id="s-sk">
@@ -204,7 +283,7 @@ ${EXPORT_CSS}
     <span class="nav-score">0 ⭐</span>
   </nav>
   <div class="main">${modulesPreRendered || '<div class="card" style="text-align:center;padding:30px;color:var(--muted)">Belum ada modul.</div>'}
-    <div class="btn-row btn-center mt20"><button class="btn btn-y" onclick="goScreen('${hasSkenario ? 's-sk' : hasMateri ? 's-materi' : hasKuis ? 's-kuis' : 's-hasil'}')">Lanjut →</button><button class="btn btn-ghost" onclick="goScreen('s-cp')">← Kembali</button></div>
+    <div class="btn-row btn-center mt20"><button class="btn btn-y" onclick="goScreen('${modulesNextScreen}')">Lanjut →</button><button class="btn btn-ghost" onclick="goScreen('${hasReview ? 's-review' : 's-cp'}')">← Kembali</button></div>
   </div>
 </div>
 
@@ -224,8 +303,8 @@ ${EXPORT_CSS}
       <div id="ftabContent"></div>
     </div>
     <div class="btn-row btn-center mt20">
-      <button class="btn btn-y" onclick="goScreen('${materiNextScreen}')">Mulai Kuis ❓</button>
-      <button class="btn btn-ghost" onclick="goScreen('${hasSkenario ? 's-sk' : 's-cp'}')">← ${hasSkenario ? 'Skenario' : 'Kembali'}</button>
+      <button class="btn btn-y" onclick="goScreen('${materiNextScreen}')">${hasKuis ? 'Mulai Kuis ❓' : 'Lanjut →'}</button>
+      <button class="btn btn-ghost" onclick="goScreen('${hasModules ? 's-modules' : hasSkenario ? 's-sk' : hasReview ? 's-review' : 's-cp'}')">← Kembali</button>
     </div>
   </div>
 </div>
@@ -248,6 +327,23 @@ ${EXPORT_CSS}
     </div>
   </div>
 </div>
+
+<!-- ═══ REFLEKSI ═══ -->
+${hasRefleksi ? `
+<div class="screen" id="s-refleksi">
+  <nav class="navbar">
+    <span class="nav-logo">${esc(M.namaBab || 'Media')}</span>
+    <div class="nav-prog"><div class="nav-prog-fill" style="width:90%"></div></div>
+    <span class="nav-score">⭐</span>
+  </nav>
+  <div class="main">
+    ${refleksiHtml}
+    <div class="btn-row btn-center mt14">
+      <button class="btn btn-y" onclick="goScreen('${refleksiNextScreen}')">Lihat Hasil →</button>
+      <button class="btn btn-ghost" onclick="goScreen('${hasKuis ? 's-kuis' : hasMateri ? 's-materi' : 's-modules'}')">← Kembali</button>
+    </div>
+  </div>
+</div>` : ''}
 
 <!-- ═══ HASIL ═══ -->
 <div class="screen" id="s-hasil">
