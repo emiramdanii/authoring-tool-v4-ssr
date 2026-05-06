@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // GAMES — Matching, TrueFalse, Memory, Roda, Sorting, Spinwheel,
-//         Teambuzzer, Wordsearch
+//         Teambuzzer, Wordsearch, Crossword, Fillblank, Dragdrop
 // ═══════════════════════════════════════════════════════════════════
 
 import type { LayoutVariant, M } from './types';
@@ -90,12 +90,23 @@ export function bodySorting(mod: M, v: LayoutVariant): string {
 }
 
 // ── SPINWHEEL ─────────────────────────────────────────────────────
-export function bodySpinwheel(mod: M): string {
+export function bodySpinwheel(mod: M, v: LayoutVariant): string {
   const soal = arr<Record<string, unknown>>(mod.soal);
   if (!soal.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada soal.</div>`;
-  return `<div style="text-align:center">` +
-    `<div style="font-size:36px;margin-bottom:6px">\u{1F3B0}</div>` +
-    `<div style="font-size:11px;color:${T.muted};font-family:'Nunito',sans-serif">${soal.length} soal roda pertanyaan</div>` +
+  const max = v === 'D' ? 4 : v === 'C' ? 6 : 5;
+  if (v === 'D') {
+    return soal.slice(0, max).map((s, i) =>
+      `<div style="padding:3px 0;border-left:3px solid ${T.r};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">${i + 1}. ${esc(str(s.teks || s.q))}</div>`
+    ).join('');
+  }
+  return `<div style="text-align:center;margin-bottom:8px">` +
+    `<div style="font-size:28px;margin-bottom:4px">\u{1F3B0}</div>` +
+    `<div style="font-size:10px;color:${T.muted};font-family:'Nunito',sans-serif;margin-bottom:8px">${soal.length} soal roda pertanyaan</div>` +
+    `</div>` +
+    `<div style="display:flex;flex-direction:column;gap:4px">` +
+    soal.slice(0, max).map((s, i) =>
+      `<div style="background:rgba(255,107,107,0.06);border:1px solid rgba(255,107,107,0.2);border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;color:${T.text};font-family:'Nunito',sans-serif">\u{1F3B0} ${esc(str(s.teks || s.q))}</div>`
+    ).join('') +
     `</div>`;
 }
 
@@ -120,5 +131,68 @@ export function bodyWordsearch(mod: M): string {
   return `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">` +
     kata.map(k =>
       `<span style="display:inline-flex;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(249,193,46,0.12);color:${T.y};font-family:'Nunito',sans-serif">${esc(k)}</span>`
+    ).join('') + `</div>`;
+}
+
+// ── CROSSWORD (Teka-Teki Silang) ──────────────────────────────────
+export function bodyCrossword(mod: M, v: LayoutVariant): string {
+  const soal = arr<Record<string, unknown>>(mod.soal);
+  if (!soal.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada soal TTS.</div>`;
+  const max = v === 'D' ? 4 : v === 'C' ? 6 : 5;
+  if (v === 'D') {
+    return soal.slice(0, max).map((s, i) =>
+      `<div style="padding:3px 0;border-left:3px solid ${T.p};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(s.arah, '\u2192'))} ${esc(str(s.teks || s.pertanyaan))}</div>`
+    ).join('');
+  }
+  return `<div style="display:flex;flex-direction:column;gap:6px">` +
+    soal.slice(0, max).map((s, i) =>
+      `<div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);border-radius:8px;padding:10px 12px;display:flex;align-items:start;gap:8px">` +
+        `<span style="font-size:10px;font-weight:900;padding:2px 6px;border-radius:4px;background:rgba(167,139,250,0.15);color:${T.p};font-family:'Nunito',sans-serif">${esc(str(s.arah, '\u2192'))}</span>` +
+        `<div>` +
+          `<div style="font-size:11px;font-weight:700;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(s.teks || s.pertanyaan))}</div>` +
+          `<div style="font-size:9px;color:${T.muted};font-family:'Nunito',sans-serif;letter-spacing:2px">${esc(str(s.jawaban)).replace(/./g, '_ ')}</div>` +
+        `</div>` +
+      `</div>`
+    ).join('') + `</div>`;
+}
+
+// ── FILLBLANK (Isi Titik-Titik) ───────────────────────────────────
+export function bodyFillblank(mod: M, v: LayoutVariant): string {
+  const soal = arr<Record<string, unknown>>(mod.soal);
+  if (!soal.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada soal isian.</div>`;
+  const max = v === 'D' ? 3 : v === 'C' ? 5 : 4;
+  if (v === 'D') {
+    return soal.slice(0, max).map((s, i) =>
+      `<div style="padding:3px 0;border-left:3px solid ${T.g};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">${i + 1}. ${esc(str(s.teks || s.pertanyaan))}</div>`
+    ).join('');
+  }
+  return `<div style="display:flex;flex-direction:column;gap:6px">` +
+    soal.slice(0, max).map((s, i) =>
+      `<div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:10px 12px">` +
+        `<div style="font-size:12px;font-weight:700;margin-bottom:6px;color:${T.text};font-family:'Nunito',sans-serif">${i + 1}. ${esc(str(s.teks || s.pertanyaan))}</div>` +
+        `<div style="border:1px dashed rgba(255,255,255,0.15);border-radius:6px;padding:6px 8px;font-size:10px;color:${T.muted};background:rgba(255,255,255,0.03);font-family:'Nunito',sans-serif">Jawaban: _______________</div>` +
+      `</div>`
+    ).join('') + `</div>`;
+}
+
+// ── DRAGDROP (Seret & Letakkan) ───────────────────────────────────
+export function bodyDragdrop(mod: M, v: LayoutVariant): string {
+  const pasangan = arr<Record<string, unknown>>(mod.pasangan);
+  const items = arr<Record<string, unknown>>(mod.items);
+  const data = pasangan.length ? pasangan : items;
+  if (!data.length) return `<div style="font-size:12px;color:${T.muted};font-family:'Nunito',sans-serif">Belum ada item drag & drop.</div>`;
+  const max = v === 'D' ? 3 : v === 'C' ? 5 : 4;
+  if (v === 'D') {
+    return data.slice(0, max).map((d, i) =>
+      `<div style="padding:3px 0;border-left:3px solid ${T.o};padding-left:8px;font-size:11px;color:${T.text};font-family:'Nunito',sans-serif">${esc(str(d.teks || d.label || d.kiri))} \u2192 ${esc(str(d.target || d.kanan || '...'))}</div>`
+    ).join('');
+  }
+  return `<div style="display:flex;flex-direction:column;gap:6px">` +
+    data.slice(0, max).map((d, i) =>
+      `<div style="display:flex;align-items:center;gap:8px">` +
+        `<div style="flex:1;text-align:center;padding:8px;border-radius:8px;font-size:11px;font-weight:700;color:${T.text};background:rgba(251,146,60,0.08);border:2px dashed rgba(251,146,60,0.3);font-family:'Nunito',sans-serif">${esc(str(d.teks || d.label || d.kiri))}</div>` +
+        `<span style="font-size:10px;color:${T.muted}">\u2192</span>` +
+        `<div style="flex:1;text-align:center;padding:8px;border-radius:8px;font-size:11px;color:${T.muted};background:rgba(251,146,60,0.06);border:2px solid rgba(251,146,60,0.15);font-family:'Nunito',sans-serif">${esc(str(d.target || d.kanan || '...'))}</div>` +
+      `</div>`
     ).join('') + `</div>`;
 }

@@ -43,7 +43,6 @@ interface ModuleTypeMeta {
 }
 
 const MODULE_META: ModuleTypeMeta[] = [
-  { id: 'senario', icon: '🎭', label: 'Skenario Interaktif', color: '#f9c82e' },
   { id: 'video', icon: '🎥', label: 'Video Embed', color: '#ff6b6b' },
   { id: 'flashcard', icon: '🃏', label: 'Flashcard', color: '#3ecfcf' },
   { id: 'infografis', icon: '📊', label: 'Infografis', color: '#a78bfa' },
@@ -71,6 +70,9 @@ const MODULE_META: ModuleTypeMeta[] = [
   { id: 'spinwheel', icon: '🎡', label: 'Roda Pertanyaan', color: '#ff6b6b', isGame: true },
   { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', color: '#f9c82e', isGame: true },
   { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', color: '#60a5fa', isGame: true },
+  { id: 'crossword', icon: '🔤', label: 'Teka-Teki Silang', color: '#a78bfa', isGame: true },
+  { id: 'fillblank', icon: '✏️', label: 'Isi Titik-Titik', color: '#34d399', isGame: true },
+  { id: 'dragdrop', icon: '🖐️', label: 'Seret & Letakkan', color: '#fb923c', isGame: true },
   { id: 'skenario', icon: '🎭', label: 'Skenario Interaktif', color: '#f9c82e' },
   { id: 'petunjuk', icon: '📌', label: 'Petunjuk Penggunaan', color: '#3ecfcf' },
   { id: 'diskusi', icon: '💬', label: 'Diskusi & Refleksi', color: '#34d399' },
@@ -118,7 +120,7 @@ function obj(val: unknown): Record<string, unknown> {
 function getItemCount(mod: M): number {
   const t = str(mod.type);
   const keys: Record<string, string> = {
-    senario: 'chapters', video: 'pertanyaan', flashcard: 'kartu',
+    video: 'pertanyaan', flashcard: 'kartu',
     infografis: 'kartu', 'studi-kasus': 'pertanyaan', timeline: 'events',
     matching: 'pasangan', materi: 'blok', truefalse: 'soal',
     memory: 'pasangan', roda: 'opsi', hero: 'chips',
@@ -126,8 +128,9 @@ function getItemCount(mod: M): number {
     statistik: 'items', polling: 'opsi', embed: 'url',
     'tab-icons': 'tabs', 'icon-explore': 'items', comparison: 'baris',
     'card-showcase': 'cards', 'hotspot-image': 'hotspots',
-    sorting: 'items', spinwheel: 'soal', teambuzzer: 'soal',
-    wordsearch: 'kata', skenario: 'chapters', debat: 'pertanyaan',
+    sorting: 'items', spinwheel: 'soal', teambuzzer: 'teams',
+    wordsearch: 'kata', crossword: 'soal', fillblank: 'soal', dragdrop: 'pasangan',
+    skenario: 'chapters', debat: 'pertanyaan',
     petunjuk: 'langkah', diskusi: 'pertanyaan', review: 'kartu', refleksi: 'pertanyaan',
   };
   const key = keys[t];
@@ -1141,16 +1144,23 @@ function PreviewSpinwheel({ mod, compact }: { mod: M; compact: boolean }) {
 }
 
 function PreviewTeambuzzer({ mod, compact }: { mod: M; compact: boolean }) {
-  const soal = arr<Record<string, unknown>>(mod.soal);
+  const teams = arr<Record<string, unknown>>(mod.teams);
+  if (!teams.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada tim.</div>;
   const max = compact ? 2 : 3;
+  const colors = ['#f9c12e', '#3ecfcf', '#ff6b6b', '#a78bfa', '#34d399', '#fb923c'];
 
   return (
-    <div className="space-y-1.5">
-      {soal.slice(0, max).map((s, i) => (
-        <div key={i} className="rounded-lg p-2 text-xs font-semibold" style={{ background: 'rgba(249,200,46,0.06)', border: '1px solid rgba(249,200,46,0.2)', color: T.text }}>
-          🏆 {str(s.teks || s.q)}
-        </div>
-      ))}
+    <div className="grid grid-cols-2 gap-1.5">
+      {teams.slice(0, max).map((t, i) => {
+        const color = str(t.color, colors[i % colors.length]);
+        return (
+          <div key={i} className="rounded-lg p-2 text-center" style={{ background: color + '12', border: `2px solid ${color}33` }}>
+            <div className="text-base">{str(t.icon, '🏆')}</div>
+            <div className="text-[10px] font-black" style={{ color: T.text }}>{str(t.name, `Tim ${i + 1}`)}</div>
+            <div className="text-sm font-black" style={{ color: color }}>{num(t.score, 0)}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1163,6 +1173,78 @@ function PreviewWordsearch({ mod, compact }: { mod: M; compact: boolean }) {
     <div className="flex flex-wrap gap-1.5">
       {kata.slice(0, max).map((k, i) => (
         <span key={i} className="px-2 py-1 rounded text-[10px] font-bold" style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)', color: '#60a5fa' }}>{str(k.teks || k)}</span>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PREVIEW: CROSSWORD (Teka-Teki Silang)
+// ═══════════════════════════════════════════════════════════════════
+function PreviewCrossword({ mod, compact }: { mod: M; compact: boolean }) {
+  const soal = arr<Record<string, unknown>>(mod.soal);
+  if (!soal.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada soal TTS.</div>;
+  const max = compact ? 2 : 4;
+
+  return (
+    <div className="space-y-1.5">
+      {soal.slice(0, max).map((s, i) => (
+        <div key={i} className="rounded-lg p-2 flex items-start gap-2" style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)' }}>
+          <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{ background: T.p + '20', color: T.p }}>{str(s.arah, '→')}</span>
+          <div>
+            <div className="text-[10px] font-bold" style={{ color: T.text }}>{str(s.teks || s.pertanyaan)}</div>
+            <div className="text-[9px]" style={{ color: T.muted }}>{str(s.jawaban).replace(/./g, '_ ')}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PREVIEW: FILLBLANK (Isi Titik-Titik)
+// ═══════════════════════════════════════════════════════════════════
+function PreviewFillblank({ mod, compact }: { mod: M; compact: boolean }) {
+  const soal = arr<Record<string, unknown>>(mod.soal);
+  if (!soal.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada soal isian.</div>;
+  const max = compact ? 2 : 3;
+
+  return (
+    <div className="space-y-1.5">
+      {soal.slice(0, max).map((s, i) => (
+        <div key={i} className="rounded-lg p-2.5" style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)' }}>
+          <div className="text-xs font-bold mb-1.5" style={{ color: T.text }}>{i + 1}. {str(s.teks || s.pertanyaan)}</div>
+          <div className="rounded px-2 py-1 text-[10px]" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)', color: T.muted }}>
+            Jawaban: _______________
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PREVIEW: DRAGDROP (Seret & Letakkan)
+// ═══════════════════════════════════════════════════════════════════
+function PreviewDragdrop({ mod, compact }: { mod: M; compact: boolean }) {
+  const pasangan = arr<Record<string, unknown>>(mod.pasangan);
+  const items = arr<Record<string, unknown>>(mod.items);
+  const data = pasangan.length ? pasangan : items;
+  if (!data.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada item drag & drop.</div>;
+  const max = compact ? 2 : 4;
+
+  return (
+    <div className="space-y-1.5">
+      {data.slice(0, max).map((d, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <div className="flex-1 rounded-lg p-2 text-[10px] font-bold text-center" style={{ background: 'rgba(251,146,60,0.08)', border: '2px dashed rgba(251,146,60,0.3)', color: T.text }}>
+            {str(d.teks || d.label || d.kiri)}
+          </div>
+          <span className="text-[10px]" style={{ color: T.muted }}>→</span>
+          <div className="flex-1 rounded-lg p-2 text-[10px] text-center" style={{ background: 'rgba(251,146,60,0.06)', border: '2px solid rgba(251,146,60,0.15)', color: T.muted }}>
+            {str(d.target || d.kanan || '...')}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -1272,6 +1354,12 @@ function ModulePreview({ mod, variant, compact }: { mod: M; variant: LayoutVaria
       return <PreviewTeambuzzer mod={mod} compact={compact} />;
     case 'wordsearch':
       return <PreviewWordsearch mod={mod} compact={compact} />;
+    case 'crossword':
+      return <PreviewCrossword mod={mod} compact={compact} />;
+    case 'fillblank':
+      return <PreviewFillblank mod={mod} compact={compact} />;
+    case 'dragdrop':
+      return <PreviewDragdrop mod={mod} compact={compact} />;
     default:
       return <PreviewFallback mod={mod} meta={meta} compact={compact} />;
   }

@@ -61,6 +61,9 @@ const MODULE_META: ModuleTypeMeta[] = [
   { id: 'spinwheel', icon: '🎡', label: 'Roda Pertanyaan', color: '#ff6b6b', isGame: true },
   { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', color: '#f9c82e', isGame: true },
   { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', color: '#60a5fa', isGame: true },
+  { id: 'crossword', icon: '🔤', label: 'Teka-Teki Silang', color: '#a78bfa', isGame: true },
+  { id: 'fillblank', icon: '✏️', label: 'Isi Titik-Titik', color: '#34d399', isGame: true },
+  { id: 'dragdrop', icon: '🖐️', label: 'Seret & Letakkan', color: '#fb923c', isGame: true },
   { id: 'skenario', icon: '🎭', label: 'Skenario Interaktif', color: '#f9c82e' },
   { id: 'petunjuk', icon: '📌', label: 'Petunjuk Penggunaan', color: '#3ecfcf' },
   { id: 'diskusi', icon: '💬', label: 'Diskusi & Refleksi', color: '#34d399' },
@@ -78,7 +81,7 @@ export function getModuleMeta(typeId: string): ModuleTypeMeta {
 export function getItemCount(mod: M): number {
   const t = str(mod.type);
   const keys: Record<string, string> = {
-    senario: 'chapters', video: 'pertanyaan', flashcard: 'kartu',
+    video: 'pertanyaan', flashcard: 'kartu',
     infografis: 'kartu', 'studi-kasus': 'pertanyaan', timeline: 'events',
     matching: 'pasangan', materi: 'blok', truefalse: 'soal',
     memory: 'pasangan', roda: 'opsi', hero: 'chips',
@@ -86,8 +89,9 @@ export function getItemCount(mod: M): number {
     statistik: 'items', polling: 'opsi', embed: 'url',
     'tab-icons': 'tabs', 'icon-explore': 'items', comparison: 'baris',
     'card-showcase': 'cards', 'hotspot-image': 'hotspots',
-    sorting: 'items', spinwheel: 'soal', teambuzzer: 'soal',
-    wordsearch: 'kata', skenario: 'chapters', debat: 'pertanyaan',
+    sorting: 'items', spinwheel: 'soal', teambuzzer: 'teams',
+    wordsearch: 'kata', crossword: 'soal', fillblank: 'soal', dragdrop: 'pasangan',
+    skenario: 'chapters', debat: 'pertanyaan',
     petunjuk: 'langkah', diskusi: 'pertanyaan', review: 'kartu', refleksi: 'pertanyaan',
   };
   const key = keys[t];

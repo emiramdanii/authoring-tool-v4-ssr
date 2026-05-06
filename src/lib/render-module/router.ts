@@ -9,7 +9,7 @@ import { bodyInfografis, bodyVideo, bodyFlashcard, bodyEmbed, bodyStudiKasus, bo
 import { bodyAccordion, bodyTabIcons, bodyIconExplore, bodyComparison, bodyCardShowcase, bodyHotspotImage, bodyPolling } from './interactive';
 import { bodyTimeline, bodyHero, bodyKutipan, bodyLangkah, bodySkenario, bodyDebat, bodyPetunjuk, bodyDiskusi, bodyReview, bodyRefleksi } from './narrative';
 import { bodyStatistik } from './statistics';
-import { bodyMatching, bodyTrueFalse, bodyMemory, bodyRoda, bodySorting, bodySpinwheel, bodyTeambuzzer, bodyWordsearch } from './games';
+import { bodyMatching, bodyTrueFalse, bodyMemory, bodyRoda, bodySorting, bodySpinwheel, bodyTeambuzzer, bodyWordsearch, bodyCrossword, bodyFillblank, bodyDragdrop } from './games';
 
 // ═══════════════════════════════════════════════════════════════════
 // FALLBACK RENDERER
@@ -66,10 +66,14 @@ export function renderBody(mod: M, v: LayoutVariant): string {
     case 'studi-kasus': return bodyStudiKasus(mod, v);
     case 'debat': return bodyDebat(mod, v);
     case 'sorting': return bodySorting(mod, v);
-    case 'spinwheel': return bodySpinwheel(mod);
+    case 'spinwheel': return bodySpinwheel(mod, v);
     case 'teambuzzer': return bodyTeambuzzer(mod);
     case 'wordsearch': return bodyWordsearch(mod);
+    case 'crossword': return bodyCrossword(mod, v);
+    case 'fillblank': return bodyFillblank(mod, v);
+    case 'dragdrop': return bodyDragdrop(mod, v);
     case 'skenario': return bodySkenario(mod, v);
+    case 'senario': return bodySkenario(mod, v); // legacy alias
     case 'petunjuk': return bodyPetunjuk(mod, v);
     case 'diskusi': return bodyDiskusi(mod, v);
     case 'review': return bodyReview(mod, v);
