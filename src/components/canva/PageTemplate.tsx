@@ -55,6 +55,14 @@ export default function PageTemplate({ page, isSelected, onEditField, interactiv
       return <HeroTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     case 'skenario':
       return <SkenarioTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+    case 'petunjuk':
+      return <PetunjukTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+    case 'diskusi':
+      return <DiskusiTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+    case 'refleksi':
+      return <RefleksiTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+    case 'penutup':
+      return <PenutupTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
     default:
       return null;
   }
@@ -1023,6 +1031,285 @@ function SkenarioTemplate({ td, palette, isSelected, onEditField, interactive }:
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">🎭</span>
           <span className="text-[10px]">Tambah skenario di panel Konten → Skenario</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Petunjuk Template ─────────────────────────────────────────
+
+function PetunjukTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+  const accent = getPaletteColor(palette, '--y', '#f9c82e');
+  const langkah = (td.langkah as Array<Record<string, unknown>>) || [];
+  const tips = String(td.tips || '');
+
+  return (
+    <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+          style={{ background: `${accent}20` }}>📋</div>
+        <div>
+          <EditableText
+            value={String(td.title || 'Petunjuk Penggunaan')}
+            fieldKey="title"
+            isSelected={isSelected}
+            onEdit={onEditField}
+            className="font-black text-sm"
+            style={{ color: accent }}
+            placeholder="Judul Petunjuk"
+          />
+          <div className="text-[9px] text-white/40">{langkah.length} langkah</div>
+        </div>
+      </div>
+
+      {/* Intro */}
+      {Boolean(td.intro) && (
+        <div className="text-[9px] text-white/70 leading-relaxed mb-3">{String(td.intro)}</div>
+      )}
+
+      {/* Steps */}
+      {langkah.length > 0 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+          {langkah.map((l, i) => (
+            <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-white/5 border border-white/10">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black flex-shrink-0 mt-0.5"
+                style={{ background: `${accent}30`, color: accent }}>
+                {i + 1}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <span className="text-sm">{String(l.icon || '📌')}</span>
+                  <span className="text-[10px] font-bold text-white">{String(l.judul || '')}</span>
+                </div>
+                <div className="text-[8px] text-white/70 leading-relaxed line-clamp-3">{String(l.isi || '')}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center text-white/30">
+          <span className="text-3xl mb-2">📋</span>
+          <span className="text-[10px]">Tambah langkah di panel Konten → Petunjuk</span>
+        </div>
+      )}
+
+      {/* Tips */}
+      {tips && (
+        <div className="mt-2 p-2 rounded-lg" style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}>
+          <div className="text-[9px] font-bold mb-0.5" style={{ color: accent }}>💡 Tips</div>
+          <div className="text-[8px] text-white/70 leading-relaxed">{tips}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Diskusi Template ───────────────────────────────────────────
+
+function DiskusiTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+  const accent = getPaletteColor(palette, '--c', '#3ecfcf');
+  const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
+
+  return (
+    <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+          style={{ background: `${accent}20` }}>💬</div>
+        <div>
+          <EditableText
+            value={String(td.title || 'Diskusi & Pertanyaan')}
+            fieldKey="title"
+            isSelected={isSelected}
+            onEdit={onEditField}
+            className="font-black text-sm"
+            style={{ color: accent }}
+            placeholder="Judul Diskusi"
+          />
+          <div className="text-[9px] text-white/40">{pertanyaan.length} pertanyaan</div>
+        </div>
+      </div>
+
+      {/* Intro */}
+      {Boolean(td.intro) && (
+        <div className="text-[9px] text-white/70 leading-relaxed mb-3">{String(td.intro)}</div>
+      )}
+
+      {/* Questions */}
+      {pertanyaan.length > 0 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+          {pertanyaan.map((p, i) => (
+            <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="px-1.5 py-0.5 rounded text-[7px] font-bold"
+                  style={{ background: `${accent}20`, color: accent }}>
+                  {String(p.label || `Pertanyaan ${i + 1}`)}
+                </span>
+                <span className="text-sm">{String(p.icon || '💬')}</span>
+              </div>
+              <div className="text-[9px] text-white/80 leading-relaxed mb-1">{String(p.teks || '')}</div>
+              {Boolean(p.petunjuk) && (
+                <div className="text-[8px] text-white/40 italic">💡 {String(p.petunjuk)}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center text-white/30">
+          <span className="text-3xl mb-2">💬</span>
+          <span className="text-[10px]">Tambah pertanyaan di panel Konten → Diskusi</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Refleksi Template ───────────────────────────────────────────
+
+function RefleksiTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+  const accent = getPaletteColor(palette, '--p', '#a78bfa');
+  const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
+  const penugasan = td.penugasan as Record<string, unknown> | undefined;
+
+  return (
+    <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+          style={{ background: `${accent}20` }}>🪞</div>
+        <div>
+          <EditableText
+            value={String(td.title || 'Refleksi Diri')}
+            fieldKey="title"
+            isSelected={isSelected}
+            onEdit={onEditField}
+            className="font-black text-sm"
+            style={{ color: accent }}
+            placeholder="Judul Refleksi"
+          />
+          <div className="text-[9px] text-white/40">{pertanyaan.length} pertanyaan</div>
+        </div>
+      </div>
+
+      {/* Intro */}
+      {Boolean(td.intro) && (
+        <div className="text-[9px] text-white/70 leading-relaxed mb-3">{String(td.intro)}</div>
+      )}
+
+      {/* Questions */}
+      {pertanyaan.length > 0 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+          {pertanyaan.map((p, i) => {
+            const warna = String(p.warna || accent);
+            return (
+              <div key={i} className="p-2 rounded-lg" style={{ background: `${warna}08`, border: `1px solid ${warna}25` }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  {Boolean(p.icon) && <span className="text-sm">{String(p.icon)}</span>}
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: warna }} />
+                </div>
+                <div className="text-[9px] text-white/80 leading-relaxed mb-0.5">{String(p.teks || '')}</div>
+                {Boolean(p.petunjuk) && (
+                  <div className="text-[8px] text-white/40 italic">💡 {String(p.petunjuk)}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center text-white/30">
+          <span className="text-3xl mb-2">🪞</span>
+          <span className="text-[10px]">Tambah pertanyaan di panel Konten → Refleksi</span>
+        </div>
+      )}
+
+      {/* Penugasan */}
+      {penugasan && (
+        <div className="mt-2 p-2 rounded-lg" style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}>
+          <div className="text-[10px] font-bold mb-0.5" style={{ color: accent }}>📝 {String(penugasan.judul || 'Penugasan')}</div>
+          <div className="text-[8px] text-white/70 leading-relaxed">{String(penugasan.isi || '')}</div>
+          {Boolean(penugasan.contoh) && (
+            <div className="mt-1 text-[7px] text-white/40 italic">Contoh: {String(penugasan.contoh)}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Penutup Template ───────────────────────────────────────────
+
+function PenutupTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+  const accent = getPaletteColor(palette, '--g', '#34d399');
+  const preview = (td.preview as Array<Record<string, unknown>>) || [];
+  const nextPertemuan = td.nextPertemuan as Record<string, unknown> | undefined;
+
+  return (
+    <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+          style={{ background: `${accent}20` }}>🎓</div>
+        <div>
+          <EditableText
+            value={String(td.title || 'Penutup')}
+            fieldKey="title"
+            isSelected={isSelected}
+            onEdit={onEditField}
+            className="font-black text-sm"
+            style={{ color: accent }}
+            placeholder="Judul Penutup"
+          />
+          {Boolean(td.subjudul) && (
+            <div className="text-[9px] text-white/50">{String(td.subjudul)}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Preview Items */}
+      {preview.length > 0 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+          {preview.map((item, i) => {
+            const warna = String(item.warna || accent);
+            return (
+              <div key={i} className="p-2 rounded-lg" style={{ background: `${warna}10`, border: `1px solid ${warna}25` }}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-sm">{String(item.icon || '📌')}</span>
+                  <span className="text-[10px] font-bold" style={{ color: warna }}>{String(item.judul || '')}</span>
+                </div>
+                <div className="text-[8px] text-white/70 leading-relaxed">{String(item.isi || '')}</div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center text-white/30">
+          <span className="text-3xl mb-2">🎓</span>
+          <span className="text-[10px]">Tambah item di panel Konten → Penutup</span>
+        </div>
+      )}
+
+      {/* Next Pertemuan */}
+      {nextPertemuan && (
+        <div className="mt-2 p-2 rounded-lg bg-white/5 border border-white/10">
+          <div className="text-[10px] font-bold mb-0.5" style={{ color: accent }}>📅 {String(nextPertemuan.judul || 'Pertemuan Berikutnya')}</div>
+          {Boolean(nextPertemuan.deskripsi) && (
+            <div className="text-[8px] text-white/60 leading-relaxed mb-1">{String(nextPertemuan.deskripsi)}</div>
+          )}
+          {Array.isArray(nextPertemuan.items) && (nextPertemuan.items as Array<Record<string, unknown>>).length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {(nextPertemuan.items as Array<Record<string, unknown>>).map((it, j) => {
+                const itWarna = String(it.warna || accent);
+                return (
+                  <span key={j} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
+                    style={{ background: `${itWarna}15`, color: itWarna }}>
+                    {String(it.icon || '')} {String(it.judul || '')}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -25,9 +25,9 @@ import { useCanvaStore } from '@/store/canva-store';
 import Dashboard from './Dashboard';
 import Dokumen from './Dokumen';
 import Konten from './Konten';
-import AutoGenerate from './AutoGenerate';
+import AutoGenerate from './auto-generate';
 import Projects from './Projects';
-import ImportExport from './ImportExport';
+import ImportExport from './import-export';
 import Riwayat from './Riwayat';
 import LivePreview from './LivePreview';
 

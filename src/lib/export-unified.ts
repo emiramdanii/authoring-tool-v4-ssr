@@ -40,6 +40,10 @@ const TEMPLATE_TO_SCREEN: Record<string, string> = {
   hasil: 's-hasil',
   hero: 's-hero',
   skenario: 's-sk',
+  petunjuk: 's-petunjuk',
+  diskusi: 's-diskusi',
+  refleksi: 's-refleksi',
+  penutup: 's-penutup',
   custom: 's-custom',
 };
 

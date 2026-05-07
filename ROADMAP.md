@@ -7,7 +7,7 @@
 
 ### ✅ Yang Sudah Bekerja Baik
 - [x] Halaman Canva untuk menyusun blok-blok konten
-- [x] Template halaman: Cover, Dokumen, Materi, Kuis, Game, Hasil, Skenario
+- [x] Template halaman: Cover, Dokumen, Materi, Kuis, Game, Hasil, Skenario, Petunjuk, Diskusi, Refleksi, Penutup
 - [x] Panel kiri untuk mengatur halaman dan menambah blok
 - [x] Panel kanan untuk mengedit properti blok
 - [x] Export ke HTML (Unified Export) — sudah bisa download file
@@ -42,9 +42,9 @@ Sekarang alur ini **putus di 3 titik**:
 
 | # | Masalah | Bahasanya Guru | Status |
 |---|---------|---------------|--------|
-| 1.1 | **Preset tidak lengkap & kurang cantik** | "Saya pilih Full Interaktif, tapi halamannya jelek dan sederhana. Tidak ada kartu, tidak ada ikon, tidak ada visual menarik." | ❌ |
-| 1.2 | **Canva tidak menampilkan halaman secara full** | "Yang muncul di canva cuma teks polos. Harusnya kelihatan seperti slide presentasi yang cantik — ada kartu warna, ikon, layout rapi." | ❌ |
-| 1.3 | **Export berbeda dengan tampilan di Canva** | "Yang saya susun di canva TIDAK SAMA dengan yang keluar di export. Susun cantik, keluar jelek." | ❌ |
+| 1.1 | **Preset tidak lengkap & kurang cantik** | "Saya pilih Full Interaktif, tapi halamannya jelek dan sederhana. Tidak ada kartu, tidak ada ikon, tidak ada visual menarik." | 🟡 |
+| 1.2 | **Canva tidak menampilkan halaman secara full** | "Yang muncul di canva cuma teks polos. Harusnya kelihatan seperti slide presentasi yang cantik — ada kartu warna, ikon, layout rapi." | 🟡 |
+| 1.3 | **Export berbeda dengan tampilan di Canva** | "Yang saya susun di canva TIDAK SAMA dengan yang keluar di export. Susun cantik, keluar jelek." | 🟡 |
 | 1.4 | **Interaktif tidak berfungsi di Export** | "Kuis dan game tidak bisa dimainkan di file export. Siswa klik tapi tidak ada respons." | ❌ |
 | 1.5 | **Game engine CSS tidak lengkap** | "Tampilan game di export jelek — tidak ada animasi, tombol tidak menarik, layout berantakan." | ❌ |
 
@@ -110,7 +110,7 @@ SEKARANG ───────────────────────�
 
 | Fase | Total Item | Selesai | Progress |
 |------|-----------|---------|----------|
-| Fase 1: Inti App | 5 | 0 | ░░░░░ 0% |
+| Fase 1: Inti App | 5 | 2 | ██░░░ 40% |
 | Fase 2: Kualitas | 6 | 0 | ░░░░░░ 0% |
 | Fase 3: Kenyamanan | 5 | 0 | ░░░░░ 0% |
 | Fase 4: Premium | 6 | 0 | ░░░░░░ 0% |
@@ -136,4 +136,4 @@ SEKARANG ───────────────────────�
 ---
 
 *Dokumen ini diperbarui setiap kali ada progress.*
-*Terakhir diperbarui: 7 Mei 2026*
+*Terakhir diperbarui: 7 Mei 2026 — Fase 1 progress: 4 template baru (Petunjuk, Diskusi, Refleksi, Penutup) kini tampil di Canva & Export*

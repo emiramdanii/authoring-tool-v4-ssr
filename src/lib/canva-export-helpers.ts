@@ -346,6 +346,123 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       </div>`;
     }
 
+    case 'petunjuk': {
+      const langkah = (td.langkah as Array<Record<string, unknown>>) || [];
+      const tips = esc(td.tips);
+      const introP = esc(td.intro);
+      const stepsHTML = langkah.map((l, i) =>
+        `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:8px">
+          <div style="width:24px;height:24px;border-radius:50%;background:rgba(249,200,46,.2);color:#f9c82e;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0">${i + 1}</div>
+          <div><div style="display:flex;align-items:center;gap:4px;margin-bottom:2px"><span style="font-size:14px">${esc(l.icon) || '📌'}</span><span style="font-size:10px;font-weight:800;color:#fff">${esc(l.judul)}</span></div><p style="font-size:9px;color:rgba(255,255,255,.6);line-height:1.5;margin:0">${esc(l.isi)}</p></div>
+        </div>`
+      ).join('');
+      const tipsHTML = tips
+        ? `<div style="padding:10px;border-radius:8px;background:rgba(249,200,46,.06);border:1px solid rgba(249,200,46,.15);margin-top:8px"><div style="font-size:10px;font-weight:700;color:#f9c82e;margin-bottom:4px">💡 Tips</div><p style="font-size:9px;color:rgba(255,255,255,.6);line-height:1.5;margin:0">${tips}</p></div>`
+        : '';
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(249,200,46,.12)">📋</div>
+          <div><div style="font-size:14px;font-weight:900;color:#f9c82e">Petunjuk Penggunaan</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${langkah.length} langkah</div></div>
+        </div>
+        ${introP ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:12px">${introP}</p>` : ''}
+        ${stepsHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah langkah di panel Petunjuk</div>'}
+        ${tipsHTML}
+      </div>`;
+    }
+
+    case 'diskusi': {
+      const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
+      const introD = esc(td.intro);
+      const questionsHTML = pertanyaan.map((p, i) =>
+        `<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="padding:2px 6px;border-radius:4px;font-size:8px;font-weight:700;background:rgba(62,207,207,.15);color:#3ecfcf">${esc(p.label) || 'Pertanyaan ' + (i + 1)}</span>
+            <span style="font-size:14px">${esc(p.icon) || '💬'}</span>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:4px">${esc(p.teks)}</div>
+          ${p.petunjuk ? `<div style="font-size:9px;color:rgba(255,255,255,.4);font-style:italic">💡 ${esc(p.petunjuk)}</div>` : ''}
+        </div>`
+      ).join('');
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(62,207,207,.12)">💬</div>
+          <div><div style="font-size:14px;font-weight:900;color:#3ecfcf">Diskusi & Pertanyaan</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${pertanyaan.length} pertanyaan</div></div>
+        </div>
+        ${introD ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:12px">${introD}</p>` : ''}
+        ${questionsHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah pertanyaan di panel Diskusi</div>'}
+      </div>`;
+    }
+
+    case 'refleksi': {
+      const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
+      const penugasan = td.penugasan as Record<string, unknown> | undefined;
+      const introR = esc(td.intro);
+      const questionsHTML = pertanyaan.map((p, i) => {
+        const warna = String(p.warna || '#a78bfa');
+        return `<div style="padding:10px;border-radius:8px;background:${warna}08;border:1px solid ${warna}25;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            ${p.icon ? `<span style="font-size:14px">${esc(p.icon)}</span>` : ''}
+            <div style="width:8px;height:8px;border-radius:50%;background:${warna}"></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:4px">${esc(p.teks)}</div>
+          ${p.petunjuk ? `<div style="font-size:9px;color:rgba(255,255,255,.4);font-style:italic">💡 ${esc(p.petunjuk)}</div>` : ''}
+        </div>`;
+      }).join('');
+      const penugasanHTML = penugasan
+        ? `<div style="padding:10px;border-radius:8px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);margin-top:8px">
+            <div style="font-size:10px;font-weight:700;color:#a78bfa;margin-bottom:4px">📝 ${esc(penugasan.judul) || 'Penugasan'}</div>
+            <p style="font-size:9px;color:rgba(255,255,255,.6);line-height:1.5;margin:0">${esc(penugasan.isi)}</p>
+            ${penugasan.contoh ? `<div style="font-size:8px;color:rgba(255,255,255,.35);font-style:italic;margin-top:4px">Contoh: ${esc(penugasan.contoh)}</div>` : ''}
+          </div>`
+        : '';
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(167,139,250,.12)">🪞</div>
+          <div><div style="font-size:14px;font-weight:900;color:#a78bfa">Refleksi Diri</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${pertanyaan.length} pertanyaan</div></div>
+        </div>
+        ${introR ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:12px">${introR}</p>` : ''}
+        ${questionsHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah pertanyaan di panel Refleksi</div>'}
+        ${penugasanHTML}
+      </div>`;
+    }
+
+    case 'penutup': {
+      const preview = (td.preview as Array<Record<string, unknown>>) || [];
+      const nextPertemuan = td.nextPertemuan as Record<string, unknown> | undefined;
+      const subjudul = esc(td.subjudul);
+      const previewHTML = preview.map((item) => {
+        const warna = String(item.warna || '#34d399');
+        return `<div style="padding:10px;border-radius:8px;background:${warna}0a;border:1px solid ${warna}25;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="font-size:14px">${esc(item.icon) || '📌'}</span>
+            <span style="font-size:10px;font-weight:800;color:${warna}">${esc(item.judul)}</span>
+          </div>
+          <p style="font-size:9px;color:rgba(255,255,255,.6);line-height:1.5;margin:0">${esc(item.isi)}</p>
+        </div>`;
+      }).join('');
+      let nextHTML = '';
+      if (nextPertemuan) {
+        const items = (nextPertemuan.items as Array<Record<string, unknown>>) || [];
+        const itemsHTML = items.map(it => {
+          const itWarna = String(it.warna || '#34d399');
+          return `<span style="padding:2px 6px;border-radius:4px;font-size:8px;font-weight:700;background:${itWarna}15;color:${itWarna}">${esc(it.icon) || ''} ${esc(it.judul)}</span>`;
+        }).join(' ');
+        nextHTML = `<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-top:8px">
+          <div style="font-size:10px;font-weight:700;color:#34d399;margin-bottom:4px">📅 ${esc(nextPertemuan.judul) || 'Pertemuan Berikutnya'}</div>
+          ${nextPertemuan.deskripsi ? `<p style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.5;margin:0 0 6px">${esc(nextPertemuan.deskripsi)}</p>` : ''}
+          ${itemsHTML ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${itemsHTML}</div>` : ''}
+        </div>`;
+      }
+      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(52,211,153,.12)">🎓</div>
+          <div><div style="font-size:14px;font-weight:900;color:#34d399">${esc(td.title) || 'Penutup'}</div>${subjudul ? `<div style="font-size:9px;color:rgba(255,255,255,.45)">${subjudul}</div>` : ''}</div>
+        </div>
+        ${previewHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah item di panel Penutup</div>'}
+        ${nextHTML}
+      </div>`;
+    }
+
     default:
       return null; // Fall back to element-based rendering
   }
