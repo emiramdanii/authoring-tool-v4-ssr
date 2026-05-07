@@ -1,10 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
-// EXPORT GAME ENGINES — Re-export barrel for backward compatibility
-//
-// The implementation has been split into:
-//   ./game-engines/css.ts        — GAME_ENGINE_CSS constant
-//   ./game-engines/js-builder.ts  — buildGameEngineJS function
-//   ./game-engines/index.ts       — barrel re-exports
+// GAME ENGINES — Barrel re-export for CSS + JS builder
 // ═══════════════════════════════════════════════════════════════
 
-export { GAME_ENGINE_CSS, buildGameEngineJS } from './game-engines';
+export { GAME_ENGINE_CSS } from './css';
+export { buildGameEngineJS } from './js-builder';
