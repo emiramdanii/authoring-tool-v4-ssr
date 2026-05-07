@@ -195,6 +195,127 @@ export interface KuisPreset {
   soal: KuisItem[];
 }
 
+// ── Full Store Interface ──────────────────────────────────────────
+export interface AuthoringState {
+  // Navigation
+  activePanel: PanelId;
+
+  // Mode tracking
+  activePreset: string | null;
+
+  // Data
+  meta: MetaState;
+  cp: CpState;
+  tp: TpItem[];
+  atp: AtpState;
+  alur: AlurItem[];
+  skenario: Array<Record<string, unknown>>;
+  kuis: KuisItem[];
+  modules: Array<Record<string, unknown>>;
+  games: Array<Record<string, unknown>>;
+  materi: MateriState;
+  petunjuk: PetunjukData;
+  diskusi: DiskusiData;
+  refleksi: RefleksiData;
+  penutup: PenutupData;
+  suara: SuaraConfig;
+
+  // System
+  dirty: boolean;
+  guruPw: string;
+
+  // Flag for auto canvas generation after preset
+  pendingCanvasGenerate: string | null;
+
+  // Navigation actions
+  setActivePanel: (panel: PanelId) => void;
+
+  // Meta actions
+  updateMeta: (key: keyof MetaState, value: string) => void;
+
+  // CP actions
+  updateCp: (key: string, value: unknown) => void;
+  addProfil: (value: string) => void;
+  removeProfil: (index: number) => void;
+
+  // TP actions
+  addTp: () => void;
+  deleteTp: (index: number) => void;
+  updateTp: (index: number, key: keyof TpItem, value: unknown) => void;
+  reorderTp: (fromIndex: number, toIndex: number) => void;
+
+  // ATP actions
+  updateAtpNamaBab: (value: string) => void;
+  addAtpPertemuan: () => void;
+  deleteAtpPertemuan: (index: number) => void;
+  updateAtpPertemuan: (index: number, key: keyof AtpPertemuan, value: string) => void;
+
+  // Alur actions
+  addAlur: () => void;
+  deleteAlur: (index: number) => void;
+  updateAlur: (index: number, key: keyof AlurItem, value: string) => void;
+  reorderAlur: (fromIndex: number, toIndex: number) => void;
+
+  // Kuis actions
+  addKuis: () => void;
+  deleteKuis: (index: number) => void;
+  updateKuis: (index: number, key: string, value: unknown) => void;
+  updateKuisOpt: (index: number, optIndex: number, value: string) => void;
+  reorderKuis: (fromIndex: number, toIndex: number) => void;
+
+  // Materi block actions
+  addMateriBlok: (tipe: string) => void;
+  removeMateriBlok: (index: number) => void;
+  updateMateriBlok: (index: number, key: string, value: unknown) => void;
+  moveMateriBlok: (fromIndex: number, toIndex: number) => void;
+
+  // Module actions
+  addModule: (typeId: string) => void;
+  removeModule: (index: number) => void;
+  updateModuleField: (index: number, key: string, value: unknown) => void;
+  moveModule: (fromIndex: number, toIndex: number) => void;
+  addModuleItem: (moduleIndex: number, arrayKey: string, defaultItem: Record<string, unknown>) => void;
+  removeModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number) => void;
+  updateModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => void;
+
+  // Skenario actions
+  setSkenario: (data: Array<Record<string, unknown>>) => void;
+  addSkenarioChapter: () => void;
+  removeSkenarioChapter: (index: number) => void;
+  updateSkenarioChapter: (index: number, key: string, value: unknown) => void;
+  addSkenarioSetup: (chapterIndex: number) => void;
+  removeSkenarioSetup: (chapterIndex: number, setupIndex: number) => void;
+  updateSkenarioSetup: (chapterIndex: number, setupIndex: number, key: string, value: unknown) => void;
+  addSkenarioChoice: (chapterIndex: number) => void;
+  removeSkenarioChoice: (chapterIndex: number, choiceIndex: number) => void;
+  updateSkenarioChoice: (chapterIndex: number, choiceIndex: number, key: string, value: unknown) => void;
+  addSkenarioConsequence: (chapterIndex: number, choiceIndex: number) => void;
+  removeSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number) => void;
+  updateSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => void;
+
+  // System actions
+  markDirty: () => void;
+  markClean: () => void;
+  saveToStorage: () => void;
+  loadFromStorage: () => boolean;
+
+  // Completeness
+  calcCompleteness: () => number;
+
+  // Presets
+  applyFullPreset: (presetKey: string) => void;
+  applyKuisPreset: (presetKey: string) => void;
+  applyTpPreset: (presetKey: string) => void;
+  applyCpPreset: (presetKey: string) => void;
+  applyAtpPreset: (presetKey: string) => void;
+  applyAlurPreset: (presetKey: string) => void;
+  applyMetaPreset: (presetKey: string) => void;
+  newProject: () => void;
+}
+
+// ── Storage Key ──────────────────────────────────────────────────
+export const STORAGE_KEY = 'at_state_v1';
+
 // ── Helper Constants & Functions ─────────────────────────────────
 export const VERB_OPTIONS = [
   'Menjelaskan', 'Mengidentifikasi', 'Menganalisis', 'Memberikan contoh',

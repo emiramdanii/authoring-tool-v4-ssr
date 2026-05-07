@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import type { CpState, TpItem, AlurItem, KuisItem } from '@/store/authoring-store';
+import type { CpState, TpItem, AlurItem, KuisItem, AtpState } from '@/store/authoring-store';
 import type {
   PreviewData,
   FlashcardItem,
   MatchingPair,
   TrueFalseItem,
   SkenarioChapter,
-} from '@/lib/autogen';
+} from './types';
 
 // ═══════════════════════════════════════════════════════════════════
 // Preview Renderer
@@ -21,7 +21,7 @@ export function renderPreviewContent(preview: PreviewData) {
     case 'tp':
       return <TpPreview data={preview.data as TpItem[]} />;
     case 'atp':
-      return <AtpPreview data={preview.data as import('@/store/authoring-store').AtpState} />;
+      return <AtpPreview data={preview.data as AtpState} />;
     case 'alur':
       return <AlurPreview data={preview.data as AlurItem[]} />;
     case 'kuis':
@@ -117,7 +117,7 @@ function TpPreview({ data }: { data: TpItem[] }) {
   );
 }
 
-function AtpPreview({ data }: { data: import('@/store/authoring-store').AtpState }) {
+function AtpPreview({ data }: { data: AtpState }) {
   return (
     <div className="space-y-3">
       <div className="bg-zinc-800/50 rounded-lg p-3">

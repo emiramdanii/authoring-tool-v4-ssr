@@ -1,6 +1,8 @@
 'use client';
 
 import { Upload, Download, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import { useAuthoringStore } from '@/store/authoring-store';
+import { toast } from 'sonner';
 import { useExportActions } from './use-export-actions';
 import { useExcelImport } from './use-excel-import';
 import { ExcelPreviewDialog } from './excel-preview-dialog';
@@ -36,24 +38,65 @@ export default function ImportExport() {
         </p>
       </div>
 
-      {/* ── Student Export ────────────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-zinc-200 mb-1 flex items-center gap-2">
-          🎓 Export untuk Siswa
+      {/* ── Unified Export (RECOMMENDED) ──────────────────────── */}
+      <div className="bg-zinc-900 border border-emerald-800/50 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-emerald-300 mb-1 flex items-center gap-2">
+          🚀 Export Interaktif (Unified) — Rekomendasi
         </h3>
         <p className="text-xs text-zinc-400 mb-4">
-          Download file HTML standalone yang berisi media pembelajaran lengkap (cover, skenario, materi, kuis, hasil).
-          Siswa bisa langsung membuka di browser tanpa koneksi internet.
+          Download HTML lengkap dengan <strong className="text-emerald-400">navigasi pintar</strong> (Lanjut → / ← Kembali), <strong className="text-emerald-400">game engines</strong> (11+ tipe), dan layout canvas.
+          Mode Unified menggabungkan kekuatan canvas + template + game engines.
+        </p>
+        <button
+          onClick={() => {
+            try {
+              const { useCanvaStore } = require('@/store/canva-store');
+              const html = useCanvaStore.getState().exportUnifiedHTML();
+              const s = useAuthoringStore.getState();
+              const filename = (s.meta.judulPertemuan || 'media')
+                .replace(/[^a-z0-9\-]/gi, '-')
+                .replace(/-+/g, '-')
+                .toLowerCase();
+              const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${filename}-unified.html`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast.success('🚀 Export Unified berhasil didownload!');
+            } catch (err) {
+              console.error('Unified export failed:', err);
+              toast.error('❌ Gagal mengexport Unified HTML');
+            }
+          }}
+          className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <Download className="size-4" />
+          Export HTML Interaktif (Unified)
+        </button>
+        <p className="text-[0.65rem] text-zinc-500 mt-2">
+          🚀 Navigasi pintar + game engines + canvas layout — satu file HTML lengkap
+        </p>
+      </div>
+
+      {/* ── Template Export ──────────────────────────────────── */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-zinc-200 mb-1 flex items-center gap-2">
+          🎓 Export Template
+        </h3>
+        <p className="text-xs text-zinc-400 mb-4">
+          Download HTML template system dengan navigasi screen-based (Cover → CP → Skenario → Materi → Kuis → Hasil).
         </p>
         <button
           onClick={exportStudentHtml}
           className="w-full px-4 py-3 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Download className="size-4" />
-          Export HTML untuk Siswa
+          Export HTML Template
         </button>
         <p className="text-[0.65rem] text-zinc-500 mt-2">
-          File .html standalone — tidak perlu server, langsung buka di browser
+          Template system dengan screen navigation
         </p>
       </div>
 
@@ -195,7 +238,7 @@ export default function ImportExport() {
         <ul className="text-xs text-zinc-500 space-y-1.5">
           <li className="flex items-start gap-2">
             <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
-            Gunakan <strong className="text-zinc-300">Export HTML untuk Siswa</strong> setelah semua konten selesai diedit. File akan berisi seluruh media pembelajaran dalam satu file.
+            Gunakan <strong className="text-emerald-300">Export Interaktif (Unified)</strong> untuk hasil terbaik — navigasi pintar, game engines, dan layout canvas dalam satu file.
           </li>
           <li className="flex items-start gap-2">
             <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>

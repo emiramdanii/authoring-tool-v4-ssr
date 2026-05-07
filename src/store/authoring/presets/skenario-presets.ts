@@ -1,0 +1,140 @@
+// ── Skenario Presets ──────────────────────────────────────────────
+export const PRESETS_SKENARIO: Record<string, Array<Record<string, unknown>>> = {
+  'hakikat-norma': [
+    {
+      title: '\uD83C\uDFD8\uFE0F Perselisihan di Kampung',
+      bg: 'sbg-kampung',
+      charEmoji: '\uD83D\uDE1F',
+      charColor: '#e87070',
+      charPants: '#4a6a9a',
+      choicePrompt: 'Apa yang kamu lakukan sebagai Ketua RT?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Pak Joko baru saja membangun pagar setinggi 3 meter yang menghalangi jalan setapak yang sudah dipakai warga selama puluhan tahun.' },
+        { speaker: 'WARGA \uD83D\uDE24', text: '"Jalan itu milik kita bersama! Pak Joko tidak boleh menutupnya begitu saja!"' },
+        { speaker: 'PAK JOKO \uD83D\uDE20', text: '"Tanah itu milik saya! Terserah saya mau bangun apa di sini."' },
+        { speaker: 'NARRATOR', text: 'Kamu adalah Ketua RT yang dipercaya warga. Konflik ini perlu diselesaikan seadil mungkin.' },
+      ],
+      choices: [
+        { icon: '\uD83E\uDD1D', label: 'Adakan musyawarah warga', detail: 'Undang Pak Joko dan warga untuk duduk bersama mencari solusi yang adil', good: true, pts: 20, norma: 'Fungsi Norma: Mencegah Konflik & Mewujudkan Keadilan', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Musyawarah adalah cara terbaik menyelesaikan konflik — inilah bukti norma berfungsi menciptakan ketertiban dan keadilan.', consequences: [{ icon: '\u2705', text: 'Konflik bisa diselesaikan tanpa kekerasan dan semua pihak merasa didengar' }, { icon: '\u2705', text: 'Norma adat dan hukum dapat diterapkan bersama untuk menemukan solusi adil' }, { icon: '\u2705', text: 'Hubungan antarwarga tetap terjaga — itulah fungsi norma sebagai pemersatu' }] },
+        { icon: '\u2696\uFE0F', label: 'Laporkan ke kelurahan', detail: 'Bawa masalah ini ke aparat desa agar diselesaikan secara resmi', good: true, pts: 15, norma: 'Fungsi Norma Hukum: Perlindungan Hak', level: 'good', resultTitle: 'Langkah yang Tepat! \uD83D\uDC4D', resultBody: 'Jalur hukum formal memastikan hak semua pihak terlindungi secara sah oleh negara.', consequences: [{ icon: '\u2705', text: 'Hak warga atas akses jalan dapat dilindungi secara hukum' }, { icon: '\u2705', text: 'Proses resmi memberi kepastian dan tidak bisa diabaikan' }, { icon: '\uD83D\uDCA1', text: 'Idealnya coba musyawarah dulu — lebih cepat dan tetap menjaga hubungan warga' }] },
+        { icon: '\uD83D\uDE21', label: 'Bela warga, paksa bongkar', detail: 'Perintahkan warga untuk membongkar pagar secara paksa bersama-sama', good: false, pts: 0, norma: 'Melanggar Norma Hukum & Norma Kesopanan', level: 'bad', resultTitle: 'Pilihan Berbahaya! \u26A0\uFE0F', resultBody: 'Tindakan main hakim sendiri justru melanggar norma — tidak ada masalah yang selesai dengan kekerasan.', consequences: [{ icon: '\u274C', text: 'Konflik semakin besar dan bisa berujung tindak pidana perusakan' }, { icon: '\u274C', text: 'Norma hukum dilanggar: pembongkaran paksa adalah tindakan melawan hukum' }, { icon: '\u274C', text: 'Fungsi norma sebagai penjaga ketertiban gagal karena kamu sendiri yang melanggar' }] },
+      ],
+    },
+    {
+      title: '\uD83D\uDD4C Azan di Waktu Tidur',
+      bg: 'sbg-masjid',
+      charEmoji: '\uD83D\uDE34',
+      charColor: '#4a7a9a',
+      charPants: '#2d4a7a',
+      choicePrompt: 'Bagaimana kamu merespons?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Subuh pukul 04.30. Suara azan berkumandang dari masjid depan rumah. Kamu baru tidur jam 02.00 karena tugas sekolah.' },
+        { speaker: 'NARRATOR', text: 'Tetanggamu, Pak Budi yang non-muslim, mengetuk pintu. Wajahnya terlihat kesal.' },
+        { speaker: 'PAK BUDI \uD83D\uDE24', text: '"Bisa minta tolong minta masjidnya kecilkan volume? Itu mengganggu tidur kami setiap subuh!"' },
+        { speaker: 'NARRATOR', text: 'Kamu tahu azan adalah kewajiban agama, tapi kamu juga menghormati tetangga yang berbeda keyakinan.' },
+      ],
+      choices: [
+        { icon: '\uD83E\uDD1D', label: 'Ajak bicara pengurus masjid', detail: 'Sampaikan kekhawatiran Pak Budi kepada takmir masjid dengan sopan', good: true, pts: 20, norma: 'Fungsi Norma: Solidaritas & Keadilan', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Menjembatani dua kebutuhan dengan dialog — inilah fungsi norma menjaga solidaritas antarwarga yang berbeda.', consequences: [{ icon: '\u2705', text: 'Hak beragama dan hak kenyamanan warga sama-sama dihormati' }, { icon: '\u2705', text: 'Fungsi norma sebagai pemersatu terwujud: perbedaan bukan penghalang hidup damai' }, { icon: '\u2705', text: 'Solusi bersama lebih langgeng dari sekadar memaksakan kehendak satu pihak' }] },
+        { icon: '\uD83D\uDE4F', label: 'Maklumi, ini norma agama', detail: 'Jelaskan kepada Pak Budi bahwa azan adalah kewajiban agama yang harus dihormati', good: false, pts: 7, norma: 'Norma Kesopanan kurang terjaga', level: 'mid', resultTitle: 'Kurang Lengkap \uD83E\uDD14', resultBody: 'Menjelaskan norma agama itu benar, tapi mengabaikan perasaan tetangga bukan sikap yang bijak.', consequences: [{ icon: '\uD83D\uDFE1', text: 'Pak Budi mungkin menerima penjelasan, tapi merasa tidak dihiraukan' }, { icon: '\u26A0\uFE0F', text: 'Hubungan bertetangga bisa renggang jika hanya melihat dari satu sudut pandang' }, { icon: '\uD83D\uDCA1', text: 'Norma yang baik melindungi SEMUA pihak — bukan hanya satu kelompok saja' }] },
+        { icon: '\uD83D\uDCE2', label: 'Minta masjid matikan speaker', detail: 'Langsung minta masjid mematikan pengeras suara agar Pak Budi tidak terganggu', good: false, pts: 3, norma: 'Melanggar Norma Agama & Kesopanan', level: 'bad', resultTitle: 'Kurang Tepat \u26A0\uFE0F', resultBody: 'Meminta penghentian ibadah tanpa dialog tidak menghormati kebebasan beragama.', consequences: [{ icon: '\u274C', text: 'Kebebasan beragama dijamin UUD 1945 — tidak bisa begitu saja dibatasi' }, { icon: '\u274C', text: 'Norma agama dan norma hukum dilanggar sekaligus' }, { icon: '\uD83D\uDCA1', text: 'Solusi terbaik harus menghormati hak semua pihak — dialog adalah kuncinya' }] },
+      ],
+    },
+    {
+      title: '\uD83D\uDED2 Antrian di Pasar',
+      bg: 'sbg-pasar',
+      charEmoji: '\uD83D\uDE10',
+      charColor: '#e8a030',
+      charPants: '#3a5a7a',
+      choicePrompt: 'Apa yang kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Kamu sedang membantu ibu berbelanja di pasar. Antrian kasir sangat panjang — kamu sudah 15 menit mengantri.' },
+        { speaker: 'NARRATOR', text: 'Tiba-tiba seorang ibu tua dengan barang belanjaan yang banyak terhenti di depanmu. Dia terlihat lelah dan kesakitan.' },
+        { speaker: 'IBU TUA \uD83D\uDCD3', text: '"Maaf dik, kaki saya sakit sekali. Boleh saya numpang antri di sini? Saya tidak kuat lama berdiri."' },
+        { speaker: 'NARRATOR', text: 'Di belakangmu ada 10 orang yang juga sudah lama mengantri. Mereka memperhatikanmu.' },
+      ],
+      choices: [
+        { icon: '\uD83D\uDE0A', label: 'Persilakan dengan senang hati', detail: 'Persilakan ibu tua itu mengantri di depanmu karena ia membutuhkan bantuan', good: true, pts: 20, norma: 'Fungsi Norma: Solidaritas & Norma Kesopanan', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Mengutamakan yang membutuhkan adalah wujud solidaritas — salah satu fungsi norma yang paling mulia.', consequences: [{ icon: '\u2705', text: 'Ibu tua mendapat pertolongan yang ia butuhkan' }, { icon: '\u2705', text: 'Kamu menunjukkan fungsi norma sebagai pemerkuat solidaritas dan kepedulian sosial' }, { icon: '\uD83C\uDF1F', text: 'Orang-orang di sekitarmu pun terinspirasi — kebaikan kecilmu berdampak besar' }] },
+        { icon: '\uD83D\uDE37', label: 'Tolak dengan sopan', detail: 'Jelaskan bahwa kamu sudah lama mengantri dan orang di belakangmu juga menunggu', good: false, pts: 8, norma: 'Norma Kesopanan', level: 'mid', resultTitle: 'Bisa Dimaklumi \uD83E\uDD14', resultBody: 'Menolak itu hakmu, tapi memberi keringanan kepada yang membutuhkan adalah nilai yang lebih tinggi.', consequences: [{ icon: '\uD83D\uDFE1', text: 'Norma antrian tetap terjaga, tapi nilai solidaritas terhadap sesama diabaikan' }, { icon: '\u26A0\uFE0F', text: 'Kehidupan yang hanya berbasis aturan tanpa empati terasa dingin' }, { icon: '\uD83D\uDCA1', text: 'Norma terbaik dijalankan dengan hati — bukan hanya dengan kepala' }] },
+        { icon: '\uD83D\uDDE3\uFE0F', label: 'Tanya pendapat yang antri', detail: 'Tanya orang di belakangmu apakah mereka keberatan jika ibu tua ini masuk antrian', good: true, pts: 17, norma: 'Fungsi Norma: Solidaritas + Keadilan', level: 'good', resultTitle: 'Pilihan Bijak! \uD83D\uDC4D', resultBody: 'Melibatkan semua pihak sebelum memutuskan — inilah demokrasi dan keadilan dalam skala kecil!', consequences: [{ icon: '\u2705', text: 'Semua pihak merasa dihargai pendapatnya' }, { icon: '\u2705', text: 'Solidaritas terbangun bersama — bukan hanya keputusan satu orang' }, { icon: '\u2705', text: 'Nilai gotong royong dan musyawarah tercermin dalam tindakan sederhana ini' }] },
+      ],
+    },
+    {
+      title: '\uD83D\uDCF1 Foto Tanpa Izin',
+      bg: 'sbg-kelas',
+      charEmoji: '\uD83D\uDE33',
+      charColor: '#9a5a9a',
+      charPants: '#2a3a6a',
+      choicePrompt: 'Apa yang kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Di kelas, teman sebangkumu diam-diam memfoto lembar jawabanmu saat ulangan berlangsung.' },
+        { speaker: 'NARRATOR', text: 'Kamu menyadarinya. Guru sedang membelakangi kelas dan tidak ada yang melihat kejadian itu.' },
+        { speaker: 'TEMAN \uD83D\uDE05', text: '"Sst... jangan bilang siapa-siapa ya. Aku cuma lihat-lihat sebentar kok."' },
+        { speaker: 'NARRATOR', text: 'Ini bukan hanya soal mencontek — tapi soal privasimu yang dilanggar tanpa izin.' },
+      ],
+      choices: [
+        { icon: '\uD83D\uDED1', label: 'Tegur langsung dan minta hapus', detail: 'Bisikkan: "Itu tidak boleh. Tolong hapus fotonya sekarang."', good: true, pts: 20, norma: 'Norma Kesusilaan + Fungsi Norma: Perlindungan Hak', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Menegur langsung melindungi hakmu sekaligus memberi kesempatan temanmu memperbaiki diri.', consequences: [{ icon: '\u2705', text: 'Privasi dan hakmu terlindungi — norma berfungsi melindungi hak setiap individu' }, { icon: '\u2705', text: 'Kamu memberi temanmu kesempatan untuk sadar tanpa langsung dihukum' }, { icon: '\u2705', text: 'Norma kesusilaan ditegakkan: menghormati privasi orang lain adalah hak dasar manusia' }] },
+        { icon: '\uD83E\uDD2B', label: 'Diam saja, tidak apa-apa', detail: 'Pura-pura tidak melihat karena tidak mau ribut dan kasihan pada teman', good: false, pts: 3, norma: 'Hak pribadi diabaikan', level: 'bad', resultTitle: 'Kurang Tepat \uD83D\uDE2C', resultBody: 'Diam bukan berarti damai. Membiarkan hakmu dilanggar melemahkan fungsi norma di lingkunganmu.', consequences: [{ icon: '\u274C', text: 'Pelanggaran privasi dibiarkan dan kemungkinan akan terulang' }, { icon: '\u274C', text: 'Fungsi norma sebagai pelindung hak tidak berjalan karena tidak ada yang menegakkannya' }, { icon: '\u26A0\uFE0F', text: 'Foto jawabanmu bisa tersebar dan kalian berdua berpotensi mendapat masalah lebih besar' }] },
+        { icon: '\uD83D\uDC68\u200D\uD83C\uDFEB', label: 'Lapor guru segera', detail: 'Angkat tangan dan beritahu guru tentang apa yang terjadi barusan', good: true, pts: 15, norma: 'Norma Hukum (Tata Tertib) + Perlindungan Hak', level: 'good', resultTitle: 'Berani Melaporkan! \uD83D\uDC4D', resultBody: 'Melibatkan guru adalah cara yang sah untuk menegakkan tata tertib sekolah dan melindungi hakmu.', consequences: [{ icon: '\u2705', text: 'Tata tertib sekolah ditegakkan oleh pihak yang berwenang' }, { icon: '\u2705', text: 'Hakmu atas privasi dilindungi secara formal' }, { icon: '\uD83D\uDCA1', text: 'Cobalah menegur langsung dulu — memberi kesempatan temanmu memperbaiki diri sendiri' }] },
+      ],
+    },
+  ],
+  'macam-norma': [
+    {
+      title: '\uD83D\uDD00 Review P1: Norma Keluarga',
+      bg: 'sbg-kampung',
+      charEmoji: '\uD83E\uDD14',
+      charColor: '#e87070',
+      charPants: '#4a6a9a',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Kamu sudah mempelajari fungsi norma di Pertemuan 1. Sekarang bayangkan: di keluargamu ada peraturan "wajib makan bersama setiap Minggu".' },
+        { speaker: 'NARRATOR', text: 'Adikmu menolak karena ingin bermain game dengan temannya. Orang tuamu marah.' },
+      ],
+      choices: [
+        { icon: '\uD83E\uDD1D', label: 'Ajak diskusi', detail: 'Bicara dengan adikmu tentang pentingnya makan bersama dan cari solusi bersama', good: true, pts: 20, norma: 'Norma Kesopanan & Solidaritas Keluarga', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Dialog adalah cara norma kesopanan bekerja — menghormati perasaan semua pihak.', consequences: [{ icon: '\u2705', text: 'Hubungan keluarga tetap harmonis' }, { icon: '\u2705', text: 'Adikmu merasa dihargai dan lebih kooperatif' }, { icon: '\uD83D\uDCA1', text: 'Norma keluarga ditegakkan dengan cara yang bijak, bukan paksaan' }] },
+        { icon: '\uD83D\uDE21', label: 'Paksa adik ikut', detail: 'Paksa adikmu agar ikut makan bersama sesuai aturan keluarga', good: false, pts: 5, norma: 'Norma tanpa dialog = pemaksaan', level: 'mid', resultTitle: 'Kurang Bijak \uD83E\uDD14', resultBody: 'Aturan tanpa dialog bisa menimbulkan perasaan tidak dihargai, meski tujuannya baik.', consequences: [{ icon: '\uD83D\uDFE1', text: 'Norma keluarga terpenuhi, tapi adikmu merasa dipaksa' }, { icon: '\u26A0\uFE0F', text: 'Kepatuhan tanpa pemahaman tidak membentuk karakter' }] },
+        { icon: '\uD83D\uDE37', label: 'Biarkan saja', detail: 'Tidak campur tangan, biarkan adikmu memilih sendiri', good: false, pts: 3, norma: 'Norma keluarga diabaikan', level: 'bad', resultTitle: 'Norma Melemah \u26A0\uFE0F', resultBody: 'Jika aturan keluarga bisa diabaikan tanpa konsekuensi, norma akan semakin lemah.', consequences: [{ icon: '\u274C', text: 'Norma keluarga kehilangan kekuatan mengikatnya' }, { icon: '\u274C', text: 'Adikmu belajar bahwa aturan bisa diabaikan' }] },
+      ],
+    },
+  ],
+  'perilaku-patuhan': [
+    {
+      title: '\uD83C\uDFEB Saksi Pelanggaran di Sekolah',
+      bg: 'sbg-kelas',
+      charEmoji: '\uD83D\uDE2F',
+      charColor: '#e87070',
+      charPants: '#4a6a9a',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Istirahat sekolah. Kamu melihat seorang siswa kelas 9 yang jauh lebih besar membully siswa kelas 7 di koridor belakang.' },
+        { speaker: 'SIWA KECIL \uD83D\uDE22', text: '"Tolong... dia mengambil uang sakuku dan mengancam akan memukulku jika melapor."' },
+        { speaker: 'KAKAK KELAS \uD83D\uDE20', text: '"Kamu jangan ikut campur! Ini urusan kami saja. Kamu juga mau diganggu?"' },
+        { speaker: 'NARRATOR', text: 'Tidak ada guru di sekitar. Kamu satu-satunya saksi. Pilihanmu sekarang bisa menentukan keselamatan adik kelas itu.' },
+      ],
+      choices: [
+        { icon: '\uD83D\uDC68\u200D\uD83C\uDFEB', label: 'Laporkan ke guru', detail: 'Segera mencari guru terdekat dan melaporkan kejadian bullying', good: true, pts: 20, norma: 'Perilaku Patuh terhadap Norma Hukum & Kesusilaan', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Melaporkan pelanggaran norma adalah wujud kepatuhan terhadap norma hukum (tata tertib sekolah) dan norma kesusilaan (melindungi yang lemah).', consequences: [{ icon: '\u2705', text: 'Korban bullying mendapat pertolongan dan merasa dilindungi' }, { icon: '\u2705', text: 'Pelajar melanggar norma mendapat sanksi sesuai tata tertib — keadilan ditegakkan' }, { icon: '\u2705', text: 'Budaya patuh norma di sekolah semakin kuat karena ada yang berani menegakkan' }] },
+        { icon: '\uD83E\uDD1D', label: 'Hadapi kakak kelas', detail: 'Menghadapi langsung dan meminta mengembalikan uang serta berhenti membully', good: true, pts: 15, norma: 'Norma Kesusilaan — Melindungi yang Lemah', level: 'good', resultTitle: 'Pilihan Berani! \uD83D\uDC4D', resultBody: 'Berani melindungi yang lemah menunjukkan penerapan norma kesusilaan. Tapi tetap berhati-hati — bisa berbahaya jika sendirian.', consequences: [{ icon: '\u2705', text: 'Kamu menunjukkan keberanian melindungi yang lemah' }, { icon: '\uD83D\uDCA1', text: 'Lebih aman melibatkan guru agar penyelesaiannya lebih terstruktur' }, { icon: '\u26A0\uFE0F', text: 'Menghadapi sendiri bisa berisiko jika pelaku tidak kooperatif' }] },
+        { icon: '\uD83E\uDD2B', label: 'Diam saja, bukan urusanku', detail: 'Pergi dari tempat kejadian dan pura-pura tidak melihat apa-apa', good: false, pts: 0, norma: 'Pelanggaran Norma Kesusilaan — Abaikan Penderitaan Orang Lain', level: 'bad', resultTitle: 'Norma Melemah \u26A0\uFE0F', resultBody: 'Membiarkan pelanggaran norma terjadi tanpa bertindak berarti ikut membiarkan ketidakadilan. Budaya patuh norma menjadi lemah.', consequences: [{ icon: '\u274C', text: 'Korban terus menderita dan bullying berlanjut' }, { icon: '\u274C', text: 'Budaya diam membuat pelanggaran norma semakin berani' }, { icon: '\u274C', text: 'Norma kesusilaan gagal berfungsi — tidak ada yang melindungi yang lemah' }] },
+      ],
+    },
+    {
+      title: '\uD83C\uDFD8\uFE0F Gotong Royong yang Memudar',
+      bg: 'sbg-kampung',
+      charEmoji: '\uD83E\uDD14',
+      charColor: '#3ecfcf',
+      charPants: '#4a7a6a',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Kampungmu dulu terkenal dengan gotong royong. Setiap Sabtu pagi, warga bersih-bersih bersama. Tapi belakangan, kebiasaan itu makin ditinggalkan.' },
+        { speaker: 'IBU \uD83D\uDE14', text: '"Dulu ramai sekali, sekarang cuma 3-4 orang yang datang. Yang lain sibuk dengan urusannya masing-masing."' },
+        { speaker: 'NARRATOR', text: 'Lingkungan mulai kotor dan tidak terawat. Kamu ingin mengembalikan semangat gotong royong.' },
+      ],
+      choices: [
+        { icon: '\uD83D\uDCAA', label: 'Inisiatif sendiri, ajak teman-teman', detail: 'Kumpulkan teman sebaya dan mulai bersih-bersih, semoga warga lain ikut terinspirasi', good: true, pts: 20, norma: 'Perilaku Patuh terhadap Norma Kesopanan — Gotong Royong', level: 'good', resultTitle: 'Pilihan Terbaik! \uD83C\uDF1F', resultBody: 'Memulai dari diri sendiri adalah wujud nyata penerapan norma kesopanan (gotong royong). Tindakan nyata lebih kuat dari sekadar mengeluh.', consequences: [{ icon: '\u2705', text: 'Contoh nyata penerapan norma gotong royong di masyarakat' }, { icon: '\u2705', text: 'Tindakanmu menginspirasi orang lain untuk ikut serta' }, { icon: '\u2705', text: 'Budaya patuh norma dibangun dari langkah kecil yang konsisten' }] },
+        { icon: '\uD83D\uDCCB', label: 'Usulkan ke RT untuk jadwal tetat', detail: 'Minta RT mengaktifkan kembali jadwal gotong royong resmi dan mengirim undangan', good: true, pts: 15, norma: 'Perilaku Patuh terhadap Norma Hukum & Kesopanan', level: 'good', resultTitle: 'Langkah Bijak! \uD83D\uDC4D', resultBody: 'Melalui jalur resmi, gotong royong menjadi kegiatan yang terstruktur dan mengikat — ini penerapan norma hukum dan kesopanan sekaligus.', consequences: [{ icon: '\u2705', text: 'Gotong royong dijadwalkan resmi — warga merasa terikat untuk hadir' }, { icon: '\u2705', text: 'RT sebagai pemimpin dapat memberi arahan dan motivasi' }, { icon: '\uD83D\uDCA1', text: 'Idealnya kamu juga ikut hadir sebagai contoh — jangan hanya mengusulkan' }] },
+        { icon: '\uD83D\uDE37', label: 'Urusi sendiri, bukan urusanku', detail: 'Itu tanggung jawab RT dan warga dewasa, bukan tugas siswa', good: false, pts: 3, norma: 'Norma kesopanan dan gotong royong diabaikan', level: 'bad', resultTitle: 'Norma Melemah \u26A0\uFE0F', resultBody: 'Gotong royong bukan hanya tanggung jawab RT — setiap warga termasuk siswa punya peran. Jika semua berpikir sama, norma akan semakin memudar.', consequences: [{ icon: '\u274C', text: 'Budaya gotong royong makin pudar tanpa regenerasi' }, { icon: '\u274C', text: 'Lingkungan semakin kotor dan tidak terawat' }, { icon: '\u274C', text: 'Norma kesopanan dan solidaritas gagal diwariskan ke generasi berikutnya' }] },
+      ],
+    },
+  ],
+  blank: [],
+};
