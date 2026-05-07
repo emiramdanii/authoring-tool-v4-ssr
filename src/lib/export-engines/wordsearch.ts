@@ -10,7 +10,7 @@ function initWordSearch(){
     var ukuran=d.ukuran||10;
     if(!kata.length) return;
     var pgIdx=gPageIdx(key);
-    var grid=[],found=new Set(),selStart=null,phase='play';
+    var grid=[],found=new Set(),selStart=null,wsWrong=0,phase='play';
     function genGrid(){
       var g=[];for(var r=0;r<ukuran;r++){g[r]=[];for(var c=0;c<ukuran;c++)g[r][c]='';}
       var dirs=[[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1]];
@@ -32,8 +32,11 @@ function initWordSearch(){
     grid=genGrid();
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Semua Ditemukan!</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,kata.length,kata.length);
+        var wsScore=Math.max(0,kata.length-wsWrong);
+        var wsPct=Math.round(wsScore/kata.length*100);
+        var wsCol=wsPct>=85?'#34d399':wsPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+wsCol+'">'+wsPct+'%</div><div class="game-result-sub">'+kata.length+' kata'+(wsWrong?' · '+wsWrong+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,wsScore,kata.length);
         return;
       }
       var cs=ukuran<=8?28:22;
@@ -62,10 +65,11 @@ function initWordSearch(){
         var rev=word.split('').reverse().join('');
         var fw=kata.find(function(k){return (k===word||k===rev)&&!found.has(k)});
         if(fw){found.add(fw);if(found.size===kata.length) phase='done';}
+        else{wsWrong++;}
         selStart=null;render();
       }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){found=new Set();selStart=null;phase='play';grid=genGrid();render();}
+      if(rb){found=new Set();selStart=null;wsWrong=0;phase='play';grid=genGrid();render();}
     });
     render();
   });

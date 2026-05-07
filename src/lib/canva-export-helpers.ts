@@ -81,6 +81,35 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
   // placeholder elements for backward export compatibility.
   if (page.templateType === 'custom') return;
 
+  // Resolve stable IDs from templateData so export engines can find the data
+  const td = page.templateData || {};
+  let moduleId: string | undefined;
+  let kuisId: string | undefined;
+
+  // For kuis pages: try to get kuisId from the first quiz item
+  if (page.templateType === 'kuis') {
+    const kuisArr = td.kuis as Array<Record<string, unknown>> | undefined;
+    if (kuisArr && kuisArr.length > 0 && kuisArr[0]._id) {
+      kuisId = kuisArr[0]._id as string;
+    }
+  }
+
+  // For game pages: try to get moduleId from the first game module
+  if (page.templateType === 'game') {
+    const gamesArr = td.games as Array<Record<string, unknown>> | undefined;
+    if (gamesArr && gamesArr.length > 0 && gamesArr[0]._id) {
+      moduleId = gamesArr[0]._id as string;
+    }
+  }
+
+  // For materi pages: try to get moduleId from the first materi module
+  if (page.templateType === 'materi') {
+    const modulesArr = td.modules as Array<Record<string, unknown>> | undefined;
+    if (modulesArr && modulesArr.length > 0 && modulesArr[0]._id) {
+      moduleId = modulesArr[0]._id as string;
+    }
+  }
+
   // Add a single large placeholder element for export compat
   page.elements = [{
     id: createElId(),
@@ -90,6 +119,8 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
     x: 0, y: 0, w: 100, h: 100,
     opacity: 100,
     dataIdx: -1,
+    ...(moduleId ? { moduleId } : {}),
+    ...(kuisId ? { kuisId } : {}),
   }];
 }
 

@@ -144,8 +144,9 @@ export function exportUnifiedHTML(
       const overlayHTML = overlayEls.length > 0
         ? overlayEls.map(el => {
             const baseHtml = renderSingleElement(el, i, allModules, allGameModules, 'quiz-engine-');
-            // Add z-index:20 for overlay positioning
-            return baseHtml.replace(/style="/g, 'style="z-index:20;pointer-events:auto;');
+            // Safely inject z-index: only target the FIRST style=" on the outer wrapper div
+            // (which is the positioning style added by renderSingleElement)
+            return baseHtml.replace(/style="position:/, 'style="z-index:20;pointer-events:auto;position:');
           }).join('\n    ')
         : '';
       elementsHTML = templateBody + (overlayHTML ? `<div style="position:absolute;inset:0;z-index:20;pointer-events:none">${overlayHTML}</div>` : '');

@@ -10,7 +10,7 @@ function initDragDrop(){
     var targets=(d.target||d.targets||[]);
     if(!items.length||!targets.length) return;
     var pgIdx=gPageIdx(key);
-    var placed={},phase='play',dragItem=null;
+    var placed={},phase='play',dragItem=null,ddWrong=0;
 
     function getUnplaced(){
       return items.filter(function(it){return !Object.values(placed).find(function(p){return p.teks===it.teks})});
@@ -18,8 +18,9 @@ function initDragDrop(){
 
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🖐️</div><div class="game-result-text">Semua Terpasang!</div><div class="game-result-sub">'+items.length+' item ditempatkan</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,items.length,items.length);
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🖐️</div><div class="game-result-text">Semua Terpasang!</div><div class="game-result-sub">'+items.length+' item'+(ddWrong?' · '+ddWrong+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        var ddScore=Math.max(0,items.length-ddWrong);
+        reportScore(pgIdx,ddScore,items.length);
         return;
       }
       var unplaced=getUnplaced();
@@ -94,7 +95,8 @@ function initDragDrop(){
         dragItem=null;
         render();
       } else {
-        // Wrong target - flash red
+        // Wrong target - flash red + track mistake
+        ddWrong++;
         var tgtEl=el.querySelector('[data-target="'+targetId+'"]');
         if(tgtEl){tgtEl.classList.add('wrong');setTimeout(function(){tgtEl.classList.remove('wrong')},500);}
         dragItem=null;
@@ -113,7 +115,7 @@ function initDragDrop(){
         render();
       }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){placed={};phase='play';dragItem=null;render();}
+      if(rb){placed={};phase='play';dragItem=null;ddWrong=0;render();}
     });
     render();
   });

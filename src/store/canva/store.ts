@@ -13,7 +13,7 @@ import { createUISlice } from './ui-slice';
 import { createBackgroundSlice } from './background-slice';
 import { createAutoRakitSlice } from './auto-rakit';
 import { createAutoGenerateSlice } from './auto-generate';
-import { createSyncSlice } from './sync-slice';
+import { createSyncSlice, startAutoSync } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
 
 export const useCanvaStore = create<CanvaState>()((...a) => {
@@ -58,3 +58,10 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ...createPersistenceSlice(...a),
   };
 });
+
+// ── Auto-sync: Wire authoring store changes → canva syncTemplateData ──
+// When authoring data changes (kuis, modules, meta, etc.), automatically
+// sync the canva store's templateData so canvas stays up-to-date.
+if (typeof window !== 'undefined') {
+  startAutoSync(() => useCanvaStore.getState().syncTemplateData());
+}

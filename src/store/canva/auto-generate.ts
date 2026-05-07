@@ -12,6 +12,7 @@ import {
   GAME_TYPES,
   MATERI_RAKIT_TYPES,
 } from '@/lib/canva-export-helpers';
+import { ensureModuleIds } from '@/lib/module-resolver';
 import { createTemplatePage } from './template-data';
 
 // ── Auto-generate modules from existing authoring data ────────
@@ -141,8 +142,11 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
         m => !existingTypes.has((m.type as string) + '_' + (m.title as string))
       );
       if (newModules.length > 0) {
+        // Ensure all auto-generated modules have stable _id fields
+        // so resolveModule() can find them by moduleId
+        const modulesWithIds = ensureModuleIds(newModules);
         useAuthoringStore.setState({
-          modules: [...authStore.modules, ...newModules],
+          modules: [...authStore.modules, ...modulesWithIds],
           dirty: true,
         });
         toast.success(`🤖 Auto-generate: ${newModules.length} modul dibuat dari data yang ada`);

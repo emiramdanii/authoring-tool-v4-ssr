@@ -2,11 +2,20 @@
 // CANVA STORE — Reactive sync from authoring → canvas
 // Updates page templateData when authoring data changes,
 // WITHOUT rebuilding the entire page layout.
+//
+// Layers:
+//   Layer 1: templateData re-binding (buildTemplateData)
+//   Layer 2: Orphan cleanup (remove elements referencing deleted data)
+//   Layer 3: Element ID re-sync (update moduleId/kuisId on elements)
+//   Layer 4: Auto-subscription wiring (authoring store → syncTemplateData)
 // ═══════════════════════════════════════════════════════════════
 
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
+import type { CanvaElement } from '@/components/canva/types';
 import { buildTemplateData } from './template-data';
+import { useAuthoringStore } from '@/store/authoring-store';
+import { GAME_TYPES } from '@/lib/canva-export-helpers';
 
 export type SyncSlice = Pick<CanvaState, 'syncTemplateData'>;
 
@@ -19,16 +28,23 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
    * Called automatically when authoring data changes (via useAuthoringStore.subscribe).
    * Now uses the canonical buildTemplateData() from template-data.ts
    * to eliminate the previous DRY violation.
+   *
+   * Also performs:
+   *   Layer 2: Orphan cleanup — removes elements referencing deleted modules/kuis
+   *   Layer 3: Element ID re-sync — updates moduleId/kuisId on elements
    */
   syncTemplateData: () => {
     const { pages } = get();
+    const authStore = useAuthoringStore.getState();
+    const allModuleIds = new Set(authStore.modules.map((m: Record<string, unknown>) => m._id as string).filter(Boolean));
+    const allKuisIds = new Set(authStore.kuis.map((k: Record<string, unknown>) => k._id as string).filter(Boolean));
     let changed = false;
 
     const newPages = pages.map(page => {
       // Only sync template pages (not custom)
       if (!page.templateType || page.templateType === 'custom') return page;
 
-      // Use canonical buildTemplateData — covers ALL 13 template types
+      // ── Layer 1: templateData re-binding ──────────────────
       const freshData = buildTemplateData(page.templateType);
 
       // Check if data actually changed (shallow comparison of keys)
@@ -42,16 +58,63 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
         }
       }
 
-      if (!dataChanged) return page;
+      // ── Layer 2: Orphan cleanup ───────────────────────────
+      // Remove overlay elements that reference deleted modules or kuis
+      const cleanedOverlays = (page.overlayElements || []).filter(el => {
+        if (el.moduleId && !allModuleIds.has(el.moduleId)) return false;
+        if (el.kuisId && !allKuisIds.has(el.kuisId)) return false;
+        return true;
+      });
+
+      // Clean regular elements too
+      const cleanedElements = page.elements.filter(el => {
+        if (el.moduleId && !allModuleIds.has(el.moduleId)) return false;
+        if (el.kuisId && !allKuisIds.has(el.kuisId)) return false;
+        return true;
+      });
+
+      const overlaysChanged = cleanedOverlays.length !== (page.overlayElements || []).length;
+      const elementsChanged = cleanedElements.length !== page.elements.length;
+
+      // ── Layer 3: Element ID re-sync ───────────────────────
+      // For game/kuis elements that still use dataIdx only, try to resolve
+      // their stable moduleId/kuisId from the authoring store
+      const syncElementIds = (els: CanvaElement[]): CanvaElement[] => {
+        return els.map(el => {
+          if (el.type === 'game' && !el.moduleId && el.dataIdx != null && el.dataIdx >= 0) {
+            const gameModules = authStore.modules.filter((m: Record<string, unknown>) =>
+              (GAME_TYPES as readonly string[]).includes(m.type as string)
+            );
+            if (el.dataIdx < gameModules.length && gameModules[el.dataIdx]._id) {
+              return { ...el, moduleId: gameModules[el.dataIdx]._id as string };
+            }
+          }
+          if (el.type === 'kuis' && !el.kuisId && el.dataIdx != null && el.dataIdx >= 0) {
+            if (el.dataIdx < authStore.kuis.length && authStore.kuis[el.dataIdx]._id) {
+              return { ...el, kuisId: authStore.kuis[el.dataIdx]._id as string };
+            }
+          }
+          return el;
+        });
+      };
+
+      const syncedOverlays = syncElementIds(cleanedOverlays);
+      const syncedElements = syncElementIds(cleanedElements);
+
+      const idsSynced = syncedOverlays !== cleanedOverlays || syncedElements !== cleanedElements;
+
+      if (!dataChanged && !overlaysChanged && !elementsChanged && !idsSynced) return page;
 
       changed = true;
       return {
         ...page,
-        templateData: freshData,
+        templateData: dataChanged ? freshData : page.templateData,
         // Also update label for cover pages if title changed
         ...(page.templateType === 'cover' && freshData.title
           ? { label: 'Cover - ' + freshData.title }
           : {}),
+        overlayElements: (overlaysChanged || idsSynced) ? syncedOverlays : page.overlayElements,
+        elements: (elementsChanged || idsSynced) ? syncedElements : page.elements,
       };
     });
 
@@ -60,3 +123,53 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
     }
   },
 });
+
+// ═══════════════════════════════════════════════════════════════
+// Layer 4: Auto-subscription wiring
+// Subscribes to authoring store changes and triggers syncTemplateData
+// automatically. This ensures canvas always reflects authoring data.
+// ═══════════════════════════════════════════════════════════════
+
+let _unsubscribe: (() => void) | null = null;
+let _lastSyncHash = '';
+
+/**
+ * Start auto-sync from authoring store to canva store.
+ * Call this once when the canva store is initialized.
+ */
+export function startAutoSync(syncFn: () => void) {
+  if (_unsubscribe) return; // Already subscribed
+
+  _unsubscribe = useAuthoringStore.subscribe((state) => {
+    // Only sync when relevant data changes (modules, kuis, meta, materi, cp, tp, etc.)
+    const hash = JSON.stringify({
+      m: state.modules,
+      k: state.kuis,
+      mt: state.meta,
+      ma: state.materi,
+      cp: state.cp,
+      tp: state.tp,
+      pet: state.petunjuk,
+      disk: state.diskusi,
+      ref: state.refleksi,
+      pen: state.penutup,
+      sk: state.skenario,
+      al: state.alur,
+    });
+
+    if (hash !== _lastSyncHash) {
+      _lastSyncHash = hash;
+      syncFn();
+    }
+  });
+}
+
+/**
+ * Stop auto-sync. Call when the canva store is destroyed.
+ */
+export function stopAutoSync() {
+  if (_unsubscribe) {
+    _unsubscribe();
+    _unsubscribe = null;
+  }
+}

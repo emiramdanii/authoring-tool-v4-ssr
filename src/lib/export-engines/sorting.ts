@@ -10,12 +10,15 @@ function initSorting(){
     var valid=items.filter(function(i){return i.teks});
     if(!valid.length) return;
     var pgIdx=gPageIdx(key);
-    var sorted={},wrongCat=null,phase='play';
+    var sorted={},wrongCat=null,sortWrong=0,phase='play';
     function getUnsorted(){return valid.filter(function(i){return !Object.values(sorted).flat().includes(i.teks)})}
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Semua Tersortir!</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,valid.length,valid.length);
+        var sortScore=Math.max(0,valid.length-sortWrong);
+        var sortPct=Math.round(sortScore/valid.length*100);
+        var sortCol=sortPct>=85?'#34d399':sortPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+sortCol+'">'+sortPct+'%</div><div class="game-result-sub">'+(sortWrong?sortWrong+' kesalahan':'Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,sortScore,valid.length);
         return;
       }
       var unsorted=getUnsorted();
@@ -47,12 +50,13 @@ function initSorting(){
           if(Object.values(sorted).flat().length===valid.length) phase='done';
           render();
         } else {
+          sortWrong++;
           wrongCat=catId;render();
           var wc=wrongCat;setTimeout(function(){if(wrongCat===wc){wrongCat=null;render();}},500);
         }
       }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){sorted={};wrongCat=null;phase='play';render();}
+      if(rb){sorted={};wrongCat=null;sortWrong=0;phase='play';render();}
     });
     render();
   });

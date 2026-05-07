@@ -16,11 +16,14 @@ function initMemory(){
     });
     cards.sort(function(){return Math.random()-.5});
     var cols=cards.length<=4?2:cards.length<=8?3:4;
-    var flipped=[],matched=new Set(),moves=0,phase='play';
+    var flipped=[],matched=new Set(),moves=0,wrongAttempts=0,phase='play';
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Selesai!</div><div class="game-result-sub">'+moves+' langkah</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,pairs.length,pairs.length);
+        var memScore=Math.max(0,pairs.length-wrongAttempts);
+        var memPct=Math.round(memScore/pairs.length*100);
+        var memCol=memPct>=85?'#34d399':memPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+memCol+'">'+memPct+'%</div><div class="game-result-sub">'+moves+' langkah'+(wrongAttempts?' · '+wrongAttempts+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,memScore,pairs.length);
         return;
       }
       var h='<div class="mem-wrap"><div class="mem-head"><span>🧠 Memory</span><span>Langkah: '+moves+' | '+matched.size/2+'/'+pairs.length+'</span></div>';
@@ -49,12 +52,13 @@ function initMemory(){
           if(matched.size===cards.length) phase='done';
           render();
         } else {
+          wrongAttempts++;
           render();
           setTimeout(function(){flipped=[];render();},800);
         }
       } else { render(); }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){flipped=[];matched=new Set();moves=0;phase='play';cards.sort(function(){return Math.random()-.5});render();}
+      if(rb){flipped=[];matched=new Set();moves=0;wrongAttempts=0;phase='play';cards.sort(function(){return Math.random()-.5});render();}
     });
     render();
   });
