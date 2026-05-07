@@ -130,6 +130,7 @@ function RakitContent() {
       x: 5, y: 10, w: 90, h: 60,
       opacity: 100,
       dataIdx: mIdx,
+      moduleId: (m._id as string) || undefined,
       layoutVariant: (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A',
     };
     const newPages = [...pages];

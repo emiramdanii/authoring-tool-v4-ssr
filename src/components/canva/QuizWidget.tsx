@@ -2,22 +2,28 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuthoringStore, type KuisItem } from '@/store/authoring-store';
+import { resolveKuis } from '@/lib/module-resolver';
+import type { CanvaElement } from './types';
 
 interface QuizWidgetProps {
   dataIdx?: number;
+  kuisId?: string;    // Stable UUID reference (preferred over dataIdx)
   compact?: boolean;  // small preview in canvas editor
   onComplete?: (score: number, maxScore: number) => void;  // score callback
 }
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-export default function QuizWidget({ dataIdx, compact = false, onComplete }: QuizWidgetProps) {
+export default function QuizWidget({ dataIdx, kuisId, compact = false, onComplete }: QuizWidgetProps) {
   const kuis = useAuthoringStore((s) => s.kuis);
 
-  // Get all quiz items - if dataIdx is set, use only that item; otherwise use all
-  const allQuestions: KuisItem[] = dataIdx !== undefined && dataIdx >= 0 && dataIdx < kuis.length
-    ? [kuis[dataIdx]]
-    : kuis.filter(k => k.q.trim() !== '');
+  // Resolve kuis data using stable reference (kuisId > dataIdx > all)
+  const refEl: Partial<CanvaElement> = {
+    kuisId: kuisId,
+    dataIdx: dataIdx,
+  };
+  const resolvedKuis = resolveKuis(refEl as CanvaElement, kuis as unknown as Array<Record<string, unknown>>);
+  const allQuestions: KuisItem[] = resolvedKuis as unknown as KuisItem[];
 
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);

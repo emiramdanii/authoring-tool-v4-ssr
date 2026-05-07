@@ -1,9 +1,10 @@
-// ═══════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 // MODULE RESOLVER — Stable reference resolution for canva elements
-// Replaces fragile dataIdx (array index) with moduleId (UUID)
-// ═══════════════════════════════════════════════════════════════════
+// Replaces fragile dataIdx (array index) with moduleId/kuisId (UUID)
+// ═════════════════════════════════════════════════════════════════════
 
 import type { CanvaElement } from '@/components/canva/types';
+import type { KuisItem } from '@/store/authoring/types';
 
 /**
  * Resolve a canva element's data reference to actual module data.
@@ -35,9 +36,11 @@ export function resolveModule(
 
 /**
  * Resolve a quiz element to its quiz data.
- * For quiz elements, the reference might be to the kuis array, not modules.
+ * Supports kuisId (stable UUID) and dataIdx (legacy fallback).
  * 
- * @param el - The canva element with moduleId and/or dataIdx
+ * Priority: kuisId > dataIdx > full array
+ * 
+ * @param el - The canva element with kuisId and/or dataIdx
  * @param allKuis - Flat array of kuis items from authoring store
  * @returns The resolved kuis data (single item or full array)
  */
@@ -45,12 +48,20 @@ export function resolveKuis(
   el: CanvaElement,
   allKuis: Array<Record<string, unknown>>,
 ): Array<Record<string, unknown>> {
-  // For kuis, dataIdx refers to a specific quiz item
+  // Priority 1: kuisId (stable reference) — find single kuis item by _id
+  if (el.kuisId) {
+    const found = allKuis.find(k => k._id === el.kuisId);
+    if (found) return [found];
+  }
+
+  // Priority 2: dataIdx (legacy fallback)
   const dataIdx = el.dataIdx ?? -1;
-  const kuisSource = dataIdx >= 0 && dataIdx < allKuis.length
-    ? [allKuis[dataIdx]]
-    : allKuis;
-  return kuisSource;
+  if (dataIdx >= 0 && dataIdx < allKuis.length) {
+    return [allKuis[dataIdx]];
+  }
+
+  // Fallback: return all kuis items
+  return allKuis;
 }
 
 /**
@@ -62,6 +73,14 @@ export function generateModuleId(): string {
 }
 
 /**
+ * Generate a stable ID for a kuis item.
+ * This should be called when a kuis item is created or when migrating existing items.
+ */
+export function generateKuisId(): string {
+  return 'kuis_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+/**
  * Ensure all modules have _id fields.
  * Migrates existing modules that don't have stable IDs yet.
  * Returns a new array with _id fields added where missing.
@@ -70,5 +89,17 @@ export function ensureModuleIds(modules: Array<Record<string, unknown>>): Array<
   return modules.map(m => {
     if (m._id) return m;
     return { ...m, _id: generateModuleId() };
+  });
+}
+
+/**
+ * Ensure all kuis items have _id fields.
+ * Migrates existing items that don't have stable IDs yet.
+ * Returns a new array with _id fields added where missing.
+ */
+export function ensureKuisIds(kuis: KuisItem[]): KuisItem[] {
+  return kuis.map(k => {
+    if (k._id) return k;
+    return { ...k, _id: generateKuisId() };
   });
 }

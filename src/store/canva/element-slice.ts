@@ -11,7 +11,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES } from '@/lib/canva-export-helpers';
 import { getModuleIcon, getGameIcon } from '@/lib/canva-icon-maps';
 import { createElId } from './constants';
-import { resolveModule } from '@/lib/module-resolver';
+import { resolveModule, generateKuisId } from '@/lib/module-resolver';
 
 export type ElementSlice = Pick<
   CanvaState,
@@ -56,6 +56,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       const gameIdx = modules.findIndex((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
       if (gameIdx >= 0) {
         el.dataIdx = gameIdx;
+        el.moduleId = (modules[gameIdx]._id as string) || undefined;
         el.label = 'Game: ' + (modules[gameIdx].title as string || modules[gameIdx].type as string);
       } else {
         el.label = 'Game Interaktif';
@@ -85,12 +86,15 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     if (!page) return;
     const kuis = useAuthoringStore.getState().kuis;
     const kuisItem = kuis[idx];
+    // Generate stable kuisId if item doesn't have one
+    const kid = (kuisItem?._id as string) || generateKuisId();
     const el: CanvaElement = {
       id: createElId(),
       type: 'kuis',
       icon: '❓',
       label: 'Kuis #' + (idx + 1),
       dataIdx: idx,
+      kuisId: kid,
       x: 5, y: 5, w: 45, h: 40,
       opacity: 100,
     };
@@ -106,6 +110,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
         elements: [...page.elements, el],
       };
     }
+    get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
   },
 
@@ -116,12 +121,14 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const modules = useAuthoringStore.getState().modules;
     const gameModules = modules.filter((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
     const gameMod = gameModules[idx];
+    // Also find the actual index in modules[] (not gameModules[]) for dataIdx
+    const actualIdx = gameMod ? modules.indexOf(gameMod) : -1;
     const el: CanvaElement = {
       id: createElId(),
       type: 'game',
       icon: '🎮',
       label: 'Game #' + (idx + 1),
-      dataIdx: idx,
+      dataIdx: actualIdx >= 0 ? actualIdx : idx, // Index in modules[], not gameModules[]
       moduleId: (gameMod?._id as string) || undefined,
       x: 55, y: 5, w: 40, h: 40,
       opacity: 100,
@@ -138,6 +145,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
         elements: [...page.elements, el],
       };
     }
+    get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
   },
 

@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { toast } from 'sonner';
-import { generateModuleId, ensureModuleIds } from '@/lib/module-resolver';
+import { generateModuleId, ensureModuleIds, generateKuisId, ensureKuisIds } from '@/lib/module-resolver';
 
 // ── Re-export types for backward compatibility ──────────────────
 export type {
@@ -54,7 +54,7 @@ import type {
   SuaraConfig,
 } from './authoring/types';
 
-import { colorForIndex, deepClone } from './authoring/types';
+import { colorForIndex, deepClone, type KuisItem } from './authoring/types';
 
 const STORAGE_KEY = 'at_state_v1';
 
@@ -333,7 +333,7 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
   // ── Kuis ───────────────────────────────────────────────────────
   addKuis: () => {
     set((s) => ({
-      kuis: [...s.kuis, { q: '', opts: ['', '', '', ''], ans: 0, ex: '' }],
+      kuis: [...s.kuis, { _id: generateKuisId(), q: '', opts: ['', '', '', ''], ans: 0, ex: '' }],
       dirty: true,
     }));
   },
@@ -663,7 +663,7 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
         atp: data.atp || get().atp,
         alur: data.alur || [],
         skenario: data.skenario || [],
-        kuis: data.kuis || [],
+        kuis: ensureKuisIds((data.kuis || []) as KuisItem[]),
         modules: ensureModuleIds(data.modules || []),
         games: ensureModuleIds(data.games || []),
         materi: data.materi || { blok: [] },
@@ -721,7 +721,7 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       tp: tp ? deepClone(tp.items) : [],
       atp: atp ? deepClone(atp) : get().atp,
       alur: alur ? deepClone(alur.steps) : [],
-      kuis: kuis ? deepClone(kuis.soal) : [],
+      kuis: kuis ? ensureKuisIds(deepClone(kuis.soal) as KuisItem[]) : [],
       skenario: skenario ? deepClone(skenario) : [],
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
       modules: modules ? ensureModuleIds(deepClone(modules)) : [],

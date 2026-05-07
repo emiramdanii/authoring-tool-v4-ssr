@@ -196,7 +196,7 @@ export default function RightPanel() {
               <DataIdxSelector
                 elementType={selectedEl.type}
                 currentIdx={selectedEl.dataIdx ?? -1}
-                onChange={v => updateElement(selectedEl.id, { dataIdx: v })}
+                onChange={(idx, stableId) => updateElement(selectedEl.id, { dataIdx: idx, ...(stableId ? (selectedEl.type === 'kuis' ? { kuisId: stableId } : { moduleId: stableId }) : {}) })}
               />
             )}
 
@@ -613,21 +613,21 @@ export default function RightPanel() {
 function DataIdxSelector({ elementType, currentIdx, onChange }: {
   elementType: string;
   currentIdx: number;
-  onChange: (idx: number) => void;
+  onChange: (idx: number, stableId?: string) => void;
 }) {
   const modules = useAuthoringStore((s) => s.modules);
   const kuis = useAuthoringStore((s) => s.kuis.filter(k => k.q.trim()));
 
   // Build options based on element type
-  let options: { idx: number; label: string; icon: string }[] = [];
+  let options: { idx: number; label: string; icon: string; stableId?: string }[] = [];
 
   if (elementType === 'kuis') {
     options = [{ idx: -1, label: `Semua soal (${kuis.length})`, icon: '?' }];
   } else if (elementType === 'game') {
     const gameModules = modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
-    options = gameModules.map((m, i) => {
+    options = gameModules.map((m) => {
       const mIdx = modules.indexOf(m);
-      return { idx: mIdx, label: String(m.title || m.type), icon: GAME_TYPE_ICON_MAP[m.type as string] || '🎮' };
+      return { idx: mIdx, label: String(m.title || m.type), icon: GAME_TYPE_ICON_MAP[m.type as string] || '🎮', stableId: (m._id as string) || undefined };
     });
     if (options.length === 0) {
       options = [{ idx: -1, label: 'Belum ada game', icon: '🎮' }];
@@ -637,7 +637,7 @@ function DataIdxSelector({ elementType, currentIdx, onChange }: {
     const materiModules = modules.filter(m => !(GAME_TYPES as readonly string[]).includes(m.type as string));
     options = materiModules.map((m) => {
       const mIdx = modules.indexOf(m);
-      return { idx: mIdx, label: String(m.title || m.type), icon: MODULE_TYPE_ICON_MAP[m.type as string] || '🧩' };
+      return { idx: mIdx, label: String(m.title || m.type), icon: MODULE_TYPE_ICON_MAP[m.type as string] || '🧩', stableId: (m._id as string) || undefined };
     });
     if (options.length === 0) {
       options = [{ idx: -1, label: 'Belum ada modul', icon: '🧩' }];
@@ -649,7 +649,11 @@ function DataIdxSelector({ elementType, currentIdx, onChange }: {
       <label className="text-[10px] text-slate-500 block mb-1">Pilih Data</label>
       <select
         value={currentIdx}
-        onChange={e => onChange(parseInt(e.target.value))}
+        onChange={e => {
+          const idx = parseInt(e.target.value);
+          const opt = options.find(o => o.idx === idx);
+          onChange(idx, opt?.stableId);
+        }}
         className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
       >
         {options.map(opt => (

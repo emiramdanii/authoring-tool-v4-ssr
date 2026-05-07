@@ -630,7 +630,7 @@ function GameTemplate({ td, palette, isSelected, onEditField, interactive }: Sub
           <div className="space-y-2">
             {/* Show selected game as main widget */}
             {activeGame && (
-              <GameWidget dataIdx={getGameModuleIndex(activeGame)} compact={!interactive} onComplete={interactive ? handleComplete : undefined} />
+              <GameWidget dataIdx={getGameModuleIndex(activeGame)} moduleId={(activeGame._id as string) || undefined} compact={!interactive} onComplete={interactive ? handleComplete : undefined} />
             )}
 
             {/* Game selector tabs — always visible when multiple games */}

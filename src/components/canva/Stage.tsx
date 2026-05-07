@@ -5,6 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { CanvaElement, ResizeDir } from './types';
+import { resolveModule } from '@/lib/module-resolver';
 import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
@@ -627,16 +628,16 @@ function StageElement({
       {/* Body */}
       <div className="w-full h-full overflow-hidden rounded-sm">
         {element.type === 'kuis' && (
-          <QuizWidget dataIdx={element.dataIdx} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
+          <QuizWidget dataIdx={element.dataIdx} kuisId={element.kuisId} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
         )}
         {element.type === 'game' && (
-          <GameWidget dataIdx={element.dataIdx} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
+          <GameWidget dataIdx={element.dataIdx} moduleId={element.moduleId} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
         )}
         {element.type === 'materi' && (
-          <ModuleElementPreview dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
+          <ModuleElementPreview dataIdx={element.dataIdx} moduleId={element.moduleId} layoutVariant={element.layoutVariant as LayoutVariant} />
         )}
         {element.type === 'modul' && (
-          <ModuleElementPreview dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
+          <ModuleElementPreview dataIdx={element.dataIdx} moduleId={element.moduleId} layoutVariant={element.layoutVariant as LayoutVariant} />
         )}
         {element.type === 'teks' && (
           <div
@@ -688,9 +689,11 @@ function StageElement({
 
 /* ── Module Element Preview (uses PresetModuleCard) ──────────── */
 
-function ModuleElementPreview({ dataIdx, layoutVariant }: { dataIdx?: number; layoutVariant?: LayoutVariant }) {
+function ModuleElementPreview({ dataIdx, moduleId, layoutVariant }: { dataIdx?: number; moduleId?: string; layoutVariant?: LayoutVariant }) {
   const modules = useAuthoringStore((s) => s.modules);
-  const mod = dataIdx != null && dataIdx >= 0 && dataIdx < modules.length ? modules[dataIdx] : null;
+  // Use resolveModule for stable reference (moduleId > dataIdx)
+  const refEl: Partial<CanvaElement> = { moduleId, dataIdx };
+  const mod = resolveModule(refEl as CanvaElement, modules);
 
   if (!mod) {
     return (

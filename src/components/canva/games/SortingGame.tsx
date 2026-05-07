@@ -5,7 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   SORTING GAME (Urutkan / Klasifikasi)
+   SORTING GAME (Urutkan / Klasifikasi) — Efficiency-based scoring
+   Score = max(0, validItems - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
   const kategori = (data.kategori as Array<Record<string, unknown>>) || [];
@@ -15,9 +16,17 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
   const [sorted, setSorted] = useState<Record<string, string[]>>({});
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const [wrong, setWrong] = useState<string | null>(null);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const reported = useRef(false);
 
-  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validItems.length, validItems.length); } }, [phase]);
+  // Efficiency-based scoring: score = max(0, validItems - wrongAttempts)
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
+      reported.current = true;
+      const score = Math.max(0, validItems.length - wrongAttempts);
+      onComplete(score, validItems.length);
+    }
+  }, [phase]);
 
   const handleDrop = useCallback((itemText: string, catId: string) => {
     const correctCat = validItems.find(i => i.teks === itemText)?.kategori as string;
@@ -30,6 +39,7 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
       const totalSorted = Object.values(newSorted).flat().length;
       if (totalSorted === validItems.length) setPhase('done');
     } else {
+      setWrongAttempts(w => w + 1);
       setWrong(catId);
       setTimeout(() => setWrong(null), 500);
     }
@@ -41,12 +51,17 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
     return !Object.values(sorted).flat().includes(i.teks as string);
   });
 
+  const finalScore = Math.max(0, validItems.length - wrongAttempts);
+  const scorePct = validItems.length > 0 ? Math.round((finalScore / validItems.length) * 100) : 0;
+
   if (phase === 'done') {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Tersortir!</div>
-        <button onClick={() => { setSorted({}); setPhase('play'); reported.current = false; }}
+        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        {wrongAttempts > 0 && <div className="text-[9px] text-cyan-400/60">{wrongAttempts} kesalahan</div>}
+        <button onClick={() => { setSorted({}); setPhase('play'); setWrongAttempts(0); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -56,7 +71,10 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
 
   return (
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
-      <div className="text-[9px] font-bold text-cyan-400 mb-1">🔢 Klasifikasi</div>
+      <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
+        <span className="font-bold">🔢 Klasifikasi</span>
+        <span>{wrongAttempts > 0 && <span className="text-red-400">{wrongAttempts} salah · </span>}{Object.values(sorted).flat().length}/{validItems.length}</span>
+      </div>
       {/* Unsorted items */}
       <div className="flex flex-wrap gap-1 mb-2">
         {unsorted.map((item, i) => (

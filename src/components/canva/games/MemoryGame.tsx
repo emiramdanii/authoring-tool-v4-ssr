@@ -5,7 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   MEMORY MATCH GAME
+   MEMORY MATCH GAME — Efficiency-based scoring
+   Score = max(0, pairs - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
@@ -23,10 +24,18 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<number>>(new Set());
   const [moves, setMoves] = useState(0);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
 
-  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validPairs.length, validPairs.length); } }, [phase]);
+  // Efficiency-based scoring: score = max(0, pairs - wrongAttempts)
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
+      reported.current = true;
+      const score = Math.max(0, validPairs.length - wrongAttempts);
+      onComplete(score, validPairs.length);
+    }
+  }, [phase]);
 
   const handleFlip = useCallback((cardId: number) => {
     if (flipped.length === 2 || flipped.includes(cardId) || matched.has(cardId)) return;
@@ -45,6 +54,7 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
           setPhase('done');
         }
       } else {
+        setWrongAttempts(w => w + 1);
         setTimeout(() => setFlipped([]), 800);
       }
     }
@@ -54,18 +64,23 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
     setFlipped([]);
     setMatched(new Set());
     setMoves(0);
+    setWrongAttempts(0);
     setPhase('play');
     reported.current = false;
   };
 
   if (validPairs.length === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} />;
 
+  const finalScore = Math.max(0, validPairs.length - wrongAttempts);
+  const scorePct = validPairs.length > 0 ? Math.round((finalScore / validPairs.length) * 100) : 0;
+
   if (phase === 'done') {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Selesai!</div>
-        <div className="text-[9px] text-cyan-400/60 mt-0.5">{moves} langkah</div>
+        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{moves} langkah · {wrongAttempts} salah</div>
         <button onClick={handleRestart}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
@@ -80,7 +95,7 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
       <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
         <span className="font-bold">🧠 Memory</span>
-        <span>Langkah: {moves} | Pasangan: {matched.size / 2}/{validPairs.length}</span>
+        <span>Langkah: {moves} | {wrongAttempts > 0 && <span className="text-red-400">{wrongAttempts} salah · </span>}{matched.size / 2}/{validPairs.length}</span>
       </div>
       <div className="flex-1 min-h-0 grid gap-1" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
         {cards.map(card => {

@@ -5,20 +5,24 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   DRAG & DROP GAME (Seret & Letakkan)
+   DRAG & DROP GAME (Seret & Letakkan) — Efficiency-based scoring
+   Score = max(0, items - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function DragDropGame({ data, compact, onComplete }: GameComponentProps) {
   const items = ((data.items as Array<Record<string, unknown>>) || []).filter(i => i.teks);
   const targets = ((data.target || data.targets) as Array<Record<string, unknown>>) || [];
   const [placed, setPlaced] = useState<Record<string, Array<{ teks: string }>>>({});
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
 
+  // Efficiency-based scoring: score = max(0, items - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      onComplete(items.length, items.length);
+      const score = Math.max(0, items.length - wrongAttempts);
+      onComplete(score, items.length);
     }
   }, [phase]);
 
@@ -39,6 +43,7 @@ export function DragDropGame({ data, compact, onComplete }: GameComponentProps) 
       setSelectedItem(null);
       if (Object.values(newPlaced).flat().length === items.length) setPhase('done');
     } else {
+      setWrongAttempts(w => w + 1);
       setSelectedItem(null);
     }
   };
@@ -52,13 +57,17 @@ export function DragDropGame({ data, compact, onComplete }: GameComponentProps) 
 
   if (items.length === 0 || targets.length === 0) return <EmptyState icon="🖐️" label="Seret & Letakkan" compact={compact} />;
 
+  const finalScore = Math.max(0, items.length - wrongAttempts);
+  const scorePct = items.length > 0 ? Math.round((finalScore / items.length) * 100) : 0;
+
   if (phase === 'done') {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Terpasang!</div>
-        <div className="text-[9px] text-cyan-400/60 mt-0.5">{items.length} item ditempatkan</div>
-        <button onClick={() => { setPlaced({}); setSelectedItem(null); setPhase('play'); reported.current = false; }}
+        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{items.length} item · {wrongAttempts > 0 ? wrongAttempts + ' salah' : 'Sempurna!'}</div>
+        <button onClick={() => { setPlaced({}); setSelectedItem(null); setWrongAttempts(0); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
       </div>
     );
@@ -66,7 +75,10 @@ export function DragDropGame({ data, compact, onComplete }: GameComponentProps) 
 
   return (
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
-      <div className="text-[9px] font-bold text-cyan-400 mb-1">🖐️ Seret & Letakkan</div>
+      <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
+        <span className="font-bold">🖐️ Seret & Letakkan</span>
+        <span>{wrongAttempts > 0 && <span className="text-red-400">{wrongAttempts} salah · </span>}{Object.values(placed).flat().length}/{items.length}</span>
+      </div>
       {/* Draggable items */}
       <div className="flex flex-wrap gap-1 mb-2 min-h-[20px]">
         {unplaced.map((it, i) => (

@@ -145,11 +145,14 @@ function initMemory(){
     });
     cards.sort(function(){return Math.random()-.5});
     var cols=cards.length<=4?2:cards.length<=8?3:4;
-    var flipped=[],matched=new Set(),moves=0,phase='play';
+    var flipped=[],matched=new Set(),moves=0,wrongAttempts=0,phase='play';
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Selesai!</div><div class="game-result-sub">'+moves+' langkah</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,pairs.length,pairs.length);
+        var memScore=Math.max(0,pairs.length-wrongAttempts);
+        var memPct=Math.round(memScore/pairs.length*100);
+        var memCol=memPct>=85?'#34d399':memPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+memCol+'">'+memPct+'%</div><div class="game-result-sub">'+moves+' langkah'+(wrongAttempts?' · '+wrongAttempts+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,memScore,pairs.length);
         return;
       }
       var h='<div class="mem-wrap"><div class="mem-head"><span>🧠 Memory</span><span>Langkah: '+moves+' | '+matched.size/2+'/'+pairs.length+'</span></div>';
@@ -178,12 +181,13 @@ function initMemory(){
           if(matched.size===cards.length) phase='done';
           render();
         } else {
+          wrongAttempts++;
           render();
           setTimeout(function(){flipped=[];render();},800);
         }
       } else { render(); }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){flipped=[];matched=new Set();moves=0;phase='play';cards.sort(function(){return Math.random()-.5});render();}
+      if(rb){flipped=[];matched=new Set();moves=0;wrongAttempts=0;phase='play';cards.sort(function(){return Math.random()-.5});render();}
     });
     render();
   });
@@ -200,11 +204,14 @@ function initMatching(){
     if(!pairs.length) return;
     var pgIdx=gPageIdx(key);
     var shuffledR=pairs.map(function(p,i){return{idx:i,text:p.kanan||''}}).sort(function(){return Math.random()-.5});
-    var selLeft=null,matchedL=new Set(),matchedR=new Set(),wrongKey=null,phase='play';
+    var selLeft=null,matchedL=new Set(),matchedR=new Set(),wrongKey=null,matchWrong=0,phase='play';
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Semua Cocok!</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,pairs.length,pairs.length);
+        var matchScore=Math.max(0,pairs.length-matchWrong);
+        var matchPct=Math.round(matchScore/pairs.length*100);
+        var matchCol=matchPct>=85?'#34d399':matchPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+matchCol+'">'+matchPct+'%</div><div class="game-result-sub">'+(matchWrong?matchWrong+' kesalahan':'Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,matchScore,pairs.length);
         return;
       }
       var h='<div class="match-wrap"><div class="match-head">🔀 Pasangkan</div><div class="match-cols"><div class="match-col">';
@@ -232,13 +239,14 @@ function initMatching(){
           if(matchedL.size===pairs.length) phase='done';
           selLeft=null;render();
         } else {
+          matchWrong++;
           wrongKey=selLeft+'-'+rIdx;render();
           var wk=wrongKey;setTimeout(function(){if(wrongKey===wk){wrongKey=null;render();}},600);
           selLeft=null;
         }
       }
       var rbtn=e.target.closest('[data-action="restart"]');
-      if(rbtn){selLeft=null;matchedL=new Set();matchedR=new Set();wrongKey=null;phase='play';render();}
+      if(rbtn){selLeft=null;matchedL=new Set();matchedR=new Set();wrongKey=null;matchWrong=0;phase='play';render();}
     });
     render();
   });
@@ -255,12 +263,15 @@ function initSorting(){
     var valid=items.filter(function(i){return i.teks});
     if(!valid.length) return;
     var pgIdx=gPageIdx(key);
-    var sorted={},wrongCat=null,phase='play';
+    var sorted={},wrongCat=null,sortWrong=0,phase='play';
     function getUnsorted(){return valid.filter(function(i){return !Object.values(sorted).flat().includes(i.teks)})}
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Semua Tersortir!</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,valid.length,valid.length);
+        var sortScore=Math.max(0,valid.length-sortWrong);
+        var sortPct=Math.round(sortScore/valid.length*100);
+        var sortCol=sortPct>=85?'#34d399':sortPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+sortCol+'">'+sortPct+'%</div><div class="game-result-sub">'+(sortWrong?sortWrong+' kesalahan':'Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,sortScore,valid.length);
         return;
       }
       var unsorted=getUnsorted();
@@ -292,12 +303,13 @@ function initSorting(){
           if(Object.values(sorted).flat().length===valid.length) phase='done';
           render();
         } else {
+          sortWrong++;
           wrongCat=catId;render();
           var wc=wrongCat;setTimeout(function(){if(wrongCat===wc){wrongCat=null;render();}},500);
         }
       }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){sorted={};wrongCat=null;phase='play';render();}
+      if(rb){sorted={};wrongCat=null;sortWrong=0;phase='play';render();}
     });
     render();
   });
@@ -543,11 +555,11 @@ function initFlashcard(){
     var kartu=(GAMEDATA.flashcard[key].kartu||[]).filter(function(k){return k.depan||k.belakang});
     if(!kartu.length) return;
     var pgIdx=gPageIdx(key);
-    var s={cur:0,flipped:false,reported:false};
+    var s={cur:0,flipped:false,reported:false,viewed:new Set()};
     function render(){
       var card=kartu[s.cur];
-      var h='<div class="fc-wrap"><div class="fc-head">🃏 Flashcard '+(s.cur+1)+'/'+kartu.length+'</div>';
-      h+='<div class="fc-card'+(s.flipped?' flipped':'')+'" data-action="flip">'+(s.flipped?card.belakang:card.depan)+'</div>';
+      var h='<div class="fc-wrap"><div class="fc-head"><span>🃏 Flashcard '+(s.cur+1)+'/'+kartu.length+'</span><span>'+s.viewed.size+'/'+kartu.length+' dilihat</span></div>';
+      h+='<div class="fc-card'+(s.flipped?' flipped':'')+'" data-action="flip" style="perspective:800px"><div style="width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;transform:'+(s.flipped?'rotateY(180deg)':'rotateY(0deg)')+'"><div style="position:absolute;inset:0;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);font-size:14px;font-weight:700;color:#3ecfcf;text-align:center">'+card.depan+'</div><div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);display:flex;align-items:center;justify-content:center;padding:16px;border-radius:12px;border:1px solid rgba(62,207,207,.3);background:rgba(62,207,207,.12);font-size:14px;font-weight:700;color:#3ecfcf;text-align:center">'+card.belakang+'</div></div></div>';
       h+='<div class="fc-nav">';
       h+='<button class="fc-nav-btn" data-action="prev"'+(s.cur===0?' disabled':'')+'>← Sebelumnya</button>';
       h+='<button class="fc-nav-btn" data-action="next"'+(s.cur===kartu.length-1?' disabled':'')+'>Selanjutnya →</button>';
@@ -556,8 +568,10 @@ function initFlashcard(){
     }
     el.addEventListener('click',function(e){
       var flip=e.target.closest('[data-action="flip"]');
-      if(flip){s.flipped=!s.flipped;render();
-        if(s.cur===kartu.length-1&&s.flipped&&!s.reported){s.reported=true;reportScore(pgIdx,kartu.length,kartu.length);}
+      if(flip){s.flipped=!s.flipped;
+        if(s.flipped) s.viewed.add(s.cur);
+        render();
+        if(s.viewed.size===kartu.length&&!s.reported){s.reported=true;reportScore(pgIdx,kartu.length,kartu.length);}
         return;
       }
       var prev=e.target.closest('[data-action="prev"]');
@@ -656,7 +670,8 @@ function initCrossword(){
       if(phase==='done'){
         var total=placedWords.length;
         el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Teka Silang Selesai!</div><div class="game-result-sub">'+total+' kata terisi</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,total,total);
+        var cwScore=Math.max(0,total-revealed.size);
+        reportScore(pgIdx,cwScore,total);
         return;
       }
       var cs=SIZE<=10?24:SIZE<=14?18:14;
@@ -710,21 +725,45 @@ function initCrossword(){
       var cell=e.target.closest('[data-r]');
       if(cell){
         var r=parseInt(cell.getAttribute('data-r')),c=parseInt(cell.getAttribute('data-c'));
-        var letter=prompt('Masukkan huruf:');
-        if(letter&&letter.trim()){
-          userGrid[r][c]=letter.trim().toUpperCase().charAt(0);
-          checked=false;
-          // Check if all words complete
-          var allDone=placedWords.every(function(w){
-            return w.text.split('').every(function(ch,i){
-              var nr=w.dir==='down'?w.startR+i:w.startR;
-              var nc=w.dir==='across'?w.startC+i:w.startC;
-              return userGrid[nr]&&userGrid[nr][nc]===ch;
+        // Show inline input modal instead of prompt()
+        var existingModal=document.getElementById('cw-input-modal');
+        if(existingModal) existingModal.remove();
+        var modal=document.createElement('div');
+        modal.id='cw-input-modal';
+        modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9999';
+        modal.innerHTML='<div style="background:#1a1a2e;border:1px solid rgba(62,207,207,.3);border-radius:12px;padding:16px;text-align:center;min-width:200px"><div style="color:#3ecfcf;font-size:12px;font-weight:700;margin-bottom:8px">Masukkan huruf</div><input id="cw-letter-input" type="text" maxlength="1" style="width:60px;height:40px;text-align:center;font-size:20px;font-weight:700;border:1px solid rgba(62,207,207,.4);border-radius:8px;background:rgba(255,255,255,.08);color:#3ecfcf;outline:none" autofocus><div style="margin-top:8px;display:flex;gap:6px;justify-content:center"><button id="cw-input-ok" style="padding:6px 16px;border-radius:6px;background:rgba(62,207,207,.2);border:1px solid rgba(62,207,207,.3);color:#3ecfcf;font-size:11px;font-weight:700;cursor:pointer">OK</button><button id="cw-input-cancel" style="padding:6px 16px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:11px;font-weight:700;cursor:pointer">Batal</button></div></div>';
+        document.body.appendChild(modal);
+        var cwInput=document.getElementById('cw-letter-input');
+        if(cwInput) cwInput.focus();
+        var cwR=r,cwC=c;
+        function cwSubmit(){
+          var inp=document.getElementById('cw-letter-input');
+          if(inp&&inp.value&&inp.value.trim()){
+            userGrid[cwR][cwC]=inp.value.trim().toUpperCase().charAt(0);
+            checked=false;
+            var allDone=placedWords.every(function(w){
+              return w.text.split('').every(function(ch,i){
+                var nr=w.dir==='down'?w.startR+i:w.startR;
+                var nc=w.dir==='across'?w.startC+i:w.startC;
+                return userGrid[nr]&&userGrid[nr][nc]===ch;
+              });
             });
-          });
-          if(allDone) phase='done';
+            if(allDone) phase='done';
+          }
+          var m=document.getElementById('cw-input-modal');
+          if(m) m.remove();
+          render();
         }
-        render();
+        document.getElementById('cw-input-ok').addEventListener('click',cwSubmit);
+        document.getElementById('cw-input-cancel').addEventListener('click',function(){
+          var m=document.getElementById('cw-input-modal');
+          if(m) m.remove();
+        });
+        cwInput.addEventListener('keydown',function(ev){
+          if(ev.key==='Enter') cwSubmit();
+          if(ev.key==='Escape'){var m=document.getElementById('cw-input-modal');if(m)m.remove();}
+        });
+        return;
       }
       var checkBtn=e.target.closest('[data-action="check"]');
       if(checkBtn){checked=true;render();setTimeout(function(){checked=false;render();},1500);}
@@ -847,7 +886,7 @@ function initDragDrop(){
     var targets=(d.target||d.targets||[]);
     if(!items.length||!targets.length) return;
     var pgIdx=gPageIdx(key);
-    var placed={},phase='play',dragItem=null;
+    var placed={},phase='play',dragItem=null,ddWrong=0;
 
     function getUnplaced(){
       return items.filter(function(it){return !Object.values(placed).find(function(p){return p.teks===it.teks})});
@@ -855,8 +894,9 @@ function initDragDrop(){
 
     function render(){
       if(phase==='done'){
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🖐️</div><div class="game-result-text">Semua Terpasang!</div><div class="game-result-sub">'+items.length+' item ditempatkan</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,items.length,items.length);
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🖐️</div><div class="game-result-text">Semua Terpasang!</div><div class="game-result-sub">'+items.length+' item'+(ddWrong?' · '+ddWrong+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        var ddScore=Math.max(0,items.length-ddWrong);
+        reportScore(pgIdx,ddScore,items.length);
         return;
       }
       var unplaced=getUnplaced();
@@ -931,7 +971,8 @@ function initDragDrop(){
         dragItem=null;
         render();
       } else {
-        // Wrong target - flash red
+        // Wrong target - flash red + track mistake
+        ddWrong++;
         var tgtEl=el.querySelector('[data-target="'+targetId+'"]');
         if(tgtEl){tgtEl.classList.add('wrong');setTimeout(function(){tgtEl.classList.remove('wrong')},500);}
         dragItem=null;
@@ -950,7 +991,7 @@ function initDragDrop(){
         render();
       }
       var rb=e.target.closest('[data-action="restart"]');
-      if(rb){placed={};phase='play';dragItem=null;render();}
+      if(rb){placed={};phase='play';dragItem=null;ddWrong=0;render();}
     });
     render();
   });

@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
+import { resolveModule } from '@/lib/module-resolver';
+import type { CanvaElement } from './types';
 import { GenericGameWidget } from './games/shared';
 import { TrueFalseGame } from './games/TrueFalseGame';
 import { MemoryGame } from './games/MemoryGame';
@@ -17,20 +19,28 @@ import { DragDropGame } from './games/DragDropGame';
 
 interface GameWidgetProps {
   dataIdx?: number;
+  moduleId?: string; // Stable UUID reference (preferred over dataIdx)
   compact?: boolean;
   onComplete?: (score: number, maxScore: number) => void;
 }
 
+const GAME_TYPE_LIST = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN GAME WIDGET — routes to specific game renderers
+   Uses resolveModule() for stable reference: moduleId > dataIdx
    ═══════════════════════════════════════════════════════════════ */
-export default function GameWidget({ dataIdx, compact = false, onComplete }: GameWidgetProps) {
+export default function GameWidget({ dataIdx, moduleId, compact = false, onComplete }: GameWidgetProps) {
   const modules = useAuthoringStore((s) => s.modules);
 
-  // Get the specific module data
-  const mod = dataIdx !== undefined && dataIdx >= 0 && dataIdx < modules.length
-    ? modules[dataIdx]
-    : null;
+  // Build a pseudo-element for resolveModule() — supports both moduleId and dataIdx
+  const refEl: Partial<CanvaElement> = {
+    moduleId: moduleId,
+    dataIdx: dataIdx,
+  };
+
+  // Resolve module data using stable reference (moduleId > dataIdx)
+  const mod = resolveModule(refEl as CanvaElement, modules);
 
   const gameType = (mod?.type as string) || '';
 
@@ -62,7 +72,7 @@ export default function GameWidget({ dataIdx, compact = false, onComplete }: Gam
       {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} onComplete={onComplete} />}
-      {!['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'].includes(gameType) && (
+      {!GAME_TYPE_LIST.includes(gameType as typeof GAME_TYPE_LIST[number]) && (
         <GenericGameWidget data={mod} compact={compact} />
       )}
     </div>

@@ -50,6 +50,7 @@ export interface AlurItem {
 }
 
 export interface KuisItem {
+  _id?: string; // Stable UUID reference (auto-generated)
   q: string;
   opts: string[];
   ans: number;

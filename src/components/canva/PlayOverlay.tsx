@@ -10,6 +10,7 @@ import GameWidget from './GameWidget';
 import InteractiveNav from './InteractiveNav';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import type { CanvaElement } from './types';
+import { resolveModule } from '@/lib/module-resolver';
 import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -417,6 +418,7 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
       {element.type === 'kuis' && (
         <QuizWidget
           dataIdx={element.dataIdx}
+          kuisId={element.kuisId}
           compact={false}
           onComplete={handleComplete}
         />
@@ -424,15 +426,16 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
       {element.type === 'game' && (
         <GameWidget
           dataIdx={element.dataIdx}
+          moduleId={element.moduleId}
           compact={false}
           onComplete={handleComplete}
         />
       )}
       {element.type === 'materi' && (
-        <ModuleElementInteractive dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
+        <ModuleElementInteractive dataIdx={element.dataIdx} moduleId={element.moduleId} layoutVariant={element.layoutVariant as LayoutVariant} />
       )}
       {element.type === 'modul' && (
-        <ModuleElementInteractive dataIdx={element.dataIdx} layoutVariant={element.layoutVariant as LayoutVariant} />
+        <ModuleElementInteractive dataIdx={element.dataIdx} moduleId={element.moduleId} layoutVariant={element.layoutVariant as LayoutVariant} />
       )}
       {element.type === 'teks' && (
         <div
@@ -464,9 +467,11 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
 
 // ── Module Element Interactive ────────────────────────────────
 
-function ModuleElementInteractive({ dataIdx, layoutVariant }: { dataIdx?: number; layoutVariant?: LayoutVariant }) {
+function ModuleElementInteractive({ dataIdx, moduleId, layoutVariant }: { dataIdx?: number; moduleId?: string; layoutVariant?: LayoutVariant }) {
   const modules = useAuthoringStore((s) => s.modules);
-  const mod = dataIdx != null && dataIdx >= 0 && dataIdx < modules.length ? modules[dataIdx] : null;
+  // Use resolveModule for stable reference (moduleId > dataIdx)
+  const refEl: Partial<CanvaElement> = { moduleId, dataIdx };
+  const mod = resolveModule(refEl as CanvaElement, modules);
 
   if (!mod) {
     return (

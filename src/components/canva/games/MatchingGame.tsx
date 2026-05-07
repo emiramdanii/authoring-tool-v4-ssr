@@ -5,7 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   MATCHING GAME (Pasangkan)
+   MATCHING GAME (Pasangkan) — Efficiency-based scoring
+   Score = max(0, pairs - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function MatchingGame({ data, compact, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
@@ -19,10 +20,18 @@ export function MatchingGame({ data, compact, onComplete }: GameComponentProps) 
   const [matchedLeft, setMatchedLeft] = useState<Set<number>>(new Set());
   const [matchedRight, setMatchedRight] = useState<Set<number>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
 
-  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validPairs.length, validPairs.length); } }, [phase]);
+  // Efficiency-based scoring: score = max(0, pairs - wrongAttempts)
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
+      reported.current = true;
+      const score = Math.max(0, validPairs.length - wrongAttempts);
+      onComplete(score, validPairs.length);
+    }
+  }, [phase]);
 
   const handleLeftClick = (idx: number) => {
     if (matchedLeft.has(idx)) return;
@@ -36,6 +45,7 @@ export function MatchingGame({ data, compact, onComplete }: GameComponentProps) 
       setMatchedRight(prev => new Set([...prev, originalIdx]));
       if (matchedLeft.size + 1 === validPairs.length) setPhase('done');
     } else {
+      setWrongAttempts(w => w + 1);
       setWrong(`${selectedLeft}-${originalIdx}`);
       setTimeout(() => setWrong(null), 600);
     }
@@ -44,12 +54,17 @@ export function MatchingGame({ data, compact, onComplete }: GameComponentProps) 
 
   if (validPairs.length === 0) return <EmptyState icon="🔀" label="Game Pasangkan" compact={compact} />;
 
+  const finalScore = Math.max(0, validPairs.length - wrongAttempts);
+  const scorePct = validPairs.length > 0 ? Math.round((finalScore / validPairs.length) * 100) : 0;
+
   if (phase === 'done') {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Cocok!</div>
-        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setPhase('play'); reported.current = false; }}
+        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        {wrongAttempts > 0 && <div className="text-[9px] text-cyan-400/60">{wrongAttempts} kesalahan</div>}
+        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setWrongAttempts(0); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -59,7 +74,10 @@ export function MatchingGame({ data, compact, onComplete }: GameComponentProps) 
 
   return (
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
-      <div className="text-[9px] font-bold text-cyan-400 mb-1">🔀 Pasangkan</div>
+      <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
+        <span className="font-bold">🔀 Pasangkan</span>
+        <span>{wrongAttempts > 0 && <span className="text-red-400">{wrongAttempts} salah · </span>}{matchedLeft.size}/{validPairs.length}</span>
+      </div>
       <div className="flex-1 min-h-0 flex gap-1 overflow-hidden">
         {/* Left column */}
         <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
