@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { toast } from 'sonner';
+import { generateModuleId, ensureModuleIds } from '@/lib/module-resolver';
 
 // ── Types ────────────────────────────────────────────────────────
 export type PanelId = 'dashboard' | 'dokumen' | 'konten' | 'canva' | 'autogen' | 'projects' | 'import' | 'preview' | 'versions';
@@ -936,7 +937,7 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       wordsearch: { type: 'wordsearch', title: '', instruksi: '', kata: [], ukuran: 10 },
     };
     const base = defaults[typeId] || { type: typeId, title: '' };
-    set((s) => ({ modules: [...s.modules, { ...base }], dirty: true }));
+    set((s) => ({ modules: [...s.modules, { ...base, _id: generateModuleId() }], dirty: true }));
   },
   removeModule: (index) => {
     set((s) => ({ modules: s.modules.filter((_, i) => i !== index), dirty: true }));
@@ -1163,8 +1164,8 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
         alur: data.alur || [],
         skenario: data.skenario || [],
         kuis: data.kuis || [],
-        modules: data.modules || [],
-        games: data.games || [],
+        modules: ensureModuleIds(data.modules || []),
+        games: ensureModuleIds(data.games || []),
         materi: data.materi || { blok: [] },
         guruPw: data.guruPw || 'guru123',
         dirty: false,
@@ -1218,7 +1219,7 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       kuis: kuis ? deepClone(kuis.soal) : [],
       skenario: skenario ? deepClone(skenario) : [],
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
-      modules: modules ? deepClone(modules) : [],
+      modules: modules ? ensureModuleIds(deepClone(modules)) : [],
       games: [],
       dirty: false,
     });

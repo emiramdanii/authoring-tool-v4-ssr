@@ -161,12 +161,10 @@ export function buildGameData(
     // Custom pages: scan elements for quiz/game
     if (!p.templateType || p.templateType === 'custom') {
       let gameIdx = 0;
-      p.elements.forEach(el => {
+      const allElements = [...(p.elements || []), ...(p.overlayElements || [])];
+      allElements.forEach(el => {
         if (el.type === 'kuis') {
-          const dataIdx = el.dataIdx ?? -1;
-          const kuisSource = dataIdx >= 0 && dataIdx < allKuis.length
-            ? [allKuis[dataIdx]]
-            : allKuis;
+          const kuisSource = resolveKuis(el, allKuis);
           if (kuisSource.length > 0) {
             (gameData.quizzes as Record<string, unknown>)[String(i)] = kuisSource.map(k => ({
               q: (k as Record<string, unknown>).q || '',
@@ -177,17 +175,27 @@ export function buildGameData(
           }
         }
         if (el.type === 'game') {
-          const dataIdx = el.dataIdx ?? -1;
-          const gameSource = dataIdx >= 0 && dataIdx < allGameModules.length
-            ? [allGameModules[dataIdx]]
-            : allGameModules;
-          gameSource.forEach(g => {
-            const gType = g.type as string;
+          const gMod = resolveModule(el, allGameModules);
+          if (gMod) {
+            const gType = gMod.type as string;
             const dataKey = gType === 'roda' ? 'roda' : gType === 'spinwheel' ? 'spinwheel' : gType;
             const compositeKey = i + '-' + gameIdx;
-            (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
+            (gameData[dataKey] as Record<string, unknown>)[compositeKey] = gMod;
             gameIdx++;
-          });
+          } else {
+            // Fallback to dataIdx for legacy elements
+            const dataIdx = el.dataIdx ?? -1;
+            const gameSource = dataIdx >= 0 && dataIdx < allGameModules.length
+              ? [allGameModules[dataIdx]]
+              : allGameModules;
+            gameSource.forEach(g => {
+              const gType = g.type as string;
+              const dataKey = gType === 'roda' ? 'roda' : gType === 'spinwheel' ? 'spinwheel' : gType;
+              const compositeKey = i + '-' + gameIdx;
+              (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
+              gameIdx++;
+            });
+          }
         }
       });
     }

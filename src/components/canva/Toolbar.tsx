@@ -45,6 +45,7 @@ export default function Toolbar() {
     clearStage,
     exportPageHTML,
     exportSlideshowHTML,
+    exportUnifiedHTML,
     currentPageIndex,
     pages,
     undo,
@@ -160,6 +161,46 @@ export default function Toolbar() {
         toast.error('Gagal mengekspor slideshow', { id: 'export-slideshow' });
       } finally {
         setExporting(false);
+      }
+    });
+    setExportOpen(false);
+  };
+
+  const handleExportUnified = () => {
+    setExporting(true);
+    toast.loading(`Mengekspor ${pages.length} halaman (Unified)...`, { id: 'export-unified' });
+    requestAnimationFrame(() => {
+      try {
+        const html = exportUnifiedHTML();
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const judul = useAuthoringStore.getState().meta.judulPertemuan || 'media-pembelajaran';
+        a.download = `${judul.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase()}-unified.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        toast.success(`Unified export selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-unified' });
+      } catch (err) {
+        toast.error('Gagal mengekspor unified HTML', { id: 'export-unified' });
+      } finally {
+        setExporting(false);
+      }
+    });
+    setExportOpen(false);
+  };
+
+  const handlePreviewUnified = () => {
+    requestAnimationFrame(() => {
+      try {
+        const html = exportUnifiedHTML();
+        const win = window.open('', '_blank');
+        if (win) { win.document.write(html); win.document.close(); }
+        toast.success(`Unified preview dibuka (${pages.length} halaman + navigasi pintar + game)`);
+      } catch (err) {
+        toast.error('Gagal membuat preview unified');
       }
     });
     setExportOpen(false);
@@ -304,15 +345,43 @@ export default function Toolbar() {
           <ChevronDown size={10} className={`transition-transform ${exportOpen ? 'rotate-180' : ''}`} />
         </button>
         {exportOpen && (
-          <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+            {/* ── UNIFIED EXPORT (Recommended) ── */}
+            <div className="px-3 py-1.5 bg-emerald-500/10 border-b border-emerald-500/20">
+              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">🚀 Rekomendasi — Export Lengkap</div>
+            </div>
+            <button
+              onClick={handlePreviewUnified}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
+            >
+              <MonitorPlay size={14} className="text-emerald-400" />
+              <div>
+                <div className="text-[11px] text-emerald-300 font-semibold">▶ Preview Unified (Tab Baru)</div>
+                <div className="text-[8px] text-emerald-500/70">Navigasi pintar + game + skor + layout canva</div>
+              </div>
+            </button>
+            <button
+              onClick={handleExportUnified}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
+            >
+              <Download size={14} className="text-emerald-400" />
+              <div>
+                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Export Unified HTML</div>
+                <div className="text-[8px] text-emerald-500/70">File HTML lengkap — siap dibagikan ke siswa</div>
+              </div>
+            </button>
+
+            <div className="px-3 py-1.5 bg-slate-800/30 border-y border-slate-700/30">
+              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Ekspor Lainnya</div>
+            </div>
             <button
               onClick={handlePreviewSlideshow}
               className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
             >
-              <MonitorPlay size={14} className="text-cyan-400" />
+              <Film size={14} className="text-teal-400" />
               <div>
-                <div className="text-[11px] text-slate-200 font-semibold">▶ Preview Slideshow di Tab Baru</div>
-                <div className="text-[8px] text-slate-500">{pages.length} halaman interaktif lengkap</div>
+                <div className="text-[11px] text-slate-200 font-semibold">Preview Slideshow</div>
+                <div className="text-[8px] text-slate-500">Slideshow biasa (tanpa navigasi pintar)</div>
               </div>
             </button>
             <button
@@ -321,7 +390,7 @@ export default function Toolbar() {
             >
               <Eye size={14} className="text-slate-400" />
               <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Preview Halaman di Tab Baru</div>
+                <div className="text-[11px] text-slate-200 font-semibold">Preview Halaman</div>
                 <div className="text-[8px] text-slate-500">Hanya halaman saat ini</div>
               </div>
             </button>
@@ -341,8 +410,8 @@ export default function Toolbar() {
             >
               <Film size={14} className="text-teal-400" />
               <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Export Slideshow Interaktif</div>
-                <div className="text-[8px] text-slate-500">{pages.length} halaman dengan skor & kuis</div>
+                <div className="text-[11px] text-slate-200 font-semibold">Export Slideshow HTML</div>
+                <div className="text-[8px] text-slate-500">{pages.length} halaman (navigasi prev/next)</div>
               </div>
             </button>
             <div className="section-divider mx-3" />

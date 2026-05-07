@@ -13,6 +13,7 @@ import { createUISlice } from './ui-slice';
 import { createBackgroundSlice } from './background-slice';
 import { createAutoRakitSlice } from './auto-rakit';
 import { createAutoGenerateSlice } from './auto-generate';
+import { createSyncSlice } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
 
 export const useCanvaStore = create<CanvaState>()((...a) => {
@@ -52,6 +53,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ...createBackgroundSlice(...a),
     ...createAutoRakitSlice(...a),
     ...createAutoGenerateSlice(...a),
+    ...createSyncSlice(...a),
     ...createPersistenceSlice(...a),
   };
 });

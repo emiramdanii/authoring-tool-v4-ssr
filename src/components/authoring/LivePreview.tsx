@@ -16,6 +16,7 @@ import {
   ExternalLink,
   ArrowLeft,
   X,
+  Download,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -606,6 +607,33 @@ export default function LivePreview() {
 
         {/* ── Right side: Actions + Status ────────────────────── */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Export HTML button (primary action) */}
+          <button
+            onClick={() => {
+              if (!htmlContent) return;
+              const blob = new Blob([htmlContent], { type: 'text/html' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              const judul = useAuthoringStore.getState().meta.judulPertemuan || 'media-pembelajaran';
+              a.download = `${judul.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase()}.html`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }}
+            disabled={!htmlContent}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${
+              htmlContent
+                ? 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30'
+                : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed border border-transparent'
+            }`}
+            title="Export HTML — download file siap pakai"
+          >
+            <Download size={11} />
+            <span className="hidden md:inline">Export HTML</span>
+          </button>
+
           {/* Open in new tab button */}
           <button
             onClick={handleOpenInNewTab}

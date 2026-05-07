@@ -310,3 +310,38 @@ Stage Summary:
 - Overlay elements bug fixed in export
 - Stable module IDs (moduleId) added alongside legacy dataIdx
 - Export HTML button now in main UI with 2 options (Unified + Template)
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Implement architecture improvements (Phase 1-4) based on senior dev audit
+
+Work Log:
+- Phase 1: Complete moduleId migration
+  - Updated authoring-store.ts: import generateModuleId/ensureModuleIds, add _id on module creation, ensureModuleIds on load/preset
+  - Updated element-slice.ts: addGameElement now sets moduleId from module._id, imported resolveModule
+  - Updated canva-export-helpers.ts: buildGameData uses resolveModule/resolveKuis for stable references, scans overlayElements too
+- Phase 2: Reactive authoring → canvas sync
+  - Created sync-slice.ts with syncTemplateData() action that updates page templateData without rebuilding layout
+  - Added syncTemplateData to CanvaState interface
+  - Composed sync slice in canva store
+  - Added subscriber in AuthoringTool.tsx that watches authoring store changes and calls syncTemplateData (debounced 300ms)
+- Phase 3: Export Pipeline Polish
+  - Added exportUnifiedHTML to Toolbar destructuring
+  - Added handleExportUnified and handlePreviewUnified handlers
+  - Redesigned Export dropdown: Unified Export as RECOMMENDED (green header), other exports in "Ekspor Lainnya" section
+  - Added "Export HTML" button in LivePreview toolbar (primary action, emerald styled)
+  - Added Download icon import to LivePreview
+- Phase 4: Overlay export improvements for template pages
+  - Fixed unified export to render overlay elements ON TOP of template pages (not just custom pages)
+  - Overlay elements on template pages get z-index:20 and pointer-events:auto for interactivity
+  - Supports all element types: teks, shape, kuis, game, modul, materi
+  - Uses resolveModule for stable game/module references in overlays
+
+Stage Summary:
+- 7 files modified, 1 file created (sync-slice.ts)
+- moduleId migration: all module creation and loading now uses stable UUIDs
+- Reactive sync: authoring changes auto-propagate to canvas (no manual Auto Rakit needed)
+- Export HTML: unified export is now the PRIMARY recommended option with prominent UI
+- Overlay: template pages correctly render overlay elements in export
+- Build: ✅ next build compiled successfully, 0 TypeScript errors in src/

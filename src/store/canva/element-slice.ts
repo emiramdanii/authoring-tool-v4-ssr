@@ -11,6 +11,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES } from '@/lib/canva-export-helpers';
 import { getModuleIcon, getGameIcon } from '@/lib/canva-icon-maps';
 import { createElId } from './constants';
+import { resolveModule } from '@/lib/module-resolver';
 
 export type ElementSlice = Pick<
   CanvaState,
@@ -82,6 +83,8 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
+    const kuis = useAuthoringStore.getState().kuis;
+    const kuisItem = kuis[idx];
     const el: CanvaElement = {
       id: createElId(),
       type: 'kuis',
@@ -110,12 +113,16 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
+    const modules = useAuthoringStore.getState().modules;
+    const gameModules = modules.filter((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
+    const gameMod = gameModules[idx];
     const el: CanvaElement = {
       id: createElId(),
       type: 'game',
       icon: '🎮',
       label: 'Game #' + (idx + 1),
       dataIdx: idx,
+      moduleId: (gameMod?._id as string) || undefined,
       x: 55, y: 5, w: 40, h: 40,
       opacity: 100,
     };

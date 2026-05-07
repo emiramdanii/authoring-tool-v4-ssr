@@ -122,6 +122,10 @@ export interface CanvaState {
   // ── Actions: Auto Rakit ──────────────────────────────────────
   autoRakit: () => void;
 
+  // ── Actions: Reactive Sync ────────────────────────────────────
+  /** Sync template pages' templateData from authoring store (incremental, no rebuild) */
+  syncTemplateData: () => void;
+
   // ── Actions: Auto Generate (Page Type) ──────────────────────
   generateFromPageType: (pageType: PageTypeDefinition, config: Record<string, number | string | boolean>) => void;
 

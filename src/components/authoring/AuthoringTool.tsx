@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 
 import Dashboard from './Dashboard';
 import Dokumen from './Dokumen';
@@ -126,6 +127,24 @@ export default function AuthoringTool() {
     }, 8000);
     return () => clearTimeout(timer);
   }, [dirty]);
+
+  // ── Reactive sync: authoring data → canvas templateData ─────
+  // When authoring store data changes, update canvas pages' templateData
+  // without rebuilding the page layout (preserves elements, overlays, positions)
+  useEffect(() => {
+    let syncTimer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribe = useAuthoringStore.subscribe(() => {
+      // Debounce sync to avoid rapid-fire updates during typing
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        useCanvaStore.getState().syncTemplateData();
+      }, 300);
+    });
+    return () => {
+      unsubscribe();
+      if (syncTimer) clearTimeout(syncTimer);
+    };
+  }, []);
 
   // Keyboard shortcut: Ctrl+S to save, Ctrl+P to toggle Live Preview
   useEffect(() => {

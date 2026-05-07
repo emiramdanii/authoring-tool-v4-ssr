@@ -22,6 +22,7 @@ import {
   renderMateriBlokInline,
   getHeroData,
 } from '@/lib/canva-export-helpers';
+import { resolveModule } from '@/lib/module-resolver';
 import type { ExportState } from '@/lib/export-html/types';
 import { EXPORT_CSS } from '@/lib/export-html/styles';
 import { FUNGSI_NORMA } from '@/lib/export-html/constants';
@@ -133,7 +134,45 @@ export function exportUnifiedHTML(
     // Template-specific body
     const templateBody = renderTemplateExportHTML(p, i);
     // Element-based body for custom pages (includes overlay fix)
-    const elementsHTML = templateBody || renderElementsHTML(p, i, allModules, allGameModules);
+    const customElementsHTML = renderElementsHTML(p, i, allModules, allGameModules);
+
+    // For template pages with overlay elements, render template body + overlay on top
+    let elementsHTML: string;
+    if (templateBody) {
+      // Template page: render template content + overlay elements on top
+      const overlayEls = (p.overlayElements || []).filter(el => !el.hidden);
+      const overlayHTML = overlayEls.length > 0
+        ? overlayEls.map(el => {
+            // Import renderSingleElement from helpers — inline here for overlay
+            const style = `position:absolute;left:${el.x}%;top:${el.y}%;width:${el.w}%;height:${el.h}%;opacity:${(el.opacity || 100) / 100};pointer-events:auto`;
+            if (el.type === 'teks') {
+              return `<div style="${style};z-index:20"><div style="font-size:${el.fontSize || 20}px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);padding:8px;line-height:1.4">${el.text || ''}</div></div>`;
+            }
+            if (el.type === 'shape') {
+              return `<div style="${style};z-index:20"><div style="width:100%;height:100%;background:${el.color || 'rgba(255,255,255,.15)'};border-radius:${el.radius || 8}px"></div></div>`;
+            }
+            if (el.type === 'kuis') {
+              return `<div id="quiz-engine-${i}" style="${style};z-index:20;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:10px;overflow:hidden;display:flex;flex-direction:column"></div>`;
+            }
+            if (el.type === 'game') {
+              const gMod = resolveModule(el, allGameModules);
+              const gType = (gMod?.type as string) || 'game';
+              const engineId = getGameEngineId(gType, i, 0);
+              return `<div id="${engineId}" style="${style};z-index:20;background:rgba(56,217,217,.08);border:1px solid rgba(56,217,217,.2);border-radius:8px;overflow:hidden;display:flex;flex-direction:column"></div>`;
+            }
+            if (el.type === 'modul' || el.type === 'materi') {
+              const mod = resolveModule(el, allModules);
+              const variant = (el.layoutVariant as LayoutVariant) || 'A';
+              if (mod) return `<div style="${style};z-index:20;overflow-y:auto;padding:8px">${renderModuleToStyledHTML(mod, variant)}</div>`;
+              return `<div style="${style};z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px"><div style="font-size:1.5rem">🧩</div><div style="font-size:10px;color:rgba(167,139,250,.6);margin-top:4px">Modul</div></div>`;
+            }
+            return `<div style="${style};z-index:20;display:flex;align-items:center;justify-content:center"><div style="font-size:1.5rem">${el.icon || ''}</div></div>`;
+          }).join('\n    ')
+        : '';
+      elementsHTML = templateBody + (overlayHTML ? `<div style="position:absolute;inset:0;z-index:20;pointer-events:none">${overlayHTML}</div>` : '');
+    } else {
+      elementsHTML = customElementsHTML;
+    }
 
     // Build nav bar
     const navbarHtml = `
