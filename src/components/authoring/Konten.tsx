@@ -876,6 +876,11 @@ const GAME_TYPES = [
   { id: 'spinwheel', icon: '🎡', label: 'Roda Pertanyaan', desc: 'Roda putar dengan soal acak', color: '#ff6b6b' },
   { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', desc: 'Kuis kompetisi antar tim', color: '#f9c82e' },
   { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', desc: 'Cari kata tersembunyi', color: '#60a5fa' },
+  { id: 'flashcard', icon: '🃏', label: 'Flashcard', desc: 'Kartu belajar bolak-balik', color: '#3ecfcf' },
+  { id: 'crossword', icon: '🔤', label: 'Teka Silang', desc: 'Isi kata sesuai petunjuk', color: '#a78bfa' },
+  { id: 'fillblank', icon: '✏️', label: 'Isian', desc: 'Soal isian singkat', color: '#34d399' },
+  { id: 'dragdrop', icon: '🖐️', label: 'Seret & Letakkan', desc: 'Letakkan item ke target yang benar', color: '#fb923c' },
+  { id: 'matching', icon: '🔀', label: 'Pasangkan', desc: 'Cocokkan pasangan kiri-kanan', color: '#f9c82e' },
 ] as const;
 
 const ALL_MODULE_TYPES = [...MODULE_TYPES, ...GAME_TYPES];

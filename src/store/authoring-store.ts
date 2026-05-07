@@ -435,6 +435,9 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       spinwheel: { type: 'spinwheel', title: '', instruksi: '', soal: [{ teks: '', kategori: '' }] },
       teambuzzer: { type: 'teambuzzer', title: '', instruksi: '', timA: 'Tim A', timB: 'Tim B', soal: [{ teks: '', jawaban: '', poin: 10 }] },
       wordsearch: { type: 'wordsearch', title: '', instruksi: '', kata: [], ukuran: 10 },
+      crossword: { type: 'crossword', title: '', instruksi: '', kata: [], ukuran: 12 },
+      fillblank: { type: 'fillblank', title: '', instruksi: '', soal: [] },
+      dragdrop: { type: 'dragdrop', title: '', instruksi: '', items: [], target: [] },
     };
     const base = defaults[typeId] || { type: typeId, title: '' };
     set((s) => ({ modules: [...s.modules, { ...base, _id: generateModuleId() }], dirty: true }));

@@ -5,8 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   DRAG & DROP GAME (Seret & Letakkan) — Efficiency-based scoring
-   Score = max(0, items - wrongAttempts)
+   DRAG & DROP GAME (Seret & Letakkan) — Efficiency-based scoring with 50% floor
+   Score = max(ceil(items * 0.5), items - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function DragDropGame({ data, compact, onComplete }: GameComponentProps) {
   const items = ((data.items as Array<Record<string, unknown>>) || []).filter(i => i.teks);
@@ -17,11 +17,11 @@ export function DragDropGame({ data, compact, onComplete }: GameComponentProps) 
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
 
-  // Efficiency-based scoring: score = max(0, items - wrongAttempts)
+  // Efficiency-based scoring with 50% floor: score = max(ceil(items*0.5), items - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(0, items.length - wrongAttempts);
+      const score = Math.max(Math.ceil(items.length * 0.5), items.length - wrongAttempts);
       onComplete(score, items.length);
     }
   }, [phase]);
@@ -57,7 +57,7 @@ export function DragDropGame({ data, compact, onComplete }: GameComponentProps) 
 
   if (items.length === 0 || targets.length === 0) return <EmptyState icon="🖐️" label="Seret & Letakkan" compact={compact} />;
 
-  const finalScore = Math.max(0, items.length - wrongAttempts);
+  const finalScore = Math.max(Math.ceil(items.length * 0.5), items.length - wrongAttempts);
   const scorePct = items.length > 0 ? Math.round((finalScore / items.length) * 100) : 0;
 
   if (phase === 'done') {

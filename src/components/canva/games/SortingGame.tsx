@@ -5,8 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   SORTING GAME (Urutkan / Klasifikasi) — Efficiency-based scoring
-   Score = max(0, validItems - wrongAttempts)
+   SORTING GAME (Urutkan / Klasifikasi) — Efficiency-based scoring with 50% floor
+   Score = max(ceil(items * 0.5), items - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
   const kategori = (data.kategori as Array<Record<string, unknown>>) || [];
@@ -19,11 +19,11 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const reported = useRef(false);
 
-  // Efficiency-based scoring: score = max(0, validItems - wrongAttempts)
+  // Efficiency-based scoring with 50% floor: score = max(ceil(items*0.5), items - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(0, validItems.length - wrongAttempts);
+      const score = Math.max(Math.ceil(validItems.length * 0.5), validItems.length - wrongAttempts);
       onComplete(score, validItems.length);
     }
   }, [phase]);
@@ -51,7 +51,7 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
     return !Object.values(sorted).flat().includes(i.teks as string);
   });
 
-  const finalScore = Math.max(0, validItems.length - wrongAttempts);
+  const finalScore = Math.max(Math.ceil(validItems.length * 0.5), validItems.length - wrongAttempts);
   const scorePct = validItems.length > 0 ? Math.round((finalScore / validItems.length) * 100) : 0;
 
   if (phase === 'done') {

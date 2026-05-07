@@ -5,8 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   MEMORY MATCH GAME — Efficiency-based scoring
-   Score = max(0, pairs - wrongAttempts)
+   MEMORY MATCH GAME — Efficiency-based scoring with 50% floor
+   Score = max(ceil(pairs * 0.5), pairs - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
@@ -28,11 +28,11 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
 
-  // Efficiency-based scoring: score = max(0, pairs - wrongAttempts)
+  // Efficiency-based scoring with 50% floor: score = max(ceil(pairs*0.5), pairs - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(0, validPairs.length - wrongAttempts);
+      const score = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
       onComplete(score, validPairs.length);
     }
   }, [phase]);
@@ -71,7 +71,7 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
 
   if (validPairs.length === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} />;
 
-  const finalScore = Math.max(0, validPairs.length - wrongAttempts);
+  const finalScore = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
   const scorePct = validPairs.length > 0 ? Math.round((finalScore / validPairs.length) * 100) : 0;
 
   if (phase === 'done') {

@@ -5,7 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   SPIN WHEEL (Roda Pertanyaan)
+   SPIN WHEEL (Roda Pertanyaan) — Non-scored tool (random picker)
+   reportScore(0, 0) — does not contribute to overall scoring
    ═══════════════════════════════════════════════════════════════ */
 export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
@@ -29,7 +30,8 @@ export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps)
       const sliceAngle = 360 / validSoal.length;
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
       setResult(validSoal[Math.min(idx, validSoal.length - 1)]);
-      if (onComplete) onComplete(1, 1);
+      // SpinWheel is a random picker tool, not a quiz — no scoring contribution
+      if (onComplete) onComplete(0, 0);
     }, 2500);
   };
 

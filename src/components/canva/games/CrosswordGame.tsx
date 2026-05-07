@@ -5,8 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   CROSSWORD GAME (Teka Silang) — Efficiency-based scoring
-   Score = max(0, totalWords - revealsUsed)
+   CROSSWORD GAME (Teka Silang) — Efficiency-based scoring with 50% floor
+   Score = max(ceil(words * 0.5), words - revealsUsed)
    No more prompt() — uses inline keyboard input
    ═══════════════════════════════════════════════════════════════ */
 export function CrosswordGame({ data, compact, onComplete }: GameComponentProps) {
@@ -77,11 +77,11 @@ export function CrosswordGame({ data, compact, onComplete }: GameComponentProps)
 
   const { grid, SIZE: gridSize, acrossClues, downClues } = gridData;
 
-  // Efficiency-based scoring: score = max(0, words - reveals)
+  // Efficiency-based scoring with 50% floor: score = max(ceil(words*0.5), words - reveals)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(0, validKata.length - revealed.size);
+      const score = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - revealed.size);
       onComplete(score, validKata.length);
     }
   }, [phase]);
@@ -191,7 +191,7 @@ export function CrosswordGame({ data, compact, onComplete }: GameComponentProps)
 
   if (validKata.length === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} />;
 
-  const finalScore = Math.max(0, validKata.length - revealed.size);
+  const finalScore = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - revealed.size);
   const scorePct = validKata.length > 0 ? Math.round((finalScore / validKata.length) * 100) : 0;
 
   if (phase === 'done') {

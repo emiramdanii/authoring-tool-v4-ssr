@@ -5,7 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   RODA PUTAR (Spinning Wheel)
+   RODA PUTAR (Spinning Wheel) — Non-scored tool (random picker)
+   reportScore(0, 0) — does not contribute to overall scoring
    ═══════════════════════════════════════════════════════════════ */
 export function RodaGame({ data, compact, onComplete }: GameComponentProps) {
   const opsi = (data.opsi as string[]) || [];
@@ -29,7 +30,8 @@ export function RodaGame({ data, compact, onComplete }: GameComponentProps) {
       const sliceAngle = 360 / opsi.length;
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
       setResult(opsi[Math.min(idx, opsi.length - 1)]);
-      if (onComplete) onComplete(1, 1);
+      // Roda Putar is a random picker tool, not a quiz — no scoring contribution
+      if (onComplete) onComplete(0, 0);
     }, 2500);
   };
 

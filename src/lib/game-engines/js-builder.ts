@@ -148,7 +148,7 @@ function initMemory(){
     var flipped=[],matched=new Set(),moves=0,wrongAttempts=0,phase='play';
     function render(){
       if(phase==='done'){
-        var memScore=Math.max(0,pairs.length-wrongAttempts);
+        var memScore=Math.max(Math.ceil(pairs.length*0.5),pairs.length-wrongAttempts);
         var memPct=Math.round(memScore/pairs.length*100);
         var memCol=memPct>=85?'#34d399':memPct>=70?'#f9c12e':'#f87171';
         el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+memCol+'">'+memPct+'%</div><div class="game-result-sub">'+moves+' langkah'+(wrongAttempts?' · '+wrongAttempts+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
@@ -207,7 +207,7 @@ function initMatching(){
     var selLeft=null,matchedL=new Set(),matchedR=new Set(),wrongKey=null,matchWrong=0,phase='play';
     function render(){
       if(phase==='done'){
-        var matchScore=Math.max(0,pairs.length-matchWrong);
+        var matchScore=Math.max(Math.ceil(pairs.length*0.5),pairs.length-matchWrong);
         var matchPct=Math.round(matchScore/pairs.length*100);
         var matchCol=matchPct>=85?'#34d399':matchPct>=70?'#f9c12e':'#f87171';
         el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+matchCol+'">'+matchPct+'%</div><div class="game-result-sub">'+(matchWrong?matchWrong+' kesalahan':'Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
@@ -267,7 +267,7 @@ function initSorting(){
     function getUnsorted(){return valid.filter(function(i){return !Object.values(sorted).flat().includes(i.teks)})}
     function render(){
       if(phase==='done'){
-        var sortScore=Math.max(0,valid.length-sortWrong);
+        var sortScore=Math.max(Math.ceil(valid.length*0.5),valid.length-sortWrong);
         var sortPct=Math.round(sortScore/valid.length*100);
         var sortCol=sortPct>=85?'#34d399':sortPct>=70?'#f9c12e':'#f87171';
         el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+sortCol+'">'+sortPct+'%</div><div class="game-result-sub">'+(sortWrong?sortWrong+' kesalahan':'Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
@@ -315,7 +315,7 @@ function initSorting(){
   });
 }
 
-/* ── RODA PUTAR ENGINE ──────────────────────────────────── */
+/* ── RODA PUTAR ENGINE — Non-scored tool (random picker) ── */
 function initRoda(){
   if(!GAMEDATA.roda) return;
   Object.keys(GAMEDATA.roda).forEach(function(key){
@@ -323,7 +323,7 @@ function initRoda(){
     if(!el) return;
     var opsi=GAMEDATA.roda[key].opsi||[];
     if(opsi.length<2) return;
-    var rot=0,spinning=false,result=null;
+    var rot=0,spinning=false,result=null,reported=false;
     var colors=['#f9c82e','#3ecfcf','#a78bfa','#34d399','#ff6b6b','#fb923c','#60a5fa','#f472b6'];
     function makeSlices(){
       var h='';
@@ -343,6 +343,7 @@ function initRoda(){
       h+='<button class="roda-spin" data-action="spin"'+(spinning?' disabled':'')+'>'+(spinning?'Berputar...':'Putar!')+'</button></div>';
       el.innerHTML=h;
     }
+    var pgIdx=gPageIdx(key);
     el.addEventListener('click',function(e){
       var btn=e.target.closest('[data-action="spin"]');
       if(btn&&!spinning){
@@ -354,6 +355,8 @@ function initRoda(){
           var n=rot%360,sa=360/opsi.length;
           var idx=Math.floor(((360-n+sa/2)%360)/sa);
           result=opsi[Math.min(idx,opsi.length-1)];
+          // Non-scored tool — report (0,0) once to mark completion
+          if(!reported){reported=true;reportScore(pgIdx,0,0);}
           render();
         },2500);
       }
@@ -362,7 +365,7 @@ function initRoda(){
   });
 }
 
-/* ── SPINWHEEL (Roda Pertanyaan) ENGINE ─────────────────── */
+/* ── SPINWHEEL (Roda Pertanyaan) ENGINE — Non-scored tool ── */
 function initSpinWheel(){
   if(!GAMEDATA.spinwheel) return;
   Object.keys(GAMEDATA.spinwheel).forEach(function(key){
@@ -370,7 +373,7 @@ function initSpinWheel(){
     if(!el) return;
     var soal=(GAMEDATA.spinwheel[key].soal||[]).filter(function(s){return s.teks});
     if(soal.length<2) return;
-    var rot=0,spinning=false,result=null;
+    var rot=0,spinning=false,result=null,reported=false;
     var colors=['#f9c82e','#3ecfcf','#a78bfa','#34d399','#ff6b6b','#fb923c','#60a5fa','#f472b6'];
     function makeSlices(){
       var h='';
@@ -396,6 +399,7 @@ function initSpinWheel(){
       h+='<button class="roda-spin" data-action="spin"'+(spinning?' disabled':'')+'>'+(spinning?'Berputar...':'Putar!')+'</button></div>';
       el.innerHTML=h;
     }
+    var pgIdx=gPageIdx(key);
     el.addEventListener('click',function(e){
       var btn=e.target.closest('[data-action="spin"]');
       if(btn&&!spinning){
@@ -407,6 +411,8 @@ function initSpinWheel(){
           var n=rot%360,sa=360/soal.length;
           var idx=Math.floor(((360-n+sa/2)%360)/sa);
           result=soal[Math.min(idx,soal.length-1)];
+          // Non-scored tool — report (0,0) once to mark completion
+          if(!reported){reported=true;reportScore(pgIdx,0,0);}
           render();
         },2500);
       }
@@ -507,7 +513,7 @@ function initWordSearch(){
     grid=genGrid();
     function render(){
       if(phase==='done'){
-        var wsScore=Math.max(0,kata.length-wsWrong);
+        var wsScore=Math.max(Math.ceil(kata.length*0.5),kata.length-wsWrong);
         var wsPct=Math.round(wsScore/kata.length*100);
         var wsCol=wsPct>=85?'#34d399':wsPct>=70?'#f9c12e':'#f87171';
         el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+wsCol+'">'+wsPct+'%</div><div class="game-result-sub">'+kata.length+' kata'+(wsWrong?' · '+wsWrong+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
@@ -672,10 +678,12 @@ function initCrossword(){
 
     function render(){
       if(phase==='done'){
-        var totalCells=0,userCorrect=0;
-        for(var r=0;r<SIZE;r++)for(var c=0;c<SIZE;c++){if(grid[r][c].letter!==''){totalCells++;if(userGrid[r][c]===grid[r][c].letter&&!revealed.has(r+','+c))userCorrect++;}}
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Teka Silang Selesai!</div><div class="game-result-sub">'+userCorrect+'/'+totalCells+' sel diisi sendiri</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        reportScore(pgIdx,userCorrect,totalCells);
+        // Word-based scoring: max(ceil(words*0.5), words - revealsUsed) — consistent with canva preview
+        var cwScore=Math.max(Math.ceil(placedWords.length*0.5),placedWords.length-revealed.size);
+        var cwPct=Math.round(cwScore/placedWords.length*100);
+        var cwCol=cwPct>=85?'#34d399':cwPct>=70?'#f9c12e':'#f87171';
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text" style="color:'+cwCol+'">'+cwPct+'%</div><div class="game-result-sub">'+placedWords.length+' kata'+(revealed.size?' · '+revealed.size+' dibantu':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,cwScore,placedWords.length);
         return;
       }
       var cs=SIZE<=10?24:SIZE<=14?18:14;
@@ -899,7 +907,7 @@ function initDragDrop(){
     function render(){
       if(phase==='done'){
         el.innerHTML='<div class="game-result"><div class="game-result-icon">🖐️</div><div class="game-result-text">Semua Terpasang!</div><div class="game-result-sub">'+items.length+' item'+(ddWrong?' · '+ddWrong+' salah':' · Sempurna!')+'</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        var ddScore=Math.max(0,items.length-ddWrong);
+        var ddScore=Math.max(Math.ceil(items.length*0.5),items.length-ddWrong);
         reportScore(pgIdx,ddScore,items.length);
         return;
       }

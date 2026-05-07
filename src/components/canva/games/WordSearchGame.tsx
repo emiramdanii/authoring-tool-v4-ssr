@@ -5,7 +5,8 @@ import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
 /* ═══════════════════════════════════════════════════════════════
-   WORD SEARCH GAME
+   WORD SEARCH GAME — Efficiency-based scoring with 50% floor
+   Score = max(ceil(words * 0.5), words - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 
 function generateGrid(words: string[], size: number): string[][] {
@@ -56,7 +57,7 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(0, validKata.length - wrongAttempts);
+      const score = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - wrongAttempts);
       onComplete(score, validKata.length);
     }
   }, [phase]);
