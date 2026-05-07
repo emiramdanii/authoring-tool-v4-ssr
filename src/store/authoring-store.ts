@@ -85,6 +85,70 @@ export interface MateriState {
   blok: MateriBlok[];
 }
 
+// ── Additional Section Types ──────────────────────────────────────
+export interface PetunjukLangkah {
+  icon: string;
+  judul: string;
+  isi: string;
+}
+
+export interface PetunjukData {
+  title: string;
+  intro: string;
+  langkah: PetunjukLangkah[];
+  tips?: string;
+}
+
+export interface DiskusiPertanyaan {
+  label: string;
+  icon: string;
+  teks: string;
+  petunjuk: string;
+}
+
+export interface DiskusiData {
+  title: string;
+  intro: string;
+  pertanyaan: DiskusiPertanyaan[];
+}
+
+export interface RefleksiPertanyaan {
+  teks: string;
+  petunjuk: string;
+  warna?: string;
+  icon?: string;
+}
+
+export interface RefleksiData {
+  title: string;
+  intro: string;
+  pertanyaan: RefleksiPertanyaan[];
+  penugasan?: { judul: string; isi: string; contoh?: string };
+}
+
+export interface PenutupPreviewItem {
+  icon: string;
+  judul: string;
+  isi: string;
+  warna: string;
+}
+
+export interface PenutupData {
+  title: string;
+  subjudul: string;
+  preview: PenutupPreviewItem[];
+  nextPertemuan?: { judul: string; deskripsi: string; items: Array<{ icon: string; judul: string; isi: string; warna: string }> };
+}
+
+export interface SuaraConfig {
+  navigasi: boolean;
+  benar: boolean;
+  salah: boolean;
+  selesai: boolean;
+  klik: boolean;
+  skor: boolean;
+}
+
 // ── Preset Types ─────────────────────────────────────────────────
 interface MetaPreset {
   id: string;
@@ -151,6 +215,13 @@ const PRESETS_META: Record<string, MetaPreset> = {
     judulPertemuan: 'Pertemuan 2 – Macam-Macam Norma',
     subjudul: 'Apa saja jenis norma yang mengatur kehidupan kita?',
     ikon: '\uD83D\uDCDC', durasi: '2 \u00D7 40 menit', namaBab: 'Macam-Macam Norma',
+  },
+  'perilaku-patuhan': {
+    id: 'perilaku-patuhan', label: 'Bab 3 – Pertemuan 3: Perilaku Patuh terhadap Norma',
+    mapel: 'PPKn', kelas: 'VII', kurikulum: 'Kurikulum Merdeka',
+    judulPertemuan: 'Pertemuan 3 – Perilaku Patuh terhadap Norma',
+    subjudul: 'Bagaimana menerapkan norma dalam kehidupan sehari-hari?',
+    ikon: '⚖️', durasi: '2 × 40 menit', namaBab: 'Perilaku Patuh terhadap Norma',
   },
   blank: {
     id: 'blank', label: 'Kosong – Mulai dari Nol',
@@ -222,6 +293,16 @@ const PRESETS_ALUR: Record<string, AlurPreset> = {
       { fase: 'Penutup', durasi: '8 menit', judul: 'Refleksi & Penutup', deskripsi: 'Kartu kilat ringkasan + portofolio jawaban diskusi + komitmen diri + penugasan P3.' },
     ],
   },
+  'perilaku-patuhan-80menit': {
+    id: 'perilaku-patuhan-80menit', label: 'Perilaku Patuh – 2×40 menit',
+    steps: [
+      { fase: 'Pendahuluan', durasi: '10 menit', judul: 'Review & Apersepsi', deskripsi: 'Guru me-review P1 & P2 secara kilat. Tanya jawab: Norma apa yang paling sering kamu langgar? Skenario: Kamu jadi saksi pelanggaran norma — apa yang kamu lakukan?' },
+      { fase: 'Inti', durasi: '20 menit', judul: 'Penerapan Norma di 4 Lingkungan', deskripsi: 'Eksplorasi penerapan norma di keluarga, sekolah, masyarakat, dan negara melalui tab interaktif. Siswa mencatat contoh nyata dari pengalaman masing-masing.' },
+      { fase: 'Inti', durasi: '20 menit', judul: 'Kuis 10 Soal & Diskusi Kasus', deskripsi: 'Kuis mandiri 10 soal tentang seluruh Bab 3. Lalu diskusi kelompok: analisis 2 kasus konflik norma — mana yang harus diprioritaskan?' },
+      { fase: 'Inti', durasi: '15 menit', judul: 'Budaya Patuh & Komitmen Diri', deskripsi: 'Membangun budaya patuh norma. Siswa menulis komitmen pribadi dan menandatangani "Deklarasi Patuh Norma" secara simbolis.' },
+      { fase: 'Penutup', durasi: '15 menit', judul: 'Refleksi & Portofolio', deskripsi: 'Siswa mengisi refleksi akhir dan menyerahkan portofolio tugas 3 pertemuan. Guru memberi apresiasi dan menutup pembelajaran Bab 3.' },
+    ],
+  },
   blank: { id: 'blank', label: 'Kosong – Isi Manual', steps: [] },
 };
 
@@ -242,6 +323,34 @@ const PRESETS_KUIS: Record<string, KuisPreset> = {
     ],
   },
   blank: { id: 'blank', label: 'Kosong – Isi Manual', soal: [] },
+  'macam-norma-8soal': {
+    id: 'macam-norma-8soal', label: 'Kuis Macam Norma – 8 Soal',
+    soal: [
+      { q: 'Norma yang bersumber dari Tuhan YME melalui kitab suci disebut norma...', opts: ['Kesusilaan', 'Kesopanan', 'Agama', 'Hukum'], ans: 2, ex: 'Norma agama bersumber dari wahyu Tuhan yang tertuang dalam kitab suci masing-masing agama.' },
+      { q: 'Berdoa sebelum makan merupakan contoh pelaksanaan norma...', opts: ['Kesopanan', 'Kesusilaan', 'Agama', 'Hukum'], ans: 2, ex: 'Berdoa adalah bentuk hubungan vertikal dengan Tuhan yang termasuk dalam norma agama.' },
+      { q: 'Norma kesusilaan bersumber dari...', opts: ['Kitab suci', 'Hati nurani manusia', 'Adat istiadat', 'Undang-undang'], ans: 1, ex: 'Norma kesusilaan lahir dari hati nurani manusia — nilai baik-buruk yang dirasakan secara naluriah.' },
+      { q: 'Mengembalikan dompet yang ditemukan meskipun tidak ada yang tahu merupakan contoh norma...', opts: ['Agama', 'Kesusilaan', 'Kesopanan', 'Hukum'], ans: 1, ex: 'Mengembalikan tanpa paksaan dari luar menunjukkan norma kesusilaan yang berasal dari hati nurani.' },
+      { q: 'Mengucap salam saat bertemu guru di lorong sekolah merupakan contoh norma...', opts: ['Agama', 'Kesusilaan', 'Kesopanan', 'Hukum'], ans: 2, ex: 'Mengucap salam adalah etika pergaulan yang berasal dari adat kebiasaan masyarakat — norma kesopanan.' },
+      { q: 'Norma yang sanksinya berupa denda atau penjara adalah norma...', opts: ['Agama', 'Kesusilaan', 'Kesopanan', 'Hukum'], ans: 3, ex: 'Hanya norma hukum yang memiliki sanksi tegas berupa denda, penjara, atau pencabutan hak dari negara.' },
+      { q: 'Norma yang berbeda-beda antar daerah karena berasal dari kebiasaan setempat adalah norma...', opts: ['Agama', 'Kesusilaan', 'Kesopanan', 'Hukum'], ans: 2, ex: 'Norma kesopanan berasal dari adat istiadat yang berbeda-beda di setiap daerah.' },
+      { q: 'Norma hukum berbeda dari norma lainnya karena...', opts: ['Bersifat universal', 'Berasal dari hati nurani', 'Tertulis, tegas, dan ada aparat penegaknya', 'Tidak memiliki sanksi'], ans: 2, ex: 'Norma hukum bersifat tertulis, tegas, berlaku bagi seluruh warga negara, dan ada aparat penegak hukum.' },
+    ],
+  },
+  'perilaku-patuhan-10soal': {
+    id: 'perilaku-patuhan-10soal', label: 'Kuis Perilaku Patuh – 10 Soal',
+    soal: [
+      { q: 'Penerapan norma di lingkungan keluarga yang paling tepat adalah...', opts: ['Menolak perintah orang tua jika tidak suka', 'Membantu orang tua mengerjakan pekerjaan rumah dengan sukarela', 'Mengambil keputusan sendiri tanpa diskusi keluarga', 'Berkata kasar jika tidak setuju dengan orang tua'], ans: 1, ex: 'Membantu orang tua sukarela menunjukkan penerapan norma kesusilaan dan kesopanan dalam keluarga.' },
+      { q: 'Di sekolah, siswa yang datang tepat waktu menunjukkan patuh terhadap norma...', opts: ['Kesusilaan', 'Kesopanan', 'Agama', 'Hukum'], ans: 3, ex: 'Tata tertib sekolah tentang jam masuk adalah bagian dari norma hukum (peraturan tertulis yang berlaku di lingkungan sekolah).' },
+      { q: 'Seorang warga yang melaporkan tindak kriminal kepada polisi menunjukkan...', opts: ['Pelanggaran norma kesopanan', 'Ketidakpedulian terhadap sesama', 'Perilaku patuh terhadap norma hukum', 'Pelanggaran hak orang lain'], ans: 2, ex: 'Melaporkan tindak kriminal adalah wujud kepatuhan terhadap norma hukum dan ikut menjaga ketertiban masyarakat.' },
+      { q: 'Contoh penerapan norma agama dalam kehidupan sehari-hari adalah...', opts: ['Membayar pajak tepat waktu', 'Berdoa sebelum makan dan belajar', 'Mengucap salam saat bertemu guru', 'Mengantre dengan tertib di kantin'], ans: 1, ex: 'Berdoa adalah hubungan vertikal dengan Tuhan yang merupakan penerapan norma agama dalam keseharian.' },
+      { q: 'Ketika teman menyontek saat ulangan, tindakan yang patuh terhadap norma adalah...', opts: ['Diam saja agar tidak dianggap pengadu', 'Mencontek juga agar nilainya tidak ketinggalan', 'Menegur teman dan melaporkan jika tidak mau berhenti', 'Memfotokan jawaban untuk dibagikan ke teman lain'], ans: 2, ex: 'Menegur dan melaporkan adalah tindakan yang patuh terhadap norma kesusilaan (kejujuran) dan norma hukum (tata tertib sekolah).' },
+      { q: 'Dampak pelanggaran norma bagi kehidupan bermasyarakat adalah...', opts: ['Masyarakat menjadi lebih bebas berekspresi', 'Terjadi ketidakpercayaan dan ketidakharmonisan sosial', 'Semua orang menjadi lebih mandiri', 'Norma-norma lama tergantikan oleh yang baru'], ans: 1, ex: 'Pelanggaran norma merusak kepercayaan dan keharmonisan — masyarakat menjadi tidak aman dan tidak tertib.' },
+      { q: 'Seorang pemimpin yang memanfaatkan jabatannya untuk keuntungan pribadi melanggar norma...', opts: ['Kesopanan saja', 'Kesusilaan saja', 'Hukum saja', 'Kesusilaan dan hukum'], ans: 3, ex: 'Korupsi melanggar norma kesusilaan (tidak jujur/adil) dan norma hukum (melanggar UU Tipikor).' },
+      { q: 'Budaya patuh terhadap norma di Indonesia ditunjukkan melalui...', opts: ['Gotong royong dan musyawarah', 'Mementingkan kepentingan pribadi', 'Mengabaikan adat istiadat daerah', 'Menolak semua aturan yang dianggap kuno'], ans: 0, ex: 'Gotong royong dan musyawarah adalah budaya bangsa Indonesia yang mencerminkan kepatuhan terhadap norma kesopanan dan hukum.' },
+      { q: 'Perilaku patuh terhadap norma yang paling sulit dilakukan adalah...', opts: ['Mengikuti aturan saat diawasi orang lain', 'Membayar pajak karena takut denda', 'Menepati janji meskipun tidak ada yang tahu', 'Mengantre karena semua orang juga mengantre'], ans: 2, ex: 'Menepati janji tanpa pengawasan menunjukkan kepatuhan pada norma kesusilaan — yang paling sulit karena hanya hati nurani yang mengawasi.' },
+      { q: 'Apa yang akan terjadi jika masyarakat tidak patuh terhadap norma hukum?', opts: ['Masyarakat menjadi lebih kreatif', 'Terjadi kekacauan dan ketidakadilan', 'Semua orang merasa lebih bebas', 'Hukum akan berubah mengikuti keinginan warga'], ans: 1, ex: 'Tanpa kepatuhan pada norma hukum, masyarakat kehilangan ketertiban, keadilan, dan kepastian hukum — kehidupan menjadi kacau.' },
+    ],
+  },
 };
 
 // ── Preset Skenario Data ────────────────────────────────────────
@@ -340,6 +449,45 @@ const PRESETS_SKENARIO: Record<string, Array<Record<string, unknown>>> = {
         { icon: '🤝', label: 'Ajak diskusi', detail: 'Bicara dengan adikmu tentang pentingnya makan bersama dan cari solusi bersama', good: true, pts: 20, norma: 'Norma Kesopanan & Solidaritas Keluarga', level: 'good', resultTitle: 'Pilihan Terbaik! 🌟', resultBody: 'Dialog adalah cara norma kesopanan bekerja — menghormati perasaan semua pihak.', consequences: [{ icon: '✅', text: 'Hubungan keluarga tetap harmonis' }, { icon: '✅', text: 'Adikmu merasa dihargai dan lebih kooperatif' }, { icon: '💡', text: 'Norma keluarga ditegakkan dengan cara yang bijak, bukan paksaan' }] },
         { icon: '😤', label: 'Paksa adik ikut', detail: 'Paksa adikmu agar ikut makan bersama sesuai aturan keluarga', good: false, pts: 5, norma: 'Norma tanpa dialog = pemaksaan', level: 'mid', resultTitle: 'Kurang Bijak 🤔', resultBody: 'Aturan tanpa dialog bisa menimbulkan perasaan tidak dihargai, meski tujuannya baik.', consequences: [{ icon: '🟡', text: 'Norma keluarga terpenuhi, tapi adikmu merasa dipaksa' }, { icon: '⚠️', text: 'Kepatuhan tanpa pemahaman tidak membentuk karakter' }] },
         { icon: '🙅', label: 'Biarkan saja', detail: 'Tidak campur tangan, biarkan adikmu memilih sendiri', good: false, pts: 3, norma: 'Norma keluarga diabaikan', level: 'bad', resultTitle: 'Norma Melemah ⚠️', resultBody: 'Jika aturan keluarga bisa diabaikan tanpa konsekuensi, norma akan semakin lemah.', consequences: [{ icon: '❌', text: 'Norma keluarga kehilangan kekuatan mengikatnya' }, { icon: '❌', text: 'Adikmu belajar bahwa aturan bisa diabaikan' }] },
+      ],
+    },
+  ],
+  'perilaku-patuhan': [
+    {
+      title: '🏫 Saksi Pelanggaran di Sekolah',
+      bg: 'sbg-kelas',
+      charEmoji: '😯',
+      charColor: '#e87070',
+      charPants: '#4a6a9a',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Istirahat sekolah. Kamu melihat seorang siswa kelas 9 yang jauh lebih besar membully siswa kelas 7 di koridor belakang.' },
+        { speaker: 'SIWA KECIL 😢', text: '"Tolong... dia mengambil uang sakuku dan mengancam akan memukulku jika melapor."' },
+        { speaker: 'KAKAK KELAS 😠', text: '"Kamu jangan ikut campur! Ini urusan kami saja. Kamu juga mau diganggu?"' },
+        { speaker: 'NARRATOR', text: 'Tidak ada guru di sekitar. Kamu satu-satunya saksi. Pilihanmu sekarang bisa menentukan keselamatan adik kelas itu.' },
+      ],
+      choices: [
+        { icon: '👨‍🏫', label: 'Laporkan ke guru', detail: 'Segera mencari guru terdekat dan melaporkan kejadian bullying', good: true, pts: 20, norma: 'Perilaku Patuh terhadap Norma Hukum & Kesusilaan', level: 'good', resultTitle: 'Pilihan Terbaik! 🌟', resultBody: 'Melaporkan pelanggaran norma adalah wujud kepatuhan terhadap norma hukum (tata tertib sekolah) dan norma kesusilaan (melindungi yang lemah).', consequences: [{ icon: '✅', text: 'Korban bullying mendapat pertolongan dan merasa dilindungi' }, { icon: '✅', text: 'Pelajar melanggar norma mendapat sanksi sesuai tata tertib — keadilan ditegakkan' }, { icon: '✅', text: 'Budaya patuh norma di sekolah semakin kuat karena ada yang berani menegakkan' }] },
+        { icon: '🤝', label: 'Hadapi kakak kelas', detail: 'Menghadapi langsung dan meminta mengembalikan uang serta berhenti membully', good: true, pts: 15, norma: 'Norma Kesusilaan — Melindungi yang Lemah', level: 'good', resultTitle: 'Pilihan Berani! 👍', resultBody: 'Berani melindungi yang lemah menunjukkan penerapan norma kesusilaan. Tapi tetap berhati-hati — bisa berbahaya jika sendirian.', consequences: [{ icon: '✅', text: 'Kamu menunjukkan keberanian melindungi yang lemah' }, { icon: '💡', text: 'Lebih aman melibatkan guru agar penyelesaiannya lebih terstruktur' }, { icon: '⚠️', text: 'Menghadapi sendiri bisa berisiko jika pelaku tidak kooperatif' }] },
+        { icon: '🤫', label: 'Diam saja, bukan urusanku', detail: 'Pergi dari tempat kejadian dan pura-pura tidak melihat apa-apa', good: false, pts: 0, norma: 'Pelanggaran Norma Kesusilaan — Abaikan Penderitaan Orang Lain', level: 'bad', resultTitle: 'Norma Melemah ⚠️', resultBody: 'Membiarkan pelanggaran norma terjadi tanpa bertindak berarti ikut membiarkan ketidakadilan. Budaya patuh norma menjadi lemah.', consequences: [{ icon: '❌', text: 'Korban terus menderita dan bullying berlanjut' }, { icon: '❌', text: 'Budaya diam membuat pelanggaran norma semakin berani' }, { icon: '❌', text: 'Norma kesusilaan gagal berfungsi — tidak ada yang melindungi yang lemah' }] },
+      ],
+    },
+    {
+      title: '🏘️ Gotong Royong yang Memudar',
+      bg: 'sbg-kampung',
+      charEmoji: '🤔',
+      charColor: '#3ecfcf',
+      charPants: '#4a7a6a',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Kampungmu dulu terkenal dengan gotong royong. Setiap Sabtu pagi, warga bersih-bersih bersama. Tapi belakangan, kebiasaan itu makin ditinggalkan.' },
+        { speaker: 'IBU 😔', text: '"Dulu ramai sekali, sekarang cuma 3-4 orang yang datang. Yang lain sibuk dengan urusannya masing-masing."' },
+        { speaker: 'NARRATOR', text: 'Lingkungan mulai kotor dan tidak terawat. Kamu ingin mengembalikan semangat gotong royong.' },
+      ],
+      choices: [
+        { icon: '💪', label: 'Inisiatif sendiri, ajak teman-teman', detail: 'Kumpulkan teman sebaya dan mulai bersih-bersih, semoga warga lain ikut terinspirasi', good: true, pts: 20, norma: 'Perilaku Patuh terhadap Norma Kesopanan — Gotong Royong', level: 'good', resultTitle: 'Pilihan Terbaik! 🌟', resultBody: 'Memulai dari diri sendiri adalah wujud nyata penerapan norma kesopanan (gotong royong). Tindakan nyata lebih kuat dari sekadar mengeluh.', consequences: [{ icon: '✅', text: 'Contoh nyata penerapan norma gotong royong di masyarakat' }, { icon: '✅', text: 'Tindakanmu menginspirasi orang lain untuk ikut serta' }, { icon: '✅', text: 'Budaya patuh norma dibangun dari langkah kecil yang konsisten' }] },
+        { icon: '📋', label: 'Usulkan ke RT untuk jadwal tetap', detail: 'Minta RT mengaktifkan kembali jadwal gotong royong resmi dan mengirim undangan', good: true, pts: 15, norma: 'Perilaku Patuh terhadap Norma Hukum & Kesopanan', level: 'good', resultTitle: 'Langkah Bijak! 👍', resultBody: 'Melalui jalur resmi, gotong royong menjadi kegiatan yang terstruktur dan mengikat — ini penerapan norma hukum dan kesopanan sekaligus.', consequences: [{ icon: '✅', text: 'Gotong royong dijadwalkan resmi — warga merasa terikat untuk hadir' }, { icon: '✅', text: 'RT sebagai pemimpin dapat memberi arahan dan motivasi' }, { icon: '💡', text: 'Idealnya kamu juga ikut hadir sebagai contoh — jangan hanya mengusulkan' }] },
+        { icon: '🙅', label: 'Urusi sendiri, bukan urusanku', detail: 'Itu tanggung jawab RT dan warga dewasa, bukan tugas siswa', good: false, pts: 3, norma: 'Norma kesopanan dan gotong royong diabaikan', level: 'bad', resultTitle: 'Norma Melemah ⚠️', resultBody: 'Gotong royong bukan hanya tanggung jawab RT — setiap warga termasuk siswa punya peran. Jika semua berpikir sama, norma akan semakin memudar.', consequences: [{ icon: '❌', text: 'Budaya gotong royong makin pudar tanpa regenerasi' }, { icon: '❌', text: 'Lingkungan semakin kotor dan tidak terawat' }, { icon: '❌', text: 'Norma kesopanan dan solidaritas gagal diwariskan ke generasi berikutnya' }] },
       ],
     },
   ],
@@ -487,6 +635,14 @@ const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
         '🤝 Kesopanan',
         '⚖️ Hukum',
       ],
+      soal: [
+        { teks: 'Norma yang sanksinya berupa dosa dan hukuman akhirat', jawaban: '🙏 Agama' },
+        { teks: 'Norma yang berasal dari adat istiadat masyarakat', jawaban: '🤝 Kesopanan' },
+        { teks: 'Norma yang bersifat tertulis dan ada aparat penegaknya', jawaban: '⚖️ Hukum' },
+        { teks: 'Norma yang berasal dari hati nurani manusia', jawaban: '❤️ Kesusilaan' },
+        { teks: 'Contoh: berdoa sebelum makan', jawaban: '🙏 Agama' },
+        { teks: 'Contoh: mengucap salam saat bertemu guru', jawaban: '🤝 Kesopanan' },
+      ],
     },
     {
       type: 'comparison',
@@ -537,6 +693,95 @@ const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
       ],
     },
   ],
+  'perilaku-patuhan': [
+    {
+      type: 'petunjuk',
+      title: 'Cara Belajar Hari Ini',
+      intro: 'Pertemuan terakhir Bab 3 — saatnya menerapkan semua yang sudah dipelajari!',
+      langkah: [
+        { icon: '🔄', judul: 'Review P1 & P2', isi: 'Kilas balik hakikat norma dan macam-macam norma. Siapkan diri untuk menerapkan!' },
+        { icon: '🏠', judul: 'Eksplorasi 4 Lingkungan', isi: 'Pelajari penerapan norma di keluarga, sekolah, masyarakat, dan negara melalui tab interaktif.' },
+        { icon: '📝', judul: 'Kuis & Diskusi Kasus', isi: 'Kuis 10 soal tentang seluruh Bab 3, lalu diskusi kelompok analisis kasus konflik norma.' },
+        { icon: '💪', judul: 'Refleksi & Komitmen', isi: 'Tulis komitmen pribadi dan tandatangani "Deklarasi Patuh Norma" secara simbolis.' },
+      ],
+    },
+    {
+      type: 'review',
+      title: 'Ingat Kembali Pertemuan 1 & 2',
+      intro: 'Apa saja yang sudah dipelajari dan apa yang akan dipelajari hari ini?',
+      kartu: [
+        { icon: '✅', judul: 'Pertemuan 1 — Hakikat Norma', isi: '• Manusia = makhluk sosial\n• Norma = aturan mengikat\n• 5 fungsi norma', warna: '#34d399' },
+        { icon: '✅', judul: 'Pertemuan 2 — Macam-Macam Norma', isi: '• 4 jenis norma & sumbernya\n• Sanksi tiap norma\n• Hubungan antarnorma', warna: '#3ecfcf' },
+        { icon: '🎯', judul: 'Hari ini — Perilaku Patuh', isi: '• Penerapan norma di 4 lingkungan\n• Budaya patuh norma\n• Komitmen pribadi', warna: '#f9c82e' },
+      ],
+    },
+    {
+      type: 'tab-icons',
+      title: 'Penerapan Norma di 4 Lingkungan',
+      intro: 'Eksplorasi bagaimana norma diterapkan dalam berbagai lingkungan kehidupan',
+      layout: 'horizontal',
+      animation: 'fade',
+      tabs: [
+        { icon: '🏠', judul: 'Keluarga', warna: '#f9c82e', isi: 'Di lingkungan keluarga, norma mengatur hubungan antar anggota keluarga. Norma agama mewarnai nilai-nilai keluarga, norma kesusilaan menjadi dasar kasih sayang, norma kesopanan mengatur tata krama, dan norma hukum melindungi hak-hak anggota keluarga.', poin: ['Menghormati dan membantu orang tua', 'Berkomunikasi dengan sopan dalam keluarga', 'Menjalankan tradisi dan nilai keluarga'], refleksi: 'Norma apa yang paling kuat di keluargamu? Beri contohnya!' },
+        { icon: '🏫', judul: 'Sekolah', warna: '#3ecfcf', isi: 'Di lingkungan sekolah, norma diterapkan melalui tata tertib, etika belajar, dan hubungan antar warga sekolah. Norma hukum berupa peraturan sekolah, norma kesopanan mengatur etika bergaul, norma agama melalui kegiatan keagamaan, dan norma kesusilaan menjadi dasar kejujuran.', poin: ['Mematuhi tata tertib sekolah', 'Menghormati guru dan teman', 'Jujur dalam ulangan dan tugas'], refleksi: 'Norma mana yang paling sering kamu patuhi di sekolah?' },
+        { icon: '🏘️', judul: 'Masyarakat', warna: '#34d399', isi: 'Di lingkungan masyarakat, norma berupa adat istiadat, gotong royong, dan peraturan daerah. Norma kesopanan paling menonjol dalam kehidupan bermasyarakat, diikuti norma hukum berupa peraturan daerah dan norma agama dalam kegiatan keagamaan komunal.', poin: ['Ikut gotong royong dan kegiatan sosial', 'Menghormati tetangga dan perbedaan', 'Mematuhi peraturan daerah setempat'], refleksi: 'Kegiatan gotong royong apa yang masih ada di lingkunganmu?' },
+        { icon: '🇮🇩', judul: 'Negara', warna: '#a78bfa', isi: 'Dalam kehidupan berbangsa dan bernegara, norma hukum menjadi paling menonjol melalui UUD dan undang-undang. Norma agama memengaruhi hukum nasional, norma kesusilaan menjadi dasar kebijakan publik, dan norma kesopanan tercermin dalam etika berdemokrasi.', poin: ['Mematuhi undang-undang dan peraturan negara', 'Membayar pajak sebagai kewajiban warga negara', 'Menghormati lambang dan simbol negara'], refleksi: 'Sebagai warga negara, norma apa yang paling kamu rasakan manfaatnya?' },
+      ],
+    },
+    {
+      type: 'debat',
+      title: 'Debat: Prioritas Norma',
+      pertanyaan: 'Apakah norma hukum harus selalu diprioritaskan di atas norma lainnya?',
+      konteks: 'Di Indonesia, norma agama dan hukum sering berjalan beriringan. Namun, kadang terjadi konflik antar norma — mana yang harus diutamakan?',
+      pihakA: { label: 'Pro — Norma hukum harus diprioritaskan' },
+      pihakB: { label: 'Kontra — Norma lain setara dan kontekstual' },
+    },
+    {
+      type: 'truefalse',
+      title: 'Game: Penerapan Norma',
+      instruksi: 'Tentukan benar atau salah pernyataan berikut tentang penerapan norma!',
+      soal: [
+        { teks: 'Membantu orang tua sukarela adalah penerapan norma kesusilaan di keluarga', jawaban: true, penjelasan: 'Membantu sukarela tanpa paksaan menunjukkan hati nurani yang baik — penerapan norma kesusilaan.' },
+        { teks: 'Norma hukum hanya berlaku di pengadilan, bukan di sekolah', jawaban: false, penjelasan: 'Tata tertib sekolah adalah bagian dari norma hukum — peraturan tertulis yang berlaku di lingkungan sekolah.' },
+        { teks: 'Gotong royong adalah wujud penerapan norma kesopanan di masyarakat', jawaban: true, penjelasan: 'Gotong royong mencerminkan adat kebiasaan tolong-menolong — penerapan norma kesopanan.' },
+        { teks: 'Pelanggaran norma tidak berdampak pada kehidupan bermasyarakat', jawaban: false, penjelasan: 'Pelanggaran norma merusak kepercayaan, keharmonisan, dan ketertiban masyarakat.' },
+        { teks: 'Menepati janji tanpa pengawasan menunjukkan kepatuhan pada norma kesusilaan', jawaban: true, penjelasan: 'Hanya hati nurani yang mengawasi — inilah penerapan tertinggi norma kesusilaan.' },
+      ],
+    },
+    {
+      type: 'flashcard',
+      title: 'Kartu Kilat: Penerapan Norma',
+      instruksi: 'Ketuk kartu untuk melihat jawaban. Uji ingatanmu!',
+      kartu: [
+        { depan: 'Contoh norma di keluarga?', belakang: 'Membantu orang tua, menghormati kakak/adik, berdoa bersama, komunikasi sopan.' },
+        { depan: 'Mengapa tata tertib sekolah termasuk norma hukum?', belakang: 'Karena tertulis, berlaku bagi semua siswa, dan ada sanksi jika dilanggar — ciri-ciri norma hukum.' },
+        { depan: 'Apa itu budaya patuh norma?', belakang: 'Kebiasaan masyarakat untuk secara sukarela mematuhi norma tanpa paksaan — karena kesadaran, bukan takut sanksi.' },
+        { depan: 'Mengapa gotong royong penting dalam penerapan norma?', belakang: 'Gotong royong adalah wujud nyata penerapan norma kesopanan dan solidaritas — tanpa paksaan, dari kesadaran bersama.' },
+        { depan: 'Apa dampak jika masyarakat tidak patuh norma hukum?', belakang: 'Kehilangan ketertiban, keadilan, dan kepastian hukum — kehidupan menjadi kacau dan tidak aman.' },
+        { depan: 'Norma apa yang paling sulit dipatuhi? Mengapa?', belakang: 'Norma kesusilaan — karena hanya hati nurani yang mengawasi, tidak ada sanksi eksternal yang memaksa.' },
+      ],
+    },
+    {
+      type: 'diskusi',
+      title: 'Diskusi Kelas',
+      intro: 'Diskusikan pertanyaan berikut tentang penerapan norma dalam kehidupan nyata',
+      pertanyaan: [
+        { label: 'Diskusi Konflik Norma', icon: '⚖️', teks: 'Bayangkan norma agama dan norma hukum bertentangan dalam satu kasus. Norma mana yang harus diprioritaskan? Berikan alasanmu!', petunjuk: 'Tidak ada jawaban mutlak — yang penting argumentasi yang jelas dan logis' },
+        { label: 'Diskusi Penerapan Nyata', icon: '🏠', teks: 'Pilih 1 dari 4 lingkungan (keluarga, sekolah, masyarakat, negara). Ceritakan 1 contoh nyata penerapan norma yang kamu lakukan sendiri minggu ini!', petunjuk: 'Gunakan pengalaman pribadimu yang sesungguhnya' },
+        { label: 'Diskusi Budaya Patuh', icon: '💪', teks: 'Mengapa budaya patuh norma lebih efektif daripada ketertiban karena takut sanksi? Bagaimana cara membangun budaya patuh di lingkunganmu?', petunjuk: 'Bandingkan kepatuhan karena kesadaran vs kepatuhan karena paksaan' },
+      ],
+    },
+    {
+      type: 'refleksi',
+      title: 'Refleksi Akhir Bab 3',
+      intro: 'Refleksi terakhir — rangkum seluruh pembelajaran 3 pertemuan',
+      pertanyaan: [
+        { teks: 'Dari 3 pertemuan Bab 3, apa hal paling berkesan yang kamu pelajari tentang norma?', petunjuk: 'Tulis 2-3 hal yang benar-benar mengubah cara pandangmu', warna: '#f9c82e', icon: '🌟' },
+        { teks: 'Sebutkan 1 contoh nyata di mana kamu MENERAPKAN norma dalam kehidupan sehari-hari tanpa disuruh!', petunjuk: 'Fokus pada tindakan sukarela — bukan karena paksaan', warna: '#3ecfcf', icon: '🔍' },
+        { teks: 'Tulis komitmen pribadimu: 1 tindakan nyata yang akan kamu lakukan sebagai wujud patuh terhadap norma', petunjuk: 'Contoh: Saya akan selalu mengantre dengan tertib dan tidak memotong antrian...', warna: '#34d399', icon: '💪' },
+      ],
+    },
+  ],
   blank: [],
 };
 
@@ -562,14 +807,203 @@ const PRESETS_MATERI: Record<string, Array<Record<string, unknown>>> = {
     ]},
     { tipe: 'definisi', judul: 'Hubungan Antarnorma', isi: 'Keempat norma tidak berdiri sendiri. Norma agama membentuk kesusilaan, kesusilaan mendorong kesopanan, dan kesopanan sering menjadi dasar hukum. Di Indonesia, norma agama dan hukum saling memengaruhi.' },
   ],
+  'perilaku-patuhan': [
+    { tipe: 'definisi', judul: 'Penerapan Norma dalam Kehidupan Sehari-hari', isi: 'Penerapan norma berarti menjalankan aturan-aturan yang berlaku dalam kehidupan nyata — bukan hanya mengetahui, tetapi benar-benar melakukannya setiap hari di keluarga, sekolah, masyarakat, dan negara.' },
+    { tipe: 'poin', judul: '4 Lingkungan Penerapan Norma', butir: ['🏠 Keluarga — Menghormati orang tua, berdoa bersama, membantu pekerjaan rumah, komunikasi sopan', '🏫 Sekolah — Mematuhi tata tertib, jujur dalam ulangan, menghormati guru dan teman', '🏘️ Masyarakat — Gotong royong, menghormati tetangga, mematuhi peraturan daerah', '🇮🇩 Negara — Mematuhi UUD dan UU, membayar pajak, menghormati lambang negara'] },
+    { tipe: 'highlight', judul: 'Budaya Patuh Norma = Kehidupan yang Tertib', isi: 'Analogi: Bayangkan kota tanpa lampu lalu lintas — semua kendaraan saling berebut dan terjadi kekacauan. Budaya patuh norma adalah "lampu hijau" yang membuat kehidupan berjalan lancer karena setiap orang MENGIKUTI aturan secara sukarela, bukan karena takut sanksi.', icon: '🚦', warna: '#34d399' },
+    { tipe: 'timeline', judul: 'Langkah Membangun Budaya Patuh', langkah: [
+      { icon: '1️⃣', judul: 'Memahami', isi: 'Pahami norma yang berlaku — tahu apa yang boleh dan tidak boleh' },
+      { icon: '2️⃣', judul: 'Menyadari', isi: 'Sadari pentingnya norma — bukan karena paksaan, tapi karena manfaatnya' },
+      { icon: '3️⃣', judul: 'Menerapkan', isi: 'Terapkan dalam tindakan nyata — lakukan secara konsisten setiap hari' },
+      { icon: '4️⃣', judul: 'Membiasakan', isi: 'Jadikan kebiasaan — dari kesadaran tumbuh menjadi budaya patuh' },
+    ]},
+  ],
   blank: [],
 };
 
+// ── Preset Petunjuk Data ─────────────────────────────────────────
+const PRESETS_PETUNJUK: Record<string, PetunjukData> = {
+  'hakikat-norma': {
+    title: 'Cara Menggunakan Media Ini',
+    intro: 'Ikuti langkah-langkah berikut agar pembelajaran berjalan optimal',
+    langkah: [
+      { icon: '🎭', judul: 'Skenario Interaktif', isi: 'Hadapi 4 situasi nyata. Setiap pilihan punya konsekuensi — temukan sendiri kaitannya dengan norma!' },
+      { icon: '📖', judul: 'Baca & Eksplorasi', isi: 'Pelajari pengertian dan fungsi norma. Tandai tiap tab setelah dibaca agar tidak ada yang terlewat!' },
+      { icon: '💬', judul: 'Diskusi & Tulis', isi: 'Jawab pertanyaan diskusi — jawabanmu otomatis tersimpan dan akan tampil lagi di Refleksi sebagai portofoliomu' },
+      { icon: '🎮', judul: 'Game Fungsi Norma', isi: 'Uji pemahamanmu dengan 8 soal skenario. Setiap jawaban benar memberi penjelasan mendalam!' },
+    ],
+    tips: 'Ikuti alur dari awal sampai akhir. Jawab semua pertanyaan diskusi — jawabanmu akan muncul di Refleksi sebagai portofolio belajarmu hari ini!',
+  },
+  'macam-norma': {
+    title: 'Cara Belajar Hari Ini',
+    intro: 'Setiap aktivitas dilengkapi panduan diskusi dan pertanyaan pemantik',
+    langkah: [
+      { icon: '👥', judul: 'Diskusi Kelompok', isi: 'Setiap aktivitas dilengkapi panduan diskusi dan pertanyaan pemantik. Diskusikan dulu sebelum menjawab!' },
+      { icon: '🙏', judul: '4 Jenis Norma', isi: 'Pelajari kartu detail setiap norma. Bagi tugas membaca antar anggota kelompok!' },
+      { icon: '🔢', judul: 'Game Sortir Norma', isi: 'Klasifikasikan 12 perilaku ke jenis norma yang tepat. Diskusi kelompok dulu sebelum menjawab!' },
+      { icon: '🎡', judul: 'Roda Norma', isi: 'Putar roda dan jawab pertanyaan tentang macam-macam norma!' },
+    ],
+    tips: 'Pembelajaran hari ini berbasis kelompok. Diskusikan setiap pertanyaan sebelum menjawab bersama!',
+  },
+  'perilaku-patuhan': {
+    title: 'Cara Belajar Hari Ini',
+    intro: 'Pertemuan terakhir Bab 3 — saatnya menerapkan semua yang sudah dipelajari!',
+    langkah: [
+      { icon: '🔄', judul: 'Review P1 & P2', isi: 'Kilas balik hakikat norma dan macam-macam norma. Siapkan diri untuk menerapkan!' },
+      { icon: '🏠', judul: 'Eksplorasi 4 Lingkungan', isi: 'Pelajari penerapan norma di keluarga, sekolah, masyarakat, dan negara melalui tab interaktif.' },
+      { icon: '📝', judul: 'Kuis & Diskusi Kasus', isi: 'Kuis 10 soal tentang seluruh Bab 3, lalu diskusi kelompok analisis kasus konflik norma.' },
+      { icon: '💪', judul: 'Refleksi & Komitmen', isi: 'Tulis komitmen pribadi dan tandatangani "Deklarasi Patuh Norma" secara simbolis.' },
+    ],
+    tips: 'Ini pertemuan terakhir! Berikan yang terbaik — semua yang kamu pelajari akan dirangkum dalam komitmen pribadimu.',
+  },
+  blank: { title: '', intro: '', langkah: [] },
+};
+
+// ── Preset Diskusi Data ──────────────────────────────────────────
+const PRESETS_DISKUSI: Record<string, DiskusiData> = {
+  'hakikat-norma': {
+    title: 'Diskusi Kelas',
+    intro: 'Jawab pertanyaan berikut — jawabanmu akan tersimpan untuk portofolio refleksi',
+    pertanyaan: [
+      { label: 'Diskusi Makhluk Sosial', icon: '💬', teks: 'Bayangkan kamu tinggal di sebuah pulau bersama 30 orang yang tidak saling mengenal, tanpa pemimpin dan tanpa aturan sama sekali. Apa yang akan terjadi dalam 1 minggu pertama? Apa masalah yang paling pertama muncul?', petunjuk: 'Jawabanmu akan tampil lagi di Refleksi sebagai portofoliomu' },
+      { label: 'Latihan Mandiri — Pengertian Norma', icon: '✍️', teks: 'Dengan kata-katamu sendiri, jelaskan apa yang dimaksud norma dan mengapa norma dibutuhkan. Gunakan contoh dari kehidupan sehari-harimu!', petunjuk: 'Gunakan pengalaman pribadimu sebagai contoh' },
+      { label: 'Diskusi Kelompok — Fungsi Norma', icon: '💬', teks: 'Dari 5 fungsi norma yang kamu pelajari, fungsi mana yang paling terasa dalam kehidupanmu sehari-hari? Berikan satu contoh nyata dari pengalamanmu!', petunjuk: 'Fokus pada 1 fungsi yang paling bermakna bagimu' },
+    ],
+  },
+  'macam-norma': {
+    title: 'Diskusi Kelompok',
+    intro: 'Diskusikan pertanyaan berikut bersama kelompokmu',
+    pertanyaan: [
+      { label: 'Diskusi Perbandingan Norma Keluarga', icon: '📝', teks: 'Tuliskan 1–2 temuan menarik dari perbandingan tabel norma keluarga kelompokmu. Norma apa yang sama? Norma apa yang unik/berbeda?', petunjuk: 'Jawabanmu akan tampil lagi di Refleksi' },
+      { label: 'Diskusi Hubungan Antarnorma', icon: '💬', teks: 'Setelah semua presentasi: Norma mana yang paling berbeda dari yang kamu bayangkan sebelumnya? Mengapa sanksinya berbeda antar norma?', petunjuk: 'Diskusikan bersama kelompokmu' },
+      { label: 'Diskusi Konflik Nilai — Kasus Deni & Rian', icon: '⚖️', teks: 'Deni tahu sahabatnya Rian menyontek. Jika Deni jujur → Rian bisa diskors. Jika diam → Deni membohongi guru. Norma mana yang harus diprioritaskan?', petunjuk: 'Tidak ada jawaban benar/salah — yang penting argumentasi yang jelas' },
+    ],
+  },
+  'perilaku-patuhan': {
+    title: 'Diskusi Kelas',
+    intro: 'Diskusikan pertanyaan berikut tentang penerapan norma dalam kehidupan nyata',
+    pertanyaan: [
+      { label: 'Diskusi Konflik Norma', icon: '⚖️', teks: 'Bayangkan norma agama dan norma hukum bertentangan dalam satu kasus. Norma mana yang harus diprioritaskan? Berikan alasanmu!', petunjuk: 'Tidak ada jawaban mutlak — yang penting argumentasi yang jelas dan logis' },
+      { label: 'Diskusi Penerapan Nyata', icon: '🏠', teks: 'Pilih 1 dari 4 lingkungan (keluarga, sekolah, masyarakat, negara). Ceritakan 1 contoh nyata penerapan norma yang kamu lakukan sendiri minggu ini!', petunjuk: 'Gunakan pengalaman pribadimu yang sesungguhnya' },
+      { label: 'Diskusi Budaya Patuh', icon: '💪', teks: 'Mengapa budaya patuh norma lebih efektif daripada ketertiban karena takut sanksi? Bagaimana cara membangun budaya patuh di lingkunganmu?', petunjuk: 'Bandingkan kepatuhan karena kesadaran vs kepatuhan karena paksaan' },
+    ],
+  },
+  blank: { title: '', intro: '', pertanyaan: [] },
+};
+
+// ── Preset Refleksi Data ──────────────────────────────────────────
+const PRESETS_REFLEKSI: Record<string, RefleksiData> = {
+  'hakikat-norma': {
+    title: 'Refleksi Diri',
+    intro: 'Jawaban jujurmu lebih berharga dari jawaban yang sempurna.',
+    pertanyaan: [
+      { teks: 'Hal baru apa yang kamu pelajari hari ini tentang norma?', petunjuk: 'Tuliskan 1–2 hal yang benar-benar baru bagimu', warna: '#f9c82e', icon: '🌟' },
+      { teks: 'Dari 5 fungsi norma, mana yang paling kamu rasakan manfaatnya di sekolah? Mengapa?', petunjuk: 'Jelaskan dengan contoh konkret', warna: '#3ecfcf', icon: '🔍' },
+      { teks: 'Satu komitmen nyata yang akan kamu lakukan minggu ini sebagai wujud menghargai norma:', petunjuk: 'Contoh: Saya akan selalu mengantre dengan sabar di kantin dan tidak menyela antrian…', warna: '#34d399', icon: '💪' },
+    ],
+    penugasan: {
+      judul: 'Penugasan untuk Pertemuan 2',
+      isi: 'Amati kehidupan di rumahmu selama 1 hari. Catat minimal 3 norma yang berlaku di keluargamu menggunakan tabel: No | Norma | Contoh Perilaku | Sanksi jika Dilanggar',
+      contoh: '| No | Norma | Contoh Perilaku | Sanksi jika Dilanggar |\n|----|---------|-----------------|-----------------------|\n| 1  | ...     | ...             | ...                   |',
+    },
+  },
+  'macam-norma': {
+    title: 'Refleksi Diri',
+    intro: 'Jawaban jujur lebih berharga dari jawaban sempurna.',
+    pertanyaan: [
+      { teks: 'Dari 4 jenis norma, mana yang paling sering kamu patuhi setiap hari? Beri 1 contoh konkret!', petunjuk: 'Contoh: Norma kesopanan — saya selalu menyapa guru saat bertemu di lorong sekolah...', warna: '#3ecfcf', icon: '🗂️' },
+      { teks: 'Pernahkah kamu melihat pelanggaran norma di sekitarmu? Norma apa? Apa sanksi yang terjadi?', petunjuk: 'Ceritakan dengan jujur — tidak perlu menyebut nama orang', warna: '#ff6b6b', icon: '⚠️' },
+      { teks: 'Komitmenmu: 1 tindakan nyata minggu ini berkaitan dengan salah satu dari 4 norma:', petunjuk: 'Contoh: Saya akan lebih berhati-hati menggunakan media sosial agar tidak melanggar norma kesusilaan...', warna: '#34d399', icon: '💪' },
+    ],
+    penugasan: {
+      judul: 'Penugasan untuk Pertemuan 3',
+      isi: 'Cari 1 kasus pelanggaran norma di sekitarmu atau dari berita. Analisis menggunakan panduan: Kasus | Norma yang Dilanggar | Sanksi yang Diterima | Pendapatmu: Apakah sanksinya sudah adil?',
+      contoh: 'Contoh kasus yang bisa dianalisis:\n• Teman yang menyontek saat ulangan → norma kesusilaan + tata tertib sekolah\n• Buang sampah sembarangan di jalan → norma kesopanan + perda setempat\n• Kasus bullying di media sosial → norma kesusilaan + UU ITE\n• Pengendara motor tanpa helm → norma hukum lalu lintas',
+    },
+  },
+  'perilaku-patuhan': {
+    title: 'Refleksi Akhir Bab 3',
+    intro: 'Refleksi terakhir — rangkum seluruh pembelajaran 3 pertemuan',
+    pertanyaan: [
+      { teks: 'Dari 3 pertemuan Bab 3, apa hal paling berkesan yang kamu pelajari tentang norma?', petunjuk: 'Tulis 2-3 hal yang benar-benar mengubah cara pandangmu', warna: '#f9c82e', icon: '🌟' },
+      { teks: 'Sebutkan 1 contoh nyata di mana kamu MENERAPKAN norma dalam kehidupan sehari-hari tanpa disuruh!', petunjuk: 'Fokus pada tindakan sukarela — bukan karena paksaan', warna: '#3ecfcf', icon: '🔍' },
+      { teks: 'Tulis komitmen pribadimu: 1 tindakan nyata yang akan kamu lakukan sebagai wujud patuh terhadap norma', petunjuk: 'Contoh: Saya akan selalu mengantre dengan tertib dan tidak memotong antrian...', warna: '#34d399', icon: '💪' },
+    ],
+    penugasan: {
+      judul: 'Penugasan Akhir Bab 3 — Portofolio',
+      isi: 'Kumpulkan semua tugas 3 pertemuan sebagai portofolio akhir Bab 3. Pastikan semua tugas lengkap dan rapi!',
+      contoh: 'Portofolio Bab 3:\n• P1: Tabel norma keluarga (5 norma + contoh + sanksi)\n• P2: Analisis kasus pelanggaran norma\n• P3: Komitmen pribadi patuh norma + Deklarasi Patuh Norma',
+    },
+  },
+  blank: { title: '', intro: '', pertanyaan: [] },
+};
+
+// ── Preset Penutup Data ──────────────────────────────────────────
+const PRESETS_PENUTUP: Record<string, PenutupData> = {
+  'hakikat-norma': {
+    title: 'Pertemuan 1',
+    subjudul: 'Berhasil Diselesaikan!',
+    preview: [
+      { icon: '🧑‍🤝‍🧑', judul: 'Pertemuan 1', isi: '✅ Hakikat Norma', warna: '#34d399' },
+      { icon: '🗂️', judul: 'Pertemuan 2', isi: '→ Macam-Macam Norma', warna: '#3ecfcf' },
+      { icon: '🌟', judul: 'Pertemuan 3', isi: '→ Perilaku Patuh', warna: '#6e90b5' },
+    ],
+    nextPertemuan: {
+      judul: 'Pertemuan 2 — Apa yang Akan Kamu Pelajari?',
+      deskripsi: 'Kamu sudah paham apa itu norma dan mengapa norma penting. Sekarang saatnya mengenal 4 jenis norma yang mengatur kehidupanmu setiap hari!',
+      items: [
+        { icon: '🙏', judul: 'Norma Agama', isi: 'Bersumber dari Tuhan YME', warna: '#f9c82e' },
+        { icon: '❤️', judul: 'Norma Kesusilaan', isi: 'Bersumber dari hati nurani', warna: '#ff6b6b' },
+        { icon: '🤝', judul: 'Norma Kesopanan', isi: 'Bersumber dari adat istiadat', warna: '#3ecfcf' },
+        { icon: '⚖️', judul: 'Norma Hukum', isi: 'Bersumber dari negara', warna: '#a78bfa' },
+      ],
+    },
+  },
+  'macam-norma': {
+    title: 'Pertemuan 2',
+    subjudul: 'Berhasil Diselesaikan!',
+    preview: [
+      { icon: '🧑‍🤝‍🧑', judul: 'Pertemuan 1', isi: '✅ Hakikat Norma', warna: '#34d399' },
+      { icon: '🗂️', judul: 'Pertemuan 2', isi: '✅ Macam-Macam Norma', warna: '#3ecfcf' },
+      { icon: '🌟', judul: 'Pertemuan 3', isi: '→ Perilaku Patuh', warna: '#6e90b5' },
+    ],
+    nextPertemuan: {
+      judul: 'Pertemuan 3 — Apa yang Akan Kamu Pelajari?',
+      deskripsi: 'Kamu sudah mengenal 4 jenis norma dan hubungan antarnorma. Sekarang saatnya menerapkan norma dalam kehidupan nyata!',
+      items: [
+        { icon: '🏠', judul: 'Keluarga', isi: 'Penerapan norma di lingkungan keluarga', warna: '#f9c82e' },
+        { icon: '🏫', judul: 'Sekolah', isi: 'Penerapan norma di lingkungan sekolah', warna: '#3ecfcf' },
+        { icon: '🏘️', judul: 'Masyarakat', isi: 'Penerapan norma di lingkungan masyarakat', warna: '#34d399' },
+        { icon: '🇮🇩', judul: 'Negara', isi: 'Penerapan norma dalam kehidupan berbangsa', warna: '#a78bfa' },
+      ],
+    },
+  },
+  'perilaku-patuhan': {
+    title: 'Bab 3 — Pertemuan 3',
+    subjudul: 'Berhasil Diselesaikan! 🎉',
+    preview: [
+      { icon: '🧑‍🤝‍🧑', judul: 'Pertemuan 1', isi: '✅ Hakikat Norma', warna: '#34d399' },
+      { icon: '🗂️', judul: 'Pertemuan 2', isi: '✅ Macam-Macam Norma', warna: '#3ecfcf' },
+      { icon: '🌟', judul: 'Pertemuan 3', isi: '✅ Perilaku Patuh terhadap Norma', warna: '#f9c82e' },
+    ],
+  },
+  blank: { title: '', subjudul: '', preview: [] },
+};
+
+// ── Preset Suara Config ──────────────────────────────────────────
+const PRESETS_SUARA: Record<string, SuaraConfig> = {
+  'hakikat-norma': { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+  'macam-norma': { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+  'perilaku-patuhan': { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+  blank: { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false },
+};
+
 // ── Full Preset Mapping ──────────────────────────────────────────
-const FULL_PRESET_MAP: Record<string, { meta: string; cp: string; tp: string; atp: string; alur: string; kuis: string; skenario: string; modules: string; materi: string }> = {
-  'hakikat-norma': { meta: 'hakikat-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'hakikat-norma-80menit', kuis: 'norma-10-soal', skenario: 'hakikat-norma', modules: 'hakikat-norma', materi: 'hakikat-norma' },
-  'macam-norma': { meta: 'macam-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'macam-norma-80menit', kuis: 'norma-10-soal', skenario: 'macam-norma', modules: 'macam-norma', materi: 'macam-norma' },
-  blank: { meta: 'blank', cp: 'blank', tp: 'blank', atp: 'blank', alur: 'blank', kuis: 'blank', skenario: 'blank', modules: 'blank', materi: 'blank' },
+const FULL_PRESET_MAP: Record<string, { meta: string; cp: string; tp: string; atp: string; alur: string; kuis: string; skenario: string; modules: string; materi: string; petunjuk: string; diskusi: string; refleksi: string; penutup: string; suara: string }> = {
+  'hakikat-norma': { meta: 'hakikat-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'hakikat-norma-80menit', kuis: 'norma-10-soal', skenario: 'hakikat-norma', modules: 'hakikat-norma', materi: 'hakikat-norma', petunjuk: 'hakikat-norma', diskusi: 'hakikat-norma', refleksi: 'hakikat-norma', penutup: 'hakikat-norma', suara: 'hakikat-norma' },
+  'macam-norma': { meta: 'macam-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'macam-norma-80menit', kuis: 'macam-norma-8soal', skenario: 'macam-norma', modules: 'macam-norma', materi: 'macam-norma', petunjuk: 'macam-norma', diskusi: 'macam-norma', refleksi: 'macam-norma', penutup: 'macam-norma', suara: 'macam-norma' },
+  'perilaku-patuhan': { meta: 'perilaku-patuhan', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'perilaku-patuhan-80menit', kuis: 'perilaku-patuhan-10soal', skenario: 'perilaku-patuhan', modules: 'perilaku-patuhan', materi: 'perilaku-patuhan', petunjuk: 'perilaku-patuhan', diskusi: 'perilaku-patuhan', refleksi: 'perilaku-patuhan', penutup: 'perilaku-patuhan', suara: 'perilaku-patuhan' },
+  blank: { meta: 'blank', cp: 'blank', tp: 'blank', atp: 'blank', alur: 'blank', kuis: 'blank', skenario: 'blank', modules: 'blank', materi: 'blank', petunjuk: 'blank', diskusi: 'blank', refleksi: 'blank', penutup: 'blank', suara: 'blank' },
 };
 
 // ── Verb options ─────────────────────────────────────────────────
@@ -610,10 +1044,18 @@ interface AuthoringState {
   modules: Array<Record<string, unknown>>;
   games: Array<Record<string, unknown>>;
   materi: MateriState;
+  petunjuk: PetunjukData;
+  diskusi: DiskusiData;
+  refleksi: RefleksiData;
+  penutup: PenutupData;
+  suara: SuaraConfig;
 
   // System
   dirty: boolean;
   guruPw: string;
+
+  // Flag for auto canvas generation after preset
+  pendingCanvasGenerate: string | null;
 
   // Navigation actions
   setActivePanel: (panel: PanelId) => void;
@@ -723,9 +1165,15 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
   modules: [],
   games: [],
   materi: { blok: [] },
+  petunjuk: { title: '', intro: '', langkah: [] },
+  diskusi: { title: '', intro: '', pertanyaan: [] },
+  refleksi: { title: '', intro: '', pertanyaan: [] },
+  penutup: { title: '', subjudul: '', preview: [] },
+  suara: { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false },
 
   dirty: false,
   guruPw: 'guru123',
+  pendingCanvasGenerate: null as string | null,
 
   // ── Navigation ─────────────────────────────────────────────────
   setActivePanel: (panel) => set({ activePanel: panel }),
@@ -1208,6 +1656,11 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
     const skenario = PRESETS_SKENARIO[mapping.skenario];
     const modules = PRESETS_MODULES[mapping.modules];
     const materi = PRESETS_MATERI[mapping.materi];
+    const petunjuk = PRESETS_PETUNJUK[mapping.petunjuk];
+    const diskusi = PRESETS_DISKUSI[mapping.diskusi];
+    const refleksi = PRESETS_REFLEKSI[mapping.refleksi];
+    const penutup = PRESETS_PENUTUP[mapping.penutup];
+    const suara = PRESETS_SUARA[mapping.suara];
 
     set({
       activePreset: presetKey === 'blank' ? null : presetKey,
@@ -1221,6 +1674,11 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
       modules: modules ? ensureModuleIds(deepClone(modules)) : [],
       games: [],
+      petunjuk: petunjuk ? deepClone(petunjuk) : { title: '', intro: '', langkah: [] },
+      diskusi: diskusi ? deepClone(diskusi) : { title: '', intro: '', pertanyaan: [] },
+      refleksi: refleksi ? deepClone(refleksi) : { title: '', intro: '', pertanyaan: [] },
+      penutup: penutup ? deepClone(penutup) : { title: '', subjudul: '', preview: [] },
+      suara: suara ? deepClone(suara) : { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false },
       dirty: false,
     });
     if (presetKey === 'blank') {
@@ -1228,6 +1686,8 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
     } else {
       toast.success(`\u26A1 Preset diterapkan: ${presetKey}`);
     }
+    // Set flag for auto canvas generation
+    set({ pendingCanvasGenerate: presetKey === 'blank' ? null : presetKey });
   },
 
   applyKuisPreset: (presetKey) => {
@@ -1285,6 +1745,11 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       modules: [],
       games: [],
       materi: { blok: [] },
+      petunjuk: { title: '', intro: '', langkah: [] },
+      diskusi: { title: '', intro: '', pertanyaan: [] },
+      refleksi: { title: '', intro: '', pertanyaan: [] },
+      penutup: { title: '', subjudul: '', preview: [] },
+      suara: { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false },
       dirty: false,
       activePanel: 'dashboard',
     });

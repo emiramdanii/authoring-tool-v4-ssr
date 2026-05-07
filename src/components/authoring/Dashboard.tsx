@@ -201,10 +201,11 @@ export default function Dashboard() {
           Preset mengisi <strong>semua tab</strong> dengan data contoh PPKn Kelas VII. 
           Setelah menggunakan preset, Anda bisa mengedit isinya dan menyimpan sebagai proyek mandiri.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { key: 'hakikat-norma', icon: '🧑\u200D🤝\u200D🧑', label: 'Bab 3 – P1: Hakikat Norma', sub: 'PPKn Kelas VII' },
             { key: 'macam-norma', icon: '📜', label: 'Bab 3 – P2: Macam Norma', sub: 'PPKn Kelas VII' },
+            { key: 'perilaku-patuhan', icon: '⚖️', label: 'Bab 3 – P3: Perilaku Patuh', sub: 'PPKn Kelas VII' },
             { key: 'blank', icon: '📋', label: 'Proyek Kosong', sub: 'Isi semua manual' },
           ].map((p) => (
             <button

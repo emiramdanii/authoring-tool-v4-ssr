@@ -238,6 +238,34 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       populateTemplateElements(newPages[newPages.length - 1], createElId);
     }
 
+    // Petunjuk page
+    if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
+      newPages.push(createPage('Petunjuk Penggunaan', 'petunjuk'));
+      newPages[newPages.length - 1].templateData = { petunjuk: authStore.petunjuk };
+      populateTemplateElements(newPages[newPages.length - 1], createElId);
+    }
+
+    // Diskusi page
+    if (blueprint.includeDiskusi && authStore.diskusi.pertanyaan.length > 0) {
+      newPages.push(createPage('Diskusi', 'diskusi'));
+      newPages[newPages.length - 1].templateData = { diskusi: authStore.diskusi };
+      populateTemplateElements(newPages[newPages.length - 1], createElId);
+    }
+
+    // Refleksi page
+    if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
+      newPages.push(createPage('Refleksi', 'refleksi'));
+      newPages[newPages.length - 1].templateData = { refleksi: authStore.refleksi };
+      populateTemplateElements(newPages[newPages.length - 1], createElId);
+    }
+
+    // Penutup page
+    if (blueprint.includePenutup && authStore.penutup.preview.length > 0) {
+      newPages.push(createPage('Penutup', 'penutup'));
+      newPages[newPages.length - 1].templateData = { penutup: authStore.penutup };
+      populateTemplateElements(newPages[newPages.length - 1], createElId);
+    }
+
     // Set navbar/timer config on all pages
     newPages.forEach(p => {
       if (p.templateData && typeof p.templateData === 'object') {

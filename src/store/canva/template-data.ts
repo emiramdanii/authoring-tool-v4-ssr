@@ -21,11 +21,15 @@ export function getTemplateLabel(templateType: PageTemplateType, pageCount: numb
   const meta = authStore.meta;
   const labelMap: Record<string, string> = {
     cover: 'Cover - ' + (meta.judulPertemuan || 'Halaman Judul'),
+    petunjuk: 'Petunjuk Penggunaan',
     dokumen: 'Dokumen CP/TP/ATP',
     materi: 'Materi Pembelajaran',
+    diskusi: 'Diskusi & Pertanyaan',
     kuis: 'Kuis Interaktif',
     game: 'Game Interaktif',
     hasil: 'Hasil & Apresiasi',
+    refleksi: 'Refleksi Diri',
+    penutup: 'Penutup',
     hero: 'Hero Banner',
     skenario: 'Skenario Interaktif',
     custom: 'Halaman ' + (pageCount + 1),
@@ -50,6 +54,11 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
         namaBab: meta.namaBab || '',
       };
 
+    case 'petunjuk':
+      return {
+        petunjuk: authStore.petunjuk,
+      };
+
     case 'dokumen':
       return {
         cp: authStore.cp,
@@ -63,6 +72,11 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
         modules: authStore.modules.filter((m: Record<string, unknown>) =>
           (MATERI_MODULE_TYPES as readonly string[]).includes(m.type as string)
         ),
+      };
+
+    case 'diskusi':
+      return {
+        diskusi: authStore.diskusi,
       };
 
     case 'kuis':
@@ -81,6 +95,16 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
       return {
         totalKuis: authStore.kuis.filter(k => k.q.trim()).length,
         namaBab: meta.namaBab || '',
+      };
+
+    case 'refleksi':
+      return {
+        refleksi: authStore.refleksi,
+      };
+
+    case 'penutup':
+      return {
+        penutup: authStore.penutup,
       };
 
     case 'skenario':

@@ -23,6 +23,10 @@ export interface PageTypeBlueprint {
   includeKuis: boolean;
   includeGame: boolean;
   includeHasil: boolean;
+  includePetunjuk: boolean;
+  includeDiskusi: boolean;
+  includeRefleksi: boolean;
+  includePenutup: boolean;
   soalPerHalaman: number;
   timer: boolean;
   navbar: boolean;
@@ -72,6 +76,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeKuis: true,
       includeGame: true,
       includeHasil: true,
+      includePetunjuk: true,
+      includeDiskusi: true,
+      includeRefleksi: true,
+      includePenutup: true,
       soalPerHalaman: (config.soalPerHalaman as number) || 5,
       timer: config.timer as boolean || false,
       navbar: config.navbar as boolean || true,
@@ -97,6 +105,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeKuis: false,
       includeGame: false,
       includeHasil: true,
+      includePetunjuk: false,
+      includeDiskusi: false,
+      includeRefleksi: false,
+      includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
       navbar: config.navbar as boolean || true,
@@ -124,6 +136,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeKuis: true,
       includeGame: false,
       includeHasil: true,
+      includePetunjuk: false,
+      includeDiskusi: false,
+      includeRefleksi: false,
+      includePenutup: false,
       soalPerHalaman: (config.soalPerHalaman as number) || 5,
       timer: true,
       navbar: config.navbar as boolean || true,
@@ -149,6 +165,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeKuis: false,
       includeGame: true,
       includeHasil: true,
+      includePetunjuk: false,
+      includeDiskusi: false,
+      includeRefleksi: false,
+      includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
       navbar: config.navbar as boolean || true,
@@ -174,6 +194,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeKuis: false,
       includeGame: false,
       includeHasil: true,
+      includePetunjuk: false,
+      includeDiskusi: false,
+      includeRefleksi: false,
+      includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
       navbar: config.navbar as boolean || true,
@@ -196,6 +220,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeKuis: false,
       includeGame: false,
       includeHasil: false,
+      includePetunjuk: false,
+      includeDiskusi: false,
+      includeRefleksi: false,
+      includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
       navbar: false,

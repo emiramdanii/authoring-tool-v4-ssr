@@ -8,9 +8,6 @@ import type { CanvaState } from './types';
 import type { CanvaPage, CanvaElement, PageTemplateType } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import {
-  GAME_TYPES,
-  MATERI_MODULE_TYPES,
-  getHeroData,
   populateTemplateElements,
 } from '@/lib/canva-export-helpers';
 import { createPage, createElId } from './constants';
@@ -39,96 +36,17 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
   addTemplatePage: (templateType) => {
     const pages = get().pages;
-    const authStore = useAuthoringStore.getState();
-    const meta = authStore.meta;
-
-    // Generate page label based on template type
-    const labelMap: Record<string, string> = {
-      cover: 'Cover - ' + (meta.judulPertemuan || 'Halaman Judul'),
-      dokumen: 'Dokumen CP/TP/ATP',
-      materi: 'Materi Pembelajaran',
-      kuis: 'Kuis Interaktif',
-      game: 'Game Interaktif',
-      hasil: 'Hasil & Apresiasi',
-      hero: 'Hero Banner',
-      skenario: 'Skenario Interaktif',
-      custom: 'Halaman ' + (pages.length + 1),
-    };
-
-    const newPage = createPage(labelMap[templateType] || 'Halaman ' + (pages.length + 1), templateType);
-
-    // Pre-fill template data from authoring store
-    switch (templateType) {
-      case 'cover':
-        newPage.templateData = {
-          title: meta.judulPertemuan || 'Judul Pertemuan',
-          subtitle: meta.subjudul || 'Subjudul',
-          icon: meta.ikon || '📚',
-          mapel: meta.mapel || '',
-          kelas: meta.kelas || '',
-          namaBab: meta.namaBab || '',
-        };
-        newPage.bgColor = '#0f172a';
-        break;
-
-      case 'dokumen':
-        newPage.templateData = {
-          cp: authStore.cp,
-          tp: authStore.tp,
-          atp: authStore.atp,
-        };
-        break;
-
-      case 'materi':
-        newPage.templateData = {
-          blok: authStore.materi.blok,
-          modules: authStore.modules.filter((m: Record<string, unknown>) =>
-            (MATERI_MODULE_TYPES as readonly string[]).includes(m.type as string)
-          ),
-        };
-        break;
-
-      case 'kuis':
-        newPage.templateData = {
-          kuis: authStore.kuis.filter(k => k.q.trim()),
-        };
-        break;
-
-      case 'game': {
-        newPage.templateData = {
-          games: authStore.modules.filter((m: Record<string, unknown>) =>
-            (GAME_TYPES as readonly string[]).includes(m.type as string)
-          ),
-        };
-        break;
-      }
-
-      case 'hasil':
-        newPage.templateData = {
-          totalKuis: authStore.kuis.filter(k => k.q.trim()).length,
-          namaBab: meta.namaBab || '',
-        };
-        break;
-
-      case 'skenario':
-        newPage.templateData = {
-          skenario: authStore.skenario,
-        };
-        break;
-
-      case 'hero': {
-        const heroData = getHeroData(authStore);
-        newPage.templateData = heroData;
-        break;
-      }
-    }
+    const label = getTemplateLabel(templateType, pages.length);
+    const newPage = createPage(label, templateType);
+    newPage.templateData = buildTemplateData(templateType);
+    Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Auto-fill elements for template (compatible with export)
     populateTemplateElements(newPage, createElId);
 
     get()._pushHistory();
     set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null });
-    toast.success(`${labelMap[templateType] || 'Halaman'} ditambahkan`);
+    toast.success(`${label} ditambahkan`);
   },
 
   duplicatePage: () => {
@@ -174,59 +92,9 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     get()._pushHistory();
     const newPages = [...pages];
 
-    // Populate templateData when switching to a template type
-    const authStore = useAuthoringStore.getState();
-    const meta = authStore.meta;
-    const newPage = { ...page, templateType, templateData: page.templateData || {} };
-
-    switch (templateType) {
-      case 'cover':
-        newPage.templateData = {
-          title: meta.judulPertemuan || 'Judul Pertemuan',
-          subtitle: meta.subjudul || 'Subjudul',
-          icon: meta.ikon || '📚',
-          mapel: meta.mapel || '',
-          kelas: meta.kelas || '',
-          namaBab: meta.namaBab || '',
-        };
-        newPage.bgColor = '#0f172a';
-        break;
-      case 'dokumen':
-        newPage.templateData = { cp: authStore.cp, tp: authStore.tp, atp: authStore.atp };
-        break;
-      case 'materi':
-        newPage.templateData = {
-          blok: authStore.materi.blok,
-          modules: authStore.modules.filter((m: Record<string, unknown>) =>
-            (MATERI_MODULE_TYPES as readonly string[]).includes(m.type as string)
-          ),
-        };
-        break;
-      case 'kuis':
-        newPage.templateData = { kuis: authStore.kuis.filter(k => k.q.trim()) };
-        break;
-      case 'game': {
-        newPage.templateData = {
-          games: authStore.modules.filter((m: Record<string, unknown>) =>
-            (GAME_TYPES as readonly string[]).includes(m.type as string)
-          ),
-        };
-        break;
-      }
-      case 'hasil':
-        newPage.templateData = { totalKuis: authStore.kuis.filter(k => k.q.trim()).length, namaBab: meta.namaBab || '' };
-        break;
-      case 'skenario':
-        newPage.templateData = { skenario: authStore.skenario };
-        break;
-      case 'hero': {
-        newPage.templateData = getHeroData(authStore);
-        break;
-      }
-      case 'custom':
-        newPage.templateData = {};
-        break;
-    }
+    // Populate templateData using centralized builder
+    const newPage = { ...page, templateType, templateData: buildTemplateData(templateType) };
+    Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Re-populate placeholder elements for export compat
     populateTemplateElements(newPage, createElId);

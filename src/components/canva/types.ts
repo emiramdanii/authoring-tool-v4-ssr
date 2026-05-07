@@ -47,13 +47,17 @@ export interface CanvaElement {
 
 export type PageTemplateType =
   | 'cover'      // Cover / judul halaman
+  | 'petunjuk'   // Petunjuk penggunaan media
   | 'dokumen'    // CP / TP / ATP display
   | 'materi'     // Materi pembelajaran
+  | 'diskusi'    // Diskusi & pertanyaan reflektif
+  | 'skenario'   // Skenario interaktif
   | 'kuis'       // Kuis interaktif
   | 'game'       // Game interaktif (sub-type from modules)
   | 'hasil'      // Hasil / apresiasi
+  | 'refleksi'   // Refleksi diri & portofolio
+  | 'penutup'    // Penutup & preview pertemuan berikutnya
   | 'hero'       // Hero banner
-  | 'skenario'   // Skenario interaktif
   | 'custom';    // Blank canvas (legacy element mode)
 
 export interface ColorPalette {
@@ -144,6 +148,10 @@ export const TEMPLATE_TYPES: TemplateInfo[] = [
   { id: 'kuis',     icon: '❓', name: 'Kuis',        desc: 'Soal pilihan ganda',          color: '#f5c842', category: 'interaktif' },
   { id: 'game',     icon: '🎮', name: 'Game',        desc: 'Game interaktif',             color: '#3ecfcf', category: 'interaktif' },
   { id: 'hasil',    icon: '🏆', name: 'Hasil',       desc: 'Skor & apresiasi',            color: '#34d399', category: 'penutup' },
+  { id: 'petunjuk', icon: '📌', name: 'Petunjuk',   desc: 'Cara menggunakan media',      color: '#3ecfcf', category: 'utama' },
+  { id: 'diskusi',  icon: '💬', name: 'Diskusi',     desc: 'Pertanyaan diskusi & tulis',   color: '#34d399', category: 'interaktif' },
+  { id: 'refleksi', icon: '📝', name: 'Refleksi',    desc: 'Refleksi diri & portofolio',   color: '#a78bfa', category: 'penutup' },
+  { id: 'penutup',  icon: '🎊', name: 'Penutup',     desc: 'Penutup & preview berikutnya', color: '#fb923c', category: 'penutup' },
   { id: 'custom',   icon: '⬜', name: 'Kosong',      desc: 'Canvas kosong (bebas)',       color: '#6366f1', category: 'utama' },
 ];
 
