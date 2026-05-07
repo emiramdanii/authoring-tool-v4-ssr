@@ -45,7 +45,7 @@ Sekarang alur ini **putus di 3 titik**:
 | 1.1 | **Preset tidak lengkap & kurang cantik** | "Saya pilih Full Interaktif, tapi halamannya jelek dan sederhana. Tidak ada kartu, tidak ada ikon, tidak ada visual menarik." | 🟡 |
 | 1.2 | **Canva tidak menampilkan halaman secara full** | "Yang muncul di canva cuma teks polos. Harusnya kelihatan seperti slide presentasi yang cantik — ada kartu warna, ikon, layout rapi." | 🟡 |
 | 1.3 | **Export berbeda dengan tampilan di Canva** | "Yang saya susun di canva TIDAK SAMA dengan yang keluar di export. Susun cantik, keluar jelek." | 🟡 |
-| 1.4 | **Interaktif tidak berfungsi di Export** | "Kuis dan game tidak bisa dimainkan di file export. Siswa klik tapi tidak ada respons." | ❌ |
+| 1.4 | **Interaktif tidak berfungsi di Export** | "Kuis dan game tidak bisa dimainkan di file export. Siswa klik tapi tidak ada respons." | 🟡 GAME_TYPES+flashcard fixed; resolveModule in buildPageGameData fixed |
 | 1.5 | **Game engine CSS tidak lengkap** | "Tampilan game di export jelek — tidak ada animasi, tombol tidak menarik, layout berantakan." | ❌ |
 
 ### FASE 2: 🟡 KUALITAS — Skor, Sinkronisasi, Navigasi
@@ -55,11 +55,11 @@ Sekarang alur ini **putus di 3 titik**:
 | # | Masalah | Bahasanya Guru | Status |
 |---|---------|---------------|--------|
 | 2.1 | **Skor game selalu 100%** | "Siswa jawab salah tapi dapat nilai sempurna. Guru tertipu." | ❌ |
-| 2.2 | **Data kuis bisa salah referensi** | "Kalau saya hapus soal no.3, kuis di bawahnya jadi kacau." | ❌ |
+| 2.2 | **Data kuis bisa salah referensi** | "Kalau saya hapus soal no.3, kuis di bawahnya jadi kacau." | 🟡 buildPageGameData + addKuisElement fixed; addElement('kuis') fixed |
 | 2.3 | **Edit materi tidak otomatis update ke canva** | "Saya edit materi di kiri, tapi canva tidak berubah. Harus hapus dan taruh ulang." | ❌ |
 | 2.4 | **Setting navigasi tidak berpengaruh di export** | "Saya atur navigasi tapi di export tetap sama." | ❌ |
-| 2.5 | **Crossword pakai popup browser** | "Teka silang tidak bisa dipakai di HP." | ❌ |
-| 2.6 | **Flashcard tidak ada efek flip 3D** | "Kartu tidak ada efek putar, kurang menarik." | ❌ |
+| 2.5 | **Crossword pakai popup browser** | "Teka silang tidak bisa dipakai di HP." | ✅ |
+| 2.6 | **Flashcard tidak ada efek flip 3D** | "Kartu tidak ada efek putar, kurang menarik." | ✅ |
 
 ### FASE 3: 🟢 KENYAMANAN — Fitur Tambahan
 > **Dilakukan setelah inti dan kualitas OK.**
@@ -110,8 +110,8 @@ SEKARANG ───────────────────────�
 
 | Fase | Total Item | Selesai | Progress |
 |------|-----------|---------|----------|
-| Fase 1: Inti App | 5 | 2 | ██░░░ 40% |
-| Fase 2: Kualitas | 6 | 0 | ░░░░░░ 0% |
+| Fase 1: Inti App | 5 | 3 | ███░░ 60% |
+| Fase 2: Kualitas | 6 | 3 | ███░░░ 50% |
 | Fase 3: Kenyamanan | 5 | 0 | ░░░░░ 0% |
 | Fase 4: Premium | 6 | 0 | ░░░░░░ 0% |
 
@@ -136,4 +136,4 @@ SEKARANG ───────────────────────�
 ---
 
 *Dokumen ini diperbarui setiap kali ada progress.*
-*Terakhir diperbarui: 7 Mei 2026 — Fase 1 progress: 4 template baru (Petunjuk, Diskusi, Refleksi, Penutup) kini tampil di Canva & Export*
+*Terakhir diperbarui: 7 Mei 2026 — Critical bug fixes: flashcard in GAME_TYPES, buildPageGameData uses resolveModule, addElement('kuis') sets kuisId, selectedElement searches overlayElements, duplicatePage re-IDs overlays, DRY: auto-rakit/auto-generate use createTemplatePage, DRY: score JS shared, DRY: overlay render uses renderSingleElement*

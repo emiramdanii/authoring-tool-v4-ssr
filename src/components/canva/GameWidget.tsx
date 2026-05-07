@@ -2,6 +2,7 @@
 
 import { useAuthoringStore } from '@/store/authoring-store';
 import { resolveModule } from '@/lib/module-resolver';
+import { GAME_TYPES } from '@/lib/canva-export-helpers';
 import type { CanvaElement } from './types';
 import { GenericGameWidget } from './games/shared';
 import { TrueFalseGame } from './games/TrueFalseGame';
@@ -24,7 +25,7 @@ interface GameWidgetProps {
   onComplete?: (score: number, maxScore: number) => void;
 }
 
-const GAME_TYPE_LIST = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
+// Use canonical GAME_TYPES from canva-export-helpers (single source of truth)
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN GAME WIDGET — routes to specific game renderers
@@ -72,7 +73,7 @@ export default function GameWidget({ dataIdx, moduleId, compact = false, onCompl
       {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} onComplete={onComplete} />}
       {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} onComplete={onComplete} />}
-      {!GAME_TYPE_LIST.includes(gameType as typeof GAME_TYPE_LIST[number]) && (
+      {!(GAME_TYPES as readonly string[]).includes(gameType) && (
         <GenericGameWidget data={mod} compact={compact} />
       )}
     </div>

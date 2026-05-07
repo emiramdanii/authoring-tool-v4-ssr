@@ -42,7 +42,8 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
       const state = get();
       const page = state.pages[state.currentPageIndex];
       if (!page) return undefined;
-      return page.elements.find(e => e.id === state.selectedElId);
+      return page.elements.find(e => e.id === state.selectedElId)
+        || (page.overlayElements || []).find(e => e.id === state.selectedElId);
     },
 
     // ── Composed slices ─────────────────────────────────────────

@@ -48,6 +48,14 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     if (type === 'kuis') {
       el.w = 55; el.h = 65;
       el.icon = '❓'; el.label = 'Kuis Interaktif';
+      // Set stable kuisId from first available kuis item
+      const kuis = useAuthoringStore.getState().kuis;
+      if (kuis.length > 0) {
+        const kuisItem = kuis[0];
+        el.dataIdx = 0;
+        el.kuisId = (kuisItem._id as string) || generateKuisId();
+        el.label = 'Kuis #1';
+      }
     }
     if (type === 'game') {
       el.w = 45; el.h = 60;

@@ -13,6 +13,7 @@ import {
   renderElementsHTML,
   buildPageGameData,
 } from '@/lib/canva-export-helpers';
+import { buildScoreJS } from '@/lib/export-html/score-script';
 
 // ── Single-page HTML generator ────────────────────────────────
 
@@ -47,28 +48,8 @@ export function exportPageHTML(page: CanvaPage, pageIdx: number, ratioId: string
   const gamedataJSON = JSON.stringify(gameData).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
   const gameEngineJS = buildGameEngineJS(gamedataJSON);
 
-  // Hasil page score update function
-  const hasilJS = page.templateType === 'hasil' ? `
-function updateHasil(){
-  var ts=0,tm=0;
-  Object.keys(SCORE).forEach(function(k){ts+=SCORE[k].score;tm+=SCORE[k].max});
-  var pct=tm>0?Math.round(ts/tm*100):0;
-  var col=pct>=85?'#34d399':pct>=70?'#f9c12e':'#f87171';
-  var lvl=pct>=85?'Sangat Baik':pct>=70?'Baik':pct>0?'Perlu Latihan':'';
-  var pctEl=document.getElementById('hasil-score-pct');
-  var detailEl=document.getElementById('hasil-score-detail');
-  var circleWrap=document.getElementById('hasil-circle-wrap');
-  var levelLabel=document.getElementById('hasil-level-label');
-  if(pctEl){pctEl.textContent=pct+'%';pctEl.style.color=col}
-  if(circleWrap){var deg=tm>0?(ts/tm*360):0;circleWrap.style.background='conic-gradient('+col+' '+deg+'deg,rgba(255,255,255,.08) '+deg+'deg)'}
-  if(levelLabel){levelLabel.textContent=lvl;levelLabel.style.color=col}
-  if(detailEl){detailEl.textContent=tm>0?ts+' dari '+tm+' jawaban benar':'Kerjakan kuis untuk melihat skor'}
-}
-function reportScore(pageIdx,score,max){
-  SCORE[pageIdx]={score:score,max:max,pct:max>0?Math.round(score/max*100):0};
-  if(typeof updateHasil==='function')updateHasil();
-}
-var SCORE={};` : 'var SCORE={};function reportScore(){}';
+  // Shared score JS (reportScore + updateHasil)
+  const scoreJS = buildScoreJS('single');
 
   return `<!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -80,7 +61,7 @@ ${GAME_ENGINE_CSS}
 </style></head>
 <body><div class="slide" data-slide="${pageIdx}">${overlayDiv}${elementsHTML}</div>
 <script>
-${hasilJS}
+${scoreJS}
 
 ${gameEngineJS}
 

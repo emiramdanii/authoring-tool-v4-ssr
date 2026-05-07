@@ -16,6 +16,7 @@ import {
   buildGameData,
   getGameEngineId,
 } from '@/lib/canva-export-helpers';
+import { buildScoreJS } from '@/lib/export-html/score-script';
 
 // ── Slideshow HTML generator ──────────────────────────────────
 
@@ -89,7 +90,6 @@ ${slidesHtml}
 <script>
 var cur=0;
 var total=${pages.length};
-var SCORE={};
 var SW=${ratio.w},SH=${ratio.h};
 var slides=document.querySelectorAll('.slide');
 
@@ -116,45 +116,13 @@ function showSlide(n){
 function nextSlide(){if(cur<total-1)showSlide(cur+1)}
 function prevSlide(){if(cur>0)showSlide(cur-1)}
 
-function reportScore(pageIdx,score,max){
-  SCORE[pageIdx]={score:score,max:max,pct:max>0?Math.round(score/max*100):0};
-  updateScoreBadge();
-  updateHasil();
-  updateDots();
-}
+${buildScoreJS('multi')}
 
 function updateScoreBadge(){
   var ts=0,tm=0;
   Object.keys(SCORE).forEach(function(k){ts+=SCORE[k].score;tm+=SCORE[k].max});
   var el=document.getElementById('score-val');
   if(el)el.textContent=tm>0?Math.round(ts/tm*100)+'%':'\\u2014';
-}
-
-function updateHasil(){
-  var ts=0,tm=0;
-  Object.keys(SCORE).forEach(function(k){ts+=SCORE[k].score;tm+=SCORE[k].max});
-  var pct=tm>0?Math.round(ts/tm*100):0;
-  var col=pct>=85?'#34d399':pct>=70?'#f9c12e':'#f87171';
-  var lvl=pct>=85?'Sangat Baik':pct>=70?'Baik':pct>0?'Perlu Latihan':'';
-  var pctEl=document.getElementById('hasil-score-pct');
-  var detailEl=document.getElementById('hasil-score-detail');
-  var circleWrap=document.getElementById('hasil-circle-wrap');
-  var levelLabel=document.getElementById('hasil-level-label');
-  if(pctEl){
-    pctEl.textContent=pct+'%';
-    pctEl.style.color=col;
-  }
-  if(circleWrap){
-    var deg=tm>0?(ts/tm*360):0;
-    circleWrap.style.background='conic-gradient('+col+' '+deg+'deg,rgba(255,255,255,.08) '+deg+'deg)';
-  }
-  if(levelLabel){
-    levelLabel.textContent=lvl;
-    levelLabel.style.color=col;
-  }
-  if(detailEl){
-    detailEl.textContent=tm>0?ts+' dari '+tm+' jawaban benar':'Kerjakan kuis untuk melihat skor';
-  }
 }
 
 function updateDots(){

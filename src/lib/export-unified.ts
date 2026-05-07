@@ -10,8 +10,7 @@
 import type { CanvaPage } from '@/components/canva/types';
 import { RATIOS } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { renderModuleToStyledHTML } from '@/lib/render-module-html';
-import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
+
 import { GAME_ENGINE_CSS, buildGameEngineJS } from '@/lib/export-game-engines';
 import {
   GAME_TYPES,
@@ -19,14 +18,11 @@ import {
   renderElementsHTML,
   buildGameData,
   getGameEngineId,
-  renderMateriBlokInline,
-  getHeroData,
+  renderSingleElement,
 } from '@/lib/canva-export-helpers';
-import { resolveModule } from '@/lib/module-resolver';
-import type { ExportState } from '@/lib/export-html/types';
 import { EXPORT_CSS } from '@/lib/export-html/styles';
-import { FUNGSI_NORMA } from '@/lib/export-html/constants';
 import { esc } from '@/lib/export-html/utils';
+import { buildScoreJS } from '@/lib/export-html/score-script';
 
 // ── Screen ID assignment for canva pages ──────────────────────────
 // Maps each canva page to a named screen ID for smart navigation
@@ -147,30 +143,9 @@ export function exportUnifiedHTML(
       const overlayEls = (p.overlayElements || []).filter(el => !el.hidden);
       const overlayHTML = overlayEls.length > 0
         ? overlayEls.map(el => {
-            // Import renderSingleElement from helpers — inline here for overlay
-            const style = `position:absolute;left:${el.x}%;top:${el.y}%;width:${el.w}%;height:${el.h}%;opacity:${(el.opacity || 100) / 100};pointer-events:auto`;
-            if (el.type === 'teks') {
-              return `<div style="${style};z-index:20"><div style="font-size:${el.fontSize || 20}px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);padding:8px;line-height:1.4">${el.text || ''}</div></div>`;
-            }
-            if (el.type === 'shape') {
-              return `<div style="${style};z-index:20"><div style="width:100%;height:100%;background:${el.color || 'rgba(255,255,255,.15)'};border-radius:${el.radius || 8}px"></div></div>`;
-            }
-            if (el.type === 'kuis') {
-              return `<div id="quiz-engine-${i}" style="${style};z-index:20;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:10px;overflow:hidden;display:flex;flex-direction:column"></div>`;
-            }
-            if (el.type === 'game') {
-              const gMod = resolveModule(el, allGameModules);
-              const gType = (gMod?.type as string) || 'game';
-              const engineId = getGameEngineId(gType, i, 0);
-              return `<div id="${engineId}" style="${style};z-index:20;background:rgba(56,217,217,.08);border:1px solid rgba(56,217,217,.2);border-radius:8px;overflow:hidden;display:flex;flex-direction:column"></div>`;
-            }
-            if (el.type === 'modul' || el.type === 'materi') {
-              const mod = resolveModule(el, allModules);
-              const variant = (el.layoutVariant as LayoutVariant) || 'A';
-              if (mod) return `<div style="${style};z-index:20;overflow-y:auto;padding:8px">${renderModuleToStyledHTML(mod, variant)}</div>`;
-              return `<div style="${style};z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px"><div style="font-size:1.5rem">🧩</div><div style="font-size:10px;color:rgba(167,139,250,.6);margin-top:4px">Modul</div></div>`;
-            }
-            return `<div style="${style};z-index:20;display:flex;align-items:center;justify-content:center"><div style="font-size:1.5rem">${el.icon || ''}</div></div>`;
+            const baseHtml = renderSingleElement(el, i, allModules, allGameModules, 'quiz-engine-');
+            // Add z-index:20 for overlay positioning
+            return baseHtml.replace(/style="/g, 'style="z-index:20;pointer-events:auto;');
           }).join('\n    ')
         : '';
       elementsHTML = templateBody + (overlayHTML ? `<div style="position:absolute;inset:0;z-index:20;pointer-events:none">${overlayHTML}</div>` : '');
@@ -226,7 +201,6 @@ var NEXT_MAP = ${nextMapJS};
 var PREV_MAP = ${prevMapJS};
 var NODES = ${nodesJS};
 var currentScreen = '${nodes[0]?.screenId || 's-cover'}';
-var SCORE = {};
 
 function goScreen(id) {
   // Hide all screens
@@ -251,40 +225,7 @@ function prevScreen() {
   if (prev) goScreen(prev);
 }
 
-function reportScore(pageIdx, score, max) {
-  SCORE[pageIdx] = { score: score, max: max, pct: max > 0 ? Math.round(score / max * 100) : 0 };
-  updateNavScore();
-  updateHasilCircle();
-}
-
-function updateNavScore() {
-  var ts = 0, tm = 0;
-  Object.keys(SCORE).forEach(function(k) { ts += SCORE[k].score; tm += SCORE[k].max; });
-  var pct = tm > 0 ? Math.round(ts / tm * 100) : 0;
-  document.querySelectorAll('[id^="nav-score-"]').forEach(function(el) {
-    el.textContent = (tm > 0 ? pct + '%' : '0') + ' ⭐';
-  });
-}
-
-function updateHasilCircle() {
-  var ts = 0, tm = 0;
-  Object.keys(SCORE).forEach(function(k) { ts += SCORE[k].score; tm += SCORE[k].max; });
-  var pct = tm > 0 ? Math.round(ts / tm * 100) : 0;
-  var col = pct >= 85 ? '#34d399' : pct >= 70 ? '#f9c12e' : '#f87171';
-  var lvl = pct >= 85 ? 'Sangat Baik' : pct >= 70 ? 'Baik' : pct > 0 ? 'Perlu Latihan' : '';
-  // Update hasil circle if present
-  var circle = document.getElementById('hasil-circle-wrap');
-  if (circle) {
-    var deg = tm > 0 ? (ts / tm * 360) : 0;
-    circle.style.background = 'conic-gradient(' + col + ' ' + deg + 'deg, rgba(255,255,255,.08) ' + deg + 'deg)';
-  }
-  var pctEl = document.getElementById('hasil-score-pct');
-  if (pctEl) { pctEl.textContent = pct + '%'; pctEl.style.color = col; }
-  var lvlEl = document.getElementById('hasil-level-label');
-  if (lvlEl) { lvlEl.textContent = lvl; lvlEl.style.color = col; }
-  var detailEl = document.getElementById('hasil-score-detail');
-  if (detailEl) { detailEl.textContent = tm > 0 ? ts + ' dari ' + tm + ' jawaban benar' : 'Kerjakan kuis untuk melihat skor'; }
-}
+${buildScoreJS('multi')}
 
 // ── Keyboard navigation ───────────────────────────────────────
 document.addEventListener('keydown', function(e) {

@@ -10,7 +10,7 @@ import type { MateriBlok } from '@/store/authoring-store';
 import { resolveModule, resolveKuis } from '@/lib/module-resolver';
 
 // ── Shared constants (used by canva-store + export modules) ────
-export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','crossword','fillblank','dragdrop'] as const;
+export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
 export const MATERI_MODULE_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline'] as const;
 export const MATERI_RAKIT_TYPES = ['materi','infografis','accordion','tab-icons','icon-explore','timeline','hero','kutipan','langkah','statistik','petunjuk','diskusi','review','refleksi','skenario','debat','studi-kasus','comparison','card-showcase','hotspot-image','polling','embed','video','flashcard'] as const;
 
@@ -472,7 +472,7 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
 
 // ── Render a single element to HTML ────────────────────────────
 
-function renderSingleElement(
+export function renderSingleElement(
   el: CanvaElement,
   pageIdx: number,
   allModules: Array<Record<string, unknown>>,
@@ -568,28 +568,43 @@ export function buildPageGameData(
       (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
     });
   }
-  // Also support game/kuis elements on custom pages
+  // Also support game/kuis elements on custom pages (use resolveModule/resolveKuis for stable references)
   if (!page.templateType || page.templateType === 'custom') {
-    (page.elements || []).forEach((el) => {
-      if (el.type === 'game') {
-        const gameIdx = el.dataIdx;
-        const mod = (gameIdx != null && gameIdx >= 0 && gameIdx < allGameModules.length) ? allGameModules[gameIdx] : null;
-        if (mod) {
-          const gType = mod.type as string;
-          const dataKey = gType === 'roda' ? 'roda' : gType === 'spinwheel' ? 'spinwheel' : gType;
-          const compositeKey = pageIdx + '-0';
-          (gameData[dataKey] as Record<string, unknown>)[compositeKey] = mod;
-        }
-      }
+    let gameIdx = 0;
+    const allElements = [...(page.elements || []), ...(page.overlayElements || [])];
+    allElements.forEach(el => {
       if (el.type === 'kuis') {
-        const dataIdx = el.dataIdx ?? -1;
-        const kuisSource = dataIdx >= 0 && dataIdx < allKuis.length
-          ? [allKuis[dataIdx]]
-          : allKuis;
+        const kuisSource = resolveKuis(el, allKuis);
         if (kuisSource.length > 0) {
           (gameData.quizzes as Record<string, unknown>)[String(pageIdx)] = kuisSource.map(k => ({
-            q: k.q || '', opts: k.opts || [], ans: k.ans ?? 0, ex: k.ex || '',
+            q: (k as Record<string, unknown>).q || '',
+            opts: (k as Record<string, unknown>).opts || [],
+            ans: (k as Record<string, unknown>).ans ?? 0,
+            ex: (k as Record<string, unknown>).ex || '',
           }));
+        }
+      }
+      if (el.type === 'game') {
+        const gMod = resolveModule(el, allGameModules);
+        if (gMod) {
+          const gType = gMod.type as string;
+          const dataKey = gType === 'roda' ? 'roda' : gType === 'spinwheel' ? 'spinwheel' : gType;
+          const compositeKey = pageIdx + '-' + gameIdx;
+          (gameData[dataKey] as Record<string, unknown>)[compositeKey] = gMod;
+          gameIdx++;
+        } else {
+          // Fallback to dataIdx for legacy elements
+          const dataIdx = el.dataIdx ?? -1;
+          const gameSource = dataIdx >= 0 && dataIdx < allGameModules.length
+            ? [allGameModules[dataIdx]]
+            : allGameModules;
+          gameSource.forEach(g => {
+            const gType = g.type as string;
+            const dataKey = gType === 'roda' ? 'roda' : gType === 'spinwheel' ? 'spinwheel' : gType;
+            const compositeKey = pageIdx + '-' + gameIdx;
+            (gameData[dataKey] as Record<string, unknown>)[compositeKey] = g;
+            gameIdx++;
+          });
         }
       }
     });

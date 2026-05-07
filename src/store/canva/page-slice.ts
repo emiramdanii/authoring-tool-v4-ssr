@@ -58,6 +58,9 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     clone.elements.forEach((el: CanvaElement) => {
       el.id = createElId();
     });
+    (clone.overlayElements || []).forEach((el: CanvaElement) => {
+      el.id = createElId();
+    });
     const newPages = [...pages];
     newPages.splice(currentPageIndex + 1, 0, clone);
     get()._pushHistory();

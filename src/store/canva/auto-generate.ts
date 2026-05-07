@@ -8,12 +8,11 @@ import type { CanvaPage } from '@/components/canva/types';
 import type { CanvaState } from './types';
 import type { PageTypeDefinition } from '@/store/page-types';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { createPage, createElId } from './constants';
 import {
   GAME_TYPES,
   MATERI_RAKIT_TYPES,
-  populateTemplateElements,
 } from '@/lib/canva-export-helpers';
+import { createTemplatePage } from './template-data';
 
 // ── Auto-generate modules from existing authoring data ────────
 export function autoGenerateContent(): {
@@ -122,12 +121,11 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
   generateFromPageType: (pageType: PageTypeDefinition, config: Record<string, number | string | boolean>) => {
     const blueprint = pageType.generate(config);
     const authStore = useAuthoringStore.getState();
-    const meta = authStore.meta;
     const kuis = authStore.kuis.filter((k: { q: string }) => k.q.trim());
-    const games = authStore.modules.filter((m: Record<string, unknown>) =>
+    let games = authStore.modules.filter((m: Record<string, unknown>) =>
       (GAME_TYPES as readonly string[]).includes(m.type as string)
     );
-    const materiModules = authStore.modules.filter((m: Record<string, unknown>) =>
+    let materiModules = authStore.modules.filter((m: Record<string, unknown>) =>
       (MATERI_RAKIT_TYPES as readonly string[]).includes(m.type as string)
     );
 
@@ -151,119 +149,68 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       }
       // Re-read after merge
       const updatedModules = useAuthoringStore.getState().modules;
-      const updatedGames = updatedModules.filter((m: Record<string, unknown>) =>
+      games = updatedModules.filter((m: Record<string, unknown>) =>
         (GAME_TYPES as readonly string[]).includes(m.type as string)
       );
-      const updatedMateri = updatedModules.filter((m: Record<string, unknown>) =>
+      materiModules = updatedModules.filter((m: Record<string, unknown>) =>
         (MATERI_RAKIT_TYPES as readonly string[]).includes(m.type as string)
       );
-      games.length = 0;
-      games.push(...updatedGames);
-      materiModules.length = 0;
-      materiModules.push(...updatedMateri);
     }
 
-    // Step 2: Build pages based on blueprint
+    // Step 2: Build pages using createTemplatePage (DRY — single source of truth)
     const newPages: CanvaPage[] = [];
 
     if (blueprint.includeCover) {
-      newPages.push(createPage('Cover - ' + (meta.judulPertemuan || 'Judul'), 'cover'));
-      newPages[newPages.length - 1].templateData = {
-        title: meta.judulPertemuan || 'Judul Pertemuan',
-        subtitle: meta.subjudul || 'Subjudul',
-        icon: meta.ikon || '📚',
-        mapel: meta.mapel || '',
-        kelas: meta.kelas || '',
-        namaBab: meta.namaBab || '',
-      };
-      newPages[newPages.length - 1].bgColor = '#0f172a';
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('cover', newPages.length));
     }
 
     if (blueprint.includeDokumen && (authStore.cp.capaianFase || authStore.tp.length > 0)) {
-      newPages.push(createPage('Dokumen CP/TP/ATP', 'dokumen'));
-      newPages[newPages.length - 1].templateData = {
-        cp: authStore.cp,
-        tp: authStore.tp,
-        atp: authStore.atp,
-      };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('dokumen', newPages.length));
     }
 
     if (blueprint.includeSkenario && authStore.skenario.length > 0) {
-      newPages.push(createPage('Skenario Interaktif', 'skenario'));
-      newPages[newPages.length - 1].templateData = { skenario: authStore.skenario };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('skenario', newPages.length));
     }
 
     if (blueprint.includeMateri && (materiModules.length > 0 || authStore.materi.blok.length > 0)) {
-      newPages.push(createPage('Materi Pembelajaran', 'materi'));
-      newPages[newPages.length - 1].templateData = {
-        blok: authStore.materi.blok,
-        modules: materiModules,
-      };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('materi', newPages.length));
     }
 
     // Kuis pages — split by soalPerHalaman
     if (blueprint.includeKuis && kuis.length > 0) {
       const perPage = blueprint.soalPerHalaman || 5;
       if (kuis.length <= perPage) {
-        newPages.push(createPage('Kuis Interaktif', 'kuis'));
-        newPages[newPages.length - 1].templateData = { kuis };
-        populateTemplateElements(newPages[newPages.length - 1], createElId);
+        newPages.push(createTemplatePage('kuis', newPages.length));
       } else {
         const totalPages = Math.ceil(kuis.length / perPage);
         for (let p = 0; p < totalPages; p++) {
-          const slice = kuis.slice(p * perPage, (p + 1) * perPage);
-          newPages.push(createPage(`Kuis ${p + 1}/${totalPages}`, 'kuis'));
-          newPages[newPages.length - 1].templateData = { kuis: slice };
-          populateTemplateElements(newPages[newPages.length - 1], createElId);
+          newPages.push(createTemplatePage('kuis', newPages.length));
         }
       }
     }
 
     if (blueprint.includeGame && games.length > 0) {
-      newPages.push(createPage('Game Interaktif', 'game'));
-      newPages[newPages.length - 1].templateData = { games };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('game', newPages.length));
     }
 
     if (blueprint.includeHasil) {
-      newPages.push(createPage('Hasil & Apresiasi', 'hasil'));
-      newPages[newPages.length - 1].templateData = {
-        totalKuis: kuis.length,
-        namaBab: meta.namaBab || '',
-      };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('hasil', newPages.length));
     }
 
-    // Petunjuk page
     if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
-      newPages.push(createPage('Petunjuk Penggunaan', 'petunjuk'));
-      newPages[newPages.length - 1].templateData = { petunjuk: authStore.petunjuk };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('petunjuk', newPages.length));
     }
 
-    // Diskusi page
     if (blueprint.includeDiskusi && authStore.diskusi.pertanyaan.length > 0) {
-      newPages.push(createPage('Diskusi', 'diskusi'));
-      newPages[newPages.length - 1].templateData = { diskusi: authStore.diskusi };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('diskusi', newPages.length));
     }
 
-    // Refleksi page
     if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
-      newPages.push(createPage('Refleksi', 'refleksi'));
-      newPages[newPages.length - 1].templateData = { refleksi: authStore.refleksi };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('refleksi', newPages.length));
     }
 
-    // Penutup page
     if (blueprint.includePenutup && authStore.penutup.preview.length > 0) {
-      newPages.push(createPage('Penutup', 'penutup'));
-      newPages[newPages.length - 1].templateData = { penutup: authStore.penutup };
-      populateTemplateElements(newPages[newPages.length - 1], createElId);
+      newPages.push(createTemplatePage('penutup', newPages.length));
     }
 
     // Set navbar/timer config on all pages
@@ -275,7 +222,7 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     });
 
     if (newPages.length === 0) {
-      newPages.push(createPage('Halaman 1', 'custom'));
+      newPages.push(createTemplatePage('custom', 0));
     }
 
     get()._pushHistory();
