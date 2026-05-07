@@ -42,7 +42,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Auto-fill elements for template (compatible with export)
-    populateTemplateElements(newPage, createElId);
+    newPage.elements = populateTemplateElements(newPage, createElId);
 
     get()._pushHistory();
     set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null });
@@ -100,7 +100,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Re-populate placeholder elements for export compat
-    populateTemplateElements(newPage, createElId);
+    newPage.elements = populateTemplateElements(newPage, createElId);
 
     newPages[currentPageIndex] = newPage;
     set({ pages: newPages, selectedElId: null });

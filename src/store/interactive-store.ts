@@ -33,6 +33,9 @@ interface InteractiveState {
   prevInteractivePage: () => void;
   totalPages: number;
   setTotalPages: (n: number) => void;
+  /** Sync totalPages from the canva store's pages length. Public so
+   *  external code can trigger a manual sync. */
+  syncFromCanva: () => void;
 
   // ── Scores ─────────────────────────────────────────────────
   scores: ScoreEntry[];
@@ -50,7 +53,19 @@ interface InteractiveState {
 
 // ── Store ──────────────────────────────────────────────────────
 
-export const useInteractiveStore = create<InteractiveState>((set, get) => ({
+export const useInteractiveStore = create<InteractiveState>((set, get) => {
+  // ── Helper: Sync totalPages from canva store ─────────────────
+  const syncTotalPages = () => {
+    try {
+      const canvaPages = useCanvaStore.getState().pages;
+      const count = canvaPages.length;
+      if (count !== get().totalPages) {
+        set({ totalPages: count });
+      }
+    } catch { /* canva store may not be ready */ }
+  };
+
+  return {
   // ── Mode ───────────────────────────────────────────────────
   mode: 'design',
 
@@ -59,6 +74,7 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
     if (mode === 'interactive') {
       // Reset navigation and scores when entering interactive mode
       set({ interactivePageIdx: 0 });
+      syncTotalPages();
     }
   },
 
@@ -68,6 +84,7 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
   },
 
   openPlay: () => {
+    syncTotalPages(); // ← ensure totalPages is correct before navigating
     set({ mode: 'interactive', interactivePageIdx: 0, scores: [] });
     // Sync canva store to first page
     try { useCanvaStore.getState().goPage(0); } catch { /* canva store may not be ready */ }
@@ -83,7 +100,15 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
 
   setTotalPages: (n) => set({ totalPages: n }),
 
+  /** Public method: sync totalPages from the canva store's current
+   *  pages length. Call this whenever you suspect the canva page
+   *  count may have changed outside of interactive navigation. */
+  syncFromCanva: () => {
+    syncTotalPages();
+  },
+
   goInteractivePage: (idx) => {
+    syncTotalPages(); // ← guard against stale totalPages
     const { totalPages } = get();
     if (idx >= 0 && idx < totalPages) {
       set({ interactivePageIdx: idx });
@@ -91,6 +116,7 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
   },
 
   nextInteractivePage: () => {
+    syncTotalPages(); // ← guard against stale totalPages
     const { interactivePageIdx, totalPages } = get();
     if (interactivePageIdx < totalPages - 1) {
       set({ interactivePageIdx: interactivePageIdx + 1 });
@@ -98,6 +124,7 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
   },
 
   prevInteractivePage: () => {
+    syncTotalPages(); // ← guard against stale totalPages
     const { interactivePageIdx } = get();
     if (interactivePageIdx > 0) {
       set({ interactivePageIdx: interactivePageIdx - 1 });
@@ -167,4 +194,41 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => ({
     }
     return true;
   },
-}));
+  };
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Reactive subscription: canva store pages → interactive store totalPages
+// When pages are added/removed in the canva store, automatically
+// sync totalPages so navigation and score tracking stay correct.
+// ═══════════════════════════════════════════════════════════════
+
+let _canvaUnsubscribe: (() => void) | null = null;
+let _lastPageCount = -1;
+
+/** Start auto-syncing totalPages from the canva store.
+ *  Call once at app init (only runs in browser). */
+export function startInteractiveCanvaSync() {
+  if (_canvaUnsubscribe) return; // Already subscribed
+
+  _canvaUnsubscribe = useCanvaStore.subscribe((state) => {
+    const count = state.pages.length;
+    if (count !== _lastPageCount) {
+      _lastPageCount = count;
+      useInteractiveStore.getState().syncFromCanva();
+    }
+  });
+}
+
+/** Stop auto-syncing. Call when tearing down. */
+export function stopInteractiveCanvaSync() {
+  if (_canvaUnsubscribe) {
+    _canvaUnsubscribe();
+    _canvaUnsubscribe = null;
+  }
+}
+
+// ── Auto-start in browser ──────────────────────────────────────
+if (typeof window !== 'undefined') {
+  startInteractiveCanvaSync();
+}

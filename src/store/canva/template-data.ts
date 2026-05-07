@@ -137,6 +137,6 @@ export function createTemplatePage(templateType: PageTemplateType, pageCount: nu
   const newPage = createPage(label, templateType);
   newPage.templateData = buildTemplateData(templateType);
   Object.assign(newPage, getTemplateExtraProps(templateType));
-  populateTemplateElements(newPage, createElId);
+  newPage.elements = populateTemplateElements(newPage, createElId);
   return newPage;
 }

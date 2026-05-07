@@ -51,8 +51,15 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
   const [isSelecting, setIsSelecting] = useState(false);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
 
-  useEffect(() => { if (phase === 'done' && !reported.current && onComplete) { reported.current = true; onComplete(validKata.length, validKata.length); } }, [phase]);
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
+      reported.current = true;
+      const score = Math.max(0, validKata.length - wrongAttempts);
+      onComplete(score, validKata.length);
+    }
+  }, [phase]);
 
   const handleRestart = () => {
     setFound(new Set());
@@ -60,6 +67,7 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
     setIsSelecting(false);
     setPhase('play');
     reported.current = false;
+    setWrongAttempts(0);
     setGridKey(k => k + 1);
   };
 
@@ -70,6 +78,7 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Ditemukan!</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKata.length} kata{wrongAttempts ? ` · ${wrongAttempts} salah` : ' · Sempurna!'}</div>
         <button onClick={handleRestart}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
@@ -90,6 +99,8 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
       if (foundWord) {
         setFound(prev => new Set([...prev, foundWord]));
         if (found.size + 1 === validKata.length) setPhase('done');
+      } else {
+        setWrongAttempts(w => w + 1);
       }
       setSelectedCells([]);
       setIsSelecting(false);

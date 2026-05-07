@@ -96,7 +96,19 @@ export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps
             className="flex-1 py-1 bg-emerald-500/20 hover:bg-emerald-500/40 rounded text-[9px] font-bold text-emerald-300 border border-emerald-400/30 cursor-pointer">
             Benar ({buzzed})
           </button>
-          <button onClick={() => { const other = buzzed === 'A' ? 'B' : 'A'; setBuzzed(null); setTimeout(() => handleCorrect(other), 100); }}
+          <button onClick={() => {
+              setBuzzed(null);
+              setCorrect(null);
+              setTimeout(() => {
+                if (currentQ + 1 < validSoal.length) {
+                  setCurrentQ(q => q + 1);
+                  setBuzzed(null);
+                  setCorrect(null);
+                } else {
+                  setPhase('result');
+                }
+              }, 800);
+            }}
             className="flex-1 py-1 bg-red-500/20 hover:bg-red-500/40 rounded text-[9px] font-bold text-red-300 border border-red-400/30 cursor-pointer">
             Salah ({buzzed})
           </button>

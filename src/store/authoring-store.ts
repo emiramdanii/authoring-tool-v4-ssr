@@ -54,7 +54,7 @@ import type {
   SuaraConfig,
 } from './authoring/types';
 
-import { colorForIndex, deepClone, type KuisItem } from './authoring/types';
+import { colorForIndex, deepClone } from './authoring/types';
 
 const STORAGE_KEY = 'at_state_v1';
 

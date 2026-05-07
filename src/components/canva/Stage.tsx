@@ -390,13 +390,14 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Phase 1: Overlay elements on template pages — always render on top */}
           {isTemplateMode && (page.overlayElements || []).length > 0 && (
-            <div className="absolute inset-0" style={{ zIndex: 10 }}>
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
               {(page.overlayElements || []).map(el => (
                 <StageElement
                   key={el.id}
                   element={el}
                   isSelected={el.id === selectedElId || isMultiSelected(el.id)}
                   isMultiSelected={isMultiSelected(el.id)}
+                  isOverlay={true}
                   onSelect={(shiftKey) => {
                     if (shiftKey) {
                       toggleElementSelection(el.id);
@@ -520,6 +521,7 @@ function StageElement({
   onSelect,
   onStartDrag,
   onStartResize,
+  isOverlay = false,
 }: {
   element: CanvaElement;
   isSelected: boolean;
@@ -527,6 +529,7 @@ function StageElement({
   onSelect: (shiftKey: boolean) => void;
   onStartDrag: (startX: number, startY: number) => void;
   onStartResize: (dir: ResizeDir, startX: number, startY: number) => void;
+  isOverlay?: boolean;
 }) {
   const { updateElement, deleteElement, saveTextContent } = useCanvaStore();
   const interactiveMode = useInteractiveStore((s) => s.mode);
@@ -591,7 +594,7 @@ function StageElement({
 
   return (
     <div
-      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''}`}
+      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''} ${isOverlay && isInteractive ? 'pointer-events-auto' : ''}`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,

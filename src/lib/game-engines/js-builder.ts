@@ -672,10 +672,10 @@ function initCrossword(){
 
     function render(){
       if(phase==='done'){
-        var total=placedWords.length;
-        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Teka Silang Selesai!</div><div class="game-result-sub">'+total+' kata terisi</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
-        var cwScore=Math.max(0,total-revealed.size);
-        reportScore(pgIdx,cwScore,total);
+        var totalCells=0,userCorrect=0;
+        for(var r=0;r<SIZE;r++)for(var c=0;c<SIZE;c++){if(grid[r][c].letter!==''){totalCells++;if(userGrid[r][c]===grid[r][c].letter&&!revealed.has(r+','+c))userCorrect++;}}
+        el.innerHTML='<div class="game-result"><div class="game-result-icon">🎉</div><div class="game-result-text">Teka Silang Selesai!</div><div class="game-result-sub">'+userCorrect+'/'+totalCells+' sel diisi sendiri</div><button class="qe-btn" data-action="restart">Ulangi</button></div>';
+        reportScore(pgIdx,userCorrect,totalCells);
         return;
       }
       var cs=SIZE<=10?24:SIZE<=14?18:14;

@@ -74,12 +74,12 @@ export function renderMateriBlokInline(blok: MateriBlok[]): string {
 
 // ── Helper: Populate template elements for backward compat ────
 
-export function populateTemplateElements(page: CanvaPage, createElId: () => string) {
+export function populateTemplateElements(page: CanvaPage, createElId: () => string): CanvaElement[] {
   // For template pages, we don't add individual elements —
   // the template rendering in Stage.tsx handles it.
   // But we keep elements empty for custom pages or add
   // placeholder elements for backward export compatibility.
-  if (page.templateType === 'custom') return;
+  if (page.templateType === 'custom') return [];
 
   // Resolve stable IDs from templateData so export engines can find the data
   const td = page.templateData || {};
@@ -111,7 +111,7 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
   }
 
   // Add a single large placeholder element for export compat
-  page.elements = [{
+  return [{
     id: createElId(),
     type: page.templateType === 'kuis' ? 'kuis' : page.templateType === 'game' ? 'game' : 'modul',
     icon: page.templateType === 'kuis' ? '❓' : page.templateType === 'game' ? '🎮' : '🧩',

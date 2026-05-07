@@ -36,8 +36,8 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
   syncTemplateData: () => {
     const { pages } = get();
     const authStore = useAuthoringStore.getState();
-    const allModuleIds = new Set(authStore.modules.map((m: Record<string, unknown>) => m._id as string).filter(Boolean));
-    const allKuisIds = new Set(authStore.kuis.map((k: Record<string, unknown>) => k._id as string).filter(Boolean));
+    const allModuleIds = new Set(authStore.modules.map((m: { _id?: string }) => m._id).filter(Boolean));
+    const allKuisIds = new Set(authStore.kuis.map((k: { _id?: string }) => k._id).filter(Boolean));
     let changed = false;
 
     const newPages = pages.map(page => {
@@ -132,6 +132,7 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
 
 let _unsubscribe: (() => void) | null = null;
 let _lastSyncHash = '';
+let _syncTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Start auto-sync from authoring store to canva store.
@@ -159,7 +160,12 @@ export function startAutoSync(syncFn: () => void) {
 
     if (hash !== _lastSyncHash) {
       _lastSyncHash = hash;
-      syncFn();
+      // Debounce: wait 100ms before syncing to avoid firing on every keystroke
+      if (_syncTimer) clearTimeout(_syncTimer);
+      _syncTimer = setTimeout(() => {
+        syncFn();
+        _syncTimer = null;
+      }, 100);
     }
   });
 }
@@ -168,6 +174,10 @@ export function startAutoSync(syncFn: () => void) {
  * Stop auto-sync. Call when the canva store is destroyed.
  */
 export function stopAutoSync() {
+  if (_syncTimer) {
+    clearTimeout(_syncTimer);
+    _syncTimer = null;
+  }
   if (_unsubscribe) {
     _unsubscribe();
     _unsubscribe = null;

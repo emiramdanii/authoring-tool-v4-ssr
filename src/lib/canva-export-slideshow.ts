@@ -6,7 +6,6 @@
 import type { CanvaPage, Ratio } from '@/components/canva/types';
 import { RATIOS } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { renderModuleToStyledHTML } from '@/lib/render-module-html';
 import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
 import { GAME_ENGINE_CSS, buildGameEngineJS } from '@/lib/export-game-engines';
 import {
