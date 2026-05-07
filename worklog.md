@@ -280,3 +280,33 @@ Stage Summary:
 - Phase 4: Reactive Authoring → Canvas Sync
 - Phase 5: Export HTML button in main UI + polish
 - Phase 6: End-to-end testing & git push
+
+---
+Task ID: 1-3-5-6
+Agent: Main Agent
+Task: Implement Unified Export Engine (Phase 1-3, 5-6)
+
+Work Log:
+- Phase 1: Added moduleId (UUID) field to CanvaElement alongside deprecated dataIdx
+- Created module-resolver.ts with resolveModule(), resolveKuis(), generateModuleId(), ensureModuleIds()
+- Phase 2: Fixed overlay elements export — renderElementsHTML now renders BOTH page.elements AND page.overlayElements
+- Extracted renderSingleElement() helper to reduce duplication
+- Phase 3: Created export-unified.ts — single pipeline combining smart navigation + canvas layout + 11+ game engines
+  - Named screen IDs mapped from template types
+  - Navigation flow with 'Lanjut →' / '← Kembali' buttons
+  - goScreen()/nextScreen()/prevScreen() with keyboard + touch/swipe
+  - Score tracking + hasil circle + confetti
+  - Conditional navbar (hidden on cover)
+- Phase 5: Added 'Export Interaktif (Unified)' button to ImportExport panel
+  - Unified mode added to LivePreview (default auto-detect)
+  - 4 preview modes: Unified, Canvas, Template, Legacy
+- Build: ✅ Compiled successfully
+- Push: ✅ commit 9262f4d pushed
+
+Stage Summary:
+- 9 files changed, 517 insertions, 43 deletions
+- New files: export-unified.ts, module-resolver.ts
+- Unified Export Engine merges smart navigation + canvas layout + game engines
+- Overlay elements bug fixed in export
+- Stable module IDs (moduleId) added alongside legacy dataIdx
+- Export HTML button now in main UI with 2 options (Unified + Template)
