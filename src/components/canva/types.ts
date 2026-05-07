@@ -35,7 +35,9 @@ export interface CanvaElement {
   // Shape-specific
   color?: string;
   radius?: number;
-  // Data reference (kuis/game/modul)
+  // Data reference (kuis/game/modul) — stable ID referencing authoring store module
+  moduleId?: string; // UUID-based stable reference (preferred)
+  /** @deprecated Use moduleId instead — array indices break when modules are reordered */
   dataIdx?: number;
   // Layout variant for module rendering
   layoutVariant?: 'A' | 'B' | 'C' | 'D';

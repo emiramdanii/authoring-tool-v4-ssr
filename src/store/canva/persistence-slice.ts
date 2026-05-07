@@ -8,6 +8,7 @@ import type { CanvaPage, CanvaElement, LeftTab } from '@/components/canva/types'
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { exportPageHTML as generatePageHTML } from '@/lib/canva-export-page';
 import { exportSlideshowHTML as generateSlideshowHTML } from '@/lib/canva-export-slideshow';
+import { exportUnifiedHTML as generateUnifiedHTML } from '@/lib/export-unified';
 import { CANVA_STORAGE_KEY } from './constants';
 
 // ── Legacy tab name migration map ──────────────────────────────
@@ -22,7 +23,7 @@ const TAB_MIGRATION: Record<string, LeftTab> = {
 export type PersistenceSlice = Pick<
   CanvaState,
   | 'saveToStorage' | 'loadFromStorage'
-  | 'exportPageHTML' | 'exportSlideshowHTML'
+  | 'exportPageHTML' | 'exportSlideshowHTML' | 'exportUnifiedHTML'
 >;
 
 export const createPersistenceSlice: StateCreator<CanvaState, [], [], PersistenceSlice> = (set, get) => ({
@@ -98,5 +99,10 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   exportSlideshowHTML: () => {
     const { pages, ratioId } = get();
     return generateSlideshowHTML(pages, ratioId);
+  },
+
+  exportUnifiedHTML: () => {
+    const { pages, ratioId } = get();
+    return generateUnifiedHTML(pages, ratioId, 'canva');
   },
 });

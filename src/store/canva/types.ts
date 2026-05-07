@@ -132,4 +132,6 @@ export interface CanvaState {
   // ── Export helpers ───────────────────────────────────────────
   exportPageHTML: (pageIdx?: number) => string;
   exportSlideshowHTML: () => string;
+  /** Unified export: smart navigation + canvas layout + game engines */
+  exportUnifiedHTML: () => string;
 }

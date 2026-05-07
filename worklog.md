@@ -262,3 +262,21 @@ Stage Summary:
 - Grid cols, max items, variant handling consistent across both rendering paths
 - Toolbar now has 3 preview buttons: Play (interactive), Slideshow (new tab), Live (panel)
 - 4 files modified, 29 insertions, 12 deletions
+
+---
+Task ID: ROADMAP
+Agent: Main Agent
+Task: Create implementation roadmap for Unified Export Pipeline
+
+Work Log:
+- Completed comprehensive audit of entire rendering/export architecture
+- Identified 6 critical gaps vs user vision
+- Created 6-phase roadmap
+
+Stage Summary:
+- Phase 1: Stable Module IDs (replace dataIdx with UUID)
+- Phase 2: Fix Overlay Elements Export
+- Phase 3: Unified Export Engine (merge template nav + canvas layout + game engines)
+- Phase 4: Reactive Authoring → Canvas Sync
+- Phase 5: Export HTML button in main UI + polish
+- Phase 6: End-to-end testing & git push

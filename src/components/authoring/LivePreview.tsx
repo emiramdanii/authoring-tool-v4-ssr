@@ -22,7 +22,7 @@ import {
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
-type PreviewMode = 'canvas' | 'template' | 'legacy';
+type PreviewMode = 'canvas' | 'template' | 'legacy' | 'unified';
 type DeviceMode = 'mobile' | 'tablet' | 'desktop';
 type LayoutTheme = 'colorful' | 'neon' | 'glass' | 'default' | 'minimal';
 
@@ -181,10 +181,12 @@ export default function LivePreview() {
   // ── Auto-detect mode (only on first load, not overriding user) ─
   const hasCanvasContent = canvaPages.some(
     (p) => p.elements && p.elements.length > 0
+  ) || canvaPages.some(
+    (p) => p.overlayElements && p.overlayElements.length > 0
   );
 
   const detectedMode = useMemo<PreviewMode>(() => {
-    if (hasCanvasContent) return 'canvas';
+    if (hasCanvasContent) return 'unified'; // Default to unified when canvas has content
     return 'template';
   }, [hasCanvasContent]);
 
@@ -228,8 +230,12 @@ export default function LivePreview() {
       try {
         let html = '';
 
-        if (previewMode === 'canvas') {
-          // Canvas mode -> exportSlideshowHTML
+        if (previewMode === 'unified') {
+          // Unified mode -> exportUnifiedHTML (smart nav + canvas layout + game engines)
+          const store = useCanvaStore.getState();
+          html = store.exportUnifiedHTML();
+        } else if (previewMode === 'canvas') {
+          // Canvas mode -> exportSlideshowHTML (legacy slideshow)
           const store = useCanvaStore.getState();
           html = store.exportSlideshowHTML();
         } else if (previewMode === 'template') {
@@ -417,6 +423,7 @@ export default function LivePreview() {
 
   // ── Mode label/badge colors ────────────────────────────────────
   const modeMeta: Record<PreviewMode, { label: string; color: string; icon: string }> = {
+    unified: { label: 'Unified', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30', icon: '🚀' },
     canvas: { label: 'Canvas', color: 'text-amber-400 bg-amber-500/15 border-amber-500/30', icon: '🎨' },
     template: { label: 'Template', color: 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30', icon: '🧩' },
     legacy: { label: 'Legacy', color: 'text-purple-400 bg-purple-500/15 border-purple-500/30', icon: '📝' },
@@ -463,7 +470,8 @@ export default function LivePreview() {
           {modeOpen && (
             <div className="absolute top-full left-0 mt-1 w-48 rounded-xl bg-zinc-900 border border-zinc-700/50 shadow-xl z-50 overflow-hidden">
               {([
-                { id: 'canvas' as PreviewMode, icon: '🎨', label: 'Canvas', desc: 'Dari halaman Canva', disabled: !hasCanvasContent },
+                { id: 'unified' as PreviewMode, icon: '🚀', label: 'Unified', desc: 'Navigasi pintar + game + layout', disabled: false },
+                { id: 'canvas' as PreviewMode, icon: '🎨', label: 'Canvas', desc: 'Slideshow dari halaman Canva', disabled: !hasCanvasContent },
                 { id: 'template' as PreviewMode, icon: '🧩', label: 'Template', desc: 'Template system + tema', disabled: false },
                 { id: 'legacy' as PreviewMode, icon: '📝', label: 'Legacy', desc: 'HTML lama (tanpa tema)', disabled: false },
               ]).map((m) => (

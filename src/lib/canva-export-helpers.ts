@@ -5,8 +5,9 @@
 
 import { renderModuleToStyledHTML } from '@/lib/render-module';
 import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
-import type { CanvaPage, PageTemplateType } from '@/components/canva/types';
+import type { CanvaPage, PageTemplateType, CanvaElement } from '@/components/canva/types';
 import type { MateriBlok } from '@/store/authoring-store';
+import { resolveModule, resolveKuis } from '@/lib/module-resolver';
 
 // ── Shared constants (used by canva-store + export modules) ────
 export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','crossword','fillblank','dragdrop'] as const;
@@ -344,6 +345,42 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
 
 // ── Helper: Render element-based HTML for custom pages ────────
 
+// ── Render a single element to HTML ────────────────────────────
+
+function renderSingleElement(
+  el: CanvaElement,
+  pageIdx: number,
+  allModules: Array<Record<string, unknown>>,
+  allGameModules: Array<Record<string, unknown>>,
+  quizPrefix: string,
+): string {
+  const style = `position:absolute;left:${el.x}%;top:${el.y}%;width:${el.w}%;height:${el.h}%;opacity:${(el.opacity || 100) / 100}`;
+  if (el.type === 'teks') {
+    return `<div style="${style}"><div style="font-size:${el.fontSize || 20}px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);padding:8px;line-height:1.4">${el.text || ''}</div></div>`;
+  }
+  if (el.type === 'shape') {
+    return `<div style="${style}"><div style="width:100%;height:100%;background:${el.color || 'rgba(255,255,255,.15)'};border-radius:${el.radius || 8}px"></div></div>`;
+  }
+  if (el.type === 'kuis') {
+    return `<div id="${quizPrefix}${pageIdx}" style="${style};background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:10px;overflow:hidden;display:flex;flex-direction:column"></div>`;
+  }
+  if (el.type === 'game') {
+    // Use module resolver for stable reference
+    const gMod = resolveModule(el, allGameModules);
+    const gType = (gMod?.type as string) || 'game';
+    const engineId = getGameEngineId(gType, pageIdx, 0);
+    return `<div id="${engineId}" style="${style};background:rgba(56,217,217,.08);border:1px solid rgba(56,217,217,.2);border-radius:8px;overflow:hidden;display:flex;flex-direction:column"></div>`;
+  }
+  if (el.type === 'modul' || el.type === 'materi') {
+    // Use module resolver for stable reference
+    const mod = resolveModule(el, allModules);
+    const variant = (el.layoutVariant as LayoutVariant) || 'A';
+    if (mod) return `<div style="${style};overflow-y:auto;padding:8px">${renderModuleToStyledHTML(mod, variant)}</div>`;
+    return `<div style="${style};display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px"><div style="font-size:1.5rem">🧩</div><div style="font-size:10px;color:rgba(167,139,250,.6);margin-top:4px">Modul</div></div>`;
+  }
+  return `<div style="${style};display:flex;align-items:center;justify-content:center"><div style="font-size:1.5rem">${el.icon || ''}</div></div>`;
+}
+
 export function renderElementsHTML(
   page: CanvaPage,
   pageIdx: number,
@@ -351,36 +388,22 @@ export function renderElementsHTML(
   allGameModules: Array<Record<string, unknown>>,
   quizPrefix: string = 'quiz-engine-',
 ): string {
-  return (page.elements || [])
+  // ✅ FIX: Render BOTH page.elements AND page.overlayElements
+  const regularHtml = (page.elements || [])
     .filter(el => !el.hidden)
-    .map((el, ei) => {
-      const style = `position:absolute;left:${el.x}%;top:${el.y}%;width:${el.w}%;height:${el.h}%;opacity:${(el.opacity || 100) / 100}`;
-      if (el.type === 'teks') {
-        return `<div style="${style}"><div style="font-size:${el.fontSize || 20}px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);padding:8px;line-height:1.4">${el.text || ''}</div></div>`;
-      }
-      if (el.type === 'shape') {
-        return `<div style="${style}"><div style="width:100%;height:100%;background:${el.color || 'rgba(255,255,255,.15)'};border-radius:${el.radius || 8}px"></div></div>`;
-      }
-      if (el.type === 'kuis') {
-        return `<div id="${quizPrefix}${pageIdx}" style="${style};background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:10px;overflow:hidden;display:flex;flex-direction:column"></div>`;
-      }
-      if (el.type === 'game') {
-        const gameIdx = el.dataIdx ?? 0;
-        const gMod = (gameIdx >= 0 && gameIdx < allGameModules.length) ? allGameModules[gameIdx] : null;
-        const gType = (gMod?.type as string) || 'game';
-        const engineId = getGameEngineId(gType, pageIdx, 0);
-        return `<div id="${engineId}" style="${style};background:rgba(56,217,217,.08);border:1px solid rgba(56,217,217,.2);border-radius:8px;overflow:hidden;display:flex;flex-direction:column"></div>`;
-      }
-      if (el.type === 'modul' || el.type === 'materi') {
-        const modIdx = el.dataIdx;
-        const mod = (modIdx != null && modIdx >= 0 && modIdx < allModules.length) ? allModules[modIdx] : null;
-        const variant = (el.layoutVariant as LayoutVariant) || 'A';
-        if (mod) return `<div style="${style};overflow-y:auto;padding:8px">${renderModuleToStyledHTML(mod, variant)}</div>`;
-        return `<div style="${style};display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px"><div style="font-size:1.5rem">🧩</div><div style="font-size:10px;color:rgba(167,139,250,.6);margin-top:4px">Modul</div></div>`;
-      }
-      return `<div style="${style};display:flex;align-items:center;justify-content:center"><div style="font-size:1.5rem">${el.icon || ''}</div></div>`;
-    })
+    .map(el => renderSingleElement(el, pageIdx, allModules, allGameModules, quizPrefix))
     .join('\n    ');
+  
+  const overlayHtml = (page.overlayElements || [])
+    .filter(el => !el.hidden)
+    .map(el => renderSingleElement(el, pageIdx, allModules, allGameModules, quizPrefix))
+    .join('\n    ');
+  
+  // Overlay elements render on top (higher z-index)
+  if (overlayHtml && regularHtml) {
+    return regularHtml + '\n    <div style="position:absolute;inset:0;z-index:10;pointer-events:none">' + overlayHtml.replace(/position:absolute;/g, 'position:absolute;pointer-events:auto;') + '</div>';
+  }
+  return regularHtml + overlayHtml;
 }
 
 // ── Helper: Build page-level GAMEDATA (for single-page export) ─
