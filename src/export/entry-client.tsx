@@ -14,13 +14,91 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 
+// ── Error Boundary for export mode ────────────────────────────────
+// Catches render errors in any template component and shows a
+// user-friendly fallback instead of a blank white screen.
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ExportErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  ErrorBoundaryState
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[Export] Render error:', error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          background: '#0e1c2f',
+          color: '#e8f2ff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem',
+          fontFamily: "'Nunito', sans-serif",
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: 400 }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+              Terjadi Kesalahan
+            </div>
+            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginBottom: '1rem' }}>
+              Komponen gagal ditampilkan. Coba muat ulang halaman.
+            </div>
+            <button
+              onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
+              style={{
+                padding: '0.5rem 1.5rem',
+                borderRadius: 8,
+                background: '#f9c82e',
+                color: '#0e1c2f',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Muat Ulang
+            </button>
+            <details style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
+              <summary>Detail Teknis</summary>
+              <pre style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {this.state.error?.message || 'Unknown error'}
+              </pre>
+            </details>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ── Get export data injected by the build/API pipeline ───────────
 const exportData = (window as any).__EXPORT_DATA__;
 
 if (exportData) {
+  // Validate essential structure
+  if (!exportData.pages || !Array.isArray(exportData.pages)) {
+    console.error('[Export] __EXPORT_DATA__.pages is missing or not an array.');
+  }
+
   // 1. Pre-populate authoring store with quiz, modules, meta data
-  //    This makes QuizWidget, GameWidget, and all template components
-  //    work exactly as they do in preview mode.
   const authPartial: Record<string, unknown> = {};
 
   if (exportData.allKuis) authPartial.kuis = exportData.allKuis;
@@ -45,8 +123,7 @@ if (exportData) {
   }
 
   // 2. Pre-populate canva store with pages + ratio
-  //    This is needed for interactiveStore sync and any component
-  //    that reads from canvaStore.
+  //    MUST be set before interactive store so the auto-sync reads correct data.
   const canvaPartial: Record<string, unknown> = {};
   if (exportData.pages) canvaPartial.pages = exportData.pages;
   if (exportData.ratioId != null) canvaPartial.ratioId = exportData.ratioId;
@@ -57,22 +134,24 @@ if (exportData) {
   }
 
   // 3. Set interactive store to interactive mode
-  //    This enables score tracking, navigation, and the interactive UI
   useInteractiveStore.setState({
     mode: 'interactive',
     interactivePageIdx: 0,
     totalPages: exportData.pages?.length || 0,
     scores: [],
   });
+} else {
+  console.error('[Export] window.__EXPORT_DATA__ is missing. Export data was not injected by the API route.');
 }
 
-// ── Render the Export App ────────────────────────────────────────
+// ── Render the Export App with Error Boundary ────────────────────
+// Note: No React.StrictMode — unnecessary in standalone export HTML
 const rootEl = document.getElementById('root');
 if (rootEl) {
   const root = createRoot(rootEl);
   root.render(
-    <React.StrictMode>
+    <ExportErrorBoundary>
       <ExportApp />
-    </React.StrictMode>
+    </ExportErrorBoundary>
   );
 }

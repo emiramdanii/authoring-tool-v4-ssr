@@ -1,7 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════
-// EXPORT API ROUTE — Lightweight export for containerized environments
-// Strategy: Generate export HTML entirely client-side using the pre-built
-// Vite template. The API just returns the template; client injects data.
+// EXPORT API ROUTE — Generates standalone HTML for exported media
+// Strategy: Inject export data into pre-built Vite SSR template.
+// The client-side entry-client.tsx reads window.__EXPORT_DATA__
+// and pre-populates Zustand stores, then React renders the same
+// template components used in preview mode.
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,25 +12,28 @@ import path from 'path';
 
 const TEMPLATE_PATH = path.resolve(process.cwd(), 'export-output', 'index.html');
 
-// Cache template at module level (read once, reuse)
+// Maximum export payload size (20 MB JSON ≈ ~30 MB HTML after injection)
+const MAX_EXPORT_SIZE = 20_000_000;
+
+// Cache template with mtime-based invalidation (no fs.watchFile leak)
 let _templateCache: Buffer | null = null;
+let _templateMtime: number = 0;
 
 function getTemplateBuffer(): Buffer | null {
-  if (_templateCache) return _templateCache;
   try {
+    const stat = fs.statSync(TEMPLATE_PATH);
+    if (_templateCache && _templateMtime === stat.mtimeMs) {
+      return _templateCache;
+    }
     _templateCache = fs.readFileSync(TEMPLATE_PATH);
+    _templateMtime = stat.mtimeMs;
     return _templateCache;
   } catch {
+    _templateCache = null;
+    _templateMtime = 0;
     return null;
   }
 }
-
-// Watch for template rebuilds
-try {
-  fs.watchFile(TEMPLATE_PATH, { interval: 10000 }, () => {
-    _templateCache = null; // Invalidate cache
-  });
-} catch {}
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,13 +70,21 @@ export async function POST(request: NextRequest) {
     const dataJson = JSON.stringify(exportData)
       .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/\//g, '\\u002f');
 
-    // Build the complete HTML using Buffer operations (zero-copy where possible)
+    // Size guard: reject excessively large payloads (likely uncompressed images)
+    if (dataJson.length > MAX_EXPORT_SIZE) {
+      return NextResponse.json(
+        { error: `Export data too large (${Math.round(dataJson.length / 1_000_000)} MB). Maximum is ${MAX_EXPORT_SIZE / 1_000_000} MB. Try reducing background image sizes.` },
+        { status: 413 }
+      );
+    }
+
+    // Build the complete HTML using Buffer operations
     const templateStr = templateBuf.toString('utf-8');
     const dataScript = `<script>window.__EXPORT_DATA__=${dataJson};</script>\n`;
     
-    // Title replacement
+    // Title replacement with XSS-safe encoding
     const title = `${meta?.judulPertemuan || 'Media Pembelajaran Interaktif'} | ${meta?.mapel || ''} ${meta?.kelas || ''}`;
-    const safeTitle = title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const safeTitle = title.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     
     // Inject: split at </body>, insert data script
     const bodyCloseIdx = templateStr.lastIndexOf('</body>');
@@ -84,17 +97,13 @@ export async function POST(request: NextRequest) {
       result = templateStr.replace(/<title>.*?<\/title>/, `<title>${safeTitle}</title>`) + dataScript;
     }
 
-    // Convert to buffer for response
-    const resultBuf = Buffer.from(result, 'utf-8');
-    
-    // Clear result string from memory
-    // (not strictly necessary in JS, but helps signal GC)
-
-    const fileName = `${(meta?.judulPertemuan || 'media-pembelajaran')
+    // Sanitize filename — ensure it's never empty
+    const rawName = (meta?.judulPertemuan || 'media-pembelajaran')
       .replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-')
-      .toLowerCase().replace(/^-|-$/g, '')}-export.html`;
+      .toLowerCase().replace(/^-|-$/g, '');
+    const fileName = `${rawName || 'media-pembelajaran'}-export.html`;
 
-    return new NextResponse(resultBuf, {
+    return new NextResponse(Buffer.from(result, 'utf-8'), {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -102,9 +111,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
+    // Log full error server-side, return generic message to client
     console.error('[Export API] Error:', error);
     return NextResponse.json(
-      { error: `Export failed: ${error.message}` },
+      { error: 'Export failed. Please try again.' },
       { status: 500 }
     );
   }

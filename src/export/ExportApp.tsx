@@ -196,9 +196,10 @@ export default function ExportApp() {
           const pageNavConfig = getNavConfig(page);
           const pageShowProgress = pageNavConfig.showProgress !== false;
 
-          // Background style
-          const bgStyle: React.CSSProperties = page.bgDataUrl
-            ? { backgroundImage: `url('${page.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
+          // Background style — validate bgDataUrl starts with data:image/ to prevent CSS injection
+          const safeBgDataUrl = page.bgDataUrl?.startsWith('data:image/') ? page.bgDataUrl : null;
+          const bgStyle: React.CSSProperties = safeBgDataUrl
+            ? { backgroundImage: `url('${safeBgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
             : { background: page.bgColor || '#0e1c2f' };
 
           return (

@@ -25,12 +25,37 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
 
   setBgImage: (dataUrl) => {
     const { pages, currentPageIndex } = get();
-    const newPages = [...pages];
-    newPages[currentPageIndex] = { ...newPages[currentPageIndex], bgDataUrl: dataUrl };
-    set({ pages: newPages });
-    // Auto-extract color palette from image
-    get().extractAndSetPalette(dataUrl);
-    toast.success('Background diterapkan');
+    // Compress image if it's too large — resize to max 1200px width, JPEG 80% quality
+    // This prevents export HTML from bloating to 20-50+ MB with uncompressed backgrounds
+    const compressImage = (url: string): Promise<string> => {
+      return new Promise((resolve) => {
+        if (!url.startsWith('data:image/')) { resolve(url); return; }
+        const img = new Image();
+        img.onload = () => {
+          const MAX_W = 1200;
+          if (img.width <= MAX_W) { resolve(url); return; }
+          const scale = MAX_W / img.width;
+          const canvas = document.createElement('canvas');
+          canvas.width = MAX_W;
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { resolve(url); return; }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => resolve(url);
+        img.src = url;
+      });
+    };
+
+    compressImage(dataUrl).then((compressedUrl) => {
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...newPages[currentPageIndex], bgDataUrl: compressedUrl };
+      set({ pages: newPages });
+      // Auto-extract color palette from image
+      get().extractAndSetPalette(compressedUrl);
+      toast.success('Background diterapkan');
+    });
   },
 
   setOverlay: (val) => {
