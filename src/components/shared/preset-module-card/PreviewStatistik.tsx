@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: STATISTIK
@@ -29,7 +30,7 @@ export function PreviewStatistik({ mod, variant, compact }: { mod: M; variant: L
   return (
     <div className={`grid ${cols} gap-2`}>
       {items.slice(0, maxItems).map((it, i) => (
-        <div key={i} className="rounded-lg p-2 text-center" style={{ background: str(it.color, T.o) + '12', border: `1px solid ${str(it.color, T.o)}25` }}>
+        <div key={i} className="rounded-lg p-2 text-center" style={{ background: alpha(str(it.color, T.o), 0.07), border: `1px solid ${alpha(str(it.color, T.o), 0.15)}` }}>
           <div className={compact ? 'text-sm' : 'text-lg'}>{str(it.icon, '📊')}</div>
           <div className={`font-bold ${compact ? 'text-sm' : 'text-xl'}`} style={{ color: str(it.color, T.o) }}>
             {str(it.angka, '-')}

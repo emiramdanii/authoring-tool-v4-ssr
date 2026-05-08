@@ -1,6 +1,6 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
@@ -16,7 +16,7 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>🪞</div>
+          style={{ background: alpha(accent, 0.12) }}>🪞</div>
         <div>
           <EditableText
             value={String(td.title || 'Refleksi Diri')}
@@ -43,7 +43,7 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
           {pertanyaan.map((p, i) => {
             const warna = String(p.warna || accent);
             return (
-              <div key={i} className="p-2 rounded-lg" style={{ background: `${warna}08`, border: `1px solid ${warna}25` }}>
+              <div key={i} className="p-2 rounded-lg" style={{ background: alpha(warna, 0.03), border: `1px solid ${alpha(warna, 0.15)}` }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   {Boolean(p.icon) && <span className="text-sm">{String(p.icon)}</span>}
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: warna }} />
@@ -65,7 +65,7 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
 
       {/* Penugasan */}
       {penugasan && (
-        <div className="mt-2 p-2 rounded-lg" style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}>
+        <div className="mt-2 p-2 rounded-lg" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.15)}` }}>
           <div className="text-[10px] font-bold mb-0.5" style={{ color: accent }}>📝 {String(penugasan.judul || 'Penugasan')}</div>
           <div className="text-[8px] text-white/70 leading-relaxed">{String(penugasan.isi || '')}</div>
           {Boolean(penugasan.contoh) && (

@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M, ModuleTypeMeta } from './types';
 import { T } from './tokens';
 import { arr, str, num, getItemCount } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: EMBED
@@ -44,7 +45,7 @@ export function PreviewPolling({ mod, variant, compact }: { mod: M; variant: Lay
       {opsi.slice(0, max).map((o, i) => {
         const color = str(o.warna, T.c);
         return (
-          <div key={i} className="rounded-lg p-3 flex items-center gap-2" style={{ background: color + '0a', border: `2px solid ${color}33` }}>
+          <div key={i} className="rounded-lg p-3 flex items-center gap-2" style={{ background: alpha(color, 0.04), border: `2px solid ${alpha(color, 0.20)}` }}>
             <span className={compact ? 'text-sm' : 'text-base'}>{str(o.icon, '📊')}</span>
             <span className="text-xs font-bold" style={{ color: T.text }}>{str(o.teks)}</span>
           </div>
@@ -202,7 +203,7 @@ export function PreviewFallback({ mod, meta, compact }: { mod: M; meta: ModuleTy
   const count = getItemCount(mod);
 
   return (
-    <div className="flex flex-col items-center justify-center py-3 gap-2" style={{ background: meta.color + '08', borderRadius: 8 }}>
+    <div className="flex flex-col items-center justify-center py-3 gap-2" style={{ background: alpha(meta.color, 0.03), borderRadius: 8 }}>
       <div className={`flex items-center gap-1.5`}>
         <span className={compact ? 'text-base' : 'text-xl'}>{meta.icon}</span>
         <span className={`font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`} style={{ color: meta.color }}>
@@ -210,7 +211,7 @@ export function PreviewFallback({ mod, meta, compact }: { mod: M; meta: ModuleTy
         </span>
       </div>
       {count > 0 && (
-        <div className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: meta.color + '15', color: meta.color }}>
+        <div className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: alpha(meta.color, 0.08), color: meta.color }}>
           {count} item
         </div>
       )}
@@ -218,7 +219,7 @@ export function PreviewFallback({ mod, meta, compact }: { mod: M; meta: ModuleTy
       {!compact && count > 0 && (
         <div className="flex flex-wrap gap-1 justify-center max-w-[160px]">
           {Array.from({ length: Math.min(count, 8) }).map((_, i) => (
-            <div key={i} className="w-4 h-4 rounded" style={{ background: meta.color + '25' }} />
+            <div key={i} className="w-4 h-4 rounded" style={{ background: alpha(meta.color, 0.15) }} />
           ))}
         </div>
       )}

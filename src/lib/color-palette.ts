@@ -190,6 +190,21 @@ function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
+/**
+ * Convert a hex color + alpha (0–1) to rgba() string.
+ * Phase 9 data-driven fix: replaces fragile `${color}XX` hex-alpha concatenation
+ * (e.g., `#f9c82e20`) which produces invalid CSS if color is not 6-digit hex.
+ * Usage: alpha('#f9c82e', 0.12) → 'rgba(249,200,46,0.12)'
+ */
+export function alpha(hex: string, a: number): string {
+  // Handle non-hex gracefully — return transparent rather than invalid CSS
+  if (!hex || !hex.startsWith('#') || hex.length < 7) {
+    return `rgba(0,0,0,${a})`;
+  }
+  const [r, g, b] = hexToRgb(hex);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
 function getSaturation(hex: string): number {
   const [r, g, b] = hexToRgb(hex);
   const max = Math.max(r, g, b);

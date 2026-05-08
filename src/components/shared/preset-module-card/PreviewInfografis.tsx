@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: INFOGRAFIS
@@ -33,7 +34,7 @@ export function PreviewInfografis({ mod, variant, compact }: { mod: M; variant: 
   return (
     <div className={`grid ${gridCols} gap-2`}>
       {kartu.slice(0, maxItems).map((k, i) => (
-        <div key={i} className={`rounded-lg ${cardP}`} style={{ background: str(k.color, T.c) + '18', border: `1px solid ${str(k.color, T.c)}30` }}>
+        <div key={i} className={`rounded-lg ${cardP}`} style={{ background: alpha(str(k.color, T.c), 0.09), border: `1px solid ${alpha(str(k.color, T.c), 0.19)}` }}>
           <div className={`${compact ? 'text-sm' : variant === 'C' ? 'text-xl' : 'text-lg'} mb-1`}>{str(k.icon, '📌')}</div>
           <div className="font-semibold text-xs" style={{ color: str(k.color, T.c) }}>{str(k.judul) || `Kartu ${i + 1}`}</div>
           {!compact && str(k.isi) && <div className="text-[10px] mt-0.5" style={{ color: T.muted }}>{str(k.isi).slice(0, 50)}</div>}

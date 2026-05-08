@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: REVIEW
@@ -33,11 +34,11 @@ export function PreviewReview({ mod, variant, compact }: { mod: M; variant: Layo
       {kartu.slice(0, max).map((k, i) => {
         const color = str(k.warna, accent);
         return (
-          <div key={i} className="relative rounded-xl overflow-hidden" style={{ background: `linear-gradient(160deg, ${color}10, ${color}05)`, border: `1px solid ${color}22`, padding: 14 }}>
+          <div key={i} className="relative rounded-xl overflow-hidden" style={{ background: `linear-gradient(160deg, ${alpha(color, 0.06)}, ${alpha(color, 0.02)})`, border: `1px solid ${alpha(color, 0.13)}`, padding: 14 }}>
             {/* Decorative circle */}
-            <div className="absolute -top-2.5 -right-2.5 w-12 h-12 rounded-full" style={{ background: color + '0a' }} />
+            <div className="absolute -top-2.5 -right-2.5 w-12 h-12 rounded-full" style={{ background: alpha(color, 0.04) }} />
             {/* Icon area */}
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-2.5" style={{ background: color + '18', border: `1px solid ${color}20` }}>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-2.5" style={{ background: alpha(color, 0.09), border: `1px solid ${alpha(color, 0.12)}` }}>
               {str(k.icon, '✅')}
             </div>
             <div className="font-extrabold text-xs mb-0.5" style={{ color: T.text }}>{str(k.judul)}</div>

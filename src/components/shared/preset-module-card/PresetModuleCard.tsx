@@ -4,6 +4,7 @@ import React from 'react';
 import type { LayoutVariant, M, PresetModuleCardProps } from './types';
 import { T } from './tokens';
 import { str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 import { LAYOUT_VARIANTS } from './layout-variants';
 import { getModuleMeta } from './module-meta';
 import { PreviewInfografis } from './PreviewInfografis';
@@ -173,7 +174,7 @@ function VariantBadge({ variant }: { variant: LayoutVariant }) {
   return (
     <span
       className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
-      style={{ background: T.y + '18', color: T.y, border: `1px solid ${T.y}30` }}
+      style={{ background: alpha(T.y, 0.09), color: T.y, border: `1px solid ${alpha(T.y, 0.19)}` }}
     >
       {v.icon} {v.label}
     </span>
@@ -187,7 +188,7 @@ function GameBadge() {
   return (
     <span
       className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase"
-      style={{ background: T.g + '18', color: T.g, border: `1px solid ${T.g}30` }}
+      style={{ background: alpha(T.g, 0.09), color: T.g, border: `1px solid ${alpha(T.g, 0.19)}` }}
     >
       🎮 Game
     </span>
@@ -211,7 +212,7 @@ function FullCard({ mode, mod, variant, onEdit }: { mode: 'edit' | 'export'; mod
           {/* Icon box */}
           <div
             className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-lg"
-            style={{ background: meta.color + '20', border: `1px solid ${meta.color}30` }}
+            style={{ background: alpha(meta.color, 0.12), border: `1px solid ${alpha(meta.color, 0.19)}` }}
           >
             {meta.icon}
           </div>
@@ -219,7 +220,7 @@ function FullCard({ mode, mod, variant, onEdit }: { mode: 'edit' | 'export'; mod
           <div className="flex-1 min-w-0">
             <div className="font-bold text-sm truncate" style={{ color: T.text }}>{title}</div>
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: meta.color + '15', color: meta.color }}>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: alpha(meta.color, 0.08), color: meta.color }}>
                 {meta.label}
               </span>
               <VariantBadge variant={variant} />
@@ -278,7 +279,7 @@ function CompactCard({ mod, variant }: { mod: M; variant: LayoutVariant }) {
         <div className="flex items-center gap-1.5 mb-1.5">
           <div
             className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center text-xs"
-            style={{ background: meta.color + '20', border: `1px solid ${meta.color}30` }}
+            style={{ background: alpha(meta.color, 0.12), border: `1px solid ${alpha(meta.color, 0.19)}` }}
           >
             {meta.icon}
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
@@ -16,7 +16,7 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField, interac
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>📋</div>
+          style={{ background: alpha(accent, 0.12) }}>📋</div>
         <div>
           <EditableText
             value={String(td.title || 'Petunjuk Penggunaan')}
@@ -43,7 +43,7 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField, interac
           {langkah.map((l, i) => (
             <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-white/5 border border-white/10">
               <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black flex-shrink-0 mt-0.5"
-                style={{ background: `${accent}30`, color: accent }}>
+                style={{ background: alpha(accent, 0.19), color: accent }}>
                 {i + 1}
               </div>
               <div className="min-w-0">
@@ -65,7 +65,7 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField, interac
 
       {/* Tips */}
       {tips && (
-        <div className="mt-2 p-2 rounded-lg" style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}>
+        <div className="mt-2 p-2 rounded-lg" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.15)}` }}>
           <div className="text-[9px] font-bold mb-0.5" style={{ color: accent }}>💡 Tips</div>
           <div className="text-[8px] text-white/70 leading-relaxed">{tips}</div>
         </div>

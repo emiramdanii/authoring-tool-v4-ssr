@@ -1,6 +1,6 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
@@ -15,7 +15,7 @@ export function DiskusiTemplate({ td, palette, isSelected, onEditField, interact
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>💬</div>
+          style={{ background: alpha(accent, 0.12) }}>💬</div>
         <div>
           <EditableText
             value={String(td.title || 'Diskusi & Pertanyaan')}
@@ -43,7 +43,7 @@ export function DiskusiTemplate({ td, palette, isSelected, onEditField, interact
             <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="px-1.5 py-0.5 rounded text-[7px] font-bold"
-                  style={{ background: `${accent}20`, color: accent }}>
+                  style={{ background: alpha(accent, 0.12), color: accent }}>
                   {String(p.label || `Pertanyaan ${i + 1}`)}
                 </span>
                 <span className="text-sm">{String(p.icon || '💬')}</span>

@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str, num } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: FLASHCARD
@@ -118,7 +119,7 @@ export function PreviewRoda({ mod, compact }: { mod: M; compact: boolean }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {opsi.slice(0, compact ? 3 : 6).map((o, i) => (
-        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: colors[i % colors.length] + '20', color: colors[i % colors.length] }}>{String(o)}</span>
+        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: alpha(colors[i % colors.length], 0.12), color: colors[i % colors.length] }}>{String(o)}</span>
       ))}
     </div>
   );
@@ -187,7 +188,7 @@ export function PreviewTeambuzzer({ mod, compact }: { mod: M; compact: boolean }
       {teams.slice(0, max).map((t, i) => {
         const color = str(t.color, colors[i % colors.length]);
         return (
-          <div key={i} className="rounded-lg p-2 text-center" style={{ background: color + '12', border: `2px solid ${color}33` }}>
+          <div key={i} className="rounded-lg p-2 text-center" style={{ background: alpha(color, 0.07), border: `2px solid ${alpha(color, 0.20)}` }}>
             <div className="text-base">{str(t.icon, '🏆')}</div>
             <div className="text-[10px] font-black" style={{ color: T.text }}>{str(t.name, `Tim ${i + 1}`)}</div>
             <div className="text-sm font-black" style={{ color: color }}>{num(t.score, 0)}</div>
@@ -226,7 +227,7 @@ export function PreviewCrossword({ mod, compact }: { mod: M; compact: boolean })
     <div className="space-y-1.5">
       {soal.slice(0, max).map((s, i) => (
         <div key={i} className="rounded-lg p-2 flex items-start gap-2" style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)' }}>
-          <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{ background: T.p + '20', color: T.p }}>{str(s.arah, '→')}</span>
+          <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{ background: alpha(T.p, 0.12), color: T.p }}>{str(s.arah, '→')}</span>
           <div>
             <div className="text-[10px] font-bold" style={{ color: T.text }}>{str(s.teks || s.pertanyaan)}</div>
             <div className="text-[9px]" style={{ color: T.muted }}>{str(s.jawaban).replace(/./g, '_ ')}</div>

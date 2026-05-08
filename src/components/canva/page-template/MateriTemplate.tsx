@@ -1,6 +1,6 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
@@ -21,7 +21,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
         {/* Header */}
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-            style={{ background: `${accent}20` }}>📝</div>
+            style={{ background: alpha(accent, 0.12) }}>📝</div>
           <div>
             <EditableText
               value={String(td.materiTitle || 'Materi Pembelajaran')}
@@ -91,7 +91,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>📝</div>
+          style={{ background: alpha(accent, 0.12) }}>📝</div>
         <div>
           <EditableText
             value={String(td.materiTitle || 'Materi Pembelajaran')}

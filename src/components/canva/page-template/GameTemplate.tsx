@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import GameWidget from '../GameWidget';
@@ -53,9 +53,9 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 pt-3 pb-2"
-        style={{ background: `linear-gradient(90deg, ${accent}15, transparent)` }}>
+        style={{ background: `linear-gradient(90deg, ${alpha(accent, 0.08)}, transparent)` }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>🎮</div>
+          style={{ background: alpha(accent, 0.12) }}>🎮</div>
         <div>
           <EditableText
             value={String(td.gameTitle || 'Game Interaktif')}
@@ -88,9 +88,9 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
                     onClick={() => handleSelectGame(i)}
                     className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-left transition-all hover:scale-105"
                     style={{
-                      background: i === safeIdx ? `${accent}20` : 'rgba(255,255,255,.05)',
-                      border: `1px solid ${i === safeIdx ? accent + '50' : 'rgba(255,255,255,.1)'}`,
-                      boxShadow: i === safeIdx ? `0 0 12px ${accent}20` : 'none',
+                      background: i === safeIdx ? alpha(accent, 0.12) : 'rgba(255,255,255,.05)',
+                      border: `1px solid ${i === safeIdx ? alpha(accent, 0.31) : 'rgba(255,255,255,.1)'}`,
+                      boxShadow: i === safeIdx ? `0 0 12px ${alpha(accent, 0.12)}` : 'none',
                     }}>
                     <span className="text-sm">{getGameIcon(String(g.type))}</span>
                     <span className={`text-[8px] font-bold truncate max-w-[60px] ${i === safeIdx ? 'text-white' : 'text-white/50'}`}>

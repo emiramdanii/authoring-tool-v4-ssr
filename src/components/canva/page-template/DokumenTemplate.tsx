@@ -1,6 +1,6 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
@@ -18,7 +18,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>📋</div>
+          style={{ background: alpha(accent, 0.12) }}>📋</div>
         <div>
           <EditableText
             value={String(td.dokumenTitle || 'Dokumen Kurikulum')}
@@ -35,7 +35,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
 
       {/* CP Section */}
       {cp && (
-        <div className="mb-3 p-3 rounded-lg" style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}>
+        <div className="mb-3 p-3 rounded-lg" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.15)}` }}>
           <div className="text-[10px] font-bold mb-1" style={{ color: accent }}>Capaian Pembelajaran</div>
           <div className="text-[9px] text-white/80 leading-relaxed line-clamp-4">
             {String(interactive ? (cp.capaianFase || '') : (cp.capaianFase || 'Belum diisi'))}
@@ -44,7 +44,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
             <div className="flex flex-wrap gap-1 mt-2">
               {(cp.profil as string[]).slice(0, 4).map((p, i) => (
                 <span key={i} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
-                  style={{ background: `${accent}15`, color: accent }}>
+                  style={{ background: alpha(accent, 0.08), color: accent }}>
                   {p}
                 </span>
               ))}
@@ -61,7 +61,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
             {tpItems.map((tp, i) => (
               <div key={i} className="flex items-start gap-1.5 px-2 py-1 rounded-md bg-white/5">
                 <div className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black flex-shrink-0 mt-0.5"
-                  style={{ background: String(tp.color || accent2) + '30', color: String(tp.color || accent2) }}>
+                  style={{ background: alpha(String(tp.color || accent2), 0.19), color: String(tp.color || accent2) }}>
                   {i + 1}
                 </div>
                 <div className="min-w-0">

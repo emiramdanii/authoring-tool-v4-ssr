@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: REFLEKSI
@@ -17,7 +18,7 @@ export function PreviewRefleksi({ mod, variant, compact }: { mod: M; variant: La
       <div className="space-y-1">
         {pertanyaan.slice(0, max).map((p, i) => (
           <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
-            <div className="flex-shrink-0 min-w-[20px] h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: accent + '25', color: accent }}>{i + 1}</div>
+            <div className="flex-shrink-0 min-w-[20px] h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: alpha(accent, 0.15), color: accent }}>{i + 1}</div>
             <span className="text-[11px]" style={{ color: T.text }}>{str(p.teks).slice(0, 80)}</span>
           </div>
         ))}
@@ -28,10 +29,10 @@ export function PreviewRefleksi({ mod, variant, compact }: { mod: M; variant: La
   return (
     <div className="space-y-2.5">
       {pertanyaan.slice(0, max).map((p, i) => (
-        <div key={i} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${accent}20`, background: `linear-gradient(160deg, ${accent}08, transparent)` }}>
+        <div key={i} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${alpha(accent, 0.12)}`, background: `linear-gradient(160deg, ${alpha(accent, 0.03)}, transparent)` }}>
           {/* Gradient accent header */}
-          <div className="flex items-center gap-2 px-3.5 py-2.5" style={{ background: `linear-gradient(135deg, ${accent}20, ${accent}08)`, borderBottom: `1px solid ${accent}15` }}>
-            <div className="min-w-[24px] h-[24px] rounded-md flex items-center justify-center text-[10px] font-black" style={{ background: accent + '30', color: accent, border: `1px solid ${accent}35` }}>{i + 1}</div>
+          <div className="flex items-center gap-2 px-3.5 py-2.5" style={{ background: `linear-gradient(135deg, ${alpha(accent, 0.12)}, ${alpha(accent, 0.03)})`, borderBottom: `1px solid ${alpha(accent, 0.08)}` }}>
+            <div className="min-w-[24px] h-[24px] rounded-md flex items-center justify-center text-[10px] font-black" style={{ background: alpha(accent, 0.19), color: accent, border: `1px solid ${alpha(accent, 0.21)}` }}>{i + 1}</div>
             <label className="text-[12px] font-extrabold block" style={{ color: T.text }}>{str(p.icon || '💭')} {str(p.teks)}</label>
           </div>
           <div className="px-3.5 py-3">

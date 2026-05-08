@@ -1,11 +1,13 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
 // ── Cover Template ────────────────────────────────────────────
 // Phase 3: 3 variants — A (centered), B (left-aligned), C (split icon+text)
+// Phase 9 fix: clamp() %→vw for proper viewport-responsive font sizes
+// Phase 9 fix: hex-alpha concatenation → alpha() helper for data-driven color system
 
 export function CoverTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
@@ -17,7 +19,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
   if (variant === 'A') {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
-        style={{ background: `linear-gradient(180deg, ${bg} 0%, ${bg}dd 100%)` }}>
+        style={{ background: `linear-gradient(180deg, ${bg} 0%, ${alpha(bg, 0.87)} 100%)` }}>
 
         {/* Decorative top bar */}
         <div className="absolute top-0 left-0 right-0 h-1.5"
@@ -37,7 +39,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className="font-black text-white leading-tight"
-          style={{ fontSize: 'clamp(18px, 3.5%, 32px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
+          style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
           placeholder="Judul Pertemuan"
         />
 
@@ -49,7 +51,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className="mt-2"
-          style={{ fontSize: 'clamp(10px, 1.8%, 16px)', color: 'rgba(255,255,255,.7)' }}
+          style={{ fontSize: 'clamp(10px, 1.8vw, 16px)', color: 'rgba(255,255,255,.7)' }}
           placeholder="Subjudul / Deskripsi"
         />
 
@@ -57,8 +59,8 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
         {Boolean(td.mapel || td.kelas) && (
           <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
             style={{
-              background: `${accent}20`,
-              border: `1px solid ${accent}40`,
+              background: alpha(accent, 0.12),
+              border: `1px solid ${alpha(accent, 0.25)}`,
               color: accent,
             }}>
             {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
@@ -79,7 +81,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
   if (variant === 'B') {
     return (
       <div className="absolute inset-0 flex flex-col justify-center p-8 pl-12"
-        style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg}cc 100%)` }}>
+        style={{ background: `linear-gradient(135deg, ${bg} 0%, ${alpha(bg, 0.8)} 100%)` }}>
 
         {/* Decorative left bar */}
         <div className="absolute top-0 left-0 bottom-0 w-1.5"
@@ -89,8 +91,8 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
         {Boolean(td.mapel || td.kelas) && (
           <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold w-fit"
             style={{
-              background: `${accent}20`,
-              border: `1px solid ${accent}40`,
+              background: alpha(accent, 0.12),
+              border: `1px solid ${alpha(accent, 0.25)}`,
               color: accent,
             }}>
             {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
@@ -109,7 +111,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
             onEdit={onEditField}
             interactive={interactive}
             className="font-black text-white leading-tight"
-            style={{ fontSize: 'clamp(16px, 3.2%, 30px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
+            style={{ fontSize: 'clamp(16px, 3.2vw, 30px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
             placeholder="Judul Pertemuan"
           />
         </div>
@@ -122,7 +124,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className="mt-1"
-          style={{ fontSize: 'clamp(10px, 1.6%, 14px)', color: 'rgba(255,255,255,.6)' }}
+          style={{ fontSize: 'clamp(10px, 1.6vw, 14px)', color: 'rgba(255,255,255,.6)' }}
           placeholder="Subjudul / Deskripsi"
         />
 
@@ -143,15 +145,15 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
 
       {/* Left panel: Icon + gradient background */}
       <div className="w-2/5 flex flex-col items-center justify-center relative"
-        style={{ background: `linear-gradient(135deg, ${accent}15, ${cyan}10)` }}>
-        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${bg}80, ${bg}40)` }} />
+        style={{ background: `linear-gradient(135deg, ${alpha(accent, 0.08)}, ${alpha(cyan, 0.06)})` }}>
+        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${alpha(bg, 0.5)}, ${alpha(bg, 0.25)})` }} />
         <div className="relative text-6xl mb-4" style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,.4))' }}>
           {String(td.icon || '📚')}
         </div>
         {/* Badge */}
         {Boolean(td.mapel || td.kelas) && (
           <div className="relative px-3 py-1 rounded-full text-[9px] font-bold"
-            style={{ background: `${accent}30`, border: `1px solid ${accent}50`, color: accent }}>
+            style={{ background: alpha(accent, 0.19), border: `1px solid ${alpha(accent, 0.31)}`, color: accent }}>
             {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
           </div>
         )}
@@ -172,7 +174,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className="font-black text-white leading-tight mb-3"
-          style={{ fontSize: 'clamp(20px, 4%, 36px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
+          style={{ fontSize: 'clamp(20px, 4vw, 36px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
           placeholder="Judul Pertemuan"
         />
 
@@ -183,7 +185,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className=""
-          style={{ fontSize: 'clamp(11px, 2%, 18px)', color: 'rgba(255,255,255,.65)', lineHeight: 1.5 }}
+          style={{ fontSize: 'clamp(11px, 2vw, 18px)', color: 'rgba(255,255,255,.65)', lineHeight: 1.5 }}
           placeholder="Subjudul / Deskripsi"
         />
 

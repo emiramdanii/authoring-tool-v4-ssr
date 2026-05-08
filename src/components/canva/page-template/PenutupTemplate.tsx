@@ -1,6 +1,6 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
@@ -16,7 +16,7 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField, interact
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>🎓</div>
+          style={{ background: alpha(accent, 0.12) }}>🎓</div>
         <div>
           <EditableText
             value={String(td.title || 'Penutup')}
@@ -40,7 +40,7 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField, interact
           {preview.map((item, i) => {
             const warna = String(item.warna || accent);
             return (
-              <div key={i} className="p-2 rounded-lg" style={{ background: `${warna}10`, border: `1px solid ${warna}25` }}>
+              <div key={i} className="p-2 rounded-lg" style={{ background: alpha(warna, 0.06), border: `1px solid ${alpha(warna, 0.15)}` }}>
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="text-sm">{String(item.icon || '📌')}</span>
                   <span className="text-[10px] font-bold" style={{ color: warna }}>{String(item.judul || '')}</span>
@@ -70,7 +70,7 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField, interact
                 const itWarna = String(it.warna || accent);
                 return (
                   <span key={j} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
-                    style={{ background: `${itWarna}15`, color: itWarna }}>
+                    style={{ background: alpha(itWarna, 0.08), color: itWarna }}>
                     {String(it.icon || '')} {String(it.judul || '')}
                   </span>
                 );

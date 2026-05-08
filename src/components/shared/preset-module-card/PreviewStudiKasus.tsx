@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: STUDI-KASUS
@@ -31,7 +32,7 @@ export function PreviewStudiKasus({ mod, variant, compact }: { mod: M; variant: 
           <div className="font-bold text-xs" style={{ color: T.text }}>📝 Pertanyaan Analisis</div>
           {pertanyaan.slice(0, 2).map((p, i) => (
             <div key={i} className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: T.p, background: T.p + '18' }}>{str(p.level, 'C2')}</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: T.p, background: alpha(T.p, 0.09) }}>{str(p.level, 'C2')}</span>
               <p className="text-xs font-semibold mt-1" style={{ color: T.text }}>{str(p.teks || p.label)}</p>
             </div>
           ))}

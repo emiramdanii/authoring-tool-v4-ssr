@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import QuizWidget from '../QuizWidget';
@@ -23,9 +23,9 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 pt-3 pb-2"
-        style={{ background: `linear-gradient(90deg, ${accent}15, transparent)` }}>
+        style={{ background: `linear-gradient(90deg, ${alpha(accent, 0.08)}, transparent)` }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>❓</div>
+          style={{ background: alpha(accent, 0.12) }}>❓</div>
         <div>
           <EditableText
             value={String(td.kuisTitle || 'Kuis Interaktif')}

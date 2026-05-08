@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: KUTIPAN
@@ -24,7 +25,7 @@ export function PreviewKutipan({ mod, variant, compact }: { mod: M; variant: Lay
   }
 
   return (
-    <div className="rounded-lg p-3 relative" style={{ background: accent + '10', border: `1px solid ${accent}30` }}>
+    <div className="rounded-lg p-3 relative" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.19)}` }}>
       <div className="absolute -top-1 left-2 text-xl leading-none" style={{ color: accent }}>&ldquo;</div>
       <div className={`italic ${compact ? 'text-[10px]' : variant === 'C' ? 'text-sm' : 'text-xs'} mt-2`} style={{ color: T.text }}>
         {quote || 'Belum ada kutipan'}

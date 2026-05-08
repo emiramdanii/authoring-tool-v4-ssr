@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
@@ -46,6 +46,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
   const handleChoice = useCallback((chapterIdx: number, choiceIdx: number, choice: Record<string, unknown>) => {
     const isGood = Boolean(choice.good);
     const nextChapter = choice.nextChapter != null ? Number(choice.nextChapter) : chapterIdx + 1;
+
+    // Phase 9 fix: clear previous timeout before setting new one (rapid-click leak)
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     setChoiceHistory(prev => [...prev, { chapter: chapterIdx, choiceIdx, good: isGood }]);
 
@@ -98,7 +101,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-          style={{ background: `${accent}20` }}>🎭</div>
+          style={{ background: alpha(accent, 0.12) }}>🎭</div>
         <div>
           <EditableText
             value={String(td.skenarioTitle || 'Skenario Interaktif')}

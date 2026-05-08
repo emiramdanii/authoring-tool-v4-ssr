@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { alpha } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: ACCORDION
@@ -30,7 +31,7 @@ export function PreviewAccordion({ mod, variant, compact }: { mod: M; variant: L
   return (
     <div className="space-y-1.5">
       {items.slice(0, maxItems).map((it, i) => (
-        <div key={i} className="rounded-lg p-2 flex items-start gap-2" style={{ background: T.bg2, border: `1px solid ${T.p}18` }}>
+        <div key={i} className="rounded-lg p-2 flex items-start gap-2" style={{ background: T.bg2, border: `1px solid ${alpha(T.p, 0.09)}` }}>
           <span className={compact ? 'text-[10px]' : 'text-sm'}>{str(it.icon, '📌')}</span>
           <div className="flex-1 min-w-0">
             <div className={`font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`} style={{ color: T.text }}>

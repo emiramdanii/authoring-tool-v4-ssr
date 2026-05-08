@@ -1,11 +1,12 @@
 'use client';
 
-import { getPaletteColor } from '@/lib/color-palette';
+import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
 
 // ── Hasil Template ────────────────────────────────────────────
+// Phase 9 fix: clamp() %→vw, hex-alpha → alpha() helper
 
 export function HasilTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--g', '#34d399');
@@ -46,15 +47,15 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
         onEdit={onEditField}
         interactive={interactive}
         className="font-black mb-2"
-        style={{ fontSize: 'clamp(16px, 3%, 28px)', color: accent }}
+        style={{ fontSize: 'clamp(16px, 3vw, 28px)', color: accent }}
         placeholder="Judul Hasil"
       />
 
       {/* Score Circle — live in interactive mode */}
       <div className="relative w-24 h-24 rounded-full flex items-center justify-center mb-4"
         style={{
-          background: `conic-gradient(${levelColor || accent} ${pct}%, ${accent}20 ${pct}%)`,
-          boxShadow: `0 0 40px ${accent}30`,
+          background: `conic-gradient(${levelColor || accent} ${pct}%, ${alpha(accent, 0.12)} ${pct}%)`,
+          boxShadow: `0 0 40px ${alpha(accent, 0.19)}`,
           transition: 'background 1s ease-out',
         }}>
         <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: bg }}>
@@ -82,7 +83,7 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
           { label: 'Perlu Latihan', pct: 0, color: '#f87171' },
         ].map((level) => (
           <div key={level.label} className="flex flex-col items-center">
-            <div className="w-3 h-3 rounded-full mb-0.5" style={{ background: level.color + '40', border: `1px solid ${level.color}` }} />
+            <div className="w-3 h-3 rounded-full mb-0.5" style={{ background: alpha(level.color, 0.25), border: `1px solid ${level.color}` }} />
             <span className="text-[7px] text-white/40">{level.label}</span>
           </div>
         ))}
