@@ -43,7 +43,11 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
       {/* Quiz Widget — full-size in interactive mode */}
       <div className="flex-1 min-h-0 px-3 pb-3">
         {kuisData.length > 0 ? (
-          <QuizWidget compact={!interactive} onComplete={interactive ? handleComplete : undefined} />
+          <QuizWidget
+            compact={!interactive}
+            kuisIds={kuisData.map(k => String(k._id)).filter(Boolean)}
+            onComplete={interactive ? handleComplete : undefined}
+          />
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">❓</span>

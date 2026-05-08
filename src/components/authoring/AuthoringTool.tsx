@@ -108,6 +108,13 @@ export default function AuthoringTool() {
     loadFromStorage();
   }, [loadFromStorage]);
 
+  // Auto-dismiss tour when user navigates away from dashboard (e.g. clicks preset)
+  useEffect(() => {
+    if (activePanel !== 'dashboard' && showTour) {
+      dismissTour();
+    }
+  }, [activePanel]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-save every 8s when dirty
   useEffect(() => {
     if (!dirty) return;
@@ -129,22 +136,9 @@ export default function AuthoringTool() {
   }, [dirty]);
 
   // ── Reactive sync: authoring data → canvas templateData ─────
-  // When authoring store data changes, update canvas pages' templateData
-  // without rebuilding the page layout (preserves elements, overlays, positions)
-  useEffect(() => {
-    let syncTimer: ReturnType<typeof setTimeout> | null = null;
-    const unsubscribe = useAuthoringStore.subscribe(() => {
-      // Debounce sync to avoid rapid-fire updates during typing
-      if (syncTimer) clearTimeout(syncTimer);
-      syncTimer = setTimeout(() => {
-        useCanvaStore.getState().syncTemplateData();
-      }, 300);
-    });
-    return () => {
-      unsubscribe();
-      if (syncTimer) clearTimeout(syncTimer);
-    };
-  }, []);
+  // NOTE: Auto-sync is now handled by sync-slice.ts startAutoSync() (100ms debounce).
+  // Previously there was a duplicate 300ms subscription here causing double-renders.
+  // That has been removed to avoid redundant sync calls.
 
   // Keyboard shortcut: Ctrl+S to save, Ctrl+P to toggle Live Preview
   useEffect(() => {
@@ -401,7 +395,7 @@ export default function AuthoringTool() {
       </div>
 
       {/* ── Guided Tour Overlay ────────────────────────────── */}
-      {showTour && (
+      {showTour && activePanel === 'dashboard' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />

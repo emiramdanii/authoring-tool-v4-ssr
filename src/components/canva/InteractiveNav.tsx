@@ -36,13 +36,21 @@ export default function InteractiveNav() {
   };
 
   const handleNext = () => {
+    const beforeIdx = interactivePageIdx;
     nextInteractivePage();
-    if (currentIdx + 1 < total) goPage(currentIdx + 1);
+    // Re-read the interactive store to check if navigation actually succeeded.
+    // If nextInteractivePage() silently failed (e.g. on last page or totalPages
+    // was out of sync), we should not update the canva store either.
+    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
+    if (afterIdx !== beforeIdx) goPage(afterIdx);
   };
 
   const handlePrev = () => {
+    const beforeIdx = interactivePageIdx;
     prevInteractivePage();
-    if (currentIdx - 1 >= 0) goPage(currentIdx - 1);
+    // Same guard as handleNext — only sync canva store if navigation happened.
+    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
+    if (afterIdx !== beforeIdx) goPage(afterIdx);
   };
 
   return (

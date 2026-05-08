@@ -121,19 +121,24 @@ export default function Dashboard() {
           <div className="text-3xl">👋</div>
           <div className="flex-1">
             <h3 className="font-bold text-zinc-100 text-base">Selamat Datang di Authoring Tool v3!</h3>
-            <p className="text-xs text-zinc-400 mt-1">Buat media pembelajaran interaktif dengan mudah. Ikuti langkah-langkah berikut:</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+            <p className="text-xs text-zinc-400 mt-1">Buat media pembelajaran interaktif dengan mudah. Ikuti alur kerja berikut:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 mt-3">
               {[
-                { num: '1', text: 'Pilih Preset / Proyek Baru' },
-                { num: '2', text: 'Isi CP / TP / ATP' },
-                { num: '3', text: 'Tambah Konten & Game' },
-                { num: '4', text: 'Preview & Export' },
-              ].map((step) => (
+                { num: '1', text: 'Pilih Preset', icon: '⚡', color: 'amber' },
+                { num: '2', text: 'Isi Data (CP/TP/Kuis)', icon: '📝', color: 'cyan' },
+                { num: '3', text: 'Desain di Canva', icon: '🎨', color: 'purple' },
+                { num: '4', text: 'Preview Siswa', icon: '📱', color: 'emerald' },
+                { num: '5', text: 'Export HTML', icon: '📤', color: 'teal' },
+              ].map((step, i) => (
                 <div key={step.num} className="flex items-center gap-2 bg-zinc-800/50 rounded-lg px-3 py-2">
-                  <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  <div className={`w-6 h-6 rounded-full bg-${step.color}-500/20 text-${step.color}-400 flex items-center justify-center text-xs font-bold flex-shrink-0`}>
                     {step.num}
                   </div>
-                  <span className="text-xs text-zinc-300">{step.text}</span>
+                  <div>
+                    <span className="text-[9px]">{step.icon}</span>
+                    <span className="text-xs text-zinc-300 ml-1">{step.text}</span>
+                  </div>
+                  {i < 4 && <span className="text-zinc-600 text-[10px] ml-auto hidden sm:block">→</span>}
                 </div>
               ))}
             </div>
@@ -215,10 +220,12 @@ export default function Dashboard() {
                 if (!isPresetMode && (meta.judulPertemuan || tp.length > 0 || kuis.length > 0) && !confirm('Preset akan menimpa data proyek saat ini. Lanjutkan?')) return;
                 applyFullPreset(p.key);
                 // Auto-rakit after preset then navigate to canva
+                // Use longer delay to ensure authoring store data is committed
+                // before autoRakit reads it via useAuthoringStore.getState()
                 setTimeout(() => {
                   useCanvaStore.getState().autoRakit();
                   useAuthoringStore.getState().setActivePanel('canva');
-                }, 100);
+                }, 300);
               }}
               className={`rounded-lg p-3 text-center transition-colors cursor-pointer ${
                 isPresetMode && activePreset === p.key
@@ -275,6 +282,78 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Next Step Action — smart guidance based on current state */}
+      <div className="bg-gradient-to-r from-emerald-900/40 to-cyan-900/40 border border-emerald-500/30 rounded-xl p-5">
+        <h3 className="text-sm font-bold text-emerald-300 mb-2">🚀 Langkah Selanjutnya</h3>
+        {completeness < 30 ? (
+          <div>
+            <p className="text-xs text-zinc-300 mb-3">
+              Data proyek masih kurang. Mulai dengan memilih preset atau isi data dokumen (CP/TP/ATP) terlebih dahulu.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setActivePanel('dokumen')}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm rounded-lg transition-colors"
+              >
+                📝 Isi Dokumen
+              </button>
+            </div>
+          </div>
+        ) : completeness < 80 ? (
+          <div>
+            <p className="text-xs text-zinc-300 mb-3">
+              Data sudah cukup! Lengkapi kuis dan materi di panel Konten, lalu desain tampilan di Canva.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setActivePanel('konten')}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors"
+              >
+                🧩 Tambah Konten
+              </button>
+              <button
+                onClick={() => {
+                  useCanvaStore.getState().autoRakit();
+                  setActivePanel('canva');
+                }}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+              >
+                🎨 Buka Canva
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-xs text-zinc-300 mb-3">
+              Proyek sudah lengkap! Preview tampilan siswa, lalu export sebagai HTML interaktif.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  useCanvaStore.getState().autoRakit();
+                  setActivePanel('canva');
+                }}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+              >
+                🎨 Buka Canva
+              </button>
+              <button
+                onClick={() => setActivePanel('preview')}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors"
+              >
+                📱 Preview Siswa
+              </button>
+              <button
+                onClick={() => setActivePanel('import')}
+                className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-sm rounded-lg transition-colors"
+              >
+                📤 Export HTML
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Export — clearly separated */}

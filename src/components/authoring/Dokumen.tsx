@@ -566,6 +566,15 @@ export default function Dokumen() {
           <AlurSection />
         </AccordionSection>
       </div>
+
+      <div className="mt-6 pt-4 border-t border-zinc-800 flex justify-end">
+        <button
+          onClick={() => useAuthoringStore.getState().setActivePanel('konten')}
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+        >
+          Selanjutnya: Tambah Konten →
+        </button>
+      </div>
     </div>
   );
 }

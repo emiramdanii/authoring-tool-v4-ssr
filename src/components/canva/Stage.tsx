@@ -631,7 +631,7 @@ function StageElement({
       {/* Body */}
       <div className="w-full h-full overflow-hidden rounded-sm">
         {element.type === 'kuis' && (
-          <QuizWidget dataIdx={element.dataIdx} kuisId={element.kuisId} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
+          <QuizWidget dataIdx={element.dataIdx} kuisId={element.kuisId} kuisIds={element.kuisIds} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
         )}
         {element.type === 'game' && (
           <GameWidget dataIdx={element.dataIdx} moduleId={element.moduleId} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />

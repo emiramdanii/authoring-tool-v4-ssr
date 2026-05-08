@@ -14,6 +14,7 @@ import PlayOverlay from './PlayOverlay';
 
 export default function CanvaBuilder() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
 
   // ── Load state from localStorage on mount ────────────────────
   useEffect(() => {
@@ -44,6 +45,11 @@ export default function CanvaBuilder() {
   // ── Keyboard shortcuts (design mode only) ──────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept shortcuts when the interactive Play overlay is active.
+      // The Play overlay has its own keyboard handler for navigation.
+      const iMode = useInteractiveStore.getState().mode;
+      if (iMode === 'interactive') return;
+
       // Only handle shortcuts when Canva panel is active
       const activePanel = useAuthoringStore.getState().activePanel;
       if (activePanel !== 'canva') return;
@@ -129,7 +135,7 @@ export default function CanvaBuilder() {
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         <IconRail />
-        <div className="border-r border-slate-800/60 shadow-[1px_0_8px_-2px_rgba(0,0,0,0.35)]">
+        <div className="border-r border-slate-800/60 shadow-[1px_0_8px_-2px_rgba(0,0,0,0.35)] flex-shrink-0">
           <LeftPanel />
         </div>
 
@@ -138,9 +144,11 @@ export default function CanvaBuilder() {
           <Stage onMouseMove={handleMouseMove} />
         </div>
 
-        <div className="border-l border-slate-800/60 shadow-[-1px_0_8px_-2px_rgba(0,0,0,0.35)]">
-          <RightPanel />
-        </div>
+        {rightPanelOpen && (
+          <div className="border-l border-slate-800/60 shadow-[-1px_0_8px_-2px_rgba(0,0,0,0.35)] flex-shrink-0">
+            <RightPanel />
+          </div>
+        )}
       </div>
 
       {/* Status Bar */}

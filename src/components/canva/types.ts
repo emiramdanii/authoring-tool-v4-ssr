@@ -38,6 +38,7 @@ export interface CanvaElement {
   // Data reference (kuis/game/modul) — stable ID referencing authoring store
   moduleId?: string; // UUID-based stable reference to modules[] (preferred)
   kuisId?: string;   // UUID-based stable reference to kuis[] (preferred)
+  kuisIds?: string[]; // Multiple kuis IDs — for template pages with multiple questions
   /** @deprecated Use moduleId/kuisId instead — array indices break when items are reordered */
   dataIdx?: number;
   // Layout variant for module rendering

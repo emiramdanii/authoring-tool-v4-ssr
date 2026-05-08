@@ -36,18 +36,25 @@ export function resolveModule(
 
 /**
  * Resolve a quiz element to its quiz data.
- * Supports kuisId (stable UUID) and dataIdx (legacy fallback).
+ * Supports kuisIds (multiple, preferred for template pages), kuisId (single UUID),
+ * and dataIdx (legacy fallback).
  * 
- * Priority: kuisId > dataIdx > full array
+ * Priority: kuisIds (multi) > kuisId (single) > dataIdx > empty
  * 
- * @param el - The canva element with kuisId and/or dataIdx
+ * @param el - The canva element with kuisId/kuisIds and/or dataIdx
  * @param allKuis - Flat array of kuis items from authoring store
- * @returns The resolved kuis data (single item or full array)
+ * @returns The resolved kuis data (scoped to referenced items only)
  */
 export function resolveKuis(
   el: CanvaElement,
   allKuis: Array<Record<string, unknown>>,
 ): Array<Record<string, unknown>> {
+  // Priority 0: kuisIds (multiple IDs) — for template pages with multiple questions
+  if (el.kuisIds && el.kuisIds.length > 0) {
+    const found = allKuis.filter(k => k._id && el.kuisIds!.includes(k._id as string));
+    if (found.length > 0) return found;
+  }
+
   // Priority 1: kuisId (stable reference) — find single kuis item by _id
   if (el.kuisId) {
     const found = allKuis.find(k => k._id === el.kuisId);
@@ -60,8 +67,15 @@ export function resolveKuis(
     return [allKuis[dataIdx]];
   }
 
-  // Fallback: return all kuis items
-  return allKuis;
+  // No reference found — return empty instead of ALL (was a scoping bug)
+  if (typeof console !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '[resolveKuis] Quiz element has no kuisId/kuisIds or valid dataIdx. ' +
+      'Returning empty array to avoid showing ALL questions. ' +
+      'Element:', el
+    );
+  }
+  return [];
 }
 
 /**

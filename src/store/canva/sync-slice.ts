@@ -41,20 +41,22 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
     let changed = false;
 
     const newPages = pages.map(page => {
-      // Only sync template pages (not custom)
-      if (!page.templateType || page.templateType === 'custom') return page;
-
-      // ── Layer 1: templateData re-binding ──────────────────
-      const freshData = buildTemplateData(page.templateType);
-
-      // Check if data actually changed (shallow comparison of keys)
-      const oldData = page.templateData || {};
-      const allKeys = new Set([...Object.keys(oldData), ...Object.keys(freshData)]);
+      // ── Layer 1: templateData re-binding (template pages only) ──
+      // Custom pages don't have templateData, but they still need Layer 2 & 3
+      let freshData: Record<string, unknown> | null = null;
       let dataChanged = false;
-      for (const key of allKeys) {
-        if (JSON.stringify(oldData[key]) !== JSON.stringify(freshData[key])) {
-          dataChanged = true;
-          break;
+
+      if (page.templateType && page.templateType !== 'custom') {
+        freshData = buildTemplateData(page.templateType);
+
+        // Check if data actually changed (shallow comparison of keys)
+        const oldData = page.templateData || {};
+        const allKeys = new Set([...Object.keys(oldData), ...Object.keys(freshData)]);
+        for (const key of allKeys) {
+          if (JSON.stringify(oldData[key]) !== JSON.stringify(freshData[key])) {
+            dataChanged = true;
+            break;
+          }
         }
       }
 
@@ -108,9 +110,9 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       changed = true;
       return {
         ...page,
-        templateData: dataChanged ? freshData : page.templateData,
+        templateData: dataChanged && freshData ? freshData : page.templateData,
         // Also update label for cover pages if title changed
-        ...(page.templateType === 'cover' && freshData.title
+        ...(page.templateType === 'cover' && freshData?.title
           ? { label: 'Cover - ' + freshData.title }
           : {}),
         overlayElements: (overlaysChanged || idsSynced) ? syncedOverlays : page.overlayElements,

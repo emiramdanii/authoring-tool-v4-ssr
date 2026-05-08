@@ -144,16 +144,22 @@ function PlayCanvas() {
       }
       if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
+        const beforeIdx = iStore.interactivePageIdx;
         iStore.nextInteractivePage();
-        const next = iStore.interactivePageIdx + 1;
-        if (next < cStore.pages.length) cStore.goPage(next);
+        // Re-read the store to get the updated interactivePageIdx.
+        // Using the stale snapshot could cause canva store desync if
+        // nextInteractivePage() silently fails (e.g. totalPages == 0).
+        const afterIdx = useInteractiveStore.getState().interactivePageIdx;
+        if (afterIdx !== beforeIdx) cStore.goPage(afterIdx);
         return;
       }
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
+        const beforeIdx = iStore.interactivePageIdx;
         iStore.prevInteractivePage();
-        const prev = iStore.interactivePageIdx - 1;
-        if (prev >= 0) cStore.goPage(prev);
+        // Re-read the store for the same reason as ArrowRight above.
+        const afterIdx = useInteractiveStore.getState().interactivePageIdx;
+        if (afterIdx !== beforeIdx) cStore.goPage(afterIdx);
         return;
       }
       // F = fullscreen toggle
@@ -228,8 +234,12 @@ function PlayCanvas() {
         />
 
         {/* Template Mode: Render full-page template with interactive prop */}
+        {/* key={page.id} forces React to unmount/remount the template when the page
+            changes, preventing stale internal state (quiz answers, game selections,
+            EditableText contentEditable DOM) from carrying over. */}
         {isTemplateMode && (
           <PageTemplate
+            key={page.id}
             page={page}
             isSelected={false}
             onEditField={() => {}}
@@ -238,8 +248,9 @@ function PlayCanvas() {
         )}
 
         {/* Phase 3 FIX: Render overlay elements on template pages in interactive mode */}
+        {/* key={page.id} ensures elements are recreated when navigating to a different page */}
         {isTemplateMode && (page.overlayElements || []).length > 0 && (
-          <div className="absolute inset-0" style={{ zIndex: 10 }}>
+          <div key={page.id} className="absolute inset-0" style={{ zIndex: 10 }}>
             {(page.overlayElements || []).filter(el => !el.hidden).map(el => (
               <PlayElement key={el.id} element={el} pageIndex={interactivePageIdx} />
             ))}
@@ -247,8 +258,9 @@ function PlayCanvas() {
         )}
 
         {/* Custom Mode: Render individual elements */}
+        {/* key={page.id} ensures elements are recreated when navigating to a different page */}
         {!isTemplateMode && (
-          <div className="absolute inset-0">
+          <div key={page.id} className="absolute inset-0">
             {page.elements
               .filter((el) => !el.hidden)
               .map((el) => (
@@ -419,6 +431,7 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
         <QuizWidget
           dataIdx={element.dataIdx}
           kuisId={element.kuisId}
+          kuisIds={element.kuisIds}
           compact={false}
           onComplete={handleComplete}
         />

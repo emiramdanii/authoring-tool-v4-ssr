@@ -6,6 +6,8 @@ import { type KontenTab } from './konten/shared';
 import { MateriTab } from './konten/MateriTab';
 import { ModulesTab } from './konten/ModulesTab';
 import { KuisTab } from './konten/KuisTab';
+import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 
 // ── Main Konten Panel ──────────────────────────────────────────
 export default function Konten() {
@@ -52,6 +54,18 @@ export default function Konten() {
         {activeTab === 'skenario' && <Skenario />}
         {activeTab === 'modules' && <ModulesTab />}
         {activeTab === 'kuis' && <KuisTab />}
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-zinc-800 flex justify-end">
+        <button
+          onClick={() => {
+            useCanvaStore.getState().autoRakit();
+            useAuthoringStore.getState().setActivePanel('canva');
+          }}
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+        >
+          Selanjutnya: Desain di Canva →
+        </button>
       </div>
     </div>
   );

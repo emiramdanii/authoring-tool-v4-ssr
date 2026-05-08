@@ -24,6 +24,11 @@ import {
   CheckCircle2,
   Loader2,
   MonitorPlay,
+  Home,
+  FileText,
+  BookOpen,
+  ArrowLeft,
+  RefreshCw,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -64,8 +69,10 @@ export default function Toolbar() {
   const [exporting, setExporting] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [ratioOpen, setRatioOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const ratioRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
   const isInteractive = mode === 'interactive';
   const page = pages[currentPageIndex];
@@ -89,6 +96,7 @@ export default function Toolbar() {
     const handleClick = (e: MouseEvent) => {
       if (exportRef.current && !exportRef.current.contains(e.target as Node)) setExportOpen(false);
       if (ratioRef.current && !ratioRef.current.contains(e.target as Node)) setRatioOpen(false);
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setNavOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -244,14 +252,94 @@ export default function Toolbar() {
   return (
     <div className="flex items-center gap-1 px-3 py-1.5 glass-panel-strong select-none">
 
-      {/* ── Left group: Logo/Brand ────────────────────────────── */}
-      <div className="flex items-center gap-2">
+      {/* ── Left group: Navigation Back + Page Label ─────────── */}
+      <div className="flex items-center gap-1">
+        {/* Navigation dropdown — go to Dashboard, Dokumen, Konten */}
+        <div className="relative" ref={navRef}>
+          <button
+            onClick={() => setNavOpen(!navOpen)}
+            className="btn-ghost focus-ring flex items-center gap-1 !text-amber-400 hover:!text-amber-300"
+            title="Navigasi — Kembali ke panel lain"
+          >
+            <ArrowLeft size={14} />
+            <span className="hidden md:inline text-[9px] font-semibold">Menu</span>
+            <ChevronDown size={8} className={`transition-transform ${navOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {navOpen && (
+            <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+              <div className="px-3 py-1.5 bg-amber-500/10 border-b border-amber-500/20">
+                <div className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">🏠 Navigasi Utama</div>
+              </div>
+              <button
+                onClick={() => { setActivePanel('dashboard'); setNavOpen(false); }}
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-amber-500/10 transition-colors text-left"
+              >
+                <Home size={14} className="text-amber-400" />
+                <div>
+                  <div className="text-[11px] text-amber-300 font-semibold">Dashboard</div>
+                  <div className="text-[8px] text-slate-500">Pilih preset, kelengkapan, quick actions</div>
+                </div>
+              </button>
+              <button
+                onClick={() => { setActivePanel('dokumen'); setNavOpen(false); }}
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+              >
+                <FileText size={14} className="text-cyan-400" />
+                <div>
+                  <div className="text-[11px] text-slate-200 font-semibold">Dokumen</div>
+                  <div className="text-[8px] text-slate-500">Edit CP, TP, ATP, Alur Pembelajaran</div>
+                </div>
+              </button>
+              <button
+                onClick={() => { setActivePanel('konten'); setNavOpen(false); }}
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+              >
+                <BookOpen size={14} className="text-emerald-400" />
+                <div>
+                  <div className="text-[11px] text-slate-200 font-semibold">Konten</div>
+                  <div className="text-[8px] text-slate-500">Edit Kuis, Game, Materi, Skenario</div>
+                </div>
+              </button>
+              <div className="section-divider mx-3" />
+              <button
+                onClick={() => { setActivePanel('preview'); setNavOpen(false); }}
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+              >
+                <MonitorPlay size={14} className="text-cyan-400" />
+                <div>
+                  <div className="text-[11px] text-slate-200 font-semibold">Live Preview</div>
+                  <div className="text-[8px] text-slate-500">Preview tampilan siswa lengkap</div>
+                </div>
+              </button>
+              <button
+                onClick={() => { setActivePanel('import'); setNavOpen(false); }}
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+              >
+                <Download size={14} className="text-slate-400" />
+                <div>
+                  <div className="text-[11px] text-slate-200 font-semibold">Import / Export</div>
+                  <div className="text-[8px] text-slate-500">Import Excel/JSON, Export HTML</div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
         <span className="w-1 h-1 rounded-full bg-amber-400" />
         <span className="text-xs font-semibold text-slate-200 min-w-0 truncate max-w-[140px]">
           {label}
         </span>
       </div>
       <div className="section-divider h-5 w-px mx-1" />
+
+      {/* ── Re-Rakit Button — rebuild pages from authoring data ── */}
+      <button
+        onClick={() => { useCanvaStore.getState().autoRakit(); toast.success('Halaman diperbarui dari data authoring'); }}
+        title="Rakit Ulang — Bangun ulang halaman dari data terbaru (CP/TP/Kuis/Game)"
+        className="btn-ghost focus-ring flex items-center gap-0.5 !text-amber-300 hover:!text-amber-200"
+      >
+        <RefreshCw size={14} />
+        <span className="hidden md:inline text-[9px] font-semibold">Rakit Ulang</span>
+      </button>
 
       {/* ── Play Button (MAIN action) ────────────────────────── */}
       <button
@@ -346,75 +434,34 @@ export default function Toolbar() {
         </button>
         {exportOpen && (
           <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
-            {/* ── UNIFIED EXPORT (Recommended) ── */}
+            {/* ── EXPORT UTAMA  ── */}
             <div className="px-3 py-1.5 bg-emerald-500/10 border-b border-emerald-500/20">
-              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">🚀 Rekomendasi — Export Lengkap</div>
+              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">🚀 Export HTML Interaktif</div>
             </div>
-            <button
-              onClick={handlePreviewUnified}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
-            >
-              <MonitorPlay size={14} className="text-emerald-400" />
-              <div>
-                <div className="text-[11px] text-emerald-300 font-semibold">▶ Preview Unified (Tab Baru)</div>
-                <div className="text-[8px] text-emerald-500/70">Navigasi pintar + game + skor + layout canva</div>
-              </div>
-            </button>
             <button
               onClick={handleExportUnified}
               className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
             >
               <Download size={14} className="text-emerald-400" />
               <div>
-                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Export Unified HTML</div>
-                <div className="text-[8px] text-emerald-500/70">File HTML lengkap — siap dibagikan ke siswa</div>
+                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Download HTML</div>
+                <div className="text-[8px] text-emerald-500/70">Navbar + navigasi + game + skor — siap bagi ke siswa</div>
+              </div>
+            </button>
+            <button
+              onClick={handlePreviewUnified}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
+            >
+              <MonitorPlay size={14} className="text-emerald-400" />
+              <div>
+                <div className="text-[11px] text-emerald-300 font-semibold">▶ Preview (Tab Baru)</div>
+                <div className="text-[8px] text-emerald-500/70">Lihat tampilan siswa di tab baru</div>
               </div>
             </button>
 
             <div className="px-3 py-1.5 bg-slate-800/30 border-y border-slate-700/30">
-              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Ekspor Lainnya</div>
+              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Lainnya</div>
             </div>
-            <button
-              onClick={handlePreviewSlideshow}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
-            >
-              <Film size={14} className="text-teal-400" />
-              <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Preview Slideshow</div>
-                <div className="text-[8px] text-slate-500">Slideshow biasa (tanpa navigasi pintar)</div>
-              </div>
-            </button>
-            <button
-              onClick={handlePreview}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
-            >
-              <Eye size={14} className="text-slate-400" />
-              <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Preview Halaman</div>
-                <div className="text-[8px] text-slate-500">Hanya halaman saat ini</div>
-              </div>
-            </button>
-            <button
-              onClick={handleExport}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
-            >
-              <Download size={14} className="text-amber-400" />
-              <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Export Halaman HTML</div>
-                <div className="text-[8px] text-slate-500">Download halaman saat ini</div>
-              </div>
-            </button>
-            <button
-              onClick={handleExportSlideshow}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-slate-800/50 transition-colors text-left"
-            >
-              <Film size={14} className="text-teal-400" />
-              <div>
-                <div className="text-[11px] text-slate-200 font-semibold">Export Slideshow HTML</div>
-                <div className="text-[8px] text-slate-500">{pages.length} halaman (navigasi prev/next)</div>
-              </div>
-            </button>
-            <div className="section-divider mx-3" />
             <button
               onClick={handleClear}
               className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-red-500/10 transition-colors text-left"

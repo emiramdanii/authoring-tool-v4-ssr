@@ -62,7 +62,13 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => {
       if (count !== get().totalPages) {
         set({ totalPages: count });
       }
-    } catch { /* canva store may not be ready */ }
+    } catch (err) {
+      // If canva store is not available, totalPages stays at its last
+      // known value. Navigation guards will silently fail-safe.
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[interactive-store] syncTotalPages failed — canva store may not be ready', err);
+      }
+    }
   };
 
   return {

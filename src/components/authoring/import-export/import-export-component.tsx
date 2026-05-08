@@ -2,6 +2,7 @@
 
 import { Upload, Download, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import { useExportActions } from './use-export-actions';
 import { useExcelImport } from './use-excel-import';
@@ -38,19 +39,19 @@ export default function ImportExport() {
         </p>
       </div>
 
-      {/* ── Unified Export (RECOMMENDED) ──────────────────────── */}
+      {/* ── SATU-SATUNYA Export HTML ──────────────────────────── */}
       <div className="bg-zinc-900 border border-emerald-800/50 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-emerald-300 mb-1 flex items-center gap-2">
-          🚀 Export Interaktif (Unified) — Rekomendasi
+          🚀 Export HTML Interaktif
         </h3>
         <p className="text-xs text-zinc-400 mb-4">
-          Download HTML lengkap dengan <strong className="text-emerald-400">navigasi pintar</strong> (Lanjut → / ← Kembali), <strong className="text-emerald-400">game engines</strong> (11+ tipe), dan layout canvas.
-          Mode Unified menggabungkan kekuatan canvas + template + game engines.
+          Download HTML lengkap dengan <strong className="text-emerald-400">navbar + navigasi</strong> (sama seperti preview),
+          <strong className="text-emerald-400"> game engines</strong> (11+ tipe), <strong className="text-emerald-400">skor tracking</strong>, dan layout canvas.
+          Satu file HTML — siap dibagikan ke siswa.
         </p>
         <button
           onClick={() => {
             try {
-              const { useCanvaStore } = require('@/store/canva-store');
               const html = useCanvaStore.getState().exportUnifiedHTML();
               const s = useAuthoringStore.getState();
               const filename = (s.meta.judulPertemuan || 'media')
@@ -61,42 +62,22 @@ export default function ImportExport() {
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `${filename}-unified.html`;
+              a.download = `${filename}.html`;
               a.click();
               URL.revokeObjectURL(url);
-              toast.success('🚀 Export Unified berhasil didownload!');
+              toast.success('🚀 Export HTML berhasil didownload!');
             } catch (err) {
-              console.error('Unified export failed:', err);
-              toast.error('❌ Gagal mengexport Unified HTML');
+              console.error('Export failed:', err);
+              toast.error('❌ Gagal mengexport HTML');
             }
           }}
           className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Download className="size-4" />
-          Export HTML Interaktif (Unified)
+          Export HTML Interaktif
         </button>
         <p className="text-[0.65rem] text-zinc-500 mt-2">
-          🚀 Navigasi pintar + game engines + canvas layout — satu file HTML lengkap
-        </p>
-      </div>
-
-      {/* ── Template Export ──────────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-zinc-200 mb-1 flex items-center gap-2">
-          🎓 Export Template
-        </h3>
-        <p className="text-xs text-zinc-400 mb-4">
-          Download HTML template system dengan navigasi screen-based (Cover → CP → Skenario → Materi → Kuis → Hasil).
-        </p>
-        <button
-          onClick={exportStudentHtml}
-          className="w-full px-4 py-3 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <Download className="size-4" />
-          Export HTML Template
-        </button>
-        <p className="text-[0.65rem] text-zinc-500 mt-2">
-          Template system dengan screen navigation
+          Navbar + tombol navigasi + game engines + skor — satu file HTML lengkap
         </p>
       </div>
 

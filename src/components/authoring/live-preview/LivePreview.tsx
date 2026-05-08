@@ -11,6 +11,10 @@ import {
   ExternalLink,
   ArrowLeft,
   Download,
+  Home,
+  FileText,
+  BookOpen,
+  Palette,
 } from 'lucide-react';
 import type { PreviewMode, DeviceMode, LayoutTheme } from './types';
 import { DEVICE_MODES, LAYOUT_THEMES, SCREEN_OPTIONS, MODE_META } from './constants';
@@ -128,14 +132,39 @@ export default function LivePreview() {
       {/* ══ TOOLBAR ══════════════════════════════════════════════ */}
       <div className="flex-shrink-0 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 px-3 py-2 flex items-center gap-2 flex-wrap">
 
-        {/* ── Back button ────────────────────────────────────── */}
+        {/* ── Back button (default to Canva) ──────────────────── */}
         <button
           onClick={() => setActivePanel('canva')}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
           title="Kembali ke Canva (Esc)"
         >
-          <ArrowLeft size={14} />
-          <span className="hidden sm:inline">Kembali</span>
+          <Palette size={14} />
+          <span className="hidden sm:inline">Canva</span>
+        </button>
+
+        <div className="w-px h-5 bg-zinc-700/50" />
+
+        {/* ── Quick navigation ─────────────────────────────────── */}
+        <button
+          onClick={() => setActivePanel('dashboard')}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          title="Dashboard"
+        >
+          <Home size={13} />
+        </button>
+        <button
+          onClick={() => setActivePanel('dokumen')}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          title="Edit Dokumen (CP/TP/ATP)"
+        >
+          <FileText size={13} />
+        </button>
+        <button
+          onClick={() => setActivePanel('konten')}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          title="Edit Konten (Kuis/Game/Materi)"
+        >
+          <BookOpen size={13} />
         </button>
 
         <div className="w-px h-5 bg-zinc-700/50" />

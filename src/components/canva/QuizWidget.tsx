@@ -8,22 +8,30 @@ import type { CanvaElement } from './types';
 interface QuizWidgetProps {
   dataIdx?: number;
   kuisId?: string;    // Stable UUID reference (preferred over dataIdx)
+  kuisIds?: string[]; // Multiple kuis IDs — for template pages with multiple questions
   compact?: boolean;  // small preview in canvas editor
   onComplete?: (score: number, maxScore: number) => void;  // score callback
 }
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-export default function QuizWidget({ dataIdx, kuisId, compact = false, onComplete }: QuizWidgetProps) {
+export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, onComplete }: QuizWidgetProps) {
   const kuis = useAuthoringStore((s) => s.kuis);
 
-  // Resolve kuis data using stable reference (kuisId > dataIdx > all)
-  const refEl: Partial<CanvaElement> = {
-    kuisId: kuisId,
-    dataIdx: dataIdx,
-  };
-  const resolvedKuis = resolveKuis(refEl as CanvaElement, kuis as unknown as Array<Record<string, unknown>>);
-  const allQuestions: KuisItem[] = resolvedKuis as unknown as KuisItem[];
+  // Resolve kuis data — priority: kuisIds (multi) > kuisId (single) > dataIdx > all
+  let allQuestions: KuisItem[];
+  if (kuisIds && kuisIds.length > 0) {
+    // Multi-ID mode: filter kuis by IDs (for template pages)
+    allQuestions = kuis.filter(k => k._id && kuisIds.includes(k._id));
+  } else {
+    // Single/legacy mode
+    const refEl: Partial<CanvaElement> = {
+      kuisId: kuisId,
+      dataIdx: dataIdx,
+    };
+    const resolvedKuis = resolveKuis(refEl as CanvaElement, kuis as unknown as Array<Record<string, unknown>>);
+    allQuestions = resolvedKuis as unknown as KuisItem[];
+  }
 
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);

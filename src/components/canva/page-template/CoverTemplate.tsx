@@ -59,7 +59,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, variant = 
               border: `1px solid ${accent}40`,
               color: accent,
             }}>
-            {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+            {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
           </div>
         )}
 
@@ -91,7 +91,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, variant = 
               border: `1px solid ${accent}40`,
               color: accent,
             }}>
-            {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+            {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
           </div>
         )}
 
@@ -148,7 +148,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, variant = 
         {Boolean(td.mapel || td.kelas) && (
           <div className="relative px-3 py-1 rounded-full text-[9px] font-bold"
             style={{ background: `${accent}30`, border: `1px solid ${accent}50`, color: accent }}>
-            {String(td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+            {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
           </div>
         )}
         {/* Decorative dots */}

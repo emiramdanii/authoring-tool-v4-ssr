@@ -85,12 +85,15 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
   const td = page.templateData || {};
   let moduleId: string | undefined;
   let kuisId: string | undefined;
+  let kuisIds: string[] | undefined;
 
-  // For kuis pages: try to get kuisId from the first quiz item
+  // For kuis pages: collect all kuis IDs (kuisIds) for proper scoping
+  // Also set kuisId from first item for backward compatibility
   if (page.templateType === 'kuis') {
     const kuisArr = td.kuis as Array<Record<string, unknown>> | undefined;
-    if (kuisArr && kuisArr.length > 0 && kuisArr[0]._id) {
-      kuisId = kuisArr[0]._id as string;
+    if (kuisArr && kuisArr.length > 0) {
+      kuisId = (kuisArr[0]._id as string) || undefined;
+      kuisIds = kuisArr.map(k => k._id as string).filter(Boolean);
     }
   }
 
@@ -121,6 +124,7 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
     dataIdx: -1,
     ...(moduleId ? { moduleId } : {}),
     ...(kuisId ? { kuisId } : {}),
+    ...(kuisIds && kuisIds.length > 0 ? { kuisIds } : {}),
   }];
 }
 
@@ -162,9 +166,17 @@ export function buildGameData(
   pages.forEach((p, i) => {
     // Quiz data for kuis pages
     if (p.templateType === 'kuis') {
-      const kuisData = (p.templateData.kuis as Array<Record<string, unknown>>) || allKuis;
-      if (kuisData.length > 0) {
-        (gameData.quizzes as Record<string, unknown>)[String(i)] = kuisData.map(k => ({
+      const kuisData = (p.templateData.kuis as Array<Record<string, unknown>> | undefined) ?? [];
+      // Also try resolving via element kuisId/kuisIds for scoped questions
+      let scopedKuisData = kuisData;
+      if (kuisData.length === 0) {
+        const kuisEl = [...(p.elements || []), ...(p.overlayElements || [])].find(e => e.type === 'kuis');
+        if (kuisEl) {
+          scopedKuisData = resolveKuis(kuisEl, allKuis);
+        }
+      }
+      if (scopedKuisData.length > 0) {
+        (gameData.quizzes as Record<string, unknown>)[String(i)] = scopedKuisData.map(k => ({
           q: (k as Record<string, unknown>).q || '',
           opts: (k as Record<string, unknown>).opts || [],
           ans: (k as Record<string, unknown>).ans ?? 0,
@@ -253,20 +265,30 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       const icon = td.icon || '📚';
       const mapel = esc(td.mapel);
       const kelas = esc(td.kelas);
-      return `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px">
-        <div style="font-size:64px;margin-bottom:16px">${icon}</div>
-        <div style="font-size:32px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5);margin-bottom:8px">${title}</div>
-        <div style="font-size:16px;color:rgba(255,255,255,.7);margin-bottom:20px">${subtitle}</div>
-        ${mapel ? `<div style="display:inline-block;padding:6px 16px;border-radius:20px;background:rgba(249,200,46,.2);border:1px solid rgba(249,200,46,.3);color:#f9c82e;font-size:13px;font-weight:700">${mapel} ${kelas ? '• Kelas ' + kelas : ''}</div>` : ''}
+      const durasi = esc(td.durasi);
+      const kurikulum = esc(td.kurikulum);
+      // Render as non-absolute so the "Mulai Belajar" button sits below naturally
+      // Matches the preset cover layout exactly (icon → chips → title → subtitle → chips → button)
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+        <div class="cover-icon">${icon}</div>
+        <div class="cover-chips">
+          ${mapel ? `<span class="chip" style="background:rgba(249,193,46,.15);color:var(--y)">${mapel} ${kelas ? 'Kelas ' + kelas : ''}</span>` : ''}
+          ${durasi ? `<span class="chip" style="background:rgba(62,207,207,.15);color:var(--c)">${durasi}</span>` : ''}
+          ${kurikulum ? `<span class="chip" style="background:rgba(52,211,153,.15);color:var(--g)">${kurikulum}</span>` : ''}
+        </div>
+        <div class="cover-title">${title}</div>
+        ${subtitle ? `<p class="sub" style="max-width:480px;margin:0 auto">${subtitle}</p>` : ''}
       </div>`;
     }
 
     case 'kuis': {
       // Interactive quiz engine — container will be populated by JS
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="font-size:18px;font-weight:900;color:#f5c842;margin-bottom:16px">❓ Kuis Interaktif</div>
-        <div id="quiz-engine-${pageIdx}" style="min-height:200px"></div>
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">❓ <span class="hl">Kuis</span> Pengetahuan</div>
+        <p class="sub mt8">Jawab dan lihat penjelasannya langsung.</p>
+      </div>
+      <div id="quiz-engine-${pageIdx}" style="min-height:200px"></div>`;
     }
 
     case 'materi': {
@@ -277,16 +299,17 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       ).join('');
       const blokHTML = blok.length > 0 ? renderMateriBlokInline(blok) : '';
       const allContent = modulesHTML + blokHTML;
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="font-size:18px;font-weight:900;color:#e8f2ff;margin-bottom:16px">📝 Materi Pembelajaran</div>
-        ${allContent || '<div style="text-align:center;padding:40px;color:#6e90b5">Belum ada modul materi.</div>'}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">📝 <span class="hl">Materi</span> Pembelajaran</div>
+      </div>
+      ${allContent || '<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Belum ada modul materi.</div>'}`;
     }
 
     case 'game': {
       const games = (td.games as Array<Record<string, unknown>>) || [];
       if (games.length === 0) {
-        return `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#6e90b5">Belum ada game.</div>`;
+        return `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Belum ada game.</div>`;
       }
       // Build tab bar + game panels for each game
       const tabBtns = games.map((g, i) => {
@@ -296,33 +319,35 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       }).join('');
       const panels = games.map((g, i) => {
         const engineId = getGameEngineId(g.type as string, pageIdx, i);
-        return `<div class="game-panel" data-panel="g${i}" style="display:${i === 0 ? 'block' : 'none'};height:calc(100% - 44px);overflow-y:auto"><div id="${engineId}" style="min-height:200px"></div></div>`;
+        return `<div class="game-panel" data-panel="g${i}" style="display:${i === 0 ? 'block' : 'none'};min-height:300px;overflow-y:auto"><div id="${engineId}" style="min-height:200px"></div></div>`;
       }).join('');
-      return `<div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column">
-        <div style="font-size:18px;font-weight:900;color:#3ecfcf;margin-bottom:10px">🎮 Game Interaktif</div>
-        <div class="game-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${tabBtns}</div>
-        ${panels}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">🎮 <span class="hl">Game</span> Interaktif</div>
+      </div>
+      <div class="game-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${tabBtns}</div>
+      ${panels}`;
     }
 
     case 'hasil': {
       const totalKuis = (td.totalKuis as number) || 0;
-      return `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px">
-        <div style="font-size:56px;margin-bottom:12px">🏆</div>
-        <div style="font-size:28px;font-weight:900;color:#34d399;margin-bottom:6px">Hasil Belajar</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px" id="hasil-score-detail">${totalKuis > 0 ? totalKuis + ' soal kuis tersedia' : 'Kerjakan kuis untuk melihat skor'}</div>
-        <div style="width:150px;height:150px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;position:relative;background:conic-gradient(#34d399 0%,rgba(255,255,255,.08) 0%)" id="hasil-circle-wrap">
-          <div style="width:120px;height:120px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0f172a;position:relative;z-index:1">
-            <div style="font-size:42px;font-weight:900;color:#34d399" id="hasil-score-pct">0%</div>
-            <div style="font-size:10px;font-weight:700;margin-top:2px" id="hasil-level-label"></div>
+      // Non-absolute so the "Selesai" / "Ulangi" buttons sit below naturally
+      // Matches the preset hasil layout exactly
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+        <div class="hasil-circle" id="hasilCircle">
+          <div class="hasil-score">
+            <div style="font-family:'Fredoka One',cursive;font-size:2rem;color:var(--g)" id="hasilNum">0</div>
+            <div style="font-size:.7rem;color:var(--muted)">SKOR</div>
           </div>
         </div>
-        <div style="display:flex;gap:16px;margin-bottom:16px" id="hasil-legend">
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#34d399"></div><span style="font-size:9px;color:rgba(255,255,255,.4)">Sangat Baik</span></div>
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#f9c12e"></div><span style="font-size:9px;color:rgba(255,255,255,.4)">Baik</span></div>
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#f87171"></div><span style="font-size:9px;color:rgba(255,255,255,.4)">Perlu Latihan</span></div>
+        <div id="hasilLevel" style="padding:10px 20px;border-radius:12px;font-weight:800;font-size:.92rem;margin:12px 0;display:inline-block"></div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px" id="hasil-score-detail">${totalKuis > 0 ? totalKuis + ' soal kuis tersedia' : 'Kerjakan kuis untuk melihat skor'}</div>
+        <div class="card" style="text-align:left;margin-top:8px">
+          <div class="refl-item"><label>💭 Apa yang paling kamu pelajari hari ini?</label>
+            <textarea placeholder="Tuliskan refleksimu…"></textarea></div>
+          <div class="refl-item"><label>🌟 Bagaimana kamu akan menerapkannya?</label>
+            <textarea placeholder="Rencana aksi nyata…"></textarea></div>
         </div>
-        <div style="font-size:11px;color:rgba(255,255,255,.35)">Skor diperbarui secara langsung</div>
       </div>`;
     }
 
@@ -342,14 +367,13 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
               <div><span style="font-size:9px;font-weight:700;color:${String(tp.color || '#3ecfcf')}">${esc(tp.verb)}</span><span style="font-size:9px;color:rgba(255,255,255,.6);margin-left:4px">${esc(tp.desc)}</span></div>
             </div>`).join('')}`
         : '';
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(249,200,46,.12)">📋</div>
-          <div><div style="font-size:14px;font-weight:900;color:#fff">Dokumen Kurikulum</div><div style="font-size:9px;color:rgba(255,255,255,.4)">Capaian Pembelajaran • Tujuan Pembelajaran</div></div>
-        </div>
-        ${cpHTML}${tpHTML}
-        ${!cp?.capaianFase && tpItems.length === 0 ? '<div style="text-align:center;padding:40px;color:#6e90b5">Isi data CP & TP di panel Dokumen</div>' : ''}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">📋 <span class="hl">Dokumen</span> Pembelajaran</div>
+      </div>
+      ${cpHTML ? `<div class="card mt14">${cpHTML}</div>` : ''}
+      ${tpHTML ? `<div class="card mt14">${tpHTML}</div>` : ''}
+      ${!cp?.capaianFase && tpItems.length === 0 ? '<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Isi data CP & TP di panel Dokumen</div>' : ''}`;
     }
 
     case 'hero': {
@@ -357,23 +381,27 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       const heroSub = esc(td.subtitle);
       const heroIcon = td.icon || '🚀';
       const heroCta = esc(td.cta);
-      return `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a)">
-        <div style="font-size:48px;margin-bottom:12px">${heroIcon}</div>
-        <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5);margin-bottom:8px">${heroTitle}</div>
-        <div style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:20px">${heroSub}</div>
-        ${heroCta ? `<div style="padding:10px 24px;border-radius:12px;font-weight:700;font-size:14px;background:#f9c82e;color:#000">${heroCta}</div>` : ''}
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+        <div class="cover-icon">${heroIcon}</div>
+        <div class="cover-title">${heroTitle}</div>
+        ${heroSub ? `<p class="sub" style="max-width:480px;margin:0 auto">${heroSub}</p>` : ''}
+        ${heroCta ? `<div style="padding:10px 24px;border-radius:12px;font-weight:700;font-size:14px;background:#f9c82e;color:#000;margin-top:16px">${heroCta}</div>` : ''}
       </div>`;
     }
 
     case 'skenario': {
       const skenario = (td.skenario as Array<Record<string, unknown>>) || [];
       // Interactive skenario engine — container will be populated by JS
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(244,114,182,.12)">🎭</div>
-          <div><div style="font-size:14px;font-weight:900;color:#f472b6">Skenario Interaktif</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${skenario.length} babak</div></div>
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="sk-shell">
+        <div class="sk-hud">
+          <div class="sk-hud-title">🎭 Skenario Interaktif</div>
+          <span id="skTitle" style="font-size:.78rem;color:var(--muted)"></span>
+          <span class="sk-badge" id="skScoreBadge" style="background:rgba(249,193,46,.15);color:var(--y)">0 poin</span>
         </div>
-        <div id="sk-engine-${pageIdx}" style="min-height:200px"></div>
+        <div id="skBody"></div>
+        <div id="skProgress" style="display:flex;gap:4px;padding:8px 14px;background:#060d18;border-top:1px solid #1e3a5a;"></div>
       </div>`;
     }
 
@@ -390,15 +418,13 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
       const tipsHTML = tips
         ? `<div style="padding:10px;border-radius:8px;background:rgba(249,200,46,.06);border:1px solid rgba(249,200,46,.15);margin-top:8px"><div style="font-size:10px;font-weight:700;color:#f9c82e;margin-bottom:4px">💡 Tips</div><p style="font-size:9px;color:rgba(255,255,255,.6);line-height:1.5;margin:0">${tips}</p></div>`
         : '';
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(249,200,46,.12)">📋</div>
-          <div><div style="font-size:14px;font-weight:900;color:#f9c82e">Petunjuk Penggunaan</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${langkah.length} langkah</div></div>
-        </div>
-        ${introP ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:12px">${introP}</p>` : ''}
-        ${stepsHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah langkah di panel Petunjuk</div>'}
-        ${tipsHTML}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">📋 <span class="hl">Petunjuk</span> Penggunaan</div>
+        ${introP ? `<p class="sub mt8">${introP}</p>` : ''}
+      </div>
+      ${stepsHTML || '<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Tambah langkah di panel Petunjuk</div>'}
+      ${tipsHTML}`;
     }
 
     case 'diskusi': {
@@ -414,14 +440,12 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
           ${p.petunjuk ? `<div style="font-size:9px;color:rgba(255,255,255,.4);font-style:italic">💡 ${esc(p.petunjuk)}</div>` : ''}
         </div>`
       ).join('');
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(62,207,207,.12)">💬</div>
-          <div><div style="font-size:14px;font-weight:900;color:#3ecfcf">Diskusi & Pertanyaan</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${pertanyaan.length} pertanyaan</div></div>
-        </div>
-        ${introD ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:12px">${introD}</p>` : ''}
-        ${questionsHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah pertanyaan di panel Diskusi</div>'}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">💬 <span class="hl">Diskusi</span> & Pertanyaan</div>
+        ${introD ? `<p class="sub mt8">${introD}</p>` : ''}
+      </div>
+      ${questionsHTML || '<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Tambah pertanyaan di panel Diskusi</div>'}`;
     }
 
     case 'refleksi': {
@@ -446,15 +470,13 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
             ${penugasan.contoh ? `<div style="font-size:8px;color:rgba(255,255,255,.35);font-style:italic;margin-top:4px">Contoh: ${esc(penugasan.contoh)}</div>` : ''}
           </div>`
         : '';
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(167,139,250,.12)">🪞</div>
-          <div><div style="font-size:14px;font-weight:900;color:#a78bfa">Refleksi Diri</div><div style="font-size:9px;color:rgba(255,255,255,.4)">${pertanyaan.length} pertanyaan</div></div>
-        </div>
-        ${introR ? `<p style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:12px">${introR}</p>` : ''}
-        ${questionsHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah pertanyaan di panel Refleksi</div>'}
-        ${penugasanHTML}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">🪞 <span class="hl">Refleksi</span> Diri</div>
+        ${introR ? `<p class="sub mt8">${introR}</p>` : ''}
+      </div>
+      ${questionsHTML || '<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Tambah pertanyaan di panel Refleksi</div>'}
+      ${penugasanHTML}`;
     }
 
     case 'penutup': {
@@ -484,14 +506,13 @@ export function renderTemplateExportHTML(page: CanvaPage, pageIdx: number = 0): 
           ${itemsHTML ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${itemsHTML}</div>` : ''}
         </div>`;
       }
-      return `<div style="position:absolute;inset:0;padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(52,211,153,.12)">🎓</div>
-          <div><div style="font-size:14px;font-weight:900;color:#34d399">${esc(td.title) || 'Penutup'}</div>${subjudul ? `<div style="font-size:9px;color:rgba(255,255,255,.45)">${subjudul}</div>` : ''}</div>
-        </div>
-        ${previewHTML || '<div style="text-align:center;padding:40px;color:#6e90b5">Tambah item di panel Penutup</div>'}
-        ${nextHTML}
-      </div>`;
+      // Non-absolute so navigation buttons sit below naturally
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="h2">🎓 <span class="hl">Penutup</span></div>
+        ${subjudul ? `<p class="sub mt8">${subjudul}</p>` : ''}
+      </div>
+      ${previewHTML || '<div class="card" style="text-align:center;padding:40px;color:var(--muted)">Tambah item di panel Penutup</div>'}
+      ${nextHTML}`;
     }
 
     default:
@@ -579,9 +600,17 @@ export function buildPageGameData(
 
   // Quiz data for kuis pages
   if (page.templateType === 'kuis') {
-    const kuisData = (page.templateData.kuis as Array<Record<string, unknown>>) || allKuis;
-    if (kuisData.length > 0) {
-      (gameData.quizzes as Record<string, unknown>)[String(pageIdx)] = kuisData.map(k => ({
+    const kuisData = (page.templateData.kuis as Array<Record<string, unknown>> | undefined) ?? [];
+    // Also try resolving via element kuisId/kuisIds for scoped questions
+    let scopedKuisData = kuisData;
+    if (kuisData.length === 0) {
+      const kuisEl = [...(page.elements || []), ...(page.overlayElements || [])].find(e => e.type === 'kuis');
+      if (kuisEl) {
+        scopedKuisData = resolveKuis(kuisEl, allKuis);
+      }
+    }
+    if (scopedKuisData.length > 0) {
+      (gameData.quizzes as Record<string, unknown>)[String(pageIdx)] = scopedKuisData.map(k => ({
         q: (k as Record<string, unknown>).q || '',
         opts: (k as Record<string, unknown>).opts || [],
         ans: (k as Record<string, unknown>).ans ?? 0,
