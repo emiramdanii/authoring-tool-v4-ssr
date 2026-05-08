@@ -27,3 +27,35 @@ Stage Summary:
 - Game engines work via React components (QuizWidget, GameWidget) with pre-populated stores
 - Score tracking works via interactiveStore
 - Navigation works via interactiveStore (keyboard, touch/swipe, buttons)
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Phase 2 — Remove Legacy Export Pipeline & Refactor
+
+Work Log:
+- Backed up current state with git commit (dbcdeff)
+- Deleted src/lib/export-html/ (10 files — old string-based HTML generator)
+- Deleted src/lib/export-engines/ (17 files — old JS game engine builders)
+- Deleted src/lib/game-engines/ (19 files — old game engine string generators)
+- Deleted src/lib/render-module/ (11 files — old module HTML renderer)
+- Deleted src/lib/canva-export-page.ts, canva-export-slideshow.ts (legacy single/slideshow export)
+- Deleted src/lib/export-unified.ts (507 lines — replaced by Vite SSR)
+- Deleted src/lib/export-game-engines.ts, render-module-html.tsx
+- Deleted src/components/canva/templates/ (5 duplicate files — page-template/ is canonical)
+- Renamed canva-export-helpers.ts → canva-constants.ts (kept constants + helpers, removed export HTML generation)
+- Updated all imports from @/lib/canva-export-helpers → @/lib/canva-constants (9 files)
+- Refactored src/store/canva/persistence-slice.ts — removed 3 legacy export method imports & implementations
+- Refactored src/store/canva/types.ts — removed exportPageHTML, exportSlideshowHTML, exportUnifiedHTML type defs
+- Refactored src/components/canva/Toolbar.tsx — removed legacy export handlers, Slideshow button now uses Vite SSR preview
+- Rewrote src/components/authoring/import-export/use-export-actions.ts — exportStudentHtml now uses Vite SSR, cetakDokumenAdmin inlined
+- Rewrote src/components/authoring/live-preview/use-preview-builder.ts — all modes now use Vite SSR API
+- Verified: Vite build (598KB, down from 971KB) + Next.js build both pass with 0 errors
+- Committed as 94178c7 — 83 files changed, -7063 lines, +266 lines
+
+Stage Summary:
+- ~6800 lines of legacy export code removed
+- Single export pipeline: Vite SSR (same React components as preview)
+- Export build size reduced 38% (971KB → 598KB)
+- All components now route through /api/export for HTML generation
+- GitHub push requires credentials (SSH key or token) — commits saved locally
