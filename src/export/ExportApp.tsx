@@ -64,6 +64,14 @@ export default function ExportApp() {
   const ratioId = useCanvaStore((s) => s.ratioId);
   const meta = useAuthoringStore((s) => s.meta);
 
+  // ── Expose interactive store for Live Preview postMessage bridge ──
+  // This allows the parent iframe (use-preview-builder.ts) to navigate
+  // slides via window.__INTERACTIVE_STORE__.getState().goInteractivePage(idx)
+  useEffect(() => {
+    (window as any).__INTERACTIVE_STORE__ = useInteractiveStore;
+    return () => { delete (window as any).__INTERACTIVE_STORE__; };
+  }, []);
+
   // Interactive store for navigation + scoring
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
@@ -108,6 +116,22 @@ export default function ExportApp() {
     goInteractivePage(0);
     window.scrollTo(0, 0);
   }, [resetAllScores, goInteractivePage]);
+
+  // ── Dynamic bottom nav height observer ─────────────────────────
+  // Observes the bottom nav bar height and updates --export-nav-h CSS variable
+  // so the page content always fills the remaining viewport space accurately.
+  useEffect(() => {
+    const navEl = document.getElementById('exportBottomNav');
+    if (!navEl) return;
+    const updateHeight = () => {
+      const h = navEl.offsetHeight;
+      document.documentElement.style.setProperty('--export-nav-h', `${h}px`);
+    };
+    updateHeight();
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(navEl);
+    return () => ro.disconnect();
+  }, [hasScore]);
 
   // ── Keyboard navigation ───────────────────────────────────────
   useEffect(() => {
@@ -174,9 +198,10 @@ export default function ExportApp() {
               key={page.id || i}
               className={isActive ? 'block' : 'hidden'}
               style={{
-                // Use full viewport height minus bottom nav (approx 80px)
-                // This is critical for template components that use `absolute inset-0`
-                height: 'calc(100vh - 80px)',
+                // Dynamic height: full viewport minus bottom nav bar.
+                // We use a CSS variable --export-nav-h updated by a resize observer
+                // so the page content always fills exactly the right space.
+                height: 'calc(100vh - var(--export-nav-h, 72px))',
                 position: 'relative',
                 overflow: 'hidden',
                 ...bgStyle,
@@ -276,7 +301,7 @@ export default function ExportApp() {
       </div>
 
       {/* ── Bottom Navigation Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-[300] border-t border-white/10"
+      <div id="exportBottomNav" className="fixed bottom-0 left-0 right-0 z-[300] border-t border-white/10"
         style={{ background: 'rgba(14,28,47,0.96)', backdropFilter: 'blur(12px)' }}>
         {/* Progress bar */}
         <div className="h-1 bg-white/5">

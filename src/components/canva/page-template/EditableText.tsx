@@ -12,6 +12,7 @@ export function EditableText({
   className = '',
   style = {},
   placeholder = 'Ketik di sini...',
+  interactive,
 }: {
   value: string;
   fieldKey: string;
@@ -20,6 +21,7 @@ export function EditableText({
   className?: string;
   style?: React.CSSProperties;
   placeholder?: string;
+  interactive?: boolean; // When true, don't show placeholder (students shouldn't see "Ketik di sini...")
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -28,6 +30,10 @@ export function EditableText({
       onEdit(fieldKey, ref.current.textContent || '');
     }
   }, [fieldKey, onEdit]);
+
+  // In interactive/export mode: don't show placeholder — students shouldn't
+  // see "Ketik di sini...". Just render the value or nothing.
+  const displayText = interactive ? (value || '') : (value || placeholder);
 
   return (
     <div
@@ -38,7 +44,7 @@ export function EditableText({
       className={`outline-none ${isSelected ? 'ring-1 ring-amber-400/40 ring-offset-2 ring-offset-transparent rounded' : ''} ${className}`}
       style={style}
     >
-      {value || placeholder}
+      {displayText}
     </div>
   );
 }

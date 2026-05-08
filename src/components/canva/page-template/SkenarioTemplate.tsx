@@ -80,6 +80,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
             fieldKey="skenarioTitle"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Skenario"

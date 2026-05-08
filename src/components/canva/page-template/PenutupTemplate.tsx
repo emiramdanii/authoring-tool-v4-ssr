@@ -6,7 +6,7 @@ import { EditableText } from './EditableText';
 
 // ── Penutup Template ───────────────────────────────────────────
 
-export function PenutupTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+export function PenutupTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--g', '#34d399');
   const preview = (td.preview as Array<Record<string, unknown>>) || [];
   const nextPertemuan = td.nextPertemuan as Record<string, unknown> | undefined;
@@ -23,6 +23,7 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField }: SubTem
             fieldKey="title"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Penutup"

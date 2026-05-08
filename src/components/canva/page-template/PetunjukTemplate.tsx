@@ -6,7 +6,7 @@ import { EditableText } from './EditableText';
 
 // ── Petunjuk Template ─────────────────────────────────────────
 
-export function PetunjukTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+export function PetunjukTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const langkah = (td.langkah as Array<Record<string, unknown>>) || [];
   const tips = String(td.tips || '');
@@ -23,6 +23,7 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField }: SubTe
             fieldKey="title"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Petunjuk"

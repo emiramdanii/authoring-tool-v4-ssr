@@ -6,7 +6,7 @@ import { EditableText } from './EditableText';
 
 // ── Diskusi Template ───────────────────────────────────────────
 
-export function DiskusiTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+export function DiskusiTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--c', '#3ecfcf');
   const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
 
@@ -22,6 +22,7 @@ export function DiskusiTemplate({ td, palette, isSelected, onEditField }: SubTem
             fieldKey="title"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Diskusi"

@@ -32,6 +32,7 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
         fieldKey="hasilTitle"
         isSelected={isSelected}
         onEdit={onEditField}
+        interactive={interactive}
         className="font-black mb-2"
         style={{ fontSize: 'clamp(16px, 3%, 28px)', color: accent }}
         placeholder="Judul Hasil"

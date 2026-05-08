@@ -6,7 +6,7 @@ import { EditableText } from './EditableText';
 
 // ── Refleksi Template ───────────────────────────────────────────
 
-export function RefleksiTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+export function RefleksiTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--p', '#a78bfa');
   const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
   const penugasan = td.penugasan as Record<string, unknown> | undefined;
@@ -23,6 +23,7 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField }: SubTe
             fieldKey="title"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Refleksi"

@@ -57,6 +57,7 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
             fieldKey="gameTitle"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Game"

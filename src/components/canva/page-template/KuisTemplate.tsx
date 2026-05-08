@@ -32,6 +32,7 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
             fieldKey="kuisTitle"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-sm"
             style={{ color: accent }}
             placeholder="Judul Kuis"

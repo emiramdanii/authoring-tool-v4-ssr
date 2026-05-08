@@ -8,7 +8,7 @@ import PresetModuleCard, { type LayoutVariant } from '@/components/shared/Preset
 // ── Materi Template ───────────────────────────────────────────
 // Phase 3: 2 variants — A (vertical list), B (2-column grid)
 
-export function MateriTemplate({ td, palette, isSelected, onEditField, variant = 'A' }: SubTemplateProps) {
+export function MateriTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#a78bfa');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const blok = (td.blok as Array<Record<string, unknown>>) || [];
@@ -28,6 +28,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, variant =
               fieldKey="materiTitle"
               isSelected={isSelected}
               onEdit={onEditField}
+              interactive={interactive}
               className="font-black text-white text-sm"
               placeholder="Judul Materi"
             />
@@ -97,6 +98,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, variant =
             fieldKey="materiTitle"
             isSelected={isSelected}
             onEdit={onEditField}
+            interactive={interactive}
             className="font-black text-white text-sm"
             placeholder="Judul Materi"
           />

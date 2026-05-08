@@ -6,7 +6,7 @@ import { EditableText } from './EditableText';
 
 // ── Hero Template ─────────────────────────────────────────────
 
-export function HeroTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+export function HeroTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
 
   return (
@@ -22,6 +22,7 @@ export function HeroTemplate({ td, palette, isSelected, onEditField }: SubTempla
         fieldKey="title"
         isSelected={isSelected}
         onEdit={onEditField}
+        interactive={interactive}
         className="font-black text-white leading-tight"
         style={{ fontSize: 'clamp(16px, 3%, 28px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
         placeholder="Hero Title"
@@ -33,6 +34,7 @@ export function HeroTemplate({ td, palette, isSelected, onEditField }: SubTempla
         fieldKey="subtitle"
         isSelected={isSelected}
         onEdit={onEditField}
+        interactive={interactive}
         className="mt-2"
         style={{ fontSize: 'clamp(10px, 1.6%, 14px)', color: 'rgba(255,255,255,.6)' }}
         placeholder="Subjudul"

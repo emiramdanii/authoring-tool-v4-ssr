@@ -25,6 +25,7 @@ if (exportData) {
 
   if (exportData.allKuis) authPartial.kuis = exportData.allKuis;
   if (exportData.allModules) authPartial.modules = exportData.allModules;
+  if (exportData.games) authPartial.games = exportData.games;
   if (exportData.meta) authPartial.meta = exportData.meta;
   if (exportData.cp) authPartial.cp = exportData.cp;
   if (exportData.tp) authPartial.tp = exportData.tp;

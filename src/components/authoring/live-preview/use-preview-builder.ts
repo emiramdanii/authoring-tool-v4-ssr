@@ -82,6 +82,7 @@ export function usePreviewBuilder(
           meta: authStore.meta,
           allKuis: authStore.kuis,
           allModules: authStore.modules,
+          games: authStore.games,
           cp: authStore.cp,
           tp: authStore.tp,
           materi: authStore.materi,

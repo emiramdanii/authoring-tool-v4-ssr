@@ -88,7 +88,9 @@ export default function InteractiveNav() {
               const isComplete = isPageComplete(i);
               const templateIcon: Record<string, string> = {
                 cover: '🏠', dokumen: '📋', materi: '📝', kuis: '❓',
-                game: '🎮', hasil: '🏆', hero: '🚀', skenario: '🎭', custom: '⬜',
+                game: '🎮', hasil: '🏆', hero: '🚀', skenario: '🎭',
+                petunjuk: '📌', diskusi: '💬', refleksi: '🪞', penutup: '🎓',
+                custom: '⬜',
               };
               return (
                 <button
