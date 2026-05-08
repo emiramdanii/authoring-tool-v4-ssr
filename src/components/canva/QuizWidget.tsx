@@ -40,8 +40,12 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
   const [answered, setAnswered] = useState(false);
   const [phase, setPhase] = useState<'quiz' | 'result'>('quiz');
   const scoreReported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const total = allQuestions.length;
+
+  // Cleanup all timeouts on unmount (Phase 9 fix — prevents state updates on unmounted component)
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   // Report score to interactive store when quiz completes
   useEffect(() => {
@@ -59,8 +63,8 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
     const isCorrect = optIdx === allQuestions[currentQ].ans;
     if (isCorrect) setScore(s => s + 1);
 
-    // Auto-advance after 1.5s
-    setTimeout(() => {
+    // Auto-advance after 1.5s — tracked for cleanup
+    const tid = setTimeout(() => {
       if (currentQ + 1 < total) {
         setCurrentQ(q => q + 1);
         setSelectedOpt(null);
@@ -69,9 +73,12 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
         setPhase('result');
       }
     }, 1500);
+    timersRef.current.push(tid);
   }, [answered, currentQ, allQuestions, total]);
 
   const handleRestart = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
     setCurrentQ(0);
     setScore(0);
     setSelectedOpt(null);

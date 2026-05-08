@@ -78,6 +78,15 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
 
   const currentCh = skenario[currentChapter];
   const totalGoodChoices = choiceHistory.filter(c => c.good).length;
+  const isCompleted = choiceHistory.length >= skenario.length && skenario.length > 0;
+
+  // Phase 9 fix: Reset button handler for replaying scenario
+  const handleReset = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setCurrentChapter(0);
+    setChoiceHistory([]);
+    setShowFeedback(null);
+  }, []);
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
@@ -205,6 +214,15 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
                   </div>
                 );
               })}
+              {/* Phase 9 fix: Reset button for replaying scenario */}
+              {isCompleted && (
+                <button
+                  onClick={handleReset}
+                  className="mt-2 w-full px-3 py-1.5 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg text-[9px] font-bold text-pink-300 transition-colors border border-pink-500/30 cursor-pointer"
+                >
+                  ↩ Ulangi Skenario
+                </button>
+              )}
             </div>
           )}
         </div>

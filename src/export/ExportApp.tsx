@@ -3,17 +3,26 @@
 // Renders all pages using the SAME template components as preview.
 // Navigation, scoring, and interactivity all use Zustand stores
 // that are pre-populated by entry-client.tsx.
+//
+// Phase 9 fixes:
+// - Only render ACTIVE page (perf + prevent hidden timers)
+// - Full element rendering: kuis, game, materi, modul (not just teks/shape)
+// - Top navbar no longer overlaps template content
+// - Overlay elements render kuis/game properly
 // ═══════════════════════════════════════════════════════════════════════
 
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { PageTemplate } from '@/components/canva/page-template/PageTemplate';
-import type { CanvaPage, NavConfig } from '@/components/canva/types';
+import type { CanvaElement, CanvaPage, NavConfig } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import QuizWidget from '@/components/canva/QuizWidget';
+import GameWidget from '@/components/canva/GameWidget';
+import { resolveModule } from '@/lib/module-resolver';
 
 // ── Constants ────────────────────────────────────────────────────
 
@@ -63,6 +72,110 @@ function getNavConfig(page: CanvaPage): NavConfig {
   return page.navConfig || DEFAULT_NAV_CONFIG;
 }
 
+// ── Export Element — Full interactive element renderer ────────────
+// Renders kuis, game, materi, modul, teks, shape — same as PlayOverlay
+
+function ExportElement({ element, pageIndex }: { element: CanvaElement; pageIndex: number }) {
+  const reportScore = useInteractiveStore((s) => s.reportScore);
+  const modules = useAuthoringStore((s) => s.modules);
+
+  const handleComplete = useCallback(
+    (score: number, maxScore: number) => {
+      if (maxScore === 0) return; // Skip non-scored games
+      reportScore({ elementId: element.id, pageIndex, score, maxScore, completed: true });
+    },
+    [element.id, pageIndex, reportScore],
+  );
+
+  const isInteractive = element.type === 'kuis' || element.type === 'game';
+
+  return (
+    <div
+      className={isInteractive ? 'ring-2 ring-emerald-400/50 rounded' : ''}
+      style={{
+        position: 'absolute',
+        left: `${element.x}%`,
+        top: `${element.y}%`,
+        width: `${element.w}%`,
+        height: `${element.h}%`,
+        opacity: (element.opacity ?? 100) / 100,
+        pointerEvents: 'auto',
+        zIndex: 20,
+      }}
+    >
+      {element.type === 'kuis' && (
+        <QuizWidget
+          dataIdx={element.dataIdx}
+          kuisId={element.kuisId}
+          kuisIds={element.kuisIds}
+          compact={false}
+          interactive
+          onComplete={handleComplete}
+        />
+      )}
+      {element.type === 'game' && (
+        <GameWidget
+          dataIdx={element.dataIdx}
+          moduleId={element.moduleId}
+          compact={false}
+          interactive
+          onComplete={handleComplete}
+        />
+      )}
+      {(element.type === 'materi' || element.type === 'modul') && (
+        <ExportModuleElement element={element} />
+      )}
+      {element.type === 'teks' && (
+        <div style={{
+          fontSize: `${element.fontSize || 20}px`,
+          fontWeight: 700,
+          color: element.textColor || '#fff',
+          padding: 8,
+          lineHeight: 1.4,
+          textShadow: '0 2px 8px rgba(0,0,0,.5)',
+        }}>
+          {element.text || ''}
+        </div>
+      )}
+      {element.type === 'shape' && (
+        <div style={{
+          width: '100%',
+          height: '100%',
+          background: element.color || 'rgba(255,255,255,.15)',
+          borderRadius: `${element.radius || 8}px`,
+        }} />
+      )}
+    </div>
+  );
+}
+
+// ── Export Module Element ────────────────────────────────────────
+
+function ExportModuleElement({ element }: { element: CanvaElement }) {
+  const modules = useAuthoringStore((s) => s.modules);
+  const mod = resolveModule(element, modules);
+
+  if (!mod) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full bg-emerald-500/10 rounded border border-emerald-500/20 p-2">
+        <span className="text-2xl">🧩</span>
+        <span className="text-[10px] font-bold text-emerald-300 mt-1">Modul</span>
+      </div>
+    );
+  }
+
+  // Render module data as a simplified card
+  const type = String(mod.type || 'modul');
+  const title = String(mod.title || type);
+
+  return (
+    <div className="h-full overflow-auto p-2 bg-white/5 rounded border border-white/10">
+      <div className="text-[10px] font-bold text-emerald-300 mb-1">🧩 {title}</div>
+      <div className="text-[8px] text-white/50">{type}</div>
+    </div>
+  );
+}
+
 // ── Main Export App Component ────────────────────────────────────
 
 export default function ExportApp() {
@@ -81,7 +194,7 @@ export default function ExportApp() {
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
   const nextInteractivePage = useInteractiveStore((s) => s.nextInteractivePage);
   const prevInteractivePage = useInteractiveStore((s) => s.prevInteractivePage);
-  // Subscribe to scores[] for reactive updates — function refs are stable and won't trigger re-renders
+  // Subscribe to scores[] for reactive updates
   const scores = useInteractiveStore((s) => s.scores);
   const _totalScore = useInteractiveStore((s) => s.scores.reduce((sum: number, sc: { score: number }) => sum + sc.score, 0));
   const _totalMax = useInteractiveStore((s) => s.scores.reduce((sum: number, sc: { maxScore: number }) => sum + sc.maxScore, 0));
@@ -130,7 +243,7 @@ export default function ExportApp() {
 
   const handleNav = useCallback((idx: number) => {
     goInteractivePage(idx);
-    goPage(idx); // Sync canva store so components reading currentPageIndex stay in sync
+    goPage(idx);
     window.scrollTo(0, 0);
   }, [goInteractivePage, goPage]);
 
@@ -197,140 +310,106 @@ export default function ExportApp() {
     );
   }
 
+  // ── Render ONLY the active page ────────────────────────────────
+  // Phase 9 fix: previously all pages were rendered simultaneously (hidden/shown).
+  // This caused all game timers to run on hidden pages, wasting resources and
+  // causing score desyncs. Now only the active page is mounted.
+  const page = currentPage;
+  if (!page) return null;
+
+  const templateType = page.templateType || 'custom';
+  const isTemplate = templateType !== 'custom';
+  const pageNavConfig = getNavConfig(page);
+  const pageShowProgress = pageNavConfig.showProgress !== false;
+  const showTopNav = templateType !== 'cover' && pageNavConfig.showNavbar !== false;
+
+  // Background style — validate bgDataUrl starts with data:image/ to prevent CSS injection
+  const safeBgDataUrl = page.bgDataUrl?.startsWith('data:image/') ? page.bgDataUrl : null;
+  const bgStyle: React.CSSProperties = safeBgDataUrl
+    ? { backgroundImage: `url('${safeBgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { background: page.bgColor || '#0e1c2f' };
+
   return (
     <>
       <div className="min-h-screen bg-slate-900 text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
-        {pages.map((page, i) => {
-          const isActive = i === currentIdx;
-          const templateType = page.templateType || 'custom';
-          const isTemplate = templateType !== 'custom';
-          const pageNavConfig = getNavConfig(page);
-          const pageShowProgress = pageNavConfig.showProgress !== false;
-
-          // Background style — validate bgDataUrl starts with data:image/ to prevent CSS injection
-          const safeBgDataUrl = page.bgDataUrl?.startsWith('data:image/') ? page.bgDataUrl : null;
-          const bgStyle: React.CSSProperties = safeBgDataUrl
-            ? { backgroundImage: `url('${safeBgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
-            : { background: page.bgColor || '#0e1c2f' };
-
-          return (
+        {/* ── Page Container ── */}
+        <div
+          key={page.id}
+          style={{
+            height: 'calc(100vh - var(--export-nav-h, 72px))',
+            position: 'relative',
+            overflow: 'hidden',
+            ...bgStyle,
+          }}
+        >
+          {/* Overlay for background images */}
+          {page.bgDataUrl && (
             <div
-              key={page.id || i}
-              className={isActive ? 'block' : 'hidden'}
               style={{
-                height: 'calc(100vh - var(--export-nav-h, 72px))',
-                position: 'relative',
-                overflow: 'hidden',
-                ...bgStyle,
+                position: 'absolute', inset: 0,
+                background: `rgba(0,0,0,${(page.overlay ?? 20) / 100})`,
+                pointerEvents: 'none', zIndex: 0,
               }}
-            >
-              {/* Overlay for background images */}
-              {page.bgDataUrl && (
-                <div
-                  style={{
-                    position: 'absolute', inset: 0,
-                    background: `rgba(0,0,0,${(page.overlay ?? 20) / 100})`,
-                    pointerEvents: 'none', zIndex: 0,
-                  }}
-                />
-              )}
+            />
+          )}
 
-              {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
-              {templateType !== 'cover' && pageNavConfig.showNavbar !== false && (
-                <nav className="glass-panel-strong sticky top-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
-                  <span className="font-['Fredoka_One'] text-sm text-amber-400 whitespace-nowrap">
-                    {meta.namaBab || meta.judulPertemuan || 'Media'}
+          {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
+          {/* Phase 9 fix: navbar is position: absolute now, with a spacer div
+              below it so template content is NOT hidden behind the navbar */}
+          {showTopNav && (
+            <>
+              <nav className="glass-panel-strong absolute top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
+                <span className="font-['Fredoka_One'] text-sm text-amber-400 whitespace-nowrap">
+                  {meta.namaBab || meta.judulPertemuan || 'Media'}
+                </span>
+                {pageShowProgress && (
+                  <div className="flex-1 h-1.5 bg-white/10 rounded-full mx-2 overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progressPct}%`,
+                        background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
+                      }} />
+                  </div>
+                )}
+                {hasScore && pageNavConfig.showScore !== false && (
+                  <span className="text-xs font-extrabold text-amber-400 whitespace-nowrap">
+                    {_totalScore} ⭐
                   </span>
-                  {pageShowProgress && (
-                    <div className="flex-1 h-1.5 bg-white/10 rounded-full mx-2 overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${progressPct}%`,
-                          background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
-                        }} />
-                    </div>
-                  )}
-                  {hasScore && pageNavConfig.showScore !== false && (
-                    <span className="text-xs font-extrabold text-amber-400 whitespace-nowrap">
-                      {_totalScore} ⭐
-                    </span>
-                  )}
-                </nav>
-              )}
+                )}
+              </nav>
+              {/* Spacer to push content below the navbar */}
+              <div style={{ height: 44 }} />
+            </>
+          )}
 
-              {/* ── Page Content ── */}
-              {isTemplate ? (
-                <>
-                  <PageTemplate
-                    key={page.id}
-                    page={page}
-                    isSelected={false}
-                    onEditField={() => {}}
-                    interactive={true}
-                  />
-                  {/* Overlay elements on template pages */}
-                  {(page.overlayElements || []).filter(el => !el.hidden).length > 0 && (
-                    <div className="absolute inset-0" style={{ zIndex: 10 }}>
-                      {page.overlayElements.filter(el => !el.hidden).map(el => (
-                        <div key={el.id} style={{
-                          position: 'absolute',
-                          left: `${el.x}%`, top: `${el.y}%`,
-                          width: `${el.w}%`, height: `${el.h}%`,
-                          opacity: (el.opacity || 100) / 100,
-                          pointerEvents: 'auto',
-                          zIndex: 20,
-                        }}>
-                          {el.type === 'teks' && (
-                            <div style={{ fontSize: `${el.fontSize || 20}px`, fontWeight: 700, color: el.textColor || '#fff', padding: 8, lineHeight: 1.4 }}>
-                              {el.text || ''}
-                            </div>
-                          )}
-                          {el.type === 'shape' && (
-                            <div style={{ width: '100%', height: '100%', background: el.color || 'rgba(255,255,255,.15)', borderRadius: `${el.radius || 8}px` }} />
-                          )}
-                          {el.icon && el.type !== 'teks' && el.type !== 'shape' && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                              <span style={{ fontSize: '2rem' }}>{el.icon}</span>
-                            </div>
-                          )}
-                          {!el.type && el.icon && (
-                            <span className="text-2xl">{el.icon}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                // Custom mode: render elements manually
-                <div className="absolute inset-0">
-                  {page.elements.filter(el => !el.hidden).map(el => (
-                    <div key={el.id} style={{
-                      position: 'absolute',
-                      left: `${el.x}%`, top: `${el.y}%`,
-                      width: `${el.w}%`, height: `${el.h}%`,
-                      opacity: (el.opacity || 100) / 100,
-                    }}>
-                      {el.type === 'teks' && (
-                        <div style={{ fontSize: `${el.fontSize || 20}px`, fontWeight: 700, color: el.textColor || '#fff', padding: 8, lineHeight: 1.4 }}>
-                          {el.text || ''}
-                        </div>
-                      )}
-                      {el.type === 'shape' && (
-                        <div style={{ width: '100%', height: '100%', background: el.color || 'rgba(255,255,255,.15)', borderRadius: `${el.radius || 8}px` }} />
-                      )}
-                      {el.icon && el.type !== 'teks' && el.type !== 'shape' && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                          <span style={{ fontSize: '2rem' }}>{el.icon}</span>
-                        </div>
-                      )}
-                    </div>
+          {/* ── Page Content ── */}
+          {isTemplate ? (
+            <>
+              <PageTemplate
+                key={page.id}
+                page={page}
+                isSelected={false}
+                onEditField={() => {}}
+                interactive={true}
+              />
+              {/* Overlay elements on template pages — now with full element rendering */}
+              {(page.overlayElements || []).filter(el => !el.hidden).length > 0 && (
+                <div className="absolute inset-0" style={{ zIndex: 10 }}>
+                  {page.overlayElements.filter(el => !el.hidden).map(el => (
+                    <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
                   ))}
                 </div>
               )}
+            </>
+          ) : (
+            // Custom mode: render ALL element types including kuis/game/modul
+            <div className="absolute inset-0">
+              {page.elements.filter(el => !el.hidden).map(el => (
+                <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
+              ))}
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
 
       {/* ── Bottom Navigation Bar (respects navConfig) ── */}

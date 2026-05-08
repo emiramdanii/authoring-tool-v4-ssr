@@ -27,7 +27,10 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
   const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
   const [matchedLeft, setMatchedLeft] = useState<Set<number>>(new Set());
   const [matchedRight, setMatchedRight] = useState<Set<number>>(new Set());
-  const [wrong, setWrong] = useState<string | null>(null);
+  // Phase 9 fix: wrong state stores the right-idx that was incorrectly matched.
+  // Previously stored `${selectedLeft}-${originalIdx}` but selectedLeft was already
+  // null by render time, so the red highlight never appeared.
+  const [wrongRightIdx, setWrongRightIdx] = useState<number | null>(null);
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
@@ -58,8 +61,8 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
       if (matchedLeft.size + 1 === validPairs.length) setPhase('done');
     } else {
       setWrongAttempts(w => w + 1);
-      setWrong(`${selectedLeft}-${originalIdx}`);
-      const tid = setTimeout(() => setWrong(null), 600);
+      setWrongRightIdx(originalIdx);
+      const tid = setTimeout(() => setWrongRightIdx(null), 600);
       timersRef.current.push(tid);
     }
     setSelectedLeft(null);
@@ -77,7 +80,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Cocok!</div>
         <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
         {wrongAttempts > 0 && <div className="text-[9px] text-cyan-400/60">{wrongAttempts} kesalahan</div>}
-        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setWrongAttempts(0); setPhase('play'); reported.current = false; }}
+        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setWrongAttempts(0); setWrongRightIdx(null); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -111,7 +114,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
             <button key={r.idx} onClick={() => handleRightClick(r.idx)}
               className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-all ${
                 matchedRight.has(r.idx) ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 line-through opacity-60' :
-                wrong === `${selectedLeft}-${r.idx}` ? 'bg-red-500/30 border-red-400/40 text-red-300' :
+                wrongRightIdx === r.idx ? 'bg-red-500/30 border-red-400/40 text-red-300' :
                 'bg-white/5 hover:bg-white/10 border-white/10 text-cyan-200 cursor-pointer'
               }`}>
               {r.text}

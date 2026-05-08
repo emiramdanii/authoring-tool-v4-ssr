@@ -8,10 +8,12 @@ import { EditableText } from './EditableText';
 
 export function HeroTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
+  // Phase 9 fix: use palette --bg instead of hardcoded gradient
+  const bg = getPaletteColor(palette, '--bg', '#0f172a');
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
-      style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b, #0f172a)' }}>
+      style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc, ${bg})` }}>
 
       {/* Icon */}
       <div className="text-4xl mb-3">{String(td.icon || '🚀')}</div>

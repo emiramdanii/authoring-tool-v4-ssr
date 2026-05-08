@@ -9,6 +9,8 @@ import { useInteractiveStore } from '@/store/interactive-store';
 
 export function HasilTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--g', '#34d399');
+  // Phase 9 fix: use palette --bg for score circle inner instead of hardcoded zinc-900
+  const bg = getPaletteColor(palette, '--bg', '#0e1c2f');
   const totalKuis = (td.totalKuis as number) || 0;
   const namaBab = String(td.namaBab || '');
 
@@ -55,7 +57,7 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
           boxShadow: `0 0 40px ${accent}30`,
           transition: 'background 1s ease-out',
         }}>
-        <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: bg }}>
           <span className="text-2xl font-black" style={{ color: pct > 0 ? levelColor : accent }}>{pct}%</span>
         </div>
       </div>
