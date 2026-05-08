@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
@@ -14,7 +14,6 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
   const ukuran = (data.ukuran as number) || 12;
   // Stable serialization key so useMemo doesn't reshuffle on every render
   const kataKey = JSON.stringify(kata.filter(k => k.teks && String(k.teks).trim()).map(k => ({ t: String(k.teks), h: String(k.petunjuk || k.hint || ''), r: k.baris, c: k.kolom, d: k.arah })));
-  const validKataLenRef = useRef(0);
   const [userGrid, setUserGrid] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const [checked, setChecked] = useState(false);
@@ -46,7 +45,6 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
   // Build crossword grid
   const gridData = useMemo(() => {
     const validKata = kata.filter(k => k.teks && String(k.teks).trim());
-    validKataLenRef.current = validKata.length;
     const SIZE = ukuran;
     const grid: Array<Array<{ letter: string; num: number; wordIds: number[] }>> = [];
     for (let r = 0; r < SIZE; r++) {
@@ -104,14 +102,39 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
   const { grid, SIZE: gridSize, acrossClues, downClues, validCount } = gridData;
   const validKataLen = validCount;
 
-  // Efficiency-based scoring with 50% floor: score = max(ceil(words*0.5), words - reveals)
+  // Efficiency-based scoring with 50% floor: score = max(ceil(words*0.5), words - revealsUsed)
+  // Phase 9+ fix: Count words with at least one revealed cell (not raw cell count),
+  // so the scoring formula uses consistent units (words, not cells).
+  const wordsWithReveals = useMemo(() => {
+    const wordIds = new Set<number>();
+    for (const key of revealed) {
+      const [r, c] = key.split(',').map(Number);
+      for (const wid of grid[r]?.[c]?.wordIds ?? []) wordIds.add(wid);
+    }
+    return wordIds.size;
+  }, [revealed, grid]);
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - revealed.size);
+      const score = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - wordsWithReveals);
       onComplete(score, validKataLen);
     }
-  }, [phase, onComplete, validKataLen, revealed.size]);
+  }, [phase, onComplete, validKataLen, wordsWithReveals]);
+
+  // Determine active word direction from the active cell's wordIds
+  const getActiveWordDir = useCallback((cell: { r: number; c: number } | null): 'across' | 'down' | null => {
+    if (!cell) return null;
+    const cellData = grid[cell.r]?.[cell.c];
+    if (!cellData || cellData.wordIds.length === 0) return null;
+    // Check across clues first, then down
+    for (const cl of acrossClues) {
+      if (cellData.wordIds.includes(acrossClues.indexOf(cl))) return 'across';
+    }
+    for (const cl of downClues) {
+      if (cellData.wordIds.includes(downClues.indexOf(cl) + acrossClues.length)) return 'down';
+    }
+    return null;
+  }, [grid, acrossClues, downClues]);
 
   // Handle keyboard input for active cell
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -166,10 +189,14 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       setUserGrid(newGrid);
       setChecked(false);
 
-      // Auto-advance to next cell
-      if (c < gridSize - 1 && grid[r][c + 1].letter) {
+      // Auto-advance to next cell — direction-aware
+      const dir = getActiveWordDir(activeCell) || 'across';
+      if (dir === 'down' && r < gridSize - 1 && grid[r + 1][c].letter) {
+        setActiveCell({ r: r + 1, c });
+      } else if (dir === 'across' && c < gridSize - 1 && grid[r][c + 1].letter) {
         setActiveCell({ r, c: c + 1 });
       } else if (r < gridSize - 1 && grid[r + 1][0].letter) {
+        // Fallback: wrap to next row
         setActiveCell({ r: r + 1, c: 0 });
       }
 
@@ -219,7 +246,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
 
   if (validKataLen === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} interactive={interactive} />;
 
-  const finalScore = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - revealed.size);
+  const finalScore = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - wordsWithReveals);
   const scorePct = validKataLen > 0 ? Math.round((finalScore / validKataLen) * 100) : 0;
 
   if (phase === 'done') {
@@ -304,7 +331,8 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       <input
         ref={inputRef}
         type="text"
-        className="opacity-0 absolute w-0 h-0"
+        className="opacity-0 fixed top-0 left-0 w-px h-px"
+        style={{ fontSize: '16px' }}
         onKeyDown={handleKeyDown}
         onChange={(e) => {
           const ch = e.target.value.slice(-1).toUpperCase();
@@ -313,8 +341,10 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             const newGrid = { ...userGrid, [`${r},${c}`]: ch };
             setUserGrid(newGrid);
             setChecked(false);
-            // Auto-advance
-            if (c < gridSize - 1 && grid[r][c + 1].letter) setActiveCell({ r, c: c + 1 });
+            // Auto-advance — direction-aware (same as handleKeyDown)
+            const dir = getActiveWordDir(activeCell) || 'across';
+            if (dir === 'down' && r < gridSize - 1 && grid[r + 1][c].letter) setActiveCell({ r: r + 1, c });
+            else if (dir === 'across' && c < gridSize - 1 && grid[r][c + 1].letter) setActiveCell({ r, c: c + 1 });
             else if (r < gridSize - 1 && grid[r + 1][0].letter) setActiveCell({ r: r + 1, c: 0 });
             if (checkComplete(newGrid)) setPhase('done');
           }

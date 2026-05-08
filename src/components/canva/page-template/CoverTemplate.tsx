@@ -38,7 +38,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           isSelected={isSelected}
           onEdit={onEditField}
           interactive={interactive}
-          className="font-black text-white leading-tight"
+          className="font-black text-white leading-tight line-clamp-2"
           style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
           placeholder="Judul Pertemuan"
         />
@@ -50,7 +50,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           isSelected={isSelected}
           onEdit={onEditField}
           interactive={interactive}
-          className="mt-2"
+          className="mt-2 line-clamp-2"
           style={{ fontSize: 'clamp(10px, 1.8vw, 16px)', color: 'rgba(255,255,255,.7)' }}
           placeholder="Subjudul / Deskripsi"
         />
@@ -110,7 +110,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
             isSelected={isSelected}
             onEdit={onEditField}
             interactive={interactive}
-            className="font-black text-white leading-tight"
+            className="font-black text-white leading-tight line-clamp-2"
             style={{ fontSize: 'clamp(16px, 3.2vw, 30px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
             placeholder="Judul Pertemuan"
           />
@@ -123,7 +123,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           isSelected={isSelected}
           onEdit={onEditField}
           interactive={interactive}
-          className="mt-1"
+          className="mt-1 line-clamp-2"
           style={{ fontSize: 'clamp(10px, 1.6vw, 14px)', color: 'rgba(255,255,255,.6)' }}
           placeholder="Subjudul / Deskripsi"
         />
@@ -173,7 +173,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           isSelected={isSelected}
           onEdit={onEditField}
           interactive={interactive}
-          className="font-black text-white leading-tight mb-3"
+          className="font-black text-white leading-tight mb-3 line-clamp-2"
           style={{ fontSize: 'clamp(20px, 4vw, 36px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
           placeholder="Judul Pertemuan"
         />
@@ -184,7 +184,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           isSelected={isSelected}
           onEdit={onEditField}
           interactive={interactive}
-          className=""
+          className="line-clamp-3"
           style={{ fontSize: 'clamp(11px, 2vw, 18px)', color: 'rgba(255,255,255,.65)', lineHeight: 1.5 }}
           placeholder="Subjudul / Deskripsi"
         />

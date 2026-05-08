@@ -197,9 +197,14 @@ function hexToRgb(hex: string): [number, number, number] {
  * Usage: alpha('#f9c82e', 0.12) → 'rgba(249,200,46,0.12)'
  */
 export function alpha(hex: string, a: number): string {
-  // Handle non-hex gracefully — return transparent rather than invalid CSS
+  // Handle non-hex gracefully — use original color with alpha instead of black
+  // This prevents DokumenTemplate, RefleksiTemplate, PenutupTemplate from
+  // showing black backgrounds when user-provided colors are not 6-digit hex
   if (!hex || !hex.startsWith('#') || hex.length < 7) {
-    return `rgba(0,0,0,${a})`;
+    // For CSS color names or rgb(), wrap in rgba-like fallback
+    // Since we can't parse arbitrary CSS colors, use the color as-is
+    // with a semi-transparent overlay approach
+    return `color-mix(in srgb, ${hex || '#000000'} ${Math.round(a * 100)}%, transparent)`;
   }
   const [r, g, b] = hexToRgb(hex);
   return `rgba(${r},${g},${b},${a})`;

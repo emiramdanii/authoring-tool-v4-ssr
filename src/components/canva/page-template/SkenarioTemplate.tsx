@@ -23,6 +23,19 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
   const [showFeedback, setShowFeedback] = useState<{ good: boolean; message: string } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Track skenario identity for proper reset on data swap
+  const skenarioId = (td.skenarioId || td._id) as string | undefined;
+  const [lastScenarioId, setLastScenarioId] = useState(skenarioId);
+  useEffect(() => {
+    if (skenarioId !== lastScenarioId) {
+      setCurrentChapter(0);
+      setChoiceHistory([]);
+      setShowFeedback(null);
+      setLastScenarioId(skenarioId);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }
+  }, [skenarioId, lastScenarioId]);
+
   // Reset currentChapter when skenario data changes and currentChapter is out of bounds
   useEffect(() => {
     if (skenario && currentChapter >= skenario.length) {
@@ -115,7 +128,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
           />
           <div className="text-[9px] text-white/40">
             {interactive
-              ? `Babak ${currentChapter + 1}/${skenario.length} • ${totalGoodChoices} benar`
+              ? isCompleted
+                ? `Selesai • ${totalGoodChoices}/${choiceHistory.length} benar`
+                : `Babak ${currentChapter + 1}/${skenario.length} • ${totalGoodChoices} benar`
               : `${skenario.length} babak`
             }
           </div>

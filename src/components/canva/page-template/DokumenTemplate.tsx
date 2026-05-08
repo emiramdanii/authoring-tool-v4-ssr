@@ -11,7 +11,6 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const cp = td.cp as Record<string, unknown> | undefined;
   const tpItems = (td.tp as Array<Record<string, unknown>>) || [];
-  const atp = td.atp as Record<string, unknown> | undefined;
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden p-4">

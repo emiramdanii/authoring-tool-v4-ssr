@@ -13,7 +13,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
   const items = (data.items as Array<Record<string, unknown>>) || [];
   const validItems = items.filter(i => i.teks && i.kategori);
 
-  const [sorted, setSorted] = useState<Record<string, string[]>>({});
+  const [sorted, setSorted] = useState<Record<string, Array<{ idx: number; teks: string }>>>({});
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const [wrong, setWrong] = useState<string | null>(null);
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -52,12 +52,14 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
     }
   }, [totalSorted, validItems.length, phase]);
 
-  const handleDrop = useCallback((itemText: string, catId: string) => {
-    const correctCat = validItems.find(i => i.teks === itemText)?.kategori as string;
+  const handleDrop = useCallback((itemIdx: number, catId: string) => {
+    const item = validItems[itemIdx];
+    if (!item) return;
+    const correctCat = item.kategori as string;
     if (!correctCat) return; // Guard: skip items with missing kategori
     if (correctCat === catId) {
       setSorted(prev => {
-        const next = { ...prev, [catId]: [...(prev[catId] || []), itemText] };
+        const next = { ...prev, [catId]: [...(prev[catId] || []), { idx: itemIdx, teks: String(item.teks) }] };
         return next;
       });
     } else {
@@ -71,9 +73,9 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
   // Phase 9 fix: Also check for empty kategori — game is uncompletable without drop zones
   if (validItems.length === 0 || kategori.length === 0) return <EmptyState icon="🔢" label="Urutkan" compact={compact} interactive={interactive} />;
 
-  const unsorted = validItems.filter(i => {
-    return !Object.values(sorted).flat().includes(i.teks as string);
-  });
+  // Track sorted item indices for accurate unsorted computation
+  const sortedIndices = new Set(Object.values(sorted).flat().map(s => s.idx));
+  const unsorted = validItems.filter((_, i) => !sortedIndices.has(i));
 
   const finalScore = Math.max(Math.ceil(validItems.length * 0.5), validItems.length - wrongAttempts);
   const scorePct = validItems.length > 0 ? Math.round((finalScore / validItems.length) * 100) : 0;
@@ -118,18 +120,21 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
               style={{ borderLeftColor: catColor, borderLeftWidth: 3 }}>
               <div className="text-[9px] font-bold mb-0.5" style={{ color: catColor }}>{cat.label as string}</div>
               <div className="flex flex-wrap gap-0.5">
-                {sortedItems.map((t, j) => (
-                  <span key={j} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">{t}</span>
+                {sortedItems.map((s, j) => (
+                  <span key={j} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">{s.teks}</span>
                 ))}
               </div>
-              {/* Buttons for unsorted items */}
+              {/* Buttons for unsorted items — use index-based key for accurate tracking */}
               <div className="flex flex-wrap gap-0.5 mt-0.5">
-                {unsorted.map((item, j) => (
-                  <button key={j} onClick={() => handleDrop(item.teks as string, catId)}
+                {unsorted.map((item, j) => {
+                  const origIdx = validItems.indexOf(item);
+                  return (
+                  <button key={origIdx} onClick={() => handleDrop(origIdx, catId)}
                     className="text-[7px] px-1 py-0.5 rounded bg-white/5 border border-dashed border-white/15 text-white/40 hover:bg-white/10 hover:text-white/60 cursor-pointer transition-colors">
                     + {item.teks as string}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );

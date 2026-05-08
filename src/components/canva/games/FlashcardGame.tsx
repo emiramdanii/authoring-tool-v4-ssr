@@ -14,16 +14,23 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [viewedCards, setViewedCards] = useState<Set<number>>(new Set());
+  const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
 
   // Track viewed cards and report score when all viewed
   useEffect(() => {
     // Guard: validCards.length > 0 prevents spurious onComplete(0,0) on empty data
-    if (validCards.length > 0 && viewedCards.size === validCards.length && !reported.current && onComplete) {
+    if (validCards.length > 0 && viewedCards.size === validCards.length && !reported.current && phase === 'play') {
+      setPhase('done');
+    }
+  }, [viewedCards, validCards.length, phase]);
+
+  useEffect(() => {
+    if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
       onComplete(validCards.length, validCards.length);
     }
-  }, [viewedCards, validCards.length, onComplete]);
+  }, [phase, onComplete, validCards.length]);
 
   // Phase 9 fix: Reset game state when card data changes
   const cardsKey = JSON.stringify(validCards.map(c => ({ f: String(c.depan || ''), b: String(c.belakang || '') })));
@@ -31,6 +38,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
     setCurrentIdx(0);
     setFlipped(false);
     setViewedCards(new Set());
+    setPhase('play');
     reported.current = false;
   }, [cardsKey]);
 
@@ -58,6 +66,21 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
   };
 
   if (validCards.length === 0) return <EmptyState icon="🃏" label="Flashcard" compact={compact} interactive={interactive} />;
+
+  // Done phase — show completion feedback
+  if (phase === 'done') {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
+        <span className="text-2xl">🎉</span>
+        <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Kartu Dilihat!</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validCards.length} kartu · 100%</div>
+        <button onClick={() => { setCurrentIdx(0); setFlipped(false); setViewedCards(new Set()); setPhase('play'); reported.current = false; }}
+          className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
+          Ulangi
+        </button>
+      </div>
+    );
+  }
 
   const card = validCards[currentIdx];
 

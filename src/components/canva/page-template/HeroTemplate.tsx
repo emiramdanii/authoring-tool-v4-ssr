@@ -26,7 +26,7 @@ export function HeroTemplate({ td, palette, isSelected, onEditField, interactive
         isSelected={isSelected}
         onEdit={onEditField}
         interactive={interactive}
-        className="font-black text-white leading-tight"
+        className="font-black text-white leading-tight line-clamp-2"
         style={{ fontSize: 'clamp(16px, 3vw, 28px)', textShadow: '0 2px 12px rgba(0,0,0,.5)' }}
         placeholder="Hero Title"
       />
@@ -38,7 +38,7 @@ export function HeroTemplate({ td, palette, isSelected, onEditField, interactive
         isSelected={isSelected}
         onEdit={onEditField}
         interactive={interactive}
-        className="mt-2"
+        className="mt-2 line-clamp-3"
         style={{ fontSize: 'clamp(10px, 1.6vw, 14px)', color: 'rgba(255,255,255,.6)' }}
         placeholder="Subjudul"
       />
@@ -54,7 +54,12 @@ export function HeroTemplate({ td, palette, isSelected, onEditField, interactive
       {/* Chips */}
       {Boolean(td.chips) && (
         <div className="flex gap-2 mt-3">
-          {String(td.chips).split(',').map((chip, i) => (
+          {Array.isArray(td.chips) ? (td.chips as string[]).map((chip: string, i: number) => (
+            <span key={i} className="px-2 py-0.5 rounded-full text-[8px] font-bold"
+              style={{ background: alpha(accent, 0.08), color: accent, border: `1px solid ${alpha(accent, 0.19)}` }}>
+              {chip.trim()}
+            </span>
+          )) : String(td.chips || '').split(',').map((chip, i) => (
             <span key={i} className="px-2 py-0.5 rounded-full text-[8px] font-bold"
               style={{ background: alpha(accent, 0.08), color: accent, border: `1px solid ${alpha(accent, 0.19)}` }}>
               {chip.trim()}

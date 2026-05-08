@@ -16,11 +16,13 @@ interface WordPlacement {
 }
 
 function generateGridWithPlacements(words: string[], size: number): { grid: string[][]; placements: WordPlacement[] } {
+  // Normalize words to uppercase and strip non-letter characters
+  const normalizedWords = words.map(w => w.toUpperCase().replace(/[^A-Z\u00C0-\u024F]/g, '')).filter(w => w.length > 0);
   const g: string[][] = Array.from({ length: size }, () => Array(size).fill(''));
   const directions = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
   const placements: WordPlacement[] = [];
 
-  for (const word of words) {
+  for (const word of normalizedWords) {
     for (let attempt = 0; attempt < 50; attempt++) {
       const dir = directions[Math.floor(Math.random() * directions.length)];
       const startR = Math.floor(Math.random() * size);
@@ -82,7 +84,6 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
   const ukuran = (data.ukuran as number) || 10;
   // Stable serialization key so useMemo doesn't reshuffle on every render
   const kataKey = JSON.stringify(kataList.filter(k => k.trim()));
-  const validKataLenRef = useRef(0);
 
   const [gridKey, setGridKey] = useState(0);
   const { grid, placements } = useMemo(() => {

@@ -35,6 +35,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
   };
 
   const handleCorrect = (team: 'A' | 'B') => {
+    if (correct) return; // Guard against double-clicking
     const pts = (validSoal[currentQ]?.poin as number) || 10;
     if (team === 'A') setScoreA(s => s + pts);
     else setScoreB(s => s + pts);
@@ -104,7 +105,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
             Benar ({buzzed})
           </button>
           <button onClick={() => {
-              // Mark as wrong — prevents re-buzzing until question advances
+              if (correct) return; // Guard against double-clicking
               setCorrect('wrong');
               const tid2 = setTimeout(() => {
                 if (currentQ + 1 < validSoal.length) {

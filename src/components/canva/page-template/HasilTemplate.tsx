@@ -81,10 +81,10 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
           { label: 'Sangat Baik', pct: 85, color: '#34d399' },
           { label: 'Baik', pct: 70, color: '#f9c82e' },
           { label: 'Perlu Latihan', pct: 0, color: '#f87171' },
-        ].map((level) => (
-          <div key={level.label} className="flex flex-col items-center">
-            <div className="w-3 h-3 rounded-full mb-0.5" style={{ background: alpha(level.color, 0.25), border: `1px solid ${level.color}` }} />
-            <span className="text-[7px] text-white/40">{level.label}</span>
+        ].map((tier) => (
+          <div key={tier.label} className="flex flex-col items-center">
+            <div className="w-3 h-3 rounded-full mb-0.5" style={{ background: alpha(tier.color, 0.25), border: `1px solid ${tier.color}` }} />
+            <span className="text-[7px] text-white/40">{tier.label}</span>
           </div>
         ))}
       </div>
