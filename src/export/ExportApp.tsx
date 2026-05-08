@@ -55,17 +55,31 @@ function getNextLabel(templateType: string, nextTemplateType: string): string {
 
 // ── Confetti Effect ──────────────────────────────────────────────
 
+// Track confetti timeouts for proper cleanup on unmount
+let confettiTimers: ReturnType<typeof setTimeout>[] = [];
+
 function launchConfetti() {
   const wrap = document.getElementById('confWrap');
   if (!wrap) return;
+  // Clear any previous timers
+  confettiTimers.forEach(t => clearTimeout(t));
+  confettiTimers = [];
   const colors = ['#f9c12e', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
   for (let i = 0; i < 60; i++) {
     const c = document.createElement('div');
     c.className = 'conf';
     c.style.cssText = `left:${Math.random() * 100}%;top:-10px;width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;background:${colors[Math.floor(Math.random() * colors.length)]};animation-duration:${1.5 + Math.random() * 2}s;animation-delay:${Math.random() * 0.5}s`;
     wrap.appendChild(c);
-    setTimeout(() => c.remove(), 4000);
+    const timer = setTimeout(() => c.remove(), 4000);
+    confettiTimers.push(timer);
   }
+}
+
+function clearConfetti() {
+  confettiTimers.forEach(t => clearTimeout(t));
+  confettiTimers = [];
+  const wrap = document.getElementById('confWrap');
+  if (wrap) wrap.innerHTML = '';
 }
 
 // ── Get effective navConfig for a page (with defaults) ───────────
@@ -93,16 +107,13 @@ function ExportElement({ element, pageIndex }: { element: CanvaElement; pageInde
 
   return (
     <div
-      className={isInteractive ? 'ring-2 ring-emerald-400/50 rounded' : ''}
+      className={`absolute ${isInteractive ? 'ring-2 ring-emerald-400/50 rounded' : ''}`}
       style={{
-        position: 'absolute',
         left: `${element.x}%`,
         top: `${element.y}%`,
         width: `${element.w}%`,
         height: `${element.h}%`,
         opacity: (element.opacity ?? 100) / 100,
-        pointerEvents: 'auto',
-        zIndex: 20,
       }}
     >
       {element.type === 'kuis' && (
@@ -128,24 +139,28 @@ function ExportElement({ element, pageIndex }: { element: CanvaElement; pageInde
         <ExportModuleElement element={element} />
       )}
       {element.type === 'teks' && (
-        <div style={{
-          fontSize: `${element.fontSize || 20}px`,
-          fontWeight: 700,
-          color: element.textColor || '#fff',
-          padding: 8,
-          lineHeight: 1.4,
-          textShadow: '0 2px 8px rgba(0,0,0,.5)',
-        }}>
+        <div
+          className="w-full h-full outline-none"
+          style={{
+            fontSize: `${element.fontSize || 20}px`,
+            fontWeight: 700,
+            color: element.textColor || '#ffffff',
+            textShadow: '0 2px 8px rgba(0,0,0,.5)',
+            lineHeight: 1.4,
+            padding: 8,
+          }}
+        >
           {element.text || ''}
         </div>
       )}
       {element.type === 'shape' && (
-        <div style={{
-          width: '100%',
-          height: '100%',
-          background: element.color || 'rgba(255,255,255,.15)',
-          borderRadius: `${element.radius || 8}px`,
-        }} />
+        <div
+          className="w-full h-full"
+          style={{
+            background: element.color || 'rgba(255,255,255,.15)',
+            borderRadius: element.radius || 8,
+          }}
+        />
       )}
     </div>
   );
@@ -189,7 +204,10 @@ export default function ExportApp() {
   // ── Expose interactive store for Live Preview postMessage bridge ──
   useEffect(() => {
     (window as any).__INTERACTIVE_STORE__ = useInteractiveStore;
-    return () => { delete (window as any).__INTERACTIVE_STORE__; };
+    return () => {
+      delete (window as any).__INTERACTIVE_STORE__;
+      clearConfetti();
+    };
   }, []);
 
   // Interactive store for navigation + scoring
@@ -231,6 +249,11 @@ export default function ExportApp() {
   const showScore = navConfig.showScore !== false;
   const showProgress = navConfig.showProgress !== false;
 
+  // Compute showTopNav early (needed by useEffect before early returns)
+  // TDZ fix: moved before useEffect that references it
+  const currentTemplateType = currentPage?.templateType || 'custom';
+  const showTopNav = currentTemplateType !== 'cover' && navConfig.showNavbar !== false;
+
   // ── Navigation handlers ───────────────────────────────────────
   const handleNext = useCallback(() => {
     if (isLastPage) {
@@ -269,6 +292,24 @@ export default function ExportApp() {
     ro.observe(navEl);
     return () => ro.disconnect();
   }, [hasScore, showNavbar]);
+
+  // ── Dynamic top nav height observer ─────────────────────────
+  useEffect(() => {
+    const topNavEl = document.getElementById('exportTopNav');
+    if (!topNavEl) {
+      // No top nav on cover pages — reset to default
+      document.documentElement.style.setProperty('--export-topnav-h', '44px');
+      return;
+    }
+    const updateHeight = () => {
+      const h = topNavEl.offsetHeight;
+      document.documentElement.style.setProperty('--export-topnav-h', `${h}px`);
+    };
+    updateHeight();
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(topNavEl);
+    return () => ro.disconnect();
+  }, [showTopNav]);
 
   // ── Keyboard navigation ───────────────────────────────────────
   useEffect(() => {
@@ -324,24 +365,24 @@ export default function ExportApp() {
   const isTemplate = templateType !== 'custom';
   const pageNavConfig = getNavConfig(page);
   const pageShowProgress = pageNavConfig.showProgress !== false;
-  const showTopNav = templateType !== 'cover' && pageNavConfig.showNavbar !== false;
+  // showTopNav is already computed above (before early returns for TDZ safety)
 
-  // Background style — validate bgDataUrl starts with data:image/ to prevent CSS injection
-  // Phase 9 fix: support gradient bgColor (e.g. 'linear-gradient(...)')
-  // and image backgrounds, matching PlayOverlay behavior
+  // Background style — Phase 9 visual fidelity fix:
+  // - Default fallback matches PlayOverlay (#1a1a2e, not #0e1c2f)
+  // - Background image uses <img> tag (like PlayOverlay) for pixel-perfect rendering
+  // - Overlay is ALWAYS rendered (like PlayOverlay), not just when bgDataUrl exists
   const safeBgDataUrl = page.bgDataUrl?.startsWith('data:image/') ? page.bgDataUrl : null;
-  const bgStyle: React.CSSProperties = safeBgDataUrl
-    ? { backgroundImage: `url('${safeBgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : page.bgColor?.includes('gradient')
-      ? { background: page.bgColor }
-      : { background: page.bgColor || '#0e1c2f' };
+  const bgStyle: React.CSSProperties = page.bgColor?.includes('gradient')
+    ? { background: page.bgColor }
+    : { background: page.bgColor || '#1a1a2e' };
 
   return (
     <>
       <div className="min-h-screen bg-slate-900 text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
-        {/* ── Page Container ── */}
+        {/* ── Page Container with page-transition for smooth navigation ── */}
         <div
           key={page.id}
+          className="page-transition"
           style={{
             height: 'calc(100vh - var(--export-nav-h, 72px))',
             position: 'relative',
@@ -349,23 +390,36 @@ export default function ExportApp() {
             ...bgStyle,
           }}
         >
-          {/* Overlay for background images */}
-          {page.bgDataUrl && (
-            <div
+          {/* Background image — uses <img> tag like PlayOverlay for pixel-perfect rendering */}
+          {safeBgDataUrl && (
+            <img
+              src={safeBgDataUrl}
+              alt=""
               style={{
                 position: 'absolute', inset: 0,
-                background: `rgba(14,28,47,${(page.overlay ?? 20) / 100})`,
-                pointerEvents: 'none', zIndex: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover',
+                pointerEvents: 'none',
               }}
             />
           )}
+
+          {/* Overlay — ALWAYS rendered (matching PlayOverlay behavior) */}
+          {/* Note: uses || (not ??) to match PlayOverlay — overlay=0 still shows 20% */}
+          <div
+            style={{
+              position: 'absolute', inset: 0,
+              background: `rgba(14,28,47,${(page.overlay || 20) / 100})`,
+              pointerEvents: 'none', zIndex: 0,
+            }}
+          />
 
           {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
           {/* Phase 9 fix: navbar is position: absolute now, with a spacer div
               below it so template content is NOT hidden behind the navbar */}
           {showTopNav && (
             <>
-              <nav className="glass-panel-strong absolute top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
+              <nav id="exportTopNav" className="glass-panel-strong absolute top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
                 <span className="font-['Fredoka_One'] text-sm text-amber-400 whitespace-nowrap">
                   {meta.namaBab || meta.judulPertemuan || 'Media'}
                 </span>
@@ -384,8 +438,8 @@ export default function ExportApp() {
                   </span>
                 )}
               </nav>
-              {/* Spacer to push content below the navbar */}
-              <div style={{ height: 44 }} />
+              {/* Spacer measured dynamically from actual navbar height */}
+              <div style={{ height: 'var(--export-topnav-h, 44px)' }} />
             </>
           )}
 

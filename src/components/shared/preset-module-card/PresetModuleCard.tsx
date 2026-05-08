@@ -149,7 +149,9 @@ function CardShell({
 }) {
   return (
     <div
-      className={`relative overflow-hidden border border-white/[0.09] rounded-${rounded} ${className}`}
+      // Phase 9 fix: use explicit conditional instead of `rounded-${rounded}` interpolation
+      // Tailwind v4 cannot detect dynamically interpolated class names in its content scan
+      className={`relative overflow-hidden border border-white/[0.09] ${rounded === '2xl' ? 'rounded-2xl' : 'rounded-xl'} ${className}`}
       style={{ background: T.card, ...style }}
     >
       {/* Top accent bar */}

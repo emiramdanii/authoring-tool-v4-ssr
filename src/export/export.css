@@ -19,10 +19,16 @@
 html { scroll-behavior: smooth; }
 body {
   font-family: 'Nunito', sans-serif;
-  background: #0e1c2f;
+  background: #1a1a2e;
   color: #e8f2ff;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* ── Dark mode base (matches PlayOverlay dark theme) ── */
+::selection {
+  background: rgba(251, 191, 36, 0.3);
+  color: #fff;
 }
 
 /* ── Confetti Animation ────────────────────────────────────────── */
@@ -362,9 +368,46 @@ input[type="number"]::-webkit-outer-spin-button {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+/* ── Ring utilities for interactive elements (Phase 9 fidelity) ── */
+.ring-2 {
+  box-shadow: 0 0 0 2px var(--tw-ring-color, rgba(52, 211, 153, 0.5));
+}
+.ring-emerald-400\/50 {
+  --tw-ring-color: rgba(52, 211, 153, 0.5);
+}
+
+/* ── Transition utilities (Phase 9 fidelity) ── */
+.transition-all {
+  transition: all 0.15s ease;
+}
+.duration-200 {
+  transition-duration: 200ms;
+}
+.duration-500 {
+  transition-duration: 500ms;
+}
+.ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
 /* ── Fade Slide In animation ──────────────────────────────────── */
 /* Phase 9 fix: match globals.css exactly (4px, not 8px) */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Shadow utility (Phase 9 — ensure shadow classes work) ─────── */
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+}
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+}
+
+/* ── Border radius safelist (Phase 9 — PresetModuleCard uses conditional) ── */
+.rounded-2xl { border-radius: 1rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-md { border-radius: 0.375rem; }
+.rounded-full { border-radius: 9999px; }

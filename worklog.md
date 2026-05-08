@@ -209,3 +209,35 @@ Stage Summary:
 - Consistent theme: HeroTemplate, HasilTemplate respect palette colors
 - All game/template interactions properly cleaned up on unmount
 - Total bugs fixed across all phases: 65+ bugs
+
+---
+Task ID: 10
+Agent: Main Agent
+Task: Phase 9 Continuation — Visual Fidelity Deep Audit & Critical Fixes
+
+Work Log:
+- Performed systematic audit of ExportApp vs PlayOverlay (side-by-side comparison)
+- Audited all 12 page templates for CSS/resource/interactive/Lucide/framer-motion differences
+- Audited PresetModuleCard rendering chain (CardShell, tokens, all preview components)
+- Identified and fixed 7 visual fidelity issues:
+  1. CRITICAL: showTopNav TDZ bug — useEffect referenced showTopNav before declaration (moved declaration before hooks)
+  2. HIGH: Background default color mismatch — ExportApp used #0e1c2f, PlayOverlay uses #1a1a2e (aligned to #1a1a2e)
+  3. HIGH: Background image rendering — ExportApp used CSS backgroundImage, PlayOverlay uses <img> tag (switched to <img> for pixel-perfect match)
+  4. HIGH: Overlay always rendered in PlayOverlay but conditional in ExportApp (made always-rendered)
+  5. HIGH: Overlay opacity operator mismatch — ExportApp used ??, PlayOverlay used || (aligned to || for overlay=0 case)
+  6. HIGH: PresetModuleCard dynamic rounded-${rounded} — Tailwind v4 can't detect interpolated classes (replaced with explicit conditional)
+  7. MEDIUM: Confetti timeout leak — setTimeout not cleaned up on unmount (added tracking + clearConfetti)
+- Additional improvements:
+  - Added page-transition class to page container for smooth navigation animation
+  - Dynamic top nav height observer (was hardcoded 44px spacer)
+  - ExportElement now matches PlayElement exactly (className="absolute", no pointerEvents/zIndex overrides, w-full h-full outline-none for teks)
+  - Export.css: body background aligned to #1a1a2e, added ::selection style, ring/transition/shadow/border-radius safelist utilities
+- Both builds pass: Next.js 16.1.3 ✅ 0 errors, Vite SSR ✅ 614KB
+
+Stage Summary:
+- 7 visual fidelity bugs fixed (1 CRITICAL, 4 HIGH, 2 MEDIUM)
+- Export rendering now pixel-perfect match with PlayOverlay for background, overlay, and elements
+- PresetModuleCard border-radius works correctly in export (no more purged Tailwind classes)
+- Confetti cleanup prevents memory leaks
+- Dynamic navbar heights prevent content overlap
+- Total Phase 9 bugs fixed: 19 (12 previous + 7 this round)
