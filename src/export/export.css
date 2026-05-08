@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   EXPORT CSS — Tailwind + custom styles for exported HTML
+   This file is the CSS entry point for Vite build
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+
+/* ── Base Reset ────────────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #0e1c2f;
+  color: #e8f2ff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Confetti Animation ────────────────────────────────────────── */
+.conf {
+  position: fixed;
+  border-radius: 2px;
+  animation: confFall linear both;
+  pointer-events: none;
+  z-index: 9999;
+}
+@keyframes confFall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── Float Animation (cover icon) ──────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* ── Fade In ───────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
