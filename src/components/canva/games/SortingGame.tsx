@@ -11,7 +11,7 @@ import type { GameComponentProps } from './shared';
 export function SortingGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kategori = (data.kategori as Array<Record<string, unknown>>) || [];
   const items = (data.items as Array<Record<string, unknown>>) || [];
-  const validItems = items.filter(i => i.teks);
+  const validItems = items.filter(i => i.teks && i.kategori);
 
   const [sorted, setSorted] = useState<Record<string, string[]>>({});
   const [phase, setPhase] = useState<'play' | 'done'>('play');
@@ -42,6 +42,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
 
   const handleDrop = useCallback((itemText: string, catId: string) => {
     const correctCat = validItems.find(i => i.teks === itemText)?.kategori as string;
+    if (!correctCat) return; // Guard: skip items with missing kategori
     if (correctCat === catId) {
       setSorted(prev => {
         const next = { ...prev, [catId]: [...(prev[catId] || []), itemText] };
@@ -71,7 +72,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Tersortir!</div>
         <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
         {wrongAttempts > 0 && <div className="text-[9px] text-cyan-400/60">{wrongAttempts} kesalahan</div>}
-        <button onClick={() => { setSorted({}); setPhase('play'); setWrongAttempts(0); reported.current = false; }}
+        <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setSorted({}); setPhase('play'); setWrongAttempts(0); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>

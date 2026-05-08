@@ -9,7 +9,7 @@ import type { GameComponentProps } from './shared';
    ═══════════════════════════════════════════════════════════════ */
 export function TrueFalseGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
-  const validSoal = soal.filter(s => s.teks);
+  const validSoal = soal.filter(s => s.teks && s.benar !== undefined);
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
@@ -27,7 +27,9 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
     if (answered || !validSoal[currentQ]) return;
     setSelected(benar);
     setAnswered(true);
-    const correct = validSoal[currentQ].benar as boolean;
+    // Normalize benar to boolean — may be stored as string "true"/"false" from JSON form data
+    const rawBenar = validSoal[currentQ].benar;
+    const correct = typeof rawBenar === 'boolean' ? rawBenar : String(rawBenar).toLowerCase() === 'true';
     if (benar === correct) setScore(s => s + 1);
     const tid = setTimeout(() => {
       if (currentQ + 1 < validSoal.length) {
@@ -49,7 +51,7 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <div className="text-xl font-black text-cyan-400">{pct}%</div>
         <div className="text-[9px] text-cyan-300/60 mt-1">{score}/{validSoal.length} benar</div>
-        <button onClick={() => { setCurrentQ(0); setScore(0); setSelected(null); setAnswered(false); setPhase('play'); reported.current = false; }}
+        <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setCurrentQ(0); setScore(0); setSelected(null); setAnswered(false); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>
@@ -58,7 +60,8 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
   }
 
   const q = validSoal[currentQ];
-  const correct = q.benar as boolean;
+  const rawBenar = q?.benar;
+  const correct = typeof rawBenar === 'boolean' ? rawBenar : String(rawBenar).toLowerCase() === 'true';
 
   return (
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">

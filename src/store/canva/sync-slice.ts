@@ -154,6 +154,7 @@ export function startAutoSync(syncFn: () => void) {
       ma: state.materi,
       cp: state.cp,
       tp: state.tp,
+      atp: state.atp,
       pet: state.petunjuk,
       disk: state.diskusi,
       ref: state.refleksi,

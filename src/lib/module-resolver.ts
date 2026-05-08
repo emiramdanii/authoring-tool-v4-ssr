@@ -68,7 +68,7 @@ export function resolveKuis(
   }
 
   // No reference found — return empty instead of ALL (was a scoping bug)
-  if (typeof console !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  if (typeof console !== 'undefined' && typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
     console.warn(
       '[resolveKuis] Quiz element has no kuisId/kuisIds or valid dataIdx. ' +
       'Returning empty array to avoid showing ALL questions. ' +

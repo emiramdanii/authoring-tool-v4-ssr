@@ -34,13 +34,14 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
   const safeIdx = activeGameIdx < games.length ? activeGameIdx : 0;
   const activeGame = games[safeIdx];
 
+  const activeGameId = (activeGame?._id as string) || String(safeIdx);
+
   const handleComplete = useCallback((score: number, maxScore: number) => {
     // Skip score reporting for non-scored games (e.g., Roda, SpinWheel)
     // to prevent overwriting valid scores from other games on the same page
     if (maxScore === 0) return;
-    const gameId = (activeGame?._id as string) || String(safeIdx);
-    reportScore({ elementId: `game-${gameId}`, pageIndex: interactivePageIdx, score, maxScore, completed: true });
-  }, [reportScore, interactivePageIdx, activeGame, safeIdx]);
+    reportScore({ elementId: `game-${activeGameId}`, pageIndex: interactivePageIdx, score, maxScore, completed: true });
+  }, [reportScore, interactivePageIdx, activeGameId, safeIdx]);
 
   const handleSelectGame = useCallback((idx: number) => {
     setActiveGameIdx(idx);
@@ -76,7 +77,7 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
           <div className="space-y-2">
             {/* Show selected game as main widget */}
             {activeGame && (
-              <GameWidget dataIdx={getGameModuleIndex(activeGame)} moduleId={(activeGame._id as string) || undefined} compact={!interactive} interactive={interactive} onComplete={interactive ? handleComplete : undefined} />
+              <GameWidget key={String(activeGame._id) || `game-${safeIdx}`} dataIdx={getGameModuleIndex(activeGame)} moduleId={(activeGame._id as string) || undefined} compact={!interactive} interactive={interactive} onComplete={interactive ? handleComplete : undefined} />
             )}
 
             {/* Game selector tabs — always visible when multiple games */}

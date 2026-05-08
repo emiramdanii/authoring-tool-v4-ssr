@@ -60,11 +60,11 @@ export async function POST(request: NextRequest) {
       allKuis: allKuis || [], allModules: allModules || [], games: games || [],
       cp: cp || {}, tp: tp || [], atp: atp || { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
       alur: alur || [], materi: materi || { blok: [] },
-      skenario: skenario || [], petunjuk: petunjuk || { title:'',intro:'',langkah:[], tips:'' },
+      skenario: skenario || [], petunjuk: petunjuk || { title:'',intro:'',langkah:[] },
       diskusi: diskusi || { title:'',intro:'',pertanyaan:[] },
       refleksi: refleksi || { title:'',intro:'',pertanyaan:[] },
       penutup: penutup || { title:'',subjudul:'',preview:[] },
-      suara: suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+      suara: suara || { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false },
     };
 
     const dataJson = JSON.stringify(exportData)

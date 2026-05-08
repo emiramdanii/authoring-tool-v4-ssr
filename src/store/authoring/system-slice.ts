@@ -21,6 +21,8 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
         skenario: s.skenario, kuis: s.kuis, modules: s.modules,
         games: s.games, materi: s.materi, guruPw: s.guruPw,
+        petunjuk: s.petunjuk, diskusi: s.diskusi, refleksi: s.refleksi,
+        penutup: s.penutup, suara: s.suara,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       set({ dirty: false });
@@ -50,6 +52,11 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         games: ensureModuleIds(data.games || []),
         materi: data.materi || { blok: [] },
         guruPw: data.guruPw || 'guru123',
+        petunjuk: data.petunjuk || get().petunjuk,
+        diskusi: data.diskusi || get().diskusi,
+        refleksi: data.refleksi || get().refleksi,
+        penutup: data.penutup || get().penutup,
+        suara: data.suara || get().suara,
         dirty: false,
       });
       toast.info('\uD83D\uDCC2 Data tersimpan dimuat');

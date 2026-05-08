@@ -60,7 +60,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <div className="text-xl font-black text-cyan-400">{pct}%</div>
         <div className="text-[9px] text-cyan-300/60 mt-1">{score}/{validSoal.length} benar</div>
-        <button onClick={() => { setCurrentQ(0); setScore(0); setAnswered(false); setUserInput(''); setLastCorrect(null); setPhase('play'); reported.current = false; }}
+        <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setCurrentQ(0); setScore(0); setAnswered(false); setUserInput(''); setLastCorrect(null); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
       </div>
     );
