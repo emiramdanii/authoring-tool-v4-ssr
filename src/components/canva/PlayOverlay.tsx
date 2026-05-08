@@ -441,6 +441,7 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
           dataIdx={element.dataIdx}
           moduleId={element.moduleId}
           compact={false}
+          interactive
           onComplete={handleComplete}
         />
       )}

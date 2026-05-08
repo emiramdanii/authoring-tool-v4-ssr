@@ -8,7 +8,7 @@ import type { GameComponentProps } from './shared';
    MEMORY MATCH GAME — Efficiency-based scoring with 50% floor
    Score = max(ceil(pairs * 0.5), pairs - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
-export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
+export function MemoryGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
   const validPairs = pasangan.filter(p => p.kiri || p.kanan);
 
@@ -74,7 +74,7 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
     reported.current = false;
   };
 
-  if (validPairs.length === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} />;
+  if (validPairs.length === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} interactive={interactive} />;
 
   const finalScore = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
   const scorePct = validPairs.length > 0 ? Math.round((finalScore / validPairs.length) * 100) : 0;

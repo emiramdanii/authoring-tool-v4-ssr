@@ -60,7 +60,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
                   <span className="text-[8px] font-bold" style={{ color: String(tp.color || accent2) }}>
                     {String(tp.verb || '')}
                   </span>
-                  <span className="text-[8px] text-white/70 ml-0.5">{String(tp.desc || '').slice(0, 80)}...</span>
+                  <span className="text-[8px] text-white/70 ml-0.5">{String(tp.desc || '').length > 80 ? String(tp.desc).slice(0, 80) + '...' : String(tp.desc || '')}</span>
                 </div>
               </div>
             ))}

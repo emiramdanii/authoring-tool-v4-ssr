@@ -62,18 +62,18 @@ export default function GameWidget({ dataIdx, moduleId, compact = false, interac
       className="h-full overflow-auto rounded border border-cyan-500/20"
       onClick={(e) => e.stopPropagation()}
     >
-      {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'memory' && <MemoryGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'matching' && <MatchingGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'roda' && <RodaGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'sorting' && <SortingGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} onComplete={onComplete} />}
-      {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} onComplete={onComplete} />}
+      {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'memory' && <MemoryGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'matching' && <MatchingGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'roda' && <RodaGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'sorting' && <SortingGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
       {!(GAME_TYPES as readonly string[]).includes(gameType) && (
         <GenericGameWidget data={mod} compact={compact} />
       )}

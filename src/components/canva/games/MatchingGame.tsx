@@ -9,7 +9,7 @@ import type { GameComponentProps } from './shared';
    Score = max(ceil(pairs * 0.5), pairs - wrongAttempts)
    Completing the game always gives at least 50%
    ═══════════════════════════════════════════════════════════════ */
-export function MatchingGame({ data, compact, onComplete }: GameComponentProps) {
+export function MatchingGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
   const validPairs = pasangan.filter(p => p.kiri || p.kanan);
 
@@ -58,7 +58,7 @@ export function MatchingGame({ data, compact, onComplete }: GameComponentProps) 
     setSelectedLeft(null);
   };
 
-  if (validPairs.length === 0) return <EmptyState icon="🔀" label="Game Pasangkan" compact={compact} />;
+  if (validPairs.length === 0) return <EmptyState icon="🔀" label="Game Pasangkan" compact={compact} interactive={interactive} />;
 
   const finalScore = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
   const scorePct = validPairs.length > 0 ? Math.round((finalScore / validPairs.length) * 100) : 0;

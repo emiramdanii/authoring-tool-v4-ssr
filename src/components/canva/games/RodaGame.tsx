@@ -8,7 +8,7 @@ import type { GameComponentProps } from './shared';
    RODA PUTAR (Spinning Wheel) — Non-scored tool (random picker)
    reportScore(0, 0) — does not contribute to overall scoring
    ═══════════════════════════════════════════════════════════════ */
-export function RodaGame({ data, compact, onComplete }: GameComponentProps) {
+export function RodaGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const opsi = (data.opsi as string[]) || [];
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -35,7 +35,7 @@ export function RodaGame({ data, compact, onComplete }: GameComponentProps) {
     }, 2500);
   };
 
-  if (opsi.length < 2) return <EmptyState icon="🎡" label="Roda Putar" compact={compact} />;
+  if (opsi.length < 2) return <EmptyState icon="🎡" label="Roda Putar" compact={compact} interactive={interactive} />;
 
   return (
     <div className="h-full flex flex-col bg-cyan-500/10 p-2 items-center justify-center">

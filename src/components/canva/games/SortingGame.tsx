@@ -8,7 +8,7 @@ import type { GameComponentProps } from './shared';
    SORTING GAME (Urutkan / Klasifikasi) — Efficiency-based scoring with 50% floor
    Score = max(ceil(items * 0.5), items - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
-export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
+export function SortingGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kategori = (data.kategori as Array<Record<string, unknown>>) || [];
   const items = (data.items as Array<Record<string, unknown>>) || [];
   const validItems = items.filter(i => i.teks);
@@ -26,15 +26,21 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
       const score = Math.max(Math.ceil(validItems.length * 0.5), validItems.length - wrongAttempts);
       onComplete(score, validItems.length);
     }
-  }, [phase]);
+  }, [phase, wrongAttempts, validItems.length, onComplete]);
+
+  // Track total sorted items to detect completion
+  const totalSorted = Object.values(sorted).flat().length;
+  useEffect(() => {
+    if (totalSorted === validItems.length && validItems.length > 0 && phase === 'play') {
+      setPhase('done');
+    }
+  }, [totalSorted, validItems.length, phase]);
 
   const handleDrop = useCallback((itemText: string, catId: string) => {
     const correctCat = validItems.find(i => i.teks === itemText)?.kategori as string;
     if (correctCat === catId) {
       setSorted(prev => {
         const next = { ...prev, [catId]: [...(prev[catId] || []), itemText] };
-        const totalSorted = Object.values(next).flat().length;
-        if (totalSorted === validItems.length) setPhase('done');
         return next;
       });
     } else {
@@ -44,7 +50,7 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
     }
   }, [validItems]);
 
-  if (validItems.length === 0) return <EmptyState icon="🔢" label="Urutkan" compact={compact} />;
+  if (validItems.length === 0) return <EmptyState icon="🔢" label="Urutkan" compact={compact} interactive={interactive} />;
 
   const unsorted = validItems.filter(i => {
     return !Object.values(sorted).flat().includes(i.teks as string);

@@ -9,7 +9,7 @@ import type { GameComponentProps } from './shared';
    Score = max(ceil(words * 0.5), words - revealsUsed)
    No more prompt() — uses inline keyboard input
    ═══════════════════════════════════════════════════════════════ */
-export function CrosswordGame({ data, compact, onComplete }: GameComponentProps) {
+export function CrosswordGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kata = (data.kata as Array<Record<string, unknown>>) || [];
   const ukuran = (data.ukuran as number) || 12;
   const validKata = kata.filter(k => k.teks && String(k.teks).trim());
@@ -189,7 +189,7 @@ export function CrosswordGame({ data, compact, onComplete }: GameComponentProps)
     }
   };
 
-  if (validKata.length === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} />;
+  if (validKata.length === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} interactive={interactive} />;
 
   const finalScore = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - revealed.size);
   const scorePct = validKata.length > 0 ? Math.round((finalScore / validKata.length) * 100) : 0;

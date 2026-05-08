@@ -7,7 +7,7 @@ import type { GameComponentProps } from './shared';
 /* ═══════════════════════════════════════════════════════════════
    TRUE/FALSE GAME
    ═══════════════════════════════════════════════════════════════ */
-export function TrueFalseGame({ data, compact, onComplete }: GameComponentProps) {
+export function TrueFalseGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks);
   const [currentQ, setCurrentQ] = useState(0);
@@ -36,7 +36,7 @@ export function TrueFalseGame({ data, compact, onComplete }: GameComponentProps)
     }, 1200);
   }, [answered, currentQ, validSoal]);
 
-  if (validSoal.length === 0) return <EmptyState icon="✅" label="Benar / Salah" compact={compact} />;
+  if (validSoal.length === 0) return <EmptyState icon="✅" label="Benar / Salah" compact={compact} interactive={interactive} />;
 
   if (phase === 'result') {
     const pct = Math.round((score / validSoal.length) * 100);

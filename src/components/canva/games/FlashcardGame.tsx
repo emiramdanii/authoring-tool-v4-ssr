@@ -8,7 +8,7 @@ import type { GameComponentProps } from './shared';
    FLASHCARD GAME — Proper 3D flip animation
    Score = cards viewed (flashcard = study tool, all viewed = 100%)
    ═══════════════════════════════════════════════════════════════ */
-export function FlashcardGame({ data, compact, onComplete }: GameComponentProps) {
+export function FlashcardGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kartu = (data.kartu as Array<Record<string, unknown>>) || [];
   const validCards = kartu.filter(k => k.depan || k.belakang);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -48,7 +48,7 @@ export function FlashcardGame({ data, compact, onComplete }: GameComponentProps)
     }
   };
 
-  if (validCards.length === 0) return <EmptyState icon="🃏" label="Flashcard" compact={compact} />;
+  if (validCards.length === 0) return <EmptyState icon="🃏" label="Flashcard" compact={compact} interactive={interactive} />;
 
   const card = validCards[currentIdx];
 

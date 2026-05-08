@@ -7,7 +7,7 @@ import type { GameComponentProps } from './shared';
 /* ═══════════════════════════════════════════════════════════════
    FILL-IN-THE-BLANK GAME (Isian)
    ═══════════════════════════════════════════════════════════════ */
-export function FillBlankGame({ data, compact, onComplete }: GameComponentProps) {
+export function FillBlankGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks && s.jawaban);
   const [currentQ, setCurrentQ] = useState(0);
@@ -47,7 +47,7 @@ export function FillBlankGame({ data, compact, onComplete }: GameComponentProps)
     }, 1500);
   }, [answered, userInput, currentQ, validSoal]);
 
-  if (validSoal.length === 0) return <EmptyState icon="✏️" label="Isian" compact={compact} />;
+  if (validSoal.length === 0) return <EmptyState icon="✏️" label="Isian" compact={compact} interactive={interactive} />;
 
   if (phase === 'result') {
     const pct = Math.round((score / validSoal.length) * 100);

@@ -30,6 +30,10 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
     }
   }, [td.activeGameIdx, games.length]);
 
+  // Ensure activeGameIdx is valid (must be declared before handleComplete)
+  const safeIdx = activeGameIdx < games.length ? activeGameIdx : 0;
+  const activeGame = games[safeIdx];
+
   const handleComplete = useCallback((score: number, maxScore: number) => {
     // Skip score reporting for non-scored games (e.g., Roda, SpinWheel)
     // to prevent overwriting valid scores from other games on the same page
@@ -44,10 +48,6 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
     onEditField('activeGameIdx', String(idx));
   }, [onEditField]);
 
-  // Ensure activeGameIdx is valid
-  const safeIdx = activeGameIdx < games.length ? activeGameIdx : 0;
-  const activeGame = games[safeIdx];
-
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Header */}
@@ -57,7 +57,7 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
           style={{ background: `${accent}20` }}>🎮</div>
         <div>
           <EditableText
-            value="Game Interaktif"
+            value={String(td.gameTitle || 'Game Interaktif')}
             fieldKey="gameTitle"
             isSelected={isSelected}
             onEdit={onEditField}

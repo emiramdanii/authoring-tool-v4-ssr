@@ -8,7 +8,7 @@ import type { GameComponentProps } from './shared';
    SPIN WHEEL (Roda Pertanyaan) — Non-scored tool (random picker)
    reportScore(0, 0) — does not contribute to overall scoring
    ═══════════════════════════════════════════════════════════════ */
-export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps) {
+export function SpinWheelGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks);
   const [rotation, setRotation] = useState(0);
@@ -37,7 +37,7 @@ export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps)
     }, 2500);
   };
 
-  if (validSoal.length < 2) return <EmptyState icon="🎡" label="Roda Pertanyaan" compact={compact} />;
+  if (validSoal.length < 2) return <EmptyState icon="🎡" label="Roda Pertanyaan" compact={compact} interactive={interactive} />;
 
   return (
     <div className="h-full flex flex-col bg-cyan-500/10 p-2 items-center justify-center">
@@ -75,7 +75,7 @@ export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps)
       </div>
       {result && (
         <div className="mt-2 text-center px-2 max-w-full">
-          <div className="text-[9px] text-cyan-400/60 mb-0.5">{result.kategori as string || 'Soal'}</div>
+          <div className="text-[9px] text-cyan-400/60 mb-0.5">{String(result.kategori ?? 'Soal')}</div>
           <div className={`${compact ? 'text-[9px]' : 'text-[11px]'} font-bold text-amber-300`}>{result.teks as string}</div>
         </div>
       )}

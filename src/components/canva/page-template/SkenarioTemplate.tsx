@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { getPaletteColor } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
@@ -21,6 +21,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
   const [currentChapter, setCurrentChapter] = useState(0);
   const [choiceHistory, setChoiceHistory] = useState<Array<{ chapter: number; choiceIdx: number; good: boolean }>>([]);
   const [showFeedback, setShowFeedback] = useState<{ good: boolean; message: string } | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset state when not in interactive mode
   useEffect(() => {
@@ -29,6 +30,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
       setChoiceHistory([]);
       setShowFeedback(null);
     }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [interactive]);
 
   const handleChoice = useCallback((chapterIdx: number, choiceIdx: number, choice: Record<string, unknown>) => {
@@ -46,7 +50,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
     });
 
     // Auto-advance after feedback
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setShowFeedback(null);
       if (nextChapter < skenario.length && nextChapter >= 0) {
         setCurrentChapter(nextChapter);
@@ -76,7 +80,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
           style={{ background: `${accent}20` }}>🎭</div>
         <div>
           <EditableText
-            value="Skenario Interaktif"
+            value={String(td.skenarioTitle || 'Skenario Interaktif')}
             fieldKey="skenarioTitle"
             isSelected={isSelected}
             onEdit={onEditField}

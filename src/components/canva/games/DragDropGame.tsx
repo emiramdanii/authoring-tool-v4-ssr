@@ -8,7 +8,7 @@ import type { GameComponentProps } from './shared';
    DRAG & DROP GAME (Seret & Letakkan) — Efficiency-based scoring with 50% floor
    Score = max(ceil(items * 0.5), items - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
-export function DragDropGame({ data, compact, onComplete }: GameComponentProps) {
+export function DragDropGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const items = ((data.items as Array<Record<string, unknown>>) || []).filter(i => i.teks);
   const targets = ((data.target || data.targets) as Array<Record<string, unknown>>) || [];
   const [placed, setPlaced] = useState<Record<string, Array<{ teks: string }>>>({});
@@ -55,7 +55,7 @@ export function DragDropGame({ data, compact, onComplete }: GameComponentProps) 
     setPlaced(newPlaced);
   };
 
-  if (items.length === 0 || targets.length === 0) return <EmptyState icon="🖐️" label="Seret & Letakkan" compact={compact} />;
+  if (items.length === 0 || targets.length === 0) return <EmptyState icon="🖐️" label="Seret & Letakkan" compact={compact} interactive={interactive} />;
 
   const finalScore = Math.max(Math.ceil(items.length * 0.5), items.length - wrongAttempts);
   const scorePct = items.length > 0 ? Math.round((finalScore / items.length) * 100) : 0;

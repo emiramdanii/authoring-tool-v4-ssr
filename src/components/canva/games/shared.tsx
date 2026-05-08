@@ -7,22 +7,25 @@
 export interface GameComponentProps {
   data: Record<string, unknown>;
   compact: boolean;
+  interactive?: boolean;
   onComplete?: (score: number, maxScore: number) => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    EMPTY STATE helper
    ═══════════════════════════════════════════════════════════════ */
-export function EmptyState({ icon, label, compact }: { icon: string; label: string; compact: boolean }) {
+export function EmptyState({ icon, label, compact, interactive }: { icon: string; label: string; compact: boolean; interactive?: boolean }) {
   return (
     <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3">
       <span className={compact ? 'text-xl' : 'text-2xl'}>{icon}</span>
       <span className={`${compact ? 'text-[9px]' : 'text-[10px]'} text-cyan-300/70 mt-1`}>
         {label}
       </span>
-      <span className="text-[8px] text-cyan-400/50 mt-0.5">
-        Tambahkan data di panel Konten
-      </span>
+      {!interactive && (
+        <span className="text-[8px] text-cyan-400/50 mt-0.5">
+          Tambahkan data di panel Konten
+        </span>
+      )}
     </div>
   );
 }

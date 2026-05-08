@@ -262,7 +262,22 @@ export default function ExportApp() {
                           pointerEvents: 'auto',
                           zIndex: 20,
                         }}>
-                          <span className="text-2xl">{el.icon || ''}</span>
+                          {el.type === 'teks' && (
+                            <div style={{ fontSize: `${el.fontSize || 20}px`, fontWeight: 700, color: el.textColor || '#fff', padding: 8, lineHeight: 1.4 }}>
+                              {el.text || ''}
+                            </div>
+                          )}
+                          {el.type === 'shape' && (
+                            <div style={{ width: '100%', height: '100%', background: el.color || 'rgba(255,255,255,.15)', borderRadius: `${el.radius || 8}px` }} />
+                          )}
+                          {el.icon && el.type !== 'teks' && el.type !== 'shape' && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              <span style={{ fontSize: '2rem' }}>{el.icon}</span>
+                            </div>
+                          )}
+                          {!el.type && el.icon && (
+                            <span className="text-2xl">{el.icon}</span>
+                          )}
                         </div>
                       ))}
                     </div>

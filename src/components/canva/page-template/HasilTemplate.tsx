@@ -28,7 +28,7 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
 
       {/* Title */}
       <EditableText
-        value="Hasil Belajar"
+        value={String(td.hasilTitle || 'Hasil Belajar')}
         fieldKey="hasilTitle"
         isSelected={isSelected}
         onEdit={onEditField}

@@ -24,7 +24,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
             style={{ background: `${accent}20` }}>📝</div>
           <div>
             <EditableText
-              value="Materi Pembelajaran"
+              value={String(td.materiTitle || 'Materi Pembelajaran')}
               fieldKey="materiTitle"
               isSelected={isSelected}
               onEdit={onEditField}
@@ -94,7 +94,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
           style={{ background: `${accent}20` }}>📝</div>
         <div>
           <EditableText
-            value="Materi Pembelajaran"
+            value={String(td.materiTitle || 'Materi Pembelajaran')}
             fieldKey="materiTitle"
             isSelected={isSelected}
             onEdit={onEditField}

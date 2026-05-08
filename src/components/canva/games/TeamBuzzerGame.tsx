@@ -7,7 +7,7 @@ import type { GameComponentProps } from './shared';
 /* ═══════════════════════════════════════════════════════════════
    TEAM BUZZER GAME
    ═══════════════════════════════════════════════════════════════ */
-export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps) {
+export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const soal = (data.soal as Array<Record<string, unknown>>) || [];
   const validSoal = soal.filter(s => s.teks);
   const timA = (data.timA as string) || 'Tim A';
@@ -44,7 +44,7 @@ export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps
     }, 1500);
   };
 
-  if (validSoal.length === 0) return <EmptyState icon="🏆" label="Kuis Tim" compact={compact} />;
+  if (validSoal.length === 0) return <EmptyState icon="🏆" label="Kuis Tim" compact={compact} interactive={interactive} />;
 
   if (phase === 'result') {
     const winner = scoreA > scoreB ? timA : scoreB > scoreA ? timB : 'Seri';

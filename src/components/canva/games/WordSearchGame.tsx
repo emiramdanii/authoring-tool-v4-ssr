@@ -77,7 +77,7 @@ function getLineCells(start: [number, number], end: [number, number]): Array<[nu
   return cells;
 }
 
-export function WordSearchGame({ data, compact, onComplete }: GameComponentProps) {
+export function WordSearchGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kataList = (data.kata as string[]) || [];
   const ukuran = (data.ukuran as number) || 10;
   const validKata = kataList.filter(k => k.trim());
@@ -114,7 +114,7 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
     setGridKey(k => k + 1);
   };
 
-  if (validKata.length === 0) return <EmptyState icon="🔍" label="Teka-Teki Kata" compact={compact} />;
+  if (validKata.length === 0) return <EmptyState icon="🔍" label="Teka-Teki Kata" compact={compact} interactive={interactive} />;
 
   if (phase === 'done') {
     return (

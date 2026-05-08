@@ -28,7 +28,7 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
           style={{ background: `${accent}20` }}>❓</div>
         <div>
           <EditableText
-            value="Kuis Interaktif"
+            value={String(td.kuisTitle || 'Kuis Interaktif')}
             fieldKey="kuisTitle"
             isSelected={isSelected}
             onEdit={onEditField}
