@@ -81,11 +81,21 @@ export default function ExportApp() {
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
   const nextInteractivePage = useInteractiveStore((s) => s.nextInteractivePage);
   const prevInteractivePage = useInteractiveStore((s) => s.prevInteractivePage);
-  const totalScore = useInteractiveStore((s) => s.totalScore);
-  const totalMax = useInteractiveStore((s) => s.totalMax);
-  const totalPct = useInteractiveStore((s) => s.totalPct);
+  // Subscribe to scores[] for reactive updates — function refs are stable and won't trigger re-renders
+  const scores = useInteractiveStore((s) => s.scores);
+  const _totalScore = useInteractiveStore((s) => s.scores.reduce((sum: number, sc: { score: number }) => sum + sc.score, 0));
+  const _totalMax = useInteractiveStore((s) => s.scores.reduce((sum: number, sc: { maxScore: number }) => sum + sc.maxScore, 0));
+  const _totalPct = useInteractiveStore((s) => {
+    const max = s.scores.reduce((sum: number, sc: { maxScore: number }) => sum + sc.maxScore, 0);
+    if (max === 0) return 0;
+    return Math.round((s.scores.reduce((sum: number, sc: { score: number }) => sum + sc.score, 0) / max) * 100);
+  });
   const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
   const resetAllScores = useInteractiveStore((s) => s.resetAllScores);
+  const goPage = useCanvaStore((s) => s.goPage);
+
+  // Suppress unused variable warning — scores subscription needed for reactivity
+  void scores;
 
   const currentIdx = interactivePageIdx;
   const totalPages = pages.length;
@@ -94,7 +104,7 @@ export default function ExportApp() {
   const progressPct = totalPages > 0 ? Math.round(((currentIdx + 1) / totalPages) * 100) : 0;
   const currentTemplate = pages[currentIdx]?.templateType || 'custom';
   const nextTemplate = pages[currentIdx + 1]?.templateType || '';
-  const hasScore = totalMax() > 0;
+  const hasScore = _totalMax > 0;
   const isLastPage = currentIdx >= totalPages - 1;
   const currentPage = pages[currentIdx];
 
@@ -120,8 +130,9 @@ export default function ExportApp() {
 
   const handleNav = useCallback((idx: number) => {
     goInteractivePage(idx);
+    goPage(idx); // Sync canva store so components reading currentPageIndex stay in sync
     window.scrollTo(0, 0);
-  }, [goInteractivePage]);
+  }, [goInteractivePage, goPage]);
 
   const handleReset = useCallback(() => {
     resetAllScores();
@@ -235,13 +246,13 @@ export default function ExportApp() {
                       <div className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${progressPct}%`,
-                          background: 'linear-gradient(90deg, #f9c12e, #3ecfcf)',
+                          background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
                         }} />
                     </div>
                   )}
                   {hasScore && pageNavConfig.showScore !== false && (
                     <span className="text-xs font-extrabold text-amber-400 whitespace-nowrap">
-                      {totalScore()} ⭐
+                      {_totalScore} ⭐
                     </span>
                   )}
                 </nav>
@@ -386,8 +397,8 @@ export default function ExportApp() {
               {hasScore && showScore && (
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                   <span className="text-[10px]">🏆</span>
-                  <span className="font-mono font-bold text-[11px] text-emerald-300">{totalPct()}%</span>
-                  <span className="text-[9px] text-emerald-400/50">{totalScore()}/{totalMax()}</span>
+                  <span className="font-mono font-bold text-[11px] text-emerald-300">{_totalPct}%</span>
+                  <span className="text-[9px] text-emerald-400/50">{_totalScore}/{_totalMax}</span>
                 </div>
               )}
               <span className="text-[10px] font-mono text-slate-500">
@@ -399,8 +410,8 @@ export default function ExportApp() {
                   disabled={isLastPage}
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
                     isLastPage
-                      ? 'bg-amber-400/80 text-slate-900 cursor-pointer hover:-translate-y-0.5 hover:shadow-lg'
-                      : 'bg-amber-400 text-slate-900 hover:-translate-y-0.5 hover:shadow-lg'
+                      ? 'bg-amber-400/30 text-slate-900/50 cursor-not-allowed opacity-50'
+                      : 'bg-amber-400 text-slate-900 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer'
                   }`}
                 >
                   {isLastPage ? '🎉 Selesai' : getNextLabel(currentTemplate, nextTemplate)}

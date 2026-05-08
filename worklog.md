@@ -124,3 +124,50 @@ Stage Summary:
 - Export overlay rendering matches custom mode rendering
 - CSS parity between preview and export established
 - Production build suppresses console warnings correctly
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Phase 6 — Navigation Parity + navConfig Support + Game Deps Fix
+
+Work Log:
+- Rewrote ExportApp bottom navigation to visually match InteractiveNav
+- Added isPageComplete tracking with green ring indicators on page dots
+- Implemented full navConfig support (showNavbar, showPrevNext, showScore, showProgress)
+- Top navbar now also respects per-page navConfig
+- Used glass-panel-strong class in export bottom nav (matching preview)
+- Score badge with 🏆 + percentage + fraction (matching preview layout)
+- Next button now disabled on last page, confetti still fires on click
+- Fixed useEffect dependency arrays in 7 game components
+- Committed as db17c0e, pushed to GitHub
+
+Stage Summary:
+- Export navigation now visually and functionally matches preview
+- navConfig per-page settings fully respected in export
+- All 7 game useEffect deps fixed (SortingGame already correct from Phase 5)
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Phase 7 — Production Hardening (Security, Performance, Robustness)
+
+Work Log:
+- Final production audit identified 13 issues across CRITICAL/HIGH/MEDIUM/LOW
+- Added ExportErrorBoundary class to entry-client.tsx — catches render errors
+  with user-friendly fallback + reload button + technical details
+- Added image compression in setBgImage — resize to max 1200px, JPEG 80%
+  to prevent 20-50+ MB export HTML from uncompressed backgrounds
+- Validated bgDataUrl starts with 'data:image/' in ExportApp — prevents CSS injection
+- Added 20 MB size guard in API route with helpful error message
+- Replaced fs.watchFile with mtime-based cache invalidation — no more FD leak
+- Hid internal error details from API responses — generic message to client
+- Removed React.StrictMode from export entry — unnecessary in standalone HTML
+- Added console.error when __EXPORT_DATA__ is missing
+- Fixed empty filename edge case with fallback
+- Committed as 556282e, pushed to GitHub
+
+Stage Summary:
+- Production-ready export pipeline: error boundary, image compression, XSS prevention
+- No resource leaks: mtime-based cache instead of fs.watchFile
+- Error handling: graceful degradation at all levels
+- All builds pass: Vite SSR (604KB), Next.js 16.1.3 (0 errors)

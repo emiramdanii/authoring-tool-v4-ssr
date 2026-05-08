@@ -48,9 +48,81 @@ body {
 }
 
 /* ── Glass Panel (matches globals.css) ──────────────────────────── */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
 .glass-panel-strong {
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* ── Custom Scrollbar (from globals.css) ────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.25);
+}
+
+/* ── Button Base Styles (from globals.css) ─────────────────────── */
+.btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  color: rgba(148, 163, 184, 0.7);
+  transition: all 0.15s ease;
+}
+.btn-ghost:hover {
+  background: rgba(30, 41, 59, 0.6);
+  color: #e2e8f0;
+}
+
+/* ── Page Transition (from globals.css) ────────────────────────── */
+.page-transition {
+  animation: fadeSlideIn 0.2s ease-out;
+}
+
+/* ── Accent Top Bar (from globals.css) ─────────────────────────── */
+.accent-top {
+  position: relative;
+  overflow: hidden;
+}
+.accent-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-color, #fbbf24);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Section Divider (from globals.css) ────────────────────────── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent);
+}
+
+/* ── Pulse Dot (from globals.css) ──────────────────────────────── */
+.pulse-dot {
+  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }

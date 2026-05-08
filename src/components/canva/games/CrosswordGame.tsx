@@ -12,16 +12,24 @@ import type { GameComponentProps } from './shared';
 export function CrosswordGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kata = (data.kata as Array<Record<string, unknown>>) || [];
   const ukuran = (data.ukuran as number) || 12;
-  const validKata = kata.filter(k => k.teks && String(k.teks).trim());
+  // Stable serialization key so useMemo doesn't reshuffle on every render
+  const kataKey = JSON.stringify(kata.filter(k => k.teks && String(k.teks).trim()).map(k => ({ t: String(k.teks), h: String(k.petunjuk || k.hint || ''), r: k.baris, c: k.kolom, d: k.arah })));
+  const validKataLenRef = useRef(0);
   const [userGrid, setUserGrid] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const [checked, setChecked] = useState(false);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const [activeCell, setActiveCell] = useState<{ r: number; c: number } | null>(null);
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   // Build crossword grid
   const gridData = useMemo(() => {
+    const validKata = kata.filter(k => k.teks && String(k.teks).trim());
+    validKataLenRef.current = validKata.length;
     const SIZE = ukuran;
     const grid: Array<Array<{ letter: string; num: number; wordIds: number[] }>> = [];
     for (let r = 0; r < SIZE; r++) {
@@ -55,7 +63,8 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
           }
           if (fits) { startR = tr; startC = tc; dir = td; break; }
         }
-        if (startR === null) return;
+        // Fix: guard BOTH startR and startC — if either is still null, skip this word
+        if (startR === null || startC === null) return;
       }
 
       const wid = wordId++;
@@ -72,19 +81,20 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       clueNum++;
     });
 
-    return { grid, SIZE, acrossClues, downClues };
-  }, [validKata, ukuran]);
+    return { grid, SIZE, acrossClues, downClues, validCount: validKata.length };
+  }, [kataKey, ukuran]);
 
-  const { grid, SIZE: gridSize, acrossClues, downClues } = gridData;
+  const { grid, SIZE: gridSize, acrossClues, downClues, validCount } = gridData;
+  const validKataLen = validCount;
 
   // Efficiency-based scoring with 50% floor: score = max(ceil(words*0.5), words - reveals)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - revealed.size);
-      onComplete(score, validKata.length);
+      const score = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - revealed.size);
+      onComplete(score, validKataLen);
     }
-  }, [phase, onComplete, validKata.length, revealed.size]);
+  }, [phase, onComplete, validKataLen, revealed.size]);
 
   // Handle keyboard input for active cell
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -164,7 +174,8 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
 
   const handleCheck = () => {
     setChecked(true);
-    setTimeout(() => setChecked(false), 1500);
+    const tid = setTimeout(() => setChecked(false), 1500);
+    timersRef.current.push(tid);
     if (checkComplete()) setPhase('done');
   };
 
@@ -189,10 +200,10 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
     }
   };
 
-  if (validKata.length === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} interactive={interactive} />;
+  if (validKataLen === 0) return <EmptyState icon="🔤" label="Teka Silang" compact={compact} interactive={interactive} />;
 
-  const finalScore = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - revealed.size);
-  const scorePct = validKata.length > 0 ? Math.round((finalScore / validKata.length) * 100) : 0;
+  const finalScore = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - revealed.size);
+  const scorePct = validKataLen > 0 ? Math.round((finalScore / validKataLen) * 100) : 0;
 
   if (phase === 'done') {
     return (
@@ -200,7 +211,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Teka Silang Selesai!</div>
         <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
-        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKata.length} kata{revealed.size > 0 ? ` · ${revealed.size} dibantu` : ' · Sempurna!'}</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKataLen} kata{revealed.size > 0 ? ` · ${revealed.size} dibantu` : ' · Sempurna!'}</div>
         <button onClick={() => { setUserGrid({}); setRevealed(new Set()); setChecked(false); setPhase('play'); setActiveCell(null); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
       </div>
@@ -213,7 +224,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
     <div className="h-full flex flex-col bg-cyan-500/10 p-2" onKeyDown={handleKeyDown} tabIndex={0}>
       <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
         <span className="font-bold">🔤 Teka Silang</span>
-        <span>{validKata.length} kata{revealed.size > 0 ? ` · ${revealed.size} dibantu` : ''}</span>
+        <span>{validKataLen} kata{revealed.size > 0 ? ` · ${revealed.size} dibantu` : ''}</span>
       </div>
       <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
         {/* Grid */}

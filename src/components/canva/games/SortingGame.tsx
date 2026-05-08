@@ -18,6 +18,10 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
   const [wrong, setWrong] = useState<string | null>(null);
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   // Efficiency-based scoring with 50% floor: score = max(ceil(items*0.5), items - wrongAttempts)
   useEffect(() => {
@@ -46,7 +50,8 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
     } else {
       setWrongAttempts(w => w + 1);
       setWrong(catId);
-      setTimeout(() => setWrong(null), 500);
+      const tid = setTimeout(() => setWrong(null), 500);
+      timersRef.current.push(tid);
     }
   }, [validItems]);
 

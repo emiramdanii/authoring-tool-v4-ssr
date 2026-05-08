@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
@@ -12,8 +12,10 @@ import type { GameComponentProps } from './shared';
 export function MatchingGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
   const validPairs = pasangan.filter(p => p.kiri || p.kanan);
+  // Stable serialization key so useMemo reshuffles only when data actually changes
+  const pairsKey = JSON.stringify(validPairs.map(p => ({ l: String(p.kiri || ''), r: String(p.kanan || '') })));
 
-  const [shuffledRight] = useState(() => {
+  const shuffledRight = useMemo(() => {
     const r = validPairs.map((p, i) => ({ idx: i, text: (p.kanan as string) || '' }));
     // Fisher-Yates shuffle (unbiased, unlike sort+random)
     for (let i = r.length - 1; i > 0; i--) {
@@ -21,7 +23,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
       [r[i], r[j]] = [r[j], r[i]];
     }
     return r;
-  });
+  }, [pairsKey]);
   const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
   const [matchedLeft, setMatchedLeft] = useState<Set<number>>(new Set());
   const [matchedRight, setMatchedRight] = useState<Set<number>>(new Set());
@@ -29,6 +31,10 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   // Efficiency-based scoring with 50% floor: score = max(ceil(pairs*0.5), pairs - wrongAttempts)
   useEffect(() => {
@@ -53,7 +59,8 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
     } else {
       setWrongAttempts(w => w + 1);
       setWrong(`${selectedLeft}-${originalIdx}`);
-      setTimeout(() => setWrong(null), 600);
+      const tid = setTimeout(() => setWrong(null), 600);
+      timersRef.current.push(tid);
     }
     setSelectedLeft(null);
   };

@@ -17,6 +17,10 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [phase, setPhase] = useState<'play' | 'result'>('play');
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   useEffect(() => {
     if (phase === 'result' && !reported.current && onComplete) {
@@ -35,7 +39,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
     if (isCorrect) setScore(s => s + 1);
     setAnswered(true);
 
-    setTimeout(() => {
+    const tid = setTimeout(() => {
       if (currentQ + 1 < validSoal.length) {
         setCurrentQ(q => q + 1);
         setAnswered(false);
@@ -45,6 +49,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
         setPhase('result');
       }
     }, 1500);
+    timersRef.current.push(tid);
   }, [answered, userInput, currentQ, validSoal]);
 
   if (validSoal.length === 0) return <EmptyState icon="✏️" label="Isian" compact={compact} interactive={interactive} />;

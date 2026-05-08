@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
@@ -14,6 +14,10 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const reported = useRef(false); // track if score reported
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   const colors = ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c', '#60a5fa', '#f472b6'];
 
@@ -24,7 +28,7 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
     const extra = Math.floor(Math.random() * 360) + 360 * 3;
     const newRot = rotation + extra;
     setRotation(newRot);
-    setTimeout(() => {
+    const tid = setTimeout(() => {
       setSpinning(false);
       const normalized = newRot % 360;
       const sliceAngle = 360 / opsi.length;
@@ -33,6 +37,7 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
       // Roda Putar is a random picker tool, not a quiz — no scoring contribution
       if (!reported.current && onComplete) { reported.current = true; onComplete(0, 0); }
     }, 2500);
+    timersRef.current.push(tid);
   };
 
   if (opsi.length < 2) return <EmptyState icon="🎡" label="Roda Putar" compact={compact} interactive={interactive} />;

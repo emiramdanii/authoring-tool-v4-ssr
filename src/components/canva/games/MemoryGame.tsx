@@ -10,9 +10,13 @@ import type { GameComponentProps } from './shared';
    ═══════════════════════════════════════════════════════════════ */
 export function MemoryGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const pasangan = (data.pasangan as Array<Record<string, unknown>>) || [];
-  const validPairs = pasangan.filter(p => p.kiri || p.kanan);
+  // Stable serialization key so useMemo doesn't reshuffle on every render
+  const pairsKey = JSON.stringify(pasangan.filter(p => p.kiri || p.kanan).map(p => ({ l: String(p.kiri || ''), r: String(p.kanan || '') })));
+  const validPairsLenRef = useRef(0);
 
   const cards = useMemo(() => {
+    const validPairs = pasangan.filter(p => p.kiri || p.kanan);
+    validPairsLenRef.current = validPairs.length;
     const c: Array<{ id: number; text: string; pairId: number; type: 'left' | 'right' }> = [];
     validPairs.forEach((p, i) => {
       c.push({ id: i * 2, text: (p.kiri as string) || `?${i + 1}`, pairId: i, type: 'left' });
@@ -24,7 +28,7 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
       [c[i], c[j]] = [c[j], c[i]];
     }
     return c;
-  }, [validPairs]);
+  }, [pairsKey]);
 
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<number>>(new Set());
@@ -32,15 +36,21 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
+
+  const validPairsLen = validPairsLenRef.current;
 
   // Efficiency-based scoring with 50% floor: score = max(ceil(pairs*0.5), pairs - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
-      onComplete(score, validPairs.length);
+      const score = Math.max(Math.ceil(validPairsLen * 0.5), validPairsLen - wrongAttempts);
+      onComplete(score, validPairsLen);
     }
-  }, [phase, onComplete, validPairs.length, wrongAttempts]);
+  }, [phase, onComplete, validPairsLen, wrongAttempts]);
 
   const handleFlip = useCallback((cardId: number) => {
     if (flipped.length === 2 || flipped.includes(cardId) || matched.has(cardId)) return;
@@ -60,7 +70,8 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
         }
       } else {
         setWrongAttempts(w => w + 1);
-        setTimeout(() => setFlipped([]), 800);
+        const tid = setTimeout(() => setFlipped([]), 800);
+        timersRef.current.push(tid);
       }
     }
   }, [flipped, matched, cards]);
@@ -74,10 +85,10 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
     reported.current = false;
   };
 
-  if (validPairs.length === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} interactive={interactive} />;
+  if (validPairsLen === 0) return <EmptyState icon="🧠" label="Memory Match" compact={compact} interactive={interactive} />;
 
-  const finalScore = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
-  const scorePct = validPairs.length > 0 ? Math.round((finalScore / validPairs.length) * 100) : 0;
+  const finalScore = Math.max(Math.ceil(validPairsLen * 0.5), validPairsLen - wrongAttempts);
+  const scorePct = validPairsLen > 0 ? Math.round((finalScore / validPairsLen) * 100) : 0;
 
   if (phase === 'done') {
     return (
@@ -100,7 +111,7 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
       <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
         <span className="font-bold">🧠 Memory</span>
-        <span>Langkah: {moves} | {wrongAttempts > 0 && <span className="text-red-400">{wrongAttempts} salah · </span>}{matched.size / 2}/{validPairs.length}</span>
+        <span>Langkah: {moves} | {wrongAttempts > 0 && <span className="text-red-400">{wrongAttempts} salah · </span>}{matched.size / 2}/{validPairsLen}</span>
       </div>
       <div className="flex-1 min-h-0 grid gap-1" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
         {cards.map(card => {

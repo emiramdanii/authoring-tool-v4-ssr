@@ -110,7 +110,9 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       changed = true;
       return {
         ...page,
-        templateData: dataChanged && freshData ? freshData : page.templateData,
+        // Merge fresh data INTO existing templateData to preserve user-edited fields
+        // (e.g. title overrides) that aren't produced by buildTemplateData
+        templateData: dataChanged && freshData ? { ...page.templateData, ...freshData } : page.templateData,
         // Also update label for cover pages if title changed
         ...(page.templateType === 'cover' && freshData?.title
           ? { label: 'Cover - ' + freshData.title }

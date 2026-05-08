@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
@@ -15,6 +15,10 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   const colors = ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c', '#60a5fa', '#f472b6'];
 
@@ -25,7 +29,7 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
     const extra = Math.floor(Math.random() * 360) + 360 * 3;
     const newRot = rotation + extra;
     setRotation(newRot);
-    setTimeout(() => {
+    const tid = setTimeout(() => {
       setSpinning(false);
       const normalized = newRot % 360;
       const sliceAngle = 360 / validSoal.length;
@@ -35,6 +39,7 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
       // Guard: only report once per session to avoid overwriting other game scores
       if (!reported.current && onComplete) { reported.current = true; onComplete(0, 0); }
     }, 2500);
+    timersRef.current.push(tid);
   };
 
   if (validSoal.length < 2) return <EmptyState icon="🎡" label="Roda Pertanyaan" compact={compact} interactive={interactive} />;

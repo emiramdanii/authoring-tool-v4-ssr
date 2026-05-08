@@ -20,7 +20,15 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
           style={{ background: `${accent}20` }}>📋</div>
         <div>
-          <div className="font-black text-white text-sm">Dokumen Kurikulum</div>
+          <EditableText
+            value={String(td.dokumenTitle || 'Dokumen Kurikulum')}
+            fieldKey="dokumenTitle"
+            isSelected={isSelected}
+            onEdit={onEditField}
+            interactive={interactive}
+            className="font-black text-white text-sm"
+            placeholder="Judul Dokumen"
+          />
           <div className="text-[9px] text-white/40">Capaian Pembelajaran • Tujuan Pembelajaran</div>
         </div>
       </div>

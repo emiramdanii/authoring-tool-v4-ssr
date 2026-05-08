@@ -12,12 +12,22 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
   const totalKuis = (td.totalKuis as number) || 0;
   const namaBab = String(td.namaBab || '');
 
-  // Live score from interactive store
-  const totalPct = useInteractiveStore((s) => s.totalPct);
-  const totalScore = useInteractiveStore((s) => s.totalScore);
-  const totalMax = useInteractiveStore((s) => s.totalMax);
+  // Live score from interactive store — subscribe to scores[] array (primitive) so
+  // Zustand detects changes. The function refs (totalPct, totalScore, totalMax)
+  // are stable and never trigger re-renders on their own.
+  const scores = useInteractiveStore((s) => s.scores);
+  const _pct = useInteractiveStore((s) => {
+    const max = s.scores.reduce((sum, sc) => sum + sc.maxScore, 0);
+    if (max === 0) return 0;
+    return Math.round((s.scores.reduce((sum, sc) => sum + sc.score, 0) / max) * 100);
+  });
+  const _totalScore = useInteractiveStore((s) => s.scores.reduce((sum, sc) => sum + sc.score, 0));
+  const _totalMax = useInteractiveStore((s) => s.scores.reduce((sum, sc) => sum + sc.maxScore, 0));
 
-  const pct = interactive ? totalPct() : 0;
+  // Suppress unused variable warning — scores subscription is needed for reactivity
+  void scores;
+
+  const pct = interactive ? _pct : 0;
   const level = pct >= 85 ? 'Sangat Baik' : pct >= 70 ? 'Baik' : pct > 0 ? 'Perlu Latihan' : '';
   const levelColor = pct >= 85 ? '#34d399' : pct >= 70 ? '#f9c82e' : '#f87171';
 
@@ -58,7 +68,7 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
       {/* Info */}
       {totalKuis > 0 && (
         <div className="text-[10px] text-white/50 mb-3">
-          {interactive ? `${totalScore()}/${totalMax()} poin` : `${totalKuis} soal kuis tersedia`}
+          {interactive ? `${_totalScore}/${_totalMax} poin` : `${totalKuis} soal kuis tersedia`}
         </div>
       )}
 

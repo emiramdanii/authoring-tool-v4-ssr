@@ -20,6 +20,10 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
   const [correct, setCorrect] = useState<'A' | 'B' | 'wrong' | null>(null); // 'wrong' prevents re-buzz
   const [phase, setPhase] = useState<'play' | 'result'>('play');
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; const total = validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0); onComplete(scoreA + scoreB, total); } }, [phase, onComplete, scoreA, scoreB, validSoal]);
 
@@ -33,7 +37,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
     if (team === 'A') setScoreA(s => s + pts);
     else setScoreB(s => s + pts);
     setCorrect(team);
-    setTimeout(() => {
+    const tid1 = setTimeout(() => {
       if (currentQ + 1 < validSoal.length) {
         setCurrentQ(q => q + 1);
         setBuzzed(null);
@@ -42,6 +46,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
         setPhase('result');
       }
     }, 1500);
+    timersRef.current.push(tid1);
   };
 
   if (validSoal.length === 0) return <EmptyState icon="🏆" label="Kuis Tim" compact={compact} interactive={interactive} />;
@@ -99,7 +104,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
           <button onClick={() => {
               // Mark as wrong — prevents re-buzzing until question advances
               setCorrect('wrong');
-              setTimeout(() => {
+              const tid2 = setTimeout(() => {
                 if (currentQ + 1 < validSoal.length) {
                   setCurrentQ(q => q + 1);
                   setBuzzed(null);
@@ -108,6 +113,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
                   setPhase('result');
                 }
               }, 800);
+              timersRef.current.push(tid2);
             }}
             className="flex-1 py-1 bg-red-500/20 hover:bg-red-500/40 rounded text-[9px] font-bold text-red-300 border border-red-400/30 cursor-pointer">
             Salah ({buzzed})

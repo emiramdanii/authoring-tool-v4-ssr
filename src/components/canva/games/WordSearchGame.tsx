@@ -80,13 +80,20 @@ function getLineCells(start: [number, number], end: [number, number]): Array<[nu
 export function WordSearchGame({ data, compact, interactive, onComplete }: GameComponentProps) {
   const kataList = (data.kata as string[]) || [];
   const ukuran = (data.ukuran as number) || 10;
-  const validKata = kataList.filter(k => k.trim());
+  // Stable serialization key so useMemo doesn't reshuffle on every render
+  const kataKey = JSON.stringify(kataList.filter(k => k.trim()));
+  const validKataLenRef = useRef(0);
 
   const [gridKey, setGridKey] = useState(0);
-  const { grid, placements } = useMemo(
-    () => generateGridWithPlacements(validKata, ukuran),
-    [validKata, ukuran, gridKey]
-  );
+  const { grid, placements, validCount } = useMemo(() => {
+    const validKata = kataList.filter(k => k.trim());
+    validKataLenRef.current = validKata.length;
+    const result = generateGridWithPlacements(validKata, ukuran);
+    return { ...result, validCount: validKata.length };
+  }, [kataKey, ukuran, gridKey]);
+  const validKataLen = validCount;
+  // Also keep validKata accessible for word matching
+  const validKata = useMemo(() => kataList.filter(k => k.trim()), [kataKey]);
 
   // Track found words AND which cells belong to found words
   const [found, setFound] = useState<Set<string>>(new Set());
@@ -99,10 +106,10 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
       reported.current = true;
-      const score = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - wrongAttempts);
-      onComplete(score, validKata.length);
+      const score = Math.max(Math.ceil(validKataLen * 0.5), validKataLen - wrongAttempts);
+      onComplete(score, validKataLen);
     }
-  }, [phase, onComplete, validKata.length, wrongAttempts]);
+  }, [phase, onComplete, validKataLen, wrongAttempts]);
 
   const handleRestart = () => {
     setFound(new Set());
@@ -114,14 +121,14 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
     setGridKey(k => k + 1);
   };
 
-  if (validKata.length === 0) return <EmptyState icon="🔍" label="Teka-Teki Kata" compact={compact} interactive={interactive} />;
+  if (validKataLen === 0) return <EmptyState icon="🔍" label="Teka-Teki Kata" compact={compact} interactive={interactive} />;
 
   if (phase === 'done') {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Ditemukan!</div>
-        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKata.length} kata{wrongAttempts ? ` · ${wrongAttempts} salah` : ' · Sempurna!'}</div>
+        <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKataLen} kata{wrongAttempts ? ` · ${wrongAttempts} salah` : ' · Sempurna!'}</div>
         <button onClick={handleRestart}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi

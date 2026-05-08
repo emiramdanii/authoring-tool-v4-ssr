@@ -16,6 +16,10 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
   const [selected, setSelected] = useState<boolean | null>(null);
   const [phase, setPhase] = useState<'play' | 'result'>('play');
   const reported = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
   useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; onComplete(score, validSoal.length); } }, [phase, score, validSoal.length, onComplete]);
 
@@ -25,7 +29,7 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
     setAnswered(true);
     const correct = validSoal[currentQ].benar as boolean;
     if (benar === correct) setScore(s => s + 1);
-    setTimeout(() => {
+    const tid = setTimeout(() => {
       if (currentQ + 1 < validSoal.length) {
         setCurrentQ(q => q + 1);
         setSelected(null);
@@ -34,6 +38,7 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
         setPhase('result');
       }
     }, 1200);
+    timersRef.current.push(tid);
   }, [answered, currentQ, validSoal]);
 
   if (validSoal.length === 0) return <EmptyState icon="✅" label="Benar / Salah" compact={compact} interactive={interactive} />;

@@ -47,7 +47,7 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
           <QuizWidget
             compact={!interactive}
             interactive={interactive}
-            kuisIds={kuisData.map(k => String(k._id)).filter(Boolean)}
+            kuisIds={kuisData.map(k => k._id).filter((id): id is string => typeof id === 'string' && id.length > 0)}
             onComplete={interactive ? handleComplete : undefined}
           />
         ) : (

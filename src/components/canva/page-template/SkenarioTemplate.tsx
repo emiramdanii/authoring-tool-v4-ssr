@@ -23,6 +23,13 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
   const [showFeedback, setShowFeedback] = useState<{ good: boolean; message: string } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Reset currentChapter when skenario data changes and currentChapter is out of bounds
+  useEffect(() => {
+    if (skenario && currentChapter >= skenario.length) {
+      setCurrentChapter(0);
+    }
+  }, [skenario, currentChapter]);
+
   // Reset state when not in interactive mode
   useEffect(() => {
     if (!interactive) {
