@@ -84,7 +84,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       const score = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - revealed.size);
       onComplete(score, validKata.length);
     }
-  }, [phase]);
+  }, [phase, onComplete, validKata.length, revealed.size]);
 
   // Handle keyboard input for active cell
   const handleKeyDown = (e: React.KeyboardEvent) => {

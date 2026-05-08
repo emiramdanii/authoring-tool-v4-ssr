@@ -24,7 +24,7 @@ export function DragDropGame({ data, compact, interactive, onComplete }: GameCom
       const score = Math.max(Math.ceil(items.length * 0.5), items.length - wrongAttempts);
       onComplete(score, items.length);
     }
-  }, [phase]);
+  }, [phase, onComplete, items.length, wrongAttempts]);
 
   const unplaced = items.filter(it => !Object.values(placed).flat().find(p => p.teks === it.teks));
 

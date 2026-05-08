@@ -102,7 +102,7 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
       const score = Math.max(Math.ceil(validKata.length * 0.5), validKata.length - wrongAttempts);
       onComplete(score, validKata.length);
     }
-  }, [phase]);
+  }, [phase, onComplete, validKata.length, wrongAttempts]);
 
   const handleRestart = () => {
     setFound(new Set());

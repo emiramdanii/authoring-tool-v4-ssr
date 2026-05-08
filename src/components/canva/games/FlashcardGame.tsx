@@ -23,7 +23,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
       reported.current = true;
       onComplete(validCards.length, validCards.length);
     }
-  }, [viewedCards, validCards.length]);
+  }, [viewedCards, validCards.length, onComplete]);
 
   const handleFlip = () => {
     const newFlipped = !flipped;

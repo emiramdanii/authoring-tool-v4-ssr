@@ -89,3 +89,38 @@ Stage Summary:
 - 10/12 game components were clean, 2 had scoring bugs (now fixed)
 - API route optimized with template caching
 - All changes pushed to GitHub (3 commits ahead)
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Phase 5 — E2E Deep Audit + 12 Bug Fixes
+
+Work Log:
+- Ran 3 parallel deep audits: 12 PageTemplates, 12 Game components, Export Pipeline
+- PageTemplate audit found: TDZ bug in GameTemplate, 5 hardcoded EditableText values, DokumenTemplate truncation, SkenarioTemplate setTimeout leak
+- Game audit found: interactive prop never forwarded to any game component, SortingGame nested setState, SpinWheelGame undefined kategori
+- Export pipeline audit found: overlay elements only render icon, glass-panel-strong CSS mismatch, process.env.NODE_ENV not defined
+- Fixed all 12 bugs across 24 files (commit 829303e):
+  1. CRITICAL: GameTemplate TDZ — moved safeIdx/activeGame above handleComplete
+  2. CRITICAL: GameTemplate hardcoded value — now reads td.gameTitle
+  3. HIGH: 5 templates hardcoded EditableText values → read from td with fallbacks
+  4. HIGH: GameComponentProps + all 12 games — accept + forward interactive prop
+  5. HIGH: EmptyState — hide authoring prompt when interactive=true
+  6. HIGH: PlayOverlay — pass interactive prop to GameWidget
+  7. HIGH: ExportApp overlay elements — render text/shape/icon types (not just icon)
+  8. HIGH: Vite config — define process.env.NODE_ENV='production'
+  9. HIGH: export.css — glass-panel-strong matches globals.css
+  10. MEDIUM: SortingGame — moved completion detection from nested setState to useEffect
+  11. MEDIUM: SpinWheelGame — nullish coalescing for undefined kategori
+  12. MEDIUM: DokumenTemplate — conditional truncation ellipsis
+  13. MEDIUM: SkenarioTemplate — setTimeout cleanup via useRef
+- All builds pass: Vite SSR (602KB), Next.js 16.1.3 (0 errors), dev server ready in 563ms
+- Pushed to GitHub (829303e)
+
+Stage Summary:
+- Phase 5 complete: 12 bugs fixed across templates, games, and export pipeline
+- All 12 templates now correctly read dynamic data from td instead of hardcoded strings
+- All 12 games properly accept and forward the interactive prop
+- Export overlay rendering matches custom mode rendering
+- CSS parity between preview and export established
+- Production build suppresses console warnings correctly

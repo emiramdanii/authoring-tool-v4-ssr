@@ -40,7 +40,7 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
       const score = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
       onComplete(score, validPairs.length);
     }
-  }, [phase]);
+  }, [phase, onComplete, validPairs.length, wrongAttempts]);
 
   const handleFlip = useCallback((cardId: number) => {
     if (flipped.length === 2 || flipped.includes(cardId) || matched.has(cardId)) return;

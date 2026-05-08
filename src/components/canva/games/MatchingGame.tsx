@@ -37,7 +37,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
       const score = Math.max(Math.ceil(validPairs.length * 0.5), validPairs.length - wrongAttempts);
       onComplete(score, validPairs.length);
     }
-  }, [phase]);
+  }, [phase, onComplete, validPairs.length, wrongAttempts]);
 
   const handleLeftClick = (idx: number) => {
     if (matchedLeft.has(idx)) return;

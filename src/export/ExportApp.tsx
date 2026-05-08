@@ -9,7 +9,8 @@
 
 import React, { useCallback, useEffect } from 'react';
 import { PageTemplate } from '@/components/canva/page-template/PageTemplate';
-import type { CanvaPage } from '@/components/canva/types';
+import type { CanvaPage, NavConfig } from '@/components/canva/types';
+import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -56,17 +57,20 @@ function launchConfetti() {
   }
 }
 
+// ── Get effective navConfig for a page (with defaults) ───────────
+
+function getNavConfig(page: CanvaPage): NavConfig {
+  return page.navConfig || DEFAULT_NAV_CONFIG;
+}
+
 // ── Main Export App Component ────────────────────────────────────
 
 export default function ExportApp() {
   // Read data from stores (pre-populated by entry-client.tsx)
   const pages = useCanvaStore((s) => s.pages);
-  const ratioId = useCanvaStore((s) => s.ratioId);
   const meta = useAuthoringStore((s) => s.meta);
 
   // ── Expose interactive store for Live Preview postMessage bridge ──
-  // This allows the parent iframe (use-preview-builder.ts) to navigate
-  // slides via window.__INTERACTIVE_STORE__.getState().goInteractivePage(idx)
   useEffect(() => {
     (window as any).__INTERACTIVE_STORE__ = useInteractiveStore;
     return () => { delete (window as any).__INTERACTIVE_STORE__; };
@@ -80,6 +84,7 @@ export default function ExportApp() {
   const totalScore = useInteractiveStore((s) => s.totalScore);
   const totalMax = useInteractiveStore((s) => s.totalMax);
   const totalPct = useInteractiveStore((s) => s.totalPct);
+  const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
   const resetAllScores = useInteractiveStore((s) => s.resetAllScores);
 
   const currentIdx = interactivePageIdx;
@@ -92,6 +97,13 @@ export default function ExportApp() {
   const hasScore = totalMax() > 0;
   const isLastPage = currentIdx >= totalPages - 1;
   const currentPage = pages[currentIdx];
+
+  // NavConfig for current page
+  const navConfig = currentPage ? getNavConfig(currentPage) : DEFAULT_NAV_CONFIG;
+  const showNavbar = navConfig.showNavbar !== false;
+  const showPrevNext = navConfig.showPrevNext !== false;
+  const showScore = navConfig.showScore !== false;
+  const showProgress = navConfig.showProgress !== false;
 
   // ── Navigation handlers ───────────────────────────────────────
   const handleNext = useCallback(() => {
@@ -118,8 +130,6 @@ export default function ExportApp() {
   }, [resetAllScores, goInteractivePage]);
 
   // ── Dynamic bottom nav height observer ─────────────────────────
-  // Observes the bottom nav bar height and updates --export-nav-h CSS variable
-  // so the page content always fills the remaining viewport space accurately.
   useEffect(() => {
     const navEl = document.getElementById('exportBottomNav');
     if (!navEl) return;
@@ -131,7 +141,7 @@ export default function ExportApp() {
     const ro = new ResizeObserver(updateHeight);
     ro.observe(navEl);
     return () => ro.disconnect();
-  }, [hasScore]);
+  }, [hasScore, showNavbar]);
 
   // ── Keyboard navigation ───────────────────────────────────────
   useEffect(() => {
@@ -176,17 +186,15 @@ export default function ExportApp() {
     );
   }
 
-  const isFullPage = ['cover', 'hasil', 'hero'].includes(currentTemplate);
-  const isTemplateMode = currentPage?.templateType && currentPage.templateType !== 'custom';
-
   return (
     <>
       <div className="min-h-screen bg-slate-900 text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
         {pages.map((page, i) => {
           const isActive = i === currentIdx;
           const templateType = page.templateType || 'custom';
-          const isFull = ['cover', 'hasil', 'hero'].includes(templateType);
           const isTemplate = templateType !== 'custom';
+          const pageNavConfig = getNavConfig(page);
+          const pageShowProgress = pageNavConfig.showProgress !== false;
 
           // Background style
           const bgStyle: React.CSSProperties = page.bgDataUrl
@@ -198,9 +206,6 @@ export default function ExportApp() {
               key={page.id || i}
               className={isActive ? 'block' : 'hidden'}
               style={{
-                // Dynamic height: full viewport minus bottom nav bar.
-                // We use a CSS variable --export-nav-h updated by a resize observer
-                // so the page content always fills exactly the right space.
                 height: 'calc(100vh - var(--export-nav-h, 72px))',
                 position: 'relative',
                 overflow: 'hidden',
@@ -218,30 +223,31 @@ export default function ExportApp() {
                 />
               )}
 
-              {/* ── Top Navbar (hidden on cover) ── */}
-              {templateType !== 'cover' && (
-                <nav className="sticky top-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10"
-                  style={{ background: 'rgba(14,28,47,0.96)', backdropFilter: 'blur(12px)' }}>
+              {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
+              {templateType !== 'cover' && pageNavConfig.showNavbar !== false && (
+                <nav className="glass-panel-strong sticky top-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
                   <span className="font-['Fredoka_One'] text-sm text-amber-400 whitespace-nowrap">
                     {meta.namaBab || meta.judulPertemuan || 'Media'}
                   </span>
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full mx-2 overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${progressPct}%`,
-                        background: 'linear-gradient(90deg, #f9c12e, #3ecfcf)',
-                      }} />
-                  </div>
-                  <span className="text-xs font-extrabold text-amber-400 whitespace-nowrap">
-                    {totalScore()} ⭐
-                  </span>
+                  {pageShowProgress && (
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full mx-2 overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${progressPct}%`,
+                          background: 'linear-gradient(90deg, #f9c12e, #3ecfcf)',
+                        }} />
+                    </div>
+                  )}
+                  {hasScore && pageNavConfig.showScore !== false && (
+                    <span className="text-xs font-extrabold text-amber-400 whitespace-nowrap">
+                      {totalScore()} ⭐
+                    </span>
+                  )}
                 </nav>
               )}
 
               {/* ── Page Content ── */}
               {isTemplate ? (
-                // Template mode: render PageTemplate directly
-                // It uses absolute inset-0, so it fills the container
                 <>
                   <PageTemplate
                     key={page.id}
@@ -315,79 +321,106 @@ export default function ExportApp() {
         })}
       </div>
 
-      {/* ── Bottom Navigation Bar ── */}
-      <div id="exportBottomNav" className="fixed bottom-0 left-0 right-0 z-[300] border-t border-white/10"
-        style={{ background: 'rgba(14,28,47,0.96)', backdropFilter: 'blur(12px)' }}>
-        {/* Progress bar */}
-        <div className="h-1 bg-white/5">
-          <div className="h-full rounded-full transition-all duration-500 ease-out"
-            style={{
-              width: `${progressPct}%`,
-              background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
-            }} />
-        </div>
+      {/* ── Bottom Navigation Bar (respects navConfig) ── */}
+      {showNavbar && (
+        <div id="exportBottomNav" className="glass-panel-strong fixed bottom-0 left-0 right-0 z-[300] border-t border-white/10">
+          {/* Progress bar */}
+          {showProgress && (
+            <div className="h-1 bg-white/5">
+              <div className="h-full rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${progressPct}%`,
+                  background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
+                }} />
+            </div>
+          )}
 
-        {/* Nav bar */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2">
-          {/* Prev button */}
-          <button
-            onClick={handlePrev}
-            disabled={currentIdx <= 0}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold border border-white/10 bg-white/5 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
-          >
-            ← Prev
-          </button>
-
-          {/* Page dots */}
-          <div className="flex items-center gap-1 overflow-x-auto max-w-[50vw] py-0.5">
-            {pages.map((p, i) => (
+          {/* Nav bar */}
+          <div className="flex items-center justify-between gap-2 px-3 py-2">
+            {/* Prev button */}
+            {showPrevNext && (
               <button
-                key={p.id || i}
-                onClick={() => handleNav(i)}
-                title={`${p.label || `Halaman ${i + 1}`} (${i + 1}/${totalPages})`}
-                className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs cursor-pointer border-2 transition-all ${
-                  i === currentIdx
-                    ? 'border-emerald-400 bg-emerald-400/15 shadow-[0_0_8px_rgba(52,211,153,0.3)]'
-                    : 'border-transparent bg-white/5 hover:bg-white/10'
+                onClick={handlePrev}
+                disabled={currentIdx <= 0}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  currentIdx > 0
+                    ? 'hover:bg-white/10 text-white cursor-pointer'
+                    : 'opacity-30 cursor-not-allowed text-white/50'
                 }`}
               >
-                {TEMPLATE_ICON[p.templateType || 'custom'] || '📄'}
+                ← Prev
               </button>
-            ))}
-          </div>
-
-          {/* Score + Counter + Next */}
-          <div className="flex items-center gap-1.5">
-            {hasScore && (
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-[10px] font-extrabold text-emerald-400">
-                ⭐ {totalScore()}/{totalMax()} ({totalPct()}%)
-              </div>
             )}
-            <span className="text-[10px] font-bold text-slate-400">
-              {currentIdx + 1}/{totalPages}
-            </span>
-            <button
-              onClick={handleNext}
-              disabled={false}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold bg-amber-400 text-slate-900 hover:-translate-y-0.5 hover:shadow-lg transition-all"
-            >
-              {isLastPage ? '🎉 Selesai' : getNextLabel(currentTemplate, nextTemplate)}
-            </button>
-          </div>
-        </div>
 
-        {/* Reset button */}
-        {hasScore && (
-          <div className="flex justify-center pb-1">
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1 px-3 py-1 rounded-lg text-[10px] font-bold border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 transition-all"
-            >
-              ↩ Ulangi Semua
-            </button>
+            {/* Page dots with completion indicators */}
+            <div className="flex items-center gap-1 overflow-x-auto max-w-[50vw] py-0.5">
+              {pages.map((p, i) => {
+                const isActive = i === currentIdx;
+                const isComplete = isPageComplete(i);
+                return (
+                  <button
+                    key={p.id || i}
+                    onClick={() => handleNav(i)}
+                    title={`${p.label || `Halaman ${i + 1}`} (${i + 1}/${totalPages})${isComplete ? ' ✓' : ''}`}
+                    className={`relative flex-shrink-0 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                      isActive
+                        ? 'w-8 h-8 text-base bg-slate-700/40 ring-2 ring-emerald-400/60 shadow-lg shadow-emerald-500/20'
+                        : `w-6 h-6 text-xs hover:bg-slate-800/40 ${isComplete ? 'ring-2 ring-emerald-400' : ''}`
+                    }`}
+                  >
+                    {/* Completion dot indicator */}
+                    <span className={`absolute rounded-full ${
+                      isActive
+                        ? 'w-2.5 h-2.5 bg-emerald-400'
+                        : 'w-1.5 h-1.5 bg-slate-600'
+                    }`} style={{ bottom: isActive ? 1 : 2, right: isActive ? 1 : 2 }} />
+                    <span className="relative z-10">{TEMPLATE_ICON[p.templateType || 'custom'] || '📄'}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Score + Counter + Next */}
+            <div className="flex items-center gap-1.5">
+              {hasScore && showScore && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="text-[10px]">🏆</span>
+                  <span className="font-mono font-bold text-[11px] text-emerald-300">{totalPct()}%</span>
+                  <span className="text-[9px] text-emerald-400/50">{totalScore()}/{totalMax()}</span>
+                </div>
+              )}
+              <span className="text-[10px] font-mono text-slate-500">
+                {currentIdx + 1}/{totalPages}
+              </span>
+              {showPrevNext && (
+                <button
+                  onClick={handleNext}
+                  disabled={isLastPage}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                    isLastPage
+                      ? 'bg-amber-400/80 text-slate-900 cursor-pointer hover:-translate-y-0.5 hover:shadow-lg'
+                      : 'bg-amber-400 text-slate-900 hover:-translate-y-0.5 hover:shadow-lg'
+                  }`}
+                >
+                  {isLastPage ? '🎉 Selesai' : getNextLabel(currentTemplate, nextTemplate)}
+                </button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Reset button */}
+          {hasScore && showScore && (
+            <div className="flex justify-center pb-1">
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-slate-300 transition-colors px-2 py-0.5 rounded"
+              >
+                ↩ Ulangi
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Confetti container ── */}
       <div id="confWrap" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9998 }} />

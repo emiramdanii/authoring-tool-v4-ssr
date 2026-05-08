@@ -21,7 +21,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
   const [phase, setPhase] = useState<'play' | 'result'>('play');
   const reported = useRef(false);
 
-  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; const total = validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0); onComplete(scoreA + scoreB, total); } }, [phase]);
+  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; const total = validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0); onComplete(scoreA + scoreB, total); } }, [phase, onComplete, scoreA, scoreB, validSoal]);
 
   const handleBuzz = (team: 'A' | 'B') => {
     if (buzzed || correct === 'wrong') return; // Block buzzing while wrong answer pending
