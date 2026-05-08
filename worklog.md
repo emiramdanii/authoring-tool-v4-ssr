@@ -241,3 +241,32 @@ Stage Summary:
 - Confetti cleanup prevents memory leaks
 - Dynamic navbar heights prevent content overlap
 - Total Phase 9 bugs fixed: 19 (12 previous + 7 this round)
+
+---
+Task ID: 11
+Agent: Main Agent
+Task: Phase 9+ — Edge Cases & Reactivity Bugs Deep Audit
+
+Work Log:
+- Ran parallel deep audits on 12 game components, 12 templates, store sync pipeline, and canva components
+- Found 28+ issues across CRITICAL/HIGH/MEDIUM/LOW severity levels
+- Fixed 9 bugs across 8 files:
+  1. CRITICAL: WordSearchGame uncompletable when words fail grid placement (used placements.length)
+  2. CRITICAL: WordSearchGame maxScore included unplaceable words (same root fix)
+  3. HIGH: CrosswordGame scoring mismatch — maxScore included unplaceable words
+  4. HIGH: InteractiveNav/PlayOverlay stale score display — Zustand function selectors never trigger re-renders (switched to value selectors)
+  5. HIGH: sync-slice syncElementIds always reports changed (.map() creates new reference; now tracks actual modifications)
+  6. MEDIUM: SkenarioTemplate accent & red both read --r CSS variable (accent now uses --y)
+  7. MEDIUM: SkenarioTemplate completion logic wrong for branching (now tracks currentChapter >= length)
+  8. MEDIUM: template-data.ts k.q.trim() crashes on nullish q (changed to optional chaining)
+  9. MEDIUM: openPlay() now starts from current page instead of always page 0
+- Both builds pass: Next.js 16.1.3 ✅ 0 errors, Vite SSR ✅ 614KB
+- Committed as 6f35bae, pushed to GitHub
+
+Stage Summary:
+- 9 edge case & reactivity bugs fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM)
+- Score display now updates reactively (was stale before)
+- WordSearchGame and CrosswordGame now correctly handle unplaceable words
+- SkenarioTemplate works correctly with branching scenarios
+- Store sync no longer triggers unnecessary re-renders
+- Total bugs fixed across all phases: 74+
