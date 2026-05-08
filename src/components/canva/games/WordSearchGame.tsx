@@ -85,13 +85,15 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
   const validKataLenRef = useRef(0);
 
   const [gridKey, setGridKey] = useState(0);
-  const { grid, placements, validCount } = useMemo(() => {
+  const { grid, placements } = useMemo(() => {
     const validKata = kataList.filter(k => k.trim());
-    validKataLenRef.current = validKata.length;
     const result = generateGridWithPlacements(validKata, ukuran);
-    return { ...result, validCount: validKata.length };
+    return result;
   }, [kataKey, ukuran, gridKey]);
-  const validKataLen = validCount;
+  // Use PLACED word count (not total valid words) — words that fail
+  // grid placement can never be found, making the game uncompletable
+  // if we use validKata.length as the target.
+  const validKataLen = placements.length;
   // Also keep validKata accessible for word matching
   const validKata = useMemo(() => kataList.filter(k => k.trim()), [kataKey]);
 
@@ -164,7 +166,7 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
 
       const word = lineCells.map(([cr, cc]) => grid[cr]?.[cc] || '').join('');
       const reversedWord = word.split('').reverse().join('');
-      const foundWord = validKata.find(k => (k === word || k === reversedWord) && !found.has(k));
+      const foundWord = validKata.find(k => (k === word || k === reversedWord) && !found.has(k) && placements.some(p => p.word === k));
 
       if (foundWord) {
         setFound(prev => new Set([...prev, foundWord]));
@@ -173,7 +175,7 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
           lineCells.forEach(([cr, cc]) => next.add(`${cr},${cc}`));
           return next;
         });
-        if (found.size + 1 === validKata.length) setPhase('done');
+        if (found.size + 1 === validKataLen) setPhase('done');
       } else {
         setWrongAttempts(w => w + 1);
       }
@@ -208,10 +210,10 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
         </div>
         {/* Word list */}
         <div className="flex-1 flex flex-col gap-0.5 min-w-[60px]">
-          {validKata.map((k, i) => (
+          {placements.map((p, i) => (
             <span key={i} className={`text-[8px] px-1.5 py-0.5 rounded ${
-              found.has(k) ? 'bg-emerald-500/20 text-emerald-300 line-through' : 'bg-white/5 text-white/40'
-            }`}>{k}</span>
+              found.has(p.word) ? 'bg-emerald-500/20 text-emerald-300 line-through' : 'bg-white/5 text-white/40'
+            }`}>{p.word}</span>
           ))}
         </div>
       </div>

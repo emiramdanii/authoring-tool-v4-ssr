@@ -91,7 +91,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       clueNum++;
     });
 
-    return { grid, SIZE, acrossClues, downClues, validCount: validKata.length };
+    return { grid, SIZE, acrossClues, downClues, validCount: acrossClues.length + downClues.length };
   }, [kataKey, ukuran]);
 
   const { grid, SIZE: gridSize, acrossClues, downClues, validCount } = gridData;

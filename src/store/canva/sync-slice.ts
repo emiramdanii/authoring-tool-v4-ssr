@@ -81,29 +81,35 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       // ── Layer 3: Element ID re-sync ───────────────────────
       // For game/kuis elements that still use dataIdx only, try to resolve
       // their stable moduleId/kuisId from the authoring store
-      const syncElementIds = (els: CanvaElement[]): CanvaElement[] => {
-        return els.map(el => {
+      // Phase 9 fix: track whether any element was actually modified to avoid
+      // unnecessary array replacements that trigger re-renders
+      const syncElementIds = (els: CanvaElement[]): { result: CanvaElement[]; changed: boolean } => {
+        let changed = false;
+        const result = els.map(el => {
           if (el.type === 'game' && !el.moduleId && el.dataIdx != null && el.dataIdx >= 0) {
             const gameModules = authStore.modules.filter((m: Record<string, unknown>) =>
               (GAME_TYPES as readonly string[]).includes(m.type as string)
             );
             if (el.dataIdx < gameModules.length && gameModules[el.dataIdx]._id) {
+              changed = true;
               return { ...el, moduleId: gameModules[el.dataIdx]._id as string };
             }
           }
           if (el.type === 'kuis' && !el.kuisId && el.dataIdx != null && el.dataIdx >= 0) {
             if (el.dataIdx < authStore.kuis.length && authStore.kuis[el.dataIdx]._id) {
+              changed = true;
               return { ...el, kuisId: authStore.kuis[el.dataIdx]._id as string };
             }
           }
           return el;
         });
+        return { result, changed };
       };
 
       const syncedOverlays = syncElementIds(cleanedOverlays);
       const syncedElements = syncElementIds(cleanedElements);
 
-      const idsSynced = syncedOverlays !== cleanedOverlays || syncedElements !== cleanedElements;
+      const idsSynced = syncedOverlays.changed || syncedElements.changed;
 
       if (!dataChanged && !overlaysChanged && !elementsChanged && !idsSynced) return page;
 
@@ -117,8 +123,8 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
         ...(page.templateType === 'cover' && freshData?.title
           ? { label: 'Cover - ' + freshData.title }
           : {}),
-        overlayElements: (overlaysChanged || idsSynced) ? syncedOverlays : page.overlayElements,
-        elements: (elementsChanged || idsSynced) ? syncedElements : page.elements,
+        overlayElements: (overlaysChanged || idsSynced) ? syncedOverlays.result : page.overlayElements,
+        elements: (elementsChanged || idsSynced) ? syncedElements.result : page.elements,
       };
     });
 

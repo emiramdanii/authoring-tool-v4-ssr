@@ -83,7 +83,7 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
 
     case 'kuis':
       return {
-        kuis: authStore.kuis.filter(k => k.q.trim()),
+        kuis: authStore.kuis.filter(k => k.q?.trim()),
       };
 
     case 'game':
@@ -95,7 +95,7 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
 
     case 'hasil':
       return {
-        totalKuis: authStore.kuis.filter(k => k.q.trim()).length,
+        totalKuis: authStore.kuis.filter(k => k.q?.trim()).length,
         namaBab: meta.namaBab || '',
       };
 

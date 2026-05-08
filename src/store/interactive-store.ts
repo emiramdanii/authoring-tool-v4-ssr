@@ -91,9 +91,11 @@ export const useInteractiveStore = create<InteractiveState>((set, get) => {
 
   openPlay: () => {
     syncTotalPages(); // ← ensure totalPages is correct before navigating
-    set({ mode: 'interactive', interactivePageIdx: 0, scores: [] });
-    // Sync canva store to first page
-    try { useCanvaStore.getState().goPage(0); } catch { /* canva store may not be ready */ }
+    // Phase 9 fix: start from current page instead of always page 0
+    const startIdx = useCanvaStore.getState().currentPageIndex || 0;
+    set({ mode: 'interactive', interactivePageIdx: startIdx, scores: [] });
+    // Sync canva store to the start page
+    try { useCanvaStore.getState().goPage(startIdx); } catch { /* canva store may not be ready */ }
   },
 
   closePlay: () => {

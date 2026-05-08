@@ -10,7 +10,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 // Phase 4: Interactive choices — clickable in play mode with branching navigation
 
 export function SkenarioTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
-  const accent = getPaletteColor(palette, '--r', '#f472b6');
+  const accent = getPaletteColor(palette, '--y', '#f472b6');
   const green = getPaletteColor(palette, '--g', '#34d399');
   const red = getPaletteColor(palette, '--r', '#f87171');
   const skenario = (td.skenario as Array<Record<string, unknown>>) || [];
@@ -63,7 +63,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
       if (nextChapter < skenario.length && nextChapter >= 0) {
         setCurrentChapter(nextChapter);
       } else if (nextChapter >= skenario.length) {
-        // Completed all chapters — report score
+        // Completed all chapters — set currentChapter beyond range to trigger isCompleted
+        setCurrentChapter(nextChapter);
+        // Report score
         const goodCount = [...choiceHistory, { chapter: chapterIdx, choiceIdx, good: isGood }].filter(c => c.good).length;
         const totalChoices = [...choiceHistory, { chapter: chapterIdx, choiceIdx, good: isGood }].length;
         reportScore({
@@ -79,7 +81,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
 
   const currentCh = skenario[currentChapter];
   const totalGoodChoices = choiceHistory.filter(c => c.good).length;
-  const isCompleted = choiceHistory.length >= skenario.length && skenario.length > 0;
+  // Phase 9 fix: completion should be tracked by reaching end of branching path,
+  // not by counting choices (branching can skip chapters or have variable depth)
+  const isCompleted = currentChapter >= skenario.length && skenario.length > 0;
 
   // Phase 9 fix: Reset button handler for replaying scenario
   const handleReset = useCallback(() => {

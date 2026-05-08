@@ -17,9 +17,16 @@ export default function InteractiveNav() {
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
   const nextInteractivePage = useInteractiveStore((s) => s.nextInteractivePage);
   const prevInteractivePage = useInteractiveStore((s) => s.prevInteractivePage);
-  const totalScore = useInteractiveStore((s) => s.totalScore);
-  const totalMax = useInteractiveStore((s) => s.totalMax);
-  const totalPct = useInteractiveStore((s) => s.totalPct);
+  // Phase 9 fix: Use value selectors instead of function references.
+  // Zustand only re-renders when the selected VALUE changes, not when
+  // a function reference changes. The function-based selectors (totalScore, totalMax, totalPct)
+  // always return the same function reference, so score updates were NOT reflected in the UI.
+  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
+  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
+  const totalPctVal = useInteractiveStore((s) => {
+    const max = s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0);
+    return max === 0 ? 0 : Math.round((s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0) / max) * 100);
+  });
   const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
   const resetAllScores = useInteractiveStore((s) => s.resetAllScores);
 
@@ -27,7 +34,7 @@ export default function InteractiveNav() {
 
   const currentIdx = interactivePageIdx;
   const total = pages.length;
-  const hasScore = totalMax() > 0;
+  const hasScore = totalMaxVal > 0;
   const progress = total > 1 ? ((currentIdx + 1) / total) * 100 : 100;
 
   const handleNav = (idx: number) => {
@@ -121,8 +128,8 @@ export default function InteractiveNav() {
             {hasScore && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <Trophy size={12} className="text-emerald-300" />
-                <span className="font-mono font-bold text-[11px] text-emerald-300">{totalPct()}%</span>
-                <span className="text-[9px] text-emerald-400/50">{totalScore()}/{totalMax()}</span>
+                <span className="font-mono font-bold text-[11px] text-emerald-300">{totalPctVal}%</span>
+                <span className="text-[9px] text-emerald-400/50">{totalScoreVal}/{totalMaxVal}</span>
               </div>
             )}
 

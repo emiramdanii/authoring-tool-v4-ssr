@@ -50,11 +50,12 @@ function PlayOverlayHeader() {
   const closePlay = useInteractiveStore((s) => s.closePlay);
   const pages = useCanvaStore((s) => s.pages);
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
-  const totalScore = useInteractiveStore((s) => s.totalScore);
-  const totalMax = useInteractiveStore((s) => s.totalMax);
+  // Phase 9 fix: Use value selectors for reactive score display
+  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
+  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
 
   const page = pages[interactivePageIdx];
-  const hasScore = totalMax() > 0;
+  const hasScore = totalMaxVal > 0;
 
   return (
     <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-slate-700/50">
@@ -72,7 +73,7 @@ function PlayOverlayHeader() {
         {hasScore && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
             <Trophy size={12} className="text-emerald-300" />
-            <span className="text-xs font-black text-emerald-300">{totalScore()}/{totalMax()}</span>
+            <span className="text-xs font-black text-emerald-300">{totalScoreVal}/{totalMaxVal}</span>
           </div>
         )}
 
@@ -317,8 +318,8 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
   const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
-  const totalScore = useInteractiveStore((s) => s.totalScore);
-  const totalMax = useInteractiveStore((s) => s.totalMax);
+  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
+  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
   const ratio = useCanvaStore((s) => s.currentRatio());
 
   const handleSelect = (idx: number) => {
@@ -336,9 +337,9 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
     <div className="w-full h-full overflow-auto p-6">
       <div className="text-center mb-4">
         <div className="text-sm font-bold text-slate-200">Overview — {pages.length} Halaman</div>
-        {totalMax() > 0 && (
+        {totalMaxVal > 0 && (
           <div className="text-[10px] text-emerald-400/60 mt-1">
-            Skor: {totalScore()}/{totalMax()} ({Math.round((totalScore() / totalMax()) * 100)}%)
+            Skor: {totalScoreVal}/{totalMaxVal} ({totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0}%)
           </div>
         )}
         <div className="text-[9px] text-slate-500 mt-1">Klik halaman untuk navigasi • Tekan O atau Esc untuk tutup</div>
