@@ -433,6 +433,7 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
           kuisId={element.kuisId}
           kuisIds={element.kuisIds}
           compact={false}
+          interactive
           onComplete={handleComplete}
         />
       )}

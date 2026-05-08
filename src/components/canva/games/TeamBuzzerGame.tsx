@@ -58,7 +58,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
         <span className="text-2xl">🏆</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">{winner} Menang!</div>
         <div className="text-[9px] text-cyan-400/60 mt-0.5">{timA}: {scoreA} | {timB}: {scoreB}</div>
-        <button onClick={() => { setCurrentQ(0); setScoreA(0); setScoreB(0); setBuzzed(null); setCorrect(null); setPhase('play'); reported.current = false; }}
+        <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setCurrentQ(0); setScoreA(0); setScoreB(0); setBuzzed(null); setCorrect(null); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>

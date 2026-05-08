@@ -111,6 +111,16 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
     }
   }, [phase, onComplete, validKataLen, wrongAttempts]);
 
+  // Phase 9 fix: Reset game state when word data changes
+  useEffect(() => {
+    setFound(new Set());
+    setFoundCells(new Set());
+    setStartCell(null);
+    setPhase('play');
+    reported.current = false;
+    setWrongAttempts(0);
+  }, [kataKey]);
+
   const handleRestart = () => {
     setFound(new Set());
     setFoundCells(new Set());

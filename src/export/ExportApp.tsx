@@ -22,6 +22,8 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import QuizWidget from '@/components/canva/QuizWidget';
 import GameWidget from '@/components/canva/GameWidget';
+import PresetModuleCard from '@/components/shared/PresetModuleCard';
+import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
 import { resolveModule } from '@/lib/module-resolver';
 
 // ── Constants ────────────────────────────────────────────────────
@@ -150,6 +152,8 @@ function ExportElement({ element, pageIndex }: { element: CanvaElement; pageInde
 }
 
 // ── Export Module Element ────────────────────────────────────────
+// Phase 9 fix: use full PresetModuleCard for visual fidelity with preview
+// (was a simplified card that looked different from the PlayOverlay rendering)
 
 function ExportModuleElement({ element }: { element: CanvaElement }) {
   const modules = useAuthoringStore((s) => s.modules);
@@ -164,14 +168,13 @@ function ExportModuleElement({ element }: { element: CanvaElement }) {
     );
   }
 
-  // Render module data as a simplified card
-  const type = String(mod.type || 'modul');
-  const title = String(mod.title || type);
-
   return (
-    <div className="h-full overflow-auto p-2 bg-white/5 rounded border border-white/10">
-      <div className="text-[10px] font-bold text-emerald-300 mb-1">🧩 {title}</div>
-      <div className="text-[8px] text-white/50">{type}</div>
+    <div className="h-full overflow-auto p-1">
+      <PresetModuleCard
+        mode="canvas"
+        module={mod as Parameters<typeof PresetModuleCard>[0]['module']}
+        layoutVariant={(mod.layoutVariant as LayoutVariant) || 'A'}
+      />
     </div>
   );
 }
@@ -324,10 +327,14 @@ export default function ExportApp() {
   const showTopNav = templateType !== 'cover' && pageNavConfig.showNavbar !== false;
 
   // Background style — validate bgDataUrl starts with data:image/ to prevent CSS injection
+  // Phase 9 fix: support gradient bgColor (e.g. 'linear-gradient(...)')
+  // and image backgrounds, matching PlayOverlay behavior
   const safeBgDataUrl = page.bgDataUrl?.startsWith('data:image/') ? page.bgDataUrl : null;
   const bgStyle: React.CSSProperties = safeBgDataUrl
     ? { backgroundImage: `url('${safeBgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { background: page.bgColor || '#0e1c2f' };
+    : page.bgColor?.includes('gradient')
+      ? { background: page.bgColor }
+      : { background: page.bgColor || '#0e1c2f' };
 
   return (
     <>
@@ -347,7 +354,7 @@ export default function ExportApp() {
             <div
               style={{
                 position: 'absolute', inset: 0,
-                background: `rgba(0,0,0,${(page.overlay ?? 20) / 100})`,
+                background: `rgba(14,28,47,${(page.overlay ?? 20) / 100})`,
                 pointerEvents: 'none', zIndex: 0,
               }}
             />

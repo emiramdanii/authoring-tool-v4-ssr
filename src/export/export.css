@@ -2,6 +2,8 @@
    EXPORT CSS — Tailwind + custom styles for exported HTML
    This file is the CSS entry point for Vite build.
    Tailwind v4 auto-detects content from source files.
+   Phase 9 fix: synced ALL custom classes from globals.css for
+   pixel-perfect visual fidelity between preview and export.
    ═══════════════════════════════════════════════════════════════════════ */
 
 @import "tailwindcss";
@@ -47,7 +49,7 @@ body {
   to { opacity: 1; transform: none; }
 }
 
-/* ── Glass Panel (matches globals.css) ──────────────────────────── */
+/* ── Glass Panel Effect (matches globals.css) ──────────────────── */
 .glass-panel {
   background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(12px);
@@ -60,6 +62,60 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* ── Subtle Inner Glow for Panels ────────────────────────────── */
+.panel-inner-glow {
+  box-shadow:
+    inset 0 1px 0 0 rgba(148, 163, 184, 0.06),
+    0 0 0 0 transparent;
+}
+
+/* ── Active Item Indicator ───────────────────────────────────── */
+.nav-active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
+}
+
+/* ── Card Hover Effect ───────────────────────────────────────── */
+.card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(251, 191, 36, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────── */
+.tooltip-trigger {
+  position: relative;
+}
+.tooltip-trigger::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  color: #e2e8f0;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+}
+.tooltip-trigger:hover::after {
+  opacity: 1;
 }
 
 /* ── Custom Scrollbar (from globals.css) ────────────────────────── */
@@ -77,6 +133,63 @@ body {
   background: rgba(148, 163, 184, 0.25);
 }
 
+/* ── Range Input Styling ─────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(51, 65, 85, 0.6);
+  border-radius: 4px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+  transition: box-shadow 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+/* ── Color Input ─────────────────────────────────────────────── */
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 6px;
+}
+
+/* ── Select Input ────────────────────────────────────────────── */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  padding-right: 24px;
+}
+
+/* ── Number Input ────────────────────────────────────────────── */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* ── Button Base Styles (from globals.css) ─────────────────────── */
 .btn-ghost {
   display: flex;
@@ -92,12 +205,92 @@ body {
   color: #e2e8f0;
 }
 
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-accent:hover {
+  background: rgba(251, 191, 36, 0.18);
+  border-color: rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(251, 191, 36, 0.2);
+}
+.btn-primary:hover {
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-success:hover {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.08);
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+/* ── Focus Ring ──────────────────────────────────────────────── */
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.5);
+  outline-offset: 1px;
+}
+
 /* ── Page Transition (from globals.css) ────────────────────────── */
 .page-transition {
   animation: fadeSlideIn 0.2s ease-out;
 }
 
-/* ── Accent Top Bar (from globals.css) ─────────────────────────── */
+/* ── Accent Top Bar for Cards ────────────────────────────────── */
 .accent-top {
   position: relative;
   overflow: hidden;
@@ -105,11 +298,16 @@ body {
 .accent-top::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   background: var(--accent-color, #fbbf24);
   opacity: 0.7;
   transition: opacity 0.2s ease;
+}
+.accent-top:hover::before {
+  opacity: 1;
 }
 
 /* ── Section Divider (from globals.css) ────────────────────────── */
@@ -131,6 +329,12 @@ body {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -159,7 +363,8 @@ body {
 }
 
 /* ── Fade Slide In animation ──────────────────────────────────── */
+/* Phase 9 fix: match globals.css exactly (4px, not 8px) */
 @keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

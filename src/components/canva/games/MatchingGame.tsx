@@ -39,6 +39,17 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
   // Cleanup all timeouts on unmount
   useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
+  // Phase 9 fix: Reset game state when pairs data changes
+  useEffect(() => {
+    setSelectedLeft(null);
+    setMatchedLeft(new Set());
+    setMatchedRight(new Set());
+    setWrongAttempts(0);
+    setWrongRightIdx(null);
+    setPhase('play');
+    reported.current = false;
+  }, [pairsKey]);
+
   // Efficiency-based scoring with 50% floor: score = max(ceil(pairs*0.5), pairs - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
@@ -80,7 +91,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Cocok!</div>
         <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
         {wrongAttempts > 0 && <div className="text-[9px] text-cyan-400/60">{wrongAttempts} kesalahan</div>}
-        <button onClick={() => { setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setWrongAttempts(0); setWrongRightIdx(null); setPhase('play'); reported.current = false; }}
+        <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setSelectedLeft(null); setMatchedLeft(new Set()); setMatchedRight(new Set()); setWrongAttempts(0); setWrongRightIdx(null); setPhase('play'); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">
           Ulangi
         </button>

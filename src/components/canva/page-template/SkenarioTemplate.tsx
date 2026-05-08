@@ -38,6 +38,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
       setShowFeedback(null);
     }
     return () => {
+      // Phase 9 fix: always cleanup timeout on unmount, not just when !interactive
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [interactive]);

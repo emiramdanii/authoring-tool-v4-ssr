@@ -103,7 +103,7 @@ export function DragDropGame({ data, compact, interactive, onComplete }: GameCom
             <div key={i}
               onClick={() => handleDrop(tid)}
               className={`rounded-lg border-2 border-dashed p-2 min-h-[32px] transition-all ${
-                isActive ? 'border-cyan-400/30 bg-cyan-500/5 cursor-pointer hover:border-cyan-400/50' : 'border-white/10 bg-white/3'
+                isActive ? 'border-cyan-400/30 bg-cyan-500/5 cursor-pointer hover:border-cyan-400/50' : 'border-white/10 bg-white/5'
               }`}>
               <div className="text-[9px] font-bold text-white/50 mb-1">{String(tgt.label || tid)}</div>
               <div className="flex flex-wrap gap-1 min-h-[16px]">
