@@ -13,7 +13,7 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PageTemplate } from '@/components/canva/page-template/PageTemplate';
 import type { CanvaElement, CanvaPage, NavConfig } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
@@ -312,11 +312,12 @@ export default function ExportApp() {
   }, [showTopNav]);
 
   // ── Keyboard navigation ───────────────────────────────────────
+  // Phase 9 fix: Added Space key for next page (matching PlayOverlay)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if (e.key === 'ArrowRight') { e.preventDefault(); handleNext(); }
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); handleNext(); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); handlePrev(); }
     };
     window.addEventListener('keydown', handler);
@@ -345,7 +346,7 @@ export default function ExportApp() {
   // ── No pages state ─────────────────────────────────────────────
   if (totalPages === 0) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">📭</div>
           <p className="text-white/60">Belum ada halaman untuk ditampilkan.</p>
@@ -371,48 +372,33 @@ export default function ExportApp() {
   // - Default fallback matches PlayOverlay (#1a1a2e, not #0e1c2f)
   // - Background image uses <img> tag (like PlayOverlay) for pixel-perfect rendering
   // - Overlay is ALWAYS rendered (like PlayOverlay), not just when bgDataUrl exists
-  const safeBgDataUrl = page.bgDataUrl?.startsWith('data:image/') ? page.bgDataUrl : null;
+  // Phase 9 fix: Accept any URL type (data:, https:, blob:) — not just data:image/.
+  // The export API route converts external URLs to data: URLs before injection,
+  // but defensive coding here prevents silent failures if that step is missed.
+  const safeBgDataUrl = page.bgDataUrl || null;
   const bgStyle: React.CSSProperties = page.bgColor?.includes('gradient')
     ? { background: page.bgColor }
     : { background: page.bgColor || '#1a1a2e' };
 
   return (
     <>
-      <div className="min-h-screen bg-slate-900 text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
-        {/* ── Page Container with page-transition for smooth navigation ── */}
-        <div
-          key={page.id}
-          className="page-transition"
-          style={{
-            height: 'calc(100vh - var(--export-nav-h, 72px))',
-            position: 'relative',
-            overflow: 'hidden',
-            ...bgStyle,
-          }}
+      {/* Phase 9 fix: bg-zinc-950 + select-none to match PlayOverlay exactly */}
+      <div className="min-h-screen bg-zinc-950 text-white select-none" style={{ fontFamily: "'Nunito', sans-serif" }}>
+        {/* ── Aspect-Ratio Scaling Container ── */}
+        {/* Phase 9 fix: Mirrors PlayCanvas ResizeObserver scaling logic.
+            Content renders at native aspect ratio (e.g. 1280×720), then CSS
+            transform scales it to fit the viewport. Without this, content
+            stretches to fill any viewport shape, distorting the layout. */}
+        <ExportScaleContainer
+          pageId={page.id}
+          navHeight={showNavbar ? 'var(--export-nav-h, 72px)' : '0px'}
+          topNavHeight={showTopNav ? 'var(--export-topnav-h, 44px)' : '0px'}
+          bgStyle={bgStyle}
+          safeBgDataUrl={safeBgDataUrl}
+          overlay={page.overlay ?? 20}
         >
-          {/* Background image — uses <img> tag like PlayOverlay for pixel-perfect rendering */}
-          {safeBgDataUrl && (
-            <img
-              src={safeBgDataUrl}
-              alt=""
-              style={{
-                position: 'absolute', inset: 0,
-                width: '100%', height: '100%',
-                objectFit: 'cover',
-                pointerEvents: 'none',
-              }}
-            />
-          )}
-
-          {/* Overlay — ALWAYS rendered (matching PlayOverlay behavior) */}
-          {/* Note: uses || (not ??) to match PlayOverlay — overlay=0 still shows 20% */}
-          <div
-            style={{
-              position: 'absolute', inset: 0,
-              background: `rgba(14,28,47,${(page.overlay || 20) / 100})`,
-              pointerEvents: 'none', zIndex: 0,
-            }}
-          />
+          {/* Offset for top navbar when present */}
+          {showTopNav && <div style={{ height: 'var(--export-topnav-h, 44px)' }} />}
 
           {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
           {/* Phase 9 fix: navbar is position: absolute now, with a spacer div
@@ -468,14 +454,22 @@ export default function ExportApp() {
               {page.elements.filter(el => !el.hidden).map(el => (
                 <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
               ))}
+              {/* Phase 9 fix: Empty-state message for custom pages (matching PlayOverlay) */}
+              {page.elements.length === 0 && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <div className="text-slate-600 text-sm mb-2">Halaman kosong</div>
+                  <div className="text-slate-700 text-xs">Tidak ada konten untuk ditampilkan</div>
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </ExportScaleContainer>
       </div>
 
       {/* ── Bottom Navigation Bar (respects navConfig) ── */}
+      {/* Phase 9 fix: border-slate-700/50 to match InteractiveNav */}
       {showNavbar && (
-        <div id="exportBottomNav" className="glass-panel-strong fixed bottom-0 left-0 right-0 z-[300] border-t border-white/10">
+        <div id="exportBottomNav" className="glass-panel-strong fixed bottom-0 left-0 right-0 z-[300] border-t border-slate-700/50">
           {/* Progress bar */}
           {showProgress && (
             <div className="h-1 bg-white/5">
@@ -577,5 +571,98 @@ export default function ExportApp() {
       {/* ── Confetti container ── */}
       <div id="confWrap" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9998 }} />
     </>
+  );
+}
+
+// ── Aspect-Ratio Scale Container ─────────────────────────────────
+// Mirrors PlayCanvas scaling: renders at native aspect ratio, then
+// CSS-transform scales to fit the available viewport space.
+
+function ExportScaleContainer({
+  pageId,
+  navHeight,
+  topNavHeight,
+  bgStyle,
+  safeBgDataUrl,
+  overlay,
+  children,
+}: {
+  pageId: string;
+  navHeight: string;
+  topNavHeight: string;
+  bgStyle: React.CSSProperties;
+  safeBgDataUrl: string | null;
+  overlay: number;
+  children: React.ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.5);
+
+  // Use a fixed 16:9 design size (matching PlayCanvas ratio default)
+  const DESIGN_W = 1280;
+  const DESIGN_H = 720;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      const aW = (el.clientWidth || 800) - 40;
+      const aH = (el.clientHeight || 500) - 40;
+      const sW = aW / DESIGN_W;
+      const sH = aH / DESIGN_H;
+      setScale(Math.min(sW, sH, 1));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="page-transition"
+      style={{
+        height: `calc(100vh - ${navHeight})`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+    >
+      <div
+        key={pageId}
+        className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-slate-700/30"
+        style={{
+          width: DESIGN_W,
+          height: DESIGN_H,
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
+          ...bgStyle,
+        }}
+      >
+        {/* Background image */}
+        {safeBgDataUrl && (
+          <img
+            src={safeBgDataUrl}
+            alt=""
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+        {/* Overlay */}
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            background: `rgba(14,28,47,${(overlay || 20) / 100})`,
+            pointerEvents: 'none', zIndex: 0,
+          }}
+        />
+        {children}
+      </div>
+    </div>
   );
 }

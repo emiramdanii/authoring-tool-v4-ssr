@@ -23,6 +23,18 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
   // Cleanup all timeouts on unmount
   useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
+  // Phase 9 fix: Reset game state when data changes
+  const dataKey = JSON.stringify(validItems.map(i => ({ t: String(i.teks || ''), k: String(i.kategori || '') })));
+  useEffect(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setSorted({});
+    setPhase('play');
+    setWrongAttempts(0);
+    setWrong(null);
+    reported.current = false;
+  }, [dataKey]);
+
   // Efficiency-based scoring with 50% floor: score = max(ceil(items*0.5), items - wrongAttempts)
   useEffect(() => {
     if (phase === 'done' && !reported.current && onComplete) {
@@ -56,7 +68,8 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
     }
   }, [validItems]);
 
-  if (validItems.length === 0) return <EmptyState icon="🔢" label="Urutkan" compact={compact} interactive={interactive} />;
+  // Phase 9 fix: Also check for empty kategori — game is uncompletable without drop zones
+  if (validItems.length === 0 || kategori.length === 0) return <EmptyState icon="🔢" label="Urutkan" compact={compact} interactive={interactive} />;
 
   const unsorted = validItems.filter(i => {
     return !Object.values(sorted).flat().includes(i.teks as string);
@@ -70,7 +83,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Semua Tersortir!</div>
-        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        <div className={`text-[14px] font-black mt-0.5 ${scorePct >= 85 ? 'text-emerald-400' : scorePct >= 70 ? 'text-amber-400' : 'text-red-400'}`}>{scorePct}%</div>
         {wrongAttempts > 0 && <div className="text-[9px] text-cyan-400/60">{wrongAttempts} kesalahan</div>}
         <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setSorted({}); setPhase('play'); setWrongAttempts(0); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">

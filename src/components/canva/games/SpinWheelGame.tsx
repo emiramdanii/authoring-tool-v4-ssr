@@ -49,6 +49,7 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
       <div className="text-[9px] font-bold text-cyan-400 mb-1">🎡 Roda Pertanyaan</div>
       <div className="relative flex-shrink-0">
         <svg width={compact ? 100 : 140} height={compact ? 100 : 140} viewBox="0 0 140 140"
+          role="img" aria-label={`Roda pertanyaan dengan ${validSoal.length} soal`}
           style={{ transition: spinning ? 'transform 2.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none', transform: `rotate(${rotation}deg)` }}>
           {validSoal.map((s, i) => {
             const startAngle = (i * 360) / validSoal.length;
@@ -79,7 +80,7 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 text-lg">▼</div>
       </div>
       {result && (
-        <div className="mt-2 text-center px-2 max-w-full">
+        <div className="mt-2 text-center px-2 max-w-full" aria-live="polite">
           <div className="text-[9px] text-cyan-400/60 mb-0.5">{String(result.kategori ?? 'Soal')}</div>
           <div className={`${compact ? 'text-[9px]' : 'text-[11px]'} font-bold text-amber-300`}>{result.teks as string}</div>
         </div>

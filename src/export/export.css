@@ -13,6 +13,7 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* ── Source paths for Tailwind v4 content detection ── */
 @source "../../components";

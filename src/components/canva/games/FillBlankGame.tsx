@@ -22,6 +22,20 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
   // Cleanup all timeouts on unmount
   useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
+  // Phase 9 fix: Reset game state when question data changes
+  const soalKey = JSON.stringify(validSoal.map(s => ({ t: String(s.teks || ''), j: String(s.jawaban || '') })));
+  useEffect(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setCurrentQ(0);
+    setScore(0);
+    setAnswered(false);
+    setUserInput('');
+    setLastCorrect(null);
+    setPhase('play');
+    reported.current = false;
+  }, [soalKey]);
+
   useEffect(() => {
     if (phase === 'result' && !reported.current && onComplete) {
       reported.current = true;

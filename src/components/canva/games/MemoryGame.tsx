@@ -37,6 +37,8 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Phase 9 fix: Ref for atomic flipped tracking to prevent stale closure on rapid clicks
+  const flippedRef = useRef<number[]>([]);
 
   // Cleanup all timeouts on unmount
   useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
@@ -53,8 +55,11 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
   }, [phase, onComplete, validPairsLen, wrongAttempts]);
 
   const handleFlip = useCallback((cardId: number) => {
-    if (flipped.length === 2 || flipped.includes(cardId) || matched.has(cardId)) return;
-    const newFlipped = [...flipped, cardId];
+    // Phase 9 fix: Use flippedRef for atomic tracking, prevents stale closure on rapid clicks
+    const current = flippedRef.current;
+    if (current.length === 2 || current.includes(cardId) || matched.has(cardId)) return;
+    const newFlipped = [...current, cardId];
+    flippedRef.current = newFlipped;
     setFlipped(newFlipped);
 
     if (newFlipped.length === 2) {
@@ -64,19 +69,27 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
       const c2 = cards.find(c => c.id === second);
       if (c1 && c2 && c1.pairId === c2.pairId && c1.type !== c2.type) {
         setMatched(prev => new Set([...prev, first, second]));
+        flippedRef.current = [];
         setFlipped([]);
         if (matched.size + 2 === cards.length) {
           setPhase('done');
         }
       } else {
         setWrongAttempts(w => w + 1);
-        const tid = setTimeout(() => setFlipped([]), 800);
+        const tid = setTimeout(() => {
+          flippedRef.current = [];
+          setFlipped([]);
+        }, 800);
         timersRef.current.push(tid);
       }
     }
-  }, [flipped, matched, cards]);
+  }, [matched, cards]);
 
+  // Phase 9 fix: Clear pending timeouts on restart to prevent stale callbacks
   const handleRestart = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    flippedRef.current = [];
     setFlipped([]);
     setMatched(new Set());
     setMoves(0);
@@ -95,7 +108,7 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Selesai!</div>
-        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        <div className={`text-[14px] font-black mt-0.5 ${scorePct >= 85 ? 'text-emerald-400' : scorePct >= 70 ? 'text-amber-400' : 'text-red-400'}`}>{scorePct}%</div>
         <div className="text-[9px] text-cyan-400/60 mt-0.5">{moves} langkah · {wrongAttempts} salah</div>
         <button onClick={handleRestart}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">

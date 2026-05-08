@@ -22,9 +22,16 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
   const [activeCell, setActiveCell] = useState<{ r: number; c: number } | null>(null);
   const reported = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Cleanup all timeouts on unmount
   useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
+
+  // Phase 9 fix: Managed focus via useEffect instead of autoFocus,
+  // which caused keyboard flicker on mobile
+  useEffect(() => {
+    if (activeCell) inputRef.current?.focus();
+  }, [activeCell]);
 
   // Phase 9 fix: Reset game state when crossword data changes
   useEffect(() => {
@@ -220,7 +227,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 p-3 text-center">
         <span className="text-2xl">🎉</span>
         <div className="text-[11px] font-bold text-cyan-300 mt-1">Teka Silang Selesai!</div>
-        <div className="text-[14px] font-black mt-0.5" style={{ color: scorePct >= 85 ? '#34d399' : scorePct >= 70 ? '#f9c12e' : '#f87171' }}>{scorePct}%</div>
+        <div className={`text-[14px] font-black mt-0.5 ${scorePct >= 85 ? 'text-emerald-400' : scorePct >= 70 ? 'text-amber-400' : 'text-red-400'}`}>{scorePct}%</div>
         <div className="text-[9px] text-cyan-400/60 mt-0.5">{validKataLen} kata{revealed.size > 0 ? ` · ${revealed.size} dibantu` : ' · Sempurna!'}</div>
         <button onClick={() => { timersRef.current.forEach(clearTimeout); timersRef.current = []; setUserGrid({}); setRevealed(new Set()); setChecked(false); setPhase('play'); setActiveCell(null); reported.current = false; }}
           className="mt-2 px-3 py-1 bg-cyan-500/30 hover:bg-cyan-500/50 rounded text-[10px] font-bold text-cyan-200 transition-colors border border-cyan-500/30">Ulangi</button>
@@ -268,9 +275,9 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             <>
               <div className="text-[7px] font-bold text-cyan-400/60 uppercase tracking-wider mt-1">Mendatar →</div>
               {acrossClues.map((cl, i) => (
-                <div key={`a${i}`}
+                <button key={`a${i}`}
                   onClick={() => setActiveCell({ r: cl.startR, c: cl.startC })}
-                  className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer">{cl.num}. {cl.hint}</div>
+                  className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
               ))}
             </>
           )}
@@ -278,9 +285,9 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             <>
               <div className="text-[7px] font-bold text-cyan-400/60 uppercase tracking-wider mt-1">Menurun ↓</div>
               {downClues.map((cl, i) => (
-                <div key={`d${i}`}
+                <button key={`d${i}`}
                   onClick={() => setActiveCell({ r: cl.startR, c: cl.startC })}
-                  className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer">{cl.num}. {cl.hint}</div>
+                  className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
               ))}
             </>
           )}
@@ -291,12 +298,28 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
         <button onClick={handleReveal} className="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-500/40 rounded text-[8px] font-bold text-amber-200 border border-amber-500/30 transition-colors">Buka 1</button>
       </div>
       {/* Hidden input for mobile keyboard support */}
+      {/* Phase 9 fix: onChange now handles mobile virtual keyboard input
+          (which fires input/change events instead of keydown for characters).
+          autoFocus replaced with useEffect to prevent keyboard flicker. */}
       <input
+        ref={inputRef}
         type="text"
         className="opacity-0 absolute w-0 h-0"
-        autoFocus={activeCell !== null}
         onKeyDown={handleKeyDown}
-        onChange={() => {}}
+        onChange={(e) => {
+          const ch = e.target.value.slice(-1).toUpperCase();
+          if (ch && /^[A-Z\u00C0-\u024F]$/.test(ch) && activeCell) {
+            const { r, c } = activeCell;
+            const newGrid = { ...userGrid, [`${r},${c}`]: ch };
+            setUserGrid(newGrid);
+            setChecked(false);
+            // Auto-advance
+            if (c < gridSize - 1 && grid[r][c + 1].letter) setActiveCell({ r, c: c + 1 });
+            else if (r < gridSize - 1 && grid[r + 1][0].letter) setActiveCell({ r: r + 1, c: 0 });
+            if (checkComplete(newGrid)) setPhase('done');
+          }
+          e.target.value = '';
+        }}
         value=""
       />
     </div>

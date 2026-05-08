@@ -404,6 +404,7 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
 
   const handleComplete = useCallback(
     (score: number, maxScore: number) => {
+      if (maxScore === 0) return; // Phase 9 fix: Skip non-scored games (align with ExportElement)
       reportScore({
         elementId: element.id,
         pageIndex,

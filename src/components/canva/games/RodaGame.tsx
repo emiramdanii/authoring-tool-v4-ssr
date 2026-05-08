@@ -47,6 +47,7 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
       <div className="text-[9px] font-bold text-cyan-400 mb-1">🎡 Roda Putar</div>
       <div className="relative flex-shrink-0">
         <svg width={compact ? 100 : 140} height={compact ? 100 : 140} viewBox="0 0 140 140"
+          role="img" aria-label={`Roda putar dengan ${opsi.length} opsi`}
           style={{ transition: spinning ? 'transform 2.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none', transform: `rotate(${rotation}deg)` }}>
           {opsi.map((o, i) => {
             const startAngle = (i * 360) / opsi.length;
@@ -69,7 +70,7 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 text-lg">▼</div>
       </div>
       {result && (
-        <div className="mt-2 text-center">
+        <div className="mt-2 text-center" aria-live="polite">
           <div className={`${compact ? 'text-[10px]' : 'text-[12px]'} font-bold text-amber-300`}>{result}</div>
         </div>
       )}

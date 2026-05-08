@@ -25,6 +25,15 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
     }
   }, [viewedCards, validCards.length, onComplete]);
 
+  // Phase 9 fix: Reset game state when card data changes
+  const cardsKey = JSON.stringify(validCards.map(c => ({ f: String(c.depan || ''), b: String(c.belakang || '') })));
+  useEffect(() => {
+    setCurrentIdx(0);
+    setFlipped(false);
+    setViewedCards(new Set());
+    reported.current = false;
+  }, [cardsKey]);
+
   const handleFlip = () => {
     const newFlipped = !flipped;
     setFlipped(newFlipped);

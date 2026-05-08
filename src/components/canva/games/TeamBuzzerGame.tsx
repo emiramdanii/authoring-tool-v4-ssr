@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
@@ -25,7 +25,9 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
   // Cleanup all timeouts on unmount
   useEffect(() => () => { timersRef.current.forEach(clearTimeout); }, []);
 
-  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; const total = validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0); onComplete(scoreA + scoreB, total); } }, [phase, onComplete, scoreA, scoreB, validSoal]);
+  // Phase 9 fix: Memoize totalPoints for stable useEffect deps
+  const totalPoints = useMemo(() => validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0), [validSoal.length]);
+  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; onComplete(scoreA + scoreB, totalPoints); } }, [phase, onComplete, scoreA, scoreB, totalPoints]);
 
   const handleBuzz = (team: 'A' | 'B') => {
     if (buzzed || correct === 'wrong') return; // Block buzzing while wrong answer pending
