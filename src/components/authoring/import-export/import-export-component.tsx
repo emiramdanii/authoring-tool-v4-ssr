@@ -1,15 +1,19 @@
 'use client';
 
-import { Upload, Download, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import { Upload, Download, FileSpreadsheet, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import { useExportActions } from './use-export-actions';
 import { useExcelImport } from './use-excel-import';
 import { ExcelPreviewDialog } from './excel-preview-dialog';
+import { useViteExport } from '@/lib/use-vite-export';
 
 export default function ImportExport() {
   const { exportJSON, exportStudentHtml, cetakDokumenAdmin } = useExportActions();
+  const { exportHTML } = useViteExport();
+  const [exportingSSR, setExportingSSR] = useState(false);
   const {
     fileInputRef,
     isDragOver,
@@ -39,45 +43,42 @@ export default function ImportExport() {
         </p>
       </div>
 
-      {/* ── SATU-SATUNYA Export HTML ──────────────────────────── */}
+      {/* ── Export HTML Interaktif (Vite SSR) ──────────────────── */}
       <div className="bg-zinc-900 border border-emerald-800/50 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-emerald-300 mb-1 flex items-center gap-2">
           🚀 Export HTML Interaktif
         </h3>
         <p className="text-xs text-zinc-400 mb-4">
-          Download HTML lengkap dengan <strong className="text-emerald-400">navbar + navigasi</strong> (sama seperti preview),
-          <strong className="text-emerald-400"> game engines</strong> (11+ tipe), <strong className="text-emerald-400">skor tracking</strong>, dan layout canvas.
+          Download HTML lengkap dengan <strong className="text-emerald-400">navbar + navigasi</strong> (sama persis dengan preview),
+          <strong className="text-emerald-400"> game engines</strong> (11+ tipe), <strong className="text-emerald-400">skor tracking</strong>, dan semua komponen interaktif.
           Satu file HTML — siap dibagikan ke siswa.
         </p>
         <button
-          onClick={() => {
+          onClick={async () => {
+            setExportingSSR(true);
             try {
-              const html = useCanvaStore.getState().exportUnifiedHTML();
-              const s = useAuthoringStore.getState();
-              const filename = (s.meta.judulPertemuan || 'media')
-                .replace(/[^a-z0-9\-]/gi, '-')
-                .replace(/-+/g, '-')
-                .toLowerCase();
-              const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `${filename}.html`;
-              a.click();
-              URL.revokeObjectURL(url);
-              toast.success('🚀 Export HTML berhasil didownload!');
-            } catch (err) {
-              console.error('Export failed:', err);
-              toast.error('❌ Gagal mengexport HTML');
+              await exportHTML();
+            } finally {
+              setExportingSSR(false);
             }
           }}
-          className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+          disabled={exportingSSR}
+          className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:cursor-wait text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
         >
-          <Download className="size-4" />
-          Export HTML Interaktif
+          {exportingSSR ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Mengekspor...
+            </>
+          ) : (
+            <>
+              <Download className="size-4" />
+              Export HTML Interaktif
+            </>
+          )}
         </button>
         <p className="text-[0.65rem] text-zinc-500 mt-2">
-          Navbar + tombol navigasi + game engines + skor — satu file HTML lengkap
+          ✨ SSR Export — hasil sama persis dengan preview (React components + Tailwind CSS)
         </p>
       </div>
 

@@ -1,9 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════════════
    EXPORT CSS — Tailwind + custom styles for exported HTML
-   This file is the CSS entry point for Vite build
+   This file is the CSS entry point for Vite build.
+   Tailwind v4 auto-detects content from source files.
    ═══════════════════════════════════════════════════════════════════════ */
 
 @import "tailwindcss";
+
+/* ── Source paths for Tailwind v4 content detection ── */
+@source "../../components";
+@source "../../lib";
+@source "../../store";
+@source "../export";
 
 /* ── Base Reset ────────────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,4 +45,11 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
+}
+
+/* ── Glass Panel (matches app UI) ──────────────────────────────── */
+.glass-panel-strong {
+  background: rgba(14, 28, 47, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }

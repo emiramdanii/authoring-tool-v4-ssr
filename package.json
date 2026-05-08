@@ -3,8 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 2>&1 | tee dev.log",
-    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "dev": "test -f export-output/index.html || vite build --config vite.export.config.ts; next dev -p 3000 2>&1 | tee dev.log",
+    "build": "vite build --config vite.export.config.ts && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && mkdir -p .next/standalone/export-output && cp -r export-output/index.html .next/standalone/export-output/",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "export:build": "vite build --config vite.export.config.ts",

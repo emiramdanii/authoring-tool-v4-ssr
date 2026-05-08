@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
 import {
   Play,
@@ -73,6 +74,7 @@ export default function Toolbar() {
   const exportRef = useRef<HTMLDivElement>(null);
   const ratioRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
+  const { exportHTML: viteExportHTML, previewHTML: vitePreviewHTML } = useViteExport();
 
   const isInteractive = mode === 'interactive';
   const page = pages[currentPageIndex];
@@ -174,43 +176,22 @@ export default function Toolbar() {
     setExportOpen(false);
   };
 
-  const handleExportUnified = () => {
+  const handleExportUnified = async () => {
     setExporting(true);
-    toast.loading(`Mengekspor ${pages.length} halaman (Unified)...`, { id: 'export-unified' });
-    requestAnimationFrame(() => {
-      try {
-        const html = exportUnifiedHTML();
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const judul = useAuthoringStore.getState().meta.judulPertemuan || 'media-pembelajaran';
-        a.download = `${judul.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase()}-unified.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        toast.success(`Unified export selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-unified' });
-      } catch (err) {
-        toast.error('Gagal mengekspor unified HTML', { id: 'export-unified' });
-      } finally {
-        setExporting(false);
-      }
-    });
+    try {
+      await viteExportHTML();
+    } finally {
+      setExporting(false);
+    }
     setExportOpen(false);
   };
 
-  const handlePreviewUnified = () => {
-    requestAnimationFrame(() => {
-      try {
-        const html = exportUnifiedHTML();
-        const win = window.open('', '_blank');
-        if (win) { win.document.write(html); win.document.close(); }
-        toast.success(`Unified preview dibuka (${pages.length} halaman + navigasi pintar + game)`);
-      } catch (err) {
-        toast.error('Gagal membuat preview unified');
-      }
-    });
+  const handlePreviewUnified = async () => {
+    try {
+      await vitePreviewHTML();
+    } catch (err) {
+      toast.error('Gagal membuat preview');
+    }
     setExportOpen(false);
   };
 
