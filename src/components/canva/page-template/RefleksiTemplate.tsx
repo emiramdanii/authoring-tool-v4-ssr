@@ -59,7 +59,7 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">🪞</span>
-          <span className="text-[10px]">Tambah pertanyaan di panel Konten → Refleksi</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada pertanyaan tersedia' : 'Tambah pertanyaan di panel Konten → Refleksi'}</span>
         </div>
       )}
 

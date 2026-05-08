@@ -55,8 +55,9 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
       };
 
     case 'petunjuk':
+      // Spread flat so PetunjukTemplate reads td.langkah, td.title, td.intro, td.tips
       return {
-        petunjuk: authStore.petunjuk,
+        ...authStore.petunjuk,
       };
 
     case 'dokumen':
@@ -75,8 +76,9 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
       };
 
     case 'diskusi':
+      // Spread flat so DiskusiTemplate reads td.pertanyaan, td.title, td.intro
       return {
-        diskusi: authStore.diskusi,
+        ...authStore.diskusi,
       };
 
     case 'kuis':
@@ -98,13 +100,15 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
       };
 
     case 'refleksi':
+      // Spread flat so RefleksiTemplate reads td.pertanyaan, td.title, td.intro, td.penugasan
       return {
-        refleksi: authStore.refleksi,
+        ...authStore.refleksi,
       };
 
     case 'penutup':
+      // Spread flat so PenutupTemplate reads td.preview, td.title, td.subjudul, td.nextPertemuan
       return {
-        penutup: authStore.penutup,
+        ...authStore.penutup,
       };
 
     case 'skenario':

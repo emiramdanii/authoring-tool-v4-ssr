@@ -31,8 +31,12 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
   }, [td.activeGameIdx, games.length]);
 
   const handleComplete = useCallback((score: number, maxScore: number) => {
-    reportScore({ elementId: 'game-template', pageIndex: interactivePageIdx, score, maxScore, completed: true });
-  }, [reportScore, interactivePageIdx]);
+    // Skip score reporting for non-scored games (e.g., Roda, SpinWheel)
+    // to prevent overwriting valid scores from other games on the same page
+    if (maxScore === 0) return;
+    const gameId = (activeGame?._id as string) || String(safeIdx);
+    reportScore({ elementId: `game-${gameId}`, pageIndex: interactivePageIdx, score, maxScore, completed: true });
+  }, [reportScore, interactivePageIdx, activeGame, safeIdx]);
 
   const handleSelectGame = useCallback((idx: number) => {
     setActiveGameIdx(idx);
@@ -72,7 +76,7 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
           <div className="space-y-2">
             {/* Show selected game as main widget */}
             {activeGame && (
-              <GameWidget dataIdx={getGameModuleIndex(activeGame)} moduleId={(activeGame._id as string) || undefined} compact={!interactive} onComplete={interactive ? handleComplete : undefined} />
+              <GameWidget dataIdx={getGameModuleIndex(activeGame)} moduleId={(activeGame._id as string) || undefined} compact={!interactive} interactive={interactive} onComplete={interactive ? handleComplete : undefined} />
             )}
 
             {/* Game selector tabs — always visible when multiple games */}
@@ -102,7 +106,7 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">🎮</span>
-            <span className="text-[10px]">Tambah game di panel Konten → Modul</span>
+            <span className="text-[10px]">{interactive ? 'Belum ada game tersedia' : 'Tambah game di panel Konten → Modul'}</span>
           </div>
         )}
       </div>

@@ -202,7 +202,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
         <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
           {skenario.map((ch, i) => (
             <div key={i} className={`p-2 rounded-lg border ${
-              i === currentChapter && interactive
+              i === currentChapter
                 ? 'bg-pink-500/10 border-pink-500/30'
                 : 'bg-white/5 border-white/10'
             }`}>
@@ -234,7 +234,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
         /* ── Empty state ── */
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">🎭</span>
-          <span className="text-[10px]">Tambah skenario di panel Konten → Skenario</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada skenario tersedia' : 'Tambah skenario di panel Konten → Skenario'}</span>
         </div>
       )}
     </div>

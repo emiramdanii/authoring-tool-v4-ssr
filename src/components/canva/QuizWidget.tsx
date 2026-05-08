@@ -10,12 +10,13 @@ interface QuizWidgetProps {
   kuisId?: string;    // Stable UUID reference (preferred over dataIdx)
   kuisIds?: string[]; // Multiple kuis IDs — for template pages with multiple questions
   compact?: boolean;  // small preview in canvas editor
+  interactive?: boolean; // When true, widget is in export mode — hide authoring prompts
   onComplete?: (score: number, maxScore: number) => void;  // score callback
 }
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, onComplete }: QuizWidgetProps) {
+export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, interactive = false, onComplete }: QuizWidgetProps) {
   const kuis = useAuthoringStore((s) => s.kuis);
 
   // Resolve kuis data — priority: kuisIds (multi) > kuisId (single) > dataIdx > all
@@ -85,7 +86,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
       <div className="h-full flex flex-col items-center justify-center bg-amber-500/10 rounded border border-amber-500/20 p-3">
         <span className="text-lg">❓</span>
         <span className="text-[10px] text-amber-300/70 mt-1">
-          {compact ? 'Belum ada soal' : 'Tambahkan soal di panel Konten → Evaluasi'}
+          {interactive ? 'Belum ada soal tersedia' : compact ? 'Belum ada soal' : 'Tambahkan soal di panel Konten → Evaluasi'}
         </span>
       </div>
     );

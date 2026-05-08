@@ -18,7 +18,12 @@ export function MemoryGame({ data, compact, onComplete }: GameComponentProps) {
       c.push({ id: i * 2, text: (p.kiri as string) || `?${i + 1}`, pairId: i, type: 'left' });
       c.push({ id: i * 2 + 1, text: (p.kanan as string) || `?${i + 1}`, pairId: i, type: 'right' });
     });
-    return c.sort(() => Math.random() - 0.5);
+    // Fisher-Yates shuffle (unbiased, unlike sort+random)
+    for (let i = c.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [c[i], c[j]] = [c[j], c[i]];
+    }
+    return c;
   }, [validPairs]);
 
   const [flipped, setFlipped] = useState<number[]>([]);

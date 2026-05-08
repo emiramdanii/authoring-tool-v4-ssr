@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { pages, ratioId, meta, allKuis, allModules, games,
-            cp, tp, materi, skenario, petunjuk, diskusi, refleksi, penutup } = body;
+            cp, tp, atp, alur, materi, skenario, petunjuk, diskusi, refleksi, penutup, suara } = body;
 
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
       return NextResponse.json({ error: 'No pages provided' }, { status: 400 });
@@ -53,11 +53,13 @@ export async function POST(request: NextRequest) {
     const exportData = {
       pages, ratioId: ratioId || '16:9', meta: meta || {},
       allKuis: allKuis || [], allModules: allModules || [], games: games || [],
-      cp: cp || {}, tp: tp || [], materi: materi || { blok: [] },
-      skenario: skenario || [], petunjuk: petunjuk || { title:'',intro:'',langkah:[] },
+      cp: cp || {}, tp: tp || [], atp: atp || { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
+      alur: alur || [], materi: materi || { blok: [] },
+      skenario: skenario || [], petunjuk: petunjuk || { title:'',intro:'',langkah:[], tips:'' },
       diskusi: diskusi || { title:'',intro:'',pertanyaan:[] },
       refleksi: refleksi || { title:'',intro:'',pertanyaan:[] },
       penutup: penutup || { title:'',subjudul:'',preview:[] },
+      suara: suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
     const dataJson = JSON.stringify(exportData)

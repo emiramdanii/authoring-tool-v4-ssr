@@ -31,19 +31,18 @@ export function SortingGame({ data, compact, onComplete }: GameComponentProps) {
   const handleDrop = useCallback((itemText: string, catId: string) => {
     const correctCat = validItems.find(i => i.teks === itemText)?.kategori as string;
     if (correctCat === catId) {
-      setSorted(prev => ({
-        ...prev,
-        [catId]: [...(prev[catId] || []), itemText],
-      }));
-      const newSorted = { ...sorted, [catId]: [...(sorted[catId] || []), itemText] };
-      const totalSorted = Object.values(newSorted).flat().length;
-      if (totalSorted === validItems.length) setPhase('done');
+      setSorted(prev => {
+        const next = { ...prev, [catId]: [...(prev[catId] || []), itemText] };
+        const totalSorted = Object.values(next).flat().length;
+        if (totalSorted === validItems.length) setPhase('done');
+        return next;
+      });
     } else {
       setWrongAttempts(w => w + 1);
       setWrong(catId);
       setTimeout(() => setWrong(null), 500);
     }
-  }, [validItems, sorted]);
+  }, [validItems]);
 
   if (validItems.length === 0) return <EmptyState icon="🔢" label="Urutkan" compact={compact} />;
 

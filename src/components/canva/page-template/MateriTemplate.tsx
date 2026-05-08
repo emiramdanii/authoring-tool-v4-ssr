@@ -78,7 +78,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
         {blok.length === 0 && modules.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">📝</span>
-            <span className="text-[10px]">Tambah materi di panel Konten → Materi</span>
+            <span className="text-[10px]">{interactive ? 'Belum ada materi tersedia' : 'Tambah materi di panel Konten → Materi'}</span>
           </div>
         )}
       </div>
@@ -151,7 +151,7 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
       {blok.length === 0 && modules.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📝</span>
-          <span className="text-[10px]">Tambah materi di panel Konten → Materi</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada materi tersedia' : 'Tambah materi di panel Konten → Materi'}</span>
         </div>
       )}
     </div>

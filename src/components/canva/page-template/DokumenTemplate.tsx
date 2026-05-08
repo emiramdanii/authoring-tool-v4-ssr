@@ -6,7 +6,7 @@ import { EditableText } from './EditableText';
 
 // ── Dokumen Template (CP/TP/ATP) ─────────────────────────────
 
-export function DokumenTemplate({ td, palette, isSelected, onEditField }: SubTemplateProps) {
+export function DokumenTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const cp = td.cp as Record<string, unknown> | undefined;
@@ -30,7 +30,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField }: SubTem
         <div className="mb-3 p-3 rounded-lg" style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}>
           <div className="text-[10px] font-bold mb-1" style={{ color: accent }}>Capaian Pembelajaran</div>
           <div className="text-[9px] text-white/80 leading-relaxed line-clamp-4">
-            {String(cp.capaianFase || 'Belum diisi')}
+            {String(interactive ? (cp.capaianFase || '') : (cp.capaianFase || 'Belum diisi'))}
           </div>
           {Array.isArray(cp.profil) && (cp.profil as string[]).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -72,7 +72,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField }: SubTem
       {(!cp?.capaianFase && tpItems.length === 0) && (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📋</span>
-          <span className="text-[10px]">Isi data CP & TP di panel Dokumen</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP & TP di panel Dokumen'}</span>
         </div>
       )}
     </div>

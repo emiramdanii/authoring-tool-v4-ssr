@@ -25,12 +25,15 @@ export function getGameIcon(type: string): string {
 
 export function getGameModuleIndex(game: Record<string, unknown>): number {
   const modules = useAuthoringStore.getState().modules;
-  // Use property-based comparison instead of reference equality
-  // since localStorage reload breaks object identity
+  // Prefer _id lookup first (stable, unique)
+  if (game._id) {
+    const idx = modules.findIndex(m => m._id === game._id);
+    if (idx >= 0) return idx;
+  }
+  // Fallback: property-based comparison (type + title)
   const idx = modules.findIndex(m =>
     m.type === game.type &&
-    m.title === game.title &&
-    (m as Record<string, unknown>).teks === game.teks
+    m.title === game.title
   );
   return idx >= 0 ? idx : -1;
 }

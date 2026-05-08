@@ -36,6 +36,10 @@ if (exportData) {
   if (exportData.refleksi) authPartial.refleksi = exportData.refleksi;
   if (exportData.penutup) authPartial.penutup = exportData.penutup;
 
+  if (exportData.atp) authPartial.atp = exportData.atp;
+  if (exportData.alur) authPartial.alur = exportData.alur;
+  if (exportData.suara) authPartial.suara = exportData.suara;
+
   if (Object.keys(authPartial).length > 0) {
     useAuthoringStore.setState(authPartial as any);
   }
@@ -45,7 +49,7 @@ if (exportData) {
   //    that reads from canvaStore.
   const canvaPartial: Record<string, unknown> = {};
   if (exportData.pages) canvaPartial.pages = exportData.pages;
-  if (exportData.ratioId) canvaPartial.ratioId = exportData.ratioId;
+  if (exportData.ratioId != null) canvaPartial.ratioId = exportData.ratioId;
   canvaPartial.currentPageIndex = 0;
 
   if (Object.keys(canvaPartial).length > 0) {

@@ -38,12 +38,15 @@ export function useViteExport() {
           games: authStore.games,
           cp: authStore.cp,
           tp: authStore.tp,
+          atp: authStore.atp,
+          alur: authStore.alur,
           materi: authStore.materi,
           skenario: authStore.skenario,
           petunjuk: authStore.petunjuk,
           diskusi: authStore.diskusi,
           refleksi: authStore.refleksi,
           penutup: authStore.penutup,
+          suara: authStore.suara,
         }),
       });
 
@@ -100,12 +103,15 @@ export function useViteExport() {
           games: authStore.games,
           cp: authStore.cp,
           tp: authStore.tp,
+          atp: authStore.atp,
+          alur: authStore.alur,
           materi: authStore.materi,
           skenario: authStore.skenario,
           petunjuk: authStore.petunjuk,
           diskusi: authStore.diskusi,
           refleksi: authStore.refleksi,
           penutup: authStore.penutup,
+          suara: authStore.suara,
         }),
       });
 

@@ -59,7 +59,7 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField, interac
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📋</span>
-          <span className="text-[10px]">Tambah langkah di panel Konten → Petunjuk</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada langkah tersedia' : 'Tambah langkah di panel Konten → Petunjuk'}</span>
         </div>
       )}
 

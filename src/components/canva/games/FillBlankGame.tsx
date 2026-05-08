@@ -23,7 +23,7 @@ export function FillBlankGame({ data, compact, onComplete }: GameComponentProps)
       reported.current = true;
       onComplete(score, validSoal.length);
     }
-  }, [phase]);
+  }, [phase, score, validSoal.length, onComplete]);
 
   const handleSubmit = useCallback(() => {
     if (answered || !userInput.trim()) return;

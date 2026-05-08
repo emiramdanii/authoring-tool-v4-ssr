@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { EmptyState } from './shared';
 import type { GameComponentProps } from './shared';
 
@@ -14,6 +14,7 @@ export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps)
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const reported = useRef(false);
 
   const colors = ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c', '#60a5fa', '#f472b6'];
 
@@ -31,7 +32,8 @@ export function SpinWheelGame({ data, compact, onComplete }: GameComponentProps)
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
       setResult(validSoal[Math.min(idx, validSoal.length - 1)]);
       // SpinWheel is a random picker tool, not a quiz — no scoring contribution
-      if (onComplete) onComplete(0, 0);
+      // Guard: only report once per session to avoid overwriting other game scores
+      if (!reported.current && onComplete) { reported.current = true; onComplete(0, 0); }
     }, 2500);
   };
 

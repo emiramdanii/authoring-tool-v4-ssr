@@ -22,6 +22,7 @@ interface GameWidgetProps {
   dataIdx?: number;
   moduleId?: string; // Stable UUID reference (preferred over dataIdx)
   compact?: boolean;
+  interactive?: boolean; // When true, widget is in export mode — hide authoring prompts
   onComplete?: (score: number, maxScore: number) => void;
 }
 
@@ -31,7 +32,7 @@ interface GameWidgetProps {
    MAIN GAME WIDGET — routes to specific game renderers
    Uses resolveModule() for stable reference: moduleId > dataIdx
    ═══════════════════════════════════════════════════════════════ */
-export default function GameWidget({ dataIdx, moduleId, compact = false, onComplete }: GameWidgetProps) {
+export default function GameWidget({ dataIdx, moduleId, compact = false, interactive = false, onComplete }: GameWidgetProps) {
   const modules = useAuthoringStore((s) => s.modules);
 
   // Build a pseudo-element for resolveModule() — supports both moduleId and dataIdx
@@ -50,7 +51,7 @@ export default function GameWidget({ dataIdx, moduleId, compact = false, onCompl
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 rounded border border-cyan-500/20 p-3">
         <span className="text-2xl">🎮</span>
         <span className="text-[10px] text-cyan-300/70 mt-1">
-          {compact ? 'Belum ada game' : 'Tambahkan game di panel Konten → Modul & Game'}
+          {interactive ? 'Belum ada game tersedia' : compact ? 'Belum ada game' : 'Tambahkan game di panel Konten → Modul & Game'}
         </span>
       </div>
     );
@@ -58,7 +59,7 @@ export default function GameWidget({ dataIdx, moduleId, compact = false, onCompl
 
   return (
     <div
-      className="h-full overflow-hidden rounded border border-cyan-500/20"
+      className="h-full overflow-auto rounded border border-cyan-500/20"
       onClick={(e) => e.stopPropagation()}
     >
       {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} onComplete={onComplete} />}

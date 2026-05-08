@@ -15,7 +15,12 @@ export function MatchingGame({ data, compact, onComplete }: GameComponentProps) 
 
   const [shuffledRight] = useState(() => {
     const r = validPairs.map((p, i) => ({ idx: i, text: (p.kanan as string) || '' }));
-    return r.sort(() => Math.random() - 0.5);
+    // Fisher-Yates shuffle (unbiased, unlike sort+random)
+    for (let i = r.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [r[i], r[j]] = [r[j], r[i]];
+    }
+    return r;
   });
   const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
   const [matchedLeft, setMatchedLeft] = useState<Set<number>>(new Set());

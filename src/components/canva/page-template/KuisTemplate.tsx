@@ -46,13 +46,14 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
         {kuisData.length > 0 ? (
           <QuizWidget
             compact={!interactive}
+            interactive={interactive}
             kuisIds={kuisData.map(k => String(k._id)).filter(Boolean)}
             onComplete={interactive ? handleComplete : undefined}
           />
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">❓</span>
-            <span className="text-[10px]">Tambah soal di panel Konten → Evaluasi</span>
+            <span className="text-[10px]">{interactive ? 'Belum ada soal tersedia' : 'Tambah soal di panel Konten → Evaluasi'}</span>
           </div>
         )}
       </div>

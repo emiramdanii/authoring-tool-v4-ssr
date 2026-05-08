@@ -17,14 +17,14 @@ export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
   const [buzzed, setBuzzed] = useState<'A' | 'B' | null>(null);
-  const [correct, setCorrect] = useState<'A' | 'B' | null>(null);
+  const [correct, setCorrect] = useState<'A' | 'B' | 'wrong' | null>(null); // 'wrong' prevents re-buzz
   const [phase, setPhase] = useState<'play' | 'result'>('play');
   const reported = useRef(false);
 
   useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; const total = validSoal.reduce((s, q) => s + ((q.poin as number) || 10), 0); onComplete(scoreA + scoreB, total); } }, [phase]);
 
   const handleBuzz = (team: 'A' | 'B') => {
-    if (buzzed) return;
+    if (buzzed || correct === 'wrong') return; // Block buzzing while wrong answer pending
     setBuzzed(team);
   };
 
@@ -73,7 +73,7 @@ export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps
         {q.teks as string}
       </p>
       <div className="flex gap-2 mb-1">
-        <button onClick={() => handleBuzz('A')} disabled={!!buzzed}
+        <button onClick={() => handleBuzz('A')} disabled={!!buzzed || correct === 'wrong'}
           className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all border ${
             correct === 'A' ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-300' :
             buzzed === 'A' ? 'bg-blue-500/30 border-blue-400/40 text-blue-300' :
@@ -81,7 +81,7 @@ export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps
           }`}>
           {timA} ({scoreA})
         </button>
-        <button onClick={() => handleBuzz('B')} disabled={!!buzzed}
+        <button onClick={() => handleBuzz('B')} disabled={!!buzzed || correct === 'wrong'}
           className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all border ${
             correct === 'B' ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-300' :
             buzzed === 'B' ? 'bg-orange-500/30 border-orange-400/40 text-orange-300' :
@@ -97,8 +97,8 @@ export function TeamBuzzerGame({ data, compact, onComplete }: GameComponentProps
             Benar ({buzzed})
           </button>
           <button onClick={() => {
-              setBuzzed(null);
-              setCorrect(null);
+              // Mark as wrong — prevents re-buzzing until question advances
+              setCorrect('wrong');
               setTimeout(() => {
                 if (currentQ + 1 < validSoal.length) {
                   setCurrentQ(q => q + 1);

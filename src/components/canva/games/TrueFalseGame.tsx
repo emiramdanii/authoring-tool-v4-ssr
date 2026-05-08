@@ -17,7 +17,7 @@ export function TrueFalseGame({ data, compact, onComplete }: GameComponentProps)
   const [phase, setPhase] = useState<'play' | 'result'>('play');
   const reported = useRef(false);
 
-  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; onComplete(score, validSoal.length); } }, [phase]);
+  useEffect(() => { if (phase === 'result' && !reported.current && onComplete) { reported.current = true; onComplete(score, validSoal.length); } }, [phase, score, validSoal.length, onComplete]);
 
   const handleAnswer = useCallback((benar: boolean) => {
     if (answered || !validSoal[currentQ]) return;

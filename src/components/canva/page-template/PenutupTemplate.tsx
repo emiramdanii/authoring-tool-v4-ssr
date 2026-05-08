@@ -53,7 +53,7 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField, interact
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">🎓</span>
-          <span className="text-[10px]">Tambah item di panel Konten → Penutup</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada item tersedia' : 'Tambah item di panel Konten → Penutup'}</span>
         </div>
       )}
 

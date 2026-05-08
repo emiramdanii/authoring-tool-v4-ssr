@@ -9,9 +9,17 @@ import type { GameComponentProps } from './shared';
    Score = max(ceil(words * 0.5), words - wrongAttempts)
    ═══════════════════════════════════════════════════════════════ */
 
-function generateGrid(words: string[], size: number): string[][] {
+// Store word positions during grid generation so we can highlight cells
+interface WordPlacement {
+  word: string;
+  cells: Array<[number, number]>;
+}
+
+function generateGridWithPlacements(words: string[], size: number): { grid: string[][]; placements: WordPlacement[] } {
   const g: string[][] = Array.from({ length: size }, () => Array(size).fill(''));
-  const directions = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1]];
+  const directions = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
+  const placements: WordPlacement[] = [];
+
   for (const word of words) {
     for (let attempt = 0; attempt < 50; attempt++) {
       const dir = directions[Math.floor(Math.random() * directions.length)];
@@ -25,19 +33,48 @@ function generateGrid(words: string[], size: number): string[][] {
         if (g[r][c] !== '' && g[r][c] !== word[i]) { fits = false; break; }
       }
       if (fits) {
+        const cells: Array<[number, number]> = [];
         for (let i = 0; i < word.length; i++) {
-          g[startR + dir[0] * i][startC + dir[1] * i] = word[i];
+          const r = startR + dir[0] * i;
+          const c = startC + dir[1] * i;
+          g[r][c] = word[i];
+          cells.push([r, c]);
         }
+        placements.push({ word, cells });
         break;
       }
     }
   }
+  // Fill empty cells with random letters
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       if (g[r][c] === '') g[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
     }
   }
-  return g;
+  return { grid: g, placements };
+}
+
+// Check if two cells form a valid straight line (horizontal, vertical, or diagonal)
+// and return the cells along that line
+function getLineCells(start: [number, number], end: [number, number]): Array<[number, number]> | null {
+  const [r1, c1] = start;
+  const [r2, c2] = end;
+  const dr = Math.sign(r2 - r1);
+  const dc = Math.sign(c2 - c1);
+  const rowDist = Math.abs(r2 - r1);
+  const colDist = Math.abs(c2 - c1);
+
+  // Must be a straight line: same row, same col, or diagonal (equal distances)
+  if (rowDist !== colDist && rowDist !== 0 && colDist !== 0) return null;
+
+  const steps = Math.max(rowDist, colDist);
+  if (steps === 0) return [[r1, c1]];
+
+  const cells: Array<[number, number]> = [];
+  for (let i = 0; i <= steps; i++) {
+    cells.push([r1 + dr * i, c1 + dc * i]);
+  }
+  return cells;
 }
 
 export function WordSearchGame({ data, compact, onComplete }: GameComponentProps) {
@@ -46,10 +83,15 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
   const validKata = kataList.filter(k => k.trim());
 
   const [gridKey, setGridKey] = useState(0);
-  const grid = useMemo(() => generateGrid(validKata, ukuran), [validKata, ukuran, gridKey]);
+  const { grid, placements } = useMemo(
+    () => generateGridWithPlacements(validKata, ukuran),
+    [validKata, ukuran, gridKey]
+  );
+
+  // Track found words AND which cells belong to found words
   const [found, setFound] = useState<Set<string>>(new Set());
-  const [selectedCells, setSelectedCells] = useState<Array<[number, number]>>([]);
-  const [isSelecting, setIsSelecting] = useState(false);
+  const [foundCells, setFoundCells] = useState<Set<string>>(new Set()); // "r,c" keys
+  const [startCell, setStartCell] = useState<[number, number] | null>(null);
   const [phase, setPhase] = useState<'play' | 'done'>('play');
   const reported = useRef(false);
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -64,8 +106,8 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
 
   const handleRestart = () => {
     setFound(new Set());
-    setSelectedCells([]);
-    setIsSelecting(false);
+    setFoundCells(new Set());
+    setStartCell(null);
     setPhase('play');
     reported.current = false;
     setWrongAttempts(0);
@@ -89,22 +131,36 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
   }
 
   const handleCellClick = (r: number, c: number) => {
-    if (!isSelecting) {
-      setSelectedCells([[r, c]]);
-      setIsSelecting(true);
+    if (!startCell) {
+      // First click: set start cell
+      setStartCell([r, c]);
     } else {
-      const newCells = [...selectedCells, [r, c] as [number, number]];
-      const word = newCells.map(([cr, cc]) => grid[cr]?.[cc] || '').join('');
+      // Second click: validate line and check for word match
+      const lineCells = getLineCells(startCell, [r, c]);
+
+      if (!lineCells || lineCells.length < 2) {
+        // Invalid line — reset selection
+        setWrongAttempts(w => w + 1);
+        setStartCell(null);
+        return;
+      }
+
+      const word = lineCells.map(([cr, cc]) => grid[cr]?.[cc] || '').join('');
       const reversedWord = word.split('').reverse().join('');
       const foundWord = validKata.find(k => (k === word || k === reversedWord) && !found.has(k));
+
       if (foundWord) {
         setFound(prev => new Set([...prev, foundWord]));
+        setFoundCells(prev => {
+          const next = new Set(prev);
+          lineCells.forEach(([cr, cc]) => next.add(`${cr},${cc}`));
+          return next;
+        });
         if (found.size + 1 === validKata.length) setPhase('done');
       } else {
         setWrongAttempts(w => w + 1);
       }
-      setSelectedCells([]);
-      setIsSelecting(false);
+      setStartCell(null);
     }
   };
 
@@ -117,16 +173,21 @@ export function WordSearchGame({ data, compact, onComplete }: GameComponentProps
       <div className="flex gap-1 flex-1 min-h-0 overflow-hidden">
         {/* Grid */}
         <div className="flex-shrink-0" style={{ display: 'grid', gridTemplateColumns: `repeat(${ukuran}, ${cellSize}px)`, gap: 1 }}>
-          {grid.map((row, r) => row.map((letter, c) => (
-            <button key={`${r}-${c}`} onClick={() => handleCellClick(r, c)}
-              className={`${fontSize} w-full aspect-square rounded flex items-center justify-center font-bold transition-colors ${
-                selectedCells.some(([sr, sc]) => sr === r && sc === c) ? 'bg-amber-500/40 text-amber-200' :
-                found.has(letter) ? 'bg-emerald-500/30 text-emerald-300' :
-                'bg-white/5 text-white/60 hover:bg-white/15 cursor-pointer'
-              }`}>
-              {letter}
-            </button>
-          )))}
+          {grid.map((row, r) => row.map((letter, c) => {
+            const cellKey = `${r},${c}`;
+            const isStart = startCell && startCell[0] === r && startCell[1] === c;
+            const isFound = foundCells.has(cellKey);
+            return (
+              <button key={`${r}-${c}`} onClick={() => handleCellClick(r, c)}
+                className={`${fontSize} w-full aspect-square rounded flex items-center justify-center font-bold transition-colors ${
+                  isStart ? 'bg-amber-500/40 text-amber-200 ring-2 ring-amber-400/50' :
+                  isFound ? 'bg-emerald-500/30 text-emerald-300' :
+                  'bg-white/5 text-white/60 hover:bg-white/15 cursor-pointer'
+                }`}>
+                {letter}
+              </button>
+            );
+          }))}
         </div>
         {/* Word list */}
         <div className="flex-1 flex flex-col gap-0.5 min-w-[60px]">
