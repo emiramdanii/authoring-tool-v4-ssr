@@ -11,7 +11,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import {
   GAME_TYPES,
   MATERI_RAKIT_TYPES,
-} from '@/lib/canva-export-helpers';
+} from '@/lib/canva-constants';
 import { ensureModuleIds } from '@/lib/module-resolver';
 import { createTemplatePage } from './template-data';
 

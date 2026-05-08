@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
-import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPES } from '@/lib/canva-constants';
 import { GAME_TYPE_ICON_MAP, MODULE_TYPE_ICON_MAP } from '@/lib/canva-icon-maps';
 
 export default function DataIdxSelector({ elementType, currentIdx, onChange }: {

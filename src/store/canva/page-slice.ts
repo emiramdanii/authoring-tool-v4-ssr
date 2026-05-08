@@ -9,7 +9,7 @@ import type { CanvaPage, CanvaElement, PageTemplateType } from '@/components/can
 import { useAuthoringStore } from '@/store/authoring-store';
 import {
   populateTemplateElements,
-} from '@/lib/canva-export-helpers';
+} from '@/lib/canva-constants';
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, buildTemplateData, getTemplateExtraProps } from './template-data';
 

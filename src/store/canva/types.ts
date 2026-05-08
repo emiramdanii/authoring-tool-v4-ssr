@@ -133,9 +133,7 @@ export interface CanvaState {
   saveToStorage: () => void;
   loadFromStorage: () => boolean;
 
-  // ── Export helpers ───────────────────────────────────────────
-  exportPageHTML: (pageIdx?: number) => string;
-  exportSlideshowHTML: () => string;
-  /** Unified export: smart navigation + canvas layout + game engines */
-  exportUnifiedHTML: () => string;
+  // ── Export ────────────────────────────────────────────────────
+  // Legacy export methods removed — all exports now use Vite SSR pipeline
+  // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 }

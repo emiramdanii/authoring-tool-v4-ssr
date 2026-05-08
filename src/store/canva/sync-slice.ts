@@ -15,7 +15,7 @@ import type { CanvaState } from './types';
 import type { CanvaElement } from '@/components/canva/types';
 import { buildTemplateData } from './template-data';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPES } from '@/lib/canva-constants';
 
 export type SyncSlice = Pick<CanvaState, 'syncTemplateData'>;
 

@@ -8,7 +8,7 @@ import type { CanvaState } from './types';
 import type { CanvaElement, PageTemplateType } from '@/components/canva/types';
 import { ELEM_TYPES } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPES } from '@/lib/canva-constants';
 import { getModuleIcon, getGameIcon } from '@/lib/canva-icon-maps';
 import { createElId } from './constants';
 import { resolveModule, generateKuisId } from '@/lib/module-resolver';

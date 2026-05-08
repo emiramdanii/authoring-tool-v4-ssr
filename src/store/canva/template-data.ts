@@ -11,7 +11,7 @@ import {
   MATERI_MODULE_TYPES,
   getHeroData,
   populateTemplateElements,
-} from '@/lib/canva-export-helpers';
+} from '@/lib/canva-constants';
 import { createPage, createElId } from './constants';
 
 // ── Label map for template types ──────────────────────────────

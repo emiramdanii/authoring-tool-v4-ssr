@@ -2,10 +2,13 @@
 
 import { useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { generateExportHtml, generatePrintAdminHtml } from '@/lib/export-html';
+import { useCanvaStore } from '@/store/canva-store';
+import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
 
 export function useExportActions() {
+  const { exportHTML } = useViteExport();
+
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();
     const data = {
@@ -20,67 +23,111 @@ export function useExportActions() {
     a.download = `authoring-tool-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('✅ JSON berhasil diekspor!');
+    toast.success('JSON berhasil diekspor!');
   }, []);
 
-  const exportStudentHtml = useCallback(() => {
+  /** Export student HTML — now uses Vite SSR pipeline (same as preview) */
+  const exportStudentHtml = useCallback(async () => {
     const s = useAuthoringStore.getState();
 
-    // ── Pre-export validation warnings ─────────────────────────
+    // Pre-export validation warnings
     if (!s.meta.judulPertemuan?.trim()) {
-      toast.warning('⚠️ Judul pertemuan kosong. Isi terlebih dahulu di panel Dokumen.');
+      toast.warning('Judul pertemuan kosong. Isi terlebih dahulu di panel Dokumen.');
     }
     if (s.kuis.length === 0) {
-      toast.warning('⚠️ Belum ada soal kuis.');
-    }
-    if (s.materi.blok.length === 0) {
-      toast.warning('⚠️ Materi kosong.');
+      toast.warning('Belum ada soal kuis.');
     }
 
     try {
-      const html = generateExportHtml({
-        meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-        skenario: s.skenario, kuis: s.kuis, materi: s.materi,
-        modules: s.modules, games: s.games,
-      });
-      const filename = (s.meta.judulPertemuan || 'media')
-        .replace(/[^a-z0-9\-]/gi, '-')
-        .replace(/-+/g, '-')
-        .toLowerCase();
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${filename}.html`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('✅ Media pembelajaran berhasil didownload!');
-    } catch (err) {
+      await exportHTML();
+    } catch (err: any) {
       console.error('Export HTML failed:', err);
-      toast.error('❌ Gagal mengexport HTML');
+      toast.error(`Gagal mengexport HTML: ${err.message}`);
     }
-  }, []);
+  }, [exportHTML]);
 
+  /** Cetak dokumen admin — generates a simple print-friendly page */
   const cetakDokumenAdmin = useCallback(() => {
     const s = useAuthoringStore.getState();
     try {
-      const html = generatePrintAdminHtml({
-        meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-        skenario: s.skenario, kuis: s.kuis, materi: s.materi,
-        modules: s.modules, games: s.games,
-      });
+      // Build a simple printable HTML for admin docs
+      const meta = s.meta;
+      const cp = s.cp;
+      const tp = s.tp;
+
+      let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dokumen Admin - ${meta.judulPertemuan || 'Media'}</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a; }
+  h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { font-size: 18px; margin-top: 28px; color: #2563eb; }
+  h3 { font-size: 15px; margin-top: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin: 12px 0; }
+  .meta-grid dt { font-weight: 600; color: #475569; }
+  .meta-grid dd { margin: 0; }
+  @media print { body { padding: 0; } }
+</style></head><body>`;
+
+      // Meta section
+      html += `<h1>Dokumen Admin: ${meta.judulPertemuan || '-'}</h1>`;
+      html += `<dl class="meta-grid">
+        <dt>Mata Pelajaran</dt><dd>${meta.mapel || '-'}</dd>
+        <dt>Kelas</dt><dd>${meta.kelas || '-'}</dd>
+        <dt>Semester</dt><dd>${meta.semester || '-'}</dd>
+        <dt>Judul Pertemuan</dt><dd>${meta.judulPertemuan || '-'}</dd>
+      </dl>`;
+
+      // CP section
+      if (cp?.tujuan?.length) {
+        html += `<h2>Capaian Pembelajaran (CP)</h2><table><tr><th>#</th><th>Tujuan</th></tr>`;
+        cp.tujuan.forEach((t: string, i: number) => { html += `<tr><td>${i + 1}</td><td>${t}</td></tr>`; });
+        html += `</table>`;
+      }
+
+      // TP section
+      if (tp?.length) {
+        html += `<h2>Tujuan Pembelajaran (TP)</h2><table><tr><th>#</th><th>Tujuan</th><th>Indikator</th></tr>`;
+        tp.forEach((t: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${t.tujuan || t.label || '-'}</td><td>${t.indikator || '-'}</td></tr>`; });
+        html += `</table>`;
+      }
+
+      // ATP section
+      if (s.atp?.length) {
+        html += `<h2>Alur Tujuan Pembelajaran (ATP)</h2><table><tr><th>#</th><th>Pertemuan</th><th>TP</th><th>Materi</th></tr>`;
+        s.atp.forEach((a: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.pertemuan || '-'}</td><td>${a.tp || '-'}</td><td>${a.materi || '-'}</td></tr>`; });
+        html += `</table>`;
+      }
+
+      // Alur section
+      if (s.alur?.length) {
+        html += `<h2>Alur Pembelajaran</h2><table><tr><th>#</th><th>Kegiatan</th><th>Deskripsi</th><th>Durasi</th></tr>`;
+        s.alur.forEach((a: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.kegiatan || a.label || '-'}</td><td>${a.deskripsi || '-'}</td><td>${a.durasi || '-'}</td></tr>`; });
+        html += `</table>`;
+      }
+
+      // Kuis section
+      if (s.kuis?.length) {
+        html += `<h2>Soal Kuis</h2><table><tr><th>#</th><th>Soal</th><th>Jawaban</th></tr>`;
+        s.kuis.forEach((k: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${k.soal || k.question || '-'}</td><td>${k.jawaban || k.answer || '-'}</td></tr>`; });
+        html += `</table>`;
+      }
+
+      html += `</body></html>`;
+
       const win = window.open('', '_blank');
       if (!win) {
-        toast.error('❌ Popup diblokir oleh browser');
+        toast.error('Popup diblokir oleh browser');
         return;
       }
       win.document.write(html);
       win.document.close();
       win.print();
-      toast.success('🖨️ Jendela cetak dibuka');
+      toast.success('Jendela cetak dibuka');
     } catch (err) {
       console.error('Print admin failed:', err);
-      toast.error('❌ Gagal membuka jendela cetak');
+      toast.error('Gagal membuka jendela cetak');
     }
   }, []);
 

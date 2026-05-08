@@ -28,7 +28,7 @@ import {
   getModuleIcon,
   getGameIcon,
 } from '@/lib/canva-icon-maps';
-import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPES } from '@/lib/canva-constants';
 import { toast } from 'sonner';
 import PageTypeCreator from './PageTypeCreator';
 

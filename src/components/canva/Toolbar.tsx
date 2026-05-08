@@ -49,9 +49,6 @@ export default function Toolbar() {
     ratioId,
     setRatio,
     clearStage,
-    exportPageHTML,
-    exportSlideshowHTML,
-    exportUnifiedHTML,
     currentPageIndex,
     pages,
     undo,
@@ -104,77 +101,8 @@ export default function Toolbar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handlePreview = () => {
-    const html = exportPageHTML();
-    const win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.close(); }
-    toast.success('Preview halaman dibuka di tab baru');
-    setExportOpen(false);
-  };
-
-  const handlePreviewSlideshow = () => {
-    requestAnimationFrame(() => {
-      try {
-        const html = exportSlideshowHTML();
-        const win = window.open('', '_blank');
-        if (win) { win.document.write(html); win.document.close(); }
-        toast.success(`Slideshow preview dibuka (${pages.length} halaman)`);
-      } catch (err) {
-        toast.error('Gagal membuat preview slideshow');
-      }
-    });
-    setExportOpen(false);
-  };
-
-  const handleExport = () => {
-    setExporting(true);
-    toast.loading('Mengekspor halaman...', { id: 'export-page' });
-    requestAnimationFrame(() => {
-      try {
-        const html = exportPageHTML();
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `canva-page-${currentPageIndex + 1}.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        toast.success('Halaman diekspor sebagai HTML', { id: 'export-page' });
-      } catch (err) {
-        toast.error('Gagal mengekspor halaman', { id: 'export-page' });
-      } finally {
-        setExporting(false);
-      }
-    });
-    setExportOpen(false);
-  };
-
-  const handleExportSlideshow = () => {
-    setExporting(true);
-    toast.loading(`Mengekspor ${pages.length} halaman...`, { id: 'export-slideshow' });
-    requestAnimationFrame(() => {
-      try {
-        const html = exportSlideshowHTML();
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'canva-slideshow.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        toast.success(`Slideshow diekspor (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-slideshow' });
-      } catch (err) {
-        toast.error('Gagal mengekspor slideshow', { id: 'export-slideshow' });
-      } finally {
-        setExporting(false);
-      }
-    });
-    setExportOpen(false);
-  };
+  // Legacy export handlers removed — now using Vite SSR Export pipeline
+  // See: handleExportUnified and handlePreviewUnified below
 
   const handleExportUnified = async () => {
     setExporting(true);
@@ -332,14 +260,14 @@ export default function Toolbar() {
         <span>Play</span>
       </button>
 
-      {/* ── Slideshow Preview Button (opens in new tab) ── */}
+      {/* ── Slideshow Preview Button (Vite SSR — opens in new tab) ── */}
       <button
-        onClick={handlePreviewSlideshow}
-        title="Preview Slideshow — Buka preview interaktif semua halaman di tab baru"
+        onClick={handlePreviewUnified}
+        title="Preview Interaktif — Buka preview semua halaman di tab baru (SSR Export)"
         className="btn-ghost focus-ring flex items-center gap-0.5 !text-teal-400 hover:!text-teal-300"
       >
         <Film size={14} />
-        <span className="hidden md:inline text-[9px] font-semibold">Slideshow</span>
+        <span className="hidden md:inline text-[9px] font-semibold">Preview</span>
       </button>
 
       {/* ── Live Preview Button → Navigate to Preview Panel ── */}

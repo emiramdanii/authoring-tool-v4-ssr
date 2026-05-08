@@ -7,7 +7,7 @@ import type { StateCreator } from 'zustand';
 import type { CanvaPage } from '@/components/canva/types';
 import type { CanvaState } from './types';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { GAME_TYPES, MATERI_RAKIT_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPES, MATERI_RAKIT_TYPES } from '@/lib/canva-constants';
 import { createTemplatePage } from './template-data';
 
 export type AutoRakitSlice = Pick<CanvaState, 'autoRakit'>;

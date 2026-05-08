@@ -2,7 +2,7 @@
 
 import { useAuthoringStore } from '@/store/authoring-store';
 import { resolveModule } from '@/lib/module-resolver';
-import { GAME_TYPES } from '@/lib/canva-export-helpers';
+import { GAME_TYPES } from '@/lib/canva-constants';
 import type { CanvaElement } from './types';
 import { GenericGameWidget } from './games/shared';
 import { TrueFalseGame } from './games/TrueFalseGame';
