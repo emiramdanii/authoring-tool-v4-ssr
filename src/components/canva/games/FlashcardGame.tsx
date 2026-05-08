@@ -18,11 +18,12 @@ export function FlashcardGame({ data, compact, onComplete }: GameComponentProps)
 
   // Track viewed cards and report score when all viewed
   useEffect(() => {
-    if (viewedCards.size === validCards.length && !reported.current && onComplete) {
+    // Guard: validCards.length > 0 prevents spurious onComplete(0,0) on empty data
+    if (validCards.length > 0 && viewedCards.size === validCards.length && !reported.current && onComplete) {
       reported.current = true;
       onComplete(validCards.length, validCards.length);
     }
-  }, [viewedCards, validCards.length, onComplete]);
+  }, [viewedCards, validCards.length]);
 
   const handleFlip = () => {
     const newFlipped = !flipped;
