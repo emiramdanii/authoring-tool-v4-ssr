@@ -364,6 +364,8 @@ export default function ExportApp() {
 
   const templateType = page.templateType || 'custom';
   const isTemplate = templateType !== 'custom';
+  const isPageLocked = isTemplate && page.locked !== false; // locked template
+  const isPageUnlocked = isTemplate && page.locked === false; // unlocked template
   const pageNavConfig = getNavConfig(page);
   const pageShowProgress = pageNavConfig.showProgress !== false;
   // showTopNav is already computed above (before early returns for TDZ safety)
@@ -430,16 +432,17 @@ export default function ExportApp() {
           )}
 
           {/* ── Page Content ── */}
-          {isTemplate ? (
+          {/* LOCKED template: render PageTemplate (interactive) + overlay elements on top */}
+          {isPageLocked && (
             <>
               <PageTemplate
                 key={page.id}
                 page={page}
                 isSelected={false}
-                onEditField={() => {}}
+                onEditField={undefined}
                 interactive={true}
               />
-              {/* Overlay elements on template pages — now with full element rendering */}
+              {/* Overlay elements on locked template pages */}
               {(page.overlayElements || []).filter(el => !el.hidden).length > 0 && (
                 <div className="absolute inset-0" style={{ zIndex: 10 }}>
                   {page.overlayElements.filter(el => !el.hidden).map(el => (
@@ -448,8 +451,26 @@ export default function ExportApp() {
                 </div>
               )}
             </>
-          ) : (
-            // Custom mode: render ALL element types including kuis/game/modul
+          )}
+          {/* UNLOCKED template: render frozen PageTemplate + elements (merged from overlayElements) on top */}
+          {isPageUnlocked && (
+            <>
+              <PageTemplate
+                key={page.id}
+                page={page}
+                isSelected={false}
+                onEditField={undefined}
+                interactive={true}
+              />
+              <div className="absolute inset-0" style={{ zIndex: 20 }}>
+                {page.elements.filter(el => !el.hidden).map(el => (
+                  <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Custom mode: render ALL element types including kuis/game/modul */}
+          {!isTemplate && (
             <div className="absolute inset-0">
               {page.elements.filter(el => !el.hidden).map(el => (
                 <ExportElement key={el.id} element={el} pageIndex={currentIdx} />

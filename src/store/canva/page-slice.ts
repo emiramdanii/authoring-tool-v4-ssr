@@ -140,8 +140,14 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     get()._pushHistory();
     const newPages = [...pages];
-    // Merge overlayElements into elements[] so all are draggable
-    const mergedElements = [...page.elements, ...(page.overlayElements || [])];
+    // Filter out placeholder elements (full-page template-origin elements from populateTemplateElements)
+    // Placeholders have: x:0, y:0, w:100, h:100, dataIdx:-1 — they're only for export compat
+    // and should not become visible draggable boxes after unlock.
+    const isPlaceholder = (el: CanvaElement) =>
+      el.x === 0 && el.y === 0 && el.w === 100 && el.h === 100 && el.dataIdx === -1;
+    const realElements = page.elements.filter(el => !isPlaceholder(el));
+    // Merge real elements + overlay elements so all are draggable
+    const mergedElements = [...realElements, ...(page.overlayElements || [])];
     newPages[currentPageIndex] = {
       ...page,
       locked: false,

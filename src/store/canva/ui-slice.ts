@@ -37,8 +37,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!preset || preset.slots.length === 0) return; // 'free' = no change
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (!page || page.templateType !== 'custom') {
-      toast.warning('Layout preset hanya untuk halaman Kosong');
+    if (!page || (page.templateType !== 'custom' && page.locked !== false)) {
+      toast.warning('Layout preset hanya untuk halaman Kosong atau template terbuka');
       return;
     }
     get()._pushHistory();
@@ -71,7 +71,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   currentLayoutPreset: () => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (!page || page.templateType !== 'custom' || page.elements.length === 0) return LAYOUT_PRESETS[0]; // free
+    if (!page || (page.templateType !== 'custom' && page.locked !== false) || page.elements.length === 0) return LAYOUT_PRESETS[0]; // free
     // Try to match current element positions to a preset
     const els = page.elements;
     for (const preset of LAYOUT_PRESETS) {
@@ -125,10 +125,11 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // ── Stage ────────────────────────────────────────────────────
   clearStage: () => {
     const { pages, currentPageIndex } = get();
-    if (pages[currentPageIndex].elements.length === 0) return;
+    const page = pages[currentPageIndex];
+    if (page.elements.length === 0 && (page.overlayElements || []).length === 0) return;
     get()._pushHistory();
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...newPages[currentPageIndex], elements: [] };
+    newPages[currentPageIndex] = { ...page, elements: [], overlayElements: [] };
     set({ pages: newPages, selectedElId: null, selectedElIds: [] });
     toast.success('Stage dibersihkan');
   },
