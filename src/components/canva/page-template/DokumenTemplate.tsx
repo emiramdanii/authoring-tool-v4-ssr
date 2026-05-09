@@ -11,6 +11,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const cp = td.cp as Record<string, unknown> | undefined;
   const tpItems = (td.tp as Array<Record<string, unknown>>) || [];
+  const atpItems = (td.atp as Array<Record<string, unknown>>) || [];
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
@@ -28,7 +29,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
             className="font-black text-white text-sm"
             placeholder="Judul Dokumen"
           />
-          <div className="text-[9px] text-white/40">Capaian Pembelajaran • Tujuan Pembelajaran</div>
+          <div className="text-[9px] text-white/40">Capaian Pembelajaran • Tujuan Pembelajaran • Alur Tujuan Pembelajaran</div>
         </div>
       </div>
 
@@ -54,7 +55,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
 
       {/* TP Items */}
       {tpItems.length > 0 && (
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="mb-3">
           <div className="text-[10px] font-bold mb-1.5" style={{ color: accent2 }}>Tujuan Pembelajaran</div>
           <div className="space-y-1">
             {tpItems.map((tp, i) => (
@@ -75,11 +76,38 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
         </div>
       )}
 
+      {/* ATP Section */}
+      {atpItems.length > 0 && (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="text-[10px] font-bold mb-1.5" style={{ color: '#34d399' }}>Alur Tujuan Pembelajaran</div>
+          <div className="space-y-1">
+            {atpItems.map((atp, i) => (
+              <div key={i} className="px-2 py-1.5 rounded-md bg-white/5 border-l-2" style={{ borderColor: '#34d399' }}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[8px] font-bold text-emerald-400">Pertemuan {i + 1}</span>
+                  {Boolean(atp.judul) && <span className="text-[7px] text-white/40">• {String(atp.judul)}</span>}
+                </div>
+                {Array.isArray(atp.tp) && (atp.tp as Array<Record<string, unknown>>).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {(atp.tp as Array<Record<string, unknown>>).map((tpItem, j) => (
+                      <span key={j} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
+                        style={{ background: alpha('#34d399', 0.08), color: '#34d399' }}>
+                        {String(tpItem.verb || tpItem.desc || `TP ${j + 1}`)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Empty state */}
-      {(!cp?.capaianFase && tpItems.length === 0) && (
+      {(!cp?.capaianFase && tpItems.length === 0 && atpItems.length === 0) && (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📋</span>
-          <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP & TP di panel Dokumen'}</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP, TP & ATP di panel Dokumen'}</span>
         </div>
       )}
     </div>

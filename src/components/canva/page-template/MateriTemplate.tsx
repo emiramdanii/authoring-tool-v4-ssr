@@ -41,9 +41,11 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
           <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
             {blok.map((b, i) => (
               <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/10">
-                {Boolean(b.judul) && <div className="text-[10px] font-bold text-white mb-0.5">{String(b.judul)}</div>}
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  {Boolean(b.icon) && <span className="text-sm">{String(b.icon)}</span>}
+                  {Boolean(b.judul) && <span className="text-[10px] font-bold text-white">{String(b.judul)}</span>}
+                </div>
                 {Boolean(b.isi) && <div className="text-[8px] text-white/70 leading-relaxed line-clamp-3">{String(b.isi)}</div>}
-                {Boolean(b.icon) && <span className="text-sm mr-1">{String(b.icon)}</span>}
                 {Array.isArray(b.butir) && (
                   <div className="space-y-0.5 mt-1">
                     {(b.butir as string[]).slice(0, 4).map((item, j) => (

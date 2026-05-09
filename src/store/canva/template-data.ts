@@ -128,8 +128,14 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
 // ── Get extra page properties for a template type ─────────────
 
 export function getTemplateExtraProps(templateType: PageTemplateType): Partial<Record<string, unknown>> {
+  // Dark background for all template types — consistent with the dark-themed template renderers
+  // Cover and hero use a slightly different shade
   if (templateType === 'cover' || templateType === 'hero') {
     return { bgColor: '#0f172a' };
+  }
+  // All other templates use the same dark background so content is visible
+  if (templateType !== 'custom') {
+    return { bgColor: '#0e1c2f' };
   }
   return {};
 }
