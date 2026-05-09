@@ -21,9 +21,11 @@ export type ElementSlice = Pick<
   | 'toggleElementVisibility' | 'saveTextContent' | 'moveElementZ'
 >;
 
-// ── Helper: determine if page is in template mode ──────────────
-function isTemplatePage(templateType: PageTemplateType | undefined): boolean {
-  return !!templateType && templateType !== 'custom';
+// ── Helper: determine if page is in template mode AND locked ──
+// Unlocked template pages should add elements to elements[] (not overlayElements)
+// because their overlayElements were merged into elements during unlock.
+function isLockedTemplatePage(templateType: PageTemplateType | undefined, locked: boolean | undefined): boolean {
+  return !!templateType && templateType !== 'custom' && locked !== false;
 }
 
 export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> = (set, get) => ({
@@ -71,8 +73,8 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       }
     }
     const newPages = [...pages];
-    // Phase 1: Template pages use overlayElements; custom pages use elements
-    if (isTemplatePage(page.templateType)) {
+    // Locked template pages use overlayElements; custom + unlocked use elements
+    if (isLockedTemplatePage(page.templateType, page.locked)) {
       newPages[currentPageIndex] = {
         ...page,
         overlayElements: [...(page.overlayElements || []), el],
@@ -107,7 +109,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       opacity: 100,
     };
     const newPages = [...pages];
-    if (isTemplatePage(page.templateType)) {
+    if (isLockedTemplatePage(page.templateType, page.locked)) {
       newPages[currentPageIndex] = {
         ...page,
         overlayElements: [...(page.overlayElements || []), el],
@@ -142,7 +144,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       opacity: 100,
     };
     const newPages = [...pages];
-    if (isTemplatePage(page.templateType)) {
+    if (isLockedTemplatePage(page.templateType, page.locked)) {
       newPages[currentPageIndex] = {
         ...page,
         overlayElements: [...(page.overlayElements || []), el],

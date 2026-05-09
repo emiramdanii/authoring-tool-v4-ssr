@@ -387,10 +387,16 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
               <div className="absolute inset-0" style={bgStyle}>
                 <div className="absolute inset-0 bg-black/30" />
               </div>
-              {/* Page label */}
+              {/* Page label + lock status */}
               <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-gradient-to-t from-black/80 to-transparent">
-                <div className="text-[9px] font-bold text-white truncate">
+                <div className="text-[9px] font-bold text-white truncate flex items-center gap-0.5">
                   {templateIcon[p.templateType] || '📄'} {p.label}
+                  {p.templateType && p.templateType !== 'custom' && p.locked !== false && (
+                    <span className="text-amber-400/70 text-[7px]">🔒</span>
+                  )}
+                  {p.templateType && p.templateType !== 'custom' && p.locked === false && (
+                    <span className="text-emerald-400/70 text-[7px]">🔓</span>
+                  )}
                 </div>
                 <div className="text-[7px] text-white/50">
                   Halaman {i + 1}/{pages.length}

@@ -199,6 +199,8 @@ function ExportModuleElement({ element }: { element: CanvaElement }) {
 export default function ExportApp() {
   // Read data from stores (pre-populated by entry-client.tsx)
   const pages = useCanvaStore((s) => s.pages);
+  const ratioId = useCanvaStore((s) => s.ratioId);
+  const currentRatio = useCanvaStore((s) => s.currentRatio());
   const meta = useAuthoringStore((s) => s.meta);
 
   // ── Expose interactive store for Live Preview postMessage bridge ──
@@ -397,6 +399,8 @@ export default function ExportApp() {
           topNavHeight={showTopNav ? 'var(--export-topnav-h, 44px)' : '0px'}
           bgStyle={bgStyle}
           safeBgDataUrl={safeBgDataUrl}
+          designW={currentRatio.w}
+          designH={currentRatio.h}
           overlay={page.overlay ?? 20}
         >
           {/* Offset for top navbar when present */}
@@ -606,6 +610,8 @@ function ExportScaleContainer({
   bgStyle,
   safeBgDataUrl,
   overlay,
+  designW,
+  designH,
   children,
 }: {
   pageId: string;
@@ -614,14 +620,16 @@ function ExportScaleContainer({
   bgStyle: React.CSSProperties;
   safeBgDataUrl: string | null;
   overlay: number;
+  designW: number;
+  designH: number;
   children: React.ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
 
-  // Use a fixed 16:9 design size (matching PlayCanvas ratio default)
-  const DESIGN_W = 1280;
-  const DESIGN_H = 720;
+  // Use design dimensions from the user-selected ratio (not hardcoded 16:9)
+  const DESIGN_W = designW;
+  const DESIGN_H = designH;
 
   useEffect(() => {
     const el = containerRef.current;

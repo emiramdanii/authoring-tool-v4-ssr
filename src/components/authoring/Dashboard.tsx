@@ -120,7 +120,7 @@ export default function Dashboard() {
         <div className="flex items-start gap-4">
           <div className="text-3xl">👋</div>
           <div className="flex-1">
-            <h3 className="font-bold text-zinc-100 text-base">Selamat Datang di Authoring Tool v3!</h3>
+            <h3 className="font-bold text-zinc-100 text-base">Selamat Datang di Authoring Tool v4!</h3>
             <p className="text-xs text-zinc-400 mt-1">Buat media pembelajaran interaktif dengan mudah. Ikuti alur kerja berikut:</p>
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 mt-3">
               {[

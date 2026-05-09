@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Authoring Tool v3 — Media Pembelajaran Interaktif",
+  title: "Authoring Tool v4 — Media Pembelajaran Interaktif",
   description: "Aplikasi authoring tool untuk membuat media pembelajaran interaktif PPKn. Mendukung materi, kuis, game, skenario, dan desain canva.",
   keywords: ["authoring tool", "media pembelajaran", "PPKn", "interaktif", "kuis", "game edukasi", "Next.js"],
   authors: [{ name: "emiramdanii" }],
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "Authoring Tool v3 — Media Pembelajaran Interaktif",
+    title: "Authoring Tool v4 — Media Pembelajaran Interaktif",
     description: "Aplikasi authoring tool untuk membuat media pembelajaran interaktif PPKn.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Authoring Tool v3 — Media Pembelajaran Interaktif",
+    title: "Authoring Tool v4 — Media Pembelajaran Interaktif",
     description: "Aplikasi authoring tool untuk membuat media pembelajaran interaktif PPKn.",
   },
 };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers } from 'lucide-react';
+import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, Lock, Unlock } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 
 // ═══════════════════════════════════════════════════════════════
@@ -33,6 +33,11 @@ export default function StatusBar({ mousePos }: { mousePos: { x: number; y: numb
   const totalElements = (page?.elements.length || 0) + (page?.overlayElements?.length || 0);
   const templateBadge = TEMPLATE_BADGE_MAP[page?.templateType || 'custom'];
 
+  // Lock status
+  const isTemplate = page?.templateType && page.templateType !== 'custom';
+  const isPageLocked = isTemplate && page?.locked !== false;
+  const isPageUnlocked = isTemplate && page?.locked === false;
+
   return (
     <div className="flex items-center gap-3 px-4 py-1 glass-panel text-[10px] text-slate-500 select-none">
       {/* Ratio */}
@@ -52,13 +57,15 @@ export default function StatusBar({ mousePos }: { mousePos: { x: number; y: numb
         )}
       </span>
 
-      {/* Page info with template type */}
+      {/* Page info with template type + lock status */}
       <span className="flex items-center gap-1.5">
         <FileText size={11} className="text-slate-600" />
         <span>{currentPageIndex + 1}/{pages.length}</span>
         <span className="text-[8px] text-slate-600">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>
+        {isPageLocked && <Lock size={9} className="text-amber-400/60" />}
+        {isPageUnlocked && <Unlock size={9} className="text-emerald-400/60" />}
       </span>
 
       <div className="section-divider h-3 w-px mx-1" />

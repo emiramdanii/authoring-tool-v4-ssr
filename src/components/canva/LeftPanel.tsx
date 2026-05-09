@@ -116,7 +116,7 @@ function HalamanContent() {
 
           const isTemplate = p.templateType && p.templateType !== 'custom';
           const isPageLocked = p.locked !== false; // true or undefined = locked
-          const modulCount = (p.overlayElements || []).length + p.elements.filter(e => e.type === 'modul' || e.type === 'materi').length;
+          const modulCount = (p.overlayElements || []).filter(e => e.type === 'modul' || e.type === 'materi').length + p.elements.filter(e => e.type === 'modul' || e.type === 'materi').length;
           const kuisCount = (p.overlayElements || []).filter(e => e.type === 'kuis').length + p.elements.filter(e => e.type === 'kuis').length;
           const gameCount = (p.overlayElements || []).filter(e => e.type === 'game').length + p.elements.filter(e => e.type === 'game').length;
 
@@ -256,12 +256,13 @@ function TambahContent() {
   const isPageLocked = page?.locked !== false; // true or undefined = locked
 
   // Handle adding module element (works on ALL pages including template)
+  // Uses same logic as element-slice: locked template → overlayElements, else → elements
   const handleAddModule = (m: Record<string, unknown>, mIdx: number) => {
     const store = useCanvaStore.getState();
     const pages = store.pages;
     const page = pages[store.currentPageIndex];
     if (!page) return;
-    const isTmpl = page.templateType && page.templateType !== 'custom';
+    const isLockedTmpl = page.templateType && page.templateType !== 'custom' && page.locked !== false;
     const typeInfo = { icon: getModuleIcon(m.type as string), name: (m.title as string) || (m.type as string) };
     const el: CanvaElement = {
       id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
@@ -275,9 +276,7 @@ function TambahContent() {
       layoutVariant: (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A',
     };
     const newPages = [...pages];
-    // Locked template pages: add to overlayElements
-    // Unlocked template pages + custom: add to elements
-    if (isTmpl && page.locked !== false) {
+    if (isLockedTmpl) {
       newPages[store.currentPageIndex] = {
         ...page,
         overlayElements: [...(page.overlayElements || []), el],
