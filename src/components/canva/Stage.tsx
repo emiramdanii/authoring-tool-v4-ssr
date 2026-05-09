@@ -383,6 +383,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           {/* Template Mode (LOCKED): Render full-page template as interactive */}
           {isTemplateMode && isLocked && (
             <PageTemplate
+              key={page.id}
               page={page}
               isSelected={true}
               onEditField={handleTemplateEdit}
@@ -392,6 +393,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           {/* Template Mode (UNLOCKED): Render template as frozen background + elements on top */}
           {isUnlockedTemplate && (
             <PageTemplate
+              key={page.id}
               page={page}
               isSelected={false}
               onEditField={undefined}
@@ -600,7 +602,7 @@ function StageElement({
 
   return (
     <div
-      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''} ${isOverlay && isInteractive ? 'pointer-events-auto' : ''}`}
+      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''} ${isOverlay ? 'pointer-events-auto' : ''}`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,

@@ -185,11 +185,14 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPages = [...pages];
     // Re-lock: refresh templateData from authoring, reset to locked template mode
     const freshTemplateData = buildTemplateData(page.templateType);
+    // Preserve non-placeholder user elements as overlay elements
+    // so the user's positioned elements survive the re-lock
+    const userElements = page.elements.filter(el => !el.isPlaceholder);
     const newPage: CanvaPage = {
       ...page,
       locked: true,
       templateData: freshTemplateData,
-      overlayElements: [], // Reset overlays — sync will rebuild if needed
+      overlayElements: userElements, // Preserve user elements as overlays on re-locked template
       elements: populateTemplateElements({ ...page, templateData: freshTemplateData }, createElId),
     };
     Object.assign(newPage, getTemplateExtraProps(page.templateType));

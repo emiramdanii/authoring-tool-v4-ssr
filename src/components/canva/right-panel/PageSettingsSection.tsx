@@ -58,7 +58,20 @@ export default function PageSettingsSection({
         <label className="text-[10px] text-slate-500 block mb-1">Jenis Halaman</label>
         <select
           value={page?.templateType || 'custom'}
-          onChange={(e) => setTemplateType(e.target.value as PageTemplateType)}
+          onChange={(e) => {
+            const newType = e.target.value as PageTemplateType;
+            const hasElements = (page?.elements?.length || 0) > 0 || (page?.overlayElements?.length || 0) > 0;
+            if (hasElements) {
+              const confirmed = confirm(
+                'Mengubah jenis halaman akan menghapus semua elemen yang ada.\n\n' +
+                '⚠️ Elemen yang sudah ditempatkan akan hilang.\n' +
+                'Tindakan ini bisa di-undo (Ctrl+Z).\n\n' +
+                'Lanjutkan?'
+              );
+              if (!confirmed) return;
+            }
+            setTemplateType(newType);
+          }}
           className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
         >
           {TEMPLATE_TYPES.map(t => (
@@ -157,7 +170,7 @@ export default function PageSettingsSection({
                     'Kunci kembali halaman ini?\n\n' +
                     '⚠️ Konsekuensi:\n' +
                     '• Data template akan diperbarui dari panel authoring\n' +
-                    '• Semua perubahan manual pada elemen akan hilang\n' +
+                    '• Elemen yang sudah ditempatkan dipertahankan sebagai overlay\n' +
                     '• Auto-sync kembali aktif\n\n' +
                     'Tindakan ini bisa di-undo (Ctrl+Z).'
                   )) {
@@ -254,9 +267,19 @@ export default function PageSettingsSection({
             </span>
           </div>
 
-          {/* Refresh Data button */}
+          {/* Refresh Data button — confirms if overlay elements exist */}
           <button
             onClick={() => {
+              const hasOverlays = (page.overlayElements?.length || 0) > 0;
+              if (hasOverlays) {
+                const confirmed = confirm(
+                  'Refresh data akan menghapus semua elemen overlay yang sudah ditambahkan.\n\n' +
+                  '⚠️ Elemen overlay (kuis, game, dll) akan hilang.\n' +
+                  'Tindakan ini bisa di-undo (Ctrl+Z).\n\n' +
+                  'Lanjutkan?'
+                );
+                if (!confirmed) return;
+              }
               const store = useCanvaStore.getState();
               store.setTemplateType(page.templateType);
               toast.success('Data template diperbarui dari panel authoring');
