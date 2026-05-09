@@ -434,58 +434,64 @@ export default function ExportApp() {
           )}
 
           {/* ── Page Content ── */}
-          {/* LOCKED template: render PageTemplate (interactive) + overlay elements on top */}
-          {isPageLocked && (
-            <>
-              <PageTemplate
-                key={page.id}
-                page={page}
-                isSelected={false}
-                onEditField={undefined}
-                interactive={true}
-              />
-              {/* Overlay elements on locked template pages */}
-              {(page.overlayElements || []).filter(el => !el.hidden).length > 0 && (
-                <div className="absolute inset-0" style={{ zIndex: 10 }}>
-                  {page.overlayElements.filter(el => !el.hidden).map(el => (
+          {/* Wrapped in offset container so absolute inset-0 templates don't overlap the top nav.
+              Previous spacer div only affected normal flow, not absolute children. */}
+          <div className="absolute left-0 right-0 bottom-0" style={{
+            top: showTopNav ? 'var(--export-topnav-h, 44px)' : 0,
+          }}>
+            {/* LOCKED template: render PageTemplate (interactive) + overlay elements on top */}
+            {isPageLocked && (
+              <>
+                <PageTemplate
+                  key={page.id}
+                  page={page}
+                  isSelected={false}
+                  onEditField={undefined}
+                  interactive={true}
+                />
+                {/* Overlay elements on locked template pages */}
+                {(page.overlayElements || []).filter(el => !el.hidden).length > 0 && (
+                  <div className="absolute inset-0" style={{ zIndex: 10 }}>
+                    {page.overlayElements.filter(el => !el.hidden).map(el => (
+                      <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            {/* UNLOCKED template: render frozen PageTemplate + elements (merged from overlayElements) on top */}
+            {isPageUnlocked && (
+              <>
+                <PageTemplate
+                  key={page.id}
+                  page={page}
+                  isSelected={false}
+                  onEditField={undefined}
+                  interactive={true}
+                />
+                <div className="absolute inset-0" style={{ zIndex: 20 }}>
+                  {page.elements.filter(el => !el.hidden).map(el => (
                     <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
                   ))}
                 </div>
-              )}
-            </>
-          )}
-          {/* UNLOCKED template: render frozen PageTemplate + elements (merged from overlayElements) on top */}
-          {isPageUnlocked && (
-            <>
-              <PageTemplate
-                key={page.id}
-                page={page}
-                isSelected={false}
-                onEditField={undefined}
-                interactive={true}
-              />
-              <div className="absolute inset-0" style={{ zIndex: 20 }}>
+              </>
+            )}
+            {/* Custom mode: render ALL element types including kuis/game/modul */}
+            {!isTemplate && (
+              <div className="absolute inset-0">
                 {page.elements.filter(el => !el.hidden).map(el => (
                   <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
                 ))}
+                {/* Phase 9 fix: Empty-state message for custom pages (matching PlayOverlay) */}
+                {page.elements.length === 0 && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <div className="text-slate-600 text-sm mb-2">Halaman kosong</div>
+                    <div className="text-slate-700 text-xs">Tidak ada konten untuk ditampilkan</div>
+                  </div>
+                )}
               </div>
-            </>
-          )}
-          {/* Custom mode: render ALL element types including kuis/game/modul */}
-          {!isTemplate && (
-            <div className="absolute inset-0">
-              {page.elements.filter(el => !el.hidden).map(el => (
-                <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
-              ))}
-              {/* Phase 9 fix: Empty-state message for custom pages (matching PlayOverlay) */}
-              {page.elements.length === 0 && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <div className="text-slate-600 text-sm mb-2">Halaman kosong</div>
-                  <div className="text-slate-700 text-xs">Tidak ada konten untuk ditampilkan</div>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </ExportScaleContainer>
       </div>
 

@@ -10,6 +10,8 @@ import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import { DEFAULT_NAV_CONFIG } from './types';
+import type { NavConfig } from './types';
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Canvas editing area with snap feedback & multi-select
@@ -380,13 +382,62 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* Template Mode (LOCKED): Render full-page template as interactive */}
+          {/* ══ Canvas Nav Preview (matches ExportApp layout) ══════ */}
+          {/* Preview top navbar — hidden on cover pages, like ExportApp */}
+          {isTemplateMode && (() => {
+            const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
+            const showTopNav = page.templateType !== 'cover' && navConfig.showNavbar !== false;
+            return showTopNav;
+          })() && (
+            <div className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-2 border-b border-white/10 pointer-events-none"
+              style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)' }}>
+              <span className="text-[9px] font-bold text-amber-400 whitespace-nowrap truncate max-w-[120px]">
+                {useAuthoringStore.getState().meta.namaBab || useAuthoringStore.getState().meta.judulPertemuan || 'Media'}
+              </span>
+              {(() => {
+                const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
+                return navConfig.showProgress !== false;
+              })() && (
+                <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full"
+                    style={{
+                      width: `${Math.round(((currentPageIndex + 1) / pages.length) * 100)}%`,
+                      background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
+                    }} />
+                </div>
+              )}
+              <span className="text-[8px] font-mono text-slate-400">{currentPageIndex + 1}/{pages.length}</span>
+            </div>
+          )}
+
+          {/* Template content wrapper — uses top/bottom offsets (NOT padding) so that
+              absolute inset-0 children respect the nav bar boundaries.
+              Previous paddingTop/paddingBottom was ignored by absolute-positioned templates. */}
+          <div className="absolute left-0 right-0" style={{
+            top: (() => {
+              if (!isTemplateMode) return 0;
+              const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
+              const showTopNav = page.templateType !== 'cover' && navConfig.showNavbar !== false;
+              return showTopNav ? 40 : 0; // match top nav height
+            })(),
+            bottom: (() => {
+              if (!isTemplateMode) return 0;
+              const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
+              return navConfig.showNavbar !== false ? 56 : 0; // match bottom nav height
+            })(),
+          }}>
+
+          {/* Template Mode (LOCKED): Render full-page template with interactive UI
+              so that buttons, toggles, step navigation, and all interactive elements
+              are visible inside the canvas — matching the preset preview appearance.
+              EditableText still works via isSelected + onEditField (independent of interactive). */}
           {isTemplateMode && isLocked && (
             <PageTemplate
               key={page.id}
               page={page}
               isSelected={true}
               onEditField={handleTemplateEdit}
+              interactive={true}
             />
           )}
 
@@ -399,6 +450,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
               onEditField={undefined}
             />
           )}
+          </div>{/* end template content wrapper */}
 
           {/* Phase 1: Overlay elements on LOCKED template pages — always render on top */}
           {isTemplateMode && isLocked && (page.overlayElements || []).length > 0 && (
@@ -499,12 +551,65 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Template mode badge */}
           {isTemplateMode && (
-            <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 ${
+            <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 z-[60] ${
               isLocked
                 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                 : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
             }`}>
               {isLocked ? '🔒' : '🔓'} {page.templateType}
+            </div>
+          )}
+
+          {/* ══ Canvas Bottom Nav Preview (matches ExportApp) ══════ */}
+          {isTemplateMode && (() => {
+            const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
+            return navConfig.showNavbar !== false;
+          })() && (
+            <div className="absolute bottom-0 left-0 right-0 z-50 pointer-events-none border-t border-white/10"
+              style={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)' }}>
+              {/* Progress bar */}
+              {(() => {
+                const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
+                return navConfig.showProgress !== false;
+              })() && (
+                <div className="h-0.5 bg-white/5">
+                  <div className="h-full rounded-full"
+                    style={{
+                      width: `${Math.round(((currentPageIndex + 1) / pages.length) * 100)}%`,
+                      background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
+                    }} />
+                </div>
+              )}
+              {/* Nav bar */}
+              <div className="flex items-center justify-between gap-1 px-2 py-1.5">
+                {/* Prev */}
+                <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded ${currentPageIndex > 0 ? 'text-white/60' : 'text-white/20'}`}>
+                  ← Prev
+                </span>
+                {/* Page dots */}
+                <div className="flex items-center gap-0.5 overflow-hidden">
+                  {pages.slice(0, 10).map((p, i) => {
+                    const isActive = i === currentPageIndex;
+                    const templateIcon: Record<string, string> = {
+                      cover: '🏠', dokumen: '📋', materi: '📝', kuis: '❓',
+                      game: '🎮', hasil: '🏆', hero: '🚀', skenario: '🎭',
+                      petunjuk: '📌', diskusi: '💬', refleksi: '🪞', penutup: '🎓',
+                      custom: '⬜',
+                    };
+                    return (
+                      <span key={p.id} className={`text-[7px] ${isActive ? 'scale-125' : 'opacity-40'}`}
+                        style={{ transition: 'all 0.2s' }}>
+                        {templateIcon[p.templateType] || '📄'}
+                      </span>
+                    );
+                  })}
+                  {pages.length > 10 && <span className="text-[6px] text-white/30">+{pages.length - 10}</span>}
+                </div>
+                {/* Next button */}
+                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded bg-amber-400/80 text-slate-900">
+                  {currentPageIndex >= pages.length - 1 ? '🎉 Selesai' : 'Lanjut →'}
+                </span>
+              </div>
             </div>
           )}
 

@@ -82,6 +82,8 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
         // Completed all chapters — set currentChapter beyond range to trigger isCompleted
         setCurrentChapter(nextChapter);
         // Report score
+        // Guard: only report scores in actual Play/Export mode, not canvas preview
+        if (useInteractiveStore.getState().mode !== 'interactive') return;
         const goodCount = [...choiceHistory, { chapter: chapterIdx, choiceIdx, good: isGood }].filter(c => c.good).length;
         const totalChoices = [...choiceHistory, { chapter: chapterIdx, choiceIdx, good: isGood }].length;
         reportScore({

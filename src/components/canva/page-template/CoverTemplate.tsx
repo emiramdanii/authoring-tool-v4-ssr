@@ -3,17 +3,40 @@
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { useCanvaStore } from '@/store/canva-store';
 
 // ── Cover Template ────────────────────────────────────────────
-// Phase 3: 3 variants — A (centered), B (left-aligned), C (split icon+text)
-// Phase 9 fix: clamp() %→vw for proper viewport-responsive font sizes
-// Phase 9 fix: hex-alpha concatenation → alpha() helper for data-driven color system
+// Phase 10: Fixed bottom decoration overlap with nav bar,
+// added durasi display, improved readability of all text sizes.
+// Phase 11: Added "Mulai Belajar" button for interactive mode.
 
 export function CoverTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const bg = getPaletteColor(palette, '--bg', '#0f172a');
   const cyan = getPaletteColor(palette, '--c', '#3ecfcf');
   const green = getPaletteColor(palette, '--g', '#34d399');
+
+  // ── "Mulai Belajar" button — navigates to next page in Play/Export ──
+  const MulaiButton = () => (
+    <button
+      onClick={() => {
+        // Guard: only navigate in actual Play/Export mode, not canvas preview
+        if (useInteractiveStore.getState().mode !== 'interactive') return;
+        useInteractiveStore.getState().nextInteractivePage();
+        const nextIdx = useCanvaStore.getState().currentPageIndex + 1;
+        useCanvaStore.getState().goPage(nextIdx);
+      }}
+      className="px-6 py-2.5 rounded-xl text-[12px] font-extrabold transition-all hover:scale-105 active:scale-95"
+      style={{
+        background: `linear-gradient(135deg, ${accent}, ${alpha(accent, 0.8)})`,
+        color: '#0f172a',
+        boxShadow: `0 4px 20px ${alpha(accent, 0.35)}, 0 0 40px ${alpha(accent, 0.15)}`,
+      }}
+    >
+      Mulai Belajar →
+    </button>
+  );
 
   // ── Variant A: Centered (original) ──
   if (variant === 'A') {
@@ -51,24 +74,43 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className="mt-2 line-clamp-2"
-          style={{ fontSize: 'clamp(10px, 1.8vw, 16px)', color: 'rgba(255,255,255,.7)' }}
+          style={{ fontSize: 'clamp(11px, 1.8vw, 16px)', color: 'rgba(255,255,255,.7)' }}
           placeholder="Subjudul / Deskripsi"
         />
 
-        {/* Badge */}
-        {Boolean(td.mapel || td.kelas) && (
-          <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
-            style={{
-              background: alpha(accent, 0.12),
-              border: `1px solid ${alpha(accent, 0.25)}`,
-              color: accent,
-            }}>
-            {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+        {/* Badge: Mapel + Kelas + Durasi */}
+        {(Boolean(td.mapel || td.kelas) || Boolean(td.durasi)) && (
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            {Boolean(td.mapel || td.kelas) && (
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-bold"
+                style={{
+                  background: alpha(accent, 0.12),
+                  border: `1px solid ${alpha(accent, 0.25)}`,
+                  color: accent,
+                }}>
+                {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+              </span>
+            )}
+            {Boolean(td.durasi) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold"
+                style={{
+                  background: alpha(cyan, 0.1),
+                  border: `1px solid ${alpha(cyan, 0.2)}`,
+                  color: cyan,
+                }}>
+                ⏱ {String(td.durasi)}
+              </span>
+            )}
           </div>
         )}
 
-        {/* Decorative bottom */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
+        {/* Mulai Belajar button */}
+        <div className="mt-6">
+          <MulaiButton />
+        </div>
+
+        {/* Decorative bottom — positioned higher to avoid bottom nav overlap */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5">
           {[accent, cyan, green].map((c, i) => (
             <div key={i} className="w-8 h-1 rounded-full" style={{ background: c, opacity: 0.6 }} />
           ))}
@@ -88,14 +130,24 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           style={{ background: `linear-gradient(180deg, ${accent}, ${cyan}, ${green})` }} />
 
         {/* Badge at top */}
-        {Boolean(td.mapel || td.kelas) && (
-          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold w-fit"
-            style={{
-              background: alpha(accent, 0.12),
-              border: `1px solid ${alpha(accent, 0.25)}`,
-              color: accent,
-            }}>
-            {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+        {(Boolean(td.mapel || td.kelas) || Boolean(td.durasi)) && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 w-fit">
+            {Boolean(td.mapel || td.kelas) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold"
+                style={{
+                  background: alpha(accent, 0.12),
+                  border: `1px solid ${alpha(accent, 0.25)}`,
+                  color: accent,
+                }}>
+                {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+              </span>
+            )}
+            {Boolean(td.durasi) && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold"
+                style={{ background: alpha(cyan, 0.1), border: `1px solid ${alpha(cyan, 0.2)}`, color: cyan }}>
+                ⏱ {String(td.durasi)}
+              </span>
+            )}
           </div>
         )}
 
@@ -124,12 +176,17 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           onEdit={onEditField}
           interactive={interactive}
           className="mt-1 line-clamp-2"
-          style={{ fontSize: 'clamp(10px, 1.6vw, 14px)', color: 'rgba(255,255,255,.6)' }}
+          style={{ fontSize: 'clamp(11px, 1.6vw, 14px)', color: 'rgba(255,255,255,.6)' }}
           placeholder="Subjudul / Deskripsi"
         />
 
+        {/* Mulai Belajar button */}
+        <div className="mt-5">
+          <MulaiButton />
+        </div>
+
         {/* Decorative accent dots bottom right */}
-        <div className="absolute bottom-4 right-6 flex gap-1.5">
+        <div className="absolute bottom-8 right-6 flex gap-1.5">
           {[accent, cyan, green].map((c, i) => (
             <div key={i} className="w-2 h-2 rounded-full" style={{ background: c, opacity: 0.5 }} />
           ))}
@@ -150,15 +207,23 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
         <div className="relative text-6xl mb-4" style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,.4))' }}>
           {String(td.icon || '📚')}
         </div>
-        {/* Badge */}
-        {Boolean(td.mapel || td.kelas) && (
-          <div className="relative px-3 py-1 rounded-full text-[9px] font-bold"
-            style={{ background: alpha(accent, 0.19), border: `1px solid ${alpha(accent, 0.31)}`, color: accent }}>
-            {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
-          </div>
-        )}
+        {/* Badges */}
+        <div className="relative flex flex-col items-center gap-1.5">
+          {Boolean(td.mapel || td.kelas) && (
+            <span className="px-3 py-1 rounded-full text-[9px] font-bold"
+              style={{ background: alpha(accent, 0.19), border: `1px solid ${alpha(accent, 0.31)}`, color: accent }}>
+              {String(td.namaBab || td.mapel || '')} {td.kelas ? `• Kelas ${td.kelas}` : ''}
+            </span>
+          )}
+          {Boolean(td.durasi) && (
+            <span className="px-2.5 py-0.5 rounded-full text-[8px] font-bold"
+              style={{ background: alpha(cyan, 0.1), border: `1px solid ${alpha(cyan, 0.2)}`, color: cyan }}>
+              ⏱ {String(td.durasi)}
+            </span>
+          )}
+        </div>
         {/* Decorative dots */}
-        <div className="absolute bottom-4 flex gap-1">
+        <div className="absolute bottom-8 flex gap-1">
           {[accent, cyan, green].map((c, i) => (
             <div key={i} className="w-6 h-1 rounded-full" style={{ background: c, opacity: 0.4 }} />
           ))}
@@ -188,6 +253,11 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
           style={{ fontSize: 'clamp(11px, 2vw, 18px)', color: 'rgba(255,255,255,.65)', lineHeight: 1.5 }}
           placeholder="Subjudul / Deskripsi"
         />
+
+        {/* Mulai Belajar button */}
+        <div className="mt-5">
+          <MulaiButton />
+        </div>
 
         {/* Divider accent */}
         <div className="mt-4 w-16 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${accent}, ${cyan})` }} />

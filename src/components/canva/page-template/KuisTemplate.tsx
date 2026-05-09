@@ -16,6 +16,8 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
 
   const handleComplete = useCallback((score: number, maxScore: number) => {
+    // Guard: only report scores in actual Play/Export mode, not canvas preview
+    if (useInteractiveStore.getState().mode !== 'interactive') return;
     reportScore({ elementId: 'kuis-template', pageIndex: interactivePageIdx, score, maxScore, completed: true });
   }, [reportScore, interactivePageIdx]);
 

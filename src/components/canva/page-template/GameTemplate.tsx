@@ -40,6 +40,8 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
     // Skip score reporting for non-scored games (e.g., Roda, SpinWheel)
     // to prevent overwriting valid scores from other games on the same page
     if (maxScore === 0) return;
+    // Guard: only report scores in actual Play/Export mode, not canvas preview
+    if (useInteractiveStore.getState().mode !== 'interactive') return;
     reportScore({ elementId: `game-${activeGameId}`, pageIndex: interactivePageIdx, score, maxScore, completed: true });
   }, [reportScore, interactivePageIdx, activeGameId, safeIdx]);
 

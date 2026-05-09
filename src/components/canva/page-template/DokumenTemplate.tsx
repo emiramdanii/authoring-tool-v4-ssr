@@ -1,22 +1,79 @@
 'use client';
 
+import { useState } from 'react';
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 
 // ── Dokumen Template (CP/TP/ATP) ─────────────────────────────
+// Phase 10: Accordion-style toggle buttons for CP, TP, ATP sections.
+// Each section can be expanded/collapsed independently, preventing
+// content overflow and allowing users to focus on one section at a time.
+
+type ActiveTab = 'cp' | 'tp' | 'atp';
 
 export function DokumenTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
+  const green = getPaletteColor(palette, '--g', '#34d399');
   const cp = td.cp as Record<string, unknown> | undefined;
   const tpItems = (td.tp as Array<Record<string, unknown>>) || [];
   const atpItems = (td.atp as Array<Record<string, unknown>>) || [];
 
+  // Track which tab is active (default: CP if exists, else TP, else ATP)
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    if (cp?.capaianFase) return 'cp';
+    if (tpItems.length > 0) return 'tp';
+    if (atpItems.length > 0) return 'atp';
+    return 'cp';
+  });
+
+  // Determine which tabs have content
+  const hasCp = Boolean(cp?.capaianFase);
+  const hasTp = tpItems.length > 0;
+  const hasAtp = atpItems.length > 0;
+  const hasAnyContent = hasCp || hasTp || hasAtp;
+
+  // Tab button helper
+  const tabBtn = (tab: ActiveTab, icon: string, label: string, count: number, color: string, enabled: boolean) => (
+    <button
+      onClick={() => enabled && setActiveTab(tab)}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+        activeTab === tab && enabled
+          ? 'scale-105'
+          : enabled
+            ? 'opacity-60 hover:opacity-90'
+            : 'opacity-30 cursor-not-allowed'
+      }`}
+      style={{
+        background: activeTab === tab && enabled ? alpha(color, 0.15) : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${activeTab === tab && enabled ? alpha(color, 0.35) : 'rgba(255,255,255,0.08)'}`,
+        color: activeTab === tab && enabled ? color : 'rgba(255,255,255,0.5)',
+        boxShadow: activeTab === tab && enabled ? `0 0 12px ${alpha(color, 0.12)}` : 'none',
+      }}
+      disabled={!enabled}
+    >
+      <span>{icon}</span>
+      <span>{label}</span>
+      {count > 0 && (
+        <span className="px-1 py-0 rounded text-[7px]"
+          style={{
+            background: alpha(color, 0.15),
+            color: activeTab === tab && enabled ? color : 'rgba(255,255,255,0.4)',
+          }}>
+          {count}
+        </span>
+      )}
+      {activeTab === tab && enabled && (
+        <span className="text-[7px]" style={{ color }}>●</span>
+      )}
+    </button>
+  );
+
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden p-4">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-2">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
           style={{ background: alpha(accent, 0.12) }}>📋</div>
         <div>
@@ -33,78 +90,144 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
         </div>
       </div>
 
-      {/* CP Section */}
-      {cp && (
-        <div className="mb-3 p-3 rounded-lg" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.15)}` }}>
-          <div className="text-[10px] font-bold mb-1" style={{ color: accent }}>Capaian Pembelajaran</div>
-          <div className="text-[9px] text-white/80 leading-relaxed line-clamp-4">
-            {String(interactive ? (cp.capaianFase || '') : (cp.capaianFase || 'Belum diisi'))}
-          </div>
-          {Array.isArray(cp.profil) && (cp.profil as string[]).length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {(cp.profil as string[]).slice(0, 4).map((p, i) => (
-                <span key={i} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
-                  style={{ background: alpha(accent, 0.08), color: accent }}>
-                  {p}
-                </span>
-              ))}
+      {/* Tab Toggle Buttons */}
+      {hasAnyContent && (
+        <div className="flex gap-1.5 mb-3 overflow-x-auto pb-0.5">
+          {tabBtn('cp', '📋', 'Capaian', hasCp ? 1 : 0, accent, hasCp)}
+          {tabBtn('tp', '🎯', 'Tujuan', tpItems.length, accent2, hasTp)}
+          {tabBtn('atp', '📅', 'Alur', atpItems.length, green, hasAtp)}
+        </div>
+      )}
+
+      {/* ── CP Section ── */}
+      {activeTab === 'cp' && (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {cp ? (
+            <div className="p-3 rounded-lg" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.15)}` }}>
+              <div className="text-[11px] font-bold mb-2" style={{ color: accent }}>📋 Capaian Pembelajaran</div>
+
+              {/* Elemen & Sub-Elemen */}
+              {Boolean(cp.elemen) && (
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="px-2 py-0.5 rounded text-[8px] font-bold"
+                    style={{ background: alpha(accent, 0.1), color: accent }}>
+                    {String(cp.elemen)}
+                  </span>
+                  {Boolean(cp.subElemen) && (
+                    <span className="text-[8px] text-white/50">• {String(cp.subElemen)}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Narasi Capaian Fase */}
+              <div className="text-[10px] text-white/80 leading-relaxed mb-2">
+                {String(interactive ? (cp.capaianFase || '') : (cp.capaianFase || 'Belum diisi'))}
+              </div>
+
+              {/* Profil Pelajar Pancasila */}
+              {Array.isArray(cp.profil) && (cp.profil as string[]).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {(cp.profil as string[]).map((p, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-full text-[8px] font-bold"
+                      style={{ background: alpha(accent, 0.08), color: accent, border: `1px solid ${alpha(accent, 0.15)}` }}>
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-white/30">
+              <span className="text-3xl mb-2">📋</span>
+              <span className="text-[10px]">{interactive ? 'Belum ada data Capaian Pembelajaran' : 'Isi data CP di panel Dokumen'}</span>
             </div>
           )}
         </div>
       )}
 
-      {/* TP Items */}
-      {tpItems.length > 0 && (
-        <div className="mb-3">
-          <div className="text-[10px] font-bold mb-1.5" style={{ color: accent2 }}>Tujuan Pembelajaran</div>
-          <div className="space-y-1">
-            {tpItems.map((tp, i) => (
-              <div key={i} className="flex items-start gap-1.5 px-2 py-1 rounded-md bg-white/5">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black flex-shrink-0 mt-0.5"
-                  style={{ background: alpha(String(tp.color || accent2), 0.19), color: String(tp.color || accent2) }}>
-                  {i + 1}
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[8px] font-bold" style={{ color: String(tp.color || accent2) }}>
-                    {String(tp.verb || '')}
-                  </span>
-                  <span className="text-[8px] text-white/70 ml-0.5">{String(tp.desc || '').length > 80 ? String(tp.desc).slice(0, 80) + '...' : String(tp.desc || '')}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ATP Section */}
-      {atpItems.length > 0 && (
+      {/* ── TP Section ── */}
+      {activeTab === 'tp' && (
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="text-[10px] font-bold mb-1.5" style={{ color: '#34d399' }}>Alur Tujuan Pembelajaran</div>
-          <div className="space-y-1">
-            {atpItems.map((atp, i) => (
-              <div key={i} className="px-2 py-1.5 rounded-md bg-white/5 border-l-2" style={{ borderColor: '#34d399' }}>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[8px] font-bold text-emerald-400">Pertemuan {i + 1}</span>
-                  {Boolean(atp.judul) && <span className="text-[7px] text-white/40">• {String(atp.judul)}</span>}
-                </div>
-                {Array.isArray(atp.tp) && (atp.tp as Array<Record<string, unknown>>).length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-0.5">
-                    {(atp.tp as Array<Record<string, unknown>>).map((tpItem, j) => (
-                      <span key={j} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
-                        style={{ background: alpha('#34d399', 0.08), color: '#34d399' }}>
-                        {String(tpItem.verb || tpItem.desc || `TP ${j + 1}`)}
-                      </span>
-                    ))}
+          {tpItems.length > 0 ? (
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold mb-1.5" style={{ color: accent2 }}>🎯 Tujuan Pembelajaran</div>
+              {tpItems.map((tp, i) => (
+                <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-white/5 border border-white/10">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black flex-shrink-0 mt-0.5"
+                    style={{ background: alpha(String(tp.color || accent2), 0.19), color: String(tp.color || accent2) }}>
+                    {i + 1}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 mb-0.5">
+                      <span className="text-[9px] font-bold" style={{ color: String(tp.color || accent2) }}>
+                        {String(tp.verb || '')}
+                      </span>
+                    </div>
+                    <div className="text-[9px] text-white/75 leading-relaxed">
+                      {String(tp.desc || '').length > 120 ? String(tp.desc).slice(0, 120) + '...' : String(tp.desc || '')}
+                    </div>
+                    {Boolean(tp.pertemuan) && (
+                      <div className="text-[7px] text-white/40 mt-1">Pertemuan {String(tp.pertemuan)}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-white/30">
+              <span className="text-3xl mb-2">🎯</span>
+              <span className="text-[10px]">{interactive ? 'Belum ada Tujuan Pembelajaran' : 'Tambah TP di panel Dokumen'}</span>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Empty state */}
-      {(!cp?.capaianFase && tpItems.length === 0 && atpItems.length === 0) && (
+      {/* ── ATP Section ── */}
+      {activeTab === 'atp' && (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {atpItems.length > 0 ? (
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold mb-1.5" style={{ color: green }}>📅 Alur Tujuan Pembelajaran</div>
+              {atpItems.map((atp, i) => (
+                <div key={i} className="p-2.5 rounded-lg bg-white/5 border-l-3" style={{ borderLeftColor: green, borderLeftWidth: 3 }}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className="w-5 h-5 rounded-md flex items-center justify-center text-[7px] font-black"
+                      style={{ background: alpha(green, 0.15), color: green }}>
+                      P{i + 1}
+                    </div>
+                    <span className="text-[9px] font-bold text-emerald-400">Pertemuan {i + 1}</span>
+                    {Boolean(atp.judul) && <span className="text-[8px] text-white/50">• {String(atp.judul)}</span>}
+                  </div>
+                  {Boolean(atp.durasi) && (
+                    <div className="text-[7px] text-white/40 mb-1">⏱ {String(atp.durasi)}</div>
+                  )}
+                  {Boolean(atp.kegiatan) && (
+                    <div className="text-[8px] text-white/60 leading-relaxed mb-1">{String(atp.kegiatan)}</div>
+                  )}
+                  {Array.isArray(atp.tp) && (atp.tp as Array<Record<string, unknown>>).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(atp.tp as Array<Record<string, unknown>>).map((tpItem, j) => (
+                        <span key={j} className="px-1.5 py-0.5 rounded text-[7px] font-bold"
+                          style={{ background: alpha(green, 0.08), color: green }}>
+                          {String(tpItem.verb || tpItem.desc || `TP ${j + 1}`)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-white/30">
+              <span className="text-3xl mb-2">📅</span>
+              <span className="text-[10px]">{interactive ? 'Belum ada Alur Tujuan Pembelajaran' : 'Tambah ATP di panel Dokumen'}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Empty state — no content at all */}
+      {!hasAnyContent && (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📋</span>
           <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP, TP & ATP di panel Dokumen'}</span>
