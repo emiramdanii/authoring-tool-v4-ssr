@@ -196,6 +196,8 @@ function PlayCanvas() {
   }
 
   const isTemplateMode = page.templateType && page.templateType !== 'custom';
+  const isPageLocked = isTemplateMode && page.locked !== false; // locked template
+  const isPageUnlocked = isTemplateMode && page.locked === false; // unlocked template
 
   // ── Overview Mode: thumbnail grid of all pages ──
   if (overviewOpen) {
@@ -234,28 +236,46 @@ function PlayCanvas() {
           style={{ background: `rgba(14,28,47,${(page.overlay || 20) / 100})` }}
         />
 
-        {/* Template Mode: Render full-page template with interactive prop */}
+        {/* LOCKED Template: Render full-page template (interactive) + overlay elements */}
         {/* key={page.id} forces React to unmount/remount the template when the page
             changes, preventing stale internal state (quiz answers, game selections,
             EditableText contentEditable DOM) from carrying over. */}
-        {isTemplateMode && (
+        {isPageLocked && (
           <PageTemplate
             key={page.id}
             page={page}
             isSelected={false}
-            onEditField={() => {}}
+            onEditField={undefined}
             interactive
           />
         )}
-
-        {/* Phase 3 FIX: Render overlay elements on template pages in interactive mode */}
-        {/* key={page.id} ensures elements are recreated when navigating to a different page */}
-        {isTemplateMode && (page.overlayElements || []).length > 0 && (
+        {/* Overlay elements on locked template pages in interactive mode */}
+        {isPageLocked && (page.overlayElements || []).length > 0 && (
           <div key={page.id} className="absolute inset-0" style={{ zIndex: 10 }}>
             {(page.overlayElements || []).filter(el => !el.hidden).map(el => (
               <PlayElement key={el.id} element={el} pageIndex={interactivePageIdx} />
             ))}
           </div>
+        )}
+
+        {/* UNLOCKED Template: frozen PageTemplate + elements on top */}
+        {isPageUnlocked && (
+          <>
+            <PageTemplate
+              key={page.id}
+              page={page}
+              isSelected={false}
+              onEditField={undefined}
+              interactive
+            />
+            <div key={page.id} className="absolute inset-0" style={{ zIndex: 20 }}>
+              {page.elements
+                .filter((el) => !el.hidden)
+                .map((el) => (
+                  <PlayElement key={el.id} element={el} pageIndex={interactivePageIdx} />
+                ))}
+            </div>
+          </>
         )}
 
         {/* Custom Mode: Render individual elements */}
