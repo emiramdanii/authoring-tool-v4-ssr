@@ -12,11 +12,13 @@ import { CANVA_STORAGE_KEY } from './constants';
 
 // ── Legacy tab name migration map ──────────────────────────────
 const TAB_MIGRATION: Record<string, LeftTab> = {
-  templates: 'rakit',
-  elems: 'rakit',
+  templates: 'tambah',
+  elems: 'tambah',
   ratio: 'halaman',
   pages: 'halaman',
-  layers: 'layer',
+  layers: 'halaman',
+  rakit: 'tambah',
+  layer: 'halaman',
 };
 
 export type PersistenceSlice = Pick<
@@ -60,11 +62,13 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             opacity: el.opacity ?? 100,
             hidden: el.hidden ?? false,
           })),
+          // v4: Migrate locked field — template pages without locked field default to locked
+          locked: p.locked !== undefined ? p.locked : (p.templateType && p.templateType !== 'custom' ? true : undefined),
         }));
         // Migrate legacy leftTab names
-        let leftTab: LeftTab = 'rakit';
+        let leftTab: LeftTab = 'halaman';
         if (data.leftTab) {
-          leftTab = TAB_MIGRATION[data.leftTab] || 'rakit';
+          leftTab = TAB_MIGRATION[data.leftTab] || 'halaman';
         }
         set({
           pages,

@@ -6,7 +6,6 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
-import IconRail from './IconRail';
 import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
@@ -134,7 +133,6 @@ export default function CanvaBuilder() {
 
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
-        <IconRail />
         <div className="border-r border-slate-800/60 shadow-[1px_0_8px_-2px_rgba(0,0,0,0.35)] flex-shrink-0">
           <LeftPanel />
         </div>

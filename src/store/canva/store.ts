@@ -11,7 +11,7 @@ import { createPageSlice } from './page-slice';
 import { createElementSlice } from './element-slice';
 import { createUISlice } from './ui-slice';
 import { createBackgroundSlice } from './background-slice';
-import { createAutoRakitSlice } from './auto-rakit';
+import { createResetCanvasSlice } from './reset-canvas';
 import { createAutoGenerateSlice } from './auto-generate';
 import { createSyncSlice, startAutoSync } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
@@ -27,7 +27,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ratioId: '16:9',
     zoom: 1.0,
     tool: 'select',
-    leftTab: 'rakit',
+    leftTab: 'halaman',
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
     rightPanelOpen: true,
@@ -52,7 +52,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ...createElementSlice(...a),
     ...createUISlice(...a),
     ...createBackgroundSlice(...a),
-    ...createAutoRakitSlice(...a),
+    ...createResetCanvasSlice(...a),
     ...createAutoGenerateSlice(...a),
     ...createSyncSlice(...a),
     ...createPersistenceSlice(...a),

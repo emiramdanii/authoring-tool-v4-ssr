@@ -21,6 +21,9 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
     navConfig: { ...DEFAULT_NAV_CONFIG },
     templateData: {},
     overlayElements: [],
+    // Template pages start locked (auto-sync from authoring data)
+    // Custom pages are always "unlocked" (no lock concept)
+    locked: templateType !== 'custom' ? true : undefined,
   };
 }
 

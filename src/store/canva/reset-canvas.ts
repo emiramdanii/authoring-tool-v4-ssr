@@ -1,5 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-// CANVA STORE — Auto Rakit logic
+// CANVA STORE — Reset Canvas (nuclear reset)
+// Replaces old autoRakit — same logic, explicit action with confirmation.
+// Rebuilds all pages from current authoring data.
 // ═══════════════════════════════════════════════════════════════
 
 import { toast } from 'sonner';
@@ -10,10 +12,15 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES, MATERI_RAKIT_TYPES } from '@/lib/canva-constants';
 import { createTemplatePage } from './template-data';
 
-export type AutoRakitSlice = Pick<CanvaState, 'autoRakit'>;
+export type ResetCanvasSlice = Pick<CanvaState, 'resetCanvas'>;
 
-export const createAutoRakitSlice: StateCreator<CanvaState, [], [], AutoRakitSlice> = (set, get) => ({
-  autoRakit: () => {
+export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanvasSlice> = (set, get) => ({
+  /**
+   * Reset Canvas — rebuild all pages from current authoring data.
+   * This replaces the old autoRakit() function.
+   * Should always be called with user confirmation first.
+   */
+  resetCanvas: () => {
     const authStore = useAuthoringStore.getState();
     const kuis = authStore.kuis.filter((k: { q: string }) => k.q.trim());
     const games = authStore.modules.filter((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
@@ -23,7 +30,7 @@ export const createAutoRakitSlice: StateCreator<CanvaState, [], [], AutoRakitSli
 
     const newPages: CanvaPage[] = [];
 
-    // 1. Cover page
+    // 1. Cover page (always)
     newPages.push(createTemplatePage('cover', newPages.length));
 
     // 2. Petunjuk page
@@ -80,7 +87,7 @@ export const createAutoRakitSlice: StateCreator<CanvaState, [], [], AutoRakitSli
     }
 
     get()._pushHistory();
-    set({ pages: newPages, currentPageIndex: 0, selectedElId: null });
-    toast.success(`Auto Rakit: ${newPages.length} halaman dibuat dari data authoring`);
+    set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [] });
+    toast.success(`${newPages.length} halaman dibuat dari data authoring`);
   },
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutTemplate, Zap } from 'lucide-react';
+import { LayoutTemplate, Zap, Lock, Unlock } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { TEMPLATE_TYPES, LAYOUT_PRESETS } from '../types';
 import type { PageTemplateType, CanvaPage } from '../types';
@@ -22,6 +22,7 @@ interface PageSettingsSectionProps {
   toggleGrid: () => void;
   setGridSize: (size: number) => void;
   toggleSnap: () => void;
+  unlockPage: () => void;
   collapsed: boolean;
   onToggle: () => void;
 }
@@ -39,6 +40,7 @@ export default function PageSettingsSection({
   toggleGrid,
   setGridSize,
   toggleSnap,
+  unlockPage,
   collapsed,
   onToggle,
 }: PageSettingsSectionProps) {
@@ -105,8 +107,55 @@ export default function PageSettingsSection({
         </div>
       )}
 
-      {/* Layout Presets (custom mode only) */}
-      {!isTemplateMode && (
+      {/* Lock/Unlock status + button (template pages only) */}
+      {isTemplateMode && page && (
+        <div className="mb-3">
+          {page.locked !== false ? (
+            // LOCKED — show unlock button
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-2.5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Lock size={12} className="text-amber-400" />
+                <span className="text-[10px] font-bold text-amber-300">Terkunci — Auto-sync aktif</span>
+              </div>
+              <div className="text-[8px] text-amber-400/60">
+                Template otomatis mengikuti data authoring. Buka kunci untuk edit bebas.
+              </div>
+              <button
+                onClick={() => {
+                  if (confirm(
+                    'Buka kunci halaman ini?\n\n' +
+                    '⚠️ Konsekuensi:\n' +
+                    '• Data template TIDAK lagi auto-update dari panel authoring\n' +
+                    '• Template visual menjadi beku (background)\n' +
+                    '• Semua elemen overlay bergabung dan bisa diedit bebas\n\n' +
+                    'Tindakan ini bisa di-undo (Ctrl+Z).'
+                  )) {
+                    unlockPage();
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[10px] font-bold transition-colors active:scale-95"
+              >
+                <Unlock size={11} />
+                Buka Kunci Halaman
+              </button>
+            </div>
+          ) : (
+            // UNLOCKED — show status badge
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <Unlock size={12} className="text-emerald-400" />
+                <span className="text-[10px] font-bold text-emerald-300">Terbuka — Edit bebas</span>
+              </div>
+              <div className="text-[8px] text-emerald-400/60">
+                Template beku sebagai background. Data TIDAK auto-update. Semua elemen bisa diedit.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Layout Presets (custom mode + unlocked template) */}
+      {(!isTemplateMode || page?.locked === false) && (
         <div className="mb-3">
           <label className="text-[10px] text-slate-500 block mb-1">Layout Preset</label>
           <div className="grid grid-cols-3 gap-1.5">
@@ -132,8 +181,8 @@ export default function PageSettingsSection({
         </div>
       )}
 
-      {/* Grid & Snap (custom mode only) */}
-      {!isTemplateMode && (
+      {/* Grid & Snap (custom mode + unlocked template) */}
+      {(!isTemplateMode || page?.locked === false) && (
         <div className="mb-3">
           <label className="text-[10px] text-slate-500 block mb-1.5">Grid & Snap</label>
           <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
@@ -173,8 +222,8 @@ export default function PageSettingsSection({
         </div>
       )}
 
-      {/* Template Edit (template mode only) */}
-      {isTemplateMode && page && (
+      {/* Template Edit (LOCKED template mode only — unlocked pages don't need this) */}
+      {isTemplateMode && page?.locked !== false && page && (
         <div className="mb-2">
           <div className="text-[10px] font-bold text-amber-400 mb-1.5">
             {TEMPLATE_BADGE_MAP[page.templateType]?.icon || ''} {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType} Template

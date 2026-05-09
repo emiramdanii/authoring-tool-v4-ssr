@@ -47,15 +47,24 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       let dataChanged = false;
 
       if (page.templateType && page.templateType !== 'custom') {
-        freshData = buildTemplateData(page.templateType);
+        // Skip templateData sync for unlocked pages (locked === false)
+        // Their templateData is frozen — they manage it manually
+        if (page.locked === false) {
+          // Still run Layer 2 (orphan cleanup) and Layer 3 (ID re-sync) for unlocked pages
+          freshData = null; // Don't rebind templateData
+        } else {
+          freshData = buildTemplateData(page.templateType);
+        }
 
         // Check if data actually changed (shallow comparison of keys)
-        const oldData = page.templateData || {};
-        const allKeys = new Set([...Object.keys(oldData), ...Object.keys(freshData)]);
-        for (const key of allKeys) {
-          if (JSON.stringify(oldData[key]) !== JSON.stringify(freshData[key])) {
-            dataChanged = true;
-            break;
+        if (freshData) {
+          const oldData = page.templateData || {};
+          const allKeys = new Set([...Object.keys(oldData), ...Object.keys(freshData)]);
+          for (const key of allKeys) {
+            if (JSON.stringify(oldData[key]) !== JSON.stringify(freshData[key])) {
+              dataChanged = true;
+              break;
+            }
           }
         }
       }
@@ -81,8 +90,6 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       // ── Layer 3: Element ID re-sync ───────────────────────
       // For game/kuis elements that still use dataIdx only, try to resolve
       // their stable moduleId/kuisId from the authoring store
-      // Phase 9 fix: track whether any element was actually modified to avoid
-      // unnecessary array replacements that trigger re-renders
       const syncElementIds = (els: CanvaElement[]): { result: CanvaElement[]; changed: boolean } => {
         let changed = false;
         const result = els.map(el => {

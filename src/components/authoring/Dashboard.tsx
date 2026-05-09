@@ -223,7 +223,7 @@ export default function Dashboard() {
                 // Use longer delay to ensure authoring store data is committed
                 // before autoRakit reads it via useAuthoringStore.getState()
                 setTimeout(() => {
-                  useCanvaStore.getState().autoRakit();
+                  useCanvaStore.getState().resetCanvas();
                   useAuthoringStore.getState().setActivePanel('canva');
                 }, 300);
               }}
@@ -315,7 +315,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => {
-                  useCanvaStore.getState().autoRakit();
+                  useCanvaStore.getState().resetCanvas();
                   setActivePanel('canva');
                 }}
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
@@ -332,7 +332,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => {
-                  useCanvaStore.getState().autoRakit();
+                  useCanvaStore.getState().resetCanvas();
                   setActivePanel('canva');
                 }}
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"

@@ -29,7 +29,6 @@ import {
   FileText,
   BookOpen,
   ArrowLeft,
-  RefreshCw,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -240,16 +239,6 @@ export default function Toolbar() {
       </div>
       <div className="section-divider h-5 w-px mx-1" />
 
-      {/* ── Re-Rakit Button — rebuild pages from authoring data ── */}
-      <button
-        onClick={() => { useCanvaStore.getState().autoRakit(); toast.success('Halaman diperbarui dari data authoring'); }}
-        title="Rakit Ulang — Bangun ulang halaman dari data terbaru (CP/TP/Kuis/Game)"
-        className="btn-ghost focus-ring flex items-center gap-0.5 !text-amber-300 hover:!text-amber-200"
-      >
-        <RefreshCw size={14} />
-        <span className="hidden md:inline text-[9px] font-semibold">Rakit Ulang</span>
-      </button>
-
       {/* ── Play Button (MAIN action) ────────────────────────── */}
       <button
         onClick={openPlay}
@@ -260,25 +249,77 @@ export default function Toolbar() {
         <span>Play</span>
       </button>
 
-      {/* ── Slideshow Preview Button (Vite SSR — opens in new tab) ── */}
-      <button
-        onClick={handlePreviewUnified}
-        title="Preview Interaktif — Buka preview semua halaman di tab baru (SSR Export)"
-        className="btn-ghost focus-ring flex items-center gap-0.5 !text-teal-400 hover:!text-teal-300"
-      >
-        <Film size={14} />
-        <span className="hidden md:inline text-[9px] font-semibold">Preview</span>
-      </button>
+      {/* ── Preview dropdown (Preview + Live merged) ── */}
+      <div className="relative" ref={exportRef}>
+        <button
+          onClick={() => setExportOpen(!exportOpen)}
+          disabled={exporting}
+          className={`btn-ghost focus-ring flex items-center gap-0.5 ${exporting ? 'opacity-50' : ''}`}
+          title="Preview & Export"
+        >
+          <Eye size={14} />
+          <span className="hidden md:inline text-[9px] font-semibold">Preview</span>
+          <ChevronDown size={8} className={`transition-transform ${exportOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {exportOpen && (
+          <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+            {/* ── PREVIEW ── */}
+            <div className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20">
+              <div className="text-[9px] font-bold text-teal-400 uppercase tracking-wider">▶ Preview</div>
+            </div>
+            <button
+              onClick={handlePreviewUnified}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-teal-500/10 transition-colors text-left"
+            >
+              <Film size={14} className="text-teal-400" />
+              <div>
+                <div className="text-[11px] text-teal-300 font-semibold">Preview (Tab Baru)</div>
+                <div className="text-[8px] text-teal-500/70">Lihat tampilan siswa di tab baru</div>
+              </div>
+            </button>
+            <button
+              onClick={() => { setActivePanel('preview'); setExportOpen(false); }}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-cyan-500/10 transition-colors text-left"
+            >
+              <MonitorPlay size={14} className="text-cyan-400" />
+              <div>
+                <div className="text-[11px] text-cyan-300 font-semibold">Live Preview</div>
+                <div className="text-[8px] text-cyan-500/70">Panel lengkap: tema, device frame, mode</div>
+              </div>
+            </button>
 
-      {/* ── Live Preview Button → Navigate to Preview Panel ── */}
-      <button
-        onClick={() => setActivePanel('preview')}
-        title="Live Preview — Buka panel Live Preview dengan mode Canvas/Template/Legacy, tema, dan device frame"
-        className="btn-ghost focus-ring flex items-center gap-0.5 !text-cyan-400 hover:!text-cyan-300"
-      >
-        <MonitorPlay size={14} />
-        <span className="hidden md:inline text-[9px] font-semibold">Live</span>
-      </button>
+            {/* ── EXPORT ── */}
+            <div className="px-3 py-1.5 bg-emerald-500/10 border-y border-emerald-500/20">
+              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">🚀 Export</div>
+            </div>
+            <button
+              onClick={handleExportUnified}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
+            >
+              <Download size={14} className="text-emerald-400" />
+              <div>
+                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Download HTML</div>
+                <div className="text-[8px] text-emerald-500/70">Navbar + navigasi + game + skor — siap bagi ke siswa</div>
+              </div>
+            </button>
+
+            <div className="px-3 py-1.5 bg-slate-800/30 border-y border-slate-700/30">
+              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Lainnya</div>
+            </div>
+            <button
+              onClick={handleClear}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-red-500/10 transition-colors text-left"
+            >
+              <Trash2 size={14} className="text-red-400/60" />
+              <div>
+                <div className="text-[11px] text-red-400/70 font-semibold">Bersihkan Halaman</div>
+                <div className="text-[8px] text-slate-500">Hapus semua elemen (bisa undo)</div>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="section-divider h-5 w-px mx-1" />
 
       {/* ── History group: Undo / Redo ───────────────────────── */}
@@ -326,63 +367,6 @@ export default function Toolbar() {
         >
           <Type size={14} />
         </button>
-      </div>
-      <div className="section-divider h-5 w-px mx-1" />
-
-      {/* ── Export Dropdown (merged Preview + Export Page + Export Slideshow + Clear) ── */}
-      <div className="relative" ref={exportRef}>
-        <button
-          onClick={() => setExportOpen(!exportOpen)}
-          disabled={exporting}
-          className={`btn-ghost focus-ring flex items-center gap-0.5 ${exporting ? 'opacity-50' : ''}`}
-          title="Export & Aksi"
-        >
-          <Download size={14} />
-          <span className="hidden md:inline text-[9px]">Export</span>
-          <ChevronDown size={10} className={`transition-transform ${exportOpen ? 'rotate-180' : ''}`} />
-        </button>
-        {exportOpen && (
-          <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
-            {/* ── EXPORT UTAMA  ── */}
-            <div className="px-3 py-1.5 bg-emerald-500/10 border-b border-emerald-500/20">
-              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">🚀 Export HTML Interaktif</div>
-            </div>
-            <button
-              onClick={handleExportUnified}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
-            >
-              <Download size={14} className="text-emerald-400" />
-              <div>
-                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Download HTML</div>
-                <div className="text-[8px] text-emerald-500/70">Navbar + navigasi + game + skor — siap bagi ke siswa</div>
-              </div>
-            </button>
-            <button
-              onClick={handlePreviewUnified}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-emerald-500/10 transition-colors text-left"
-            >
-              <MonitorPlay size={14} className="text-emerald-400" />
-              <div>
-                <div className="text-[11px] text-emerald-300 font-semibold">▶ Preview (Tab Baru)</div>
-                <div className="text-[8px] text-emerald-500/70">Lihat tampilan siswa di tab baru</div>
-              </div>
-            </button>
-
-            <div className="px-3 py-1.5 bg-slate-800/30 border-y border-slate-700/30">
-              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Lainnya</div>
-            </div>
-            <button
-              onClick={handleClear}
-              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-red-500/10 transition-colors text-left"
-            >
-              <Trash2 size={14} className="text-red-400/60" />
-              <div>
-                <div className="text-[11px] text-red-400/70 font-semibold">Bersihkan Halaman</div>
-                <div className="text-[8px] text-slate-500">Hapus semua elemen (bisa undo)</div>
-              </div>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* ── Ratio badge (clickable dropdown) ────────────────── */}

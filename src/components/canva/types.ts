@@ -94,11 +94,16 @@ export interface CanvaPage {
   // ── Template layout variant (Phase 3) ──
   // Different visual layouts for the same template type (A/B/C)
   templateVariant?: 'A' | 'B' | 'C';
+  // ── Lock state (v4 — Unlock Mechanism) ──
+  // true = template auto-updates from authoring data, elements not draggable
+  // false = template frozen, all elements draggable (data binding broken)
+  // undefined = same as true for backward compat
+  locked?: boolean;
 }
 
-export type LeftTab = 'rakit' | 'halaman' | 'layer';
+export type LeftTab = 'halaman' | 'tambah';
 /** @deprecated Legacy tab names — used only for localStorage migration */
-export type LegacyLeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers';
+export type LegacyLeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers' | 'rakit' | 'layer';
 export type Tool = 'select' | 'text';
 export type ResizeDir = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | 'tm' | 'bm';
 

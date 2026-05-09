@@ -119,8 +119,12 @@ export interface CanvaState {
   // ── Actions: Stage ───────────────────────────────────────────
   clearStage: () => void;
 
-  // ── Actions: Auto Rakit ──────────────────────────────────────
-  autoRakit: () => void;
+  // ── Actions: Reset Canvas (nuclear reset — replaces old Auto Rakit) ──
+  resetCanvas: () => void;
+
+  // ── Actions: Unlock Page (convert locked template → unlocked custom-edit) ──
+  /** Unlock a locked template page: freezes templateData, merges overlays → elements, enables free editing */
+  unlockPage: () => void;
 
   // ── Actions: Reactive Sync ────────────────────────────────────
   /** Sync template pages' templateData from authoring store (incremental, no rebuild) */

@@ -42,6 +42,7 @@ export default function RightPanel() {
     toggleSnap,
     applyLayoutPreset,
     currentLayoutPreset,
+    unlockPage,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
@@ -115,6 +116,7 @@ export default function RightPanel() {
         toggleGrid={toggleGrid}
         setGridSize={setGridSize}
         toggleSnap={toggleSnap}
+        unlockPage={unlockPage}
         collapsed={collapsed.settings}
         onToggle={() => toggleCollapse('settings')}
       />

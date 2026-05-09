@@ -17,7 +17,7 @@ export function EditableText({
   value: string;
   fieldKey: string;
   isSelected: boolean;
-  onEdit: (key: string, value: string) => void;
+  onEdit?: (key: string, value: string) => void;
   className?: string;
   style?: React.CSSProperties;
   placeholder?: string;
@@ -26,7 +26,7 @@ export function EditableText({
   const ref = useRef<HTMLDivElement>(null);
 
   const handleBlur = useCallback(() => {
-    if (ref.current) {
+    if (ref.current && onEdit) {
       onEdit(fieldKey, ref.current.textContent || '');
     }
   }, [fieldKey, onEdit]);
@@ -38,7 +38,7 @@ export function EditableText({
   return (
     <div
       ref={ref}
-      contentEditable={isSelected}
+      contentEditable={isSelected && !!onEdit}
       suppressContentEditableWarning
       onBlur={handleBlur}
       className={`outline-none ${isSelected ? 'ring-1 ring-amber-400/40 ring-offset-2 ring-offset-transparent rounded' : ''} ${className}`}

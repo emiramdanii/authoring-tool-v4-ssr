@@ -59,7 +59,7 @@ export default function Konten() {
       <div className="mt-6 pt-4 border-t border-zinc-800 flex justify-end">
         <button
           onClick={() => {
-            useCanvaStore.getState().autoRakit();
+            useCanvaStore.getState().resetCanvas();
             useAuthoringStore.getState().setActivePanel('canva');
           }}
           className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"

@@ -45,8 +45,8 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
 
   const handleSelectGame = useCallback((idx: number) => {
     setActiveGameIdx(idx);
-    // Persist to templateData
-    onEditField('activeGameIdx', String(idx));
+    // Persist to templateData (only if editable)
+    onEditField?.('activeGameIdx', String(idx));
   }, [onEditField]);
 
   return (

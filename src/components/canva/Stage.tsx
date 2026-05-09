@@ -10,7 +10,7 @@ import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
-import InlineEditToolbar from './InlineEditToolbar';
+// InlineEditToolbar removed — editing is now in Right Panel only
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Canvas editing area with snap feedback & multi-select
@@ -280,8 +280,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
   const scale = baseScale * zoom;
   const isTemplateMode = page && page.templateType && page.templateType !== 'custom';
+  const isLocked = page?.locked !== false; // true or undefined = locked
+  const isUnlockedTemplate = !!isTemplateMode && !isLocked; // template page but unlocked
 
-  // Find selected element (for inline edit toolbar)
+  // Find selected element
   const selectedEl = page?.elements.find(e => e.id === selectedElId)
     || page?.overlayElements?.find(e => e.id === selectedElId);
 
@@ -337,7 +339,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             style={{ background: `rgba(14,28,47,${(page.overlay || 20) / 100})` }}
           />
 
-          {/* Grid Overlay (custom mode only) */}
+          {/* Grid Overlay (custom mode only — not for locked or unlocked templates) */}
           {!isTemplateMode && showGrid && (
             <div className="absolute inset-0 pointer-events-none" style={{
               backgroundImage: `linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)`,
@@ -379,8 +381,8 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* Template Mode: Render full-page template */}
-          {isTemplateMode && (
+          {/* Template Mode (LOCKED): Render full-page template as interactive */}
+          {isTemplateMode && isLocked && (
             <PageTemplate
               page={page}
               isSelected={true}
@@ -388,8 +390,17 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             />
           )}
 
-          {/* Phase 1: Overlay elements on template pages — always render on top */}
-          {isTemplateMode && (page.overlayElements || []).length > 0 && (
+          {/* Template Mode (UNLOCKED): Render template as frozen background + elements on top */}
+          {isUnlockedTemplate && (
+            <PageTemplate
+              page={page}
+              isSelected={false}
+              onEditField={undefined}
+            />
+          )}
+
+          {/* Phase 1: Overlay elements on LOCKED template pages — always render on top */}
+          {isTemplateMode && isLocked && (page.overlayElements || []).length > 0 && (
             <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
               {(page.overlayElements || []).map(el => (
                 <StageElement
@@ -433,9 +444,9 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* Custom Mode: Render individual elements */}
-          {!isTemplateMode && (
-            <div className="absolute inset-0">
+          {/* Custom Mode + Unlocked Template: Render individual elements */}
+          {(!isTemplateMode || isUnlockedTemplate) && (
+            <div className="absolute inset-0" style={isUnlockedTemplate ? { zIndex: 20 } : undefined}>
               {page.elements.map(el => (
                 <StageElement
                   key={el.id}
@@ -477,8 +488,8 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* Drop hint (visible when no elements and custom mode) */}
-          {!isTemplateMode && page.elements.length === 0 && (
+          {/* Drop hint (visible when no elements and custom mode or unlocked template) */}
+          {(!isTemplateMode || isUnlockedTemplate) && page.elements.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <div className="text-zinc-600 text-sm mb-2">⬇ Seret elemen ke sini</div>
               <div className="text-zinc-700 text-xs">atau pilih Template dari panel kiri</div>
@@ -487,8 +498,12 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Template mode badge */}
           {isTemplateMode && (
-            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[8px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 pointer-events-none">
-              Template: {page.templateType}
+            <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 ${
+              isLocked
+                ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+            }`}>
+              {isLocked ? '🔒' : '🔓'} {page.templateType}
             </div>
           )}
 
@@ -500,13 +515,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           )}
         </div>
 
-        {/* Phase 3: Inline Edit Toolbar — floating above selected element */}
-        {selectedEl && selectedElId && selectedElIds.length <= 1 && (
-          <InlineEditToolbar
-            element={selectedEl}
-            scale={scale}
-          />
-        )}
+        {/* InlineEditToolbar removed — editing handled by Right Panel */}
       </div>
     </div>
   );

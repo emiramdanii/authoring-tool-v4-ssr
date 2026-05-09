@@ -17,6 +17,7 @@ export type PageSlice = Pick<
   CanvaState,
   | 'goPage' | 'addPage' | 'addTemplatePage' | 'duplicatePage'
   | 'deletePage' | 'setPageLabel' | 'setTemplateType' | 'reorderPage'
+  | 'unlockPage'
 >;
 
 export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set, get) => ({
@@ -119,5 +120,35 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     else if (fromIndex < currentPageIndex && toIndex >= currentPageIndex) newCurrentIdx = currentPageIndex - 1;
     else if (fromIndex > currentPageIndex && toIndex <= currentPageIndex) newCurrentIdx = currentPageIndex + 1;
     set({ pages: newPages, currentPageIndex: newCurrentIdx, selectedElId: null });
+  },
+
+  unlockPage: () => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    // Only template pages can be unlocked
+    const isTemplate = page.templateType && page.templateType !== 'custom';
+    if (!isTemplate) {
+      toast.warning('Halaman ini sudah bebas edit');
+      return;
+    }
+    // Already unlocked
+    if (page.locked === false) {
+      toast.info('Halaman ini sudah terbuka kuncinya');
+      return;
+    }
+
+    get()._pushHistory();
+    const newPages = [...pages];
+    // Merge overlayElements into elements[] so all are draggable
+    const mergedElements = [...page.elements, ...(page.overlayElements || [])];
+    newPages[currentPageIndex] = {
+      ...page,
+      locked: false,
+      elements: mergedElements,
+      overlayElements: [], // No more overlay concept for unlocked pages
+    };
+    set({ pages: newPages, selectedElId: null });
+    toast.success(`🔒→🔓 ${page.label} dibuka kuncinya — template beku, semua elemen bisa diedit`);
   },
 });
