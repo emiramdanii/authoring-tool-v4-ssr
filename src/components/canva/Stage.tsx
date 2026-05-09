@@ -10,7 +10,6 @@ import QuizWidget from './QuizWidget';
 import GameWidget from './GameWidget';
 import PageTemplate from './PageTemplate';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
-// InlineEditToolbar removed — editing is now in Right Panel only
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Canvas editing area with snap feedback & multi-select
@@ -339,8 +338,8 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             style={{ background: `rgba(14,28,47,${(page.overlay || 20) / 100})` }}
           />
 
-          {/* Grid Overlay (custom mode only — not for locked or unlocked templates) */}
-          {!isTemplateMode && showGrid && (
+          {/* Grid Overlay (custom mode + unlocked templates — useful for positioning) */}
+          {(!isTemplateMode || isUnlockedTemplate) && showGrid && (
             <div className="absolute inset-0 pointer-events-none" style={{
               backgroundImage: `linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)`,
               backgroundSize: `${gridSize}% ${gridSize}%`,
@@ -514,8 +513,6 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
         </div>
-
-        {/* InlineEditToolbar removed — editing handled by Right Panel */}
       </div>
     </div>
   );

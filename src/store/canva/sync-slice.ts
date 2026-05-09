@@ -77,12 +77,16 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
         return true;
       });
 
-      // Clean regular elements too
-      const cleanedElements = page.elements.filter(el => {
-        if (el.moduleId && !allModuleIds.has(el.moduleId)) return false;
-        if (el.kuisId && !allKuisIds.has(el.kuisId)) return false;
-        return true;
-      });
+      // Clean regular elements — but SKIP for unlocked pages
+      // Unlocked pages have manual control; auto-deleting user elements would be surprising
+      const isUnlocked = page.locked === false;
+      const cleanedElements = isUnlocked
+        ? page.elements
+        : page.elements.filter(el => {
+            if (el.moduleId && !allModuleIds.has(el.moduleId)) return false;
+            if (el.kuisId && !allKuisIds.has(el.kuisId)) return false;
+            return true;
+          });
 
       const overlaysChanged = cleanedOverlays.length !== (page.overlayElements || []).length;
       const elementsChanged = cleanedElements.length !== page.elements.length;

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { AuthoringState, KuisItem, MateriBlok } from './types';
 import { deepClone } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
+import { GAME_TYPES } from '@/lib/canva-constants';
 import {
   PRESETS_META,
   PRESETS_CP,
@@ -80,7 +81,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       skenario: skenario ? deepClone(skenario) : [],
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
       modules: modules ? ensureModuleIds(deepClone(modules)) : [],
-      games: [],
+      games: modules ? ensureModuleIds(deepClone(modules)).filter((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string)) : [],
       petunjuk: petunjuk ? deepClone(petunjuk) : { ...DEFAULT_PETUNJUK },
       diskusi: diskusi ? deepClone(diskusi) : { ...DEFAULT_DISKUSI },
       refleksi: refleksi ? deepClone(refleksi) : { ...DEFAULT_REFLEKSI },
@@ -149,7 +150,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       skenario: [],
       kuis: [],
       modules: [],
-      games: [],
+      games: [], // Empty because modules is empty
       materi: { blok: [] },
       petunjuk: { ...DEFAULT_PETUNJUK },
       diskusi: { ...DEFAULT_DISKUSI },

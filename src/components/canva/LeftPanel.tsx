@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import type { CanvaElement, LeftTab } from './types';
+import type { CanvaElement, LeftTab, PageTemplateType } from './types';
 import { TEMPLATE_TYPES, RATIOS } from './types';
 import {
   TEMPLATE_BADGE_MAP,
@@ -307,7 +307,7 @@ function TambahContent() {
         <select
           onChange={(e) => {
             const val = e.target.value;
-            if (val) addTemplatePage(val as CanvaElement['type'] & 'cover' | 'dokumen' | 'materi' | 'kuis' | 'game' | 'hasil' | 'hero' | 'skenario' | 'custom');
+            if (val) addTemplatePage(val as PageTemplateType);
             e.target.value = '';
           }}
           defaultValue=""

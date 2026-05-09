@@ -219,9 +219,9 @@ export default function Dashboard() {
                 if (isPresetMode && !confirm('Preset akan menimpa data saat ini. Lanjutkan?')) return;
                 if (!isPresetMode && (meta.judulPertemuan || tp.length > 0 || kuis.length > 0) && !confirm('Preset akan menimpa data proyek saat ini. Lanjutkan?')) return;
                 applyFullPreset(p.key);
-                // Auto-rakit after preset then navigate to canva
+                // Auto-reset canvas after preset then navigate to canva
                 // Use longer delay to ensure authoring store data is committed
-                // before autoRakit reads it via useAuthoringStore.getState()
+                // before resetCanvas reads it via useAuthoringStore.getState()
                 setTimeout(() => {
                   useCanvaStore.getState().resetCanvas();
                   useAuthoringStore.getState().setActivePanel('canva');

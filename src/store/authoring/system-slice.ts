@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { AuthoringState, KuisItem } from './types';
 import { STORAGE_KEY } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
+import { GAME_TYPES } from '@/lib/canva-constants';
 
 export type SystemSlice = Pick<AuthoringState, 'dirty' | 'guruPw' | 'markDirty' | 'markClean' | 'saveToStorage' | 'loadFromStorage' | 'calcCompleteness'>;
 
@@ -49,7 +50,12 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         skenario: data.skenario || [],
         kuis: ensureKuisIds((data.kuis || []) as KuisItem[]),
         modules: ensureModuleIds(data.modules || []),
-        games: ensureModuleIds(data.games || []),
+        // Derive games from modules — no longer stored separately
+        games: ensureModuleIds(
+          (data.modules || []).filter((m: Record<string, unknown>) =>
+            (GAME_TYPES as readonly string[]).includes(m.type as string)
+          )
+        ),
         materi: data.materi || { blok: [] },
         guruPw: data.guruPw || 'guru123',
         petunjuk: data.petunjuk || get().petunjuk,

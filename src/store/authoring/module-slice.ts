@@ -2,6 +2,12 @@
 import type { StateCreator } from 'zustand';
 import type { AuthoringState } from './types';
 import { generateModuleId } from '@/lib/module-resolver';
+import { GAME_TYPES } from '@/lib/canva-constants';
+
+/** Derive games from modules — called on every modules change */
+function deriveGames(modules: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  return modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
+}
 
 export type ModuleSlice = Pick<AuthoringState, 'modules' | 'addModule' | 'removeModule' | 'updateModuleField' | 'moveModule' | 'addModuleItem' | 'removeModuleItem' | 'updateModuleItem'>;
 
@@ -42,16 +48,16 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       dragdrop: { type: 'dragdrop', title: '', instruksi: '', items: [], target: [] },
     };
     const base = defaults[typeId] || { type: typeId, title: '' };
-    set((s) => ({ modules: [...s.modules, { ...base, _id: generateModuleId() }], dirty: true }));
+    set((s) => ({ modules: [...s.modules, { ...base, _id: generateModuleId() }], games: deriveGames([...s.modules, { ...base, _id: generateModuleId() }]), dirty: true }));
   },
   removeModule: (index: number) => {
-    set((s) => ({ modules: s.modules.filter((_, i) => i !== index), dirty: true }));
+    set((s) => { const modules = s.modules.filter((_, i) => i !== index); return { modules, games: deriveGames(modules), dirty: true }; });
   },
   updateModuleField: (index: number, key: string, value: unknown) => {
     set((s) => {
       const modules = [...s.modules];
       modules[index] = { ...modules[index], [key]: value };
-      return { modules, dirty: true };
+      return { modules, games: deriveGames(modules), dirty: true };
     });
   },
   moveModule: (fromIndex: number, toIndex: number) => {
@@ -59,7 +65,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       const modules = [...s.modules];
       const [moved] = modules.splice(fromIndex, 1);
       modules.splice(toIndex, 0, moved);
-      return { modules, dirty: true };
+      return { modules, games: deriveGames(modules), dirty: true };
     });
   },
   addModuleItem: (moduleIndex: number, arrayKey: string, defaultItem: Record<string, unknown>) => {
@@ -70,7 +76,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       arr.push(defaultItem);
       (mod as Record<string, unknown>)[arrayKey] = arr;
       modules[moduleIndex] = mod;
-      return { modules, dirty: true };
+      return { modules, games: deriveGames(modules), dirty: true };
     });
   },
   removeModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number) => {
@@ -80,7 +86,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       const arr = ((mod[arrayKey] as unknown[]) || []).filter((_, i) => i !== itemIndex);
       (mod as Record<string, unknown>)[arrayKey] = arr;
       modules[moduleIndex] = mod;
-      return { modules, dirty: true };
+      return { modules, games: deriveGames(modules), dirty: true };
     });
   },
   updateModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => {
@@ -91,7 +97,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       arr[itemIndex] = { ...arr[itemIndex], [key]: value };
       (mod as Record<string, unknown>)[arrayKey] = arr;
       modules[moduleIndex] = mod;
-      return { modules, dirty: true };
+      return { modules, games: deriveGames(modules), dirty: true };
     });
   },
 });

@@ -43,6 +43,11 @@ export interface CanvaElement {
   dataIdx?: number;
   // Layout variant for module rendering
   layoutVariant?: 'A' | 'B' | 'C' | 'D';
+  // ── Placeholder flag (v4 — Unlock Mechanism) ──
+  // Elements created by populateTemplateElements() for export compat.
+  // They fill the entire page (x:0,y:0,w:100,h:100) and should NOT
+  // become visible draggable boxes after unlock.
+  isPlaceholder?: boolean;
 }
 
 // ── Template System Types ─────────────────────────────────────

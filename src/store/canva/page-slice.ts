@@ -96,12 +96,22 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     get()._pushHistory();
     const newPages = [...pages];
 
+    const isTemplate = templateType !== 'custom';
     // Populate templateData using centralized builder
     const newPage = { ...page, templateType, templateData: buildTemplateData(templateType) };
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Re-populate placeholder elements for export compat
     newPage.elements = populateTemplateElements(newPage, createElId);
+
+    // Reset lock state: template pages always start locked,
+    // custom pages don't have the lock concept
+    if (isTemplate) {
+      newPage.locked = true;
+      newPage.overlayElements = [];
+    } else {
+      newPage.locked = undefined;
+    }
 
     newPages[currentPageIndex] = newPage;
     set({ pages: newPages, selectedElId: null });
@@ -140,12 +150,10 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     get()._pushHistory();
     const newPages = [...pages];
-    // Filter out placeholder elements (full-page template-origin elements from populateTemplateElements)
-    // Placeholders have: x:0, y:0, w:100, h:100, dataIdx:-1 — they're only for export compat
-    // and should not become visible draggable boxes after unlock.
-    const isPlaceholder = (el: CanvaElement) =>
-      el.x === 0 && el.y === 0 && el.w === 100 && el.h === 100 && el.dataIdx === -1;
-    const realElements = page.elements.filter(el => !isPlaceholder(el));
+    // Filter out placeholder elements (isPlaceholder: true — set by populateTemplateElements)
+    // These are full-page elements only for export compat and should NOT
+    // become visible draggable boxes after unlock.
+    const realElements = page.elements.filter(el => !el.isPlaceholder);
     // Merge real elements + overlay elements so all are draggable
     const mergedElements = [...realElements, ...(page.overlayElements || [])];
     newPages[currentPageIndex] = {

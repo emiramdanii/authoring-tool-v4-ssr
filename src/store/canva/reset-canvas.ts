@@ -1,6 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
 // CANVA STORE — Reset Canvas (nuclear reset)
-// Replaces old autoRakit — same logic, explicit action with confirmation.
 // Rebuilds all pages from current authoring data.
 // ═══════════════════════════════════════════════════════════════
 
@@ -17,7 +16,6 @@ export type ResetCanvasSlice = Pick<CanvaState, 'resetCanvas'>;
 export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanvasSlice> = (set, get) => ({
   /**
    * Reset Canvas — rebuild all pages from current authoring data.
-   * This replaces the old autoRakit() function.
    * Should always be called with user confirmation first.
    */
   resetCanvas: () => {

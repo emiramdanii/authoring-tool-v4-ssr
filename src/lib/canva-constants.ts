@@ -65,6 +65,7 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
     x: 0, y: 0, w: 100, h: 100,
     opacity: 100,
     dataIdx: -1,
+    isPlaceholder: true, // Mark as placeholder — filtered out on unlock
     ...(moduleId ? { moduleId } : {}),
     ...(kuisId ? { kuisId } : {}),
     ...(kuisIds && kuisIds.length > 0 ? { kuisIds } : {}),
