@@ -48,7 +48,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     if (type === 'teks') { el.text = 'Judul Halaman'; el.fontSize = 24; el.h = 15; }
     if (type === 'shape') { el.color = 'rgba(255,255,255,.1)'; el.radius = 8; el.h = 20; }
     if (type === 'kuis') {
-      el.w = 55; el.h = 65;
+      el.w = 50; el.h = 50;
       el.icon = '❓'; el.label = 'Kuis Interaktif';
       // Set stable kuisId from first available kuis item
       const kuis = useAuthoringStore.getState().kuis;
@@ -60,7 +60,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       }
     }
     if (type === 'game') {
-      el.w = 45; el.h = 60;
+      el.w = 50; el.h = 50;
       el.icon = '🎮';
       const modules = useAuthoringStore.getState().modules;
       const gameIdx = modules.findIndex((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
@@ -105,7 +105,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       label: 'Kuis #' + (idx + 1),
       dataIdx: idx,
       kuisId: kid,
-      x: 5, y: 5, w: 45, h: 40,
+      x: 5, y: 5, w: 50, h: 50,
       opacity: 100,
     };
     const newPages = [...pages];
@@ -140,7 +140,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       label: 'Game #' + (idx + 1),
       dataIdx: actualIdx >= 0 ? actualIdx : idx, // Index in modules[], not gameModules[]
       moduleId: (gameMod?._id as string) || undefined,
-      x: 55, y: 5, w: 40, h: 40,
+      x: 50, y: 5, w: 45, h: 50,
       opacity: 100,
     };
     const newPages = [...pages];

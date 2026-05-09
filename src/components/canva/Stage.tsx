@@ -656,7 +656,7 @@ function StageElement({
             contentEditable
             suppressContentEditableWarning
             onBlur={handleTextBlur}
-            className="w-full h-full outline-none text-shadow-lg"
+            className="w-full h-full outline-none"
             style={{
               fontSize: `${element.fontSize || 20}px`,
               fontWeight: element.fontWeight || 700,

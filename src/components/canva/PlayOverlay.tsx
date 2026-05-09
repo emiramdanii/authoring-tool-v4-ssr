@@ -485,8 +485,9 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
           className="w-full h-full outline-none"
           style={{
             fontSize: `${element.fontSize || 20}px`,
-            fontWeight: 700,
+            fontWeight: element.fontWeight || 700,
             color: element.textColor || '#ffffff',
+            textAlign: element.textAlign || 'left',
             textShadow: '0 2px 8px rgba(0,0,0,.5)',
             lineHeight: 1.4,
             padding: 8,
@@ -497,7 +498,7 @@ function PlayElement({ element, pageIndex }: { element: CanvaElement; pageIndex:
       )}
       {element.type === 'shape' && (
         <div
-          className="w-full h-full"
+          className="w-full h-full rounded-lg"
           style={{
             background: element.color || 'rgba(255,255,255,.15)',
             borderRadius: element.radius || 8,

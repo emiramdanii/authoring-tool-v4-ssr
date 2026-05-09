@@ -197,7 +197,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
 
       {/* Explanation */}
       {answered && q.ex && (
-        <div className={`px-2 pb-1.5 ${compact ? '' : ''}`}>
+        <div className="px-2 pb-1.5">
           <div className="bg-blue-500/10 border border-blue-400/20 rounded px-2 py-1">
             <span className={`font-bold text-blue-300 ${compact ? 'text-[8px]' : 'text-[9px]'}`}>
               💡 {q.ex}

@@ -404,9 +404,6 @@ export default function ExportApp() {
           designH={currentRatio.h}
           overlay={page.overlay ?? 20}
         >
-          {/* Offset for top navbar when present */}
-          {showTopNav && <div style={{ height: 'var(--export-topnav-h, 44px)' }} />}
-
           {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
           {/* Phase 9 fix: navbar is position: absolute now, with a spacer div
               below it so template content is NOT hidden behind the navbar */}
