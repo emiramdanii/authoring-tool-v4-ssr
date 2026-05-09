@@ -225,28 +225,48 @@ export function useAutoGenerate() {
         }
         case 'flashcard': {
           const flashData = preview.data as FlashcardItem[];
-          const currentGames = store.getState().games;
-          const updated = currentGames.filter((g) => (g as Record<string, unknown>).type !== 'flashcard');
-          updated.push({ type: 'flashcard', data: flashData });
-          store.setState({ games: updated, dirty: true });
+          // Use addModule() which triggers deriveGames() properly
+          // First remove any existing flashcard module, then add the new one
+          const s = store.getState();
+          const existingIdx = s.modules.findIndex((m) => m.type === 'flashcard');
+          if (existingIdx >= 0) s.removeModule(existingIdx);
+          s.addModule('flashcard');
+          // Now update the newly added module with generated data
+          const newIdx = store.getState().modules.findIndex((m) => m.type === 'flashcard');
+          if (newIdx >= 0) {
+            store.getState().updateModuleField(newIdx, 'kartu', flashData);
+            store.getState().updateModuleField(newIdx, 'title', 'Flashcard');
+          }
           toast.success(`🃏 ${flashData.length} flashcard diterapkan`);
           break;
         }
         case 'matching': {
           const matchData = preview.data as MatchingPair[];
-          const currentGames = store.getState().games;
-          const updated = currentGames.filter((g) => (g as Record<string, unknown>).type !== 'matching');
-          updated.push({ type: 'matching', data: matchData });
-          store.setState({ games: updated, dirty: true });
+          // Use addModule() which triggers deriveGames() properly
+          const s = store.getState();
+          const existingIdx = s.modules.findIndex((m) => m.type === 'matching');
+          if (existingIdx >= 0) s.removeModule(existingIdx);
+          s.addModule('matching');
+          const newIdx = store.getState().modules.findIndex((m) => m.type === 'matching');
+          if (newIdx >= 0) {
+            store.getState().updateModuleField(newIdx, 'pasangan', matchData);
+            store.getState().updateModuleField(newIdx, 'title', 'Matching Game');
+          }
           toast.success(`🔀 ${matchData.length} pasangan matching diterapkan`);
           break;
         }
         case 'truefalse': {
           const tfData = preview.data as TrueFalseItem[];
-          const currentGames = store.getState().games;
-          const updated = currentGames.filter((g) => (g as Record<string, unknown>).type !== 'truefalse');
-          updated.push({ type: 'truefalse', data: tfData });
-          store.setState({ games: updated, dirty: true });
+          // Use addModule() which triggers deriveGames() properly
+          const s = store.getState();
+          const existingIdx = s.modules.findIndex((m) => m.type === 'truefalse');
+          if (existingIdx >= 0) s.removeModule(existingIdx);
+          s.addModule('truefalse');
+          const newIdx = store.getState().modules.findIndex((m) => m.type === 'truefalse');
+          if (newIdx >= 0) {
+            store.getState().updateModuleField(newIdx, 'soal', tfData);
+            store.getState().updateModuleField(newIdx, 'title', 'Benar/Salah');
+          }
           toast.success(`✅ ${tfData.length} soal benar/salah diterapkan`);
           break;
         }
