@@ -147,6 +147,21 @@ export function KuisTab() {
                   onChange={(e) => updateKuis(i, 'ex', e.target.value)}
                 />
               </div>
+
+              {/* Pertemuan tag */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-medium text-zinc-400">Pertemuan</label>
+                <select
+                  value={soal.pertemuan ?? ''}
+                  onChange={(e) => updateKuis(i, 'pertemuan', e.target.value ? Number(e.target.value) : undefined)}
+                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                >
+                  <option value="">— Semua —</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+                    <option key={n} value={n}>Pertemuan {n}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           ))
         )}

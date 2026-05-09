@@ -5,10 +5,12 @@ import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Materi Template ───────────────────────────────────────────
 // Phase 10: Added tab toggle for Blok/Modul views, improved font
 // sizes for readability, fixed overflow when both blocks and modules exist.
+// Phase 11: Added "Lanjut" nav button in interactive mode.
 
 type ActiveTab = 'blok' | 'modul';
 
@@ -176,6 +178,13 @@ export function MateriTemplate({ td, palette, isSelected, onEditField, interacti
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📝</span>
           <span className="text-[10px]">{interactive ? 'Belum ada materi tersedia' : 'Tambah materi di panel Konten → Materi'}</span>
+        </div>
+      )}
+
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center mt-3">
+          <TemplateNavButton action="next" accent={accent} size="md" />
         </div>
       )}
     </div>

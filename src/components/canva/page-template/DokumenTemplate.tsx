@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Dokumen Template (CP/TP/ATP) ─────────────────────────────
 // Phase 10: Accordion-style toggle buttons for CP, TP, ATP sections.
-// Each section can be expanded/collapsed independently, preventing
-// content overflow and allowing users to focus on one section at a time.
+// Phase 11: Added "Mulai Pembelajaran" nav button in interactive mode.
 
 type ActiveTab = 'cp' | 'tp' | 'atp';
 
@@ -231,6 +231,13 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📋</span>
           <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP, TP & ATP di panel Dokumen'}</span>
+        </div>
+      )}
+
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center mt-3">
+          <TemplateNavButton action="next" label="Mulai Pembelajaran →" accent={accent} size="md" />
         </div>
       )}
     </div>

@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       diskusi: diskusi || { title:'',intro:'',pertanyaan:[] },
       refleksi: refleksi || { title:'',intro:'',pertanyaan:[] },
       penutup: penutup || { title:'',subjudul:'',preview:[] },
-      suara: suara || { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false },
+      suara: suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
     const dataJson = JSON.stringify(exportData)

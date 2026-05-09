@@ -5,6 +5,7 @@ import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { playSound } from '@/lib/sounds';
 
 // ── Skenario Template ─────────────────────────────────────────
 // Phase 4: Interactive choices — clickable in play mode with branching navigation
@@ -64,6 +65,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     setChoiceHistory(prev => [...prev, { chapter: chapterIdx, choiceIdx, good: isGood }]);
+
+    // Play sound feedback
+    playSound(isGood ? 'ding' : 'buzz');
 
     // Show brief feedback
     setShowFeedback({

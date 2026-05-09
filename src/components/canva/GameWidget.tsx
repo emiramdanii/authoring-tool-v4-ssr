@@ -17,6 +17,7 @@ import { FlashcardGame } from './games/FlashcardGame';
 import { CrosswordGame } from './games/CrosswordGame';
 import { FillBlankGame } from './games/FillBlankGame';
 import { DragDropGame } from './games/DragDropGame';
+import { playSound } from '@/lib/sounds';
 
 interface GameWidgetProps {
   dataIdx?: number;
@@ -46,6 +47,12 @@ export default function GameWidget({ dataIdx, moduleId, compact = false, interac
 
   const gameType = (mod?.type as string) || '';
 
+  // Wrap onComplete to add sound effect when game finishes
+  const handleComplete = interactive ? (score: number, maxScore: number) => {
+    playSound('complete');
+    onComplete?.(score, maxScore);
+  } : undefined;
+
   if (!mod) {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-cyan-500/10 rounded border border-cyan-500/20 p-3">
@@ -62,18 +69,18 @@ export default function GameWidget({ dataIdx, moduleId, compact = false, interac
       className="h-full overflow-auto rounded border border-cyan-500/20"
       onClick={(e) => e.stopPropagation()}
     >
-      {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'memory' && <MemoryGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'matching' && <MatchingGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'roda' && <RodaGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'sorting' && <SortingGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
-      {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} interactive={interactive} onComplete={onComplete} />}
+      {gameType === 'truefalse' && <TrueFalseGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'memory' && <MemoryGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'matching' && <MatchingGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'roda' && <RodaGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'sorting' && <SortingGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'spinwheel' && <SpinWheelGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'teambuzzer' && <TeamBuzzerGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'wordsearch' && <WordSearchGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'flashcard' && <FlashcardGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'crossword' && <CrosswordGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'fillblank' && <FillBlankGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
+      {gameType === 'dragdrop' && <DragDropGame data={mod} compact={compact} interactive={interactive} onComplete={handleComplete} />}
       {!(GAME_TYPES as readonly string[]).includes(gameType) && (
         <GenericGameWidget data={mod} compact={compact} />
       )}

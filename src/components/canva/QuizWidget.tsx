@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuthoringStore, type KuisItem } from '@/store/authoring-store';
 import { resolveKuis } from '@/lib/module-resolver';
+import { playSound } from '@/lib/sounds';
 import type { CanvaElement } from './types';
 
 interface QuizWidgetProps {
@@ -61,7 +62,12 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
     setAnswered(true);
 
     const isCorrect = optIdx === allQuestions[currentQ].ans;
-    if (isCorrect) setScore(s => s + 1);
+    if (isCorrect) {
+      setScore(s => s + 1);
+      playSound('correct');
+    } else {
+      playSound('incorrect');
+    }
 
     // Auto-advance after 1.5s — tracked for cleanup
     const tid = setTimeout(() => {
@@ -71,6 +77,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
         setAnswered(false);
       } else {
         setPhase('result');
+        playSound('complete');
       }
     }, 1500);
     timersRef.current.push(tid);

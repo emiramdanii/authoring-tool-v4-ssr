@@ -5,6 +5,7 @@ import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { playSound } from '@/lib/sounds';
 
 // ── Cover Template ────────────────────────────────────────────
 // Phase 10: Fixed bottom decoration overlap with nav bar,
@@ -23,6 +24,7 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
       onClick={() => {
         // Guard: only navigate in actual Play/Export mode, not canvas preview
         if (useInteractiveStore.getState().mode !== 'interactive') return;
+        playSound('click');
         useInteractiveStore.getState().nextInteractivePage();
         const nextIdx = useCanvaStore.getState().currentPageIndex + 1;
         useCanvaStore.getState().goPage(nextIdx);

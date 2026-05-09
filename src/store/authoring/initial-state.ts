@@ -36,4 +36,4 @@ export const DEFAULT_REFLEKSI: RefleksiData = { title: '', intro: '', pertanyaan
 
 export const DEFAULT_PENUTUP: PenutupData = { title: '', subjudul: '', preview: [] };
 
-export const DEFAULT_SUARA: SuaraConfig = { navigasi: false, benar: false, salah: false, selesai: false, klik: false, skor: false };
+export const DEFAULT_SUARA: SuaraConfig = { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true };

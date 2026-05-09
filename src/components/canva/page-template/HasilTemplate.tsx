@@ -5,6 +5,7 @@ import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { playSound } from '@/lib/sounds';
 
 // ── Hasil Template ────────────────────────────────────────────
 // Phase 10: Added action button in interactive mode, better preview
@@ -122,6 +123,7 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
           onClick={() => {
             // Guard: only navigate in actual Play/Export mode, not canvas preview
             if (useInteractiveStore.getState().mode !== 'interactive') return;
+            playSound('click');
             useInteractiveStore.getState().resetAllScores();
             useInteractiveStore.getState().goInteractivePage(0);
             useCanvaStore.getState().goPage(0);

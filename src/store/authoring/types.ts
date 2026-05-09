@@ -55,6 +55,7 @@ export interface KuisItem {
   opts: string[];
   ans: number;
   ex: string;
+  pertemuan?: number; // Pertemuan ke berapa (1-based), undefined = tanpa tag
 }
 
 export interface MateriBlok {

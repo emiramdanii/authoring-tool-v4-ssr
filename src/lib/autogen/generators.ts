@@ -237,7 +237,7 @@ export function genAlur(tps: TpItem[], meta: { durasi?: string }, totalMinutes =
   return steps;
 }
 
-export function genKuis(parsed: ParseResult, jumlah: number): KuisItem[] {
+export function genKuis(parsed: ParseResult, jumlah: number, jumlahPertemuan: number = 1): KuisItem[] {
   const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
   const kuis: KuisItem[] = [];
 
@@ -349,7 +349,11 @@ export function genKuis(parsed: ParseResult, jumlah: number): KuisItem[] {
     });
   }
 
-  return kuis.slice(0, jumlah);
+  return kuis.slice(0, jumlah).map((k, i) => ({
+    ...k,
+    // Auto-tag pertemuan: distribute evenly across meetings
+    pertemuan: jumlahPertemuan > 1 ? (i % jumlahPertemuan) + 1 : undefined,
+  }));
 }
 
 export function genFlashcard(parsed: ParseResult): FlashcardItem[] {

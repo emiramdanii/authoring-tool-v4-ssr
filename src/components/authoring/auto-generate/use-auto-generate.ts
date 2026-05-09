@@ -106,7 +106,7 @@ export function useAutoGenerate() {
               break;
             }
             case 'kuis': {
-              data = genKuis(parsed, settings.jumlahKuis);
+              data = genKuis(parsed, settings.jumlahKuis, settings.pertemuan);
               count = (data as KuisItem[]).length;
               label = 'Kuis Pilihan Ganda';
               icon = '❓';
@@ -315,7 +315,7 @@ export function useAutoGenerate() {
               label = 'Alur Kegiatan'; icon = '🗺️'; break;
             }
             case 'kuis':
-              data = genKuis(parsed, settings.jumlahKuis); count = (data as KuisItem[]).length; label = 'Kuis Pilihan Ganda'; icon = '❓'; break;
+              data = genKuis(parsed, settings.jumlahKuis, settings.pertemuan); count = (data as KuisItem[]).length; label = 'Kuis Pilihan Ganda'; icon = '❓'; break;
             case 'flashcard':
               data = genFlashcard(parsed); count = (data as FlashcardItem[]).length; label = 'Flashcard'; icon = '🃏'; break;
             case 'skenario':
