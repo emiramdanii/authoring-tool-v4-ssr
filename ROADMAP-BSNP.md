@@ -1,530 +1,257 @@
-# 🗺️ Roadmap Media Pembelajaran — Standar BSNP
+# Roadmap Media Pembelajaran Interaktif
 
-> **Dokumen perencanaan** berdasarkan audit template vs Standar BSNP 
-> (Permendikbudristek No. 8 Tahun 2024 — Media Pembelajaran Interaktif)
-> 
-> **Dibuat**: 9 Mei 2026 | **Status**: Planning
+> **Prinsip**: Media pembelajaran, bukan modul pembelajaran.
+> Flow searah, remedial serahkan ke guru.
+> Lean & praktis — hindari over-engineering.
+>
+> **Dibuat**: 9 Mei 2026 | **Update**: 10 Mei 2026
 
 ---
 
-## 📋 Fase Saat Ini (Sedang Dikerjakan)
+## Fase Saat Ini
 
 ### Phase 11: Navigation Button System
 - [x] Buat komponen `TemplateNavButton` yang reusable
-- [x] Tambah nav button ke DokumenTemplate (Guided Flow: CP → TP → ATP → Next Page)
+- [x] Tambah nav button ke DokumenTemplate
 - [x] Tambah nav button ke MateriTemplate
 - [ ] Tambah nav button ke KuisTemplate (setelah kuis selesai)
 - [ ] Tambah nav button ke GameTemplate (interactive mode)
-- [ ] Perbaiki PetunjukTemplate — "Lanjut →" di step terakhir jadi navigasi halaman
-- [ ] Perbaiki DiskusiTemplate — "Lanjut →" di pertanyaan terakhir jadi navigasi halaman
-- [ ] Perbaiki RefleksiTemplate — "Lanjut →" di pertanyaan terakhir jadi navigasi halaman
-- [ ] Perbaiki SkenarioTemplate — tambah "Lanjut →" saat skenario completed
+- [ ] Perbaiki PetunjukTemplate — "Lanjut" di step terakhir jadi navigasi halaman
+- [ ] Perbaiki DiskusiTemplate — "Lanjut" di pertanyaan terakhir jadi navigasi halaman
+- [ ] Perbaiki RefleksiTemplate — "Lanjut" di pertanyaan terakhir jadi navigasi halaman
+- [ ] Perbaiki SkenarioTemplate — tambah "Lanjut" saat skenario completed
 - [ ] Perbaiki HeroTemplate — fallback CTA jika td.cta kosong
 - [ ] Perbaiki HasilTemplate — nav button walau tanpa skor
-- [ ] Smart label kontekstual (gunakan getNextLabel dari ExportApp)
 - [ ] Build & test semua perubahan
 
 ---
 
-## 🔴 Phase 12: P1 BSNP — Kriteria Wajib
+## Phase 17: Sound Effect + Pertemuan Tag (Fondasi)
 
-### 12.1 TujuanTemplate — TP Ditampilkan ke Siswa
-**Alasan**: BSNP mewajibkan tujuan pembelajaran ditampilkan eksplisit kepada siswa sebelum materi dimulai. Saat ini TP tersembunyi di tab Dokumen.
+> Diskusi 10 Mei 2026: Sound effect belum ada, pertemuan tag perlu untuk
+> organisasi konten. Keduanya fondasi untuk fitur lain.
 
-**Desain**:
+### 17.1 Sound Effect — Inline, Bukan Sistem Terpisah
+
+**Prinsip**: Tidak perlu SoundManager class. Cukup helper function + file audio.
+
+**Suara yang diperlukan**:
+| Event | File | Kapan |
+|-------|------|-------|
+| Jawaban benar | `correct.mp3` | QuizWidget jawab benar |
+| Jawaban salah | `incorrect.mp3` | QuizWidget jawab salah |
+| Kuis selesai | `complete.mp3` | QuizWidget phase=result |
+| Klik tombol navigasi | `click.mp3` | TemplateNavButton, MulaiButton |
+| Klik tombol pilihan | `tap.mp3` | SkenarioTemplate pilih, GameWidget |
+| Skenario benar | `ding.mp3` | Skenario good choice |
+| Skenario salah | `buzz.mp3` | Skenario bad choice |
+
+**Implementasi**:
+```typescript
+// src/lib/sounds.ts — simple helper
+const cache = new Map<string, HTMLAudioElement>();
+
+export function playSound(id: string) {
+  const suara = useAuthoringStore.getState().suara;
+  if (!suara[id as keyof typeof suara]) return; // cek config
+  
+  let audio = cache.get(id);
+  if (!audio) {
+    audio = new Audio(`/sounds/${id}.mp3`);
+    cache.set(id, audio);
+  }
+  audio.currentTime = 0;
+  audio.volume = 0.3;
+  audio.play().catch(() => {});
+}
 ```
-┌─────────────────────────────────────┐
-│  🎯 Tujuan Pembelajaran             │
-│─────────────────────────────────────│
-│  Setelah mempelajari materi ini,    │
-│  siswa mampu:                       │
-│                                     │
-│  ✅ Menjelaskan konsep X            │
-│  ✅ Menganalisis hubungan Y         │
-│  ✅ Menerapkan prinsip Z            │
-│                                     │
-│  🏛️ Profil Pelajar Pancasila:      │
-│  [Bernalar Kritis] [Gotong Royong] │
-│                                     │
-│       [Mulai Belajar →]             │
-└─────────────────────────────────────┘
-```
 
-**Data source**: `authoringStore.tp` + `authoringStore.cp.profil`
+**SuaraConfig yang sudah ada** (tinggal aktifkan):
+```typescript
+interface SuaraConfig {
+  navigasi: boolean;  // → click.mp3
+  benar: boolean;     // → correct.mp3
+  salah: boolean;     // → incorrect.mp3
+  selesai: boolean;   // → complete.mp3
+  klik: boolean;      // → tap.mp3
+  skor: boolean;      // → ding.mp3 (skor tinggi)
+}
+```
 
 **Task**:
-- [ ] Buat `TujuanTemplate.tsx` di `page-template/`
-- [ ] Tambah `tujuan` ke `PageTemplateType` di `types.ts`
-- [ ] Tambah case di `PageTemplate.tsx` router
-- [ ] Tambah `buildTemplateData` case `tujuan`
-- [ ] Tambah icon + label di template selector panel
-- [ ] Tambah ke `TEMPLATE_ICON` map di Stage.tsx dan ExportApp.tsx
+- [ ] Buat `src/lib/sounds.ts` (helper function)
+- [ ] Buat `public/sounds/` + 6 file audio (free SFX, <30KB each)
+- [ ] Tambah `playSound('correct')` di QuizWidget saat jawab benar
+- [ ] Tambah `playSound('incorrect')` di QuizWidget saat jawab salah
+- [ ] Tambah `playSound('complete')` di QuizWidget phase=result
+- [ ] Tambah `playSound('click')` di TemplateNavButton + MulaiButton
+- [ ] Tambah `playSound('tap')` di SkenarioTemplate pilihan + GameWidget
+- [ ] Tambah `playSound('ding')` / `playSound('buzz')` di SkenarioTemplate feedback
+- [ ] Tambah toggle suara di panel (gunakan SuaraConfig yang sudah ada)
 
-### 12.2 Cover Template — Identitas Lengkap BSNP
-**Alasan**: BSNP mewajibkan identitas modul yang lengkap (semester, penyusun, instansi, tahun).
+### 17.2 Pertemuan Tag di KuisItem
 
-**Perubahan**:
-- Tambah field: `semester`, `penyusun`, `instansi`, `tahun` ke cover templateData
-- Tambah display area di CoverTemplate (semua variant A/B/C)
-- Update `buildTemplateData` untuk cover
-- Update authoring store `meta` untuk field baru
+**Alasan**: Tanpa tag pertemuan, soal kuis tidak bisa diorganisir per pertemuan.
+Ini fondasi untuk auto-generate per pertemuan nanti.
+
+**Perubahan minimal**:
+```typescript
+interface KuisItem {
+  // Yang sudah ada (JANGAN DIUBAH):
+  _id?: string;
+  q: string;
+  opts: string[];
+  ans: number;
+  ex: string;
+  
+  // Tambahan:
+  pertemuan?: number;  // pertemuan ke berapa, default = tanpa tag
+}
+```
 
 **Task**:
-- [ ] Tambah field meta di authoring store
-- [ ] Update CoverTemplate tampilan identitas
-- [ ] Update buildTemplateData cover
-- [ ] Update panel authoring (form identitas)
+- [ ] Tambah `pertemuan` field ke `KuisItem` di types.ts
+- [ ] Update `addKuis()` default — pertemuan: undefined (backward compatible)
+- [ ] Update KuisTab form — tambah dropdown pertemuan (1-8, opsional)
+- [ ] Update `genKuis()` — auto-tag pertemuan berdasarkan settings
+- [ ] Update `buildTemplateData('kuis')` — support filter by pertemuan (opsional)
 
 ---
 
-## 🟡 Phase 13: P2 BSNP — Sangat Direkomendasikan
+## Phase 18: Data-Driven Materi + Generator Baru
 
-### 13.1 MotivasiTemplate — Apersepsi / Hook Pembuka
-**Alasan**: BSNP mewajibkan ada stimulus awal (apersepsi) yang menghubungkan pengalaman siswa dengan materi baru.
+> Diskusi 10 Mei 2026: MateriBlok SUDAH punya field `tipe` (13 jenis)
+> tapi MateriTemplate mengabaikannya — semua jadi card list.
+> Fix: render beda berdasarkan tipe. Tidak perlu komponen baru,
+> cukup pola render berbeda di template yang sama.
 
-**Desain**:
-```
-┌─────────────────────────────────────┐
-│  💡 Motivasi Belajar                │
-│─────────────────────────────────────│
-│  Pertanyaan Pemicu:                 │
-│  "Pernahkah kamu merasa...?"       │
-│                                     │
-│  📺 Media Stimulus                  │
-│  [video/gambar ilustrasi]           │
-│                                     │
-│  🔗 Koneksi:                       │
-│  "Hari ini kita akan pelajari..."  │
-│                                     │
-│          [Lanjut ke Tujuan →]       │
-└─────────────────────────────────────┘
-```
+### 18.1 MateriTemplate Data-Driven Render
 
-**Data source**: Baru — `authoringStore.motivasi` (pertanyaanPemicu, mediaUrl, koneksi)
+**Sekarang**: Semua blok → card list (abaikan tipe)
+**Sesudah**: Render berdasarkan `blok.tipe`
 
-**Task**:
-- [ ] Buat `MotivasiTemplate.tsx`
-- [ ] Tambah `motivasi` ke `PageTemplateType`
-- [ ] Tambah slice `motivasi` di authoring store
-- [ ] Tambah form di panel Konten
-- [ ] Tambah ke auto-generate system
-
-### 13.2 RangkumanTemplate — Penegasan Materi
-**Alasan**: BSNP mewajibkan ada penegasan/reinforcement setelah penyajian materi.
-
-**Desain**:
-```
-┌─────────────────────────────────────┐
-│  📝 Rangkuman                       │
-│─────────────────────────────────────│
-│  Poin-poin penting hari ini:        │
-│                                     │
-│  1. Konsep utama X adalah...        │
-│  2. Hubungan Y dan Z menunjukkan..  │
-│  3. Prinsip dasar yang perlu...     │
-│                                     │
-│  💡 Tips Ingat:                     │
-│  "Rumus mudah: ABC = ..."           │
-│                                     │
-│        [Lanjut ke Evaluasi →]       │
-└─────────────────────────────────────┘
-```
-
-**Data source**: Baru — `authoringStore.rangkuman` (poin[], tips)
+| tipe | Render | Pakai Field |
+|------|--------|------------|
+| `teks` | Card dengan paragraf | `isi` |
+| `definisi` | Kotak highlight kuning | `judul`, `isi` |
+| `poin` | Bullet list | `butir[]` |
+| `tabel` | HTML table | `baris[][]` |
+| `kutipan` | Quote block besar | `isi`, `karakter` |
+| `timeline` | Step vertikal | `langkah[]` |
+| `compare` | 2 kolom kiri-kanan | `kiri`, `kanan` |
+| `highlight` | Card accent | `isi`, `warna` |
+| `infobox` | Info box biru | `isi` |
+| `checklist` | Checkbox list | `butir[]` |
+| `statistik` | Angka besar + label | `items[]` |
+| `studi` | Kasus + pertanyaan | `situasi`, `pertanyaan`, `pesan` |
+| `gambar` | Image + caption | `isi` (URL) |
 
 **Task**:
-- [ ] Buat `RangkumanTemplate.tsx`
-- [ ] Tambah `rangkuman` ke `PageTemplateType`
-- [ ] Tambah slice di authoring store
-- [ ] Tambah form di panel Konten
-- [ ] Auto-generate dari materi blok
+- [ ] Refactor MateriTemplate — switch render per `blok.tipe`
+- [ ] Buat helper `renderBlok(blok)` dengan 13 pola render
+- [ ] Test semua 13 tipe blok di design mode + interactive mode
+- [ ] Hapus variant B/C yang tidak diperlukan lagi (opsional)
+
+### 18.2 Generator: Materi + Diskusi + Refleksi
+
+**Alasan**: 5 section tidak punya generator, guru harus isi manual.
+Dengan generator, guru bisa re-generate yang gak cocok.
+
+**Task**:
+- [ ] Buat `genMateri(parsed)` — deteksi struktur → assign tipe per blok
+  - Definisi → `definisi` blok
+  - Enumerasi → `poin` blok
+  - Langkah → `timeline` blok
+  - Perbandingan → `compare` blok
+  - Sisanya → `teks` blok
+- [ ] Buat `genDiskusi(parsed, tp)` — buat pertanyaan dari konten + TP
+- [ ] Buat `genRefleksi(parsed)` — buat pertanyaan refleksi metakognisi
+- [ ] Tambah ke GEN_BUTTONS di constants.ts
+- [ ] Tambah ke useAutoGenerate hook (generate + apply)
+- [ ] Tambah preview komponen
+
+### 18.3 Tombol Re-generate di Panel Konten
+
+**Alasan**: Guru tidak harus ke panel Auto-Generate untuk re-generate.
+Bisa langsung dari tab yang sedang dikerjakan.
+
+**Task**:
+- [ ] Tambah tombol "⚡ Re-generate" di MateriTab
+- [ ] Tambah tombol "⚡ Re-generate" di tab Diskusi (kalau ada)
+- [ ] Tambah tombol "⚡ Re-generate" di tab Refleksi (kalau ada)
+- [ ] Alur: klik → pakai parsed data terakhir → generate → replace di store
 
 ---
 
-## 🟢 Phase 14: P3 BSNP — Direkomendasikan
+## Phase 19: Auto-Generate Per Pertemuan
 
-### 14.1 PetaKonsepTemplate — Visual Overview
-**Alasan**: BSNP merekomendasikan gambaran umum/overview materi sebelum penyajian konten.
+> Prasyarat: Phase 17.2 (pertemuan tag) sudah selesai.
+> Baru setelah itu bisa implementasi auto-split per pertemuan.
 
-**Desain**:
+**Alur baru**:
 ```
-┌─────────────────────────────────────┐
-│  🗺️ Peta Konsep                    │
-│─────────────────────────────────────│
-│        ┌──────────┐                 │
-│        │ Topik Utama│                │
-│        └────┬─────┘                 │
-│       ┌─────┼─────┐                 │
-│   Sub A    Sub B   Sub C            │
-│   ┌───┐   ┌───┐   ┌───┐           │
-│   │d1 │   │d2 │   │d3 │            │
-│   └───┘   └───┘   └───┘            │
-│                                     │
-│          [Lanjut ke Materi →]       │
-└─────────────────────────────────────┘
+Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (dari ATP)
+→ Generate:
+    Halaman GLOBAL: Cover, Dokumen, Petunjuk
+    Per PERTEMUAN: Materi P1, Kuis P1, Game P1
+                  Materi P2, Kuis P2
+                  Materi P3, Kuis P3, Diskusi P3
+    Halaman PENUTUP: Hasil, Penutup
 ```
 
 **Task**:
-- [ ] Buat `PetaKonsepTemplate.tsx` dengan visual tree/mind map
-- [ ] Tambah `petakonsep` ke `PageTemplateType`
-- [ ] Data dari `authoringStore.materi.blok` (auto-extract struktur)
-- [ ] Atau input manual: node[], edges[]
-
-### 14.2 SumberTemplate — Referensi & Glosarium
-**Alasan**: BSNP mewajibkan daftar sumber belajar dan penjelasan istilah teknis.
-
-**Desain**:
-```
-┌─────────────────────────────────────┐
-│  📚 Sumber Belajar & Glosarium      │
-│─────────────────────────────────────│
-│  📖 Referensi:                      │
-│  1. Buku Paket Kelas X, Hal. 20-45 │
-│  2. Kemendikbud, 2024              │
-│                                     │
-│  📕 Glosarium:                      │
-│  • Fotosintesis → Proses...         │
-│  • Klorofil → Pigmen hijau...       │
-│                                     │
-│          [Lanjut →]                 │
-└─────────────────────────────────────┘
-```
-
-**Task**:
-- [ ] Buat `SumberTemplate.tsx`
-- [ ] Tambah `sumber` ke `PageTemplateType`
-- [ ] Tambah slice `sumber` (referensi[], glosarium[]) di authoring store
-- [ ] Tambah form di panel Konten
-
-### 14.3 Hasil Template — Rekomendasi Tindak Lanjut
-**Alasan**: Umpan balik BSNP harus lebih dari sekadar skor — perlu rekomendasi spesifik.
-
-**Perubahan**:
-```
-Sekarang:                    BSNP Mewajibkan:
-🏆 75%                      🏆 75% Baik
-↩ Ulangi Semua              ✅ Kamu sudah menguasai X, Y
-                             📝 Perlu latihan lagi: Z
-                             🎯 Rekomendasi: Ulangi bagian Z
-```
-
-**Task**:
-- [ ] Tambah rekomendasi berdasarkan skor range
-- [ ] Tambah tampilan poin yang sudah/belum dikuasai
-- [ ] Update HasilTemplate
+- [ ] Tambah `perPertemuan` config di `PageTypeBlueprint`
+- [ ] Update `generateFromPageType()` — repeat template set per pertemuan
+- [ ] Filter kuis by `pertemuan` di `buildTemplateData('kuis')`
+- [ ] Filter materi blok by `pertemuan` (tambah field di MateriBlok)
+- [ ] UI: toggle "Per Pertemuan" + jumlah pertemuan di PageTypeCreator
+- [ ] Tambah label pertemuan di page thumbnails
 
 ---
 
-## 🔄 Alur Template BSNP Ideal
+## Phase 20: BSNP Template Baru
 
-```
-Cover ──→ Motivasi ──→ Tujuan ──→ Peta Konsep ──→ Petunjuk
-   │                                                      │
-   │                                                  Dokumen (guru)
-   │                                                      │
-   └──────→ Materi ──→ Rangkuman ──→ Diskusi ──→ Kuis ──→ Game
-                                                               │
-           Skenario ←── Refleksi ←── Hasil ←── Game            │
-               │                                               │
-               └──→ Sumber ──→ Penutup ────────────────────────┘
-```
+> Template yang belum ada tapi BSNP sarankan.
+> Prioritas berdasarkan kebutuhan nyata, bukan checklist lengkap.
 
-### Template Wajib BSNP (urut):
+### 20.1 TujuanTemplate — TP ke Siswa (P1)
+- [ ] Buat `TujuanTemplate.tsx` — tampilkan TP + Profil Pelajar Pancasila
+- Data: `authoringStore.tp` + `cp.profil` (SUDAH ADA)
+- [ ] Tambah ke `PageTemplateType`, `PageTemplate.tsx`, `buildTemplateData`, dll
 
-| No | Template | Fungsi BSNP | Status | Phase |
-|----|----------|-------------|--------|-------|
-| 1 | **Cover** | Identitas modul | ⚠️ Perlu perbaikan identitas | 12 |
-| 2 | **Motivasi** | Apersepsi / stimulus awal | ❌ Belum ada | 13 |
-| 3 | **Tujuan** | TP + Profil Pelajar Pancasila ke siswa | ❌ Belum ada | 12 |
-| 4 | **Peta Konsep** | Gambaran umum materi | ❌ Belum ada | 14 |
-| 5 | **Petunjuk** | Cara menggunakan media | ✅ Ada | - |
-| 6 | **Dokumen** | CP/TP/ATP (referensi guru) | ⚠️ Perlu self-assessment | 15 |
-| 7 | **Materi** | Penyajian materi | ⚠️ Perlu accordion + read tracking | 15 |
-| 8 | **Rangkuman** | Penegasan materi | ❌ Belum ada | 13 |
-| 9 | **Diskusi** | Aktivitas kolaboratif | ✅ Ada | - |
-| 10 | **Kuis** | Evaluasi formatif | ⚠️ Perlu review jawaban | 15 |
-| 11 | **Game** | Penguatan interaktif | ✅ Ada | - |
-| 12 | **Skenario** | Higher-order thinking | ✅ Ada | - |
-| 13 | **Refleksi** | Metakognisi | ✅ Ada | - |
-| 14 | **Hasil** | Umpan balik | ⚠️ Perlu breakdown + rekomendasi | 15 |
-| 15 | **Sumber** | Referensi + glosarium | ❌ Belum ada | 14 |
-| 16 | **Penutup** | Penutup + tindak lanjut | ⚠️ Perlu sertifikat/badge | 15 |
+### 20.2 MotivasiTemplate — Apersepsi (P2)
+- [ ] Buat `MotivasiTemplate.tsx` — pertanyaan pemicu + koneksi
+- Data: baru (pertanyaanPemicu, koneksi)
+- [ ] Tambah slice di authoring store + form di panel
+
+### 20.3 RangkumanTemplate — Penegasan (P2)
+- [ ] Buat `RangkumanTemplate.tsx` — poin penting + tips
+- Data: baru (poin[], tips) atau auto-extract dari materi
+- [ ] Tambah slice + form
 
 ---
 
-## 🎮 Phase 15: Komponen Interaktif — Pembelajaran Aktif
+## Phase 21: Interaktivitas Ringan (Opsional)
 
-> Diskusi 9 Mei 2026: Audit interaktivitas template menunjukkan
-> Dokumen dan Materi (2 template terpenting) 100% PASIF.
-> BSNP mewajibkan pembelajaran aktif, bukan hanya membaca.
+> Tambahan kecil yang bikin media lebih engaging.
+> Hanya jika ada waktu, bukan prioritas utama.
 
-### 15.1 Self-Assessment Check — Checkbox "Saya Sudah Pahami" di TP
-
-**Template terpengaruh**: DokumenTemplate (tab TP)
-
-```
-┌─────────────────────────────────────┐
-│  🎯 Tujuan Pembelajaran             │
-│─────────────────────────────────────│
-│  ☐ 1. Menjelaskan konsep X         │
-│  ✅ 2. Menganalisis hubungan Y      │
-│  ☐ 3. Menerapkan prinsip Z          │
-│                                     │
-│  Progress: 1/3 dipahami ████░░░░    │
-│                                     │
-│  [Lanjut ke Alur Tujuan →]          │
-└─────────────────────────────────────┘
-```
-
-- Checkbox per item TP — siswa klik "Saya sudah paham"
-- Progress bar otomatis update
-- Di step terakhir: jika semua dicentang → "Siap Belajar →", jika belum → "Belum semua dipahami, yakin lanjut?"
-- **Data**: session-only (tidak perlu persist untuk MVP)
-- **BSNP**: Memenuhi kriteria metakognisi & pembelajaran aktif
-
-**Task**:
-- [ ] Buat state `understoodItems: Set<number>` di DokumenTemplate
-- [ ] Tambah checkbox per item TP
-- [ ] Tambah progress bar
-- [ ] Conditional label nav button berdasarkan progress
-
-### 15.2 Accordion + "Sudah Baca" per Blok Materi
-
-**Template terpengaruh**: MateriTemplate
-
-```
-┌─────────────────────────────────────┐
-│  ▸ 📦 Pengertian                    │  ← collapsed
-├─────────────────────────────────────┤
-│  ▾ 📦 Jenis-Jenis                   │  ← expanded
-│  Penjelasan detail tentang jenis... │
-│                                     │
-│  ☐ ✅ Saya sudah membaca blok ini   │
-├─────────────────────────────────────┤
-│  ▸ 📦 Contoh                        │  ← collapsed
-└─────────────────────────────────────┘
-```
-
-- Default: semua collapsed di interactive mode, expanded di design mode
-- Setiap blok punya checkbox "Saya sudah baca"
-- Progress: X/Y blok dibaca
-- **BSNP**: Pembelajaran aktif + pengecekan pemahaman
-
-**Task**:
-- [ ] Tambah accordion (expand/collapse) per blok di interactive mode
-- [ ] Tambah checkbox "Sudah baca" per blok
-- [ ] Tambah progress indicator
-- [ ] Nav button hanya muncul setelah semua blok dibaca (opsional)
-
-### 15.3 Hasil Breakdown Per Aktivitas + Rekomendasi
-
-**Template terpengaruh**: HasilTemplate
-
-```
-┌─────────────────────────────────────┐
-│  🏆 75% Baik                        │
-│─────────────────────────────────────│
-│  ✅ Kuis 1: 90% (Sangat Baik)      │
-│  ✅ Game Flashcard: 80% (Baik)      │
-│  ⚠️ Kuis 2: 55% (Perlu Latihan)    │
-│                                     │
-│  💡 Rekomendasi:                    │
-│  "Ulangi Kuis 2 tentang konsep Z"  │
-│                                     │
-│  [↩ Ulangi Yang Salah] [↩ Ulangi Semua] │
-└─────────────────────────────────────┘
-```
-
-- Tampil skor per aktivitas (bukan hanya total)
-- Rekomendasi otomatis berdasarkan skor rendah
-- Tombol "Ulangi Yang Salah" — reset hanya skor yang di bawah threshold
-- **BSNP**: Umpan balik spesifik, tepat waktu, membangun
-
-**Task**:
-- [ ] Update HasilTemplate — breakdown per aktivitas dari scores[]
-- [ ] Tambah rekomendasi otomatis
-- [ ] Tambah tombol "Ulangi Yang Salah"
-
-### 15.4 Kuis Review Jawaban Setelah Selesai
-
-**Template terpengaruh**: KuisTemplate
-
-```
-┌─────────────────────────────────────┐
-│  ✅ Kuis Selesai! Skor: 80%        │
-│─────────────────────────────────────│
-│  1. ✅ Apa itu fotosintesis?       │
-│     Jawabanmu: Proses... ✅ Benar!  │
-│                                     │
-│  2. ❌ Faktor yang mempengaruhi...  │
-│     Jawabanmu: B. Suhu             │
-│     ❌ Salah. Jawaban: C. Cahaya   │
-│     💡 Selain suhu, cahaya juga... │
-│                                     │
-│  [Lanjut ke Hasil →]               │
-└─────────────────────────────────────┘
-```
-
-- Setelah kuis selesai, tampil review jawaban benar/salah
-- Jawaban salah diberi penjelasan singkat
-- **BSNP**: Umpan balik tepat waktu
-
-**Task**:
-- [ ] Tambah state "review mode" di QuizWidget / KuisTemplate
-- [ ] Tampil review jawaban setelah submit
-- [ ] Tambah penjelasan per soal (dari data kuis.explanation)
-
-### 15.5 Step Completion Tracking — Petunjuk
-
-**Template terpengaruh**: PetunjukTemplate
-
-- Setiap step bisa ditandai selesai (✅)
-- Progress: X/Y langkah selesai
-- Semua step selesai → nav button muncul "Siap Belajar →"
-
-**Task**:
-- [ ] Tambah checkbox "Selesai" per step di interactive mode
-- [ ] Tambah progress tracking
-
-### 15.6 Sertifikat / Badge Penyelesaian — Penutup
-
-**Template terpengaruh**: PenutupTemplate
-
-- Tampil badge/sertifikat visual berdasarkan skor akhir
-- Bisa di-screenshot (visual only, tidak perlu download untuk MVP)
-- Badge level: 🥇 Sangat Baik (≥85%), 🥈 Baik (≥70%), 🥉 Cukup (≥50%)
-
-**Task**:
-- [ ] Tambah badge visual di PenutupTemplate
-- [ ] Tampil berdasarkan skor dari interactive store
-
-### 15.7 Catatan Siswa (Sticky Notes) — Materi & Dokumen
-
-**Template terpengaruh**: MateriTemplate, DokumenTemplate
-
-- Tab kecil "📝 Catatan" di pojok kanan bawah
-- Klik → buka textarea untuk menulis catatan per halaman
-- Data disimpan di localStorage per page ID
-- **Kompleksitas tinggi** — simpan untuk phase akhir
-
-**Task**:
-- [ ] Buat komponen `StudentNotes` (floating widget)
-- [ ] Persist ke localStorage per pageId
-- [ ] Integrasikan ke MateriTemplate & DokumenTemplate
+- [ ] Checkbox "Sudah Paham" per TP di DokumenTemplate
+- [ ] Accordion per blok di MateriTemplate (interactive mode)
+- [ ] Badge visual di PenutupTemplate berdasarkan skor
+- [ ] HasilTemplate — tampilkan skor per aktivitas (bukan hanya total)
 
 ---
 
-## 🔧 Phase 16: Fitur Teknis Pendukung
+## Catatan Penting
 
-> Fitur infrastruktur yang diperlukan untuk mendukung
-> semua phase di atas dan meningkatkan kualitas teknis.
-
-### 16.1 Aksesibilitas (A11y) — Diversitas Pembelajar
-
-**BSNP mewajibkan**: Media pembelajaran harus accessible untuk semua siswa termasuk yang berkebutuhan khusus.
-
-**Task**:
-- [ ] Semua template: tambah ARIA labels pada elemen interaktif
-- [ ] Keyboard navigation lengkap (Tab, Enter, Escape)
-- [ ] Color contrast ratio min 4.5:1 (WCAG AA)
-- [ ] Screen reader friendly — alt text pada ikon/dekorasi
-- [ ] Focus indicators yang jelas pada semua tombol
-- [ ] Reduced motion support (prefers-reduced-motion)
-
-### 16.2 Audio/Narasi — Panduan Belajar
-
-**BSNP mewajibkan**: Penyajian materi harus mendukung multimodal (visual + audio).
-
-**Task**:
-- [ ] Tambah field `narasiUrl` per template/blok
-- [ ] Audio player widget di MateriTemplate
-- [ ] Text-to-Speech option untuk aksesibilitas
-- [ ] Auto-play narasi di Play/Export mode (opsional)
-
-### 16.3 Video Embed — Stimulus Visual
-
-**Saat ini**: Tidak ada template yang support video embed.
-
-**Task**:
-- [ ] Tambah video embed support di MotivasiTemplate (stimulus)
-- [ ] Video embed widget sebagai element type baru (`video`)
-- [ ] Support YouTube/Vimeo embed URL + self-hosted video
-
-### 16.4 Bookmarking / Progress Resume
-
-**Masalah**: Jika siswa menutup browser, progress hilang semua.
-
-**Task**:
-- [ ] Simpan interactivePageIdx + scores ke localStorage
-- [ ] Resume: "Lanjutkan dari halaman 5?" saat buka kembali
-- [ ] Simpan catatan siswa per pageId
-
-### 16.5 SCORM / LMS Integration
-
-**BSNP jangka panjang**: Media pembelajaran harus bisa diintegrasikan ke LMS.
-
-**Task**:
-- [ ] SCORM 1.2 / 2004 wrapper untuk export
-- [ ] cmi.core.lesson_status, cmi.core.score.raw
-- [ ] LMS commit pada setiap score update
-- [ ] Export format: ZIP dengan imsmanifest.xml
-
-### 16.6 Print Mode / PDF Export
-
-**BSNP**: Media harus bisa dicetak untuk siswa yang tidak punya akses digital.
-
-**Task**:
-- [ ] CSS @media print yang bersih (tanpa nav bar, tanpa dekorasi)
-- [ ] Export per halaman sebagai PDF
-- [ ] Opsi: "Cetak Semua Halaman" vs "Cetak Halaman Ini"
-
-### 16.7 Teacher vs Student Mode
-
-**Masalah**: Beberapa konten (CP/ATP detail, skor breakdown) hanya untuk guru, bukan siswa.
-
-**Task**:
-- [ ] Role flag: `mode: 'teacher' | 'student'`
-- [ ] DokumenTemplate: guru lihat semua tab, siswa lihat TP + profil saja
-- [ ] HasilTemplate: guru lihat breakdown lengkap, siswa lihat ringkasan
-- [ ] Export: pilih role saat generate
-
-### 16.8 Analytics / Learning Tracking
-
-**Masalah**: Guru tidak tahu bagaimana siswa berinteraksi dengan media.
-
-**Task**:
-- [ ] Track waktu per halaman (time on page)
-- [ ] Track interaksi per elemen (berapa kali klik, jawaban yang dipilih)
-- [ ] Report untuk guru: heatmap engagement
-- [ ] Export analytics sebagai CSV/JSON
+- **4-Layer Sync** JANGAN DIUBAH — sudah stabil
+- **SuaraConfig** sudah ada di store — tinggal aktifkan
+- **MateriBlok.tipe** sudah ada — tinggal pakai di template
+- **Flow searah** — tidak ada remedial, tugas guru
+- **Media pembelajaran** — bukan modul, jangan over-engineer
+- Setiap phase: build & test → push git
 
 ---
 
-## 🏗️ Infrastruktur yang Perlu Diupdate Per Phase
-
-### Setiap template baru membutuhkan:
-1. `src/components/canva/page-template/[Nama]Template.tsx` — Komponen template
-2. `src/components/canva/types.ts` — Tambah ke `PageTemplateType` union type
-3. `src/components/canva/page-template/PageTemplate.tsx` — Tambah case di switch
-4. `src/store/canva/template-data.ts` — Tambah case di `buildTemplateData` + `getTemplateLabel`
-5. `src/store/authoring-store.ts` atau slice baru — Data store untuk konten
-6. `src/components/canva/Stage.tsx` — Tambah icon di `templateIcon` map
-7. `src/export/ExportApp.tsx` — Tambah icon di `TEMPLATE_ICON` map + `getNextLabel`
-8. `src/lib/canva-constants.ts` — Tambah ke `populateTemplateElements` jika perlu
-9. Panel Konten di sidebar — Form input untuk data template
-10. Template selector — Card untuk pilih template baru
-
----
-
-## 📌 Catatan Penting
-
-- **4-Layer Sync** (buildTemplateData → syncTemplateData → orphan cleanup → auto-subscription) **JANGAN DIUBAH** — sudah stabil
-- Semua nav button menggunakan `TemplateNavButton` komponen — konsisten
-- Guard pattern: `useInteractiveStore.getState().mode !== 'interactive'` — hanya navigasi di Play/Export
-- Template baru harus mengikuti pola `SubTemplateProps` yang sudah ada
-- Setiap phase harus di-build dan di-test sebelum lanjut ke phase berikutnya
-- Push ke git setelah setiap phase selesai
-
----
-
-*Roadmap ini akan diupdate seiring progres implementasi.*
+*Roadmap diupdate berdasarkan diskusi 10 Mei 2026.*
