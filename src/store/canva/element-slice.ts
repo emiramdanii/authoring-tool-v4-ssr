@@ -15,7 +15,7 @@ import { resolveModule, generateKuisId } from '@/lib/module-resolver';
 
 export type ElementSlice = Pick<
   CanvaState,
-  | 'addElement' | 'addKuisElement' | 'addGameElement' | 'selectElement'
+  | 'addElement' | 'addKuisElement' | 'addGameElement' | 'addModuleElement' | 'selectElement'
   | 'toggleElementSelection' | 'selectAllElements' | 'clearSelection' | 'deleteSelectedElements'
   | 'updateElement' | 'deleteElement' | 'deleteSelected'
   | 'toggleElementVisibility' | 'saveTextContent' | 'moveElementZ'
@@ -157,6 +157,41 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     }
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
+  },
+
+  addModuleElement: (dataIdx, moduleId, layoutVariant) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    const modules = useAuthoringStore.getState().modules;
+    const mod = resolveModule({ dataIdx, moduleId } as CanvaElement, modules);
+    const typeInfo = { icon: getModuleIcon(mod?.type as string || ''), name: (mod?.title as string) || (mod?.type as string) || 'Modul' };
+    const el: CanvaElement = {
+      id: createElId(),
+      type: 'modul',
+      icon: typeInfo.icon,
+      label: typeInfo.name,
+      x: 5, y: 10, w: 90, h: 60,
+      opacity: 100,
+      dataIdx,
+      moduleId: moduleId || (mod?._id as string) || undefined,
+      layoutVariant: layoutVariant || (mod?.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A',
+    };
+    const newPages = [...pages];
+    if (isLockedTemplatePage(page.templateType, page.locked)) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: [...(page.overlayElements || []), el],
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: [...page.elements, el],
+      };
+    }
+    get()._pushHistory();
+    set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
+    toast.success(`${typeInfo.name} ditambahkan`);
   },
 
   selectElement: (elId) => set({ selectedElId: elId, selectedElIds: elId ? [elId] : [] }),

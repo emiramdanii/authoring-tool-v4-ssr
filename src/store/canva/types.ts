@@ -91,6 +91,7 @@ export interface CanvaState {
   addElement: (type: string, x?: number, y?: number) => void;
   addKuisElement: (idx: number) => void;
   addGameElement: (idx: number) => void;
+  addModuleElement: (dataIdx: number, moduleId?: string, layoutVariant?: 'A' | 'B' | 'C' | 'D') => void;
   selectElement: (elId: string | null) => void;
   // Phase 4: Multi-select actions
   toggleElementSelection: (elId: string) => void;

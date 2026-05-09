@@ -6,7 +6,6 @@ import {
   Plus,
   Copy,
   Trash2,
-  GripVertical,
   PanelRightOpen,
   PanelRightClose,
   Lock,
@@ -14,16 +13,14 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import type { CanvaElement, LeftTab, PageTemplateType } from './types';
+import type { LeftTab, PageTemplateType } from './types';
 import { TEMPLATE_TYPES, RATIOS } from './types';
 import {
   TEMPLATE_BADGE_MAP,
-  ELEMENT_TYPE_COLORS,
   getModuleIcon,
   getGameIcon,
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-constants';
-import { toast } from 'sonner';
 import PageTypeCreator from './PageTypeCreator';
 
 // ═══════════════════════════════════════════════════════════════
@@ -251,7 +248,7 @@ function HalamanContent() {
    ══════════════════════════════════════════════════════════════════ */
 
 function TambahContent() {
-  const { addTemplatePage, addElement, addKuisElement, addGameElement, resetCanvas } = useCanvaStore();
+  const { addTemplatePage, addElement, addKuisElement, addGameElement, addModuleElement, resetCanvas } = useCanvaStore();
   const authStore = useAuthoringStore();
   const kuis = authStore.kuis.filter(k => k.q.trim());
   const games = authStore.modules.filter((m: Record<string, unknown>) =>
@@ -264,43 +261,6 @@ function TambahContent() {
   const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const isTemplatePage = page?.templateType && page.templateType !== 'custom';
   const isPageLocked = page?.locked !== false; // true or undefined = locked
-
-  // Handle adding module element (works on ALL pages including template)
-  // Uses same logic as element-slice: locked template → overlayElements, else → elements
-  const handleAddModule = (m: Record<string, unknown>, mIdx: number) => {
-    const store = useCanvaStore.getState();
-    const pages = store.pages;
-    const page = pages[store.currentPageIndex];
-    if (!page) return;
-    const isLockedTmpl = page.templateType && page.templateType !== 'custom' && page.locked !== false;
-    const typeInfo = { icon: getModuleIcon(m.type as string), name: (m.title as string) || (m.type as string) };
-    const el: CanvaElement = {
-      id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      type: 'modul',
-      icon: typeInfo.icon,
-      label: typeInfo.name,
-      x: 5, y: 10, w: 90, h: 60,
-      opacity: 100,
-      dataIdx: mIdx,
-      moduleId: (m._id as string) || undefined,
-      layoutVariant: (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A',
-    };
-    const newPages = [...pages];
-    if (isLockedTmpl) {
-      newPages[store.currentPageIndex] = {
-        ...page,
-        overlayElements: [...(page.overlayElements || []), el],
-      };
-    } else {
-      newPages[store.currentPageIndex] = {
-        ...page,
-        elements: [...page.elements, el],
-      };
-    }
-    store._pushHistory();
-    useCanvaStore.setState({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
-    toast.success(`${typeInfo.name} ditambahkan`);
-  };
 
   const categories = [
     { key: 'utama', label: 'Halaman Utama' },
@@ -362,7 +322,7 @@ function TambahContent() {
               return (
                 <button
                   key={i}
-                  onClick={() => handleAddModule(m as Record<string, unknown>, mIdx)}
+                  onClick={() => addModuleElement(mIdx, (m._id as string) || undefined, (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A')}
                   className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 active:scale-95 transition-transform"
                 >
                   <span className="text-lg">{getModuleIcon(m.type as string)}</span>

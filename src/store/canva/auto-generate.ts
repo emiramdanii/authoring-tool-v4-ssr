@@ -220,8 +220,8 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     // Set navbar/timer config on all pages
     newPages.forEach(p => {
       if (p.templateData && typeof p.templateData === 'object') {
-        (p.templateData as Record<string, unknown>).navbar = blueprint.navbar;
-        (p.templateData as Record<string, unknown>).timer = blueprint.timer;
+        p.templateData.navbar = blueprint.navbar;
+        p.templateData.timer = blueprint.timer;
       }
     });
 
