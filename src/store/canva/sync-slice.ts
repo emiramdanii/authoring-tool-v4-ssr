@@ -140,7 +140,20 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
     });
 
     if (changed) {
-      set({ pages: newPages });
+      // Sync is auto-triggered, not a user action.
+      // Update the current history snapshot so undo goes back
+      // to the user's last manual action, not a stale pre-sync state.
+      const { _history, _historyIdx } = get();
+      if (_history.length > 0 && _historyIdx >= 0) {
+        const updatedHistory = [..._history];
+        updatedHistory[_historyIdx] = {
+          ...updatedHistory[_historyIdx],
+          pages: structuredClone(newPages),
+        };
+        set({ pages: newPages, _history: updatedHistory });
+      } else {
+        set({ pages: newPages });
+      }
     }
   },
 });

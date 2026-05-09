@@ -55,10 +55,21 @@ export function usePreviewBuilder(
   const canvaRatioId = useCanvaStore((s) => s.ratioId);
 
   // ── Compute dataHash ───────────────────────────────────────
+  // Exclude bgDataUrl from hash — base64 images are huge and slow down stringify.
+  // Changes to bgDataUrl still trigger rebuild via the canvaPages dependency.
   const dataHash = useMemo(() => {
+    const pagesLite = canvaPages.map(p => ({
+      ...p,
+      bgDataUrl: p.bgDataUrl ? `[img:${p.bgDataUrl.length}]` : null,
+      elements: p.elements.map(e => ({
+        ...e,
+        // Exclude large text content from hash
+        text: e.text ? `[text:${e.text.length}]` : undefined,
+      })),
+    }));
     return simpleHash(
       JSON.stringify({
-        pages: canvaPages,
+        pages: pagesLite,
         ratioId: canvaRatioId,
         meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
         petunjuk, diskusi, refleksi, penutup, layoutTheme, previewMode,

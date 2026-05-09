@@ -43,6 +43,9 @@ export interface CanvaElement {
   dataIdx?: number;
   // Layout variant for module rendering
   layoutVariant?: 'A' | 'B' | 'C' | 'D';
+  // ── Text styling (teks element) ──
+  textAlign?: 'left' | 'center' | 'right';
+  fontWeight?: number; // 100-900
   // ── Placeholder flag (v4 — Unlock Mechanism) ──
   // Elements created by populateTemplateElements() for export compat.
   // They fill the entire page (x:0,y:0,w:100,h:100) and should NOT

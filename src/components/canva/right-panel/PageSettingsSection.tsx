@@ -23,6 +23,7 @@ interface PageSettingsSectionProps {
   setGridSize: (size: number) => void;
   toggleSnap: () => void;
   unlockPage: () => void;
+  relockPage: () => void;
   collapsed: boolean;
   onToggle: () => void;
 }
@@ -41,6 +42,7 @@ export default function PageSettingsSection({
   setGridSize,
   toggleSnap,
   unlockPage,
+  relockPage,
   collapsed,
   onToggle,
 }: PageSettingsSectionProps) {
@@ -140,8 +142,8 @@ export default function PageSettingsSection({
               </button>
             </div>
           ) : (
-            // UNLOCKED — show status badge
-            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 space-y-1">
+            // UNLOCKED — show status badge + re-lock button
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 space-y-2">
               <div className="flex items-center gap-1.5">
                 <Unlock size={12} className="text-emerald-400" />
                 <span className="text-[10px] font-bold text-emerald-300">Terbuka — Edit bebas</span>
@@ -149,6 +151,24 @@ export default function PageSettingsSection({
               <div className="text-[8px] text-emerald-400/60">
                 Template beku sebagai background. Data TIDAK auto-update. Semua elemen bisa diedit.
               </div>
+              <button
+                onClick={() => {
+                  if (confirm(
+                    'Kunci kembali halaman ini?\n\n' +
+                    '⚠️ Konsekuensi:\n' +
+                    '• Data template akan diperbarui dari panel authoring\n' +
+                    '• Semua perubahan manual pada elemen akan hilang\n' +
+                    '• Auto-sync kembali aktif\n\n' +
+                    'Tindakan ini bisa di-undo (Ctrl+Z).'
+                  )) {
+                    relockPage();
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-bold transition-colors active:scale-95"
+              >
+                <Lock size={11} />
+                Kunci Kembali
+              </button>
             </div>
           )}
         </div>

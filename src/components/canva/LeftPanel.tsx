@@ -98,6 +98,7 @@ function HalamanContent() {
   const { pages, currentPageIndex, goPage, duplicatePage, deletePage, ratioId, reorderPage, setRatio } = useCanvaStore();
   const ratio = useCanvaStore(s => s.currentRatio());
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   return (
     <div className="space-y-3">
@@ -126,19 +127,28 @@ function HalamanContent() {
               onClick={() => goPage(i)}
               draggable
               onDragStart={() => setDragIdx(i)}
-              onDragOver={(e) => e.preventDefault()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverIdx(i);
+              }}
+              onDragLeave={() => setDragOverIdx(null)}
               onDrop={(e) => {
                 e.preventDefault();
                 if (dragIdx !== null && dragIdx !== i) {
                   reorderPage(dragIdx, i);
                 }
                 setDragIdx(null);
+                setDragOverIdx(null);
               }}
-              onDragEnd={() => setDragIdx(null)}
+              onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
               className={`w-full text-left card-hover relative rounded-xl overflow-hidden transition-all ${
-                isActive
-                  ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
-                  : 'hover:ring-1 hover:ring-slate-600'
+                dragIdx === i
+                  ? 'opacity-40 scale-95'
+                  : dragOverIdx === i
+                    ? 'ring-2 ring-amber-400/60 ring-offset-1 ring-offset-slate-950 translate-y-0.5'
+                    : isActive
+                      ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
+                      : 'hover:ring-1 hover:ring-slate-600'
               }`}
             >
               <div className="flex items-center gap-2 p-2">

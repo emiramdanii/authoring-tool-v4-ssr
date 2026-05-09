@@ -37,6 +37,20 @@ export default function CanvaBuilder() {
     return () => { clearTimeout(timer); unsub(); };
   }, []);
 
+  // ── Warn before unload if authoring data is dirty ────────────
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const authDirty = useAuthoringStore.getState().dirty;
+      if (authDirty) {
+        e.preventDefault();
+        // Modern browsers ignore custom messages, but legacy support
+        e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   const handleMouseMove = useCallback((x: number, y: number) => {
     setMousePos({ x, y });
   }, []);

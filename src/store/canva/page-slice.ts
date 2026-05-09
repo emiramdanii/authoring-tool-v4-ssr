@@ -17,7 +17,7 @@ export type PageSlice = Pick<
   CanvaState,
   | 'goPage' | 'addPage' | 'addTemplatePage' | 'duplicatePage'
   | 'deletePage' | 'setPageLabel' | 'setTemplateType' | 'reorderPage'
-  | 'unlockPage'
+  | 'unlockPage' | 'relockPage'
 >;
 
 export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set, get) => ({
@@ -164,5 +164,37 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     };
     set({ pages: newPages, selectedElId: null });
     toast.success(`🔒→🔓 ${page.label} dibuka kuncinya — template beku, semua elemen bisa diedit`);
+  },
+
+  relockPage: () => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    // Only unlocked template pages can be re-locked
+    const isTemplate = page.templateType && page.templateType !== 'custom';
+    if (!isTemplate) {
+      toast.warning('Halaman ini bukan template');
+      return;
+    }
+    if (page.locked !== false) {
+      toast.info('Halaman ini sudah terkunci');
+      return;
+    }
+
+    get()._pushHistory();
+    const newPages = [...pages];
+    // Re-lock: refresh templateData from authoring, reset to locked template mode
+    const freshTemplateData = buildTemplateData(page.templateType);
+    const newPage: CanvaPage = {
+      ...page,
+      locked: true,
+      templateData: freshTemplateData,
+      overlayElements: [], // Reset overlays — sync will rebuild if needed
+      elements: populateTemplateElements({ ...page, templateData: freshTemplateData }, createElId),
+    };
+    Object.assign(newPage, getTemplateExtraProps(page.templateType));
+    newPages[currentPageIndex] = newPage;
+    set({ pages: newPages, selectedElId: null });
+    toast.success(`🔓→🔒 ${page.label} dikunci kembali — auto-sync aktif, data diperbarui dari authoring`);
   },
 });

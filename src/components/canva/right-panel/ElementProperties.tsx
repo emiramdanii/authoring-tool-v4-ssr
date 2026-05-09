@@ -80,6 +80,48 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
         {selectedEl.type === 'teks' && (
           <>
             <PropInput label="Font" value={selectedEl.fontSize || 20} min={8} max={72} onChange={v => updateElement(selectedEl.id, { fontSize: v })} />
+            {/* Font weight */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] text-slate-500 w-14">Tebal</span>
+              <div className="flex gap-0.5 flex-1">
+                {[400, 700, 900].map(w => (
+                  <button
+                    key={w}
+                    onClick={() => updateElement(selectedEl.id, { fontWeight: w })}
+                    className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-colors ${
+                      (selectedEl.fontWeight || 700) === w
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-slate-800/40 text-slate-400 border border-slate-700/20 hover:border-slate-600'
+                    }`}
+                  >
+                    {w === 400 ? 'Ringan' : w === 700 ? 'Sedang' : 'Tebal'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Text alignment */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] text-slate-500 w-14">Rata</span>
+              <div className="flex gap-0.5 flex-1">
+                {([
+                  { val: 'left' as const, icon: '⬅' },
+                  { val: 'center' as const, icon: '⬌' },
+                  { val: 'right' as const, icon: '➡' },
+                ]).map(a => (
+                  <button
+                    key={a.val}
+                    onClick={() => updateElement(selectedEl.id, { textAlign: a.val })}
+                    className={`flex-1 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                      (selectedEl.textAlign || 'left') === a.val
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-slate-800/40 text-slate-400 border border-slate-700/20 hover:border-slate-600'
+                    }`}
+                  >
+                    {a.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] text-slate-500 w-14">Warna</span>
               <input
