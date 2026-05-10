@@ -35,7 +35,7 @@ import LivePreview from './LivePreview';
 const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-slate-950">
+    <div className="h-full w-full flex items-center justify-center bg-slate-900">
       <div className="text-center">
         <Palette className="mx-auto mb-4 size-10 text-amber-400 animate-pulse" />
         <div className="text-slate-400 text-sm">Memuat Canva Editor...</div>
@@ -217,7 +217,7 @@ export default function AuthoringTool() {
   }, [tourStep, dismissTour]);
 
   return (
-    <div className="h-screen w-screen flex bg-slate-950 text-slate-200 overflow-hidden">
+    <div className="h-screen w-screen flex bg-slate-900 text-slate-200 overflow-hidden">
       {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside
         className={`${
@@ -389,7 +389,7 @@ export default function AuthoringTool() {
         {/* ── Content ──────────────────────────────────────── */}
         <main
           className={`flex-1 ${
-            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-slate-950'
+            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-slate-900'
           }`}
         >
           {renderPanel()}
