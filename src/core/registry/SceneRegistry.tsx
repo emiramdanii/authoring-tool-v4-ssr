@@ -12,8 +12,8 @@
 // No need to modify SchemaBlockRenderer anymore.
 
 import React from 'react';
-import type { SchemaBlock } from '../schema/types';
-import type { SchemaRenderMode, TokenResolver } from '../renderer/types';
+// Note: SchemaBlock & TokenResolver types available from sibling modules if needed
+import type { PropertySchema } from '../editor/types';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK CAPABILITIES
@@ -89,23 +89,12 @@ export interface BlockDefinition {
   defaultLayout: SceneBlockLayout;
   /** Which template types commonly use this block */
   usedInTemplates: string[];
+  /** Property schema for dynamic editing — auto-generates the property panel form */
+  propertySchema: PropertySchema;
   /** Renderer component — uses `any` because each renderer has specific block type props.
    *  The registry guarantees type-safe mapping: block.type → correct renderer.
-   *  The generic BlockRendererProps is only used by RegistryBlockRenderer wrapper.
    */
   renderer: React.ComponentType<any>;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// BLOCK RENDERER PROPS
-// ═══════════════════════════════════════════════════════════════════
-
-export interface BlockRendererProps {
-  block: SchemaBlock;
-  mode: SchemaRenderMode;
-  tokens: TokenResolver;
-  interactive?: boolean;
-  isCompact?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -135,6 +124,27 @@ import {
   TabelAccordionRenderer,
 } from '../renderer/blocks';
 
+import {
+  COVER_PROPERTY_SCHEMA,
+  PETUNJUK_PROPERTY_SCHEMA,
+  TP_PROPERTY_SCHEMA,
+  ALUR_PROPERTY_SCHEMA,
+  SKENARIO_PROPERTY_SCHEMA,
+  DEFBOX_PROPERTY_SCHEMA,
+  NCGRID_PROPERTY_SCHEMA,
+  FLASHCARD_PROPERTY_SCHEMA,
+  FTAB_PROPERTY_SCHEMA,
+  NKCARD_PROPERTY_SCHEMA,
+  DISKUSI_PROPERTY_SCHEMA,
+  KUIS_PROPERTY_SCHEMA,
+  SORTIRGAME_PROPERTY_SCHEMA,
+  RODAGAME_PROPERTY_SCHEMA,
+  HASIL_PROPERTY_SCHEMA,
+  REFLEKSI_PROPERTY_SCHEMA,
+  PENUTUP_PROPERTY_SCHEMA,
+  TABELACCORD_PROPERTY_SCHEMA,
+} from '../editor/property-schemas';
+
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK REGISTRY
 // ═══════════════════════════════════════════════════════════════════
@@ -149,6 +159,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
     defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
     usedInTemplates: ['cover'],
+    propertySchema: COVER_PROPERTY_SCHEMA,
     renderer: CoverRenderer,
   },
   'petunjuk': {
@@ -160,6 +171,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['petunjuk'],
+    propertySchema: PETUNJUK_PROPERTY_SCHEMA,
     renderer: PetunjukRenderer,
   },
   'tp': {
@@ -171,6 +183,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
+    propertySchema: TP_PROPERTY_SCHEMA,
     renderer: TpRenderer,
   },
   'alur': {
@@ -182,6 +195,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
+    propertySchema: ALUR_PROPERTY_SCHEMA,
     renderer: AlurRenderer,
   },
   'skenario': {
@@ -193,6 +207,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['skenario'],
+    propertySchema: SKENARIO_PROPERTY_SCHEMA,
     renderer: SkenarioRenderer,
   },
   'def-box': {
@@ -204,6 +219,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
+    propertySchema: DEFBOX_PROPERTY_SCHEMA,
     renderer: DefBoxRenderer,
   },
   'nc-grid': {
@@ -215,6 +231,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi', 'diskusi'],
+    propertySchema: NCGRID_PROPERTY_SCHEMA,
     renderer: NcGridRenderer,
   },
   'flashcard-set': {
@@ -226,6 +243,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
+    propertySchema: FLASHCARD_PROPERTY_SCHEMA,
     renderer: FlashcardRenderer,
   },
   'ftab': {
@@ -237,6 +255,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, composite: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
+    propertySchema: FTAB_PROPERTY_SCHEMA,
     renderer: FtabRenderer,
   },
   'nk-card': {
@@ -248,6 +267,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
+    propertySchema: NKCARD_PROPERTY_SCHEMA,
     renderer: NormaKartuRenderer,
   },
   'diskusi': {
@@ -259,6 +279,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['diskusi'],
+    propertySchema: DISKUSI_PROPERTY_SCHEMA,
     renderer: DiskusiRenderer,
   },
   'kuis': {
@@ -270,6 +291,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['kuis'],
+    propertySchema: KUIS_PROPERTY_SCHEMA,
     renderer: KuisRenderer,
   },
   'sortir-game': {
@@ -281,6 +303,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game'],
+    propertySchema: SORTIRGAME_PROPERTY_SCHEMA,
     renderer: SortirGameRenderer,
   },
   'roda-game': {
@@ -292,6 +315,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game'],
+    propertySchema: RODAGAME_PROPERTY_SCHEMA,
     renderer: RodaGameRenderer,
   },
   'hasil': {
@@ -303,6 +327,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['hasil'],
+    propertySchema: HASIL_PROPERTY_SCHEMA,
     renderer: HasilRenderer,
   },
   'refleksi': {
@@ -314,6 +339,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['refleksi'],
+    propertySchema: REFLEKSI_PROPERTY_SCHEMA,
     renderer: RefleksiRenderer,
   },
   'penutup': {
@@ -325,6 +351,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['penutup'],
+    propertySchema: PENUTUP_PROPERTY_SCHEMA,
     renderer: PenutupRenderer,
   },
   'tabel-accord': {
@@ -336,6 +363,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
+    propertySchema: TABELACCORD_PROPERTY_SCHEMA,
     renderer: TabelAccordionRenderer,
   },
 };
@@ -371,34 +399,15 @@ export function getBlockCapabilities(type: string): BlockCapabilities {
   return SCENE_REGISTRY[type]?.capabilities ?? DEFAULT_CAPABILITIES;
 }
 
-/** Render a block using the registry */
-export function RegistryBlockRenderer({ block, mode, tokens, interactive }: {
-  block: SchemaBlock;
-  mode: SchemaRenderMode;
-  tokens: TokenResolver;
-  interactive?: boolean;
-}) {
-  const definition = SCENE_REGISTRY[block.type];
-
-  if (!definition) {
-    // Fallback: unknown block type
-    return (
-      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-        Unknown block type: {block.type}
-      </div>
-    );
-  }
-
-  const BlockComponent = definition.renderer;
-  const isCompact = mode === 'canvas';
-
-  return (
-    <BlockComponent
-      block={block}
-      mode={mode}
-      tokens={tokens}
-      interactive={interactive}
-      isCompact={isCompact}
-    />
-  );
+/** Get property schema for a block type (for dynamic editing).
+ *  Returns undefined only if the block type is not registered at all. */
+export function getBlockPropertySchema(type: string): PropertySchema | undefined {
+  return SCENE_REGISTRY[type]?.propertySchema;
 }
+
+/** Get all registered block definitions */
+export function getAllBlockDefinitions(): BlockDefinition[] {
+  return Object.values(SCENE_REGISTRY);
+}
+
+

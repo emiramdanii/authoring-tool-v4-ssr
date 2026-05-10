@@ -4,8 +4,6 @@ import React from 'react';
 import type { CanvaPage, CanvaElement } from '../types';
 import { PageFrame, type PageFrameMode } from './PageFrame';
 import { BlockRenderer, type BlockRendererMode } from './BlockRenderer';
-// LEGACY REMOVED: PageTemplate import — all rendering now goes through SchemaScreenRenderer
-// import { PageTemplate } from '../page-template/PageTemplate';
 import { SchemaScreenRenderer, TokenResolver, type SchemaRenderMode } from '@/core/renderer/SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
 import { convertToSchema, paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
@@ -14,20 +12,14 @@ import { useCanvaStore } from '@/store/canva-store';
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
 //
-// SINGLE RENDERING PIPELINE (Dual rendering killed):
+// SINGLE RENDERING PIPELINE:
 //   ALL template pages go through SchemaScreenRenderer.
 //   Legacy pages are converted to ScreenSchema via TemplateAdapter.
-//   PageTemplate is NO LONGER used — visual consistency guaranteed.
 //
 // Usage:
 //   <PageRenderer mode="canvas" page={page} currentPageIndex={0} totalPages={5} />
 //   <PageRenderer mode="preview" page={page} currentPageIndex={0} totalPages={5} />
 //   <PageRenderer mode="export" page={page} currentPageIndex={0} totalPages={5} />
-//
-// Internally handles:
-//   1. PageFrame (background, navbar, content area)
-//   2. Schema-driven rendering (unified — ALL pages, locked & unlocked)
-//   3. BlockRenderer for overlay/extra elements only
 // ═══════════════════════════════════════════════════════════════
 
 export type PageRendererMode = 'canvas' | 'preview' | 'export';
@@ -82,7 +74,6 @@ export function PageRenderer({
 
   // ═══ UNIFIED RENDERING PIPELINE ════════════════════════════
   // ALL template pages (locked & unlocked) go through SchemaRenderer.
-  // Dual rendering is DEAD — no more PageTemplate fallback.
 
   const schemaScreen = page.templateData?.schemaScreen as ScreenSchema | undefined;
   const schemaThemeId = page.templateData?.schemaThemeId as string | undefined;
@@ -141,16 +132,24 @@ export function PageRenderer({
 
   // Block selection handler for canvas editing overlay
   const selectBlock = useCanvaStore(s => s.selectBlock);
+  const hoverBlock = useCanvaStore(s => s.hoverBlock);
+  const startEditing = useCanvaStore(s => s.startEditing);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const hoveredBlockId = useCanvaStore(s => s.hoveredBlockId);
+  const editingBlockId = useCanvaStore(s => s.editingBlockId);
   const handleBlockSelect = React.useCallback((blockId: string, blockType: string) => {
     selectBlock(blockId, blockType);
   }, [selectBlock]);
+  const handleBlockHover = React.useCallback((blockId: string | null) => {
+    hoverBlock(blockId);
+  }, [hoverBlock]);
+  const handleBlockEdit = React.useCallback((blockId: string, blockType: string) => {
+    startEditing(blockId);
+  }, [startEditing]);
 
   const content = (
     <>
-      {/* ══ SINGLE PIPELINE: Schema-driven rendering ══════════ */}
-      {/* ALL template pages (locked & unlocked) go through this path */}
-      {/* Dual rendering is DEAD — PageTemplate is no longer used */}
+      {/* Schema-driven rendering for ALL template pages */}
       {useSchemaRenderer && adaptedSchema && (
         <SchemaScreenRenderer
           screen={adaptedSchema}
@@ -158,19 +157,15 @@ export function PageRenderer({
           tokens={tokens}
           interactive={interactive}
           selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
+          hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
+          editingBlockId={mode === 'canvas' ? editingBlockId : undefined}
           onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
+          onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
+          onBlockEdit={mode === 'canvas' ? handleBlockEdit : undefined}
         />
       )}
 
-      {/* Unlocked template: render schema as static background + overlay */}
-      {/* For unlocked templates, SchemaScreenRenderer renders the content, */}
-      {/* and extraElements (user-added elements) render on top via PageFrame */}
-
-      {/* Custom mode: no template content */}
-      {!isTemplate && null}
-
-      {/* Template without schema data (shouldn't happen after adapter) */}
-      {/* Show a minimal placeholder so the page isn't blank */}
+      {/* Template without schema data — minimal placeholder */}
       {isTemplate && !useSchemaRenderer && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white/30 text-sm">
           <div className="text-2xl mb-2">📄</div>

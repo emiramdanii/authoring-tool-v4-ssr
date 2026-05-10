@@ -112,7 +112,7 @@ export interface CanvaPage {
   locked?: boolean;
 }
 
-export type LeftTab = 'halaman' | 'tambah';
+export type LeftTab = 'halaman' | 'tambah' | 'layer';
 /** @deprecated Legacy tab names — used only for localStorage migration */
 export type LegacyLeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers' | 'rakit' | 'layer';
 export type Tool = 'select' | 'text';

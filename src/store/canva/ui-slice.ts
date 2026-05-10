@@ -3,10 +3,15 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { toast } from 'sonner';
+import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { CanvaElement } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
+import { convertToSchema } from '@/core/engine/TemplateAdapter';
+import { deepMergeBlock } from '@/core/editor/deep-merge';
+import type { SchemaBlock } from '@/core/schema/types';
+import { editBus } from '@/core/editor/edit-bus';
 
 export type UISlice = Pick<
   CanvaState,
@@ -15,7 +20,8 @@ export type UISlice = Pick<
   | 'applyLayoutPreset' | 'currentLayoutPreset'
   | 'setZoom' | 'zoomDelta' | 'setRatio' | 'nudgeSelected'
   | 'alignSelected' | 'distributeSelected'
-  | 'clearStage' | 'selectBlock'
+  | 'clearStage' | 'selectBlock' | 'updateSchemaBlock'
+  | 'hoverBlock' | 'startEditing' | 'stopEditing'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
@@ -25,12 +31,126 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   toggleRightPanel: () => set(s => ({ rightPanelOpen: !s.rightPanelOpen })),
 
   // ── Schema Block Selection ───────────────────────────────────
-  selectBlock: (blockId, blockType) => set({
-    selectedBlockId: blockId ?? null,
-    selectedBlockType: blockType ?? null,
-    // When selecting a block, clear element selection to avoid confusion
-    ...(blockId ? { selectedElId: null, selectedElIds: [] } : {}),
-  }),
+  // Central selection action — sets the editing context for a block.
+  // Clears element selection when a block is selected (mutual exclusion).
+  selectBlock: (blockId, blockType) => {
+    editBus.emit({ type: 'select', blockId: blockId ?? null, blockType: blockType ?? null });
+    set({
+      selectedBlockId: blockId ?? null,
+      selectedBlockType: blockType ?? null,
+      // Clear editing state when changing selection
+      editingBlockId: null,
+      // When selecting a block, clear element selection to avoid confusion
+      ...(blockId ? { selectedElId: null, selectedElIds: [] } : {}),
+    });
+  },
+
+  // ── Schema Block Hover Context ────────────────────────────────
+  // Tracks which block the cursor is over — for hover effects,
+  // layer panel highlighting, and future multi-select support.
+  hoverBlock: (blockId) => {
+    editBus.emit({ type: 'hover', blockId: blockId ?? null });
+    set({ hoveredBlockId: blockId ?? null });
+  },
+
+  // ── Inline Editing Context ────────────────────────────────────
+  // Double-click a text block → enter inline editing mode.
+  // The editing overlay reads editingBlockId to show a floating editor.
+  startEditing: (blockId) => {
+    const blockType = get().selectedBlockType;
+    editBus.emit({ type: 'edit-start', blockId, blockType: blockType ?? 'unknown' });
+    set({ editingBlockId: blockId });
+  },
+  stopEditing: () => {
+    const prevId = get().editingBlockId;
+    if (prevId) editBus.emit({ type: 'edit-end', blockId: prevId });
+    set({ editingBlockId: null });
+  },
+
+  // ── Schema Block Content Editing (DEEP PATCH MERGE) ──────────
+  // This is THE core editing mechanism for the Visual Editing Engine.
+  //
+  // Flow: UI editor → updateSchemaBlock(id, patch) → deep merge → schema store → renderer → rerender
+  //
+  // Key improvements over the old shallow merge:
+  //   1. DEEP MERGE: { style: { color: '#fff' } } only updates style.color, not the entire style object
+  //   2. IMMUTABLE: Uses Immer for safe immutable updates with mutable draft API
+  //   3. UNDO-FRIENDLY: Patches can be reversed (future: store patches, not full snapshots)
+  //   4. COLLAB-READY: Partial updates make collaboration possible (merge patches from multiple users)
+  //
+  // For pages without an existing schemaScreen (legacy adapted pages),
+  // this "freezes" the adapted schema into templateData on first edit.
+  updateSchemaBlock: (blockId, updates) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    // Freeze adapted schema on first edit of legacy page
+    if (!page.templateData?.schemaScreen) {
+      const adapted = convertToSchema(page);
+      if (!adapted) return; // custom pages can't be edited this way
+      // Assign stable IDs to blocks that don't have one
+      const stabilized = produce(adapted, (draft) => {
+        draft.blocks.forEach((block, idx) => {
+          if (!block.id) {
+            block.id = `${block.type}-${idx}`;
+          }
+        });
+      });
+      const frozenPages = [...pages];
+      frozenPages[currentPageIndex] = {
+        ...page,
+        templateData: {
+          ...page.templateData,
+          schemaScreen: stabilized as unknown as Record<string, unknown>,
+        },
+      };
+      set({ pages: frozenPages });
+      // Re-read the page after freeze
+      return get().updateSchemaBlock(blockId, updates);
+    }
+
+    const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    if (!Array.isArray(blocks)) return;
+
+    const blockIdx = blocks.findIndex(b => b.id === blockId);
+    if (blockIdx === -1) return;
+
+    // Push history BEFORE the edit (for undo)
+    get()._pushHistory();
+
+    // ═══ DEEP PATCH MERGE via Immer ═══════════════════════════
+    // Instead of shallow merge: { ...block, ...updates }
+    // We use deepMergeBlock which recursively merges nested objects
+    // while preserving unmodified properties at every level.
+    const mergedBlock = deepMergeBlock(blocks[blockIdx], updates);
+    const newBlocks = [...blocks];
+    newBlocks[blockIdx] = mergedBlock;
+
+    // Emit patch event for edit pipeline
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId,
+        blockType: blocks[blockIdx].type,
+        pageIndex: currentPageIndex,
+        patch: updates,
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+  },
 
   // ── Grid & Snap ──────────────────────────────────────────────
   toggleGrid: () => set(s => ({ showGrid: !s.showGrid })),

@@ -10,6 +10,7 @@ import {
   PanelRightClose,
   Lock,
   Unlock,
+  Layers,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -22,14 +23,16 @@ import {
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import PageTypeCreator from './PageTypeCreator';
+import LayerPanel from './left-panel/LayerPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
 
 // ═══════════════════════════════════════════════════════════════
-// Left Panel — 2 tabs only: Halaman (view & arrange) + Tambah (add)
+// Left Panel — 3 tabs: Halaman (view & arrange) + Layer (schema blocks) + Tambah (add)
 // ═══════════════════════════════════════════════════════════════
 
 const TABS: { id: LeftTab; label: string; icon: React.ReactNode }[] = [
   { id: 'halaman', label: 'Halaman', icon: <FileText size={16} /> },
+  { id: 'layer', label: 'Layer', icon: <Layers size={16} /> },
   { id: 'tambah', label: 'Tambah', icon: <Plus size={16} /> },
 ];
 
@@ -62,6 +65,7 @@ export default function LeftPanel() {
       {/* Tab content */}
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar page-transition">
         {leftTab === 'halaman' && <HalamanContent />}
+        {leftTab === 'layer' && <LayerPanel />}
         {leftTab === 'tambah' && <TambahContent />}
       </div>
 

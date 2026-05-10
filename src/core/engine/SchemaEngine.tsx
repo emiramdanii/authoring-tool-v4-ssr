@@ -88,17 +88,25 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
 }> {
   const tokens = resolveTokens(schema.themeId);
 
-  return schema.screens.map((screen, i) => ({
-    id: `schema-${schema.id}-${screen.id}`,
-    label: screen.sectionLabel || `Layar ${i + 1}`,
-    templateType: screen.templateType,
-    bgColor: tokens.colors.bg,
-    // Store the full ScreenSchema in templateData so PageRenderer
-    // can detect it and use SchemaScreenRenderer instead of PageTemplate.
-    // Also store schemaThemeId so TokenResolver uses the correct theme.
-    templateData: {
-      schemaScreen: screen,
-      schemaThemeId: schema.themeId,
-    },
-  }));
+  return schema.screens.map((screen, i) => {
+    // Ensure every block has a stable ID for the edit pipeline
+    const stabilizedBlocks = screen.blocks.map((block, bIdx) => ({
+      ...block,
+      id: block.id || `${screen.templateType}-${block.type}-${bIdx}`,
+    }));
+
+    return {
+      id: `schema-${schema.id}-${screen.id}`,
+      label: screen.sectionLabel || `Layar ${i + 1}`,
+      templateType: screen.templateType,
+      bgColor: tokens.colors.bg,
+      // Store the full ScreenSchema in templateData so PageRenderer
+      // can detect it and use SchemaScreenRenderer instead of PageTemplate.
+      // Also store schemaThemeId so TokenResolver uses the correct theme.
+      templateData: {
+        schemaScreen: { ...screen, blocks: stabilizedBlocks },
+        schemaThemeId: schema.themeId,
+      },
+    };
+  });
 }

@@ -34,11 +34,19 @@ export interface ScreenRendererProps {
   interactive?: boolean;
   /** Currently selected block ID (canvas mode only — for editing overlay) */
   selectedBlockId?: string | null;
+  /** Currently hovered block ID (canvas mode only — for hover effects) */
+  hoveredBlockId?: string | null;
+  /** Currently editing block ID (canvas mode only — inline editing) */
+  editingBlockId?: string | null;
   /** Callback when a block is clicked (canvas mode only) */
   onBlockSelect?: (blockId: string, blockType: string) => void;
+  /** Callback when a block is hovered (canvas mode only) */
+  onBlockHover?: (blockId: string | null) => void;
+  /** Callback when a block is double-clicked for inline editing (canvas mode only) */
+  onBlockEdit?: (blockId: string, blockType: string) => void;
 }
 
-export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, onBlockSelect }: ScreenRendererProps) {
+export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit }: ScreenRendererProps) {
   const hasCoverBlock = screen.blocks.length === 1 && screen.blocks[0].type === 'cover';
 
   // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
@@ -79,17 +87,24 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
       {/* ══ FLOW BLOCKS: vertical stack, scrollable ══════════════ */}
       <div className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${hasCoverBlock ? '' : 'px-4 py-5'}`}
         style={hasCoverBlock ? undefined : { maxWidth: 860, margin: '0 auto', width: '100%' }}>
-        {flowBlocks.map((block, i) => (
-          <SchemaBlockRenderer
-            key={block.id || `flow-${i}`}
-            block={block}
-            mode={mode}
-            tokens={tokens}
-            interactive={interactive}
-            isSelected={block.id ? block.id === selectedBlockId : false}
-            onSelect={onBlockSelect}
-          />
-        ))}
+        {flowBlocks.map((block, i) => {
+          const blockKey = block.id || `flow-${block.type}-${i}`;
+          return (
+            <SchemaBlockRenderer
+              key={blockKey}
+              block={block}
+              mode={mode}
+              tokens={tokens}
+              interactive={interactive}
+              isSelected={block.id ? block.id === selectedBlockId : (block.type === selectedBlockId)}
+              isHovered={block.id ? block.id === hoveredBlockId : (block.type === hoveredBlockId)}
+              isEditing={block.id ? block.id === editingBlockId : (block.type === editingBlockId)}
+              onSelect={onBlockSelect}
+              onHover={onBlockHover}
+              onEdit={onBlockEdit}
+            />
+          );
+        })}
       </div>
 
       {/* ══ ABSOLUTE BLOCKS: positioned overlay layer ════════════ */}
@@ -107,15 +122,20 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
               zIndex: layout.zIndex,
               transform: layout.rotation ? `rotate(${layout.rotation}deg)` : undefined,
             };
+            const blockKey = block.id || `abs-${block.type}-${i}`;
             return (
-              <div key={block.id || `abs-${i}`} style={absStyle}>
+              <div key={blockKey} style={absStyle}>
                 <SchemaBlockRenderer
                   block={block}
                   mode={mode}
                   tokens={tokens}
                   interactive={interactive}
-                  isSelected={block.id ? block.id === selectedBlockId : false}
+                  isSelected={block.id ? block.id === selectedBlockId : (block.type === selectedBlockId)}
+                  isHovered={block.id ? block.id === hoveredBlockId : (block.type === hoveredBlockId)}
+                  isEditing={block.id ? block.id === editingBlockId : (block.type === editingBlockId)}
                   onSelect={onBlockSelect}
+                  onHover={onBlockHover}
+                  onEdit={onBlockEdit}
                 />
               </div>
             );
@@ -140,19 +160,48 @@ export interface BlockRenderProps {
   interactive?: boolean;
   /** Whether this block is selected in the canvas editor */
   isSelected?: boolean;
+  /** Whether this block is hovered in the canvas editor */
+  isHovered?: boolean;
+  /** Whether this block is in inline editing mode */
+  isEditing?: boolean;
   /** Callback when this block is clicked (canvas mode) */
   onSelect?: (blockId: string, blockType: string) => void;
+  /** Callback when this block is hovered (canvas mode) */
+  onHover?: (blockId: string | null) => void;
+  /** Callback when this block is double-clicked for inline editing */
+  onEdit?: (blockId: string, blockType: string) => void;
 }
 
-export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, onSelect }: BlockRenderProps) {
+export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
-  const blockId = block.id || `${block.type}-${Math.random().toString(36).slice(2, 6)}`;
+  // ═══ STABLE BLOCK ID ═════════════════════════════════════════
+  // CRITICAL: The block ID must be stable across re-renders.
+  // If block.id is not set (legacy pages), use type as fallback.
+  // The edit pipeline (updateSchemaBlock) finds blocks by ID, so
+  // unstable IDs = edits lost after re-render = broken editing.
+  const blockId = block.id || block.type;
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (mode !== 'canvas' || !onSelect) return;
     e.stopPropagation();
     onSelect(blockId, block.type);
   }, [mode, onSelect, blockId, block.type]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (mode !== 'canvas' || !onHover) return;
+    onHover(blockId);
+  }, [mode, onHover, blockId]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (mode !== 'canvas' || !onHover) return;
+    onHover(null);
+  }, [mode, onHover]);
+
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+    if (mode !== 'canvas' || !onEdit) return;
+    e.stopPropagation();
+    onEdit(blockId, block.type);
+  }, [mode, onEdit, blockId, block.type]);
 
   // ═══ REGISTRY DISPATCH ══════════════════════════════════════
   // SceneRegistry is the SOLE dispatch mechanism.
@@ -164,19 +213,28 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
       <div
         data-block-id={blockId}
         data-block-type={block.type}
-        className={`relative group ${isSelected ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-transparent rounded-lg' : ''} ${isCompact ? 'cursor-pointer' : ''}`}
+        className={`relative group ${isSelected ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-transparent rounded-lg' : ''} ${isHovered && !isSelected ? 'ring-1 ring-blue-400/30 ring-offset-1 ring-offset-transparent rounded-lg' : ''} ${isCompact ? 'cursor-pointer' : ''}`}
         onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onDoubleClick={handleDoubleClick}
       >
-        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} />
+        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
         {/* Selection label in canvas mode */}
         {isSelected && isCompact && (
           <div className="absolute -top-5 left-0 px-1.5 py-0.5 rounded bg-blue-500 text-[8px] font-bold text-white whitespace-nowrap z-30 pointer-events-none">
             {definition.icon} {definition.name}
           </div>
         )}
-        {/* Hover highlight in canvas mode */}
+        {/* Hover highlight in canvas mode — only when not selected */}
         {!isSelected && isCompact && (
           <div className="absolute inset-0 rounded-lg border border-transparent group-hover:border-blue-400/30 pointer-events-none transition-all" />
+        )}
+        {/* Editing indicator */}
+        {isEditing && isCompact && (
+          <div className="absolute -top-5 right-0 px-1.5 py-0.5 rounded bg-emerald-500 text-[8px] font-bold text-white whitespace-nowrap z-30 pointer-events-none">
+            Editing
+          </div>
         )}
       </div>
     );
@@ -191,6 +249,8 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
       data-block-type={block.type}
       className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs"
       onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       Unregistered block type: <strong>{block.type}</strong>
       <br />

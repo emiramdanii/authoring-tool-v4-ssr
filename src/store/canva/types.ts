@@ -39,6 +39,10 @@ export interface CanvaState {
   // Schema block selection — for editing overlay on schema-driven pages
   selectedBlockId: string | null;
   selectedBlockType: string | null;
+  // Hover context — which block the cursor is over (for hover effects, layer panel)
+  hoveredBlockId: string | null;
+  // Editing context — which block is being inline-edited (double-click → edit mode)
+  editingBlockId: string | null;
   leftPanelOpen: boolean;
   rightPanelOpen: boolean;
   toggleLeftPanel: () => void;
@@ -128,6 +132,14 @@ export interface CanvaState {
   nudgeSelected: (dx: number, dy: number) => void;
   // Schema block selection — for editing overlay
   selectBlock: (blockId: string | null, blockType?: string | null) => void;
+  /** Update a schema block's content properties by block ID (deep patch merge) */
+  updateSchemaBlock: (blockId: string, updates: Record<string, unknown>) => void;
+  /** Set hover context for a block (for hover effects, layer panel) */
+  hoverBlock: (blockId: string | null) => void;
+  /** Enter inline editing mode for a block (double-click) */
+  startEditing: (blockId: string) => void;
+  /** Exit inline editing mode */
+  stopEditing: () => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

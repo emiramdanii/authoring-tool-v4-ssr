@@ -158,6 +158,17 @@ export function convertToSchema(page: CanvaPage): ScreenSchema | null {
     blocks.push(convertGenericFallback(td, tt));
   }
 
+  // ═══ STABLE BLOCK IDs ═══════════════════════════════════════
+  // Every block gets a stable, deterministic ID so that the edit
+  // pipeline (updateSchemaBlock) can find blocks reliably.
+  // Format: {templateType}-{blockType}-{index}
+  // This prevents the position-based fallback that breaks on reorder.
+  blocks.forEach((block, idx) => {
+    if (!block.id) {
+      block.id = `${tt}-${block.type}-${idx}`;
+    }
+  });
+
   return {
     id: page.id,
     templateType: tt,
