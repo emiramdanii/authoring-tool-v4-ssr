@@ -8,6 +8,7 @@ import BackgroundSection from './BackgroundSection';
 import PaletteSection from './PaletteSection';
 import NavigationSection from './NavigationSection';
 import PageSettingsSection from './PageSettingsSection';
+import BlockPropertiesPanel from './BlockPropertiesPanel';
 import {
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
@@ -55,6 +56,7 @@ export default function RightPanel() {
   const selectedElIds = useCanvaStore((s) => s.selectedElIds);
   const alignSelected = useCanvaStore((s) => s.alignSelected);
   const distributeSelected = useCanvaStore((s) => s.distributeSelected);
+  const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
 
   const page = pages[currentPageIndex];
   // Also search overlayElements for the selected element
@@ -75,6 +77,9 @@ export default function RightPanel() {
 
   return (
     <div className="w-full flex flex-col glass-panel overflow-y-auto custom-scrollbar">
+
+      {/* ═══ Section 0: Schema Block Properties (when block selected) ═══ */}
+      <BlockPropertiesPanel />
 
       {/* ═══ Section 1: Properti Elemen — ALWAYS VISIBLE (not collapsible) ═══ */}
       {selectedEl && (

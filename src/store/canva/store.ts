@@ -31,6 +31,8 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     leftTab: 'halaman',
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
+    selectedBlockId: null, // Schema block selection for editing overlay
+    selectedBlockType: null,
     // _clipboard is provided by createElementSlice — no duplicate here
     leftPanelOpen: true,
     rightPanelOpen: true,

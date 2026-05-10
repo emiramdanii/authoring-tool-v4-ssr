@@ -15,7 +15,7 @@ export type UISlice = Pick<
   | 'applyLayoutPreset' | 'currentLayoutPreset'
   | 'setZoom' | 'zoomDelta' | 'setRatio' | 'nudgeSelected'
   | 'alignSelected' | 'distributeSelected'
-  | 'clearStage'
+  | 'clearStage' | 'selectBlock'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
@@ -23,6 +23,14 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   setLeftTab: (tab) => set({ leftTab: tab }),
   toggleLeftPanel: () => set(s => ({ leftPanelOpen: !s.leftPanelOpen })),
   toggleRightPanel: () => set(s => ({ rightPanelOpen: !s.rightPanelOpen })),
+
+  // ── Schema Block Selection ───────────────────────────────────
+  selectBlock: (blockId, blockType) => set({
+    selectedBlockId: blockId ?? null,
+    selectedBlockType: blockType ?? null,
+    // When selecting a block, clear element selection to avoid confusion
+    ...(blockId ? { selectedElId: null, selectedElIds: [] } : {}),
+  }),
 
   // ── Grid & Snap ──────────────────────────────────────────────
   toggleGrid: () => set(s => ({ showGrid: !s.showGrid })),

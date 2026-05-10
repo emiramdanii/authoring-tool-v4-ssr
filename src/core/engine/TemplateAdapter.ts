@@ -31,6 +31,8 @@ import type {
   FlashcardSetBlock,
   SortirGameBlock,
   RodaGameBlock,
+  FtabBlock,
+  NormaKartuBlock,
 } from '../schema/types';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -343,6 +345,59 @@ function convertMateri(td: Record<string, unknown>): SchemaBlock[] {
         a: String(fc.a || fc.answer || ''),
       })),
     } as FlashcardSetBlock);
+  }
+
+  // Ftab (tabbed content) — converts tab data from templateData
+  const tabs = (td.tabs || td.ftabTabs) as Array<Record<string, unknown>> | undefined;
+  if (tabs && tabs.length > 0 && (td.tabs || td.ftabTabs)) {
+    blocks.push({
+      type: 'ftab',
+      tabs: tabs.map((tab) => ({
+        icon: String(tab.icon || '📑'),
+        label: String(tab.label || tab.title || ''),
+        content: ((tab.content || tab.blocks) as Array<Record<string, unknown>> || []).map((b) => ({
+          type: String(b.type || 'def-box'),
+          borderColor: String(b.borderColor || b.color || 'y'),
+          content: String(b.content || b.text || ''),
+        })),
+      })),
+      showReadMarker: td.showReadMarker ? Boolean(td.showReadMarker) : undefined,
+      showProgress: td.showProgress ? Boolean(td.showProgress) : undefined,
+    } as FtabBlock);
+  }
+
+  // Norma Kartu (detailed norma card) — converts detailed card data
+  const nkCards = (td.nkCards || td.normaKartu) as Array<Record<string, unknown>> | undefined;
+  if (nkCards && nkCards.length > 0 && (td.nkCards || td.normaKartu)) {
+    nkCards.forEach((card) => {
+      blocks.push({
+        type: 'nk-card',
+        normaType: String(card.normaType || card.type || ''),
+        icon: String(card.icon || '📜'),
+        title: String(card.title || ''),
+        label: String(card.label || ''),
+        definition: String(card.definition || card.desc || ''),
+        characteristics: ((card.characteristics || card.chars) as Array<Record<string, unknown>> || []).map((c) => ({
+          label: String(c.label || ''),
+          value: String(c.value || ''),
+        })),
+        sanksi: {
+          title: String((card.sanksi as Record<string, unknown>)?.title || 'Sanksi'),
+          items: (((card.sanksi as Record<string, unknown>)?.items || []) as Array<Record<string, unknown>>).map((s) => ({
+            dot: String(s.dot || s.color || 'r'),
+            text: String(s.text || ''),
+          })),
+        },
+        contoh: String(card.contoh || card.example || ''),
+        pelanggaran: card.pelanggaran ? {
+          title: String((card.pelanggaran as Record<string, unknown>).title || 'Pelanggaran'),
+          items: (((card.pelanggaran as Record<string, unknown>).items || []) as Array<Record<string, unknown>>).map((p) => ({
+            icon: String(p.icon || '⚠️'),
+            text: String(p.text || ''),
+          })),
+        } : undefined,
+      } as NormaKartuBlock);
+    });
   }
 
   // If no specific blocks, create a generic def-box

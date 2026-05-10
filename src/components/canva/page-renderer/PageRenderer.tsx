@@ -9,8 +9,7 @@ import { BlockRenderer, type BlockRendererMode } from './BlockRenderer';
 import { SchemaScreenRenderer, TokenResolver, type SchemaRenderMode } from '@/core/renderer/SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
 import { convertToSchema, paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
-import type { DesignTokens } from '@/core/themes/tokens';
-import { DEFAULT_TOKENS } from '@/core/themes/tokens';
+import { useCanvaStore } from '@/store/canva-store';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -140,6 +139,13 @@ export function PageRenderer({
     export: 'export',
   };
 
+  // Block selection handler for canvas editing overlay
+  const selectBlock = useCanvaStore(s => s.selectBlock);
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const handleBlockSelect = React.useCallback((blockId: string, blockType: string) => {
+    selectBlock(blockId, blockType);
+  }, [selectBlock]);
+
   const content = (
     <>
       {/* ══ SINGLE PIPELINE: Schema-driven rendering ══════════ */}
@@ -151,6 +157,8 @@ export function PageRenderer({
           mode={schemaModeMap[mode]}
           tokens={tokens}
           interactive={interactive}
+          selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
+          onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
         />
       )}
 
@@ -231,6 +239,7 @@ export function PageRenderer({
       isSchemaDriven={useSchemaRenderer}
       overlayElements={overlayElements}
       extraElements={extraElements}
+      tokens={tokens}
     >
       {content}
     </PageFrame>

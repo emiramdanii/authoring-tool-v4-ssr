@@ -36,6 +36,9 @@ export interface CanvaState {
   selectedElId: string | null;
   // Phase 4: Multi-select — array of selected element IDs
   selectedElIds: string[];
+  // Schema block selection — for editing overlay on schema-driven pages
+  selectedBlockId: string | null;
+  selectedBlockType: string | null;
   leftPanelOpen: boolean;
   rightPanelOpen: boolean;
   toggleLeftPanel: () => void;
@@ -123,6 +126,8 @@ export interface CanvaState {
   zoomDelta: (delta: number) => void;
   setRatio: (ratioId: string) => void;
   nudgeSelected: (dx: number, dy: number) => void;
+  // Schema block selection — for editing overlay
+  selectBlock: (blockId: string | null, blockType?: string | null) => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

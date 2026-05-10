@@ -9,6 +9,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { TokenResolver } from '@/core/renderer/SchemaRenderer';
 import { alpha } from '@/lib/color-palette';
+import type { SchemaBlock } from '@/core/schema/types';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE FRAME — Unified page shell shared by Canvas, Preview, Export
@@ -47,6 +48,12 @@ export interface PageFrameProps {
   /** Class/style overrides for the root container */
   className?: string;
   style?: React.CSSProperties;
+  /** Shared TokenResolver — passed from PageRenderer to ensure consistency */
+  tokens?: TokenResolver;
+  /** Currently selected schema block ID (canvas mode only) */
+  selectedBlockId?: string | null;
+  /** Callback when a schema block is clicked (canvas mode only) */
+  onBlockSelect?: (blockId: string, blockType: string) => void;
 }
 
 // TEMPLATE_ICON_MAP imported from canva-icon-maps.ts (single source of truth)
@@ -92,6 +99,9 @@ export function PageFrame({
   extraElements,
   className,
   style,
+  tokens: externalTokens,
+  selectedBlockId,
+  onBlockSelect,
 }: PageFrameProps) {
   const navConfig = getNavConfig(page);
   const showNavbar = navConfig.showNavbar !== false;
@@ -104,9 +114,10 @@ export function PageFrame({
   const isCoverPage = page.templateType === 'cover';
   const showBottomNav = showNavbar && !isCoverPage;
 
-  // Resolve theme tokens for consistent styling
+  // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
+  // Fall back to creating one if not provided (backward compat)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
-  const tokens = React.useMemo(() => new TokenResolver(themeId), [themeId]);
+  const tokens = externalTokens || React.useMemo(() => new TokenResolver(themeId), [themeId]);
 
   // Score data
   const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));

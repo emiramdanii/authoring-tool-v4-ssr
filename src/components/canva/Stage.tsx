@@ -65,6 +65,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     snapEnabled,
     snapValue,
     _pushHistory,
+    selectBlock,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
@@ -118,6 +119,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       // Escape — clear selection
       if (e.key === 'Escape') {
         clearSelection();
+        useCanvaStore.getState().selectBlock(null);
         return;
       }
     };
@@ -292,6 +294,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     }
 
     selectElement(null);
+    selectBlock(null);
   };
 
   // Handle template field edit

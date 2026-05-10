@@ -5,17 +5,14 @@
 // and produces visual output using extracted per-block renderers.
 //
 // Block renderers have been extracted to ./blocks/ for maintainability.
-// This file only contains:
-//   - Re-exports (TokenResolver, SchemaRenderMode) from ./types
-//   - SchemaScreenRenderer (screen-level layout)
-//   - SchemaBlockRenderer (dispatcher → registry or switch fallback)
+// Dispatch is handled EXCLUSIVELY by SceneRegistry — no switch fallback.
 //
 // The principle: NEVER store HTML. Store schema. Renderer produces UI.
 
 'use client';
 
-import React from 'react';
-import type { SchemaBlock, ScreenSchema, LessonSchema } from '../schema/types';
+import React, { useCallback } from 'react';
+import type { SchemaBlock, ScreenSchema } from '../schema/types';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -23,61 +20,8 @@ export { TokenResolver } from './types';
 import type { SchemaRenderMode } from './types';
 import type { TokenResolver } from './types';
 
-// Import SceneRegistry for primary dispatch (PRIORITAS 2: ACTIVE)
-import { SCENE_REGISTRY } from '../registry/SceneRegistry';
-
-// Import extracted block renderers for switch fallback (dead-code safety net)
-import {
-  CoverRenderer,
-  PetunjukRenderer,
-  TpRenderer,
-  AlurRenderer,
-  SkenarioRenderer,
-  DefBoxRenderer,
-  NcGridRenderer,
-  FlashcardRenderer,
-  FtabRenderer,
-  NormaKartuRenderer,
-  DiskusiRenderer,
-  KuisRenderer,
-  SortirGameRenderer,
-  RodaGameRenderer,
-  HasilRenderer,
-  RefleksiRenderer,
-  PenutupRenderer,
-  TabelAccordionRenderer,
-} from './blocks';
-
-// Import block types for type casting in switch fallback
-import type {
-  CoverBlock,
-  PetunjukBlock,
-  TpBlock,
-  AlurBlock,
-  SkenarioBlock,
-  DefBoxBlock,
-  NcGridBlock,
-  FlashcardSetBlock,
-  FtabBlock,
-  NormaKartuBlock,
-  DiskusiBlock,
-  KuisBlock,
-  SortirGameBlock,
-  RodaGameBlock,
-  HasilBlock,
-  RefleksiBlock,
-  PenutupBlock,
-  TabelAccordionBlock,
-} from '../schema/types';
-
-// Keep SchemaRendererProps for legacy compat
-export interface SchemaRendererProps {
-  schema: LessonSchema;
-  screenIndex: number;
-  mode: SchemaRenderMode;
-  themeOverride?: string;
-  interactive?: boolean;
-}
+// Import SceneRegistry — the SOLE dispatch mechanism
+import { SCENE_REGISTRY, getBlockDefinition } from '../registry/SceneRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
 // SCREEN RENDERER — Renders a single ScreenSchema
@@ -88,10 +32,13 @@ export interface ScreenRendererProps {
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
+  /** Currently selected block ID (canvas mode only — for editing overlay) */
+  selectedBlockId?: string | null;
+  /** Callback when a block is clicked (canvas mode only) */
+  onBlockSelect?: (blockId: string, blockType: string) => void;
 }
 
-export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false }: ScreenRendererProps) {
-  const isCompact = mode === 'canvas';
+export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, onBlockSelect }: ScreenRendererProps) {
   const hasCoverBlock = screen.blocks.length === 1 && screen.blocks[0].type === 'cover';
 
   // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
@@ -139,6 +86,8 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
             mode={mode}
             tokens={tokens}
             interactive={interactive}
+            isSelected={block.id ? block.id === selectedBlockId : false}
+            onSelect={onBlockSelect}
           />
         ))}
       </div>
@@ -165,6 +114,8 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
                   mode={mode}
                   tokens={tokens}
                   interactive={interactive}
+                  isSelected={block.id ? block.id === selectedBlockId : false}
+                  onSelect={onBlockSelect}
                 />
               </div>
             );
@@ -176,71 +127,74 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// BLOCK RENDERER — Dispatches to type-specific renderers
+// BLOCK RENDERER — Dispatches to type-specific renderers via Registry
 // ═══════════════════════════════════════════════════════════════════
+// The SceneRegistry is the SOLE dispatch mechanism.
+// No switch/case fallback — all block types must be registered.
+// Editing overlay: data-block-id + click handler + visual selection ring.
 
 export interface BlockRenderProps {
   block: SchemaBlock;
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
+  /** Whether this block is selected in the canvas editor */
+  isSelected?: boolean;
+  /** Callback when this block is clicked (canvas mode) */
+  onSelect?: (blockId: string, blockType: string) => void;
 }
 
-export function SchemaBlockRenderer({ block, mode, tokens, interactive = false }: BlockRenderProps) {
+export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, onSelect }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
+  const blockId = block.id || `${block.type}-${Math.random().toString(36).slice(2, 6)}`;
 
-  // ═══ REGISTRY-FIRST DISPATCH (PRIORITAS 2: ACTIVE) ══════════
-  // SceneRegistry is now the PRIMARY dispatch mechanism.
-  // New block types only need to be registered — no switch edit needed.
-  // The switch below is a DEAD-CODE safety net (only fires for unregistered types).
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    if (mode !== 'canvas' || !onSelect) return;
+    e.stopPropagation();
+    onSelect(blockId, block.type);
+  }, [mode, onSelect, blockId, block.type]);
+
+  // ═══ REGISTRY DISPATCH ══════════════════════════════════════
+  // SceneRegistry is the SOLE dispatch mechanism.
+  // New block types only need to be registered — no code change here.
   const definition = SCENE_REGISTRY[block.type];
   if (definition?.renderer) {
     const BlockComponent = definition.renderer;
-    return <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
+    return (
+      <div
+        data-block-id={blockId}
+        data-block-type={block.type}
+        className={`relative group ${isSelected ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-transparent rounded-lg' : ''} ${isCompact ? 'cursor-pointer' : ''}`}
+        onClick={handleClick}
+      >
+        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} />
+        {/* Selection label in canvas mode */}
+        {isSelected && isCompact && (
+          <div className="absolute -top-5 left-0 px-1.5 py-0.5 rounded bg-blue-500 text-[8px] font-bold text-white whitespace-nowrap z-30 pointer-events-none">
+            {definition.icon} {definition.name}
+          </div>
+        )}
+        {/* Hover highlight in canvas mode */}
+        {!isSelected && isCompact && (
+          <div className="absolute inset-0 rounded-lg border border-transparent group-hover:border-blue-400/30 pointer-events-none transition-all" />
+        )}
+      </div>
+    );
   }
 
-  // ═══ DEAD-CODE SAFETY NET ═══════════════════════════════════
-  // Only fires if a block type is NOT in SCENE_REGISTRY.
-  // All 18 standard block types are registered, so this should
-  // never be reached. Keeping it as a defensive fallback.
-  switch (block.type) {
-    case 'cover':
-      return <CoverRenderer block={block as CoverBlock} tokens={tokens} interactive={interactive} />;
-    case 'petunjuk':
-      return <PetunjukRenderer block={block as PetunjukBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'tp':
-      return <TpRenderer block={block as TpBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'alur':
-      return <AlurRenderer block={block as AlurBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'skenario':
-      return <SkenarioRenderer block={block as SkenarioBlock} tokens={tokens} interactive={interactive} />;
-    case 'def-box':
-      return <DefBoxRenderer block={block as DefBoxBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'nc-grid':
-      return <NcGridRenderer block={block as NcGridBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'flashcard-set':
-      return <FlashcardRenderer block={block as FlashcardSetBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'ftab':
-      return <FtabRenderer block={block as FtabBlock} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
-    case 'nk-card':
-      return <NormaKartuRenderer block={block as NormaKartuBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'diskusi':
-      return <DiskusiRenderer block={block as DiskusiBlock} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
-    case 'kuis':
-      return <KuisRenderer block={block as KuisBlock} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
-    case 'sortir-game':
-      return <SortirGameRenderer block={block as SortirGameBlock} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
-    case 'roda-game':
-      return <RodaGameRenderer block={block as RodaGameBlock} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
-    case 'hasil':
-      return <HasilRenderer block={block as HasilBlock} tokens={tokens} />;
-    case 'refleksi':
-      return <RefleksiRenderer block={block as RefleksiBlock} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
-    case 'penutup':
-      return <PenutupRenderer block={block as PenutupBlock} tokens={tokens} isCompact={isCompact} />;
-    case 'tabel-accord':
-      return <TabelAccordionRenderer block={block as TabelAccordionBlock} tokens={tokens} isCompact={isCompact} />;
-    default:
-      return null;
-  }
+  // ═══ UNREGISTERED BLOCK TYPE ════════════════════════════════
+  // If a block type is not in the registry, show a warning.
+  // This should never happen for production blocks.
+  return (
+    <div
+      data-block-id={blockId}
+      data-block-type={block.type}
+      className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs"
+      onClick={handleClick}
+    >
+      Unregistered block type: <strong>{block.type}</strong>
+      <br />
+      <span className="text-red-400/60">Register it in SceneRegistry.tsx</span>
+    </div>
+  );
 }
