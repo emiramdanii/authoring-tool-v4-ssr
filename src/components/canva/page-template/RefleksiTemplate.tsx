@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Refleksi Template ───────────────────────────────────────────
 // Phase 10: Added interactive answer mode with text input per
@@ -172,6 +173,12 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
               )}
             </div>
           )}
+        </div>
+      )}
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center mt-2">
+          <TemplateNavButton action="next" accent={accent} size="md" />
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
+import { TemplateNavButton } from './TemplateNavButton';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '@/store/canva-store';
 
@@ -62,7 +63,7 @@ export function HeroTemplate({ td, palette, isSelected, onEditField, interactive
       />
 
       {/* CTA Button — clickable in interactive mode */}
-      {Boolean(td.cta) && (
+      {Boolean(td.cta) ? (
         <button
           onClick={handleCtaClick}
           className={`mt-5 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
@@ -75,6 +76,12 @@ export function HeroTemplate({ td, palette, isSelected, onEditField, interactive
           }}>
           {String(td.cta)} {interactive ? '→' : ''}
         </button>
+      ) : (
+        interactive && (
+          <div className="mt-5">
+            <TemplateNavButton action="next" accent={accent} size="lg" />
+          </div>
+        )
       )}
 
       {/* Chips */}

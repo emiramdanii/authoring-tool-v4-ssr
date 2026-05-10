@@ -349,7 +349,7 @@ export default function ExportApp() {
   // ── No pages state ─────────────────────────────────────────────
   if (totalPages === 0) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">📭</div>
           <p className="text-white/60">Belum ada halaman untuk ditampilkan.</p>
@@ -387,8 +387,8 @@ export default function ExportApp() {
 
   return (
     <>
-      {/* Phase 9 fix: bg-zinc-950 + select-none to match PlayOverlay exactly */}
-      <div className="min-h-screen bg-zinc-950 text-white select-none" style={{ fontFamily: "'Nunito', sans-serif" }}>
+      {/* Phase 9 fix: bg-slate-900 + select-none to match PlayOverlay exactly */}
+      <div className="min-h-screen bg-slate-900 text-white select-none" style={{ fontFamily: "'Nunito', sans-serif" }}>
         {/* ── Aspect-Ratio Scaling Container ── */}
         {/* Phase 9 fix: Mirrors PlayCanvas ResizeObserver scaling logic.
             Content renders at native aspect ratio (e.g. 1280×720), then CSS

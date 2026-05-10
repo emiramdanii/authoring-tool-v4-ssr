@@ -6,6 +6,7 @@ import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Skenario Template ─────────────────────────────────────────
 // Phase 4: Interactive choices — clickable in play mode with branching navigation
@@ -252,6 +253,13 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
                   ↩ Ulangi Skenario
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Navigation button — advance to next page after completing scenario */}
+          {isCompleted && (
+            <div className="flex justify-center mt-3">
+              <TemplateNavButton action="next" accent={accent} size="md" />
             </div>
           )}
         </div>

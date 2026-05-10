@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Petunjuk Template ─────────────────────────────────────────
 // Phase 10: Step-by-step interactive mode with expand/collapse,
@@ -163,6 +164,13 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField, interac
               <div className="text-[9px] text-white/70 leading-relaxed">{tips}</div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center mt-2">
+          <TemplateNavButton action="next" accent={accent} size="md" />
         </div>
       )}
     </div>

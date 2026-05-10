@@ -128,7 +128,7 @@ export default function LivePreview() {
   // ══════════════════════════════════════════════════════════════
 
   return (
-    <div className="h-full flex flex-col bg-zinc-950">
+    <div className="h-full flex flex-col bg-slate-900">
       {/* ══ TOOLBAR ══════════════════════════════════════════════ */}
       <div className="flex-shrink-0 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 px-3 py-2 flex items-center gap-2 flex-wrap">
 
@@ -409,7 +409,7 @@ export default function LivePreview() {
       </div>
 
       {/* ══ PREVIEW AREA ═════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-zinc-950">
+      <div className="flex-1 flex flex-col overflow-hidden bg-slate-900">
         {/* Banner */}
         <div className="flex-shrink-0 w-full bg-gradient-to-r from-emerald-600/90 to-cyan-600/90 text-white text-xs font-bold px-4 py-1.5 flex items-center gap-2 z-10">
           <span className="flex items-center gap-1.5">

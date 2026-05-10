@@ -34,7 +34,7 @@ function AccordionSection({
         </span>
       </button>
       {open && (
-        <div className="p-4 bg-zinc-950/50 space-y-4 border-t border-zinc-800">
+        <div className="p-4 bg-slate-900/80 space-y-4 border-t border-zinc-800">
           {children}
         </div>
       )}

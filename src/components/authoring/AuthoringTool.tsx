@@ -117,21 +117,13 @@ export default function AuthoringTool() {
     }
   }, [activePanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-save every 8s when dirty
+  // Auto-save every 8s when dirty — delegates to store's saveToStorage()
   useEffect(() => {
     if (!dirty) return;
     const timer = setTimeout(() => {
       const s = useAuthoringStore.getState();
       if (s.dirty) {
-        try {
-          const data = {
-            meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-            skenario: s.skenario, kuis: s.kuis, modules: s.modules,
-            games: s.games, materi: s.materi, guruPw: s.guruPw,
-          };
-          localStorage.setItem('at_state_v1', JSON.stringify(data));
-          useAuthoringStore.setState({ dirty: false });
-        } catch { /* ignore */ }
+        s.saveToStorage(); // Uses store method (single source of truth, with toast)
       }
     }, 8000);
     return () => clearTimeout(timer);

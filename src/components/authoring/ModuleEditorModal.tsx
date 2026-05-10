@@ -143,7 +143,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
                 })}
               </div>
             </div>
-            <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-800 overflow-auto max-h-80">
+            <div className="bg-slate-900 rounded-xl p-4 border border-zinc-800 overflow-auto max-h-80">
               <PresetModuleCard
                 mode="edit"
                 module={mod}

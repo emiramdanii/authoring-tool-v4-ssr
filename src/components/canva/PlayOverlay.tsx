@@ -29,7 +29,7 @@ export default function PlayOverlay() {
   if (!isPlaying) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col select-none">
+    <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col select-none">
       {/* Top bar */}
       <PlayOverlayHeader />
 

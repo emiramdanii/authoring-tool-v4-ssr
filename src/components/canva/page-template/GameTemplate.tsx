@@ -7,6 +7,7 @@ import { EditableText } from './EditableText';
 import GameWidget from '../GameWidget';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { getGameIcon, getGameModuleIndex } from './shared-helpers';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Game Template ─────────────────────────────────────────────
 
@@ -113,6 +114,13 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
           </div>
         )}
       </div>
+
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center px-4 pb-3">
+          <TemplateNavButton action="next" accent={accent} size="md" />
+        </div>
+      )}
     </div>
   );
 }

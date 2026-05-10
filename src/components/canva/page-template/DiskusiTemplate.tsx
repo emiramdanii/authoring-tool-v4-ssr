@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
-
+import { TemplateNavButton } from './TemplateNavButton';
 // ── Diskusi Template ───────────────────────────────────────────
 // Phase 10: Added interactive answer mode — students can type
 // answers to discussion questions. Design mode shows all questions.
@@ -150,6 +150,12 @@ export function DiskusiTemplate({ td, palette, isSelected, onEditField, interact
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">💬</span>
           <span className="text-[10px]">{interactive ? 'Belum ada pertanyaan tersedia' : 'Tambah pertanyaan di panel Konten → Diskusi'}</span>
+        </div>
+      )}
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center mt-2">
+          <TemplateNavButton action="next" accent={accent} size="md" />
         </div>
       )}
     </div>

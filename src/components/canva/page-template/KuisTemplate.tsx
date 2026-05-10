@@ -6,6 +6,7 @@ import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import QuizWidget from '../QuizWidget';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Kuis Template ─────────────────────────────────────────────
 
@@ -59,6 +60,13 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
           </div>
         )}
       </div>
+
+      {/* Navigation button — advance to next page in interactive mode */}
+      {interactive && (
+        <div className="flex justify-center px-4 pb-3">
+          <TemplateNavButton action="next" accent={accent} size="md" />
+        </div>
+      )}
     </div>
   );
 }
