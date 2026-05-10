@@ -297,7 +297,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     <div
       ref={canvasAreaRef}
       id="cm-canvas-area"
-      className="flex-1 bg-zinc-950 overflow-auto flex items-center justify-center"
+      className="flex-1 bg-slate-800 overflow-auto flex items-center justify-center"
       style={{ cursor: tool === 'text' ? 'text' : 'default' }}
       onMouseMove={handleAreaMouseMove}
       onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
@@ -321,7 +321,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           <div
             id="cm-stage-bg"
             className="absolute inset-0"
-            style={{ background: page.bgColor || '#1a1a2e' }}
+            style={{ background: page.bgColor || '#1e293b' }}
           />
 
           {/* Background image */}
@@ -544,8 +544,8 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           {/* Drop hint (visible when no elements and custom mode or unlocked template) */}
           {(!isTemplateMode || isUnlockedTemplate) && page.elements.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <div className="text-zinc-600 text-sm mb-2">⬇ Seret elemen ke sini</div>
-              <div className="text-zinc-700 text-xs">atau pilih Template dari panel kiri</div>
+              <div className="text-slate-400 text-sm mb-2">⬇ Seret elemen ke sini</div>
+              <div className="text-slate-500 text-xs">atau pilih Template dari panel kiri</div>
             </div>
           )}
 

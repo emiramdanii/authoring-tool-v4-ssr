@@ -143,7 +143,7 @@ export default function CanvaBuilder() {
   }, []);
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden bg-slate-950 text-slate-200 focus-ring">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-slate-900 text-slate-200 focus-ring">
       {/* Top Toolbar */}
       <Toolbar />
 
@@ -154,7 +154,7 @@ export default function CanvaBuilder() {
         </div>
 
         {/* Stage Canvas Area — recessed with inner shadow */}
-        <div className="flex-1 relative shadow-[inset_0_0_32px_-8px_rgba(0,0,0,0.4)] bg-slate-950/50">
+        <div className="flex-1 relative shadow-[inset_0_0_32px_-8px_rgba(0,0,0,0.3)] bg-slate-900/80">
           <Stage onMouseMove={handleMouseMove} />
         </div>
 

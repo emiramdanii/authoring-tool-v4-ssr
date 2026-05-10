@@ -13,7 +13,7 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
     id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
     label,
     bgDataUrl: null,
-    bgColor: templateType === 'custom' ? '#1a1a2e' : '#0f172a',
+    bgColor: templateType === 'custom' ? '#1e293b' : '#0f172a',
     overlay: 20,
     elements: [],
     templateType,

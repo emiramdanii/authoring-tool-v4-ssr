@@ -110,7 +110,7 @@ function HalamanContent() {
             ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
             : p.bgColor?.includes('gradient')
               ? { background: p.bgColor }
-              : { background: p.bgColor || '#1a1a2e' };
+              : { background: p.bgColor || '#1e293b' };
 
           const isTemplate = p.templateType && p.templateType !== 'custom';
           const isPageLocked = p.locked !== false; // true or undefined = locked

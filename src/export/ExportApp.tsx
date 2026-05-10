@@ -383,7 +383,7 @@ export default function ExportApp() {
   const safeBgDataUrl = page.bgDataUrl || null;
   const bgStyle: React.CSSProperties = page.bgColor?.includes('gradient')
     ? { background: page.bgColor }
-    : { background: page.bgColor || '#1a1a2e' };
+    : { background: page.bgColor || '#1e293b' };
 
   return (
     <>

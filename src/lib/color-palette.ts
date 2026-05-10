@@ -107,7 +107,7 @@ function autoMapColors(colors: string[]): Record<string, string> {
 
   // Darkest → background (--bg)
   const darkest = [...colors].sort((a, b) => getLightness(a) - getLightness(b))[0];
-  mapping['--bg'] = darkest || '#1a1a2e';
+  mapping['--bg'] = darkest || '#1e293b';
 
   // Lightest → card (--card)
   const lightest = [...colors].sort((a, b) => getLightness(b) - getLightness(a))[0];

@@ -218,7 +218,7 @@ function PlayCanvas() {
         {/* Background color */}
         <div
           className="absolute inset-0"
-          style={{ background: page.bgColor || '#1a1a2e' }}
+          style={{ background: page.bgColor || '#1e293b' }}
         />
 
         {/* Background image */}
@@ -372,7 +372,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
             ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
             : p.bgColor?.includes('gradient')
               ? { background: p.bgColor }
-              : { background: p.bgColor || '#1a1a2e' };
+              : { background: p.bgColor || '#1e293b' };
           return (
             <button
               key={p.id}
