@@ -149,7 +149,7 @@ export default function CanvaBuilder() {
 
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-        <div className="border-r border-slate-800/60 shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0">
+        <div className="border-r border-slate-800/60 shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
           <LeftPanel />
         </div>
 
@@ -159,7 +159,7 @@ export default function CanvaBuilder() {
         </div>
 
         {rightPanelOpen && (
-          <div className="border-l border-slate-800/60 shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0">
+          <div className="border-l border-slate-800/60 shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
             <RightPanel />
           </div>
         )}

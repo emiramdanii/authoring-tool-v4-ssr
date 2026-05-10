@@ -64,7 +64,7 @@ export default function RightPanel() {
   if (!rightPanelOpen) return null;
 
   return (
-    <div className="w-60 min-w-[240px] flex flex-col glass-panel overflow-y-auto custom-scrollbar">
+    <div className="w-full flex flex-col glass-panel overflow-y-auto custom-scrollbar">
 
       {/* ═══ Section 1: Properti Elemen — ALWAYS VISIBLE (not collapsible) ═══ */}
       {selectedEl && (

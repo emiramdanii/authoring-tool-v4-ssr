@@ -36,7 +36,7 @@ export default function LeftPanel() {
   const { leftTab, setLeftTab, rightPanelOpen, toggleRightPanel } = useCanvaStore();
 
   return (
-    <div className="w-60 min-w-[240px] flex flex-col glass-panel overflow-hidden">
+    <div className="w-full flex flex-col glass-panel overflow-hidden">
       {/* Tab bar — 2 tabs */}
       <div className="glass-panel border-b border-slate-700/30">
         <div className="flex">
