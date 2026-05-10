@@ -23,6 +23,9 @@ import type { TokenResolver } from './types';
 // Import SceneRegistry — the SOLE dispatch mechanism
 import { SCENE_REGISTRY, getBlockDefinition } from '../registry/SceneRegistry';
 
+// Import BlockSelectionOverlay — reusable editing overlay
+import { BlockSelectionOverlay } from '../editor/overlay/BlockSelectionOverlay';
+
 // ═══════════════════════════════════════════════════════════════════
 // SCREEN RENDERER — Renders a single ScreenSchema
 // ═══════════════════════════════════════════════════════════════════
@@ -44,9 +47,17 @@ export interface ScreenRendererProps {
   onBlockHover?: (blockId: string | null) => void;
   /** Callback when a block is double-clicked for inline editing (canvas mode only) */
   onBlockEdit?: (blockId: string, blockType: string) => void;
+  /** Callback to delete a block */
+  onBlockDelete?: (blockId: string) => void;
+  /** Callback to move a block up in flow order */
+  onBlockMoveUp?: (blockId: string) => void;
+  /** Callback to move a block down in flow order */
+  onBlockMoveDown?: (blockId: string) => void;
+  /** Callback to duplicate a block */
+  onBlockDuplicate?: (blockId: string) => void;
 }
 
-export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit }: ScreenRendererProps) {
+export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
   const hasCoverBlock = screen.blocks.length === 1 && screen.blocks[0].type === 'cover';
 
   // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
@@ -102,6 +113,10 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
               onSelect={onBlockSelect}
               onHover={onBlockHover}
               onEdit={onBlockEdit}
+              onDelete={onBlockDelete}
+              onMoveUp={onBlockMoveUp}
+              onMoveDown={onBlockMoveDown}
+              onDuplicate={onBlockDuplicate}
             />
           );
         })}
@@ -136,6 +151,10 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
                   onSelect={onBlockSelect}
                   onHover={onBlockHover}
                   onEdit={onBlockEdit}
+                  onDelete={onBlockDelete}
+                  onMoveUp={onBlockMoveUp}
+                  onMoveDown={onBlockMoveDown}
+                  onDuplicate={onBlockDuplicate}
                 />
               </div>
             );
@@ -170,9 +189,17 @@ export interface BlockRenderProps {
   onHover?: (blockId: string | null) => void;
   /** Callback when this block is double-clicked for inline editing */
   onEdit?: (blockId: string, blockType: string) => void;
+  /** Callback to delete this block */
+  onDelete?: (blockId: string) => void;
+  /** Callback to move block up in flow order */
+  onMoveUp?: (blockId: string) => void;
+  /** Callback to move block down in flow order */
+  onMoveDown?: (blockId: string) => void;
+  /** Callback to duplicate this block */
+  onDuplicate?: (blockId: string) => void;
 }
 
-export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit }: BlockRenderProps) {
+export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   // ═══ STABLE BLOCK ID ═════════════════════════════════════════
   // CRITICAL: The block ID must be stable across re-renders.
@@ -181,80 +208,47 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
   // unstable IDs = edits lost after re-render = broken editing.
   const blockId = block.id || block.type;
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (mode !== 'canvas' || !onSelect) return;
-    e.stopPropagation();
-    onSelect(blockId, block.type);
-  }, [mode, onSelect, blockId, block.type]);
-
-  const handleMouseEnter = useCallback(() => {
-    if (mode !== 'canvas' || !onHover) return;
-    onHover(blockId);
-  }, [mode, onHover, blockId]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (mode !== 'canvas' || !onHover) return;
-    onHover(null);
-  }, [mode, onHover]);
-
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    if (mode !== 'canvas' || !onEdit) return;
-    e.stopPropagation();
-    onEdit(blockId, block.type);
-  }, [mode, onEdit, blockId, block.type]);
-
   // ═══ REGISTRY DISPATCH ══════════════════════════════════════
   // SceneRegistry is the SOLE dispatch mechanism.
   // New block types only need to be registered — no code change here.
   const definition = SCENE_REGISTRY[block.type];
-  if (definition?.renderer) {
-    const BlockComponent = definition.renderer;
+
+  // Unregistered block type — show warning
+  if (!definition?.renderer) {
     return (
-      <div
-        data-block-id={blockId}
-        data-block-type={block.type}
-        className={`relative group ${isSelected ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-transparent rounded-lg' : ''} ${isHovered && !isSelected ? 'ring-1 ring-blue-400/30 ring-offset-1 ring-offset-transparent rounded-lg' : ''} ${isCompact ? 'cursor-pointer' : ''}`}
-        onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onDoubleClick={handleDoubleClick}
-      >
-        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
-        {/* Selection label in canvas mode */}
-        {isSelected && isCompact && (
-          <div className="absolute -top-5 left-0 px-1.5 py-0.5 rounded bg-blue-500 text-[8px] font-bold text-white whitespace-nowrap z-30 pointer-events-none">
-            {definition.icon} {definition.name}
-          </div>
-        )}
-        {/* Hover highlight in canvas mode — only when not selected */}
-        {!isSelected && isCompact && (
-          <div className="absolute inset-0 rounded-lg border border-transparent group-hover:border-blue-400/30 pointer-events-none transition-all" />
-        )}
-        {/* Editing indicator */}
-        {isEditing && isCompact && (
-          <div className="absolute -top-5 right-0 px-1.5 py-0.5 rounded bg-emerald-500 text-[8px] font-bold text-white whitespace-nowrap z-30 pointer-events-none">
-            Editing
-          </div>
-        )}
+      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+        Unregistered block type: <strong>{block.type}</strong>
+        <br />
+        <span className="text-red-400/60">Register it in SceneRegistry.tsx</span>
       </div>
     );
   }
 
-  // ═══ UNREGISTERED BLOCK TYPE ════════════════════════════════
-  // If a block type is not in the registry, show a warning.
-  // This should never happen for production blocks.
+  const BlockComponent = definition.renderer;
+
+  // In non-canvas mode, render without overlay (pure rendering)
+  if (!isCompact) {
+    return <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} />;
+  }
+
+  // In canvas mode, wrap with BlockSelectionOverlay for editing interaction
   return (
-    <div
-      data-block-id={blockId}
-      data-block-type={block.type}
-      className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs"
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+    <BlockSelectionOverlay
+      blockId={blockId}
+      blockType={block.type}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      isEditing={isEditing}
+      isCompact={isCompact}
+      onSelect={onSelect ?? (() => {})}
+      onHover={onHover ?? (() => {})}
+      onEdit={onEdit ?? (() => {})}
+      onDelete={onDelete}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+      onDuplicate={onDuplicate}
     >
-      Unregistered block type: <strong>{block.type}</strong>
-      <br />
-      <span className="text-red-400/60">Register it in SceneRegistry.tsx</span>
-    </div>
+      <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
+    </BlockSelectionOverlay>
   );
 }

@@ -48,3 +48,11 @@ export {
   PENUTUP_PROPERTY_SCHEMA,
   TABELACCORD_PROPERTY_SCHEMA,
 } from './property-schemas';
+
+// Block selection overlay — reusable editing overlay for schema blocks
+export { BlockSelectionOverlay } from './overlay/BlockSelectionOverlay';
+export type { BlockSelectionOverlayProps } from './overlay/BlockSelectionOverlay';
+
+// Inline text editor — contentEditable wrapper for inline block editing
+export { InlineTextEditor, useInlineEditor } from './inline-editor/InlineTextEditor';
+export type { InlineTextEditorProps, UseInlineEditorOptions } from './inline-editor/InlineTextEditor';

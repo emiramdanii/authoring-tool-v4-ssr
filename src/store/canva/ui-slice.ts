@@ -22,6 +22,7 @@ export type UISlice = Pick<
   | 'alignSelected' | 'distributeSelected'
   | 'clearStage' | 'selectBlock' | 'updateSchemaBlock'
   | 'hoverBlock' | 'startEditing' | 'stopEditing'
+  | 'deleteBlock' | 'moveBlockUp' | 'moveBlockDown' | 'duplicateBlock'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
@@ -377,5 +378,139 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       set({ pages: newPages });
     }
     toast.success(`Distribusi ${axis === 'horizontal' ? 'horizontal' : 'vertikal'} diterapkan`);
+  },
+
+  // ── Schema Block CRUD ───────────────────────────────────────────
+  // deleteBlock: Remove a block from the schema screen by ID
+  deleteBlock: (blockId) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    // Must have schema screen
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    if (!Array.isArray(blocks)) return;
+
+    const blockIdx = blocks.findIndex(b => b.id === blockId);
+    if (blockIdx === -1) return;
+
+    get()._pushHistory();
+    editBus.emit({ type: 'patch', patch: { blockId, blockType: blocks[blockIdx].type, pageIndex: currentPageIndex, patch: { _deleted: true }, timestamp: Date.now(), source: 'user' } });
+
+    const newBlocks = blocks.filter((_, i) => i !== blockIdx);
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null });
+    toast.success('Block dihapus');
+  },
+
+  // moveBlockUp: Move a block one position up in the flow order
+  moveBlockUp: (blockId) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    if (!Array.isArray(blocks)) return;
+
+    const blockIdx = blocks.findIndex(b => b.id === blockId);
+    if (blockIdx <= 0) return; // already at top
+
+    get()._pushHistory();
+    const newBlocks = [...blocks];
+    [newBlocks[blockIdx - 1], newBlocks[blockIdx]] = [newBlocks[blockIdx], newBlocks[blockIdx - 1]];
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+  },
+
+  // moveBlockDown: Move a block one position down in the flow order
+  moveBlockDown: (blockId) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    if (!Array.isArray(blocks)) return;
+
+    const blockIdx = blocks.findIndex(b => b.id === blockId);
+    if (blockIdx === -1 || blockIdx >= blocks.length - 1) return; // already at bottom
+
+    get()._pushHistory();
+    const newBlocks = [...blocks];
+    [newBlocks[blockIdx], newBlocks[blockIdx + 1]] = [newBlocks[blockIdx + 1], newBlocks[blockIdx]];
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+  },
+
+  // duplicateBlock: Clone a block and insert it after the original
+  duplicateBlock: (blockId) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    if (!Array.isArray(blocks)) return;
+
+    const blockIdx = blocks.findIndex(b => b.id === blockId);
+    if (blockIdx === -1) return;
+
+    get()._pushHistory();
+
+    // Deep clone the block with a new ID
+    const original = blocks[blockIdx];
+    const clone = produce(original, (draft) => {
+      draft.id = `${original.type}-${Date.now()}`;
+    });
+
+    // Insert clone after original
+    const newBlocks = [...blocks];
+    newBlocks.splice(blockIdx + 1, 0, clone);
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+    // Select the cloned block
+    get().selectBlock(clone.id ?? null, clone.type);
+    toast.success('Block diduplikat');
   },
 });

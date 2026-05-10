@@ -140,6 +140,14 @@ export interface CanvaState {
   startEditing: (blockId: string) => void;
   /** Exit inline editing mode */
   stopEditing: () => void;
+  /** Delete a schema block from the current screen by ID */
+  deleteBlock: (blockId: string) => void;
+  /** Move a schema block one position up in flow order */
+  moveBlockUp: (blockId: string) => void;
+  /** Move a schema block one position down in flow order */
+  moveBlockDown: (blockId: string) => void;
+  /** Duplicate a schema block and insert after the original */
+  duplicateBlock: (blockId: string) => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

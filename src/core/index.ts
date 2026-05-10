@@ -69,6 +69,9 @@ export {
   editBus,
   getPropertySchema,
   getAllPropertySchemas,
+  BlockSelectionOverlay,
+  InlineTextEditor,
+  useInlineEditor,
 } from './editor';
 export type {
   PropertyFieldType,
@@ -77,4 +80,7 @@ export type {
   SchemaPatch,
   SelectionContext,
   EditEvent,
+  BlockSelectionOverlayProps,
+  InlineTextEditorProps,
+  UseInlineEditorOptions,
 } from './editor';

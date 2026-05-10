@@ -24,6 +24,10 @@ export default function LayerPanel() {
   const hoverBlock = useCanvaStore(s => s.hoverBlock);
   const startEditing = useCanvaStore(s => s.startEditing);
   const stopEditing = useCanvaStore(s => s.stopEditing);
+  const deleteBlock = useCanvaStore(s => s.deleteBlock);
+  const moveBlockUp = useCanvaStore(s => s.moveBlockUp);
+  const moveBlockDown = useCanvaStore(s => s.moveBlockDown);
+  const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
 
   const page = pages[currentPageIndex];
 
@@ -125,6 +129,40 @@ export default function LayerPanel() {
               <span className="text-[7px] text-slate-600 font-mono truncate max-w-[60px]">
                 {block.type}
               </span>
+
+              {/* Quick actions (visible on hover/selected) */}
+              {isSelected && (
+                <div className="flex items-center gap-0.5 ml-1 flex-shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); moveBlockUp(blockId); }}
+                    className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
+                    title="Pindah atas"
+                  >
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 1L7 5H1Z"/></svg>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); moveBlockDown(blockId); }}
+                    className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
+                    title="Pindah bawah"
+                  >
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 7L1 3H7Z"/></svg>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); duplicateBlock(blockId); }}
+                    className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
+                    title="Duplikat"
+                  >
+                    ⧉
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteBlock(blockId); }}
+                    className="p-0.5 rounded hover:bg-red-500/30 text-slate-500 hover:text-red-400 transition-colors"
+                    title="Hapus"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </button>
           );
         })}

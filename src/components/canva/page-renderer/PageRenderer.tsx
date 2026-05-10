@@ -134,6 +134,10 @@ export function PageRenderer({
   const selectBlock = useCanvaStore(s => s.selectBlock);
   const hoverBlock = useCanvaStore(s => s.hoverBlock);
   const startEditing = useCanvaStore(s => s.startEditing);
+  const deleteBlock = useCanvaStore(s => s.deleteBlock);
+  const moveBlockUp = useCanvaStore(s => s.moveBlockUp);
+  const moveBlockDown = useCanvaStore(s => s.moveBlockDown);
+  const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
   const hoveredBlockId = useCanvaStore(s => s.hoveredBlockId);
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
@@ -146,6 +150,18 @@ export function PageRenderer({
   const handleBlockEdit = React.useCallback((blockId: string, blockType: string) => {
     startEditing(blockId);
   }, [startEditing]);
+  const handleBlockDelete = React.useCallback((blockId: string) => {
+    deleteBlock(blockId);
+  }, [deleteBlock]);
+  const handleBlockMoveUp = React.useCallback((blockId: string) => {
+    moveBlockUp(blockId);
+  }, [moveBlockUp]);
+  const handleBlockMoveDown = React.useCallback((blockId: string) => {
+    moveBlockDown(blockId);
+  }, [moveBlockDown]);
+  const handleBlockDuplicate = React.useCallback((blockId: string) => {
+    duplicateBlock(blockId);
+  }, [duplicateBlock]);
 
   const content = (
     <>
@@ -162,6 +178,10 @@ export function PageRenderer({
           onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
           onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
           onBlockEdit={mode === 'canvas' ? handleBlockEdit : undefined}
+          onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
+          onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
+          onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
+          onBlockDuplicate={mode === 'canvas' ? handleBlockDuplicate : undefined}
         />
       )}
 
