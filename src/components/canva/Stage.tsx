@@ -297,14 +297,14 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     <div
       ref={canvasAreaRef}
       id="cm-canvas-area"
-      className="flex-1 bg-slate-800 overflow-auto flex items-center justify-center"
+      className="flex-1 bg-slate-800 overflow-hidden flex items-center justify-center"
       style={{ cursor: tool === 'text' ? 'text' : 'default' }}
       onMouseMove={handleAreaMouseMove}
       onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
       onDrop={handleDrop}
     >
       {/* Checkerboard pattern behind stage — padding prevents clipping when scaled */}
-      <div className="relative" style={{ padding: '10px' }}>
+      <div className="relative" style={{ padding: '10px', maxWidth: '100%', maxHeight: '100%', overflow: 'hidden' }}>
         <div
           ref={stageWrapRef}
           id="cm-stage-wrap"

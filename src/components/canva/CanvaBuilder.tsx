@@ -154,7 +154,7 @@ export default function CanvaBuilder() {
         </div>
 
         {/* Stage Canvas Area — recessed with inner shadow */}
-        <div className="flex-1 relative shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-slate-900/80">
+        <div className="flex-1 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-slate-900/80">
           <Stage onMouseMove={handleMouseMove} />
         </div>
 
