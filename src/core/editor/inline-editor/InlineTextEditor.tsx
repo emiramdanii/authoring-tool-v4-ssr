@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useRef, useEffect, useCallback } from 'react';
+import { useCanvaStore } from '@/store/canva-store';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -147,28 +148,28 @@ export function InlineTextEditor({
 // HOOK: useInlineEditor
 // ═══════════════════════════════════════════════════════════════════
 // Convenience hook for block renderers to add inline editing support.
-// Returns the InlineTextEditor props for a specific field.
+// Reads editing state from the canva store and creates onSave handler.
 //
 // Usage in a block renderer:
 //   const titleEditor = useInlineEditor({
 //     blockId: block.id,
-//     fieldKey: 'content.title',
-//     value: block.content?.title ?? '',
-//     isEditing: isEditing,
-//     onUpdate: (patch) => updateSchemaBlock(block.id, patch),
+//     fieldKey: 'title',
+//     value: block.title ?? '',
 //   });
-//   <InlineTextEditor {...titleEditor} />
+//   <InlineTextEditor {...titleEditor} tag="h1" />
+//
+// The hook automatically:
+//   1. Checks if the block is in editing mode (editingBlockId === blockId)
+//   2. Creates onSave handler that calls updateSchemaBlock with the patch
+//   3. Returns all props needed by InlineTextEditor
 
 export interface UseInlineEditorOptions {
-  blockId: string;
+  /** The block ID (must match editingBlockId in the store) */
+  blockId?: string;
   /** Dot-notation path to the field in the schema (e.g., 'content.title') */
   fieldKey: string;
   /** Current value of the field */
   value: string;
-  /** Whether the block is in editing mode */
-  isEditing: boolean;
-  /** Callback to update the schema block */
-  onUpdate: (patch: Record<string, unknown>) => void;
   /** Additional props for InlineTextEditor */
   className?: string;
   style?: React.CSSProperties;
@@ -178,14 +179,22 @@ export interface UseInlineEditorOptions {
 }
 
 export function useInlineEditor(options: UseInlineEditorOptions) {
-  const { fieldKey, value, isEditing, onUpdate, ...rest } = options;
+  const { blockId, fieldKey, value, ...rest } = options;
+
+  // Read editing state from store
+  const editingBlockId = useCanvaStore(s => s.editingBlockId);
+  const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
+
+  // This block is editing if editingBlockId matches this block's ID
+  const isEditing = !!blockId && editingBlockId === blockId;
 
   const handleSave = useCallback((newValue: string) => {
+    if (!blockId) return;
     // Convert dot-notation key to nested patch object
     // 'content.title' → { content: { title: newValue } }
     const patch = dotNotationToPatch(fieldKey, newValue);
-    onUpdate(patch);
-  }, [fieldKey, onUpdate]);
+    updateSchemaBlock(blockId, patch);
+  }, [blockId, fieldKey, updateSchemaBlock]);
 
   return {
     value,

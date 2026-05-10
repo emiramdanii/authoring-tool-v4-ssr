@@ -66,6 +66,13 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     snapValue,
     _pushHistory,
     selectBlock,
+    deleteBlock,
+    duplicateBlock,
+    moveBlockUp,
+    moveBlockDown,
+    selectedBlockId,
+    stopEditing,
+    editingBlockId,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
@@ -96,12 +103,59 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     dir?: ResizeDir;
   } | null>(null);
 
-  // Phase 4: Keyboard shortcuts for multi-select
+  // Phase 4: Keyboard shortcuts for multi-select + schema block actions
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (target.contentEditable === 'true' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+      // Allow typing in contentEditable (inline editing), inputs, textareas
+      if (target.contentEditable === 'true' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        // But still handle Escape in contentEditable to exit editing
+        if (e.key === 'Escape' && target.contentEditable === 'true') {
+          e.preventDefault();
+          stopEditing();
+          (target as HTMLElement).blur();
+        }
+        return;
+      }
 
+      // ── Schema block shortcuts (when a block is selected) ─────
+      if (selectedBlockId) {
+        // Delete / Backspace — delete selected block
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          e.preventDefault();
+          deleteBlock(selectedBlockId);
+          return;
+        }
+        // Ctrl+D / Cmd+D — duplicate selected block
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+          e.preventDefault();
+          duplicateBlock(selectedBlockId);
+          return;
+        }
+        // Alt+Arrow Up — move block up
+        if (e.altKey && e.key === 'ArrowUp') {
+          e.preventDefault();
+          moveBlockUp(selectedBlockId);
+          return;
+        }
+        // Alt+Arrow Down — move block down
+        if (e.altKey && e.key === 'ArrowDown') {
+          e.preventDefault();
+          moveBlockDown(selectedBlockId);
+          return;
+        }
+        // Escape — exit editing mode first, then deselect
+        if (e.key === 'Escape') {
+          if (editingBlockId) {
+            stopEditing();
+          } else {
+            selectBlock(null);
+          }
+          return;
+        }
+      }
+
+      // ── Element shortcuts (legacy CanvaElements) ──────────────
       // Ctrl+A / Cmd+A — select all elements
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
@@ -119,14 +173,14 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       // Escape — clear selection
       if (e.key === 'Escape') {
         clearSelection();
-        useCanvaStore.getState().selectBlock(null);
+        selectBlock(null);
         return;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedElIds, selectAllElements, deleteSelectedElements, clearSelection]);
+  }, [selectedElIds, selectedBlockId, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing]);
 
   // Phase 4: Helper to compute snap lines during drag
   const computeSnapLines = useCallback((elId: string, newX: number, newY: number, newW?: number, newH?: number) => {

@@ -3,14 +3,32 @@
 import React from 'react';
 import type { CoverBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function CoverRenderer({ block, tokens, interactive }: {
-  block: CoverBlock; tokens: TokenResolver; interactive?: boolean;
+export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean;
 }) {
   const y = tokens.color('y');
   const c = tokens.color('c');
   const g = tokens.color('g');
   const accentKey = block.accentColor || 'y';
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  // When editing mode is active, text fields become contentEditable.
+  // The hook reads editingBlockId from the store and creates onSave
+  // handlers that call updateSchemaBlock with deep patches.
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const subtitleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'subtitle',
+    value: block.subtitle ?? '',
+    tag: 'p',
+  });
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
@@ -39,16 +57,24 @@ export function CoverRenderer({ block, tokens, interactive }: {
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
+      {/* Title — inline editable when in editing mode */}
       <h1 className="font-black text-white leading-tight mt-3"
         style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), textShadow: '0 2px 12px rgba(0,0,0,.5)' }}>
-        <span style={{ color: y }}>{block.title.split(' — ')[0]}</span>
-        {block.title.includes(' — ') && <><br />{block.title.split(' — ')[1]}</>}
+        <InlineTextEditor
+          {...titleEditor}
+          className="font-black text-white leading-tight"
+          style={{ color: y, fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit' }}
+        />
+        {block.title.includes(' — ') && <><br /><span>{block.title.split(' — ')[1]}</span></>}
       </h1>
 
-      <p className="mt-3 max-w-[380px] text-white/70"
-        style={{ fontSize: 'clamp(11px, 1.8vw, 16px)' }}>
-        {block.subtitle}
-      </p>
+      {/* Subtitle — inline editable when in editing mode */}
+      <InlineTextEditor
+        {...subtitleEditor}
+        className="mt-3 max-w-[380px] text-white/70"
+        style={{ fontSize: 'clamp(11px, 1.8vw, 16px)' }}
+        placeholder="Ketik subtitle..."
+      />
 
       {/* Badges — glass-morphism pill style */}
       {block.badges && block.badges.length > 0 && (
