@@ -26,10 +26,12 @@ export type UISlice = Pick<
   | 'deleteBlock' | 'moveBlockUp' | 'moveBlockDown' | 'duplicateBlock'
   | 'addSchemaBlock'
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
+  | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
   _schemaClipboard: null,
+  selectedBlockIds: [],
 
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
@@ -39,16 +41,59 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // ── Schema Block Selection ───────────────────────────────────
   // Central selection action — sets the editing context for a block.
   // Clears element selection when a block is selected (mutual exclusion).
-  selectBlock: (blockId, blockType) => {
+  // Supports shift+click multi-select via addToSelection parameter.
+  selectBlock: (blockId, blockType, addToSelection) => {
     editBus.emit({ type: 'select', blockId: blockId ?? null, blockType: blockType ?? null });
-    set({
-      selectedBlockId: blockId ?? null,
-      selectedBlockType: blockType ?? null,
-      // Clear editing state when changing selection
-      editingBlockId: null,
-      // When selecting a block, clear element selection to avoid confusion
-      ...(blockId ? { selectedElId: null, selectedElIds: [] } : {}),
-    });
+
+    if (!blockId) {
+      // Clear all selection
+      set({
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
+        selectedElId: null,
+        selectedElIds: [],
+      });
+      return;
+    }
+
+    if (addToSelection) {
+      // Toggle in multi-select
+      const current = get().selectedBlockIds;
+      const isSelected = current.includes(blockId);
+
+      if (isSelected) {
+        // Deselect from multi-select
+        const newIds = current.filter(id => id !== blockId);
+        set({
+          selectedBlockIds: newIds,
+          selectedBlockId: newIds.length > 0 ? newIds[newIds.length - 1] : null,
+          selectedBlockType: blockType ?? null,
+          editingBlockId: null,
+        });
+      } else {
+        // Add to multi-select
+        const newIds = [...current, blockId];
+        set({
+          selectedBlockIds: newIds,
+          selectedBlockId: blockId,
+          selectedBlockType: blockType ?? null,
+          editingBlockId: null,
+        });
+      }
+    } else {
+      // Single select (replace)
+      set({
+        selectedBlockId: blockId,
+        selectedBlockType: blockType ?? null,
+        editingBlockId: null,
+        selectedBlockIds: [blockId],
+        // When selecting a block, clear element selection to avoid confusion
+        selectedElId: null,
+        selectedElIds: [],
+      });
+    }
   },
 
   // ── Schema Block Hover Context ────────────────────────────────
@@ -274,7 +319,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     get()._pushHistory();
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, elements: [], overlayElements: [] };
-    set({ pages: newPages, selectedElId: null, selectedElIds: [] });
+    set({ pages: newPages, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success('Stage dibersihkan');
   },
 
@@ -414,7 +459,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         schemaScreen: { ...schemaScreen, blocks: newBlocks },
       },
     };
-    set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null });
+    set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success('Block dihapus');
   },
 
@@ -697,6 +742,89 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // Select the new block
     get().selectBlock(newBlock.id as string, blockType);
     toast.success(`${definition.name} ditambahkan`);
+  },
+
+  // ── Schema Block Nudge (arrow keys) ────────────────────────────
+  nudgeSchemaBlocks: (dxPct, dyPct) => {
+    const { pages, currentPageIndex, selectedBlockIds, selectedBlockId } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const idsToNudge = selectedBlockIds.length > 1 ? selectedBlockIds : (selectedBlockId ? [selectedBlockId] : []);
+    if (idsToNudge.length === 0) return;
+
+    // Debounce history push (max once per 500ms of continuous nudging)
+    const now = Date.now();
+    const lastNudge = get()._lastNudgeTime;
+    if (!lastNudge || now - lastNudge > 500) {
+      get()._pushHistory();
+    }
+    set({ _lastNudgeTime: now } as any);
+
+    const newBlocks = blocks.map(block => {
+      if (!idsToNudge.includes(block.id || '')) return block;
+
+      const layout = block.layout || { position: 'flow' as const };
+      if (layout.position !== 'absolute') return block; // Can't nudge flow blocks
+
+      const toNum = (v: number | string | undefined, fallback: number): number =>
+        typeof v === 'number' ? v : fallback;
+
+      return {
+        ...block,
+        layout: {
+          ...layout,
+          x: Math.max(0, Math.min(90, toNum(layout.x, 0) + dxPct)),
+          y: Math.max(0, Math.min(90, toNum(layout.y, 0) + dyPct)),
+        },
+      };
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+  },
+
+  // ── Schema Block Bulk Delete ────────────────────────────────────
+  deleteSchemaBlocks: (blockIds) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || blockIds.length === 0) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    get()._pushHistory();
+
+    const newBlocks = blocks.filter(b => !blockIds.includes(b.id || ''));
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({
+      pages: newPages,
+      selectedBlockId: null,
+      selectedBlockType: null,
+      editingBlockId: null,
+      selectedBlockIds: [],
+    });
+    toast.success(`${blockIds.length} block dihapus`);
   },
 
   // ── Schema Block Copy/Paste ───────────────────────────────────

@@ -68,6 +68,10 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         currentPageIndex: 0,
         selectedElId: null,
         selectedElIds: [],
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
       });
 
       toast.success(`📦 Preset "${schema.title}" dimuat — ${pages.length} layar`);

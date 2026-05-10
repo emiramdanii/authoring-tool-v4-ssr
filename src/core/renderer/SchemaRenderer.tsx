@@ -37,12 +37,14 @@ export interface ScreenRendererProps {
   interactive?: boolean;
   /** Currently selected block ID (canvas mode only — for editing overlay) */
   selectedBlockId?: string | null;
+  /** Multi-select: array of selected block IDs */
+  selectedBlockIds?: string[];
   /** Currently hovered block ID (canvas mode only — for hover effects) */
   hoveredBlockId?: string | null;
   /** Currently editing block ID (canvas mode only — inline editing) */
   editingBlockId?: string | null;
   /** Callback when a block is clicked (canvas mode only) */
-  onBlockSelect?: (blockId: string, blockType: string) => void;
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
   /** Callback when a block is hovered (canvas mode only) */
   onBlockHover?: (blockId: string | null) => void;
   /** Callback when a block is double-clicked for inline editing (canvas mode only) */
@@ -57,7 +59,7 @@ export interface ScreenRendererProps {
   onBlockDuplicate?: (blockId: string) => void;
 }
 
-export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
+export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, selectedBlockIds, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
   const hasCoverBlock = screen.blocks.length === 1 && screen.blocks[0].type === 'cover';
 
   // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
@@ -108,6 +110,7 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
               tokens={tokens}
               interactive={interactive}
               isSelected={block.id ? block.id === selectedBlockId : (block.type === selectedBlockId)}
+              isMultiSelected={block.id ? (selectedBlockIds ?? []).includes(block.id) && (selectedBlockIds ?? []).length > 1 : false}
               isHovered={block.id ? block.id === hoveredBlockId : (block.type === hoveredBlockId)}
               isEditing={block.id ? block.id === editingBlockId : (block.type === editingBlockId)}
               onSelect={onBlockSelect}
@@ -146,6 +149,7 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
                   tokens={tokens}
                   interactive={interactive}
                   isSelected={block.id ? block.id === selectedBlockId : (block.type === selectedBlockId)}
+                  isMultiSelected={block.id ? (selectedBlockIds ?? []).includes(block.id) && (selectedBlockIds ?? []).length > 1 : false}
                   isHovered={block.id ? block.id === hoveredBlockId : (block.type === hoveredBlockId)}
                   isEditing={block.id ? block.id === editingBlockId : (block.type === editingBlockId)}
                   onSelect={onBlockSelect}
@@ -179,12 +183,14 @@ export interface BlockRenderProps {
   interactive?: boolean;
   /** Whether this block is selected in the canvas editor */
   isSelected?: boolean;
+  /** Whether this block is in multi-select (not the primary selection) */
+  isMultiSelected?: boolean;
   /** Whether this block is hovered in the canvas editor */
   isHovered?: boolean;
   /** Whether this block is in inline editing mode */
   isEditing?: boolean;
   /** Callback when this block is clicked (canvas mode) */
-  onSelect?: (blockId: string, blockType: string) => void;
+  onSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
   /** Callback when this block is hovered (canvas mode) */
   onHover?: (blockId: string | null) => void;
   /** Callback when this block is double-clicked for inline editing */
@@ -199,7 +205,7 @@ export interface BlockRenderProps {
   onDuplicate?: (blockId: string) => void;
 }
 
-export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
+export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   // ═══ STABLE BLOCK ID ═════════════════════════════════════════
   // CRITICAL: The block ID must be stable across re-renders.
@@ -237,6 +243,7 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
       blockId={blockId}
       blockType={block.type}
       isSelected={isSelected}
+      isMultiSelected={isMultiSelected}
       isHovered={isHovered}
       isEditing={isEditing}
       isCompact={isCompact}

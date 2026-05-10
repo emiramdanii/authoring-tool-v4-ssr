@@ -71,10 +71,13 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     moveBlockUp,
     moveBlockDown,
     selectedBlockId,
+    selectedBlockIds,
     stopEditing,
     editingBlockId,
     copySchemaBlock,
     pasteSchemaBlock,
+    nudgeSchemaBlocks,
+    deleteSchemaBlocks,
     undo,
     redo,
   } = useCanvaStore();
@@ -144,10 +147,35 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
       // ── Schema block shortcuts (when a block is selected) ─────
       if (selectedBlockId) {
-        // Delete / Backspace — delete selected block
+        // Arrow keys — nudge selected block(s)
+        if (e.key === 'ArrowUp' && !e.altKey) {
+          e.preventDefault();
+          nudgeSchemaBlocks(0, e.shiftKey ? -5 : -1);
+          return;
+        }
+        if (e.key === 'ArrowDown' && !e.altKey) {
+          e.preventDefault();
+          nudgeSchemaBlocks(0, e.shiftKey ? 5 : 1);
+          return;
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          nudgeSchemaBlocks(e.shiftKey ? -5 : -1, 0);
+          return;
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          nudgeSchemaBlocks(e.shiftKey ? 5 : 1, 0);
+          return;
+        }
+        // Delete / Backspace — delete selected block(s)
         if (e.key === 'Delete' || e.key === 'Backspace') {
           e.preventDefault();
-          deleteBlock(selectedBlockId);
+          if (selectedBlockIds.length > 1) {
+            deleteSchemaBlocks(selectedBlockIds);
+          } else {
+            deleteBlock(selectedBlockId);
+          }
           return;
         }
         // Ctrl+D / Cmd+D — duplicate selected block
@@ -220,7 +248,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedElIds, selectedBlockId, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing, copySchemaBlock, pasteSchemaBlock, undo, redo]);
+  }, [selectedElIds, selectedBlockId, selectedBlockIds, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing, copySchemaBlock, pasteSchemaBlock, nudgeSchemaBlocks, deleteSchemaBlocks, undo, redo]);
 
   // Phase 4: Helper to compute snap lines during drag
   const computeSnapLines = useCallback((elId: string, newX: number, newY: number, newW?: number, newH?: number) => {
@@ -553,10 +581,17 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* Multi-select info badge */}
-          {selectedElIds.length > 1 && (
+          {/* Multi-select info badge (elements) */}
+          {selectedElIds.length > 1 && !selectedBlockId && (
             <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none z-50">
               {selectedElIds.length} elemen terpilih • Shift+klik untuk tambah • Del untuk hapus
+            </div>
+          )}
+
+          {/* Multi-select info badge (schema blocks) */}
+          {selectedBlockIds.length > 1 && (
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none z-50">
+              {selectedBlockIds.length} block terpilih • Shift+klik untuk tambah • Del untuk hapus
             </div>
           )}
         </div>

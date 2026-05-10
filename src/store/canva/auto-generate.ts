@@ -230,7 +230,7 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     }
 
     get()._pushHistory();
-    set({ pages: newPages, currentPageIndex: 0, selectedElId: null });
+    set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success(
       `⚡ ${pageType.name}: ${newPages.length} halaman dibuat${blueprint.autoGenerateModules ? ' + modul auto-generated' : ''}`
     );

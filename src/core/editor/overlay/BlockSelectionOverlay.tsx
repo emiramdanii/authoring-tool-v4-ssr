@@ -36,6 +36,8 @@ export interface BlockSelectionOverlayProps {
   blockType: string;
   /** Whether this block is currently selected */
   isSelected: boolean;
+  /** Whether this block is in multi-select but not the primary selection */
+  isMultiSelected?: boolean;
   /** Whether this block is currently hovered */
   isHovered: boolean;
   /** Whether this block is in inline editing mode */
@@ -43,7 +45,7 @@ export interface BlockSelectionOverlayProps {
   /** Whether we're in canvas (compact) mode */
   isCompact: boolean;
   /** Callback: block clicked */
-  onSelect: (blockId: string, blockType: string) => void;
+  onSelect: (blockId: string, blockType: string, addToSelection?: boolean) => void;
   /** Callback: block hovered */
   onHover: (blockId: string | null) => void;
   /** Callback: block double-clicked (enter edit mode) */
@@ -68,6 +70,7 @@ export function BlockSelectionOverlay({
   blockId,
   blockType,
   isSelected,
+  isMultiSelected,
   isHovered,
   isEditing,
   isCompact,
@@ -98,7 +101,7 @@ export function BlockSelectionOverlay({
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!isCompact) return;
     e.stopPropagation();
-    onSelect(blockId, blockType);
+    onSelect(blockId, blockType, e.shiftKey);
   }, [isCompact, onSelect, blockId, blockType]);
 
   const handleMouseEnter = useCallback(() => {
@@ -218,11 +221,13 @@ export function BlockSelectionOverlay({
   }, [isCompact, isSelected, capabilities.movable, blockId, updateSchemaBlock]);
 
   // ── Selection ring class ──────────────────────────────────────
-  const ringClass = isSelected
-    ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent rounded-lg'
-    : isHovered
-      ? 'ring-1 ring-blue-400/30 ring-offset-1 ring-offset-transparent rounded-lg'
-      : '';
+  const ringClass = isSelected && isMultiSelected
+    ? 'ring-2 ring-blue-300 ring-offset-1 ring-offset-transparent rounded-lg'
+    : isSelected
+      ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent rounded-lg'
+      : isHovered
+        ? 'ring-1 ring-blue-400/30 ring-offset-1 ring-offset-transparent rounded-lg'
+        : '';
 
   // ── Render ────────────────────────────────────────────────────
   return (

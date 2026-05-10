@@ -24,7 +24,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
   goPage: (idx) => {
     const pages = get().pages;
     if (idx < 0 || idx >= pages.length) return;
-    set({ currentPageIndex: idx, selectedElId: null });
+    set({ currentPageIndex: idx, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
   },
 
   addPage: () => {

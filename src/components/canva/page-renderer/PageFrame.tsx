@@ -53,7 +53,7 @@ export interface PageFrameProps {
   /** Currently selected schema block ID (canvas mode only) */
   selectedBlockId?: string | null;
   /** Callback when a schema block is clicked (canvas mode only) */
-  onBlockSelect?: (blockId: string, blockType: string) => void;
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }
 
 // TEMPLATE_ICON_MAP imported from canva-icon-maps.ts (single source of truth)

@@ -33,6 +33,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     selectedElIds: [], // Phase 4: Multi-select
     selectedBlockId: null, // Schema block selection for editing overlay
     selectedBlockType: null,
+    // selectedBlockIds is provided by UISlice
     hoveredBlockId: null, // Hover context for blocks
     editingBlockId: null, // Inline editing context
     // _clipboard is provided by createElementSlice — no duplicate here

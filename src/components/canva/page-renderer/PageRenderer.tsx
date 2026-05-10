@@ -139,10 +139,11 @@ export function PageRenderer({
   const moveBlockDown = useCanvaStore(s => s.moveBlockDown);
   const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const hoveredBlockId = useCanvaStore(s => s.hoveredBlockId);
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
-  const handleBlockSelect = React.useCallback((blockId: string, blockType: string) => {
-    selectBlock(blockId, blockType);
+  const handleBlockSelect = React.useCallback((blockId: string, blockType: string, addToSelection?: boolean) => {
+    selectBlock(blockId, blockType, addToSelection);
   }, [selectBlock]);
   const handleBlockHover = React.useCallback((blockId: string | null) => {
     hoverBlock(blockId);
@@ -173,6 +174,7 @@ export function PageRenderer({
           tokens={tokens}
           interactive={interactive}
           selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
+          selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
           hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
           editingBlockId={mode === 'canvas' ? editingBlockId : undefined}
           onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}

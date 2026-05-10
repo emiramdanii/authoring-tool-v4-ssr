@@ -40,6 +40,8 @@ export interface CanvaState {
   // Schema block selection — for editing overlay on schema-driven pages
   selectedBlockId: string | null;
   selectedBlockType: string | null;
+  // Multi-select for schema blocks (shift+click)
+  selectedBlockIds: string[];
   // Hover context — which block the cursor is over (for hover effects, layer panel)
   hoveredBlockId: string | null;
   // Editing context — which block is being inline-edited (double-click → edit mode)
@@ -132,7 +134,7 @@ export interface CanvaState {
   setRatio: (ratioId: string) => void;
   nudgeSelected: (dx: number, dy: number) => void;
   // Schema block selection — for editing overlay
-  selectBlock: (blockId: string | null, blockType?: string | null) => void;
+  selectBlock: (blockId: string | null, blockType?: string | null, addToSelection?: boolean) => void;
   /** Update a schema block's content properties by block ID (deep patch merge) */
   updateSchemaBlock: (blockId: string, updates: Record<string, unknown>) => void;
   /** Set hover context for a block (for hover effects, layer panel) */
@@ -157,6 +159,10 @@ export interface CanvaState {
   copySchemaBlock: (blockId: string) => void;
   /** Paste a schema block from the clipboard */
   pasteSchemaBlock: () => void;
+  /** Nudge selected schema block(s) by dx/dy percentage */
+  nudgeSchemaBlocks: (dxPct: number, dyPct: number) => void;
+  /** Delete multiple schema blocks by IDs */
+  deleteSchemaBlocks: (blockIds: string[]) => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

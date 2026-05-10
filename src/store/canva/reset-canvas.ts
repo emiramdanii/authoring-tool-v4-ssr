@@ -85,7 +85,7 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
     }
 
     get()._pushHistory();
-    set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [] });
+    set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
     // Save new pages to localStorage immediately so loadFromStorage()
     // on next mount will get the fresh pages, not stale data.
