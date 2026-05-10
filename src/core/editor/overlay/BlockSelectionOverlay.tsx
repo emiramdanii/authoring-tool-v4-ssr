@@ -8,6 +8,7 @@
 //   - Delete button (on the label badge)
 //   - Reorder controls (move up/down for flow blocks)
 //   - Transform handles (resize/move, driven by capabilities)
+//   - Drag-to-move (absolute-positioned, movable blocks)
 //
 // This component is capability-driven: it reads BlockCapabilities from
 // the registry and only shows controls that the block supports.
@@ -19,7 +20,7 @@
 
 'use client';
 
-import React, { useCallback, type ReactNode } from 'react';
+import React, { useCallback, useState, type ReactNode } from 'react';
 import { getBlockDefinition, type BlockCapabilities } from '../../registry/SceneRegistry';
 import { useCanvaStore } from '@/store/canva-store';
 import type { SchemaBlock } from '../../schema/types';
@@ -89,6 +90,10 @@ export function BlockSelectionOverlay({
   const blockName = definition?.name ?? blockType;
   const blockIcon = definition?.icon ?? '?';
 
+  // ── Store & Drag State ────────────────────────────────────────
+  const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
+  const [isDragging, setIsDragging] = useState(false);
+
   // ── Event Handlers ────────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!isCompact) return;
@@ -136,6 +141,82 @@ export function BlockSelectionOverlay({
     onDuplicate?.(blockId);
   }, [onDuplicate, blockId]);
 
+  // ── Drag-to-move (absolute-positioned, movable blocks) ────────
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    // Only allow drag for movable, selected blocks in compact mode
+    if (!isCompact || !isSelected || !capabilities.movable) return;
+
+    // Don't start drag if clicking on a button or resize handle
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) return;
+
+    // Check if block is absolute-positioned (only absolute blocks can be dragged)
+    const state = useCanvaStore.getState();
+    const page = state.pages[state.currentPageIndex];
+    if (!page) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const block = blocks.find(b => b.id === blockId);
+    if (!block?.layout || block.layout.position !== 'absolute') return;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const toNum = (v: number | string | undefined, fallback: number): number =>
+      typeof v === 'number' ? v : fallback;
+
+    const initialX = toNum(block.layout.x, 0);
+    const initialY = toNum(block.layout.y, 0);
+    const DRAG_THRESHOLD = 3;
+    let dragStarted = false;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+
+      // Only start updating position after threshold
+      if (!dragStarted && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+
+      if (!dragStarted) {
+        dragStarted = true;
+        setIsDragging(true);
+        document.body.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+      }
+
+      // Convert pixel delta to percentage (approximate — assumes canvas ~1280x720)
+      const dxPct = dx / 12.8;
+      const dyPct = dy / 7.2;
+
+      const newX = Math.max(0, Math.min(90, initialX + dxPct));
+      const newY = Math.max(0, Math.min(90, initialY + dyPct));
+
+      updateSchemaBlock(blockId, {
+        layout: {
+          position: 'absolute',
+          x: Math.round(newX * 10) / 10,
+          y: Math.round(newY * 10) / 10,
+        },
+      });
+    };
+
+    const handleMouseUp = () => {
+      if (dragStarted) {
+        setIsDragging(false);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, [isCompact, isSelected, capabilities.movable, blockId, updateSchemaBlock]);
+
   // ── Selection ring class ──────────────────────────────────────
   const ringClass = isSelected
     ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent rounded-lg'
@@ -148,8 +229,9 @@ export function BlockSelectionOverlay({
     <div
       data-block-id={blockId}
       data-block-type={blockType}
-      className={`relative group ${ringClass} ${isCompact ? 'cursor-pointer' : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg' : ''}`}
+      className={`relative group ${ringClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg' : ''}`}
       onClick={handleClick}
+      onMouseDown={handleDragStart}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onDoubleClick={handleDoubleClick}
@@ -246,8 +328,8 @@ export function BlockSelectionOverlay({
 // TRANSFORM HANDLES — Resize/move handles for capable blocks
 // ═══════════════════════════════════════════════════════════════════
 // Shows 8-directional resize handles when a block is selected
-// and has `resizable: true` capability. For future: drag-to-move
-// when `movable: true`.
+// and has `resizable: true` capability. Drag-to-move is handled
+// directly in BlockSelectionOverlay for `movable: true` blocks.
 
 interface TransformHandlesProps {
   blockId: string;
