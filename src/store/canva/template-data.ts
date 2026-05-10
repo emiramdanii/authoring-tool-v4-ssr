@@ -52,6 +52,7 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
         mapel: meta.mapel || '',
         kelas: meta.kelas || '',
         namaBab: meta.namaBab || '',
+        durasi: meta.durasi || '',
       };
 
     case 'petunjuk':
@@ -65,6 +66,8 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
         cp: authStore.cp,
         tp: authStore.tp,
         atp: authStore.atp,
+        alur: authStore.alur,
+        atpNamaBab: authStore.atp?.namaBab || '',
       };
 
     case 'materi':
@@ -114,6 +117,7 @@ export function buildTemplateData(templateType: PageTemplateType): Record<string
     case 'skenario':
       return {
         skenario: authStore.skenario,
+        skenarioTitle: authStore.skenario.length > 0 ? 'Skenario Interaktif' : '',
       };
 
     case 'hero':

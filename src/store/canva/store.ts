@@ -24,7 +24,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     // ── Initial state ────────────────────────────────────────────
     pages: [createPage('Halaman 1', 'custom')],
     currentPageIndex: 0,
-    ratioId: '16:9',
+    ratioId: '9:16',
     zoom: 1.0,
     tool: 'select',
     leftTab: 'halaman',

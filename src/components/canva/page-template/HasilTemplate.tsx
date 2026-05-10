@@ -6,6 +6,7 @@ import { EditableText } from './EditableText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { playSound } from '@/lib/sounds';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Hasil Template ────────────────────────────────────────────
 // Phase 10: Added action button in interactive mode, better preview
@@ -117,21 +118,12 @@ export function HasilTemplate({ td, palette, isSelected, onEditField, interactiv
         ))}
       </div>
 
-      {/* Action button — only show when scores exist (not in preview mode) */}
-      {hasScores && (
-        <button
-          onClick={() => {
-            // Guard: only navigate in actual Play/Export mode, not canvas preview
-            if (useInteractiveStore.getState().mode !== 'interactive') return;
-            playSound('click');
-            useInteractiveStore.getState().resetAllScores();
-            useInteractiveStore.getState().goInteractivePage(0);
-            useCanvaStore.getState().goPage(0);
-          }}
-          className="mt-4 px-5 py-2 rounded-xl text-[11px] font-bold transition-all hover:scale-105 active:scale-95"
-          style={{ background: alpha(accent, 0.15), border: `1px solid ${alpha(accent, 0.3)}`, color: accent }}>
-          ↩ Ulangi Semua
-        </button>
+      {/* Action buttons in interactive mode */}
+      {interactive && (
+        <div className="flex gap-2 mt-4">
+          <TemplateNavButton action="restart" accent={accent} size="sm" />
+          <TemplateNavButton action="next" accent={accent} size="sm" />
+        </div>
       )}
 
       {/* Bab name */}

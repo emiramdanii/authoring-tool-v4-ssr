@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { getPaletteColor, alpha } from '@/lib/color-palette';
 import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
-import { useInteractiveStore } from '@/store/interactive-store';
-import { useCanvaStore } from '@/store/canva-store';
+import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Penutup Template ───────────────────────────────────────────
 // Phase 10: Added completion button ("Kembali ke Awal") in
@@ -88,14 +87,19 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField, interact
                 <div className="text-[9px] text-white/60 leading-relaxed mb-1.5">{String(nextPertemuan.deskripsi)}</div>
               )}
               {Array.isArray(nextPertemuan.items) && (nextPertemuan.items as Array<Record<string, unknown>>).length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="space-y-1.5">
                   {(nextPertemuan.items as Array<Record<string, unknown>>).map((it, j) => {
                     const itWarna = String(it.warna || cyan);
                     return (
-                      <span key={j} className="px-2 py-0.5 rounded-full text-[8px] font-bold"
-                        style={{ background: alpha(itWarna, 0.1), color: itWarna, border: `1px solid ${alpha(itWarna, 0.2)}` }}>
-                        {String(it.icon || '')} {String(it.judul || '')}
-                      </span>
+                      <div key={j} className="flex items-start gap-1.5">
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold flex-shrink-0"
+                          style={{ background: alpha(itWarna, 0.1), color: itWarna, border: `1px solid ${alpha(itWarna, 0.2)}` }}>
+                          {String(it.icon || '')} {String(it.judul || '')}
+                        </span>
+                        {Boolean(it.isi) && (
+                          <span className="text-[8px] text-white/50 leading-relaxed">{String(it.isi)}</span>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -105,21 +109,11 @@ export function PenutupTemplate({ td, palette, isSelected, onEditField, interact
         </div>
       )}
 
-      {/* Action button in interactive mode — only navigate in Play/Export */}
+      {/* Action buttons in interactive mode */}
       {interactive && (
         <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => {
-              // Guard: only navigate in actual Play/Export mode, not canvas preview
-              if (useInteractiveStore.getState().mode !== 'interactive') return;
-              useInteractiveStore.getState().resetAllScores();
-              useInteractiveStore.getState().goInteractivePage(0);
-              useCanvaStore.getState().goPage(0);
-            }}
-            className="flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all hover:scale-105 active:scale-95"
-            style={{ background: alpha(accent, 0.15), border: `1px solid ${alpha(accent, 0.3)}`, color: accent }}>
-            ↩ Kembali ke Awal
-          </button>
+          <TemplateNavButton action="restart" accent={accent} size="sm" />
+          <TemplateNavButton action="next" accent={accent} size="sm" />
         </div>
       )}
     </div>

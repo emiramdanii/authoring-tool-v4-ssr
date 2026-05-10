@@ -6,24 +6,30 @@ import type { SubTemplateProps } from './types';
 import { EditableText } from './EditableText';
 import { TemplateNavButton } from './TemplateNavButton';
 
-// ── Dokumen Template (CP/TP/ATP) ─────────────────────────────
-// Phase 10: Accordion-style toggle buttons for CP, TP, ATP sections.
-// Phase 11: Added "Mulai Pembelajaran" nav button in interactive mode.
+// ── Dokumen Template (CP/TP/ATP/Alur) ─────────────────────────────
+// 4-tab layout: Capaian, Tujuan, Alur, ATP
+// Shows all curriculum data from presets including Alur (learning phases),
+// ATP penilaian, CP fase & kelas.
 
-type ActiveTab = 'cp' | 'tp' | 'atp';
+type ActiveTab = 'cp' | 'tp' | 'alur' | 'atp';
 
 export function DokumenTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const accent2 = getPaletteColor(palette, '--c', '#3ecfcf');
   const green = getPaletteColor(palette, '--g', '#34d399');
+  const purple = getPaletteColor(palette, '--p', '#a78bfa');
   const cp = td.cp as Record<string, unknown> | undefined;
   const tpItems = (td.tp as Array<Record<string, unknown>>) || [];
-  const atpItems = (td.atp as Array<Record<string, unknown>>) || [];
+  const atpObj = td.atp as Record<string, unknown> | undefined;
+  const atpItems = (atpObj?.pertemuan as Array<Record<string, unknown>>) || [];
+  const atpNamaBab = String(td.atpNamaBab || atpObj?.namaBab || '');
+  const alurItems = (td.alur as Array<Record<string, unknown>>) || [];
 
-  // Track which tab is active (default: CP if exists, else TP, else ATP)
+  // Track which tab is active (default: CP if exists, else TP, else Alur, else ATP)
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     if (cp?.capaianFase) return 'cp';
     if (tpItems.length > 0) return 'tp';
+    if (alurItems.length > 0) return 'alur';
     if (atpItems.length > 0) return 'atp';
     return 'cp';
   });
@@ -31,8 +37,9 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
   // Determine which tabs have content
   const hasCp = Boolean(cp?.capaianFase);
   const hasTp = tpItems.length > 0;
+  const hasAlur = alurItems.length > 0;
   const hasAtp = atpItems.length > 0;
-  const hasAnyContent = hasCp || hasTp || hasAtp;
+  const hasAnyContent = hasCp || hasTp || hasAlur || hasAtp;
 
   // Tab button helper
   const tabBtn = (tab: ActiveTab, icon: string, label: string, count: number, color: string, enabled: boolean) => (
@@ -86,7 +93,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
             className="font-black text-white text-sm"
             placeholder="Judul Dokumen"
           />
-          <div className="text-[9px] text-white/40">Capaian Pembelajaran • Tujuan Pembelajaran • Alur Tujuan Pembelajaran</div>
+          <div className="text-[9px] text-white/40">Capaian • Tujuan • Alur • ATP</div>
         </div>
       </div>
 
@@ -95,7 +102,8 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
         <div className="flex gap-1.5 mb-3 overflow-x-auto pb-0.5">
           {tabBtn('cp', '📋', 'Capaian', hasCp ? 1 : 0, accent, hasCp)}
           {tabBtn('tp', '🎯', 'Tujuan', tpItems.length, accent2, hasTp)}
-          {tabBtn('atp', '📅', 'Alur', atpItems.length, green, hasAtp)}
+          {tabBtn('alur', '🔄', 'Alur', alurItems.length, purple, hasAlur)}
+          {tabBtn('atp', '📅', 'ATP', atpItems.length, green, hasAtp)}
         </div>
       )}
 
@@ -105,6 +113,24 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
           {cp ? (
             <div className="p-3 rounded-lg" style={{ background: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.15)}` }}>
               <div className="text-[11px] font-bold mb-2" style={{ color: accent }}>📋 Capaian Pembelajaran</div>
+
+              {/* Fase & Kelas badges */}
+              {(Boolean(cp.fase) || Boolean(cp.kelas)) && (
+                <div className="flex items-center gap-1.5 mb-2">
+                  {Boolean(cp.fase) && (
+                    <span className="px-2 py-0.5 rounded text-[8px] font-bold"
+                      style={{ background: alpha(accent, 0.1), color: accent, border: `1px solid ${alpha(accent, 0.2)}` }}>
+                      Fase {String(cp.fase)}
+                    </span>
+                  )}
+                  {Boolean(cp.kelas) && (
+                    <span className="px-2 py-0.5 rounded text-[8px] font-bold"
+                      style={{ background: alpha(accent, 0.1), color: accent, border: `1px solid ${alpha(accent, 0.2)}` }}>
+                      Kelas {String(cp.kelas)}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Elemen & Sub-Elemen */}
               {Boolean(cp.elemen) && (
@@ -182,12 +208,74 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
         </div>
       )}
 
+      {/* ── Alur Section (Learning Phases) ── */}
+      {activeTab === 'alur' && (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {alurItems.length > 0 ? (
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold mb-1.5" style={{ color: purple }}>🔄 Alur Kegiatan Pembelajaran</div>
+              {alurItems.map((item, i) => {
+                const fase = String(item.fase || 'Inti');
+                const faseColor = fase === 'Pendahuluan' ? accent : fase === 'Inti' ? accent2 : green;
+                return (
+                  <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg" style={{
+                    background: alpha(faseColor, 0.05),
+                    border: `1px solid ${alpha(faseColor, 0.15)}`,
+                    borderLeft: `3px solid ${faseColor}`,
+                  }}>
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center text-[8px] font-black flex-shrink-0 mt-0.5"
+                      style={{ background: alpha(faseColor, 0.15), color: faseColor }}>
+                      {i + 1}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-[9px] font-bold" style={{ color: faseColor }}>
+                          {fase}
+                        </span>
+                        {Boolean(item.durasi) && (
+                          <span className="text-[7px] text-white/40">
+                            ⏱ {String(item.durasi)}
+                          </span>
+                        )}
+                      </div>
+                      {Boolean(item.judul) && (
+                        <div className="text-[10px] font-bold text-white/90 mb-0.5">
+                          {String(item.judul)}
+                        </div>
+                      )}
+                      {Boolean(item.deskripsi) && (
+                        <div className="text-[9px] text-white/60 leading-relaxed">
+                          {String(item.deskripsi).length > 150 ? String(item.deskripsi).slice(0, 150) + '...' : String(item.deskripsi)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-white/30">
+              <span className="text-3xl mb-2">🔄</span>
+              <span className="text-[10px]">{interactive ? 'Belum ada Alur Kegiatan' : 'Tambah Alur di panel Dokumen'}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── ATP Section ── */}
       {activeTab === 'atp' && (
         <div className="flex-1 min-h-0 overflow-y-auto">
           {atpItems.length > 0 ? (
             <div className="space-y-2">
-              <div className="text-[11px] font-bold mb-1.5" style={{ color: green }}>📅 Alur Tujuan Pembelajaran</div>
+              {/* ATP header with namaBab & jumlahPertemuan */}
+              {(Boolean(atpNamaBab) || atpItems.length > 0) && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[11px] font-bold" style={{ color: green }}>📅 Alur Tujuan Pembelajaran</span>
+                  {Boolean(atpNamaBab) && (
+                    <span className="text-[8px] text-white/40">• {atpNamaBab}</span>
+                  )}
+                </div>
+              )}
               {atpItems.map((atp, i) => (
                 <div key={i} className="p-2.5 rounded-lg bg-white/5 border-l-3" style={{ borderLeftColor: green, borderLeftWidth: 3 }}>
                   <div className="flex items-center gap-1.5 mb-1">
@@ -203,6 +291,16 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
                   )}
                   {Boolean(atp.kegiatan) && (
                     <div className="text-[8px] text-white/60 leading-relaxed mb-1">{String(atp.kegiatan)}</div>
+                  )}
+                  {/* Penilaian — previously missing */}
+                  {Boolean(atp.penilaian) && (
+                    <div className="mt-1 p-1.5 rounded" style={{
+                      background: alpha(green, 0.06),
+                      border: `1px solid ${alpha(green, 0.12)}`,
+                    }}>
+                      <span className="text-[7px] font-bold" style={{ color: green }}>📝 Penilaian: </span>
+                      <span className="text-[7px] text-white/50">{String(atp.penilaian)}</span>
+                    </div>
                   )}
                   {Array.isArray(atp.tp) && (atp.tp as Array<Record<string, unknown>>).length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -230,7 +328,7 @@ export function DokumenTemplate({ td, palette, isSelected, onEditField, interact
       {!hasAnyContent && (
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">
           <span className="text-3xl mb-2">📋</span>
-          <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP, TP & ATP di panel Dokumen'}</span>
+          <span className="text-[10px]">{interactive ? 'Belum ada data dokumen' : 'Isi data CP, TP, Alur & ATP di panel Dokumen'}</span>
         </div>
       )}
 

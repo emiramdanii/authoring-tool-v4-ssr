@@ -149,17 +149,17 @@ export default function CanvaBuilder() {
 
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-        <div className="border-r border-slate-800/60 shadow-[1px_0_8px_-2px_rgba(0,0,0,0.35)] flex-shrink-0">
+        <div className="border-r border-slate-800/60 shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0">
           <LeftPanel />
         </div>
 
         {/* Stage Canvas Area — recessed with inner shadow */}
-        <div className="flex-1 relative shadow-[inset_0_0_32px_-8px_rgba(0,0,0,0.3)] bg-slate-900/80">
+        <div className="flex-1 relative shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-slate-900/80">
           <Stage onMouseMove={handleMouseMove} />
         </div>
 
         {rightPanelOpen && (
-          <div className="border-l border-slate-800/60 shadow-[-1px_0_8px_-2px_rgba(0,0,0,0.35)] flex-shrink-0">
+          <div className="border-l border-slate-800/60 shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0">
             <RightPanel />
           </div>
         )}

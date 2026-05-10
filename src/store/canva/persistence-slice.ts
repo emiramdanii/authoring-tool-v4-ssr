@@ -72,7 +72,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
         set({
           pages,
-          ratioId: data.ratioId || '16:9',
+          ratioId: data.ratioId || '9:16',
           currentPageIndex: 0,
           selectedElId: null,
           selectedElIds: [], // Phase 4: Reset multi-select on load

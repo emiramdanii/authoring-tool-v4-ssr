@@ -230,8 +230,8 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     const area = canvasAreaRef.current;
     if (!area) return;
     const observer = new ResizeObserver(() => {
-      const aW = (area.clientWidth || 800) - 60;
-      const aH = (area.clientHeight || 500) - 60;
+      const aW = (area.clientWidth || 800) - 20;
+      const aH = (area.clientHeight || 500) - 20;
       const scaleW = aW / ratio.w;
       const scaleH = aH / ratio.h;
       setBaseScale(Math.min(scaleW, scaleH, 1));
@@ -304,7 +304,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       onDrop={handleDrop}
     >
       {/* Checkerboard pattern behind stage — padding prevents clipping when scaled */}
-      <div className="relative" style={{ padding: '30px' }}>
+      <div className="relative" style={{ padding: '10px' }}>
         <div
           ref={stageWrapRef}
           id="cm-stage-wrap"
