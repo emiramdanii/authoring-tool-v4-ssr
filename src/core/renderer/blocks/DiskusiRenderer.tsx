@@ -26,36 +26,39 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact }: {
       </div>
       {block.intro && <p className="text-[11px] mt-1 leading-relaxed font-bold mb-3">{block.intro}</p>}
 
-      {block.questions.map((q, i) => (
+      {(block.questions || []).map((q, i) => {
+        const qColor = q.color || 'c';
+        return (
         <div key={i} className="mt-4 rounded-xl p-3"
           style={{
             background: 'rgba(255,255,255,.05)',
-            border: '1px solid ' + tokens.colorAlpha('c', 0.15),
-            borderLeft: '3px solid ' + tokens.color('c'),
+            border: '1px solid ' + tokens.colorAlpha(qColor, 0.15),
+            borderLeft: '3px solid ' + tokens.color(qColor),
           }}>
           <div className="flex items-center gap-2">
             <span className="text-base">{q.icon}</span>
-            <span className="text-[11px] font-extrabold" style={{ color: tokens.color('c') }}>{q.label}</span>
+            <span className="text-[11px] font-extrabold" style={{ color: tokens.color(qColor) }}>{q.label}</span>
           </div>
           <p className="text-[11px] mt-1.5 leading-relaxed font-bold">{q.teks}</p>
           {interactive ? (
             <textarea className="w-full mt-2 rounded-lg p-2.5 text-[11px] text-white resize-y min-h-[60px]"
               style={{
                 background: 'rgba(255,255,255,.06)',
-                border: '1px solid ' + tokens.colorAlpha('c', 0.2),
+                border: '1px solid ' + tokens.colorAlpha(qColor, 0.2),
               }}
               placeholder={q.petunjuk} />
           ) : (
             <div className="w-full mt-2 rounded-lg p-2.5 text-[10px] text-white/30 min-h-[40px]"
               style={{
                 background: 'rgba(255,255,255,.03)',
-                border: '1px dashed ' + tokens.colorAlpha('c', 0.25),
+                border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
               }}>
               {q.petunjuk}
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

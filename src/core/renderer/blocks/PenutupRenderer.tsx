@@ -14,7 +14,7 @@ export function PenutupRenderer({ block, tokens, isCompact }: {
       </h2>
 
       {/* Preview items */}
-      {block.preview.length > 0 && (
+      {(block.preview || []).length > 0 && (
         <div className="mt-4 p-4 rounded-2xl"
           style={{
             background: 'linear-gradient(135deg, ' + tokens.colorAlpha('c', 0.1) + ', ' + tokens.colorAlpha('p', 0.1) + ')',
@@ -24,7 +24,7 @@ export function PenutupRenderer({ block, tokens, isCompact }: {
           <div className="text-[10px] font-extrabold uppercase tracking-wider mb-3" style={{ color: tokens.color('c') }}>
             📋 Ringkasan
           </div>
-          {block.preview.map((item, i) => (
+          {(block.preview || []).map((item, i) => (
             <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl mb-2 text-[10px] font-bold leading-relaxed transition-all hover:-translate-y-0.5"
               style={{
                 background: tokens.colorAlpha(item.warna, 0.1),
@@ -59,7 +59,7 @@ export function PenutupRenderer({ block, tokens, isCompact }: {
           </div>
           <div className="text-[10px] text-white/55 mb-3">{block.nextPertemuan.deskripsi}</div>
           <div className="grid grid-cols-2 gap-2">
-            {block.nextPertemuan.items.map((item, i) => (
+            {(block.nextPertemuan.items || []).map((item, i) => (
               <div key={i} className="rounded-xl p-2.5 text-[10px] font-bold text-center transition-all hover:-translate-y-0.5"
                 style={{
                   background: tokens.colorAlpha(item.warna, 0.12),

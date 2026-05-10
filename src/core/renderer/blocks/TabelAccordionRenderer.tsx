@@ -11,7 +11,7 @@ export function TabelAccordionRenderer({ block, tokens, isCompact }: {
 
   return (
     <div className="flex flex-col gap-2 mt-3">
-      {block.rows.map((row, i) => (
+      {(block.rows || []).map((row, i) => (
         <div key={i} className="rounded-xl overflow-hidden transition-all"
           style={{
             border: '1px solid ' + (openIdx === i ? tokens.colorAlpha(row.color, 0.35) : tokens.colorAlpha(row.color, 0.12)),
@@ -32,7 +32,7 @@ export function TabelAccordionRenderer({ block, tokens, isCompact }: {
             <div className="px-3.5 pb-3.5"
               style={{ animation: 'fadeIn 0.3s ease' }}>
               <div className="grid grid-cols-2 gap-2.5">
-                {row.details.map((d, j) => (
+                {(row.details || []).map((d, j) => (
                   <div key={j} className="rounded-xl p-2.5"
                     style={{
                       background: tokens.colorAlpha(row.color, 0.08),

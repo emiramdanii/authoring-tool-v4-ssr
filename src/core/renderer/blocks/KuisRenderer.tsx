@@ -10,11 +10,54 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
 
-  const q = block.questions[current];
-  if (!q) return null;
-
+  const questions = block.questions || [];
+  const q = questions[current];
   const totalAnswered = Object.keys(answers).length;
-  const totalCorrect = Object.entries(answers).filter(([idx, ans]) => ans === block.questions[Number(idx)]?.ans).length;
+  const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.ans === ans).length;
+  const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ══ COMPLETION SCREEN ═══════════════════════════════════════
+  if (isCompleted) {
+    const pct = questions.length > 0 ? Math.round((totalCorrect / questions.length) * 100) : 0;
+    return (
+      <div className="text-center p-5">
+        <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
+          {pct >= 80 ? '🏆' : pct >= 50 ? '⭐' : '💪'}
+        </div>
+        <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('y') }}>
+          {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
+        </div>
+        <div className="text-[11px] text-white/55 mb-4">
+          Skor kamu: {totalCorrect}/{questions.length} ({pct}%)
+        </div>
+        <div className="flex justify-center gap-3">
+          <div className="px-4 py-2 rounded-xl"
+            style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
+            <div className="text-[10px] font-extrabold" style={{ color: tokens.color('g') }}>Benar</div>
+            <div className="font-black" style={{ color: tokens.color('g') }}>{totalCorrect}</div>
+          </div>
+          <div className="px-4 py-2 rounded-xl"
+            style={{ background: tokens.colorAlpha('r', 0.12), border: '1px solid ' + tokens.colorAlpha('r', 0.3) }}>
+            <div className="text-[10px] font-extrabold" style={{ color: tokens.color('r') }}>Salah</div>
+            <div className="font-black" style={{ color: tokens.color('r') }}>{questions.length - totalCorrect}</div>
+          </div>
+        </div>
+        {interactive && (
+          <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+            onClick={() => { setAnswers({}); setCurrent(0); }}
+            style={{
+              background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+              color: tokens.color('bg'),
+              boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
+            }}>
+            🔄 Ulangi
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (!q) return null;
 
   return (
     <div className="space-y-3">
@@ -29,7 +72,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
             color: tokens.color('y'),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
           }}>
-          {current + 1}/{block.questions.length}
+          {current + 1}/{questions.length}
         </span>
       </div>
 
@@ -38,7 +81,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
         style={{ background: 'rgba(255,255,255,.08)' }}>
         <div className="h-full rounded-full transition-all"
           style={{
-            width: (totalAnswered / block.questions.length) * 100 + '%',
+            width: (totalAnswered / questions.length) * 100 + '%',
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
           }} />
@@ -53,7 +96,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
         }}>
         <div className="text-[12px] font-bold leading-relaxed mb-3">{q.q}</div>
         <div className="grid grid-cols-2 gap-2.5">
-          {q.opts.map((opt, i) => {
+          {(q.opts || []).map((opt, i) => {
             const isAnswered = answers[current] !== undefined;
             const isCorrect = i === q.ans;
             const isPicked = answers[current] === i;
@@ -84,7 +127,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
       </div>
 
       {/* Next button */}
-      {answers[current] !== undefined && current < block.questions.length - 1 && (
+      {answers[current] !== undefined && current < questions.length - 1 && (
         <button className="px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
           onClick={() => setCurrent(current + 1)}
           style={{

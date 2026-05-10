@@ -19,7 +19,7 @@ export function AlurRenderer({ block, tokens, isCompact }: {
         ⏱️ Alur Kegiatan {block.totalDurasi || ''}
       </div>
       <div className="flex flex-col gap-2">
-        {block.steps.map((step, i) => (
+        {(block.steps || []).map((step, i) => (
           <div key={i} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5"
             style={{
               background: tokens.colorAlpha(step.dot, 0.08),

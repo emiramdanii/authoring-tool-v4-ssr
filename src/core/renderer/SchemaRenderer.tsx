@@ -221,7 +221,7 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false }
     case 'flashcard-set':
       return <FlashcardRenderer block={block as FlashcardSetBlock} tokens={tokens} isCompact={isCompact} />;
     case 'ftab':
-      return <FtabRenderer block={block as FtabBlock} mode={mode} tokens={tokens} />;
+      return <FtabRenderer block={block as FtabBlock} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} />;
     case 'nk-card':
       return <NormaKartuRenderer block={block as NormaKartuBlock} tokens={tokens} isCompact={isCompact} />;
     case 'diskusi':

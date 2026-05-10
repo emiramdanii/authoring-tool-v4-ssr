@@ -17,7 +17,7 @@ export function PetunjukRenderer({ block, tokens, isCompact }: {
       </h2>
 
       <div className={`grid grid-cols-2 gap-3 mt-4`}>
-        {block.items.map((item, i) => {
+        {(block.items || []).map((item, i) => {
           const colorCycle = ['y', 'c', 'g', 'p'];
           const itemColor = colorCycle[i % colorCycle.length];
           return (

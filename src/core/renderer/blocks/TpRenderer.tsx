@@ -15,7 +15,7 @@ export function TpRenderer({ block, tokens, isCompact }: {
       </h2>
 
       <div className="flex flex-col gap-3 mt-4">
-        {block.items.map((item, i) => (
+        {(block.items || []).map((item, i) => (
           <div key={i} className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5"
             style={{
               background: tokens.colorAlpha(item.color, 0.1),

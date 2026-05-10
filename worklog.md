@@ -270,3 +270,35 @@ Stage Summary:
 - SkenarioTemplate works correctly with branching scenarios
 - Store sync no longer triggers unnecessary re-renders
 - Total bugs fixed across all phases: 74+
+
+---
+Task ID: 12
+Agent: Main Agent
+Task: PRIORITAS 1-3 — Kill Dual Rendering, Activate Registry, Layout Transform
+
+Work Log:
+- Reviewed current state: PageRenderer already had unified pipeline from previous session
+- Fixed 22 TypeScript errors across 4 files:
+  1. SceneRegistry.tsx: renderer type changed to React.ComponentType<any> (specific block types incompatible with generic BlockRendererProps)
+  2. PageRenderer.tsx: removed redundant `templateType !== 'custom'` check (isTemplate already implies that)
+  3. generators.ts: added _jumlahPertemuan param to genKuis (was called with 3 args, only accepted 2)
+  4. store.ts: removed duplicate _clipboard (already provided by createElementSlice)
+- PRIORITAS 2: Activated SceneRegistry as primary dispatch
+  - Replaced require() try/catch with static import of SCENE_REGISTRY
+  - Registry-first dispatch in SchemaBlockRenderer
+  - Switch statement kept as dead-code safety net
+- PRIORITAS 3: Layout Transform in SchemaScreenRenderer
+  - Split blocks into flow (default, vertical stack) vs absolute (positioned overlay)
+  - Flow blocks render in scrollable container
+  - Absolute blocks render with x/y/w/h/zIndex/rotation in overlay layer
+  - BlockLayout type already existed in schema/types.ts
+- All builds pass: Next.js 16.2.6 ✅ 0 TS errors in src/
+- Committed as 48d2637, pushed to GitHub
+
+Stage Summary:
+- PRIORITAS 1 (Kill Dual Rendering): COMPLETE — unified pipeline, PageTemplate removed
+- PRIORITAS 2 (Activate Registry): COMPLETE — static import, registry-first dispatch
+- PRIORITAS 3 (Layout Transform): COMPLETE — flow/absolute block rendering
+- 22 TypeScript errors fixed → 0 errors in src/
+- SchemaBlockRenderer now dispatches via registry (18 block types registered)
+- Layout-aware rendering enables future editing overlay system

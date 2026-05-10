@@ -9,7 +9,7 @@ export function NcGridRenderer({ block, tokens, isCompact }: {
 }) {
   return (
     <div className={`grid grid-cols-2 gap-3 my-3`}>
-      {block.cards.map((card, i) => (
+      {(block.cards || []).map((card, i) => (
         <div key={i} className="rounded-xl p-3.5 border transition-all hover:-translate-y-1 hover:shadow-lg"
           style={{
             background: tokens.colorAlpha(card.color, 0.1),

@@ -29,6 +29,8 @@ import type {
   DefBoxBlock,
   NcGridBlock,
   FlashcardSetBlock,
+  SortirGameBlock,
+  RodaGameBlock,
 } from '../schema/types';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -117,9 +119,18 @@ export function convertToSchema(page: CanvaPage): ScreenSchema | null {
     case 'kuis':
       blocks.push(convertKuis(td));
       break;
-    case 'game':
-      blocks.push(convertKuis(td)); // Game uses same format as kuis
+    case 'game': {
+      // Check game sub-type in templateData
+      const gameType = td.gameType || td.gameSubtype || '';
+      if (gameType === 'sortir' || gameType === 'sortir-game') {
+        blocks.push(convertSortirGame(td));
+      } else if (gameType === 'roda' || gameType === 'roda-game') {
+        blocks.push(convertRodaGame(td));
+      } else {
+        blocks.push(convertKuis(td)); // Default game = kuis format
+      }
       break;
+    }
     case 'hasil':
       blocks.push(convertHasil(td));
       break;
@@ -372,6 +383,43 @@ function convertKuis(td: Record<string, unknown>): KuisBlock {
       opts: (q.opts || q.options || []) as string[],
       ans: Number(q.ans ?? q.correct ?? 0),
       ex: String(q.ex || q.explanation || ''),
+    })),
+  };
+}
+
+function convertSortirGame(td: Record<string, unknown>): SortirGameBlock {
+  const pool = (td.pool || td.items) as Array<Record<string, unknown>> | undefined;
+  const kolom = (td.kolom || td.columns || td.categories) as Array<Record<string, unknown>> | undefined;
+  return {
+    type: 'sortir-game',
+    title: String(td.title || 'Game Sortir'),
+    pool: (pool || []).map((item) => ({
+      id: String(item.id || ''),
+      text: String(item.text || item.label || ''),
+      category: String(item.category || item.kolom || ''),
+    })),
+    kolom: (kolom || []).map((k) => ({
+      id: String(k.id || k.key || ''),
+      label: String(k.label || k.name || ''),
+      color: String(k.color || 'y'),
+    })),
+  };
+}
+
+function convertRodaGame(td: Record<string, unknown>): RodaGameBlock {
+  const questions = (td.questions || td.items) as Array<Record<string, unknown>> | undefined;
+  return {
+    type: 'roda-game',
+    title: String(td.title || 'Game Roda'),
+    questions: (questions || []).map((q) => ({
+      q: String(q.q || q.question || ''),
+      diskusiHint: q.diskusiHint ? String(q.diskusiHint) : undefined,
+      opts: ((q.opts || q.options || []) as Array<Record<string, unknown>>).map((opt) => ({
+        text: String(opt.text || opt.label || ''),
+        correct: Boolean(opt.correct || opt.isCorrect),
+      })),
+      feedbackCorrect: q.feedbackCorrect ? String(q.feedbackCorrect) : undefined,
+      feedbackWrong: q.feedbackWrong ? String(q.feedbackWrong) : undefined,
     })),
   };
 }

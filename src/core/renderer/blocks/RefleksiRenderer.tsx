@@ -14,7 +14,7 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact }: {
       )}
       {block.intro && <p className="text-[10px] text-white/55 mb-3">{block.intro}</p>}
 
-      {block.questions.map((q, i) => {
+      {(block.questions || []).map((q, i) => {
         const qColor = q.warna || 'y';
         return (
           <div key={i} className="rounded-xl p-3.5 mb-3 transition-all hover:-translate-y-0.5"

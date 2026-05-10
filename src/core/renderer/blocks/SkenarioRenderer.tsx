@@ -9,31 +9,37 @@ export function SkenarioRenderer({ block, tokens, interactive }: {
 }) {
   const [chapter, setChapter] = React.useState(0);
   const [history, setHistory] = React.useState<Array<{ chapterIdx: number; choiceIdx: number; good: boolean; pts: number }>>([]);
-  const [selectedChoice, setSelectedChoice] = React.useState<{ choiceIdx: number; choice: typeof block.chapters[0]['choices'][0] } | null>(null);
+  const [selectedChoice, setSelectedChoice] = React.useState<{ choiceIdx: number; choice: NonNullable<typeof block.chapters[0]>['choices'][0] } | null>(null);
   const [showFeedback, setShowFeedback] = React.useState(false);
+  const timersRef = React.useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
-  const ch = block.chapters[chapter];
-  const isCompleted = chapter >= block.chapters.length;
+  const chapters = block.chapters || [];
+  const ch = chapters[chapter];
+  const isCompleted = chapter >= chapters.length;
+
+  // Cleanup timers on unmount
+  React.useEffect(() => {
+    return () => { timersRef.current.forEach(t => clearTimeout(t)); };
+  }, []);
 
   const handleChoice = (choiceIdx: number) => {
+    if (!ch) return;
     const choice = ch.choices[choiceIdx];
     setHistory(prev => [...prev, { chapterIdx: chapter, choiceIdx, good: choice.good, pts: choice.pts }]);
     setSelectedChoice({ choiceIdx, choice });
     setShowFeedback(true);
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setShowFeedback(false);
       setSelectedChoice(null);
       const nextCh = choice.nextChapter != null ? choice.nextChapter : chapter + 1;
-      if (nextCh < block.chapters.length) {
-        setChapter(nextCh);
-      } else {
-        setChapter(nextCh); // Mark completed
-      }
+      setChapter(nextCh); // Will mark completed if >= chapters.length
     }, 3000);
+    timersRef.current.push(timer);
   };
 
   const totalPts = history.reduce((sum, h) => sum + h.pts, 0);
+  const totalMax = chapters.length * 20; // Max 20 pts per chapter
   const green = tokens.color('g');
   const red = tokens.color('r');
   const yellow = tokens.color('y');
@@ -57,14 +63,51 @@ export function SkenarioRenderer({ block, tokens, interactive }: {
             </span>
             <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
               style={{ background: tokens.colorAlpha('c', 0.15), color: tokens.color('c'), border: '1px solid ' + tokens.colorAlpha('c', 0.3) }}>
-              Babak {Math.min(chapter + 1, block.chapters.length)}/{block.chapters.length}
+              Babak {Math.min(chapter + 1, chapters.length)}/{chapters.length}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Body — always render content; interactive controls only when interactive */}
-      {ch && !showFeedback && (
+      {/* ══ COMPLETION SCREEN ═══════════════════════════════════ */}
+      {isCompleted && (
+        <div className="p-6 text-center">
+          <div className="text-4xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🎉</div>
+          <div className="font-black text-lg mb-2" style={{ fontFamily: tokens.fontFamily('display'), color: yellow }}>
+            Skenario Selesai!
+          </div>
+          <div className="text-[11px] text-white/55 mb-4">
+            Kamu telah menyelesaikan semua {chapters.length} babak skenario.
+          </div>
+          {/* Score summary */}
+          <div className="inline-flex items-center gap-3">
+            <div className="px-4 py-2 rounded-xl"
+              style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
+              <div className="text-[10px] font-extrabold" style={{ color: green }}>Skor</div>
+              <div className="font-black text-lg" style={{ color: green }}>{totalPts}/{totalMax}</div>
+            </div>
+            <div className="px-4 py-2 rounded-xl"
+              style={{ background: tokens.colorAlpha('y', 0.12), border: '1px solid ' + tokens.colorAlpha('y', 0.3) }}>
+              <div className="text-[10px] font-extrabold" style={{ color: yellow }}>Pilihan Baik</div>
+              <div className="font-black text-lg" style={{ color: yellow }}>{history.filter(h => h.good).length}/{chapters.length}</div>
+            </div>
+          </div>
+          {interactive && (
+            <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+              onClick={() => { setChapter(0); setHistory([]); }}
+              style={{
+                background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+                color: tokens.color('bg'),
+                boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
+              }}>
+              🔄 Ulangi Skenario
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Body — chapter content */}
+      {ch && !isCompleted && !showFeedback && (
         <div className="p-4">
           {/* Setup */}
           {ch.setup && ch.setup.length > 0 && (
@@ -134,11 +177,9 @@ export function SkenarioRenderer({ block, tokens, interactive }: {
       )}
 
       {/* Feedback */}
-      {showFeedback && selectedChoice && (
+      {showFeedback && selectedChoice && ch && (
         <div className="p-4 space-y-2.5">
-          <div className={`p-3 rounded-xl text-center ${
-            selectedChoice.choice.good ? '' : ''
-          }`}
+          <div className="p-3 rounded-xl text-center"
             style={{
               background: selectedChoice.choice.good ? tokens.colorAlpha('g', 0.12) : tokens.colorAlpha('r', 0.12),
               border: '2px solid ' + (selectedChoice.choice.good ? tokens.colorAlpha('g', 0.4) : tokens.colorAlpha('r', 0.4)),
@@ -196,17 +237,19 @@ export function SkenarioRenderer({ block, tokens, interactive }: {
         </div>
       )}
 
-      {/* Progress bar — more visible */}
-      <div className="flex gap-1 p-3 border-t"
-        style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.15) }}>
-        {block.chapters.map((_, i) => (
-          <div key={i} className="flex-1 h-1.5 rounded-full transition-all"
-            style={{
-              background: i < chapter ? green : i === chapter ? yellow : tokens.colorAlpha('muted', 0.2),
-              boxShadow: i === chapter ? '0 0 8px ' + yellow : i < chapter ? '0 0 4px ' + tokens.colorAlpha('g', 0.3) : 'none',
-            }} />
-        ))}
-      </div>
+      {/* Progress bar */}
+      {chapters.length > 0 && (
+        <div className="flex gap-1 p-3 border-t"
+          style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.15) }}>
+          {chapters.map((_, i) => (
+            <div key={i} className="flex-1 h-1.5 rounded-full transition-all"
+              style={{
+                background: i < chapter ? green : i === chapter ? yellow : tokens.colorAlpha('muted', 0.2),
+                boxShadow: i === chapter ? '0 0 8px ' + yellow : i < chapter ? '0 0 4px ' + tokens.colorAlpha('g', 0.3) : 'none',
+              }} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

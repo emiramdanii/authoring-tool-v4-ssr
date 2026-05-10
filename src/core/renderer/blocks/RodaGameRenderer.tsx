@@ -10,7 +10,44 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
 
-  const q = block.questions[current];
+  const questions = block.questions || [];
+  const q = questions[current];
+  const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.opts?.[ans]?.correct).length;
+  const totalAnswered = Object.keys(answers).length;
+  const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ══ COMPLETION SCREEN ═══════════════════════════════════════
+  if (isCompleted) {
+    const pct = questions.length > 0 ? Math.round((totalCorrect / questions.length) * 100) : 0;
+    return (
+      <div className="rounded-2xl overflow-hidden p-6 text-center"
+        style={{
+          background: tokens.color('bg'),
+          border: '2px solid ' + tokens.colorAlpha('c', 0.3),
+          boxShadow: tokens.raw.shadow.elevated,
+        }}>
+        <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🎡</div>
+        <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('c') }}>
+          Roda Selesai!
+        </div>
+        <div className="text-[11px] text-white/55 mb-4">
+          Skor: {totalCorrect}/{questions.length} ({pct}%)
+        </div>
+        {interactive && (
+          <button className="px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+            onClick={() => { setAnswers({}); setCurrent(0); }}
+            style={{
+              background: 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')',
+              color: tokens.color('bg'),
+              boxShadow: '0 4px 16px ' + tokens.colorAlpha('c', 0.35),
+            }}>
+            🔄 Ulangi Roda
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (!q) return null;
 
   return (
@@ -36,7 +73,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
               color: tokens.color('c'),
               border: '1px solid ' + tokens.colorAlpha('c', 0.3),
             }}>
-            {current + 1}/{block.questions.length}
+            {current + 1}/{questions.length}
           </span>
         </div>
       </div>
@@ -65,7 +102,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
 
         {/* Options */}
         <div className="space-y-2.5">
-          {q.opts.map((opt, i) => {
+          {(q.opts || []).map((opt, i) => {
             const isAnswered = answers[current] !== undefined;
             let bg = 'rgba(255,255,255,.05)';
             let border = 'rgba(255,255,255,.1)';
@@ -93,7 +130,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
         </div>
 
         {/* Feedback */}
-        {answers[current] !== undefined && (
+        {answers[current] !== undefined && q.opts[answers[current]] && (
           <div className="mt-3 p-3 rounded-xl text-[10px] leading-relaxed font-bold"
             style={{
               background: q.opts[answers[current]].correct ? tokens.colorAlpha('g', 0.1) : tokens.colorAlpha('r', 0.1),
@@ -106,7 +143,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
         )}
 
         {/* Next button */}
-        {answers[current] !== undefined && current < block.questions.length - 1 && (
+        {answers[current] !== undefined && current < questions.length - 1 && (
           <button className="mt-3 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
             onClick={() => setCurrent(current + 1)}
             style={{

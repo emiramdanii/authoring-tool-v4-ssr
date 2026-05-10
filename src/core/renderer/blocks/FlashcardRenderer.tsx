@@ -4,12 +4,12 @@ import React from 'react';
 import type { FlashcardSetBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 
-export function FlashcardRenderer({ block, tokens, isCompact }: {
-  block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean;
+export function FlashcardRenderer({ block, tokens, isCompact, interactive }: {
+  block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean;
 }) {
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
-  const cards = block.cards;
+  const cards = block.cards || [];
   if (cards.length === 0) return null;
   const card = cards[idx];
 
@@ -19,14 +19,14 @@ export function FlashcardRenderer({ block, tokens, isCompact }: {
         style={{ color: tokens.color('y') }}>
         🃏 Kartu Kilat — Uji Ingatanmu
       </div>
-      <div className="rounded-xl cursor-pointer"
+      <div className={`rounded-xl ${interactive ? 'cursor-pointer' : ''}`}
         style={{
           minHeight: isCompact ? 80 : 130,
           transformStyle: 'preserve-3d',
           transform: flipped ? 'rotateY(180deg)' : 'none',
           transition: 'transform 0.6s',
         }}
-        onClick={() => setFlipped(!flipped)}>
+        onClick={() => interactive && setFlipped(!flipped)}>
 
         {/* Front */}
         <div className="rounded-xl p-4 flex flex-col justify-center"

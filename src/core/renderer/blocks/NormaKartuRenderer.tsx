@@ -42,9 +42,9 @@ export function NormaKartuRenderer({ block, tokens, isCompact }: {
       <div className="text-[11px] leading-relaxed mb-4">{block.definition}</div>
 
       {/* Characteristics 2-col */}
-      {block.characteristics.length > 0 && (
+      {(block.characteristics || []).length > 0 && (
         <div className="grid grid-cols-2 gap-2.5">
-          {block.characteristics.map((c, i) => (
+          {(block.characteristics || []).map((c, i) => (
             <div key={i} className="rounded-xl p-3"
               style={{
                 background: tokens.colorAlpha(colorKey, 0.08),
