@@ -81,7 +81,10 @@ export function paletteToTokenOverrides(palette: ColorPalette | null): Record<st
 
 /**
  * Convert a legacy CanvaPage to a ScreenSchema for unified rendering.
- * Returns null if the page is not a template or is custom.
+ * Returns null ONLY for custom pages (no template type).
+ * For any valid template type, always produces a ScreenSchema —
+ * even if the data is minimal, a generic fallback block is created.
+ * This ensures dual rendering is truly dead: no PageTemplate fallback needed.
  */
 export function convertToSchema(page: CanvaPage): ScreenSchema | null {
   const td = page.templateData;
@@ -130,10 +133,17 @@ export function convertToSchema(page: CanvaPage): ScreenSchema | null {
       blocks.push(convertCover(td, variant)); // Hero is similar to cover
       break;
     default:
-      return null;
+      // Unknown template type — create a generic fallback block
+      // instead of returning null (which would trigger PageTemplate)
+      blocks.push(convertGenericFallback(td, tt));
+      break;
   }
 
-  if (blocks.length === 0) return null;
+  // If converter produced empty blocks, add a generic fallback
+  // rather than returning null (which would trigger PageTemplate)
+  if (blocks.length === 0) {
+    blocks.push(convertGenericFallback(td, tt));
+  }
 
   return {
     id: page.id,
@@ -405,6 +415,27 @@ function convertPenutup(td: Record<string, unknown>): PenutupBlock {
       isi: String(p.isi || p.body || ''),
       warna: String(p.warna || p.color || 'y'),
     })),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GENERIC FALLBACK — For template types without a specific converter
+// ═══════════════════════════════════════════════════════════════════
+// This ensures convertToSchema() NEVER returns null for valid template
+// types. If no specific converter handles the templateType, or if a
+// converter produces empty blocks, this generic block is used instead.
+// It renders as a simple def-box with the page title/content.
+
+function convertGenericFallback(td: Record<string, unknown>, tt: string): DefBoxBlock {
+  const title = String(td.title || td.name || td.label || '');
+  const content = String(td.content || td.text || td.description || td.body || '');
+
+  return {
+    type: 'def-box',
+    borderColor: getSectionColor(tt),
+    content: title
+      ? `<strong>${title}</strong>${content ? `<br/><br/>${content}` : ''}`
+      : content || `Template "${tt}" — konten belum tersedia`,
   };
 }
 

@@ -4,7 +4,8 @@ import React from 'react';
 import type { CanvaPage, CanvaElement } from '../types';
 import { PageFrame, type PageFrameMode } from './PageFrame';
 import { BlockRenderer, type BlockRendererMode } from './BlockRenderer';
-import { PageTemplate } from '../page-template/PageTemplate';
+// LEGACY REMOVED: PageTemplate import — all rendering now goes through SchemaScreenRenderer
+// import { PageTemplate } from '../page-template/PageTemplate';
 import { SchemaScreenRenderer, TokenResolver, type SchemaRenderMode } from '@/core/renderer/SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
 import { convertToSchema, paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
@@ -14,10 +15,10 @@ import { DEFAULT_TOKENS } from '@/core/themes/tokens';
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
 //
-// UNIFIED RENDERING PIPELINE:
-//   All pages now go through SchemaScreenRenderer.
+// SINGLE RENDERING PIPELINE (Dual rendering killed):
+//   ALL template pages go through SchemaScreenRenderer.
 //   Legacy pages are converted to ScreenSchema via TemplateAdapter.
-//   This ensures visual consistency across all modes.
+//   PageTemplate is NO LONGER used — visual consistency guaranteed.
 //
 // Usage:
 //   <PageRenderer mode="canvas" page={page} currentPageIndex={0} totalPages={5} />
@@ -26,9 +27,8 @@ import { DEFAULT_TOKENS } from '@/core/themes/tokens';
 //
 // Internally handles:
 //   1. PageFrame (background, navbar, content area)
-//   2. Schema-driven rendering (unified — both preset & legacy)
-//   3. Legacy fallback (PageTemplate) only if conversion fails
-//   4. BlockRenderer for individual elements
+//   2. Schema-driven rendering (unified — ALL pages, locked & unlocked)
+//   3. BlockRenderer for overlay/extra elements only
 // ═══════════════════════════════════════════════════════════════
 
 export type PageRendererMode = 'canvas' | 'preview' | 'export';
@@ -82,24 +82,23 @@ export function PageRenderer({
   const isSelected = mode === 'canvas' && isTemplateSelected;
 
   // ═══ UNIFIED RENDERING PIPELINE ════════════════════════════
-  // Step 1: Check if page already has schema data (from preset loading)
-  // Step 2: If not, try to convert legacy templateData → ScreenSchema
-  // Step 3: If conversion succeeds, use SchemaScreenRenderer (UNIFIED)
-  // Step 4: If conversion fails, fall back to PageTemplate (LEGACY)
+  // ALL template pages (locked & unlocked) go through SchemaRenderer.
+  // Dual rendering is DEAD — no more PageTemplate fallback.
 
   const schemaScreen = page.templateData?.schemaScreen as ScreenSchema | undefined;
   const schemaThemeId = page.templateData?.schemaThemeId as string | undefined;
 
-  // Try to convert legacy page to schema on-the-fly
+  // Convert ALL template pages to schema on-the-fly (not just locked ones)
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
     // Already has schema from preset? Use it directly.
     if (schemaScreen) return schemaScreen;
-    // Legacy template page? Convert it.
-    if (isTemplate && isLocked && templateType !== 'custom') {
+    // Any template page? Convert it — locked OR unlocked.
+    // (isTemplate already means templateType !== 'custom')
+    if (isTemplate) {
       return convertToSchema(page);
     }
     return null;
-  }, [schemaScreen, isTemplate, isLocked, templateType, page]);
+  }, [schemaScreen, isTemplate, templateType, page]);
 
   // Resolve tokens, applying palette overrides for legacy pages
   const tokens = React.useMemo(() => {
@@ -131,8 +130,8 @@ export function PageRenderer({
     return resolver;
   }, [schemaThemeId, page.colorPalette]);
 
-  // Decide rendering strategy
-  const useUnifiedRenderer = !!adaptedSchema;
+  // Decide rendering strategy — unified for ALL template pages
+  const useSchemaRenderer = !!adaptedSchema;
 
   // Map PageRendererMode to SchemaRenderMode
   const schemaModeMap: Record<PageRendererMode, SchemaRenderMode> = {
@@ -143,9 +142,10 @@ export function PageRenderer({
 
   const content = (
     <>
-      {/* ══ UNIFIED: Schema-driven rendering ══════════════════ */}
-      {/* Both preset pages AND legacy pages now go through this path */}
-      {useUnifiedRenderer && adaptedSchema && (
+      {/* ══ SINGLE PIPELINE: Schema-driven rendering ══════════ */}
+      {/* ALL template pages (locked & unlocked) go through this path */}
+      {/* Dual rendering is DEAD — PageTemplate is no longer used */}
+      {useSchemaRenderer && adaptedSchema && (
         <SchemaScreenRenderer
           screen={adaptedSchema}
           mode={schemaModeMap[mode]}
@@ -154,39 +154,31 @@ export function PageRenderer({
         />
       )}
 
-      {/* ══ LEGACY FALLBACK: PageTemplate ═════════════════════ */}
-      {/* Only used if convertToSchema() fails for some reason */}
-      {!useUnifiedRenderer && isLocked && (
-        <PageTemplate
-          key={page.id}
-          page={page}
-          isSelected={isSelected}
-          onEditField={onEditField}
-          interactive={interactive}
-        />
-      )}
-
-      {/* Unlocked Template: frozen template background */}
-      {!useUnifiedRenderer && isUnlocked && (
-        <PageTemplate
-          key={page.id}
-          page={page}
-          isSelected={false}
-          onEditField={undefined}
-          interactive={false}
-        />
-      )}
+      {/* Unlocked template: render schema as static background + overlay */}
+      {/* For unlocked templates, SchemaScreenRenderer renders the content, */}
+      {/* and extraElements (user-added elements) render on top via PageFrame */}
 
       {/* Custom mode: no template content */}
       {!isTemplate && null}
+
+      {/* Template without schema data (shouldn't happen after adapter) */}
+      {/* Show a minimal placeholder so the page isn't blank */}
+      {isTemplate && !useSchemaRenderer && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white/30 text-sm">
+          <div className="text-2xl mb-2">📄</div>
+          <div>Template: {templateType}</div>
+          <div className="text-[10px] mt-1">Schema adapter needed</div>
+        </div>
+      )}
     </>
   );
 
   // ═══ Overlay elements (on top of locked templates) ════════
-  // Schema-driven pages render their own content — no overlay elements needed
+  // Schema-driven pages render their own content — overlay elements
+  // (legacy CanvaElement[]) only apply to non-schema pages.
   // In canvas mode, Stage.tsx renders its own StageElement overlays,
   // so we skip BlockRenderer here to avoid double rendering.
-  const overlayElements = !useUnifiedRenderer && isLocked && mode !== 'canvas' && (page.overlayElements || []).length > 0 ? (
+  const overlayElements = !useSchemaRenderer && isLocked && mode !== 'canvas' && (page.overlayElements || []).length > 0 ? (
     <div className="absolute inset-0" style={{ zIndex: 10 }}>
       {(page.overlayElements || []).filter(el => !el.hidden).map(el => (
         <BlockRenderer
@@ -202,10 +194,11 @@ export function PageRenderer({
   ) : undefined;
 
   // ═══ Extra elements (unlocked template / custom mode) ═════
-  // Schema-driven pages don't use extra elements — content is in schema
+  // For unlocked templates using schema renderer: user elements render on top
+  // of the schema content. For custom pages: all elements.
   // In canvas mode, Stage.tsx renders its own StageElement overlays,
   // so we skip BlockRenderer here to avoid double rendering.
-  const extraElements = !useUnifiedRenderer && (isUnlocked || !isTemplate) && mode !== 'canvas' ? (
+  const extraElements = (isUnlocked || !isTemplate) && mode !== 'canvas' ? (
     <div className="absolute inset-0" style={isUnlocked ? { zIndex: 20 } : undefined}>
       {page.elements.filter(el => !el.hidden && !el.isPlaceholder).map(el => (
         <BlockRenderer
@@ -235,7 +228,7 @@ export function PageRenderer({
       currentPageIndex={currentPageIndex}
       totalPages={totalPages}
       isLocked={isLocked}
-      isSchemaDriven={useUnifiedRenderer}
+      isSchemaDriven={useSchemaRenderer}
       overlayElements={overlayElements}
       extraElements={extraElements}
     >

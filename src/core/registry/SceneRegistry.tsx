@@ -13,8 +13,7 @@
 
 import React from 'react';
 import type { SchemaBlock } from '../schema/types';
-import type { SchemaRenderMode } from '../renderer/SchemaRenderer';
-import { TokenResolver } from '../renderer/SchemaRenderer';
+import type { SchemaRenderMode, TokenResolver } from '../renderer/types';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK CAPABILITIES
@@ -90,8 +89,11 @@ export interface BlockDefinition {
   defaultLayout: SceneBlockLayout;
   /** Which template types commonly use this block */
   usedInTemplates: string[];
-  /** Renderer component */
-  renderer: React.ComponentType<BlockRendererProps>;
+  /** Renderer component — uses `any` because each renderer has specific block type props.
+   *  The registry guarantees type-safe mapping: block.type → correct renderer.
+   *  The generic BlockRendererProps is only used by RegistryBlockRenderer wrapper.
+   */
+  renderer: React.ComponentType<any>;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -107,25 +109,31 @@ export interface BlockRendererProps {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// LAZY RENDERER IMPORTS
+// BLOCK RENDERER IMPORTS
 // ═══════════════════════════════════════════════════════════════════
-// Import renderers from the existing SchemaRenderer.
-// In a future step, each renderer will be extracted to its own file.
-// For now, we use a single import to avoid breaking changes.
+// Each renderer is now in its own file under ../renderer/blocks/
+// The registry maps block types directly to these renderers.
 
 import {
-  // We'll import individual renderers after extraction
-  // For now, we use the unified SchemaBlockRenderer as fallback
-  SchemaBlockRenderer as LegacyBlockRenderer,
-} from '../renderer/SchemaRenderer';
-
-/**
- * Placeholder renderer that delegates to the legacy SchemaBlockRenderer.
- * This will be replaced with per-block imports as we extract them.
- */
-function LegacyDelegateRenderer(props: BlockRendererProps) {
-  return <LegacyBlockRenderer {...props} />;
-}
+  CoverRenderer,
+  PetunjukRenderer,
+  TpRenderer,
+  AlurRenderer,
+  SkenarioRenderer,
+  DefBoxRenderer,
+  NcGridRenderer,
+  FlashcardRenderer,
+  FtabRenderer,
+  NormaKartuRenderer,
+  DiskusiRenderer,
+  KuisRenderer,
+  SortirGameRenderer,
+  RodaGameRenderer,
+  HasilRenderer,
+  RefleksiRenderer,
+  PenutupRenderer,
+  TabelAccordionRenderer,
+} from '../renderer/blocks';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK REGISTRY
@@ -141,7 +149,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
     defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
     usedInTemplates: ['cover'],
-    renderer: LegacyDelegateRenderer,
+    renderer: CoverRenderer,
   },
   'petunjuk': {
     type: 'petunjuk',
@@ -152,7 +160,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['petunjuk'],
-    renderer: LegacyDelegateRenderer,
+    renderer: PetunjukRenderer,
   },
   'tp': {
     type: 'tp',
@@ -163,7 +171,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
-    renderer: LegacyDelegateRenderer,
+    renderer: TpRenderer,
   },
   'alur': {
     type: 'alur',
@@ -174,7 +182,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
-    renderer: LegacyDelegateRenderer,
+    renderer: AlurRenderer,
   },
   'skenario': {
     type: 'skenario',
@@ -185,7 +193,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['skenario'],
-    renderer: LegacyDelegateRenderer,
+    renderer: SkenarioRenderer,
   },
   'def-box': {
     type: 'def-box',
@@ -196,7 +204,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: DefBoxRenderer,
   },
   'nc-grid': {
     type: 'nc-grid',
@@ -207,7 +215,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi', 'diskusi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: NcGridRenderer,
   },
   'flashcard-set': {
     type: 'flashcard-set',
@@ -218,7 +226,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: FlashcardRenderer,
   },
   'ftab': {
     type: 'ftab',
@@ -229,7 +237,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, composite: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: FtabRenderer,
   },
   'nk-card': {
     type: 'nk-card',
@@ -240,7 +248,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: NormaKartuRenderer,
   },
   'diskusi': {
     type: 'diskusi',
@@ -251,7 +259,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['diskusi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: DiskusiRenderer,
   },
   'kuis': {
     type: 'kuis',
@@ -262,7 +270,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['kuis'],
-    renderer: LegacyDelegateRenderer,
+    renderer: KuisRenderer,
   },
   'sortir-game': {
     type: 'sortir-game',
@@ -273,7 +281,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game'],
-    renderer: LegacyDelegateRenderer,
+    renderer: SortirGameRenderer,
   },
   'roda-game': {
     type: 'roda-game',
@@ -284,7 +292,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game'],
-    renderer: LegacyDelegateRenderer,
+    renderer: RodaGameRenderer,
   },
   'hasil': {
     type: 'hasil',
@@ -295,7 +303,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['hasil'],
-    renderer: LegacyDelegateRenderer,
+    renderer: HasilRenderer,
   },
   'refleksi': {
     type: 'refleksi',
@@ -306,7 +314,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['refleksi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: RefleksiRenderer,
   },
   'penutup': {
     type: 'penutup',
@@ -317,7 +325,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['penutup'],
-    renderer: LegacyDelegateRenderer,
+    renderer: PenutupRenderer,
   },
   'tabel-accord': {
     type: 'tabel-accord',
@@ -328,7 +336,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
-    renderer: LegacyDelegateRenderer,
+    renderer: TabelAccordionRenderer,
   },
 };
 

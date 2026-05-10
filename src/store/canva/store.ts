@@ -31,7 +31,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     leftTab: 'halaman',
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
-    _clipboard: [], // Clipboard buffer for copy/paste
+    // _clipboard is provided by createElementSlice — no duplicate here
     leftPanelOpen: true,
     rightPanelOpen: true,
     _saveStatus: 'saved',
