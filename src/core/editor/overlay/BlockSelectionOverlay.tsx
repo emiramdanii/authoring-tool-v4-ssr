@@ -21,6 +21,8 @@
 
 import React, { useCallback, type ReactNode } from 'react';
 import { getBlockDefinition, type BlockCapabilities } from '../../registry/SceneRegistry';
+import { useCanvaStore } from '@/store/canva-store';
+import type { SchemaBlock } from '../../schema/types';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -264,10 +266,93 @@ const RESIZE_DIRS = [
 ] as const;
 
 function TransformHandles({ blockId, capabilities }: TransformHandlesProps) {
-  // For now, resize handles are visual indicators that the block supports resize.
-  // Actual resize behavior requires the block to have `position: 'absolute'` layout
-  // and a move/resize handler connected to the store.
-  // Flow-positioned blocks show handles but resize differently (width only).
+  const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent, dir: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    // Get the current block's layout from the store
+    const state = useCanvaStore.getState();
+    const page = state.pages[state.currentPageIndex];
+    if (!page) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const block = blocks.find(b => b.id === blockId);
+    if (!block) return;
+
+    const layout = block.layout || { position: 'flow' as const };
+    const isAbsolute = layout.position === 'absolute';
+
+    // Store initial layout values — coerce to number (treat 'auto' as fallback)
+    const toNum = (v: number | string | undefined, fallback: number): number =>
+      typeof v === 'number' ? v : fallback;
+
+    const initialLayout = {
+      x: toNum(layout.x, 0),
+      y: toNum(layout.y, 0),
+      width: toNum(layout.width, 100),
+      height: toNum(layout.height, 50),
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+
+      // Convert pixel delta to percentage (approximate — assumes canvas ~1280x720)
+      const dxPct = dx / 12.8; // rough percentage conversion
+      const dyPct = dy / 7.2;
+
+      const newLayout: Record<string, unknown> = { position: layout.position };
+
+      if (isAbsolute) {
+        // Full resize for absolute blocks
+        let newX = initialLayout.x;
+        let newY = initialLayout.y;
+        let newW = initialLayout.width;
+        let newH = initialLayout.height;
+
+        if (dir.includes('r')) newW = Math.max(10, initialLayout.width + dxPct);
+        if (dir.includes('b')) newH = Math.max(8, initialLayout.height + dyPct);
+        if (dir.includes('l')) {
+          newX = Math.min(initialLayout.x + initialLayout.width - 10, initialLayout.x + dxPct);
+          newW = Math.max(10, initialLayout.width - dxPct);
+        }
+        if (dir.includes('t')) {
+          newY = Math.min(initialLayout.y + initialLayout.height - 8, initialLayout.y + dyPct);
+          newH = Math.max(8, initialLayout.height - dyPct);
+        }
+
+        newLayout.x = Math.round(newX * 10) / 10;
+        newLayout.y = Math.round(newY * 10) / 10;
+        newLayout.width = Math.round(newW * 10) / 10;
+        newLayout.height = Math.round(newH * 10) / 10;
+      } else {
+        // Flow blocks: width-only resize
+        let newW = initialLayout.width;
+        if (dir.includes('r') || dir.includes('l')) {
+          newW = Math.max(30, Math.min(100, initialLayout.width + dxPct));
+        }
+        newLayout.width = Math.round(newW * 10) / 10;
+      }
+
+      updateSchemaBlock(blockId, { layout: newLayout });
+    };
+
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, [blockId, updateSchemaBlock]);
 
   if (!capabilities.resizable) return null;
 
@@ -278,12 +363,7 @@ function TransformHandles({ blockId, capabilities }: TransformHandlesProps) {
           key={h.dir}
           className="absolute w-3 h-3 bg-blue-400 border border-blue-600 rounded-sm z-30 hover:bg-blue-300 transition-colors"
           style={{ ...h.style, cursor: h.cursor }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            // Resize handle interaction — future: connect to store for absolute blocks
-            // For flow blocks, width-only resize via updateSchemaBlock({ style: { width: '...' } })
-          }}
+          onMouseDown={(e) => handleResizeStart(e, h.dir)}
         />
       ))}
     </>

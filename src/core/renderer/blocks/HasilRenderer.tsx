@@ -3,9 +3,10 @@
 import React from 'react';
 import type { HasilBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function HasilRenderer({ block, tokens, interactive }: {
-  block: HasilBlock; tokens: TokenResolver; interactive?: boolean;
+export function HasilRenderer({ block, tokens, interactive, isEditing }: {
+  block: HasilBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean;
 }) {
   // Read score from interactive store when available
   const totalScoreVal = interactive ? 0 : 0; // Score comes from HasilPage wrapper
@@ -14,6 +15,20 @@ export function HasilRenderer({ block, tokens, interactive }: {
 
   // Fallback: use 75% as default visual when no score data
   const displayPct = pct || 75;
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const subtitleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'subtitle',
+    value: block.subtitle ?? '',
+    tag: 'p',
+  });
 
   return (
     <div className="flex flex-col items-center justify-center text-center p-6">
@@ -34,8 +49,19 @@ export function HasilRenderer({ block, tokens, interactive }: {
         </div>
       </div>
 
-      <h2 className="font-black text-lg" style={{ fontFamily: tokens.fontFamily('display') }}>{block.title}</h2>
-      <p className="text-[11px] text-white/55 mt-1 max-w-[320px]">{block.subtitle}</p>
+      <h2 className="font-black text-lg" style={{ fontFamily: tokens.fontFamily('display') }}>
+        <InlineTextEditor
+          {...titleEditor}
+          className="font-black text-lg"
+          style={{ fontFamily: 'inherit', fontSize: 'inherit' }}
+        />
+      </h2>
+      <InlineTextEditor
+        {...subtitleEditor}
+        className="text-[11px] text-white/55 mt-1 max-w-[320px]"
+        style={{ fontSize: 'inherit' }}
+        placeholder="Ketik subtitle..."
+      />
 
       {/* Summary badges */}
       <div className="mt-4 flex gap-3">

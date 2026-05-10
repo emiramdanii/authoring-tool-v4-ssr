@@ -3,16 +3,42 @@
 import React from 'react';
 import type { RefleksiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function RefleksiRenderer({ block, tokens, interactive, isCompact }: {
-  block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean;
+export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+  block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const introEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'intro',
+    value: block.intro ?? '',
+    tag: 'p',
+  });
+
   return (
     <div>
       {block.title && (
-        <h2 className="font-black text-sm mb-1" style={{ fontFamily: tokens.fontFamily('display') }}>{block.title}</h2>
+        <h2 className="font-black text-sm mb-1" style={{ fontFamily: tokens.fontFamily('display') }}>
+          <InlineTextEditor
+            {...titleEditor}
+            className="font-black text-sm"
+            style={{ fontFamily: 'inherit', fontSize: 'inherit' }}
+          />
+        </h2>
       )}
-      {block.intro && <p className="text-[10px] text-white/55 mb-3">{block.intro}</p>}
+      {block.intro && <InlineTextEditor
+        {...introEditor}
+        className="text-[10px] text-white/55 mb-3"
+        style={{ fontSize: 'inherit' }}
+        placeholder="Ketik intro..."
+      />}
 
       {(block.questions || []).map((q, i) => {
         const qColor = q.warna || 'y';

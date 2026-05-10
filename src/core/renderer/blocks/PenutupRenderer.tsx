@@ -3,14 +3,37 @@
 import React from 'react';
 import type { PenutupBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function PenutupRenderer({ block, tokens, isCompact }: {
-  block: PenutupBlock; tokens: TokenResolver; isCompact: boolean;
+export function PenutupRenderer({ block, tokens, isCompact, isEditing }: {
+  block: PenutupBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const subtitleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'subtitle',
+    value: block.subtitle ?? '',
+    tag: 'span',
+  });
+
   return (
     <div>
       <h2 className="font-black text-sm" style={{ fontFamily: tokens.fontFamily('display') }}>
-        {block.title} <span style={{ color: tokens.color('g') }}>{block.subtitle}</span>
+        <InlineTextEditor
+          {...titleEditor}
+          className="font-black text-sm"
+          style={{ fontFamily: 'inherit', fontSize: 'inherit' }}
+        /> <InlineTextEditor
+          {...subtitleEditor}
+          className="font-black text-sm"
+          style={{ color: tokens.color('g'), fontFamily: 'inherit', fontSize: 'inherit' }}
+        />
       </h2>
 
       {/* Preview items */}

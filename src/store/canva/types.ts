@@ -14,6 +14,7 @@ import type {
   LayoutPreset,
 } from '@/components/canva/types';
 import type { PageTypeDefinition } from '@/store/page-types';
+import type { SchemaBlock } from '@/core/schema/types';
 
 // ── Snapshot type for undo/redo ────────────────────────────────
 export type Snapshot = {
@@ -148,6 +149,14 @@ export interface CanvaState {
   moveBlockDown: (blockId: string) => void;
   /** Duplicate a schema block and insert after the original */
   duplicateBlock: (blockId: string) => void;
+  /** Add a new schema block from the registry to the current page */
+  addSchemaBlock: (blockType: string) => void;
+  /** Clipboard for schema block copy/paste */
+  _schemaClipboard: SchemaBlock | null;
+  /** Copy a schema block to the clipboard */
+  copySchemaBlock: (blockId: string) => void;
+  /** Paste a schema block from the clipboard */
+  pasteSchemaBlock: () => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

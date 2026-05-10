@@ -73,6 +73,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     selectedBlockId,
     stopEditing,
     editingBlockId,
+    copySchemaBlock,
+    pasteSchemaBlock,
+    undo,
+    redo,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
@@ -118,6 +122,26 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
         return;
       }
 
+      // ── Global shortcuts (always available) ─────────────────────
+      // Ctrl+Z / Cmd+Z — undo
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      // Ctrl+Y / Cmd+Y — redo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      // Ctrl+Shift+Z / Cmd+Shift+Z — redo (alternative)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
       // ── Schema block shortcuts (when a block is selected) ─────
       if (selectedBlockId) {
         // Delete / Backspace — delete selected block
@@ -130,6 +154,12 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
         if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
           e.preventDefault();
           duplicateBlock(selectedBlockId);
+          return;
+        }
+        // Ctrl+C / Cmd+C — copy selected block
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+          e.preventDefault();
+          copySchemaBlock(selectedBlockId);
           return;
         }
         // Alt+Arrow Up — move block up
@@ -151,6 +181,16 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           } else {
             selectBlock(null);
           }
+          return;
+        }
+      }
+
+      // ── Ctrl+V / Cmd+V — paste block from clipboard (always available) ──
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // Only intercept if we have a schema clipboard (don't block native paste for text inputs)
+        if (useCanvaStore.getState()._schemaClipboard) {
+          e.preventDefault();
+          pasteSchemaBlock();
           return;
         }
       }
@@ -180,7 +220,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedElIds, selectedBlockId, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing]);
+  }, [selectedElIds, selectedBlockId, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing, copySchemaBlock, pasteSchemaBlock, undo, redo]);
 
   // Phase 4: Helper to compute snap lines during drag
   const computeSnapLines = useCallback((elId: string, newX: number, newY: number, newW?: number, newH?: number) => {

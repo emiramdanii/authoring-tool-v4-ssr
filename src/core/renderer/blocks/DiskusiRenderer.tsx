@@ -3,10 +3,25 @@
 import React from 'react';
 import type { DiskusiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function DiskusiRenderer({ block, tokens, interactive, isCompact }: {
-  block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean;
+export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+  block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const introEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'intro',
+    value: block.intro ?? '',
+    tag: 'p',
+  });
+
   return (
     <div className="mt-3 rounded-2xl p-4"
       style={{
@@ -21,10 +36,19 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact }: {
           <span className="text-sm">💬</span>
         </div>
         <div className="text-[12px] font-extrabold" style={{ color: tokens.color('c') }}>
-          {block.title}
+          <InlineTextEditor
+            {...titleEditor}
+            className="text-[12px] font-extrabold"
+            style={{ color: tokens.color('c'), fontSize: 'inherit' }}
+          />
         </div>
       </div>
-      {block.intro && <p className="text-[11px] mt-1 leading-relaxed font-bold mb-3">{block.intro}</p>}
+      {block.intro && <InlineTextEditor
+        {...introEditor}
+        className="text-[11px] mt-1 leading-relaxed font-bold mb-3"
+        style={{ fontSize: 'inherit' }}
+        placeholder="Ketik intro..."
+      />}
 
       {(block.questions || []).map((q, i) => {
         const qColor = q.color || 'c';

@@ -3,12 +3,21 @@
 import React from 'react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function DefBoxRenderer({ block, tokens, isCompact }: {
-  block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean;
+export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
+  block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
   const borderColor = tokens.color(block.borderColor || 'y');
   const colorKey = block.borderColor || 'y';
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const contentEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'content',
+    value: block.content ?? '',
+    tag: 'span',
+  });
   return (
     <div className={isCompact ? 'rounded-lg p-2.5 my-2' : 'rounded-lg p-4 my-3'}
       style={{
@@ -19,7 +28,11 @@ export function DefBoxRenderer({ block, tokens, isCompact }: {
         lineHeight: 1.7,
         boxShadow: tokens.raw.shadow.card,
       }}>
-      <span dangerouslySetInnerHTML={{ __html: block.content }} />
+      <InlineTextEditor
+        {...contentEditor}
+        className=""
+        style={{ fontSize: 'inherit', lineHeight: 'inherit' }}
+      />
     </div>
   );
 }

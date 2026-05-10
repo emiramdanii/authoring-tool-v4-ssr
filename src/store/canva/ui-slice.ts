@@ -12,6 +12,7 @@ import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { deepMergeBlock } from '@/core/editor/deep-merge';
 import type { SchemaBlock } from '@/core/schema/types';
 import { editBus } from '@/core/editor/edit-bus';
+import { SCENE_REGISTRY } from '@/core/registry/SceneRegistry';
 
 export type UISlice = Pick<
   CanvaState,
@@ -23,9 +24,13 @@ export type UISlice = Pick<
   | 'clearStage' | 'selectBlock' | 'updateSchemaBlock'
   | 'hoverBlock' | 'startEditing' | 'stopEditing'
   | 'deleteBlock' | 'moveBlockUp' | 'moveBlockDown' | 'duplicateBlock'
+  | 'addSchemaBlock'
+  | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
+  _schemaClipboard: null,
+
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
   toggleLeftPanel: () => set(s => ({ leftPanelOpen: !s.leftPanelOpen })),
@@ -512,5 +517,265 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // Select the cloned block
     get().selectBlock(clone.id ?? null, clone.type);
     toast.success('Block diduplikat');
+  },
+
+  // ── Add Schema Block from Registry ────────────────────────────
+  // Adds a new block of the given type to the current page's schema.
+  // If the page doesn't have a schemaScreen yet, it first "freezes" the
+  // adapted schema (same as updateSchemaBlock's first-edit flow).
+  addSchemaBlock: (blockType) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    // Must have schema screen — freeze if needed
+    if (!page.templateData?.schemaScreen) {
+      const adapted = convertToSchema(page);
+      if (!adapted) {
+        toast.warning('Tidak dapat menambah block ke halaman ini');
+        return;
+      }
+      // Assign stable IDs
+      const stabilized = produce(adapted, (draft) => {
+        draft.blocks.forEach((block, idx) => {
+          if (!block.id) {
+            block.id = `${block.type}-${idx}`;
+          }
+        });
+      });
+      const frozenPages = [...pages];
+      frozenPages[currentPageIndex] = {
+        ...page,
+        templateData: {
+          ...page.templateData,
+          schemaScreen: stabilized as unknown as Record<string, unknown>,
+        },
+      };
+      set({ pages: frozenPages });
+      // Re-read after freeze
+      return get().addSchemaBlock(blockType);
+    }
+
+    const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+
+    // Get block definition from registry
+    const definition = SCENE_REGISTRY[blockType];
+    if (!definition) {
+      toast.error(`Block type "${blockType}" tidak ditemukan`);
+      return;
+    }
+
+    get()._pushHistory();
+
+    // Create default block based on type
+    const newBlock: Record<string, unknown> = {
+      id: `${blockType}-${Date.now()}`,
+      type: blockType,
+      variant: 'A' as const,
+      layout: {
+        position: definition.defaultLayout.position,
+        ...(definition.defaultLayout.defaultX != null ? { x: definition.defaultLayout.defaultX } : {}),
+        ...(definition.defaultLayout.defaultY != null ? { y: definition.defaultLayout.defaultY } : {}),
+        ...(definition.defaultLayout.defaultWidth != null ? { width: definition.defaultLayout.defaultWidth } : {}),
+        ...(definition.defaultLayout.defaultHeight != null ? { height: definition.defaultLayout.defaultHeight } : {}),
+      },
+    };
+
+    // Add default content based on block type
+    switch (blockType) {
+      case 'cover':
+        newBlock.icon = '📄';
+        newBlock.title = 'Judul Baru';
+        newBlock.subtitle = 'Subtitle';
+        newBlock.badges = [];
+        newBlock.cta = { label: 'Mulai →', action: 'next' };
+        break;
+      case 'petunjuk':
+        newBlock.title = 'Petunjuk';
+        newBlock.titleHighlight = 'Penggunaan';
+        newBlock.items = [{ icon: '📌', title: 'Item 1', body: 'Deskripsi item' }];
+        break;
+      case 'tp':
+        newBlock.title = 'Tujuan Pembelajaran';
+        newBlock.titleHighlight = '';
+        newBlock.items = [{ num: 1, verb: 'Memahami', desc: 'Deskripsi tujuan', color: 'y' }];
+        break;
+      case 'alur':
+        newBlock.title = 'Alur Kegiatan';
+        newBlock.steps = [{ dot: 'y', durasi: '5 menit', judul: 'Langkah 1', deskripsi: 'Deskripsi langkah' }];
+        break;
+      case 'skenario':
+        newBlock.title = 'Skenario';
+        newBlock.chapters = [{ id: 'ch1', charEmoji: '🎭', title: 'Bab 1', choices: [] }];
+        break;
+      case 'def-box':
+        newBlock.content = 'Definisi baru';
+        newBlock.borderColor = 'y';
+        break;
+      case 'nc-grid':
+        newBlock.cards = [{ icon: '📋', title: 'Kartu 1', body: 'Deskripsi kartu', color: 'y' }];
+        break;
+      case 'flashcard-set':
+        newBlock.cards = [{ q: 'Pertanyaan?', a: 'Jawaban' }];
+        break;
+      case 'ftab':
+        newBlock.tabs = [{ icon: '📑', label: 'Tab 1', content: [] }];
+        break;
+      case 'nk-card':
+        newBlock.normaType = '';
+        newBlock.icon = '📜';
+        newBlock.title = 'Kartu Norma';
+        newBlock.label = '';
+        newBlock.definition = '';
+        newBlock.characteristics = [];
+        newBlock.sanksi = { title: 'Sanksi', items: [] };
+        newBlock.contoh = '';
+        break;
+      case 'diskusi':
+        newBlock.title = 'Diskusi';
+        newBlock.questions = [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban' }];
+        break;
+      case 'kuis':
+        newBlock.title = 'Kuis';
+        newBlock.questions = [{ q: 'Pertanyaan?', opts: ['A', 'B', 'C'], ans: 0, ex: 'Penjelasan' }];
+        break;
+      case 'sortir-game':
+        newBlock.title = 'Game Sortir';
+        newBlock.pool = [];
+        newBlock.kolom = [];
+        break;
+      case 'roda-game':
+        newBlock.title = 'Game Roda';
+        newBlock.questions = [];
+        break;
+      case 'hasil':
+        newBlock.title = 'Hasil';
+        newBlock.subtitle = 'Subtitle hasil';
+        break;
+      case 'refleksi':
+        newBlock.title = 'Refleksi';
+        newBlock.questions = [{ teks: 'Pertanyaan refleksi?', petunjuk: 'Petunjuk refleksi' }];
+        break;
+      case 'penutup':
+        newBlock.title = 'Penutup';
+        newBlock.subtitle = 'Terima kasih';
+        newBlock.preview = [];
+        break;
+      case 'tabel-accord':
+        newBlock.rows = [{ icon: '📊', title: 'Baris 1', color: 'y', details: [] }];
+        break;
+      default:
+        newBlock.title = definition.name;
+        break;
+    }
+
+    const newBlocks = [...blocks, newBlock as unknown as SchemaBlock];
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: newBlock.id as string,
+        blockType,
+        pageIndex: currentPageIndex,
+        patch: { _added: true },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+
+    // Select the new block
+    get().selectBlock(newBlock.id as string, blockType);
+    toast.success(`${definition.name} ditambahkan`);
+  },
+
+  // ── Schema Block Copy/Paste ───────────────────────────────────
+  // Copy a schema block to the internal clipboard (removes ID so a
+  // fresh one is assigned on paste). Deep-cloned via Immer `produce`.
+  copySchemaBlock: (blockId) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const block = blocks.find(b => b.id === blockId);
+    if (!block) return;
+
+    // Deep clone to clipboard
+    const clone = produce(block, (draft) => {
+      // Remove the ID so it gets a new one on paste
+      draft.id = undefined as any;
+    });
+    set({ _schemaClipboard: clone as SchemaBlock });
+    toast.success('Block disalin');
+  },
+
+  // Paste a schema block from the internal clipboard. Appends it to
+  // the current page's schema screen with a fresh ID.
+  pasteSchemaBlock: () => {
+    const { pages, currentPageIndex } = get();
+    const clipboard = get()._schemaClipboard;
+    if (!clipboard) {
+      toast.info('Tidak ada block di clipboard');
+      return;
+    }
+
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    // Must have schema screen
+    if (!page.templateData?.schemaScreen) {
+      toast.warning('Tidak dapat menambah block ke halaman ini');
+      return;
+    }
+
+    const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+
+    get()._pushHistory();
+
+    // Deep clone with new ID
+    const newBlock = produce(clipboard, (draft) => {
+      draft.id = `${clipboard.type}-${Date.now()}`;
+    });
+
+    const newBlocks = [...blocks, newBlock];
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: newBlock.id!,
+        blockType: clipboard.type,
+        pageIndex: currentPageIndex,
+        patch: { _pasted: true },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
+    get().selectBlock(newBlock.id!, clipboard.type);
+    toast.success('Block ditempel');
   },
 });

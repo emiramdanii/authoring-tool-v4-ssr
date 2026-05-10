@@ -24,6 +24,7 @@ import {
 import { GAME_TYPES } from '@/lib/canva-constants';
 import PageTypeCreator from './PageTypeCreator';
 import LayerPanel from './left-panel/LayerPanel';
+import AddBlockPanel from './left-panel/AddBlockPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
 
 // ═══════════════════════════════════════════════════════════════
@@ -328,6 +329,11 @@ function TambahContent() {
           Preset dimuat via schema renderer — tampilan sesuai preset asli
         </div>
       </div>
+
+      <div className="section-divider" />
+
+      {/* ── Schema Block Palette ── */}
+      <AddBlockPanel />
 
       <div className="section-divider" />
 

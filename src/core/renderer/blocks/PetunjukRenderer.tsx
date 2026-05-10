@@ -3,17 +3,46 @@
 import React from 'react';
 import type { PetunjukBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function PetunjukRenderer({ block, tokens, isCompact }: {
-  block: PetunjukBlock; tokens: TokenResolver; isCompact: boolean;
+export function PetunjukRenderer({ block, tokens, isCompact, isEditing }: {
+  block: PetunjukBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
   const accentKey = block.tipsColor || 'y';
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const titleHighlightEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'titleHighlight',
+    value: block.titleHighlight ?? '',
+    tag: 'span',
+  });
+  const tipsEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'tips',
+    value: block.tips ?? '',
+    tag: 'span',
+  });
 
   return (
     <div className={isCompact ? 'p-1' : 'p-2'}>
       <h2 className="font-black leading-tight"
         style={{ fontSize: isCompact ? '14px' : '1.6rem', fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
-        {block.title} <span style={{ color: tokens.color('y') }}>{block.titleHighlight}</span>
+        <InlineTextEditor
+          {...titleEditor}
+          className="font-black leading-tight"
+          style={{ fontSize: 'inherit', fontFamily: 'inherit' }}
+        /> <InlineTextEditor
+          {...titleHighlightEditor}
+          className="font-black leading-tight"
+          style={{ color: tokens.color('y'), fontSize: 'inherit', fontFamily: 'inherit' }}
+        />
       </h2>
 
       <div className={`grid grid-cols-2 gap-3 mt-4`}>
@@ -57,7 +86,11 @@ export function PetunjukRenderer({ block, tokens, isCompact }: {
               <span className="text-xs">💡</span>
             </div>
             <div>
-              <strong style={{ color: tokens.color(accentKey) }}>Tips:</strong> {block.tips}
+              <strong style={{ color: tokens.color(accentKey) }}>Tips:</strong> <InlineTextEditor
+                {...tipsEditor}
+                className="text-[11px] leading-relaxed"
+                style={{ fontSize: 'inherit' }}
+              />
             </div>
           </div>
         </div>
