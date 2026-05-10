@@ -3,10 +3,25 @@
 import React from 'react';
 import type { AlurBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function AlurRenderer({ block, tokens, isCompact }: {
-  block: AlurBlock; tokens: TokenResolver; isCompact: boolean;
+export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
+  block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const durasiEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'totalDurasi',
+    value: block.totalDurasi ?? '',
+    tag: 'span',
+  });
+
   return (
     <div className={`mt-3 rounded-xl ${isCompact ? 'p-2' : 'p-4'}`}
       style={{
@@ -16,7 +31,7 @@ export function AlurRenderer({ block, tokens, isCompact }: {
       }}>
       <div className="text-[10px] font-extrabold uppercase tracking-wider mb-3"
         style={{ color: tokens.color('c') }}>
-        ⏱️ Alur Kegiatan {block.totalDurasi || ''}
+        ⏱️ <InlineTextEditor {...titleEditor} /> — <InlineTextEditor {...durasiEditor} placeholder="Durasi..." />
       </div>
       <div className="flex flex-col gap-2">
         {(block.steps || []).map((step, i) => (

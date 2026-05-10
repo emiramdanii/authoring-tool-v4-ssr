@@ -3,10 +3,19 @@
 import React from 'react';
 import type { SkenarioBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function SkenarioRenderer({ block, tokens, interactive }: {
-  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean;
+export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
+  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isEditing?: boolean;
 }) {
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+
   const [chapter, setChapter] = React.useState(0);
   const [history, setHistory] = React.useState<Array<{ chapterIdx: number; choiceIdx: number; good: boolean; pts: number }>>([]);
   const [selectedChoice, setSelectedChoice] = React.useState<{ choiceIdx: number; choice: NonNullable<typeof block.chapters[0]>['choices'][0] } | null>(null);
@@ -54,7 +63,7 @@ export function SkenarioRenderer({ block, tokens, interactive }: {
         <div className="flex items-center justify-between p-3 border-b-2"
           style={{ background: 'linear-gradient(90deg, ' + tokens.color('bg') + ', ' + tokens.color('bg2') + ')', borderColor: tokens.colorAlpha('c', 0.2) }}>
           <span className="font-black text-[11px]" style={{ color: yellow, fontFamily: tokens.fontFamily('display') }}>
-            🎭 {block.title}
+            🎭 <InlineTextEditor {...titleEditor} style={{ color: yellow, fontFamily: tokens.fontFamily('display') }} />
           </span>
           <div className="flex gap-2">
             <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"

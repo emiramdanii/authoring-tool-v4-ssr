@@ -24,6 +24,7 @@ import React, { useCallback, useState, type ReactNode } from 'react';
 import { getBlockDefinition, type BlockCapabilities } from '../../registry/SceneRegistry';
 import { useCanvaStore } from '@/store/canva-store';
 import type { SchemaBlock } from '../../schema/types';
+import { BlockContextMenu } from './BlockContextMenu';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -96,6 +97,7 @@ export function BlockSelectionOverlay({
   // ── Store & Drag State ────────────────────────────────────────
   const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
   const [isDragging, setIsDragging] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   // ── Event Handlers ────────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
@@ -143,6 +145,13 @@ export function BlockSelectionOverlay({
     e.preventDefault();
     onDuplicate?.(blockId);
   }, [onDuplicate, blockId]);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    if (!isCompact || !isSelected) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  }, [isCompact, isSelected]);
 
   // ── Drag-to-move (absolute-positioned, movable blocks) ────────
   const handleDragStart = useCallback((e: React.MouseEvent) => {
@@ -240,6 +249,7 @@ export function BlockSelectionOverlay({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
     >
       {/* ── Block content ──────────────────────────────────────── */}
       {children}
@@ -324,6 +334,17 @@ export function BlockSelectionOverlay({
       {/* ── Transform handles (only for resizable/movable blocks) ── */}
       {isSelected && isCompact && capabilities.resizable && (
         <TransformHandles blockId={blockId} capabilities={capabilities} />
+      )}
+
+      {/* ── Context menu (right-click on selected block) ── */}
+      {contextMenu && (
+        <BlockContextMenu
+          blockId={blockId}
+          blockType={blockType}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        />
       )}
     </div>
   );

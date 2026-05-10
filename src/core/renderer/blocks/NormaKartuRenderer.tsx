@@ -3,9 +3,10 @@
 import React from 'react';
 import type { NormaKartuBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function NormaKartuRenderer({ block, tokens, isCompact }: {
-  block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean;
+export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
+  block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
   const colorMap: Record<string, string> = {
     agama: 'y',
@@ -15,6 +16,26 @@ export function NormaKartuRenderer({ block, tokens, isCompact }: {
   };
   const colorKey = colorMap[block.normaType] || 'y';
   const color = tokens.color(colorKey);
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const definitionEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'definition',
+    value: block.definition ?? '',
+    tag: 'span',
+  });
+  const contohEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'contoh',
+    value: block.contoh ?? '',
+    tag: 'span',
+  });
 
   return (
     <div className="rounded-2xl p-4" style={{
@@ -34,12 +55,16 @@ export function NormaKartuRenderer({ block, tokens, isCompact }: {
         </div>
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color }}>{block.label}</div>
-          <div className="font-black text-[16px] mt-0.5" style={{ fontFamily: tokens.fontFamily('display'), color }}>{block.title}</div>
+          <div className="font-black text-[16px] mt-0.5" style={{ fontFamily: tokens.fontFamily('display'), color }}>
+            <InlineTextEditor {...titleEditor} className="font-black text-[16px]" style={{ color }} />
+          </div>
         </div>
       </div>
 
       {/* Definition */}
-      <div className="text-[11px] leading-relaxed mb-4">{block.definition}</div>
+      <div className="text-[11px] leading-relaxed mb-4">
+        <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" placeholder="Ketik definisi..." />
+      </div>
 
       {/* Characteristics 2-col */}
       {(block.characteristics || []).length > 0 && (
@@ -83,7 +108,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact }: {
             border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
             borderLeft: '3px solid ' + color,
           }}>
-          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> {block.contoh}
+          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className="text-[10px] leading-relaxed" placeholder="Ketik contoh..." />
         </div>
       )}
 
