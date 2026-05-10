@@ -321,7 +321,7 @@ export default function AuthoringTool() {
       </aside>
 
       {/* ── Main Area ───────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* ── Header ───────────────────────────────────────── */}
         {!isCanva && !isPreview && (
           <header className="h-12 flex-shrink-0 glass-panel-strong flex items-center gap-3 px-4">
