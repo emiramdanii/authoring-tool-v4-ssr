@@ -103,9 +103,11 @@ export default function AuthoringTool() {
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
 
-  // Load from storage on mount
+  // Load from storage on mount (authoring + canva)
   useEffect(() => {
     loadFromStorage();
+    // Also load canva state from localStorage on first app mount
+    useCanvaStore.getState().loadFromStorage();
   }, [loadFromStorage]);
 
   // Auto-dismiss tour when user navigates away from dashboard (e.g. clicks preset)
@@ -386,8 +388,8 @@ export default function AuthoringTool() {
 
         {/* ── Content ──────────────────────────────────────── */}
         <main
-          className={`flex-1 overflow-y-auto ${
-            isCanva || isPreview ? '' : 'bg-slate-950'
+          className={`flex-1 ${
+            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-slate-950'
           }`}
         >
           {renderPanel()}

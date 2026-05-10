@@ -15,10 +15,12 @@ export default function CanvaBuilder() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
 
-  // ── Load state from localStorage on mount ────────────────────
-  useEffect(() => {
-    useCanvaStore.getState().loadFromStorage();
-  }, []);
+  // NOTE: loadFromStorage() removed from CanvaBuilder mount.
+  // It was causing a race condition: resetCanvas() creates fresh pages,
+  // then CanvaBuilder mounts and loadFromStorage() overwrites them with
+  // stale data from localStorage. Persistence is now handled by:
+  // 1. Auto-save (subscribe + 1500ms debounce) below
+  // 2. AuthoringTool initial load via loadFromStorage on first app mount
 
   // ── Sync interactive page total with canva pages ─────────────
   useEffect(() => {
@@ -141,12 +143,12 @@ export default function CanvaBuilder() {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-950 text-slate-200 focus-ring">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-slate-950 text-slate-200 focus-ring">
       {/* Top Toolbar */}
       <Toolbar />
 
       {/* Main builder row — always visible (design view) */}
-      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+      <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
         <div className="border-r border-slate-800/60 shadow-[1px_0_8px_-2px_rgba(0,0,0,0.35)] flex-shrink-0">
           <LeftPanel />
         </div>

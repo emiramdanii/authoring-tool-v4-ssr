@@ -86,6 +86,11 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
 
     get()._pushHistory();
     set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [] });
+
+    // Save new pages to localStorage immediately so loadFromStorage()
+    // on next mount will get the fresh pages, not stale data.
+    get().saveToStorage();
+
     toast.success(`${newPages.length} halaman dibuat dari data authoring`);
   },
 });
