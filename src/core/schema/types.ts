@@ -12,6 +12,23 @@
 
 // ── Base Schema Types ──────────────────────────────────────────
 
+export interface BlockLayout {
+  /** Layout strategy: flow (flexbox) or absolute (coordinate-based) */
+  position: 'flow' | 'absolute';
+  /** X position in % (only for absolute) */
+  x?: number;
+  /** Y position in % (only for absolute) */
+  y?: number;
+  /** Width in % or 'auto' (only for absolute) */
+  width?: number | 'auto';
+  /** Height in % or 'auto' (only for absolute) */
+  height?: number | 'auto';
+  /** Z-index layer */
+  zIndex?: number;
+  /** Rotation in degrees */
+  rotation?: number;
+}
+
 export interface BaseBlock {
   type: string;
   id?: string;
@@ -23,6 +40,19 @@ export interface BaseBlock {
   interactive?: boolean;
   /** Optional condition for visibility */
   showIf?: string;
+  /**
+   * Optional layout definition.
+   * Default is flow (flexbox) — blocks stack vertically.
+   * Set position: 'absolute' for coordinate-based placement.
+   * This is the foundation for the Scene Node system.
+   */
+  layout?: BlockLayout;
+  /**
+   * Optional children for composite blocks.
+   * A composite block = mini scene with child blocks.
+   * This enables: nested blocks, grouping, z-index, layer panel.
+   */
+  children?: SchemaBlock[];
 }
 
 // ── Cover Schema ───────────────────────────────────────────────
