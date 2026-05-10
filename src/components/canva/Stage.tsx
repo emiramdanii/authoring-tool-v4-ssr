@@ -1,31 +1,53 @@
 'use client';
 
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState, useEffect, memo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { CanvaElement, ResizeDir } from './types';
-import { resolveModule } from '@/lib/module-resolver';
-import QuizWidget from './QuizWidget';
-import GameWidget from './GameWidget';
-import PageTemplate from './PageTemplate';
-import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
-import { DEFAULT_NAV_CONFIG } from './types';
-import type { NavConfig } from './types';
+import { RATIOS } from './types';
+import { PageRenderer } from './page-renderer';
+import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Canvas editing area with snap feedback & multi-select
-// Phase 4 improvements:
-// - Snap visual feedback (dashed guide lines when snapping)
-// - Multi-select elements (Shift+click)
-// - Ctrl+A select all, Delete bulk delete
+//
+// Refactored: Uses PageRenderer for consistent page rendering
+// (navbar, background, template, elements) — identical to
+// PlayOverlay and ExportApp. Only adds canvas-specific features:
+// - Drag, resize, snap for elements
+// - Grid overlay
+// - Multi-select
+// - Element handle bars & resize handles
 // ═══════════════════════════════════════════════════════════════
+
+// ── Module-level constants (avoid re-creation on every render) ──
+const RESIZE_HANDLES: { dir: ResizeDir; style: React.CSSProperties; cursor: string }[] = [
+  { dir: 'tl', style: { top: -7, left: -7 }, cursor: 'nwse-resize' },
+  { dir: 'tr', style: { top: -7, right: -7 }, cursor: 'nesw-resize' },
+  { dir: 'bl', style: { bottom: -7, left: -7 }, cursor: 'nesw-resize' },
+  { dir: 'br', style: { bottom: -7, right: -7 }, cursor: 'nwse-resize' },
+  { dir: 'tm', style: { top: -7, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
+  { dir: 'bm', style: { bottom: -7, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
+  { dir: 'l', style: { top: '50%', left: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
+  { dir: 'r', style: { top: '50%', right: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
+];
+
+const ELEMENT_ICON_MAP: Record<string, string> = {
+  kuis: '❓', game: '🎮', materi: '📝', modul: '🧩', image: '🖼️',
+};
+const ELEMENT_COLOR_MAP: Record<string, string> = {
+  kuis: 'rgba(245,200,66,.3)', game: 'rgba(56,217,217,.3)',
+  materi: 'rgba(167,139,250,.3)', modul: 'rgba(52,211,153,.3)', image: 'rgba(249,115,22,.3)',
+};
+const ELEMENT_TEXT_COLOR_MAP: Record<string, string> = {
+  kuis: '#f5c842', game: '#3ecfcf', materi: '#a78bfa', modul: '#34d399', image: '#f97316',
+};
 
 export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
   const {
     pages,
     currentPageIndex,
-    ratioId,
     zoom,
     tool,
     selectedElId,
@@ -42,10 +64,14 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     gridSize,
     snapEnabled,
     snapValue,
+    _pushHistory,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
-  const ratio = useCanvaStore(s => s.currentRatio());
+  const ratio = useCanvaStore(s => {
+    const r = RATIOS.find(r => r.id === s.ratioId);
+    return r || RATIOS[0];
+  });
 
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const stageWrapRef = useRef<HTMLDivElement>(null);
@@ -122,12 +148,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       const oRight = other.x + other.w;
       const oBottom = other.y + other.h;
 
-      // Vertical snap lines (X alignment)
       if (Math.abs(newX - other.x) < 1) lines.push({ x: other.x });
       if (Math.abs(elRight - oRight) < 1) lines.push({ x: oRight });
       if (Math.abs(elCenterX - oCenterX) < 1) lines.push({ x: oCenterX });
 
-      // Horizontal snap lines (Y alignment)
       if (Math.abs(newY - other.y) < 1) lines.push({ y: other.y });
       if (Math.abs(elBottom - oBottom) < 1) lines.push({ y: oBottom });
       if (Math.abs(elCenterY - oCenterY) < 1) lines.push({ y: oCenterY });
@@ -167,7 +191,6 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       const newY = snapEnabled ? snapValue(rawY) : rawY;
       updateElement(dragState.current.elId, { x: newX, y: newY });
 
-      // Phase 4: Update snap lines
       if (snapEnabled) {
         const lines = computeSnapLines(dragState.current.elId, newX, newY);
         setSnapLines(lines);
@@ -194,20 +217,17 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
         newH = Math.max(8, orig.h - dyPct);
       }
 
-      // Apply snap if enabled
       if (snapEnabled) {
         newX = snapValue(newX);
         newY = snapValue(newY);
         newW = snapValue(newW);
         newH = snapValue(newH);
-        // Ensure minimums after snap
         newW = Math.max(10, newW);
         newH = Math.max(8, newH);
       }
 
       updateElement(dragState.current.elId, { x: newX, y: newY, w: newW, h: newH });
 
-      // Phase 4: Update snap lines during resize
       if (snapEnabled) {
         const lines = computeSnapLines(dragState.current.elId, newX, newY, newW, newH);
         setSnapLines(lines);
@@ -217,7 +237,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
   const handleMouseUp = useCallback(() => {
     dragState.current = null;
-    setSnapLines([]); // Phase 4: Clear snap lines
+    setSnapLines([]);
   }, []);
 
   useEffect(() => {
@@ -281,12 +301,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
   const scale = baseScale * zoom;
   const isTemplateMode = page && page.templateType && page.templateType !== 'custom';
-  const isLocked = page?.locked !== false; // true or undefined = locked
-  const isUnlockedTemplate = !!isTemplateMode && !isLocked; // template page but unlocked
-
-  // Find selected element
-  const selectedEl = page?.elements.find(e => e.id === selectedElId)
-    || page?.overlayElements?.find(e => e.id === selectedElId);
+  const isLocked = page?.locked !== false;
+  const isUnlockedTemplate = !!isTemplateMode && !isLocked;
+  // Schema-driven pages: content comes from SchemaScreenRenderer, not overlay elements
+  const isSchemaDriven = !!(page?.templateData?.schemaScreen);
 
   // Phase 4: Check if an element is in multi-select
   const isMultiSelected = (elId: string) => selectedElIds.includes(elId) && selectedElIds.length > 1;
@@ -303,7 +321,6 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
       onDrop={handleDrop}
     >
-      {/* Checkerboard pattern behind stage — padding prevents clipping when scaled */}
       <div className="relative" style={{ padding: '10px', maxWidth: '100%', maxHeight: '100%', overflow: 'hidden' }}>
         <div
           ref={stageWrapRef}
@@ -317,30 +334,21 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
           }}
           onMouseDown={handleStageBgClick}
         >
-          {/* Background color */}
-          <div
-            id="cm-stage-bg"
-            className="absolute inset-0"
-            style={{ background: page.bgColor || '#1e293b' }}
-          />
-
-          {/* Background image */}
-          {page.bgDataUrl && (
-            <img
-              src={page.bgDataUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+          {/* ══ Use PageRenderer for consistent rendering ══════ */}
+          <CanvasErrorBoundary name="PageRenderer">
+            <PageRenderer
+              mode="canvas"
+              page={page}
+              currentPageIndex={currentPageIndex}
+              totalPages={pages.length}
+              isTemplateSelected={true}
+              onEditField={handleTemplateEdit}
             />
-          )}
+          </CanvasErrorBoundary>
 
-          {/* Overlay */}
-          <div
-            id="cm-stage-bg-overlay"
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: `rgba(14,28,47,${(page.overlay || 20) / 100})` }}
-          />
+          {/* ══ Canvas-only overlays ═══════════════════════════ */}
 
-          {/* Grid Overlay (custom mode + unlocked templates — useful for positioning) */}
+          {/* Grid Overlay (custom mode + unlocked templates) */}
           {(!isTemplateMode || isUnlockedTemplate) && showGrid && (
             <div className="absolute inset-0 pointer-events-none" style={{
               backgroundImage: `linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)`,
@@ -348,7 +356,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             }} />
           )}
 
-          {/* Phase 4: Snap Guide Lines — dashed lines at snap positions */}
+          {/* Snap Guide Lines */}
           {snapLines.length > 0 && (
             <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 40 }}>
               {snapLines.map((line, i) => (
@@ -382,77 +390,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* ══ Canvas Nav Preview (matches ExportApp layout) ══════ */}
-          {/* Preview top navbar — hidden on cover pages, like ExportApp */}
-          {isTemplateMode && (() => {
-            const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
-            const showTopNav = page.templateType !== 'cover' && navConfig.showNavbar !== false;
-            return showTopNav;
-          })() && (
-            <div className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-2 border-b border-white/10 pointer-events-none"
-              style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)' }}>
-              <span className="text-[9px] font-bold text-amber-400 whitespace-nowrap truncate max-w-[120px]">
-                {useAuthoringStore.getState().meta.namaBab || useAuthoringStore.getState().meta.judulPertemuan || 'Media'}
-              </span>
-              {(() => {
-                const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
-                return navConfig.showProgress !== false;
-              })() && (
-                <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full"
-                    style={{
-                      width: `${Math.round(((currentPageIndex + 1) / pages.length) * 100)}%`,
-                      background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
-                    }} />
-                </div>
-              )}
-              <span className="text-[8px] font-mono text-slate-400">{currentPageIndex + 1}/{pages.length}</span>
-            </div>
-          )}
-
-          {/* Template content wrapper — uses top/bottom offsets (NOT padding) so that
-              absolute inset-0 children respect the nav bar boundaries.
-              Previous paddingTop/paddingBottom was ignored by absolute-positioned templates. */}
-          <div className="absolute left-0 right-0" style={{
-            top: (() => {
-              if (!isTemplateMode) return 0;
-              const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
-              const showTopNav = page.templateType !== 'cover' && navConfig.showNavbar !== false;
-              return showTopNav ? 40 : 0; // match top nav height
-            })(),
-            bottom: (() => {
-              if (!isTemplateMode) return 0;
-              const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
-              return navConfig.showNavbar !== false ? 56 : 0; // match bottom nav height
-            })(),
-          }}>
-
-          {/* Template Mode (LOCKED): Render full-page template with interactive UI
-              so that buttons, toggles, step navigation, and all interactive elements
-              are visible inside the canvas — matching the preset preview appearance.
-              EditableText still works via isSelected + onEditField (independent of interactive). */}
-          {isTemplateMode && isLocked && (
-            <PageTemplate
-              key={page.id}
-              page={page}
-              isSelected={true}
-              onEditField={handleTemplateEdit}
-              interactive={true}
-            />
-          )}
-
-          {/* Template Mode (UNLOCKED): Render template as frozen background + elements on top */}
-          {isUnlockedTemplate && (
-            <PageTemplate
-              key={page.id}
-              page={page}
-              isSelected={false}
-              onEditField={undefined}
-            />
-          )}
-          </div>{/* end template content wrapper */}
-
-          {/* Phase 1: Overlay elements on LOCKED template pages — always render on top */}
+          {/* Overlay elements on LOCKED template pages — editable in canvas */}
           {isTemplateMode && isLocked && (page.overlayElements || []).length > 0 && (
             <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
               {(page.overlayElements || []).map(el => (
@@ -463,41 +401,23 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
                   isMultiSelected={isMultiSelected(el.id)}
                   isOverlay={true}
                   onSelect={(shiftKey) => {
-                    if (shiftKey) {
-                      toggleElementSelection(el.id);
-                    } else {
-                      selectElement(el.id);
-                    }
+                    if (shiftKey) toggleElementSelection(el.id);
+                    else selectElement(el.id);
                   }}
                   onStartDrag={(startX, startY) => {
-                    dragState.current = {
-                      type: 'move',
-                      elId: el.id,
-                      startX,
-                      startY,
-                      origX: el.x,
-                      origY: el.y,
-                    };
+                    _pushHistory();
+                    dragState.current = { type: 'move', elId: el.id, startX, startY, origX: el.x, origY: el.y };
                   }}
                   onStartResize={(dir, startX, startY) => {
-                    dragState.current = {
-                      type: 'resize',
-                      elId: el.id,
-                      startX,
-                      startY,
-                      origX: el.x,
-                      origY: el.y,
-                      origW: el.w,
-                      origH: el.h,
-                      dir,
-                    };
+                    _pushHistory();
+                    dragState.current = { type: 'resize', elId: el.id, startX, startY, origX: el.x, origY: el.y, origW: el.w, origH: el.h, dir };
                   }}
                 />
               ))}
             </div>
           )}
 
-          {/* Custom Mode + Unlocked Template: Render individual elements */}
+          {/* Custom Mode + Unlocked Template: Render editable elements on top of PageRenderer */}
           {(!isTemplateMode || isUnlockedTemplate) && (
             <div className="absolute inset-0" style={isUnlockedTemplate ? { zIndex: 20 } : undefined}>
               {page.elements.map(el => (
@@ -507,113 +427,36 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
                   isSelected={el.id === selectedElId || isMultiSelected(el.id)}
                   isMultiSelected={isMultiSelected(el.id)}
                   onSelect={(shiftKey) => {
-                    if (shiftKey) {
-                      toggleElementSelection(el.id);
-                    } else {
-                      selectElement(el.id);
-                    }
+                    if (shiftKey) toggleElementSelection(el.id);
+                    else selectElement(el.id);
                   }}
                   onStartDrag={(startX, startY) => {
-                    dragState.current = {
-                      type: 'move',
-                      elId: el.id,
-                      startX,
-                      startY,
-                      origX: el.x,
-                      origY: el.y,
-                    };
+                    _pushHistory();
+                    dragState.current = { type: 'move', elId: el.id, startX, startY, origX: el.x, origY: el.y };
                   }}
                   onStartResize={(dir, startX, startY) => {
-                    dragState.current = {
-                      type: 'resize',
-                      elId: el.id,
-                      startX,
-                      startY,
-                      origX: el.x,
-                      origY: el.y,
-                      origW: el.w,
-                      origH: el.h,
-                      dir,
-                    };
+                    _pushHistory();
+                    dragState.current = { type: 'resize', elId: el.id, startX, startY, origX: el.x, origY: el.y, origW: el.w, origH: el.h, dir };
                   }}
                 />
               ))}
             </div>
           )}
 
-          {/* Drop hint (visible when no elements and custom mode or unlocked template) */}
-          {(!isTemplateMode || isUnlockedTemplate) && page.elements.length === 0 && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <div className="text-slate-400 text-sm mb-2">⬇ Seret elemen ke sini</div>
-              <div className="text-slate-500 text-xs">atau pilih Template dari panel kiri</div>
-            </div>
-          )}
-
           {/* Template mode badge */}
           {isTemplateMode && (
             <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 z-[60] ${
-              isLocked
-                ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+              isSchemaDriven
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                : isLocked
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
             }`}>
-              {isLocked ? '🔒' : '🔓'} {page.templateType}
+              {isSchemaDriven ? '⚡' : isLocked ? '🔒' : '🔓'} {isSchemaDriven ? 'SCHEMA' : page.templateType}
             </div>
           )}
 
-          {/* ══ Canvas Bottom Nav Preview (matches ExportApp) ══════ */}
-          {isTemplateMode && (() => {
-            const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
-            return navConfig.showNavbar !== false;
-          })() && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 pointer-events-none border-t border-white/10"
-              style={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)' }}>
-              {/* Progress bar */}
-              {(() => {
-                const navConfig = page.navConfig || DEFAULT_NAV_CONFIG;
-                return navConfig.showProgress !== false;
-              })() && (
-                <div className="h-0.5 bg-white/5">
-                  <div className="h-full rounded-full"
-                    style={{
-                      width: `${Math.round(((currentPageIndex + 1) / pages.length) * 100)}%`,
-                      background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
-                    }} />
-                </div>
-              )}
-              {/* Nav bar */}
-              <div className="flex items-center justify-between gap-1 px-2 py-1.5">
-                {/* Prev */}
-                <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded ${currentPageIndex > 0 ? 'text-white/60' : 'text-white/20'}`}>
-                  ← Prev
-                </span>
-                {/* Page dots */}
-                <div className="flex items-center gap-0.5 overflow-hidden">
-                  {pages.slice(0, 10).map((p, i) => {
-                    const isActive = i === currentPageIndex;
-                    const templateIcon: Record<string, string> = {
-                      cover: '🏠', dokumen: '📋', materi: '📝', kuis: '❓',
-                      game: '🎮', hasil: '🏆', hero: '🚀', skenario: '🎭',
-                      petunjuk: '📌', diskusi: '💬', refleksi: '🪞', penutup: '🎓',
-                      custom: '⬜',
-                    };
-                    return (
-                      <span key={p.id} className={`text-[7px] ${isActive ? 'scale-125' : 'opacity-40'}`}
-                        style={{ transition: 'all 0.2s' }}>
-                        {templateIcon[p.templateType] || '📄'}
-                      </span>
-                    );
-                  })}
-                  {pages.length > 10 && <span className="text-[6px] text-white/30">+{pages.length - 10}</span>}
-                </div>
-                {/* Next button */}
-                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded bg-amber-400/80 text-slate-900">
-                  {currentPageIndex >= pages.length - 1 ? '🎉 Selesai' : 'Lanjut →'}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Phase 4: Multi-select info badge */}
+          {/* Multi-select info badge */}
           {selectedElIds.length > 1 && (
             <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none z-50">
               {selectedElIds.length} elemen terpilih • Shift+klik untuk tambah • Del untuk hapus
@@ -625,9 +468,9 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   );
 }
 
-/* ── Stage Element (Custom Mode) ────────────────────────────── */
+/* ── Stage Element (Canvas editing — drag, resize, select) ─── */
 
-function StageElement({
+const StageElement = memo(function StageElement({
   element,
   isSelected,
   isMultiSelected,
@@ -644,23 +487,15 @@ function StageElement({
   onStartResize: (dir: ResizeDir, startX: number, startY: number) => void;
   isOverlay?: boolean;
 }) {
-  const { updateElement, deleteElement, saveTextContent } = useCanvaStore();
+  const { deleteElement, saveTextContent } = useCanvaStore();
   const interactiveMode = useInteractiveStore((s) => s.mode);
-  const reportScore = useInteractiveStore((s) => s.reportScore);
-  const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const textRef = useRef<HTMLDivElement>(null);
   const isInteractive = element.type === 'kuis' || element.type === 'game';
   const isInteractiveMode = interactiveMode === 'interactive';
 
-  // Score callback for interactive mode
-  const handleComplete = useCallback((score: number, maxScore: number) => {
-    reportScore({ elementId: element.id, pageIndex: currentPageIndex, score, maxScore, completed: true });
-  }, [element.id, currentPageIndex, reportScore]);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect(e.shiftKey);
-    // In interactive mode, never drag — elements are clickable
     if (isInteractiveMode) return;
     if (!isInteractive || !isSelected) {
       onStartDrag(e.clientX, e.clientY);
@@ -686,19 +521,8 @@ function StageElement({
     }
   };
 
-  // 8-direction resize handles — Phase 3: larger handles (16px) for better touch target
-  const resizeHandles: { dir: ResizeDir; style: React.CSSProperties; cursor: string }[] = [
-    { dir: 'tl', style: { top: -7, left: -7 }, cursor: 'nwse-resize' },
-    { dir: 'tr', style: { top: -7, right: -7 }, cursor: 'nesw-resize' },
-    { dir: 'bl', style: { bottom: -7, left: -7 }, cursor: 'nesw-resize' },
-    { dir: 'br', style: { bottom: -7, right: -7 }, cursor: 'nwse-resize' },
-    { dir: 'tm', style: { top: -7, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
-    { dir: 'bm', style: { bottom: -7, left: '50%', transform: 'translateX(-50%)' }, cursor: 'ns-resize' },
-    { dir: 'l', style: { top: '50%', left: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
-    { dir: 'r', style: { top: '50%', right: -7, transform: 'translateY(-50%)' }, cursor: 'ew-resize' },
-  ];
+  const resizeHandles = RESIZE_HANDLES;
 
-  // Phase 4: Different ring colors for single vs multi-select
   const ringClass = isMultiSelected
     ? 'ring-2 ring-blue-400 ring-offset-0 z-10'
     : isSelected && !isInteractiveMode
@@ -717,7 +541,7 @@ function StageElement({
       }}
       onMouseDown={handleMouseDown}
     >
-      {/* Handle bar — always draggable (hidden in interactive mode) */}
+      {/* Handle bar */}
       {!isInteractiveMode && (
       <div
         className={`absolute left-0 right-0 flex items-center justify-between px-1 rounded-t text-[9px] font-bold z-20 transition-all ${
@@ -741,20 +565,8 @@ function StageElement({
       </div>
       )}
 
-      {/* Body */}
+      {/* Body — simplified, just visual preview in canvas */}
       <div className="w-full h-full overflow-hidden rounded-sm">
-        {element.type === 'kuis' && (
-          <QuizWidget dataIdx={element.dataIdx} kuisId={element.kuisId} kuisIds={element.kuisIds} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
-        )}
-        {element.type === 'game' && (
-          <GameWidget dataIdx={element.dataIdx} moduleId={element.moduleId} compact={interactiveMode !== 'interactive'} onComplete={isInteractiveMode ? handleComplete : undefined} />
-        )}
-        {element.type === 'materi' && (
-          <ModuleElementPreview dataIdx={element.dataIdx} moduleId={element.moduleId} layoutVariant={element.layoutVariant as LayoutVariant} />
-        )}
-        {element.type === 'modul' && (
-          <ModuleElementPreview dataIdx={element.dataIdx} moduleId={element.moduleId} layoutVariant={element.layoutVariant as LayoutVariant} />
-        )}
         {element.type === 'teks' && (
           <div
             ref={textRef}
@@ -784,10 +596,26 @@ function StageElement({
             }}
           />
         )}
+        {/* For kuis/game/materi/modul — show compact label in canvas mode */}
+        {(element.type === 'kuis' || element.type === 'game' || element.type === 'materi' || element.type === 'modul') && (
+          <CanvasElementPreview element={element} />
+        )}
+        {element.type === 'image' && (
+          element.imageUrl ? (
+            <img
+              src={element.imageUrl}
+              alt={element.label || 'Gambar'}
+              className="w-full h-full rounded-sm"
+              style={{ objectFit: element.imageFit || 'cover' }}
+              draggable={false}
+            />
+          ) : (
+            <CanvasElementPreview element={element} />
+          )
+        )}
       </div>
 
-      {/* Resize handles (8-direction) — Phase 3: larger 4x4 (16px) touch targets */}
-      {/* Phase 4: Only show resize handles for single-selected element (not multi) */}
+      {/* Resize handles */}
       {isSelected && !isInteractiveMode && !isMultiSelected && (
         <>
           {resizeHandles.map(h => (
@@ -802,33 +630,18 @@ function StageElement({
       )}
     </div>
   );
-}
+});
 
-/* ── Module Element Preview (uses PresetModuleCard) ──────────── */
+/* ── Compact element preview for canvas editing mode ────────── */
 
-function ModuleElementPreview({ dataIdx, moduleId, layoutVariant }: { dataIdx?: number; moduleId?: string; layoutVariant?: LayoutVariant }) {
-  const modules = useAuthoringStore((s) => s.modules);
-  // Use resolveModule for stable reference (moduleId > dataIdx)
-  const refEl: Partial<CanvaElement> = { moduleId, dataIdx };
-  const mod = resolveModule(refEl as CanvaElement, modules);
-
-  if (!mod) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full bg-emerald-500/10 rounded border border-emerald-500/20 p-2">
-        <span className="text-2xl">🧩</span>
-        <span className="text-[10px] font-bold text-emerald-300 mt-1">Modul</span>
-      </div>
-    );
-  }
-
+function CanvasElementPreview({ element }: { element: CanvaElement }) {
   return (
-    <div className="h-full overflow-auto p-1">
-      <PresetModuleCard
-        mode="canvas"
-        module={mod}
-        compact
-        layoutVariant={layoutVariant || (mod.layoutVariant as LayoutVariant) || 'A'}
-      />
+    <div className="w-full h-full flex flex-col items-center justify-center rounded-sm"
+      style={{ background: ELEMENT_COLOR_MAP[element.type] || 'rgba(255,255,255,.1)' }}>
+      <span className="text-2xl">{ELEMENT_ICON_MAP[element.type] || '📦'}</span>
+      <span className="text-[9px] font-bold mt-1" style={{ color: ELEMENT_TEXT_COLOR_MAP[element.type] || '#fff' }}>
+        {element.label || element.type}
+      </span>
     </div>
   );
 }

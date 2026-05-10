@@ -53,6 +53,19 @@ export const PAGE_TYPE_CATEGORIES = [
   { id: 'custom', label: 'Custom', color: '#3ecfcf' },
 ];
 
+// ── Type-safe config accessor helpers ────────────────────────────
+// Prevents the `as boolean || default` operator precedence bug where
+// `false || true` yields `true` (overriding user's explicit false).
+function boolOr<K extends string>(config: Record<string, number | string | boolean>, key: K, fallback: boolean): boolean {
+  const v = config[key];
+  return typeof v === 'boolean' ? v : fallback;
+}
+
+function numOr<K extends string>(config: Record<string, number | string | boolean>, key: K, fallback: number): number {
+  const v = config[key];
+  return typeof v === 'number' ? v : fallback;
+}
+
 // ── All available page types ──────────────────────────────────
 export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
   {
@@ -80,10 +93,10 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeDiskusi: true,
       includeRefleksi: true,
       includePenutup: true,
-      soalPerHalaman: (config.soalPerHalaman as number) || 5,
-      timer: config.timer as boolean || false,
-      navbar: config.navbar as boolean || true,
-      autoGenerateModules: config.autoGenerateModules as boolean || true,
+      soalPerHalaman: numOr(config, 'soalPerHalaman', 5),
+      timer: boolOr(config, 'timer', false),
+      navbar: boolOr(config, 'navbar', true),
+      autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
     }),
   },
   {
@@ -111,8 +124,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
-      navbar: config.navbar as boolean || true,
-      autoGenerateModules: config.autoGenerateModules as boolean || true,
+      navbar: boolOr(config, 'navbar', true),
+      autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
     }),
   },
   {
@@ -140,9 +153,9 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includeDiskusi: false,
       includeRefleksi: false,
       includePenutup: false,
-      soalPerHalaman: (config.soalPerHalaman as number) || 5,
+      soalPerHalaman: numOr(config, 'soalPerHalaman', 5),
       timer: true,
-      navbar: config.navbar as boolean || true,
+      navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: false,
     }),
   },
@@ -171,8 +184,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
-      navbar: config.navbar as boolean || true,
-      autoGenerateModules: config.autoGenerateModules as boolean || true,
+      navbar: boolOr(config, 'navbar', true),
+      autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
     }),
   },
   {
@@ -200,8 +213,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
-      navbar: config.navbar as boolean || true,
-      autoGenerateModules: config.autoGenerateModules as boolean || true,
+      navbar: boolOr(config, 'navbar', true),
+      autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
     }),
   },
   {

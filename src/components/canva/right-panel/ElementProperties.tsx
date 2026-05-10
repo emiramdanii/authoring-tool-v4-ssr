@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings2, Trash2, Copy } from 'lucide-react';
+import { Settings2, Trash2, Copy, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
@@ -150,6 +150,68 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
           </>
         )}
 
+        {/* Image-specific props */}
+        {selectedEl.type === 'image' && (
+          <>
+            <div className="mb-2">
+              <label className="text-[10px] text-slate-500 block mb-1">URL Gambar</label>
+              <input
+                type="text"
+                value={selectedEl.imageUrl || ''}
+                onChange={e => updateElement(selectedEl.id, { imageUrl: e.target.value })}
+                placeholder="https://... atau tempel URL"
+                className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="text-[10px] text-slate-500 block mb-1">Atau Upload File</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) {
+                    toast.error('Ukuran file maks 2MB');
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const dataUrl = ev.target?.result as string;
+                    updateElement(selectedEl.id, { imageUrl: dataUrl });
+                  };
+                  reader.readAsDataURL(file);
+                }}
+                className="w-full text-[9px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[9px] file:font-bold file:bg-orange-500/20 file:text-orange-300 hover:file:bg-orange-500/30 file:cursor-pointer"
+              />
+              <span className="text-[8px] text-slate-600">Maks 2MB (disimpan sebagai base64)</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] text-slate-500 w-14">Paskan</span>
+              <div className="flex gap-0.5 flex-1">
+                {([
+                  { val: 'cover' as const, label: 'Cover' },
+                  { val: 'contain' as const, label: 'Contain' },
+                  { val: 'fill' as const, label: 'Fill' },
+                  { val: 'none' as const, label: 'Asli' },
+                ]).map(f => (
+                  <button
+                    key={f.val}
+                    onClick={() => updateElement(selectedEl.id, { imageFit: f.val })}
+                    className={`flex-1 py-1 rounded-lg text-[8px] font-bold transition-colors ${
+                      (selectedEl.imageFit || 'cover') === f.val
+                        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                        : 'bg-slate-800/40 text-slate-400 border border-slate-700/20 hover:border-slate-600'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Data reference — dropdown with module names */}
         {(selectedEl.type === 'kuis' || selectedEl.type === 'game' || selectedEl.type === 'modul') && (
           <DataIdxSelector
@@ -182,6 +244,29 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
             </div>
           </div>
         )}
+
+        {/* Z-Order controls */}
+        <div className="mt-2 mb-1">
+          <label className="text-[10px] text-slate-500 block mb-1">Urutan Layer</label>
+          <div className="flex gap-1">
+            {[
+              { dir: 'top' as const, icon: <ChevronsUp size={10} />, label: 'Paling Depan', shortcut: '⌘⇧]' },
+              { dir: 'up' as const, icon: <ArrowUp size={10} />, label: 'Maju 1 Layer', shortcut: '⌘]' },
+              { dir: 'down' as const, icon: <ArrowDown size={10} />, label: 'Mundur 1 Layer', shortcut: '⌘[' },
+              { dir: 'bottom' as const, icon: <ChevronsDown size={10} />, label: 'Paling Belakang', shortcut: '⌘⇧[' },
+            ].map(item => (
+              <button
+                key={item.dir}
+                onClick={() => useCanvaStore.getState().moveElementZ(selectedEl.id, item.dir)}
+                className="flex-1 py-1.5 rounded-lg bg-slate-800/40 border border-slate-700/20 hover:border-slate-600 text-slate-400 hover:text-slate-200 transition-colors flex flex-col items-center gap-0.5"
+                title={`${item.label} (${item.shortcut})`}
+              >
+                {item.icon}
+                <span className="text-[7px]">{item.dir === 'top' ? 'Depan' : item.dir === 'up' ? '↑' : item.dir === 'down' ? '↓' : 'Belakang'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <button
           onClick={deleteSelected}

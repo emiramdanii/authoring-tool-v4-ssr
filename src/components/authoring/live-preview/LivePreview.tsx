@@ -20,6 +20,8 @@ import type { PreviewMode, DeviceMode, LayoutTheme } from './types';
 import { DEVICE_MODES, LAYOUT_THEMES, SCREEN_OPTIONS, MODE_META } from './constants';
 import { usePreviewBuilder } from './use-preview-builder';
 import { usePreviewNavigation } from './use-preview-navigation';
+import SchemaPlayer from './SchemaPlayer';
+import { getAvailablePresets } from '@/core';
 
 export default function LivePreview() {
   // ── Local state ────────────────────────────────────────────
@@ -38,6 +40,7 @@ export default function LivePreview() {
   // ── Store subscriptions ────────────────────────────────────
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const dirty = useAuthoringStore((s) => s.dirty);
+  const activePreset = useAuthoringStore((s) => s.activePreset);
 
   // ── Canva store subscriptions ──────────────────────────────
   const canvaPages = useCanvaStore((s) => s.pages);
@@ -183,6 +186,7 @@ export default function LivePreview() {
             <div className="absolute top-full left-0 mt-1 w-48 rounded-xl bg-zinc-900 border border-zinc-700/50 shadow-xl z-50 overflow-hidden">
               {([
                 { id: 'unified' as PreviewMode, icon: '🚀', label: 'Unified', desc: 'Navigasi pintar + game + layout', disabled: false },
+                { id: 'schema' as PreviewMode, icon: '⚡', label: 'Schema', desc: 'Schema-driven JSON → React (baru!)', disabled: !activePreset },
                 { id: 'canvas' as PreviewMode, icon: '🎨', label: 'Canvas', desc: 'Slideshow dari halaman Canva', disabled: !hasCanvasContent },
                 { id: 'template' as PreviewMode, icon: '🧩', label: 'Template', desc: 'Template system + tema', disabled: false },
                 { id: 'legacy' as PreviewMode, icon: '📝', label: 'Legacy', desc: 'HTML lama (tanpa tema)', disabled: false },
@@ -464,7 +468,15 @@ export default function LivePreview() {
               </div>
             )}
 
-            {htmlContent ? (
+            {previewMode === 'schema' && activePreset ? (
+              <SchemaPlayer
+                presetId={activePreset}
+                mode="preview"
+                showControls={true}
+                showThemeSwitcher={true}
+                className="w-full h-full"
+              />
+            ) : htmlContent ? (
               <iframe
                 ref={iframeRef}
                 srcDoc={srcdoc}

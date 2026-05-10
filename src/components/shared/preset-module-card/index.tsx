@@ -1,4 +1,4 @@
-export { default as PresetModuleCard } from './PresetModuleCard';
+export { default as PresetModuleCard, ModulePreview } from './PresetModuleCard';
 export type { PresetModuleCardProps, LayoutVariant, ModuleTypeMeta, M } from './types';
 export { LAYOUT_VARIANTS } from './layout-variants';
 export { MODULE_META, getModuleMeta } from './module-meta';

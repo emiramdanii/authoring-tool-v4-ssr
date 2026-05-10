@@ -6,7 +6,7 @@ import { STORAGE_KEY } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
 
-export type SystemSlice = Pick<AuthoringState, 'dirty' | 'guruPw' | 'markDirty' | 'markClean' | 'saveToStorage' | 'loadFromStorage' | 'calcCompleteness'>;
+export type SystemSlice = Pick<AuthoringState, 'dirty' | 'guruPw' | 'markDirty' | 'markClean' | 'saveToStorage' | 'loadFromStorage' | 'calcCompleteness' | 'toggleSuaraAll'>;
 
 export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice> = (set, get) => ({
   dirty: false,
@@ -14,6 +14,24 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
 
   markDirty: () => set({ dirty: true }),
   markClean: () => set({ dirty: false }),
+
+  toggleSuaraAll: () => {
+    const s = get().suara;
+    // If any sound is enabled, turn all off. Otherwise turn all on.
+    const anyOn = Object.values(s).some(Boolean);
+    const newVal = !anyOn;
+    set({
+      suara: {
+        navigasi: newVal,
+        benar: newVal,
+        salah: newVal,
+        selesai: newVal,
+        klik: newVal,
+        skor: newVal,
+      },
+      dirty: true,
+    });
+  },
 
   saveToStorage: () => {
     try {

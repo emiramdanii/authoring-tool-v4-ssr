@@ -57,3 +57,22 @@ agent-ctx/
 package-lock.json
 worklog.md
 export-output/
+
+# Server scripts / daemon files
+daemon.js
+keep-alive-server.js
+start-server.sh
+run-server.sh
+keep-alive.sh
+keep-next-alive.sh
+server-persist.log
+server2.log
+next-start.log
+alive-server.log
+
+# Database
+db/
+*.db
+
+# Download outputs
+download/

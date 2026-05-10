@@ -122,6 +122,47 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Font Variables & Animations
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Font variables populated by next/font/google in layout.tsx */
+  --font-fredoka: var(--font-fredoka), 'Fredoka', cursive;
+  --font-nunito: var(--font-nunito), 'Nunito', sans-serif;
+}
+
+/* ── Schema Renderer Animations ──────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(249, 193, 46, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(249, 193, 46, 0.6); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes tapPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    MPI v5.Z — Custom Design System
    ═══════════════════════════════════════════════════════════════ */
 

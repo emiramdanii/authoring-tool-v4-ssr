@@ -54,15 +54,24 @@ export const MODULE_TYPE_ICON_MAP: Record<string, string> = {
 
 export const TEMPLATE_BADGE_MAP: Record<string, { icon: string; color: string; name: string }> = {
   cover: { icon: '🏠', color: '#f9c82e', name: 'Cover' },
+  petunjuk: { icon: '📌', color: '#3ecfcf', name: 'Petunjuk' },
   dokumen: { icon: '📋', color: '#3ecfcf', name: 'Dokumen' },
+  hero: { icon: '🚀', color: '#fb923c', name: 'Hero' },
   materi: { icon: '📝', color: '#a78bfa', name: 'Materi' },
+  skenario: { icon: '🎭', color: '#f472b6', name: 'Skenario' },
   kuis: { icon: '❓', color: '#f5c842', name: 'Kuis' },
   game: { icon: '🎮', color: '#3ecfcf', name: 'Game' },
+  diskusi: { icon: '💬', color: '#34d399', name: 'Diskusi' },
   hasil: { icon: '🏆', color: '#34d399', name: 'Hasil' },
-  hero: { icon: '🚀', color: '#fb923c', name: 'Hero' },
-  skenario: { icon: '🎭', color: '#f472b6', name: 'Skenario' },
+  refleksi: { icon: '🪞', color: '#a78bfa', name: 'Refleksi' },
+  penutup: { icon: '🎓', color: '#fb923c', name: 'Penutup' },
   custom: { icon: '⬜', color: '#6366f1', name: 'Kosong' },
 };
+
+/** Icon-only map derived from TEMPLATE_BADGE_MAP (single source of truth) */
+export const TEMPLATE_ICON_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(TEMPLATE_BADGE_MAP).map(([key, val]) => [key, val.icon])
+);
 
 // ── Element type colors (for layer list) ────────────────────────
 
@@ -73,6 +82,7 @@ export const ELEMENT_TYPE_COLORS: Record<string, string> = {
   modul: '#34d399',
   teks: '#fff',
   shape: '#6366f1',
+  image: '#f97316',
 };
 
 // ── Helper: get icon for any module type ────────────────────────

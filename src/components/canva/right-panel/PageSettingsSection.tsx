@@ -24,6 +24,7 @@ interface PageSettingsSectionProps {
   toggleSnap: () => void;
   unlockPage: () => void;
   relockPage: () => void;
+  setVariant: (variant: 'A' | 'B' | 'C') => void;
   collapsed: boolean;
   onToggle: () => void;
 }
@@ -43,6 +44,7 @@ export default function PageSettingsSection({
   toggleSnap,
   unlockPage,
   relockPage,
+  setVariant,
   collapsed,
   onToggle,
 }: PageSettingsSectionProps) {
@@ -80,34 +82,80 @@ export default function PageSettingsSection({
         </select>
       </div>
 
-      {/* Phase 3: Template Layout Variant picker */}
-      {isTemplateMode && (page?.templateType === 'cover' || page?.templateType === 'materi') && (
+      {/* Phase 3: Template Layout Variant picker — available for all template types */}
+      {isTemplateMode && page && (
         <div className="mb-3">
           <label className="text-[10px] text-slate-500 block mb-1.5">Varian Tampilan</label>
           <div className="flex gap-1.5">
-            {(page?.templateType === 'cover'
+            {(page.templateType === 'cover'
               ? [
                   { id: 'A', label: 'Centered', icon: '⬜' },
                   { id: 'B', label: 'Left Align', icon: '▐▌' },
                   { id: 'C', label: 'Split', icon: '◧◨' },
                 ]
-              : [
-                  { id: 'A', label: 'Vertical', icon: '☰' },
-                  { id: 'B', label: 'Grid 2-Col', icon: '▥' },
-                ]
+              : page.templateType === 'materi'
+                ? [
+                    { id: 'A', label: 'Vertical', icon: '☰' },
+                    { id: 'B', label: 'Grid 2-Kolom', icon: '▥' },
+                  ]
+              : page.templateType === 'kuis'
+                ? [
+                    { id: 'A', label: 'Widget', icon: '⬜' },
+                    { id: 'B', label: 'Daftar Kartu', icon: '☵' },
+                  ]
+              : page.templateType === 'skenario'
+                ? [
+                    { id: 'A', label: 'Interaktif', icon: '⬜' },
+                    { id: 'B', label: 'Timeline', icon: '┃' },
+                  ]
+              : page.templateType === 'dokumen'
+                ? [
+                    { id: 'A', label: 'Tab', icon: '⬜' },
+                    { id: 'B', label: 'Side Nav', icon: '▐▌' },
+                  ]
+              : page.templateType === 'hasil'
+                ? [
+                    { id: 'A', label: 'Centered', icon: '⬜' },
+                    { id: 'B', label: 'Dashboard', icon: '▥' },
+                  ]
+              : page.templateType === 'penutup'
+                ? [
+                    { id: 'A', label: 'Kartu', icon: '⬜' },
+                    { id: 'B', label: 'Checklist', icon: '☑' },
+                  ]
+              : page.templateType === 'hero'
+                ? [
+                    { id: 'A', label: 'Centered', icon: '⬜' },
+                    { id: 'B', label: 'Split', icon: '◧◨' },
+                  ]
+              : page.templateType === 'petunjuk'
+                ? [
+                    { id: 'A', label: 'Langkah', icon: '⬜' },
+                    { id: 'B', label: 'Timeline', icon: '┃' },
+                  ]
+              : page.templateType === 'diskusi'
+                ? [
+                    { id: 'A', label: 'Satu-satu', icon: '⬜' },
+                    { id: 'B', label: 'Semua', icon: '▥' },
+                  ]
+              : page.templateType === 'refleksi'
+                ? [
+                    { id: 'A', label: 'Satu-satu', icon: '⬜' },
+                    { id: 'B', label: 'Jurnal', icon: '📓' },
+                  ]
+              : page.templateType === 'game'
+                ? [
+                    { id: 'A', label: 'Widget', icon: '⬜' },
+                    { id: 'B', label: 'Galeri', icon: '▦' },
+                  ]
+                : [
+                    { id: 'A', label: 'Default', icon: '⬜' },
+                    { id: 'B', label: 'Alt Layout', icon: '▥' },
+                  ]
             ).map(v => (
               <button
                 key={v.id}
-                onClick={() => {
-                  const store = useCanvaStore.getState();
-                  const newPages = [...store.pages];
-                  newPages[store.currentPageIndex] = {
-                    ...newPages[store.currentPageIndex],
-                    templateVariant: v.id as 'A' | 'B' | 'C',
-                  };
-                  store._pushHistory();
-                  useCanvaStore.setState({ pages: newPages });
-                }}
+                onClick={() => setVariant(v.id as 'A' | 'B' | 'C')}
                 className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] font-bold transition-colors ${
                   (page?.templateVariant || 'A') === v.id
                     ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'

@@ -51,7 +51,7 @@ import {
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW ROUTER
 // ═══════════════════════════════════════════════════════════════════
-function ModulePreview({ mod, variant, compact }: { mod: M; variant: LayoutVariant; compact: boolean }) {
+export function ModulePreview({ mod, variant, compact }: { mod: M; variant: LayoutVariant; compact: boolean }) {
   const t = str(mod.type);
   const meta = getModuleMeta(t);
 

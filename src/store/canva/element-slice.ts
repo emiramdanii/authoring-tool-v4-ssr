@@ -19,6 +19,7 @@ export type ElementSlice = Pick<
   | 'toggleElementSelection' | 'selectAllElements' | 'clearSelection' | 'deleteSelectedElements'
   | 'updateElement' | 'deleteElement' | 'deleteSelected'
   | 'toggleElementVisibility' | 'saveTextContent' | 'moveElementZ'
+  | 'copySelected' | 'pasteElements' | '_clipboard'
 >;
 
 // ── Helper: determine if page is in template mode AND locked ──
@@ -47,6 +48,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     };
     if (type === 'teks') { el.text = 'Judul Halaman'; el.fontSize = 24; el.h = 15; }
     if (type === 'shape') { el.color = 'rgba(255,255,255,.1)'; el.radius = 8; el.h = 20; }
+    if (type === 'image') { el.w = 35; el.h = 35; el.imageFit = 'cover'; }
     if (type === 'kuis') {
       el.w = 50; el.h = 50;
       el.icon = '❓'; el.label = 'Kuis Interaktif';
@@ -357,5 +359,70 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
 
   saveTextContent: (elId, text) => {
     get().updateElement(elId, { text });
+  },
+
+  // ── Clipboard: Copy / Paste ────────────────────────────────
+  _clipboard: [],
+
+  /** Copy selected elements to internal clipboard */
+  copySelected: () => {
+    const { pages, currentPageIndex, selectedElId, selectedElIds } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    const idsToCopy = selectedElIds.length > 0
+      ? selectedElIds
+      : selectedElId
+        ? [selectedElId]
+        : [];
+
+    if (idsToCopy.length === 0) return;
+
+    const allEls = [...page.elements, ...(page.overlayElements || [])];
+    const copied = idsToCopy
+      .map(id => allEls.find(e => e.id === id))
+      .filter(Boolean) as CanvaElement[];
+
+    // Deep clone to avoid mutations
+    set({ _clipboard: structuredClone(copied) });
+    toast.success(`${copied.length} elemen disalin`);
+  },
+
+  /** Paste clipboard elements at an offset position */
+  pasteElements: () => {
+    const { pages, currentPageIndex, _clipboard } = get();
+    const page = pages[currentPageIndex];
+    if (!page || _clipboard.length === 0) return;
+
+    get()._pushHistory();
+
+    const OFFSET = 3; // % offset so pasted elements don't overlap exactly
+    const newEls = _clipboard.map(el => ({
+      ...structuredClone(el),
+      id: createElId(),
+      x: Math.min(90, el.x + OFFSET),
+      y: Math.min(85, el.y + OFFSET),
+    }));
+
+    const newPages = [...pages];
+    if (isLockedTemplatePage(page.templateType, page.locked)) {
+      newPages[currentPageIndex] = {
+        ...page,
+        overlayElements: [...(page.overlayElements || []), ...newEls],
+      };
+    } else {
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: [...page.elements, ...newEls],
+      };
+    }
+
+    const newIds = newEls.map(e => e.id);
+    set({
+      pages: newPages,
+      selectedElIds: newIds,
+      selectedElId: newIds[0],
+    });
+    toast.success(`${newEls.length} elemen ditempel`);
   },
 });

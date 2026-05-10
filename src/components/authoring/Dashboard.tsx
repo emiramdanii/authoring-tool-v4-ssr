@@ -3,6 +3,9 @@
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 
+// Schema-driven presets use this path for beautiful rendering
+const SCHEMA_DRIVEN_PRESETS = new Set(['hakikat-norma', 'macam-norma']);
+
 export default function Dashboard() {
   const meta = useAuthoringStore((s) => s.meta);
   const cp = useAuthoringStore((s) => s.cp);
@@ -172,13 +175,32 @@ export default function Dashboard() {
             return (
               <button
                 key={p.key}
-                onClick={() => {
+                onClick={async () => {
                   if (hasData && !confirm('Template akan menimpa data saat ini. Lanjutkan?')) return;
-                  applyFullPreset(p.key);
-                  setTimeout(() => {
-                    useCanvaStore.getState().resetCanvas();
-                    useAuthoringStore.getState().setActivePanel('canva');
-                  }, 300);
+
+                  // Schema-driven presets get beautiful token-based rendering
+                  if (SCHEMA_DRIVEN_PRESETS.has(p.key)) {
+                    // Load authoring data first (for meta, CP, TP, ATP, etc.)
+                    applyFullPreset(p.key);
+                    // Then load schema-driven canvas pages (replaces legacy templates)
+                    setTimeout(async () => {
+                      await useCanvaStore.getState().loadSchemaPreset(p.key);
+                      useAuthoringStore.getState().setActivePanel('canva');
+                    }, 100);
+                  } else if (p.key === 'blank') {
+                    useAuthoringStore.getState().newProject();
+                    setTimeout(() => {
+                      useCanvaStore.getState().resetCanvas();
+                      useAuthoringStore.getState().setActivePanel('canva');
+                    }, 100);
+                  } else {
+                    // Other presets use legacy template path
+                    applyFullPreset(p.key);
+                    setTimeout(() => {
+                      useCanvaStore.getState().resetCanvas();
+                      useAuthoringStore.getState().setActivePanel('canva');
+                    }, 300);
+                  }
                 }}
                 className={`rounded-xl p-4 text-center transition-all cursor-pointer border ${
                   isCurrentPreset
@@ -189,6 +211,9 @@ export default function Dashboard() {
                 <div className="text-2xl mb-2">{p.icon}</div>
                 <div className="text-xs font-semibold text-slate-200">{p.label}</div>
                 <div className="text-[0.6rem] text-slate-500 mt-0.5">{p.sub}</div>
+                {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
+                  <div className="text-[0.55rem] text-amber-400/80 font-bold mt-1">⚡ Schema-Driven</div>
+                )}
                 {isCurrentPreset && (
                   <div className="text-[0.6rem] text-amber-400 font-bold mt-1.5">AKTIF</div>
                 )}
@@ -228,6 +253,22 @@ export default function Dashboard() {
           </div>
         </button>
 
+        {/* Schema Preview — new schema-driven mode */}
+        {isPresetMode && (
+          <button
+            onClick={() => setActivePanel('preview')}
+            className="flex items-center gap-4 bg-gradient-to-br from-fuchsia-900/30 to-purple-900/20 border border-fuchsia-500/30 rounded-xl p-4 hover:border-fuchsia-400/50 hover:from-fuchsia-900/40 hover:to-purple-900/30 transition-all cursor-pointer text-left"
+          >
+            <div className="w-10 h-10 rounded-lg bg-fuchsia-500/15 flex items-center justify-center text-fuchsia-400 text-lg flex-shrink-0">
+              ⚡
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-fuchsia-200">Schema Preview</div>
+              <div className="text-xs text-fuchsia-400/60">JSON-driven rendering + 7 tema</div>
+            </div>
+          </button>
+        )}
+
         {/* Preview — tertiary CTA */}
         <button
           onClick={() => setActivePanel('preview')}
@@ -245,8 +286,14 @@ export default function Dashboard() {
         {/* Canva — design CTA */}
         <button
           onClick={() => {
-            useCanvaStore.getState().resetCanvas();
-            setActivePanel('canva');
+            // If we have a schema-driven preset, just go to canva (no reset needed)
+            const activePreset = useAuthoringStore.getState().activePreset;
+            if (SCHEMA_DRIVEN_PRESETS.has(activePreset || '')) {
+              setActivePanel('canva');
+            } else {
+              useCanvaStore.getState().resetCanvas();
+              setActivePanel('canva');
+            }
           }}
           className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-purple-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
         >

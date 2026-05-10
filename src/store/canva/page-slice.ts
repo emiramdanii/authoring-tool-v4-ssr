@@ -16,7 +16,7 @@ import { getTemplateLabel, buildTemplateData, getTemplateExtraProps } from './te
 export type PageSlice = Pick<
   CanvaState,
   | 'goPage' | 'addPage' | 'addTemplatePage' | 'duplicatePage'
-  | 'deletePage' | 'setPageLabel' | 'setTemplateType' | 'reorderPage'
+  | 'deletePage' | 'setPageLabel' | 'setTemplateType' | 'setVariant' | 'reorderPage'
   | 'unlockPage' | 'relockPage'
 >;
 
@@ -40,6 +40,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const label = getTemplateLabel(templateType, pages.length);
     const newPage = createPage(label, templateType);
     newPage.templateData = buildTemplateData(templateType);
+    newPage.locked = true; // Template pages always start locked (auto-sync from authoring)
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Auto-fill elements for template (compatible with export)
@@ -98,7 +99,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     const isTemplate = templateType !== 'custom';
     // Populate templateData using centralized builder
-    const newPage = { ...page, templateType, templateData: buildTemplateData(templateType) };
+    const newPage = { ...page, templateType, templateVariant: 'A' as const, templateData: buildTemplateData(templateType) };
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Re-populate placeholder elements for export compat
@@ -115,6 +116,16 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     newPages[currentPageIndex] = newPage;
     set({ pages: newPages, selectedElId: null });
+  },
+
+  setVariant: (variant) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    get()._pushHistory();
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, templateVariant: variant };
+    set({ pages: newPages });
   },
 
   reorderPage: (fromIndex, toIndex) => {
@@ -185,15 +196,30 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPages = [...pages];
     // Re-lock: refresh templateData from authoring, reset to locked template mode
     const freshTemplateData = buildTemplateData(page.templateType);
-    // Preserve non-placeholder user elements as overlay elements
-    // so the user's positioned elements survive the re-lock
-    const userElements = page.elements.filter(el => !el.isPlaceholder);
+    // Populate fresh placeholder elements for the template
+    const freshElements = populateTemplateElements({ ...page, templateData: freshTemplateData }, createElId);
+
+    // Filter user elements: keep only non-placeholder elements that are
+    // NOT full-page (x:0,y:0,w:100,h:100) — those were the original
+    // template placeholder elements that got converted during unlock.
+    // Full-page elements that match placeholder positions are likely
+    // remnants of the old template, not user-placed content.
+    const userElements = page.elements.filter(el => {
+      if (el.isPlaceholder) return false; // Skip placeholders
+      // Skip elements that look like converted placeholders:
+      // full-page size with type modul/materi/kuis/game
+      const isFullPage = el.x <= 2 && el.y <= 2 && el.w >= 96 && el.h >= 96;
+      const isTemplateType = ['modul', 'materi', 'kuis', 'game'].includes(el.type);
+      if (isFullPage && isTemplateType) return false;
+      return true;
+    });
+
     const newPage: CanvaPage = {
       ...page,
       locked: true,
       templateData: freshTemplateData,
-      overlayElements: userElements, // Preserve user elements as overlays on re-locked template
-      elements: populateTemplateElements({ ...page, templateData: freshTemplateData }, createElId),
+      overlayElements: userElements, // Preserve genuine user elements as overlays
+      elements: freshElements,
     };
     Object.assign(newPage, getTemplateExtraProps(page.templateType));
     newPages[currentPageIndex] = newPage;

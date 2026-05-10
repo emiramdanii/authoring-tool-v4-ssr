@@ -51,6 +51,9 @@ export interface CanvaElement {
   // They fill the entire page (x:0,y:0,w:100,h:100) and should NOT
   // become visible draggable boxes after unlock.
   isPlaceholder?: boolean;
+  // ── Image element properties ──
+  imageUrl?: string;      // URL or data URL of the image
+  imageFit?: 'cover' | 'contain' | 'fill' | 'none'; // CSS object-fit behavior
 }
 
 // ── Template System Types ─────────────────────────────────────
@@ -132,6 +135,7 @@ export const ELEM_TYPES: ElemType[] = [
   { id: 'modul', icon: '🧩', name: 'Modul', color: 'rgba(52,211,153,.4)' },
   { id: 'teks', icon: '🔤', name: 'Teks', color: 'rgba(255,255,255,.3)' },
   { id: 'shape', icon: '⬜', name: 'Shape', color: 'rgba(100,100,200,.3)' },
+  { id: 'image', icon: '🖼️', name: 'Gambar', color: 'rgba(249,115,22,.4)' },
 ];
 
 export const LAYER_COLORS: Record<string, string> = {
@@ -141,6 +145,7 @@ export const LAYER_COLORS: Record<string, string> = {
   modul: '#34d399',
   teks: '#fff',
   shape: '#6366f1',
+  image: '#f97316',
 };
 
 // ── Template Gallery Constants ────────────────────────────────

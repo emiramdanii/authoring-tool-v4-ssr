@@ -36,8 +36,14 @@ export interface CanvaState {
   selectedElId: string | null;
   // Phase 4: Multi-select — array of selected element IDs
   selectedElIds: string[];
+  leftPanelOpen: boolean;
   rightPanelOpen: boolean;
+  toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
+  // Save status — centralized indicator for auto-save
+  _saveStatus: 'saved' | 'saving';
+  // Nudge debounce: timestamp of last nudge to avoid history spam
+  _lastNudgeTime?: number;
   // Grid & Snap
   showGrid: boolean;
   gridSize: number; // percentage (e.g., 5 = 5% grid)
@@ -70,6 +76,7 @@ export interface CanvaState {
   deletePage: () => void;
   setPageLabel: (label: string) => void;
   setTemplateType: (templateType: PageTemplateType) => void;
+  setVariant: (variant: 'A' | 'B' | 'C') => void;
   reorderPage: (fromIndex: number, toIndex: number) => void;
 
   // ── Actions: Background ──────────────────────────────────────
@@ -104,6 +111,10 @@ export interface CanvaState {
   toggleElementVisibility: (elId: string) => void;
   saveTextContent: (elId: string, text: string) => void;
   moveElementZ: (elId: string, direction: 'up' | 'down' | 'top' | 'bottom') => void;
+  // Clipboard: Copy / Paste
+  _clipboard: CanvaElement[];
+  copySelected: () => void;
+  pasteElements: () => void;
 
   // ── Actions: Tool & UI ───────────────────────────────────────
   setTool: (tool: Tool) => void;
@@ -112,6 +123,9 @@ export interface CanvaState {
   zoomDelta: (delta: number) => void;
   setRatio: (ratioId: string) => void;
   nudgeSelected: (dx: number, dy: number) => void;
+  // Alignment & Distribution
+  alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
+  distributeSelected: (axis: 'horizontal' | 'vertical') => void;
 
   // ── Actions: Layout Presets ────────────────────────────────────
   applyLayoutPreset: (presetId: string) => void;
@@ -135,6 +149,10 @@ export interface CanvaState {
 
   // ── Actions: Auto Generate (Page Type) ──────────────────────
   generateFromPageType: (pageType: PageTypeDefinition, config: Record<string, number | string | boolean>) => void;
+
+  // ── Actions: Schema Preset Loading ───────────────────────────
+  /** Load a schema preset (e.g. 'hakikat-norma') into the canvas, replacing all pages */
+  loadSchemaPreset: (presetId: string) => Promise<void>;
 
   // ── Actions: Persistence ─────────────────────────────────────
   saveToStorage: () => void;

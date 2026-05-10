@@ -8,6 +8,11 @@ import BackgroundSection from './BackgroundSection';
 import PaletteSection from './PaletteSection';
 import NavigationSection from './NavigationSection';
 import PageSettingsSection from './PageSettingsSection';
+import {
+  AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
+  AlignStartVertical, AlignCenterVertical, AlignEndVertical,
+  SpaceHorizontal, SpaceVertical,
+} from './align-icons';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: RightPanel redesign — 5 sections instead of 9
@@ -44,7 +49,12 @@ export default function RightPanel() {
     currentLayoutPreset,
     unlockPage,
     relockPage,
+    setVariant,
   } = useCanvaStore();
+
+  const selectedElIds = useCanvaStore((s) => s.selectedElIds);
+  const alignSelected = useCanvaStore((s) => s.alignSelected);
+  const distributeSelected = useCanvaStore((s) => s.distributeSelected);
 
   const page = pages[currentPageIndex];
   // Also search overlayElements for the selected element
@@ -73,6 +83,43 @@ export default function RightPanel() {
           updateElement={updateElement}
           deleteSelected={deleteSelected}
         />
+      )}
+
+      {/* ═══ Section 1b: Alignment Tools (multi-select) ═══ */}
+      {selectedElIds.length >= 2 && (
+        <div className="px-3 py-2 border-b border-slate-800/40">
+          <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Align & Distribusi</div>
+          <div className="grid grid-cols-6 gap-1">
+            <button onClick={() => alignSelected('left')} className="btn-ghost focus-ring p-1" title="Align Left">
+              <AlignStartHorizontal size={13} />
+            </button>
+            <button onClick={() => alignSelected('centerH')} className="btn-ghost focus-ring p-1" title="Align Center Horizontal">
+              <AlignCenterHorizontal size={13} />
+            </button>
+            <button onClick={() => alignSelected('right')} className="btn-ghost focus-ring p-1" title="Align Right">
+              <AlignEndHorizontal size={13} />
+            </button>
+            <button onClick={() => alignSelected('top')} className="btn-ghost focus-ring p-1" title="Align Top">
+              <AlignStartVertical size={13} />
+            </button>
+            <button onClick={() => alignSelected('centerV')} className="btn-ghost focus-ring p-1" title="Align Center Vertical">
+              <AlignCenterVertical size={13} />
+            </button>
+            <button onClick={() => alignSelected('bottom')} className="btn-ghost focus-ring p-1" title="Align Bottom">
+              <AlignEndVertical size={13} />
+            </button>
+          </div>
+          {selectedElIds.length >= 3 && (
+            <div className="grid grid-cols-2 gap-1 mt-1">
+              <button onClick={() => distributeSelected('horizontal')} className="btn-ghost focus-ring p-1 flex items-center gap-1" title="Distribute Horizontally">
+                <SpaceHorizontal size={12} /> <span className="text-[8px]">H-Space</span>
+              </button>
+              <button onClick={() => distributeSelected('vertical')} className="btn-ghost focus-ring p-1 flex items-center gap-1" title="Distribute Vertically">
+                <SpaceVertical size={12} /> <span className="text-[8px]">V-Space</span>
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ═══ Section 2: Background + Gradient (merged) ═══ */}
@@ -119,6 +166,7 @@ export default function RightPanel() {
         toggleSnap={toggleSnap}
         unlockPage={unlockPage}
         relockPage={relockPage}
+        setVariant={setVariant}
         collapsed={collapsed.settings}
         onToggle={() => toggleCollapse('settings')}
       />

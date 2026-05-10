@@ -10,7 +10,7 @@ import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Kuis Template ─────────────────────────────────────────────
 
-export function KuisTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
+export function KuisTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f5c842');
   const kuisData = (td.kuis as Array<Record<string, unknown>>) || [];
   const reportScore = useInteractiveStore((s) => s.reportScore);
@@ -44,15 +44,48 @@ export function KuisTemplate({ td, palette, isSelected, onEditField, interactive
         </div>
       </div>
 
-      {/* Quiz Widget — full-size in interactive mode */}
+      {/* Quiz Widget — full-size in interactive mode; variant B shows card list in design mode */}
       <div className="flex-1 min-h-0 px-3 pb-3">
         {kuisData.length > 0 ? (
-          <QuizWidget
-            compact={!interactive}
-            interactive={interactive}
-            kuisIds={kuisData.map(k => k._id || `kuis-idx-${kuisData.indexOf(k)}`).filter((id): id is string => id.length > 0)}
-            onComplete={interactive ? handleComplete : undefined}
-          />
+          variant === 'B' && !interactive ? (
+            /* Variant B — Daftar Kartu: compact card per question */
+            <div className="space-y-2 overflow-y-auto h-full pr-1">
+              {kuisData.map((q, idx) => {
+                const questionText = String(q.soal || q.text || q.pertanyaan || '');
+                const snippet = questionText.length > 60 ? questionText.slice(0, 60) + '…' : questionText;
+                const options = (q.opsi || q.options || q.jawaban || []) as Array<unknown>;
+                const answerCount = Array.isArray(options) ? options.length : 0;
+                return (
+                  <div
+                    key={q._id ? String(q._id) : `kuis-card-${idx}`}
+                    className="p-2.5 rounded-lg bg-white/5 border border-white/10 flex items-start gap-2.5"
+                  >
+                    <span
+                      className="shrink-0 w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center"
+                      style={{ background: alpha(accent, 0.15), color: accent }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] text-white/80 leading-snug truncate">
+                        {snippet || <span className="italic text-white/30">Soal kosong</span>}
+                      </p>
+                      <p className="text-[9px] text-white/35 mt-0.5">
+                        {answerCount} pilihan jawaban
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <QuizWidget
+              compact={!interactive}
+              interactive={interactive}
+              kuisIds={kuisData.map(k => String(k._id || `kuis-idx-${kuisData.indexOf(k)}`)).filter((id): id is string => id.length > 0)}
+              onComplete={interactive ? handleComplete : undefined}
+            />
+          )
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">❓</span>

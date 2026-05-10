@@ -16,7 +16,7 @@ import { TemplateNavButton } from './TemplateNavButton';
 // - Scoring by pts/level
 // - Branching navigation (nextChapter)
 
-export function SkenarioTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
+export function SkenarioTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f472b6');
   const green = getPaletteColor(palette, '--g', '#34d399');
   const red = getPaletteColor(palette, '--r', '#f87171');
@@ -77,8 +77,9 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
     setSelectedChoice({ choiceIdx, choice });
     setShowFeedback(true);
 
-    // Play sound feedback
-    playSound(isGood ? 'ding' : 'buzz');
+    // Play sound feedback — tap on choice, then ding/buzz for result
+    playSound('tap');
+    setTimeout(() => playSound(isGood ? 'ding' : 'buzz'), 300);
 
     // Auto-advance after feedback (longer delay to read consequences)
     timeoutRef.current = setTimeout(() => {
@@ -326,7 +327,7 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
                   <div className="text-center">
                     <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
                       style={{ background: alpha(green, 0.12), color: green }}>
-                      +{selectedChoice.choice.pts} poin
+                      +{String(selectedChoice.choice.pts)} poin
                     </span>
                   </div>
                 )}
@@ -375,54 +376,149 @@ export function SkenarioTemplate({ td, palette, isSelected, onEditField, interac
           )}
         </div>
       ) : !interactive && skenario.length > 0 ? (
-        /* ── Design Mode: Show all chapters as preview cards ── */
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
-          {skenario.map((ch, i) => (
-            <div key={i} className={`p-2 rounded-lg border ${
-              i === currentChapter
-                ? 'bg-pink-500/10 border-pink-500/30'
-                : 'bg-white/5 border-white/10'
-            }`}>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm">{String(ch.charEmoji || '🧑')}</span>
-                <span className="text-[10px] font-bold text-white">Babak {i + 1}</span>
-                {Boolean(ch.title) && <span className="text-[8px] text-white/40 truncate">{String(ch.title)}</span>}
-              </div>
+        variant === 'B' ? (
+          /* ── Design Mode Variant B: Timeline layout ── */
+          <div className="flex-1 min-h-0 overflow-y-auto relative pl-6">
+            {/* Vertical timeline line */}
+            <div
+              className="absolute left-[11px] top-2 bottom-2 w-0.5 rounded-full"
+              style={{ background: alpha(accent, 0.3) }}
+            />
 
-              {/* Setup dialogue preview */}
-              {Array.isArray(ch.setup) && (ch.setup as Array<Record<string, unknown>>).length > 0 && (
-                <div className="mb-1 pl-2 border-l-2 border-white/10">
-                  {(ch.setup as Array<Record<string, unknown>>).slice(0, 2).map((line, j) => (
-                    <div key={j} className="text-[7px] text-white/30">
-                      <span className="font-bold">{String(line.speaker || '')}: </span>
-                      <span>{String(line.text || '').slice(0, 60)}{String(line.text || '').length > 60 ? '...' : ''}</span>
-                    </div>
-                  ))}
-                  {(ch.setup as Array<Record<string, unknown>>).length > 2 && (
-                    <div className="text-[7px] text-white/20">+{(ch.setup as Array<Record<string, unknown>>).length - 2} dialog lagi</div>
-                  )}
-                </div>
-              )}
-
-              {Boolean(ch.choicePrompt) && (
-                <div className="text-[8px] text-white/50 italic mb-1">{String(ch.choicePrompt)}</div>
-              )}
-              {Array.isArray(ch.choices) && (
-                <div className="flex gap-1 mt-1 flex-wrap">
-                  {(ch.choices as Array<Record<string, unknown>>).map((c, j) => (
-                    <div key={j} className="px-1.5 py-0.5 rounded text-[7px]"
+            {skenario.map((ch, i) => {
+              const isActive = i === currentChapter;
+              return (
+                <div key={i} className="relative flex gap-3 pb-3 last:pb-0">
+                  {/* Timeline node dot */}
+                  <div
+                    className="absolute left-[-20px] top-1.5 w-[22px] h-[22px] flex items-center justify-center z-10"
+                  >
+                    <div
+                      className={`w-[18px] h-[18px] rounded-full flex items-center justify-center text-[8px] font-bold border-2 transition-all ${
+                        isActive ? 'scale-110' : 'scale-100'
+                      }`}
                       style={{
-                        background: c.good ? 'rgba(52,211,153,.1)' : 'rgba(248,113,113,.1)',
-                        color: c.good ? '#34d399' : '#f87171',
-                      }}>
-                      {String(c.icon || '🤔')} {String(c.label || `Pilihan ${j + 1}`)}
+                        background: isActive ? alpha(accent, 0.25) : 'rgba(255,255,255,.06)',
+                        borderColor: isActive ? accent : alpha(accent, 0.25),
+                        color: isActive ? accent : 'rgba(255,255,255,.4)',
+                      }}
+                    >
+                      {i + 1}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Chapter card content */}
+                  <div
+                    className={`flex-1 p-2 rounded-lg border transition-all ${
+                      isActive
+                        ? 'border-opacity-100'
+                        : 'bg-white/5 border-white/10'
+                    }`}
+                    style={isActive ? {
+                      background: alpha(accent, 0.08),
+                      borderColor: alpha(accent, 0.35),
+                    } : undefined}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm">{String(ch.charEmoji || '🧑')}</span>
+                      <span className="text-[10px] font-bold text-white">Babak {i + 1}</span>
+                      {Boolean(ch.title) && <span className="text-[8px] text-white/40 truncate">{String(ch.title)}</span>}
+                      {isActive && (
+                        <span
+                          className="ml-auto text-[7px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: alpha(accent, 0.2), color: accent }}
+                        >
+                          AKTIF
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Setup dialogue preview */}
+                    {Array.isArray(ch.setup) && (ch.setup as Array<Record<string, unknown>>).length > 0 && (
+                      <div className="mb-1 pl-2 border-l-2" style={{ borderColor: alpha(accent, 0.2) }}>
+                        {(ch.setup as Array<Record<string, unknown>>).slice(0, 2).map((line, j) => (
+                          <div key={j} className="text-[7px] text-white/30">
+                            <span className="font-bold">{String(line.speaker || '')}: </span>
+                            <span>{String(line.text || '').slice(0, 60)}{String(line.text || '').length > 60 ? '...' : ''}</span>
+                          </div>
+                        ))}
+                        {(ch.setup as Array<Record<string, unknown>>).length > 2 && (
+                          <div className="text-[7px] text-white/20">+{(ch.setup as Array<Record<string, unknown>>).length - 2} dialog lagi</div>
+                        )}
+                      </div>
+                    )}
+
+                    {Boolean(ch.choicePrompt) && (
+                      <div className="text-[8px] text-white/50 italic mb-1">{String(ch.choicePrompt)}</div>
+                    )}
+                    {Array.isArray(ch.choices) && (
+                      <div className="flex gap-1 mt-1 flex-wrap">
+                        {(ch.choices as Array<Record<string, unknown>>).map((c, j) => (
+                          <div key={j} className="px-1.5 py-0.5 rounded text-[7px]"
+                            style={{
+                              background: c.good ? 'rgba(52,211,153,.1)' : 'rgba(248,113,113,.1)',
+                              color: c.good ? '#34d399' : '#f87171',
+                            }}>
+                            {String(c.icon || '🤔')} {String(c.label || `Pilihan ${j + 1}`)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* ── Design Mode Variant A: Show all chapters as preview cards ── */
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+            {skenario.map((ch, i) => (
+              <div key={i} className={`p-2 rounded-lg border ${
+                i === currentChapter
+                  ? 'bg-pink-500/10 border-pink-500/30'
+                  : 'bg-white/5 border-white/10'
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm">{String(ch.charEmoji || '🧑')}</span>
+                  <span className="text-[10px] font-bold text-white">Babak {i + 1}</span>
+                  {Boolean(ch.title) && <span className="text-[8px] text-white/40 truncate">{String(ch.title)}</span>}
+                </div>
+
+                {/* Setup dialogue preview */}
+                {Array.isArray(ch.setup) && (ch.setup as Array<Record<string, unknown>>).length > 0 && (
+                  <div className="mb-1 pl-2 border-l-2 border-white/10">
+                    {(ch.setup as Array<Record<string, unknown>>).slice(0, 2).map((line, j) => (
+                      <div key={j} className="text-[7px] text-white/30">
+                        <span className="font-bold">{String(line.speaker || '')}: </span>
+                        <span>{String(line.text || '').slice(0, 60)}{String(line.text || '').length > 60 ? '...' : ''}</span>
+                      </div>
+                    ))}
+                    {(ch.setup as Array<Record<string, unknown>>).length > 2 && (
+                      <div className="text-[7px] text-white/20">+{(ch.setup as Array<Record<string, unknown>>).length - 2} dialog lagi</div>
+                    )}
+                  </div>
+                )}
+
+                {Boolean(ch.choicePrompt) && (
+                  <div className="text-[8px] text-white/50 italic mb-1">{String(ch.choicePrompt)}</div>
+                )}
+                {Array.isArray(ch.choices) && (
+                  <div className="flex gap-1 mt-1 flex-wrap">
+                    {(ch.choices as Array<Record<string, unknown>>).map((c, j) => (
+                      <div key={j} className="px-1.5 py-0.5 rounded text-[7px]"
+                        style={{
+                          background: c.good ? 'rgba(52,211,153,.1)' : 'rgba(248,113,113,.1)',
+                          color: c.good ? '#34d399' : '#f87171',
+                        }}>
+                        {String(c.icon || '🤔')} {String(c.label || `Pilihan ${j + 1}`)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         /* ── Empty state ── */
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">

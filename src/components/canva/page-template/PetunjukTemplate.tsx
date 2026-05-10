@@ -11,7 +11,7 @@ import { TemplateNavButton } from './TemplateNavButton';
 // fixed tips overflow by putting it inside scrollable area,
 // improved font sizes and step navigation.
 
-export function PetunjukTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
+export function PetunjukTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--y', '#f9c82e');
   const langkah = (td.langkah as Array<Record<string, unknown>>) || [];
   const tips = String(td.tips || '');
@@ -123,24 +123,59 @@ export function PetunjukTemplate({ td, palette, isSelected, onEditField, interac
           </div>
         </div>
       ) : !interactive && langkah.length > 0 ? (
-        /* ── Design Mode: Show all steps as cards ── */
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
-          {langkah.map((l, i) => (
-            <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-white/5 border border-white/10">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0 mt-0.5"
-                style={{ background: alpha(accent, 0.19), color: accent }}>
-                {i + 1}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1 mb-0.5">
-                  <span className="text-sm">{String(l.icon || '📌')}</span>
-                  <span className="text-[11px] font-bold text-white">{String(l.judul || '')}</span>
+        variant === 'B' ? (
+          /* ── Design Mode Variant B: Timeline layout ── */
+          <div className="flex-1 min-h-0 overflow-y-auto relative pl-6">
+            {/* Vertical connecting line */}
+            <div className="absolute left-[11px] top-2 bottom-2 w-px"
+              style={{ background: `linear-gradient(to bottom, ${alpha(accent, 0.5)}, ${alpha(accent, 0.15)})` }} />
+
+            {langkah.map((l, i) => (
+              <div key={i} className="relative flex items-start gap-3 mb-3 last:mb-0">
+                {/* Dot on the timeline */}
+                <div className="absolute -left-6 top-0.5 flex items-center justify-center">
+                  <div
+                    className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-[8px] font-black flex-shrink-0 border-2"
+                    style={{
+                      background: i === 0 ? alpha(accent, 0.25) : 'rgba(255,255,255,0.05)',
+                      borderColor: i === 0 ? accent : alpha(accent, 0.25),
+                      color: i === 0 ? accent : alpha(accent, 0.6),
+                    }}
+                  >
+                    {i + 1}
+                  </div>
                 </div>
-                <div className="text-[9px] text-white/70 leading-relaxed line-clamp-3">{String(l.isi || '')}</div>
+                {/* Step content */}
+                <div className="min-w-0 pt-0.5">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-sm">{String(l.icon || '📌')}</span>
+                    <span className="text-[11px] font-bold text-white">{String(l.judul || '')}</span>
+                  </div>
+                  <div className="text-[9px] text-white/60 leading-relaxed line-clamp-2">{String(l.isi || '')}</div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          /* ── Design Mode Variant A: Show all steps as cards ── */
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+            {langkah.map((l, i) => (
+              <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-white/5 border border-white/10">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0 mt-0.5"
+                  style={{ background: alpha(accent, 0.19), color: accent }}>
+                  {i + 1}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <span className="text-sm">{String(l.icon || '📌')}</span>
+                    <span className="text-[11px] font-bold text-white">{String(l.judul || '')}</span>
+                  </div>
+                  <div className="text-[9px] text-white/70 leading-relaxed line-clamp-3">{String(l.isi || '')}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         /* ── Empty state ── */
         <div className="flex-1 flex flex-col items-center justify-center text-white/30">

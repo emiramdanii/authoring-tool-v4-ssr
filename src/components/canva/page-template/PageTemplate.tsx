@@ -29,27 +29,27 @@ export function PageTemplate({ page, isSelected, onEditField, interactive }: Pag
     case 'cover':
       return <CoverTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'dokumen':
-      return <DokumenTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <DokumenTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'materi':
       return <MateriTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'kuis':
-      return <KuisTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <KuisTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'game':
-      return <GameTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <GameTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'hasil':
-      return <HasilTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <HasilTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'hero':
-      return <HeroTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <HeroTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'skenario':
-      return <SkenarioTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <SkenarioTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'petunjuk':
-      return <PetunjukTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <PetunjukTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'diskusi':
-      return <DiskusiTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <DiskusiTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'refleksi':
-      return <RefleksiTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <RefleksiTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     case 'penutup':
-      return <PenutupTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} />;
+      return <PenutupTemplate td={td} palette={palette} isSelected={isSelected} onEditField={onEditField} interactive={interactive} variant={variant} />;
     default:
       return null;
   }

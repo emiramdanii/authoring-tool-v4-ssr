@@ -117,14 +117,16 @@ export default function AuthoringTool() {
     }
   }, [activePanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-save every 8s when dirty — delegates to store's saveToStorage()
+  // Auto-save every 8s when dirty — saves BOTH authoring + canva stores
   useEffect(() => {
     if (!dirty) return;
     const timer = setTimeout(() => {
       const s = useAuthoringStore.getState();
       if (s.dirty) {
-        s.saveToStorage(); // Uses store method (single source of truth, with toast)
+        s.saveToStorage(); // Authoring store
       }
+      // Also persist canva store (canvas edits, page layouts, etc.)
+      useCanvaStore.getState().saveToStorage();
     }, 8000);
     return () => clearTimeout(timer);
   }, [dirty]);
@@ -140,6 +142,7 @@ export default function AuthoringTool() {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         saveToStorage();
+        useCanvaStore.getState().saveToStorage(); // Also save canva state
       }
       // Ctrl+P → toggle Live Preview panel (only when not in text input)
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
@@ -160,10 +163,17 @@ export default function AuthoringTool() {
 
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();
+    const c = useCanvaStore.getState();
     const data = {
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
       skenario: s.skenario, kuis: s.kuis, modules: s.modules,
       games: s.games, materi: s.materi,
+      // Canva state: pages, elements, layouts
+      canva: {
+        pages: c.pages,
+        ratioId: c.ratioId,
+        currentPageIndex: c.currentPageIndex,
+      },
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);

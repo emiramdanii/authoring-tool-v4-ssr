@@ -2,7 +2,6 @@
 // CANVA STORE — History slice (undo/redo)
 // ═══════════════════════════════════════════════════════════════
 
-import { toast } from 'sonner';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { Snapshot } from './types';
@@ -41,7 +40,6 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       selectedElId: null,
     });
     _set({ _skipHistory: false });
-    toast.info('Undo');
   },
 
   redo: () => {
@@ -56,7 +54,6 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       selectedElId: null,
     });
     _set({ _skipHistory: false });
-    toast.info('Redo');
   },
 
   canUndo: () => get()._historyIdx > 0,

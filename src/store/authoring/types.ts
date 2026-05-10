@@ -294,6 +294,9 @@ export interface AuthoringState {
   removeSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number) => void;
   updateSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => void;
 
+  // Sound actions
+  toggleSuaraAll: () => void;
+
   // System actions
   markDirty: () => void;
   markClean: () => void;

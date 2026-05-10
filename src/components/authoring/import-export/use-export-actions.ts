@@ -75,14 +75,14 @@ export function useExportActions() {
       html += `<dl class="meta-grid">
         <dt>Mata Pelajaran</dt><dd>${meta.mapel || '-'}</dd>
         <dt>Kelas</dt><dd>${meta.kelas || '-'}</dd>
-        <dt>Semester</dt><dd>${meta.semester || '-'}</dd>
+        <dt>Semester</dt><dd>-</dd>
         <dt>Judul Pertemuan</dt><dd>${meta.judulPertemuan || '-'}</dd>
       </dl>`;
 
       // CP section
-      if (cp?.tujuan?.length) {
-        html += `<h2>Capaian Pembelajaran (CP)</h2><table><tr><th>#</th><th>Tujuan</th></tr>`;
-        cp.tujuan.forEach((t: string, i: number) => { html += `<tr><td>${i + 1}</td><td>${t}</td></tr>`; });
+      if (cp?.elemen) {
+        html += `<h2>Capaian Pembelajaran (CP)</h2><table><tr><th>#</th><th>Elemen</th><th>Sub Elemen</th><th>Fase</th></tr>`;
+        html += `<tr><td>1</td><td>${cp.elemen || '-'}</td><td>${cp.subElemen || '-'}</td><td>${cp.fase || '-'}</td></tr>`;
         html += `</table>`;
       }
 
@@ -94,9 +94,9 @@ export function useExportActions() {
       }
 
       // ATP section
-      if (s.atp?.length) {
+      if (s.atp?.pertemuan?.length) {
         html += `<h2>Alur Tujuan Pembelajaran (ATP)</h2><table><tr><th>#</th><th>Pertemuan</th><th>TP</th><th>Materi</th></tr>`;
-        s.atp.forEach((a: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.pertemuan || '-'}</td><td>${a.tp || '-'}</td><td>${a.materi || '-'}</td></tr>`; });
+        s.atp.pertemuan.forEach((a: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.judul || a.pertemuan || '-'}</td><td>${a.tp || '-'}</td><td>${a.kegiatan || '-'}</td></tr>`; });
         html += `</table>`;
       }
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { RATIOS } from '@/components/canva/types';
 import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, Lock, Unlock } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 
@@ -13,21 +13,16 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 // - Add zoom slider
 // ═══════════════════════════════════════════════════════════════
 
-export default function StatusBar({ mousePos }: { mousePos: { x: number; y: number } }) {
+export default function StatusBar() {
   const { pages, currentPageIndex, ratioId, zoom, setZoom } = useCanvaStore();
   const page = pages[currentPageIndex];
-  const ratio = useCanvaStore(s => s.currentRatio());
+  const ratio = useCanvaStore(s => {
+    const r = RATIOS.find(r => r.id === s.ratioId);
+    return r || RATIOS[0];
+  });
 
-  // ── Save indicator ──────────────────────────────────────────
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
-
-  useEffect(() => {
-    setSaveStatus('saving');
-    const timer = setTimeout(() => {
-      setSaveStatus('saved');
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [pages, ratioId]);
+  // ── Save indicator: subscribe to centralized save status ───
+  const saveStatus = useCanvaStore((s) => s._saveStatus);
 
   // Count all elements including overlays
   const totalElements = (page?.elements.length || 0) + (page?.overlayElements?.length || 0);

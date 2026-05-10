@@ -11,7 +11,7 @@ import { TemplateNavButton } from './TemplateNavButton';
 // question, collapsible penugasan section, improved layout and
 // font sizes for better readability.
 
-export function RefleksiTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
+export function RefleksiTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--p', '#a78bfa');
   const green = getPaletteColor(palette, '--g', '#34d399');
   const pertanyaan = (td.pertanyaan as Array<Record<string, unknown>>) || [];
@@ -21,6 +21,9 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
   const [activeIdx, setActiveIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showPenugasan, setShowPenugasan] = useState(false);
+
+  // Variant B (Jurnal): journal entry text
+  const [journalText, setJournalText] = useState('');
 
   const handleAnswer = (idx: number, value: string) => {
     setAnswers(prev => ({ ...prev, [idx]: value }));
@@ -54,7 +57,62 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
         <div className="text-[10px] text-white/70 leading-relaxed mb-2">{String(td.intro)}</div>
       )}
 
-      {/* ── Interactive Mode: One question at a time with answer input ── */}
+      {/* ── Variant B ("Jurnal"): Journal-style layout for both interactive and design mode ── */}
+      {variant === 'B' ? (
+        pertanyaan.length > 0 ? (
+          <div className="flex-1 min-h-0 flex flex-col">
+            {/* Journal title */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">📓</span>
+              <span className="text-[11px] font-black" style={{ color: accent }}>Jurnal Refleksi</span>
+            </div>
+
+            {/* Questions as guiding prompts */}
+            <div className="space-y-1.5 mb-3 overflow-y-auto max-h-[40%]">
+              {pertanyaan.map((p, i) => {
+                const warna = String(p.warna || accent);
+                return (
+                  <div key={i} className="flex items-start gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: warna }} />
+                    <div>
+                      <span className="text-[9px] font-bold" style={{ color: warna }}>
+                        {Boolean(p.icon) && <span className="mr-0.5">{String(p.icon)}</span>}
+                        {String(p.teks || '')}
+                      </span>
+                      {Boolean(p.petunjuk) && (
+                        <span className="text-[8px] text-white/40 italic ml-1">💡 {String(p.petunjuk)}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Large journal textarea */}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <textarea
+                value={interactive ? journalText : ''}
+                onChange={(e) => setJournalText(e.target.value)}
+                placeholder={interactive ? 'Tulis jurnal refleksimu di sini... Gunakan pertanyaan di atas sebagai panduan.' : 'Area jurnal — siswa akan menulis di sini'}
+                readOnly={!interactive}
+                className="flex-1 min-h-[80px] w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2.5 text-[10px] text-white/80 placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-400/50 resize-none leading-relaxed"
+                style={{ background: alpha(accent, 0.03) }}
+              />
+              {interactive && journalText.length > 0 && (
+                <div className="text-[8px] text-white/30 mt-1 text-right">{journalText.length} karakter</div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ── Empty state ── */
+          <div className="flex-1 flex flex-col items-center justify-center text-white/30">
+            <span className="text-3xl mb-2">📓</span>
+            <span className="text-[10px]">{interactive ? 'Belum ada pertanyaan tersedia' : 'Tambah pertanyaan di panel Konten → Refleksi'}</span>
+          </div>
+        )
+      ) : (
+      /* ── Variant A: Original layout ── */
+      <>
       {interactive && pertanyaan.length > 0 ? (
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Progress dots */}
@@ -152,6 +210,8 @@ export function RefleksiTemplate({ td, palette, isSelected, onEditField, interac
           <span className="text-3xl mb-2">🪞</span>
           <span className="text-[10px]">{interactive ? 'Belum ada pertanyaan tersedia' : 'Tambah pertanyaan di panel Konten → Refleksi'}</span>
         </div>
+      )}
+      </>
       )}
 
       {/* Penugasan — collapsible to prevent overflow */}

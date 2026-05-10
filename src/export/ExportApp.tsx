@@ -1,67 +1,32 @@
 // ═══════════════════════════════════════════════════════════════════════
 // EXPORT APP — The main React component for exported HTML
-// Renders all pages using the SAME template components as preview.
-// Navigation, scoring, and interactivity all use Zustand stores
-// that are pre-populated by entry-client.tsx.
 //
-// Phase 9 fixes:
-// - Only render ACTIVE page (perf + prevent hidden timers)
-// - Full element rendering: kuis, game, materi, modul (not just teks/shape)
-// - Top navbar no longer overlaps template content
-// - Overlay elements render kuis/game properly
+// Refactored: Uses PageRenderer for consistent rendering with
+// Stage (canvas) and PlayOverlay (live preview). Only adds
+// export-specific features:
+// - Aspect-ratio scaling container
+// - Confetti effect on completion
+// - Touch/swipe navigation
+// - Window-scoped interactive store exposure
 // ═══════════════════════════════════════════════════════════════════════
 
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PageTemplate } from '@/components/canva/page-template/PageTemplate';
-import type { CanvaElement, CanvaPage, NavConfig } from '@/components/canva/types';
-import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import QuizWidget from '@/components/canva/QuizWidget';
-import GameWidget from '@/components/canva/GameWidget';
-import PresetModuleCard from '@/components/shared/PresetModuleCard';
-import type { LayoutVariant } from '@/components/shared/PresetModuleCard';
-import { resolveModule } from '@/lib/module-resolver';
-
-// ── Constants ────────────────────────────────────────────────────
-
-const TEMPLATE_ICON: Record<string, string> = {
-  cover: '🏠', dokumen: '📋', materi: '📝', kuis: '❓',
-  game: '🎮', hasil: '🏆', hero: '🚀', skenario: '🎭',
-  petunjuk: '📌', diskusi: '💬', refleksi: '🪞', penutup: '🎓',
-  custom: '⬜',
-};
-
-function getNextLabel(templateType: string, nextTemplateType: string): string {
-  switch (templateType) {
-    case 'cover': return 'Mulai Belajar →';
-    case 'petunjuk': return 'Tujuan Pembelajaran →';
-    case 'dokumen': return 'Mulai Pembelajaran →';
-    case 'skenario':
-      if (nextTemplateType === 'materi') return 'Lanjut ke Materi →';
-      if (nextTemplateType === 'kuis') return 'Lanjut ke Kuis →';
-      return 'Lanjut →';
-    case 'materi':
-      if (nextTemplateType === 'kuis') return 'Mulai Kuis ❓';
-      return 'Lanjut →';
-    case 'refleksi': return 'Lihat Hasil →';
-    case 'penutup': return 'Lihat Hasil →';
-    default: return 'Lanjut →';
-  }
-}
+import { RATIOS } from '@/components/canva/types';
+import { CanvasErrorBoundary } from '@/components/canva/CanvasErrorBoundary';
+import { PageRenderer } from '@/components/canva/page-renderer';
 
 // ── Confetti Effect ──────────────────────────────────────────────
 
-// Track confetti timeouts for proper cleanup on unmount
 let confettiTimers: ReturnType<typeof setTimeout>[] = [];
 
 function launchConfetti() {
   const wrap = document.getElementById('confWrap');
   if (!wrap) return;
-  // Clear any previous timers
   confettiTimers.forEach(t => clearTimeout(t));
   confettiTimers = [];
   const colors = ['#f9c12e', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
@@ -82,129 +47,18 @@ function clearConfetti() {
   if (wrap) wrap.innerHTML = '';
 }
 
-// ── Get effective navConfig for a page (with defaults) ───────────
-
-function getNavConfig(page: CanvaPage): NavConfig {
-  return page.navConfig || DEFAULT_NAV_CONFIG;
-}
-
-// ── Export Element — Full interactive element renderer ────────────
-// Renders kuis, game, materi, modul, teks, shape — same as PlayOverlay
-
-function ExportElement({ element, pageIndex }: { element: CanvaElement; pageIndex: number }) {
-  const reportScore = useInteractiveStore((s) => s.reportScore);
-  const modules = useAuthoringStore((s) => s.modules);
-
-  const handleComplete = useCallback(
-    (score: number, maxScore: number) => {
-      if (maxScore === 0) return; // Skip non-scored games
-      reportScore({ elementId: element.id, pageIndex, score, maxScore, completed: true });
-    },
-    [element.id, pageIndex, reportScore],
-  );
-
-  const isInteractive = element.type === 'kuis' || element.type === 'game';
-
-  return (
-    <div
-      className={`absolute ${isInteractive ? 'ring-2 ring-emerald-400/50 rounded' : ''}`}
-      style={{
-        left: `${element.x}%`,
-        top: `${element.y}%`,
-        width: `${element.w}%`,
-        height: `${element.h}%`,
-        opacity: (element.opacity ?? 100) / 100,
-      }}
-    >
-      {element.type === 'kuis' && (
-        <QuizWidget
-          dataIdx={element.dataIdx}
-          kuisId={element.kuisId}
-          kuisIds={element.kuisIds}
-          compact={false}
-          interactive
-          onComplete={handleComplete}
-        />
-      )}
-      {element.type === 'game' && (
-        <GameWidget
-          dataIdx={element.dataIdx}
-          moduleId={element.moduleId}
-          compact={false}
-          interactive
-          onComplete={handleComplete}
-        />
-      )}
-      {(element.type === 'materi' || element.type === 'modul') && (
-        <ExportModuleElement element={element} />
-      )}
-      {element.type === 'teks' && (
-        <div
-          className="w-full h-full outline-none"
-          style={{
-            fontSize: `${element.fontSize || 20}px`,
-            fontWeight: element.fontWeight || 700,
-            color: element.textColor || '#ffffff',
-            textAlign: element.textAlign || 'left',
-            textShadow: '0 2px 8px rgba(0,0,0,.5)',
-            lineHeight: 1.4,
-            padding: 8,
-          }}
-        >
-          {element.text || ''}
-        </div>
-      )}
-      {element.type === 'shape' && (
-        <div
-          className="w-full h-full"
-          style={{
-            background: element.color || 'rgba(255,255,255,.15)',
-            borderRadius: element.radius || 8,
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-// ── Export Module Element ────────────────────────────────────────
-// Phase 9 fix: use full PresetModuleCard for visual fidelity with preview
-// (was a simplified card that looked different from the PlayOverlay rendering)
-
-function ExportModuleElement({ element }: { element: CanvaElement }) {
-  const modules = useAuthoringStore((s) => s.modules);
-  const mod = resolveModule(element, modules);
-
-  if (!mod) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full bg-emerald-500/10 rounded border border-emerald-500/20 p-2">
-        <span className="text-2xl">🧩</span>
-        <span className="text-[10px] font-bold text-emerald-300 mt-1">Modul</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-full overflow-auto p-1">
-      <PresetModuleCard
-        mode="canvas"
-        module={mod as Parameters<typeof PresetModuleCard>[0]['module']}
-        layoutVariant={(mod.layoutVariant as LayoutVariant) || 'A'}
-      />
-    </div>
-  );
-}
-
 // ── Main Export App Component ────────────────────────────────────
 
 export default function ExportApp() {
-  // Read data from stores (pre-populated by entry-client.tsx)
   const pages = useCanvaStore((s) => s.pages);
   const ratioId = useCanvaStore((s) => s.ratioId);
-  const currentRatio = useCanvaStore((s) => s.currentRatio());
+  const ratio = useCanvaStore((s) => {
+    const r = RATIOS.find(r => r.id === s.ratioId);
+    return r || RATIOS[0];
+  });
   const meta = useAuthoringStore((s) => s.meta);
 
-  // ── Expose interactive store for Live Preview postMessage bridge ──
+  // Expose interactive store for Live Preview postMessage bridge
   useEffect(() => {
     (window as any).__INTERACTIVE_STORE__ = useInteractiveStore;
     return () => {
@@ -218,16 +72,7 @@ export default function ExportApp() {
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
   const nextInteractivePage = useInteractiveStore((s) => s.nextInteractivePage);
   const prevInteractivePage = useInteractiveStore((s) => s.prevInteractivePage);
-  // Subscribe to scores[] for reactive updates
   const scores = useInteractiveStore((s) => s.scores);
-  const _totalScore = useInteractiveStore((s) => s.scores.reduce((sum: number, sc: { score: number }) => sum + sc.score, 0));
-  const _totalMax = useInteractiveStore((s) => s.scores.reduce((sum: number, sc: { maxScore: number }) => sum + sc.maxScore, 0));
-  const _totalPct = useInteractiveStore((s) => {
-    const max = s.scores.reduce((sum: number, sc: { maxScore: number }) => sum + sc.maxScore, 0);
-    if (max === 0) return 0;
-    return Math.round((s.scores.reduce((sum: number, sc: { score: number }) => sum + sc.score, 0) / max) * 100);
-  });
-  const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
   const resetAllScores = useInteractiveStore((s) => s.resetAllScores);
   const goPage = useCanvaStore((s) => s.goPage);
 
@@ -236,28 +81,10 @@ export default function ExportApp() {
 
   const currentIdx = interactivePageIdx;
   const totalPages = pages.length;
-
-  // Derived values
-  const progressPct = totalPages > 0 ? Math.round(((currentIdx + 1) / totalPages) * 100) : 0;
-  const currentTemplate = pages[currentIdx]?.templateType || 'custom';
-  const nextTemplate = pages[currentIdx + 1]?.templateType || '';
-  const hasScore = _totalMax > 0;
-  const isLastPage = currentIdx >= totalPages - 1;
   const currentPage = pages[currentIdx];
+  const isLastPage = currentIdx >= totalPages - 1;
 
-  // NavConfig for current page
-  const navConfig = currentPage ? getNavConfig(currentPage) : DEFAULT_NAV_CONFIG;
-  const showNavbar = navConfig.showNavbar !== false;
-  const showPrevNext = navConfig.showPrevNext !== false;
-  const showScore = navConfig.showScore !== false;
-  const showProgress = navConfig.showProgress !== false;
-
-  // Compute showTopNav early (needed by useEffect before early returns)
-  // TDZ fix: moved before useEffect that references it
-  const currentTemplateType = currentPage?.templateType || 'custom';
-  const showTopNav = currentTemplateType !== 'cover' && navConfig.showNavbar !== false;
-
-  // ── Navigation handlers ───────────────────────────────────────
+  // ── Navigation handlers ───────────────────────────────────
   const handleNext = useCallback(() => {
     if (isLastPage) {
       launchConfetti();
@@ -270,52 +97,7 @@ export default function ExportApp() {
     prevInteractivePage();
   }, [prevInteractivePage]);
 
-  const handleNav = useCallback((idx: number) => {
-    goInteractivePage(idx);
-    goPage(idx);
-    window.scrollTo(0, 0);
-  }, [goInteractivePage, goPage]);
-
-  const handleReset = useCallback(() => {
-    resetAllScores();
-    goInteractivePage(0);
-    window.scrollTo(0, 0);
-  }, [resetAllScores, goInteractivePage]);
-
-  // ── Dynamic bottom nav height observer ─────────────────────────
-  useEffect(() => {
-    const navEl = document.getElementById('exportBottomNav');
-    if (!navEl) return;
-    const updateHeight = () => {
-      const h = navEl.offsetHeight;
-      document.documentElement.style.setProperty('--export-nav-h', `${h}px`);
-    };
-    updateHeight();
-    const ro = new ResizeObserver(updateHeight);
-    ro.observe(navEl);
-    return () => ro.disconnect();
-  }, [hasScore, showNavbar]);
-
-  // ── Dynamic top nav height observer ─────────────────────────
-  useEffect(() => {
-    const topNavEl = document.getElementById('exportTopNav');
-    if (!topNavEl) {
-      // No top nav on cover pages — reset to default
-      document.documentElement.style.setProperty('--export-topnav-h', '44px');
-      return;
-    }
-    const updateHeight = () => {
-      const h = topNavEl.offsetHeight;
-      document.documentElement.style.setProperty('--export-topnav-h', `${h}px`);
-    };
-    updateHeight();
-    const ro = new ResizeObserver(updateHeight);
-    ro.observe(topNavEl);
-    return () => ro.disconnect();
-  }, [showTopNav]);
-
-  // ── Keyboard navigation ───────────────────────────────────────
-  // Phase 9 fix: Added Space key for next page (matching PlayOverlay)
+  // ── Keyboard navigation ───────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -327,11 +109,19 @@ export default function ExportApp() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleNext, handlePrev]);
 
-  // ── Touch/swipe support ───────────────────────────────────────
+  // ── Touch/swipe support ───────────────────────────────────
   useEffect(() => {
     let startX = 0;
-    const onTouchStart = (e: TouchEvent) => { startX = e.changedTouches[0].screenX; };
+    let startedOnInteractive = false;
+    const onTouchStart = (e: TouchEvent) => {
+      // Skip swipe navigation if touch started on interactive elements
+      // (games, quizzes, textareas, inputs) to prevent conflicts
+      const target = e.target as HTMLElement;
+      startedOnInteractive = !!target.closest('textarea, input, [data-game], [data-quiz], [data-interactive], [contenteditable="true"]');
+      startX = e.changedTouches[0].screenX;
+    };
     const onTouchEnd = (e: TouchEvent) => {
+      if (startedOnInteractive) return; // Don't navigate when touching interactive elements
       const dx = e.changedTouches[0].screenX - startX;
       if (Math.abs(dx) > 50) {
         if (dx < 0) handleNext();
@@ -346,7 +136,7 @@ export default function ExportApp() {
     };
   }, [handleNext, handlePrev]);
 
-  // ── No pages state ─────────────────────────────────────────────
+  // ── No pages state ────────────────────────────────────────
   if (totalPages === 0) {
     return (
       <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
@@ -358,244 +148,27 @@ export default function ExportApp() {
     );
   }
 
-  // ── Render ONLY the active page ────────────────────────────────
-  // Phase 9 fix: previously all pages were rendered simultaneously (hidden/shown).
-  // This caused all game timers to run on hidden pages, wasting resources and
-  // causing score desyncs. Now only the active page is mounted.
-  const page = currentPage;
-  if (!page) return null;
-
-  const templateType = page.templateType || 'custom';
-  const isTemplate = templateType !== 'custom';
-  const isPageLocked = isTemplate && page.locked !== false; // locked template
-  const isPageUnlocked = isTemplate && page.locked === false; // unlocked template
-  const pageNavConfig = getNavConfig(page);
-  const pageShowProgress = pageNavConfig.showProgress !== false;
-  // showTopNav is already computed above (before early returns for TDZ safety)
-
-  // Background style — Phase 9 visual fidelity fix:
-  // - Default fallback matches PlayOverlay (#1a1a2e, not #0e1c2f)
-  // - Background image uses <img> tag (like PlayOverlay) for pixel-perfect rendering
-  // - Overlay is ALWAYS rendered (like PlayOverlay), not just when bgDataUrl exists
-  // Phase 9 fix: Accept any URL type (data:, https:, blob:) — not just data:image/.
-  // The export API route converts external URLs to data: URLs before injection,
-  // but defensive coding here prevents silent failures if that step is missed.
-  const safeBgDataUrl = page.bgDataUrl || null;
-  const bgStyle: React.CSSProperties = page.bgColor?.includes('gradient')
-    ? { background: page.bgColor }
-    : { background: page.bgColor || '#1e293b' };
+  if (!currentPage) return null;
 
   return (
     <>
-      {/* Phase 9 fix: bg-slate-900 + select-none to match PlayOverlay exactly */}
       <div className="min-h-screen bg-slate-900 text-white select-none" style={{ fontFamily: "'Nunito', sans-serif" }}>
         {/* ── Aspect-Ratio Scaling Container ── */}
-        {/* Phase 9 fix: Mirrors PlayCanvas ResizeObserver scaling logic.
-            Content renders at native aspect ratio (e.g. 1280×720), then CSS
-            transform scales it to fit the viewport. Without this, content
-            stretches to fill any viewport shape, distorting the layout. */}
         <ExportScaleContainer
-          pageId={page.id}
-          navHeight={showNavbar ? 'var(--export-nav-h, 72px)' : '0px'}
-          topNavHeight={showTopNav ? 'var(--export-topnav-h, 44px)' : '0px'}
-          bgStyle={bgStyle}
-          safeBgDataUrl={safeBgDataUrl}
-          designW={currentRatio.w}
-          designH={currentRatio.h}
-          overlay={page.overlay ?? 20}
+          designW={ratio.w}
+          designH={ratio.h}
         >
-          {/* ── Top Navbar (hidden on cover, respects navConfig) ── */}
-          {/* Phase 9 fix: navbar is position: absolute now, with a spacer div
-              below it so template content is NOT hidden behind the navbar */}
-          {showTopNav && (
-            <>
-              <nav id="exportTopNav" className="glass-panel-strong absolute top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
-                <span className="font-['Fredoka_One'] text-sm text-amber-400 whitespace-nowrap">
-                  {meta.namaBab || meta.judulPertemuan || 'Media'}
-                </span>
-                {pageShowProgress && (
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full mx-2 overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${progressPct}%`,
-                        background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
-                      }} />
-                  </div>
-                )}
-                {hasScore && pageNavConfig.showScore !== false && (
-                  <span className="text-xs font-extrabold text-amber-400 whitespace-nowrap">
-                    {_totalScore} ⭐
-                  </span>
-                )}
-              </nav>
-              {/* Spacer measured dynamically from actual navbar height */}
-              <div style={{ height: 'var(--export-topnav-h, 44px)' }} />
-            </>
-          )}
-
-          {/* ── Page Content ── */}
-          {/* Wrapped in offset container so absolute inset-0 templates don't overlap the top nav.
-              Previous spacer div only affected normal flow, not absolute children. */}
-          <div className="absolute left-0 right-0 bottom-0" style={{
-            top: showTopNav ? 'var(--export-topnav-h, 44px)' : 0,
-          }}>
-            {/* LOCKED template: render PageTemplate (interactive) + overlay elements on top */}
-            {isPageLocked && (
-              <>
-                <PageTemplate
-                  key={page.id}
-                  page={page}
-                  isSelected={false}
-                  onEditField={undefined}
-                  interactive={true}
-                />
-                {/* Overlay elements on locked template pages */}
-                {(page.overlayElements || []).filter(el => !el.hidden).length > 0 && (
-                  <div className="absolute inset-0" style={{ zIndex: 10 }}>
-                    {page.overlayElements.filter(el => !el.hidden).map(el => (
-                      <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-            {/* UNLOCKED template: render frozen PageTemplate + elements (merged from overlayElements) on top */}
-            {isPageUnlocked && (
-              <>
-                <PageTemplate
-                  key={page.id}
-                  page={page}
-                  isSelected={false}
-                  onEditField={undefined}
-                  interactive={true}
-                />
-                <div className="absolute inset-0" style={{ zIndex: 20 }}>
-                  {page.elements.filter(el => !el.hidden).map(el => (
-                    <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
-                  ))}
-                </div>
-              </>
-            )}
-            {/* Custom mode: render ALL element types including kuis/game/modul */}
-            {!isTemplate && (
-              <div className="absolute inset-0">
-                {page.elements.filter(el => !el.hidden).map(el => (
-                  <ExportElement key={el.id} element={el} pageIndex={currentIdx} />
-                ))}
-                {/* Phase 9 fix: Empty-state message for custom pages (matching PlayOverlay) */}
-                {page.elements.length === 0 && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <div className="text-slate-600 text-sm mb-2">Halaman kosong</div>
-                    <div className="text-slate-700 text-xs">Tidak ada konten untuk ditampilkan</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          {/* ══ Use PageRenderer for consistent rendering ══════ */}
+          <CanvasErrorBoundary name="Export">
+            <PageRenderer
+              mode="export"
+              page={currentPage}
+              currentPageIndex={currentIdx}
+              totalPages={totalPages}
+            />
+          </CanvasErrorBoundary>
         </ExportScaleContainer>
       </div>
-
-      {/* ── Bottom Navigation Bar (respects navConfig) ── */}
-      {/* Phase 9 fix: border-slate-700/50 to match InteractiveNav */}
-      {showNavbar && (
-        <div id="exportBottomNav" className="glass-panel-strong fixed bottom-0 left-0 right-0 z-[300] border-t border-slate-700/50">
-          {/* Progress bar */}
-          {showProgress && (
-            <div className="h-1 bg-white/5">
-              <div className="h-full rounded-full transition-all duration-500 ease-out"
-                style={{
-                  width: `${progressPct}%`,
-                  background: 'linear-gradient(90deg, #34d399, #3ecfcf)',
-                }} />
-            </div>
-          )}
-
-          {/* Nav bar */}
-          <div className="flex items-center justify-between gap-2 px-3 py-2">
-            {/* Prev button */}
-            {showPrevNext && (
-              <button
-                onClick={handlePrev}
-                disabled={currentIdx <= 0}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  currentIdx > 0
-                    ? 'hover:bg-white/10 text-white cursor-pointer'
-                    : 'opacity-30 cursor-not-allowed text-white/50'
-                }`}
-              >
-                ← Prev
-              </button>
-            )}
-
-            {/* Page dots with completion indicators */}
-            <div className="flex items-center gap-1 overflow-x-auto max-w-[50vw] py-0.5">
-              {pages.map((p, i) => {
-                const isActive = i === currentIdx;
-                const isComplete = isPageComplete(i);
-                return (
-                  <button
-                    key={p.id || i}
-                    onClick={() => handleNav(i)}
-                    title={`${p.label || `Halaman ${i + 1}`} (${i + 1}/${totalPages})${isComplete ? ' ✓' : ''}`}
-                    className={`relative flex-shrink-0 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
-                      isActive
-                        ? 'w-8 h-8 text-base bg-slate-700/40 ring-2 ring-emerald-400/60 shadow-lg shadow-emerald-500/20'
-                        : `w-6 h-6 text-xs hover:bg-slate-800/40 ${isComplete ? 'ring-2 ring-emerald-400' : ''}`
-                    }`}
-                  >
-                    {/* Completion dot indicator */}
-                    <span className={`absolute rounded-full ${
-                      isActive
-                        ? 'w-2.5 h-2.5 bg-emerald-400'
-                        : 'w-1.5 h-1.5 bg-slate-600'
-                    }`} style={{ bottom: isActive ? 1 : 2, right: isActive ? 1 : 2 }} />
-                    <span className="relative z-10">{TEMPLATE_ICON[p.templateType || 'custom'] || '📄'}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Score + Counter + Next */}
-            <div className="flex items-center gap-1.5">
-              {hasScore && showScore && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                  <span className="text-[10px]">🏆</span>
-                  <span className="font-mono font-bold text-[11px] text-emerald-300">{_totalPct}%</span>
-                  <span className="text-[9px] text-emerald-400/50">{_totalScore}/{_totalMax}</span>
-                </div>
-              )}
-              <span className="text-[10px] font-mono text-slate-500">
-                {currentIdx + 1}/{totalPages}
-              </span>
-              {showPrevNext && (
-                <button
-                  onClick={handleNext}
-                  disabled={isLastPage}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                    isLastPage
-                      ? 'bg-amber-400/30 text-slate-900/50 cursor-not-allowed opacity-50'
-                      : 'bg-amber-400 text-slate-900 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer'
-                  }`}
-                >
-                  {isLastPage ? '🎉 Selesai' : getNextLabel(currentTemplate, nextTemplate)}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Reset button */}
-          {hasScore && showScore && (
-            <div className="flex justify-center pb-1">
-              <button
-                onClick={handleReset}
-                className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-slate-300 transition-colors px-2 py-0.5 rounded"
-              >
-                ↩ Ulangi
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── Confetti container ── */}
       <div id="confWrap" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9998 }} />
@@ -608,22 +181,10 @@ export default function ExportApp() {
 // CSS-transform scales to fit the available viewport space.
 
 function ExportScaleContainer({
-  pageId,
-  navHeight,
-  topNavHeight,
-  bgStyle,
-  safeBgDataUrl,
-  overlay,
   designW,
   designH,
   children,
 }: {
-  pageId: string;
-  navHeight: string;
-  topNavHeight: string;
-  bgStyle: React.CSSProperties;
-  safeBgDataUrl: string | null;
-  overlay: number;
   designW: number;
   designH: number;
   children: React.ReactNode;
@@ -631,30 +192,26 @@ function ExportScaleContainer({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
 
-  // Use design dimensions from the user-selected ratio (not hardcoded 16:9)
-  const DESIGN_W = designW;
-  const DESIGN_H = designH;
-
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(() => {
       const aW = (el.clientWidth || 800) - 40;
       const aH = (el.clientHeight || 500) - 40;
-      const sW = aW / DESIGN_W;
-      const sH = aH / DESIGN_H;
+      const sW = aW / designW;
+      const sH = aH / designH;
       setScale(Math.min(sW, sH, 1));
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [designW, designH]);
 
   return (
     <div
       ref={containerRef}
       className="page-transition"
       style={{
-        height: `calc(100vh - ${navHeight})`,
+        height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -663,37 +220,14 @@ function ExportScaleContainer({
       }}
     >
       <div
-        key={pageId}
         className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-slate-700/30"
         style={{
-          width: DESIGN_W,
-          height: DESIGN_H,
+          width: designW,
+          height: designH,
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
-          ...bgStyle,
         }}
       >
-        {/* Background image */}
-        {safeBgDataUrl && (
-          <img
-            src={safeBgDataUrl}
-            alt=""
-            style={{
-              position: 'absolute', inset: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-        {/* Overlay */}
-        <div
-          style={{
-            position: 'absolute', inset: 0,
-            background: `rgba(14,28,47,${(overlay || 20) / 100})`,
-            pointerEvents: 'none', zIndex: 0,
-          }}
-        />
         {children}
       </div>
     </div>

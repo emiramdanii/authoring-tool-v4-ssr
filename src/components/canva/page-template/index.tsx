@@ -4,6 +4,7 @@ export { PageTemplate } from './PageTemplate';
 export type { PageTemplateProps, SubTemplateProps } from './types';
 export { EditableText } from './EditableText';
 export { getModuleIcon, getGameIcon, getGameModuleIndex } from './shared-helpers';
+export { MateriBlokRenderer } from './MateriBlokRenderer';
 export { CoverTemplate } from './CoverTemplate';
 export { DokumenTemplate } from './DokumenTemplate';
 export { MateriTemplate } from './MateriTemplate';

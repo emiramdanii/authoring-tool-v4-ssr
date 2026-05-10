@@ -25,8 +25,10 @@ export function CoverTemplate({ td, palette, isSelected, onEditField, interactiv
         // Guard: only navigate in actual Play/Export mode, not canvas preview
         if (useInteractiveStore.getState().mode !== 'interactive') return;
         playSound('click');
+        // Use interactive store consistently (same pattern as TemplateNavButton)
+        // to avoid desync between interactivePageIdx and currentPageIndex
         useInteractiveStore.getState().nextInteractivePage();
-        const nextIdx = useCanvaStore.getState().currentPageIndex + 1;
+        const nextIdx = useInteractiveStore.getState().interactivePageIdx;
         useCanvaStore.getState().goPage(nextIdx);
       }}
       className="px-6 py-2.5 rounded-xl text-[12px] font-extrabold transition-all hover:scale-105 active:scale-95"

@@ -19,6 +19,7 @@ import {
   Minus,
   Plus,
   PanelRight,
+  PanelLeft,
   X,
   ChevronDown,
   Save,
@@ -29,6 +30,8 @@ import {
   FileText,
   BookOpen,
   ArrowLeft,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -52,11 +55,16 @@ export default function Toolbar() {
     pages,
     undo,
     redo,
-    canUndo,
-    canRedo,
     rightPanelOpen,
     toggleRightPanel,
+    leftPanelOpen,
+    toggleLeftPanel,
   } = useCanvaStore();
+
+  // Reactive undo/redo — use value-based selectors so Zustand
+  // re-renders when history index changes (not function refs)
+  const canUndo = useCanvaStore((s) => s._historyIdx > 0);
+  const canRedo = useCanvaStore((s) => s._historyIdx < s._history.length - 1);
 
   const mode = useInteractiveStore((s) => s.mode);
   const openPlay = useInteractiveStore((s) => s.openPlay);
@@ -75,19 +83,12 @@ export default function Toolbar() {
   const isInteractive = mode === 'interactive';
   const page = pages[currentPageIndex];
   const label = page?.label || 'Untitled';
+  const soundOn = useAuthoringStore((s) => Object.values(s.suara).some(Boolean));
 
-  // ── Save indicator state ────────────────────────────────────
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
-
-  // Auto-save: watch for page changes
-  useEffect(() => {
-    setSaveStatus('saving');
-    const timer = setTimeout(() => {
-      useCanvaStore.getState().saveToStorage();
-      setSaveStatus('saved');
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [pages, ratioId]);
+  // ── Save indicator: subscribe to centralized save status ───
+  // Auto-save is handled exclusively by CanvaBuilder's subscriber.
+  // Toolbar only reads the status to display the indicator.
+  const saveStatus = useCanvaStore((s) => s._saveStatus);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -326,17 +327,17 @@ export default function Toolbar() {
       <div className="flex items-center gap-0.5">
         <button
           onClick={undo}
-          disabled={!canUndo()}
+          disabled={!canUndo}
           title="Undo (Ctrl+Z)"
-          className={`btn-ghost focus-ring ${!canUndo() ? 'opacity-30 cursor-not-allowed' : ''}`}
+          className={`btn-ghost focus-ring ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
           <Undo2 size={14} />
         </button>
         <button
           onClick={redo}
-          disabled={!canRedo()}
+          disabled={!canRedo}
           title="Redo (Ctrl+Y)"
-          className={`btn-ghost focus-ring ${!canRedo() ? 'opacity-30 cursor-not-allowed' : ''}`}
+          className={`btn-ghost focus-ring ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
           <Redo2 size={14} />
         </button>
@@ -417,8 +418,27 @@ export default function Toolbar() {
         )}
       </div>
 
+      {/* ── Sound toggle ──────────────────────────────────────── */}
+      <button
+        onClick={() => useAuthoringStore.getState().toggleSuaraAll()}
+        title={soundOn ? 'Matikan suara' : 'Nyalakan suara'}
+        className={`btn-ghost focus-ring ${soundOn ? '!text-emerald-400' : '!text-slate-500'}`}
+      >
+        {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
+      </button>
+
+      <div className="section-divider h-5 w-px mx-1" />
+
       {/* ── Right group: Zoom + Panel toggle ─────────────────── */}
       <div className="flex items-center gap-0.5 ml-auto">
+        {/* Left panel toggle */}
+        <button
+          onClick={toggleLeftPanel}
+          title={leftPanelOpen ? 'Sembunyikan Panel Kiri' : 'Tampilkan Panel Kiri'}
+          className={`btn-ghost focus-ring ${leftPanelOpen ? '!text-amber-400' : ''}`}
+        >
+          <PanelLeft size={14} />
+        </button>
         {/* Right panel toggle */}
         <button
           onClick={toggleRightPanel}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -10,10 +10,11 @@ import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
 import PlayOverlay from './PlayOverlay';
+import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 
 export default function CanvaBuilder() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
+  const leftPanelOpen = useCanvaStore((s) => s.leftPanelOpen);
 
   // NOTE: loadFromStorage() removed from CanvaBuilder mount.
   // It was causing a race condition: resetCanvas() creates fresh pages,
@@ -28,12 +29,17 @@ export default function CanvaBuilder() {
   }, [useCanvaStore((s) => s.pages.length)]);
 
   // ── Auto-save to localStorage on changes (debounced) ────────
+  // This is the ONLY auto-save in the app. Toolbar and StatusBar
+  // read _saveStatus from the store instead of implementing their own.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const unsub = useCanvaStore.subscribe(() => {
+      // Mark as "saving" immediately so UI responds
+      useCanvaStore.setState({ _saveStatus: 'saving' });
       clearTimeout(timer);
       timer = setTimeout(() => {
         useCanvaStore.getState().saveToStorage();
+        useCanvaStore.setState({ _saveStatus: 'saved' });
       }, 1500);
     });
     return () => { clearTimeout(timer); unsub(); };
@@ -53,8 +59,8 @@ export default function CanvaBuilder() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  const handleMouseMove = useCallback((x: number, y: number) => {
-    setMousePos({ x, y });
+  const handleMouseMove = useCallback((_x: number, _y: number) => {
+    // Mouse position no longer tracked — was only used by StatusBar
   }, []);
 
   // ── Keyboard shortcuts (design mode only) ──────────────────
@@ -96,6 +102,31 @@ export default function CanvaBuilder() {
       if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
         e.preventDefault();
         store.redo();
+        return;
+      }
+
+      // Copy / Paste
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        if (store.selectedElId || store.selectedElIds.length > 0) {
+          e.preventDefault();
+          store.copySelected();
+        }
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        if (store._clipboard.length > 0) {
+          e.preventDefault();
+          store.pasteElements();
+        }
+        return;
+      }
+      // Duplicate (Ctrl+D)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        if (store.selectedElId || store.selectedElIds.length > 0) {
+          e.preventDefault();
+          store.copySelected();
+          store.pasteElements();
+        }
         return;
       }
 
@@ -149,9 +180,11 @@ export default function CanvaBuilder() {
 
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-        <div className="border-r border-slate-800/60 shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
-          <LeftPanel />
-        </div>
+        {leftPanelOpen && (
+          <div className="border-r border-slate-800/60 shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
+            <LeftPanel />
+          </div>
+        )}
 
         {/* Stage Canvas Area — recessed with inner shadow */}
         <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-slate-900/80">
@@ -160,13 +193,15 @@ export default function CanvaBuilder() {
 
         {rightPanelOpen && (
           <div className="border-l border-slate-800/60 shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
-            <RightPanel />
+            <CanvasErrorBoundary name="RightPanel">
+              <RightPanel />
+            </CanvasErrorBoundary>
           </div>
         )}
       </div>
 
       {/* Status Bar */}
-      <StatusBar mousePos={mousePos} />
+      <StatusBar />
 
       {/* Play Preview Overlay — renders on top of everything */}
       <PlayOverlay />

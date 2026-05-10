@@ -76,6 +76,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           currentPageIndex: 0,
           selectedElId: null,
           selectedElIds: [], // Phase 4: Reset multi-select on load
+          leftPanelOpen: true,
           rightPanelOpen: true,
           leftTab,
         });

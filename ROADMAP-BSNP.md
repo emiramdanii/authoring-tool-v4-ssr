@@ -8,21 +8,19 @@
 
 ---
 
-## Fase Saat Ini
-
-### Phase 11: Navigation Button System
+## ✅ Phase 11: Navigation Button System (SELESAI)
 - [x] Buat komponen `TemplateNavButton` yang reusable
 - [x] Tambah nav button ke DokumenTemplate
 - [x] Tambah nav button ke MateriTemplate
-- [ ] Tambah nav button ke KuisTemplate (setelah kuis selesai)
-- [ ] Tambah nav button ke GameTemplate (interactive mode)
-- [ ] Perbaiki PetunjukTemplate — "Lanjut" di step terakhir jadi navigasi halaman
-- [ ] Perbaiki DiskusiTemplate — "Lanjut" di pertanyaan terakhir jadi navigasi halaman
-- [ ] Perbaiki RefleksiTemplate — "Lanjut" di pertanyaan terakhir jadi navigasi halaman
-- [ ] Perbaiki SkenarioTemplate — tambah "Lanjut" saat skenario completed
-- [ ] Perbaiki HeroTemplate — fallback CTA jika td.cta kosong
-- [ ] Perbaiki HasilTemplate — nav button walau tanpa skor
-- [ ] Build & test semua perubahan
+- [x] Tambah nav button ke KuisTemplate (setelah kuis selesai)
+- [x] Tambah nav button ke GameTemplate (interactive mode)
+- [x] Perbaiki PetunjukTemplate — "Lanjut" di step terakhir jadi navigasi halaman
+- [x] Perbaiki DiskusiTemplate — "Lanjut" di pertanyaan terakhir jadi navigasi halaman
+- [x] Perbaiki RefleksiTemplate — "Lanjut" di pertanyaan terakhir jadi navigasi halaman
+- [x] Perbaiki SkenarioTemplate — tambah "Lanjut" saat skenario completed
+- [x] Perbaiki HeroTemplate — fallback CTA jika td.cta kosong
+- [x] Perbaiki HasilTemplate — nav button walau tanpa skor
+- [x] Build & test semua perubahan
 
 ---
 
@@ -79,15 +77,15 @@ interface SuaraConfig {
 ```
 
 **Task**:
-- [ ] Buat `src/lib/sounds.ts` (helper function)
-- [ ] Buat `public/sounds/` + 6 file audio (free SFX, <30KB each)
-- [ ] Tambah `playSound('correct')` di QuizWidget saat jawab benar
-- [ ] Tambah `playSound('incorrect')` di QuizWidget saat jawab salah
-- [ ] Tambah `playSound('complete')` di QuizWidget phase=result
-- [ ] Tambah `playSound('click')` di TemplateNavButton + MulaiButton
-- [ ] Tambah `playSound('tap')` di SkenarioTemplate pilihan + GameWidget
-- [ ] Tambah `playSound('ding')` / `playSound('buzz')` di SkenarioTemplate feedback
-- [ ] Tambah toggle suara di panel (gunakan SuaraConfig yang sudah ada)
+- [x] Buat `src/lib/sounds.ts` (helper function)
+- [x] Buat `public/sounds/` + 7 file audio (free SFX, <30KB each)
+- [x] Tambah `playSound('correct')` di QuizWidget saat jawab benar
+- [x] Tambah `playSound('incorrect')` di QuizWidget saat jawab salah
+- [x] Tambah `playSound('complete')` di QuizWidget phase=result
+- [x] Tambah `playSound('click')` di TemplateNavButton + MulaiButton
+- [x] Tambah `playSound('tap')` di SkenarioTemplate pilihan + GameWidget
+- [x] Tambah `playSound('ding')` / `playSound('buzz')` di SkenarioTemplate feedback
+- [x] Tambah toggle suara di Toolbar (gunakan SuaraConfig yang sudah ada)
 
 ### 17.2 Pertemuan Tag di KuisItem
 
@@ -147,8 +145,8 @@ interface KuisItem {
 | `gambar` | Image + caption | `isi` (URL) |
 
 **Task**:
-- [ ] Refactor MateriTemplate — switch render per `blok.tipe`
-- [ ] Buat helper `renderBlok(blok)` dengan 13 pola render
+- [x] Refactor MateriTemplate — switch render per `blok.tipe`
+- [x] Buat helper `renderBlok(blok)` dengan 13 pola render (BlokRenderer.tsx)
 - [ ] Test semua 13 tipe blok di design mode + interactive mode
 - [ ] Hapus variant B/C yang tidak diperlukan lagi (opsional)
 

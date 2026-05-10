@@ -22,6 +22,7 @@ import {
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import PageTypeCreator from './PageTypeCreator';
+import { getAvailablePresets } from '@/core/engine/SchemaEngine';
 
 // ═══════════════════════════════════════════════════════════════
 // Left Panel — 2 tabs only: Halaman (view & arrange) + Tambah (add)
@@ -114,6 +115,7 @@ function HalamanContent() {
 
           const isTemplate = p.templateType && p.templateType !== 'custom';
           const isPageLocked = p.locked !== false; // true or undefined = locked
+          const isSchemaDriven = !!(p.templateData?.schemaScreen);
           const modulCount = (p.overlayElements || []).filter(e => e.type === 'modul' || e.type === 'materi').length + p.elements.filter(e => e.type === 'modul' || e.type === 'materi').length;
           const kuisCount = (p.overlayElements || []).filter(e => e.type === 'kuis').length + p.elements.filter(e => e.type === 'kuis').length;
           const gameCount = (p.overlayElements || []).filter(e => e.type === 'game').length + p.elements.filter(e => e.type === 'game').length;
@@ -160,15 +162,19 @@ function HalamanContent() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] font-bold text-slate-200 truncate flex items-center gap-1">
-                    {isTemplate && isPageLocked && <Lock size={8} className="text-amber-400 flex-shrink-0" />}
-                    {isTemplate && !isPageLocked && <Unlock size={8} className="text-emerald-400 flex-shrink-0" />}
+                    {isSchemaDriven && <span className="text-emerald-400">⚡</span>}
+                    {!isSchemaDriven && isTemplate && isPageLocked && <Lock size={8} className="text-amber-400 flex-shrink-0" />}
+                    {!isSchemaDriven && isTemplate && !isPageLocked && <Unlock size={8} className="text-emerald-400 flex-shrink-0" />}
                     <span className="truncate">{badge.icon} {p.label}</span>
                   </div>
                   <div className="text-[8px] text-slate-500">
-                    {isTemplate && isPageLocked && (
+                    {isSchemaDriven && (
+                      <span className="text-emerald-400/70">Schema</span>
+                    )}
+                    {!isSchemaDriven && isTemplate && isPageLocked && (
                       <span className="text-amber-400/60">Terkunci</span>
                     )}
-                    {isTemplate && !isPageLocked && (
+                    {isTemplate && !isPageLocked && !isSchemaDriven && (
                       <span className="text-emerald-400/60">Terbuka</span>
                     )}
                     {!isTemplate && (
@@ -248,7 +254,7 @@ function HalamanContent() {
    ══════════════════════════════════════════════════════════════════ */
 
 function TambahContent() {
-  const { addTemplatePage, addElement, addKuisElement, addGameElement, addModuleElement, resetCanvas } = useCanvaStore();
+  const { addTemplatePage, addElement, addKuisElement, addGameElement, addModuleElement, resetCanvas, loadSchemaPreset } = useCanvaStore();
   const authStore = useAuthoringStore();
   const kuis = authStore.kuis.filter(k => k.q.trim());
   const games = authStore.modules.filter((m: Record<string, unknown>) =>
@@ -262,6 +268,14 @@ function TambahContent() {
   const isTemplatePage = page?.templateType && page.templateType !== 'custom';
   const isPageLocked = page?.locked !== false; // true or undefined = locked
 
+  // Schema preset info
+  const availablePresets = getAvailablePresets();
+  const presetInfo: Record<string, { label: string; icon: string; desc: string }> = {
+    'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII' },
+    'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII' },
+  };
+  const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
+
   const categories = [
     { key: 'utama', label: 'Halaman Utama' },
     { key: 'konten', label: 'Konten' },
@@ -271,6 +285,48 @@ function TambahContent() {
 
   return (
     <div className="space-y-3">
+      {/* ── 📦 Preset Schema (NEW — schema-driven!) ── */}
+      <div>
+        <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+          <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[7px] font-black">SCHEMA</span>
+          Preset PPKn
+        </div>
+        <div className="space-y-1.5">
+          {availablePresets.map(presetId => {
+            const info = presetInfo[presetId] || { label: presetId, icon: '📦', desc: 'Preset' };
+            const isLoading = loadingPreset === presetId;
+            return (
+              <button
+                key={presetId}
+                onClick={async () => {
+                  setLoadingPreset(presetId);
+                  await loadSchemaPreset(presetId);
+                  setLoadingPreset(null);
+                }}
+                disabled={isLoading}
+                className="card-hover w-full flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 active:scale-95 transition-transform disabled:opacity-50"
+              >
+                <span className="text-xl">{info.icon}</span>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="text-[11px] font-bold text-emerald-300 truncate">{info.label}</div>
+                  <div className="text-[8px] text-emerald-400/60">{info.desc}</div>
+                </div>
+                {isLoading ? (
+                  <span className="text-[10px] text-emerald-400 animate-pulse">⏳</span>
+                ) : (
+                  <Plus size={12} className="text-emerald-400" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="text-[8px] text-white/30 mt-1.5 px-1">
+          Preset dimuat via schema renderer — tampilan sesuai preset asli
+        </div>
+      </div>
+
+      <div className="section-divider" />
+
       {/* ── Jenis Halaman ── */}
       <div>
         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Jenis Halaman</div>
@@ -404,10 +460,11 @@ function TambahContent() {
       {/* ── Elemen Dasar ── */}
       <div>
         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Elemen Dasar</div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {[
             { id: 'teks', icon: '🔤', name: 'Teks', note: 'Teks bebas', color: '#e2e8f0' },
             { id: 'shape', icon: '⬜', name: 'Shape', note: 'Kotak/warna', color: '#6366f1' },
+            { id: 'image', icon: '🖼️', name: 'Gambar', note: 'URL / upload', color: '#f97316' },
           ].map(t => (
             <button
               key={t.id}

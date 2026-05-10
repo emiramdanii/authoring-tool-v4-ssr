@@ -5,20 +5,23 @@
 import { toast } from 'sonner';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
+import type { CanvaElement } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
 
 export type UISlice = Pick<
   CanvaState,
-  | 'setTool' | 'setLeftTab' | 'toggleRightPanel'
+  | 'setTool' | 'setLeftTab' | 'toggleLeftPanel' | 'toggleRightPanel'
   | 'toggleGrid' | 'setGridSize' | 'toggleSnap' | 'snapValue'
   | 'applyLayoutPreset' | 'currentLayoutPreset'
   | 'setZoom' | 'zoomDelta' | 'setRatio' | 'nudgeSelected'
+  | 'alignSelected' | 'distributeSelected'
   | 'clearStage'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
+  toggleLeftPanel: () => set(s => ({ leftPanelOpen: !s.leftPanelOpen })),
   toggleRightPanel: () => set(s => ({ rightPanelOpen: !s.rightPanelOpen })),
 
   // ── Grid & Snap ──────────────────────────────────────────────
@@ -99,7 +102,14 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // Phase 4: Support multi-select nudge
     const idsToNudge = selectedElIds.length > 0 ? selectedElIds : (get().selectedElId ? [get().selectedElId!] : []);
     if (idsToNudge.length === 0) return;
-    get()._pushHistory();
+    // Only push history if this is the first nudge in a sequence
+    // (debounce: push history max once per 500ms of continuous nudging)
+    const now = Date.now();
+    const lastNudge = get()._lastNudgeTime;
+    if (!lastNudge || now - lastNudge > 500) {
+      get()._pushHistory();
+    }
+    set({ _lastNudgeTime: now } as any);
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
@@ -132,5 +142,112 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     newPages[currentPageIndex] = { ...page, elements: [], overlayElements: [] };
     set({ pages: newPages, selectedElId: null, selectedElIds: [] });
     toast.success('Stage dibersihkan');
+  },
+
+  // ── Alignment ────────────────────────────────────────────────
+  alignSelected: (direction) => {
+    const { pages, currentPageIndex, selectedElIds, selectedElId } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    const ids = selectedElIds.length > 0 ? selectedElIds : (selectedElId ? [selectedElId] : []);
+    if (ids.length < 2) {
+      toast.info('Pilih minimal 2 elemen untuk alignment');
+      return;
+    }
+    get()._pushHistory();
+    const allEls = [...page.elements, ...(page.overlayElements || [])];
+    const targets = ids.map(id => allEls.find(e => e.id === id)).filter(Boolean) as CanvaElement[];
+    if (targets.length < 2) return;
+
+    // Compute alignment value based on direction
+    let alignValue: number;
+    switch (direction) {
+      case 'left': alignValue = Math.min(...targets.map(e => e.x)); break;
+      case 'centerH': alignValue = targets.reduce((s, e) => s + e.x + e.w / 2, 0) / targets.length; break;
+      case 'right': alignValue = Math.max(...targets.map(e => e.x + e.w)); break;
+      case 'top': alignValue = Math.min(...targets.map(e => e.y)); break;
+      case 'centerV': alignValue = targets.reduce((s, e) => s + e.y + e.h / 2, 0) / targets.length; break;
+      case 'bottom': alignValue = Math.max(...targets.map(e => e.y + e.h)); break;
+      default: return;
+    }
+
+    const updateEl = (el: CanvaElement): CanvaElement => {
+      switch (direction) {
+        case 'left': return { ...el, x: alignValue };
+        case 'centerH': return { ...el, x: alignValue - el.w / 2 };
+        case 'right': return { ...el, x: alignValue - el.w };
+        case 'top': return { ...el, y: alignValue };
+        case 'centerV': return { ...el, y: alignValue - el.h / 2 };
+        case 'bottom': return { ...el, y: alignValue - el.h };
+        default: return el;
+      }
+    };
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: page.elements.map(e => ids.includes(e.id) ? updateEl(e) : e),
+      overlayElements: (page.overlayElements || []).map(e => ids.includes(e.id) ? updateEl(e) : e),
+    };
+    set({ pages: newPages });
+    toast.success(`Align ${direction} diterapkan`);
+  },
+
+  distributeSelected: (axis) => {
+    const { pages, currentPageIndex, selectedElIds, selectedElId } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    const ids = selectedElIds.length > 0 ? selectedElIds : (selectedElId ? [selectedElId] : []);
+    if (ids.length < 3) {
+      toast.info('Pilih minimal 3 elemen untuk distribusi');
+      return;
+    }
+    get()._pushHistory();
+    const allEls = [...page.elements, ...(page.overlayElements || [])];
+    const targets = ids.map(id => allEls.find(e => e.id === id)).filter(Boolean) as CanvaElement[];
+    if (targets.length < 3) return;
+
+    if (axis === 'horizontal') {
+      // Sort by x, distribute evenly between leftmost and rightmost edges
+      const sorted = [...targets].sort((a, b) => a.x - b.x);
+      const min = sorted[0].x;
+      const max = sorted[sorted.length - 1].x + sorted[sorted.length - 1].w;
+      const totalW = sorted.reduce((s, e) => s + e.w, 0);
+      const gap = (max - min - totalW) / (sorted.length - 1);
+      let current = min;
+      const updates = new Map<string, number>();
+      for (const el of sorted) {
+        updates.set(el.id, current);
+        current += el.w + gap;
+      }
+      const newPages = [...pages];
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: page.elements.map(e => updates.has(e.id) ? { ...e, x: updates.get(e.id)! } : e),
+        overlayElements: (page.overlayElements || []).map(e => updates.has(e.id) ? { ...e, x: updates.get(e.id)! } : e),
+      };
+      set({ pages: newPages });
+    } else {
+      // Sort by y, distribute evenly
+      const sorted = [...targets].sort((a, b) => a.y - b.y);
+      const min = sorted[0].y;
+      const max = sorted[sorted.length - 1].y + sorted[sorted.length - 1].h;
+      const totalH = sorted.reduce((s, e) => s + e.h, 0);
+      const gap = (max - min - totalH) / (sorted.length - 1);
+      let current = min;
+      const updates = new Map<string, number>();
+      for (const el of sorted) {
+        updates.set(el.id, current);
+        current += el.h + gap;
+      }
+      const newPages = [...pages];
+      newPages[currentPageIndex] = {
+        ...page,
+        elements: page.elements.map(e => updates.has(e.id) ? { ...e, y: updates.get(e.id)! } : e),
+        overlayElements: (page.overlayElements || []).map(e => updates.has(e.id) ? { ...e, y: updates.get(e.id)! } : e),
+      };
+      set({ pages: newPages });
+    }
+    toast.success(`Distribusi ${axis === 'horizontal' ? 'horizontal' : 'vertikal'} diterapkan`);
   },
 });

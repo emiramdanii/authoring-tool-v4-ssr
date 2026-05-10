@@ -11,7 +11,7 @@ import { TemplateNavButton } from './TemplateNavButton';
 
 // ── Game Template ─────────────────────────────────────────────
 
-export function GameTemplate({ td, palette, isSelected, onEditField, interactive }: SubTemplateProps) {
+export function GameTemplate({ td, palette, isSelected, onEditField, interactive, variant = 'A' }: SubTemplateProps) {
   const accent = getPaletteColor(palette, '--c', '#3ecfcf');
   const games = (td.games as Array<Record<string, unknown>>) || [];
   const reportScore = useInteractiveStore((s) => s.reportScore);
@@ -74,9 +74,37 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
         </div>
       </div>
 
-      {/* Game selection or widget — full-size in interactive mode */}
+      {/* Game selection or widget */}
       <div className="flex-1 min-h-0 px-3 pb-3">
         {games.length > 0 ? (
+          /* ── Variant B ("Galeri"): Gallery grid for design mode ── */
+          variant === 'B' && !interactive ? (
+            <div className="grid grid-cols-2 gap-2 overflow-y-auto h-full">
+              {games.map((g, i) => (
+                <button key={i}
+                  onClick={() => handleSelectGame(i)}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all hover:scale-[1.03] cursor-pointer text-center"
+                  style={{
+                    background: i === safeIdx ? alpha(accent, 0.1) : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${i === safeIdx ? alpha(accent, 0.3) : 'rgba(255,255,255,0.08)'}`,
+                    boxShadow: i === safeIdx ? `0 0 12px ${alpha(accent, 0.1)}` : 'none',
+                  }}>
+                  <span className="text-2xl">{getGameIcon(String(g.type))}</span>
+                  <span className="text-[9px] font-bold text-white/90 leading-tight line-clamp-2">
+                    {String(g.title || g.type)}
+                  </span>
+                  <span className="text-[7px] px-1.5 py-0.5 rounded-full font-bold"
+                    style={{ background: alpha(accent, 0.12), color: accent }}>
+                    {String(g.type)}
+                  </span>
+                  {i === safeIdx && (
+                    <span className="text-[8px] font-bold" style={{ color: accent }}>✦ Pilih</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+          /* ── Variant A (or interactive mode): Widget + tabs ── */
           <div className="space-y-2">
             {/* Show selected game as main widget */}
             {activeGame && (
@@ -107,6 +135,7 @@ export function GameTemplate({ td, palette, isSelected, onEditField, interactive
               </div>
             )}
           </div>
+          )
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <span className="text-3xl mb-2">🎮</span>

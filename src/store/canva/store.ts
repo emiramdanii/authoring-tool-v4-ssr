@@ -15,6 +15,7 @@ import { createResetCanvasSlice } from './reset-canvas';
 import { createAutoGenerateSlice } from './auto-generate';
 import { createSyncSlice, startAutoSync } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
+import { createSchemaPresetSlice } from './schema-preset-slice';
 
 export const useCanvaStore = create<CanvaState>()((...a) => {
   const set = a[0];
@@ -30,7 +31,10 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     leftTab: 'halaman',
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
+    _clipboard: [], // Clipboard buffer for copy/paste
+    leftPanelOpen: true,
     rightPanelOpen: true,
+    _saveStatus: 'saved',
     showGrid: false,
     gridSize: 5,
     snapEnabled: true,
@@ -56,6 +60,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ...createAutoGenerateSlice(...a),
     ...createSyncSlice(...a),
     ...createPersistenceSlice(...a),
+    ...createSchemaPresetSlice(...a),
   };
 });
 
