@@ -25,6 +25,10 @@ export { deepMergeBlock, batchMergeBlocks } from './deep-merge';
 // Edit event bus
 export { editBus } from './edit-bus';
 
+// Patch history — immer-based undo/redo infrastructure
+export { PatchHistory, patchHistory, connectHistoryToEditBus } from './patch-history';
+export type { PatchHistoryEntry, PatchHistoryState } from './patch-history';
+
 // Property schemas
 export {
   getPropertySchema,
@@ -56,3 +60,7 @@ export type { BlockSelectionOverlayProps } from './overlay/BlockSelectionOverlay
 // Inline text editor — contentEditable wrapper for inline block editing
 export { InlineTextEditor, useInlineEditor } from './inline-editor/InlineTextEditor';
 export type { InlineTextEditorProps, UseInlineEditorOptions } from './inline-editor/InlineTextEditor';
+
+// Transform controls — resize handles and drag-to-move for schema blocks
+export { TransformHandles, useTransformDrag } from './transform-controls/TransformHandles';
+export type { TransformHandlesProps, UseTransformDragOptions } from './transform-controls/TransformHandles';
