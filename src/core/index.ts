@@ -67,8 +67,6 @@ export {
   deepMergeBlock,
   batchMergeBlocks,
   editBus,
-  getPropertySchema,
-  getAllPropertySchemas,
   BlockSelectionOverlay,
   InlineTextEditor,
   useInlineEditor,

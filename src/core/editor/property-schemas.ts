@@ -9,6 +9,22 @@
 //
 // This replaces the giant switch statement in BlockTypeEditor.
 // Adding a new block type = add its propertySchema here. No UI code change.
+//
+// ═══════════════════════════════════════════════════════════════════
+// FASE 2: Single Source of Truth
+// ═══════════════════════════════════════════════════════════════════
+// Property schemas are DEFINED here but the SINGLE SOURCE OF TRUTH
+// for looking them up is SCENE_REGISTRY in SceneRegistry.tsx.
+//
+// Each named schema (COVER_PROPERTY_SCHEMA, etc.) is imported by
+// SceneRegistry and attached to its BlockDefinition.propertySchema.
+//
+// To look up a property schema, use:
+//   getBlockPropertySchema(blockType) from '@/core/registry/SceneRegistry'
+//
+// The old PROPERTY_SCHEMAS record and getPropertySchema() function
+// have been REMOVED to eliminate the dual-source drift risk.
+// ═══════════════════════════════════════════════════════════════════
 
 import type { PropertySchema } from './types';
 
@@ -21,6 +37,7 @@ export const COVER_PROPERTY_SCHEMA: PropertySchema = {
   groups: [
     { key: 'content', label: 'Konten', icon: 'Type' },
     { key: 'badges', label: 'Badge', icon: 'Award' },
+    { key: 'cta', label: 'CTA', icon: 'MousePointerClick', collapsed: true },
     { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
   ],
   properties: [
@@ -37,6 +54,8 @@ export const COVER_PROPERTY_SCHEMA: PropertySchema = {
       ],
     },
     { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'y' },
+    { key: 'cta.label', type: 'text', label: 'CTA Label', group: 'cta', placeholder: 'Mulai →' },
+    { key: 'meta.durasi', type: 'text', label: 'Durasi', group: 'content', placeholder: '2 x 45 menit' },
   ],
 };
 
@@ -127,10 +146,14 @@ export const DEFBOX_PROPERTY_SCHEMA: PropertySchema = {
 
 export const NCGRID_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'nc-grid',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
     {
-      key: 'cards', type: 'array', label: 'Kartu',
+      key: 'cards', type: 'array', label: 'Kartu', group: 'content',
       fields: [
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📋' },
         { key: 'title', label: 'Judul', type: 'text' },
@@ -143,10 +166,14 @@ export const NCGRID_PROPERTY_SCHEMA: PropertySchema = {
 
 export const FLASHCARD_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'flashcard-set',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
     {
-      key: 'cards', type: 'array', label: 'Kartu Kilat',
+      key: 'cards', type: 'array', label: 'Kartu Kilat', group: 'content',
       fields: [
         { key: 'q', label: 'Pertanyaan', type: 'textarea' },
         { key: 'a', label: 'Jawaban', type: 'textarea' },
@@ -169,9 +196,10 @@ export const NKCARD_PROPERTY_SCHEMA: PropertySchema = {
   groups: [
     { key: 'content', label: 'Konten', icon: 'Type' },
     { key: 'detail', label: 'Detail', icon: 'FileText', collapsed: true },
+    { key: 'sanksi', label: 'Sanksi', icon: 'ShieldAlert', collapsed: true },
   ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
     { key: 'normaType', type: 'select', label: 'Jenis Norma', group: 'content',
       options: [
         { label: 'Norma Agama', value: 'agama' },
@@ -192,6 +220,14 @@ export const NKCARD_PROPERTY_SCHEMA: PropertySchema = {
       ],
     },
     { key: 'contoh', type: 'textarea', label: 'Contoh', group: 'detail', rows: 3 },
+    { key: 'sanksi.title', type: 'text', label: 'Judul Sanksi', group: 'sanksi', defaultValue: 'Sanksi' },
+    {
+      key: 'sanksi.items', type: 'array', label: 'Item Sanksi', group: 'sanksi',
+      fields: [
+        { key: 'dot', label: 'Warna', type: 'color' },
+        { key: 'text', label: 'Teks', type: 'textarea' },
+      ],
+    },
   ],
 };
 
@@ -199,16 +235,27 @@ export const DISKUSI_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'diskusi',
   groups: [
     { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'kelompok', label: 'Kelompok', icon: 'Users', collapsed: true },
   ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
-    { key: 'title', type: 'text', label: 'Judul', required: true },
-    { key: 'intro', type: 'textarea', label: 'Intro', rows: 3 },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'intro', type: 'textarea', label: 'Intro', group: 'content', rows: 3 },
     {
-      key: 'questions', type: 'array', label: 'Pertanyaan',
+      key: 'questions', type: 'array', label: 'Pertanyaan', group: 'content',
       fields: [
         { key: 'teks', label: 'Pertanyaan', type: 'textarea' },
         { key: 'petunjuk', label: 'Petunjuk', type: 'text' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    {
+      key: 'kelompok', type: 'array', label: 'Kelompok Diskusi', group: 'kelompok',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '👥' },
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'judul', label: 'Judul', type: 'text' },
+        { key: 'isi', label: 'Isi', type: 'textarea' },
         { key: 'color', label: 'Warna', type: 'color' },
       ],
     },
@@ -261,9 +308,10 @@ export const REFLEKSI_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'refleksi',
   groups: [
     { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'penugasan', label: 'Penugasan', icon: 'ClipboardList', collapsed: true },
   ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
     { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
     { key: 'intro', type: 'textarea', label: 'Intro', group: 'content', rows: 3 },
     {
@@ -273,6 +321,8 @@ export const REFLEKSI_PROPERTY_SCHEMA: PropertySchema = {
         { key: 'petunjuk', label: 'Petunjuk', type: 'text' },
       ],
     },
+    { key: 'penugasan.judul', type: 'text', label: 'Judul Penugasan', group: 'penugasan' },
+    { key: 'penugasan.isi', type: 'textarea', label: 'Isi Penugasan', group: 'penugasan', rows: 3 },
   ],
 };
 
@@ -281,9 +331,10 @@ export const PENUTUP_PROPERTY_SCHEMA: PropertySchema = {
   groups: [
     { key: 'content', label: 'Konten', icon: 'Type' },
     { key: 'preview', label: 'Preview', icon: 'Eye', collapsed: true },
+    { key: 'nextPertemuan', label: 'Pertemuan Berikutnya', icon: 'Calendar', collapsed: true },
   ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
     { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
     { key: 'subtitle', type: 'text', label: 'Subjudul', group: 'content' },
     {
@@ -295,15 +346,21 @@ export const PENUTUP_PROPERTY_SCHEMA: PropertySchema = {
         { key: 'warna', label: 'Warna', type: 'color' },
       ],
     },
+    { key: 'nextPertemuan.judul', type: 'text', label: 'Judul Pertemuan', group: 'nextPertemuan' },
+    { key: 'nextPertemuan.deskripsi', type: 'textarea', label: 'Deskripsi', group: 'nextPertemuan', rows: 2 },
   ],
 };
 
 export const TABELACCORD_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'tabel-accord',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
     {
-      key: 'rows', type: 'array', label: 'Baris',
+      key: 'rows', type: 'array', label: 'Baris', group: 'content',
       fields: [
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📊' },
         { key: 'title', label: 'Judul', type: 'text' },
@@ -314,50 +371,16 @@ export const TABELACCORD_PROPERTY_SCHEMA: PropertySchema = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// PROPERTY SCHEMA REGISTRY
+// PROPERTY SCHEMA LOOKUP — DELEGATED TO SCENE REGISTRY
 // ═══════════════════════════════════════════════════════════════════
-// Maps block type → its property schema.
-// The dynamic property panel reads from this to auto-generate forms.
-
-const PROPERTY_SCHEMAS: Record<string, PropertySchema> = {
-  'cover': COVER_PROPERTY_SCHEMA,
-  'petunjuk': PETUNJUK_PROPERTY_SCHEMA,
-  'tp': TP_PROPERTY_SCHEMA,
-  'alur': ALUR_PROPERTY_SCHEMA,
-  'skenario': SKENARIO_PROPERTY_SCHEMA,
-  'def-box': DEFBOX_PROPERTY_SCHEMA,
-  'nc-grid': NCGRID_PROPERTY_SCHEMA,
-  'flashcard-set': FLASHCARD_PROPERTY_SCHEMA,
-  'ftab': FTAB_PROPERTY_SCHEMA,
-  'nk-card': NKCARD_PROPERTY_SCHEMA,
-  'diskusi': DISKUSI_PROPERTY_SCHEMA,
-  'kuis': KUIS_PROPERTY_SCHEMA,
-  'sortir-game': SORTIRGAME_PROPERTY_SCHEMA,
-  'roda-game': RODAGAME_PROPERTY_SCHEMA,
-  'hasil': HASIL_PROPERTY_SCHEMA,
-  'refleksi': REFLEKSI_PROPERTY_SCHEMA,
-  'penutup': PENUTUP_PROPERTY_SCHEMA,
-  'tabel-accord': TABELACCORD_PROPERTY_SCHEMA,
-};
-
-/**
- * Get the property schema for a block type.
- * Returns a minimal generic schema for unregistered types.
- */
-export function getPropertySchema(blockType: string): PropertySchema {
-  return PROPERTY_SCHEMAS[blockType] ?? {
-    blockType,
-    properties: [
-      { key: 'variant', type: 'variant', label: 'Varian' },
-    ],
-    redirectToAuthoring: true,
-    redirectNote: `Block type "${blockType}" — editor belum tersedia`,
-  };
-}
-
-/**
- * Get all registered property schemas.
- */
-export function getAllPropertySchemas(): Record<string, PropertySchema> {
-  return PROPERTY_SCHEMAS;
-}
+// FASE 2: The PROPERTY_SCHEMAS record has been REMOVED.
+// The single source of truth for property schema lookup is now:
+//
+//   getBlockPropertySchema(type) from '@/core/registry/SceneRegistry'
+//
+// That function returns `PropertySchema | undefined`.
+// For a fallback schema for unregistered types, consumers should
+// create a minimal schema inline (same pattern as the old fallback).
+//
+// The named exports (COVER_PROPERTY_SCHEMA, etc.) remain for
+// SceneRegistry to import and attach to BlockDefinition.propertySchema.

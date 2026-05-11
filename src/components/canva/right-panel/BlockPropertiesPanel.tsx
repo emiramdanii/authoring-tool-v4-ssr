@@ -6,12 +6,16 @@
 // ARCHITECTURE (v2 — Schema-Driven Visual Editing Engine):
 //
 //   1. Block is selected → store.selectedBlockId/Type set
-//   2. getPropertySchema(blockType) → list of editable PropertyFields
+//   2. getBlockPropertySchema(blockType) → list of editable PropertyFields
 //   3. Dynamic editor auto-generates form from PropertyField[]
 //   4. Changes call updateSchemaBlock() → deep patch merge → rerender
 //
-// NO MORE SWITCH STATEMENT. Adding a new block type = add its
-// propertySchema in core/editor/property-schemas.ts. No UI code change.
+// FASE 2: Single source of truth — property schema comes from
+// SCENE_REGISTRY via getBlockPropertySchema(). No more dual source.
+//
+// Dot-notation support: Property schemas can use keys like 'cta.label'
+// which read from block.cta.label and write via deep merge preserving
+// sibling properties.
 //
 // Key principles:
 //   - Schema is SINGLE SOURCE OF TRUTH (editor reads from schema store)
@@ -20,8 +24,7 @@
 //   - Capability-based (capabilities control what's editable)
 
 import { useCanvaStore } from '@/store/canva-store';
-import { getBlockDefinition, getBlockCapabilities } from '@/core/registry/SceneRegistry';
-import { getPropertySchema } from '@/core/editor/property-schemas';
+import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
 import type { PropertyField, PropertySchema } from '@/core/editor/types';
 import { Settings2, X, Type, AlignLeft, List, Palette, LayoutGrid, HelpCircle, BookOpen, Hash, ToggleLeft, ChevronDown } from 'lucide-react';
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
@@ -76,7 +79,14 @@ export default function BlockPropertiesPanel() {
 
   const definition = getBlockDefinition(selectedBlockType);
   const capabilities = getBlockCapabilities(selectedBlockType);
-  const propertySchema = getPropertySchema(selectedBlockType);
+  // FASE 2: Single source of truth — property schema comes from SCENE_REGISTRY.
+  // Fallback to a minimal generic schema for unregistered block types.
+  const propertySchema = getBlockPropertySchema(selectedBlockType) ?? {
+    blockType: selectedBlockType,
+    properties: [{ key: 'variant', type: 'variant' as const, label: 'Varian' }],
+    redirectToAuthoring: true,
+    redirectNote: `Block type "${selectedBlockType}" — editor belum tersedia`,
+  };
 
   // If this block type is not editable, show minimal info
   if (!capabilities.editable) {
@@ -184,6 +194,56 @@ export default function BlockPropertiesPanel() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// DOT-NOTATION HELPERS — Support for nested property editing
+// ═══════════════════════════════════════════════════════════════
+// Property schemas can use dot-notation keys like 'cta.label',
+// 'meta.durasi', 'sanksi.title', 'penugasan.judul', etc.
+//
+// Reading: getNestedValue(block, 'cta.label') → block.cta.label
+// Writing: buildNestedUpdate('cta.label', 'new') → { cta: { label: 'new' } }
+//
+// The writing side leverages updateSchemaBlock's deep merge (Immer),
+// so { cta: { label: 'new' } } correctly merges without losing
+// sibling properties like cta.action.
+
+/**
+ * Get a nested value from an object using dot-notation path.
+ * Examples: getNestedValue(obj, 'cta.label') → obj.cta.label
+ */
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  const keys = path.split('.');
+  let current: unknown = obj;
+  for (const key of keys) {
+    if (current == null || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+/**
+ * Build a nested update object from a dot-notation key and value.
+ * The resulting object can be passed to updateSchemaBlock() which
+ * uses Immer deep merge, preserving sibling properties.
+ *
+ * Example: buildNestedUpdate('cta.label', 'Mulai') → { cta: { label: 'Mulai' } }
+ */
+function buildNestedUpdate(path: string, value: unknown): Record<string, unknown> {
+  const keys = path.split('.');
+  if (keys.length === 1) {
+    return { [keys[0]]: value };
+  }
+  // Build nested object from right to left
+  let result: Record<string, unknown> = {};
+  let current = result;
+  for (let i = 0; i < keys.length - 1; i++) {
+    current[keys[i]] = {};
+    current = current[keys[i]] as Record<string, unknown>;
+  }
+  current[keys[keys.length - 1]] = value;
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // SCHEMA-DRIVEN DYNAMIC EDITOR
 // ═══════════════════════════════════════════════════════════════
 // Replaces the giant switch statement in BlockTypeEditor.
@@ -257,7 +317,11 @@ function renderField(
   blockData: Record<string, unknown>,
   onUpdate: (updates: Record<string, unknown>) => void
 ): React.ReactNode {
-  const value = blockData[field.key];
+  // FASE 2: Support dot-notation keys (e.g., 'cta.label', 'meta.durasi')
+  const value = getNestedValue(blockData, field.key);
+
+  // Wrap onUpdate to handle dot-notation paths via deep merge
+  const handleUpdate = (v: unknown) => onUpdate(buildNestedUpdate(field.key, v));
 
   switch (field.type) {
     case 'text':
@@ -268,7 +332,7 @@ function renderField(
           value={String(value || '')}
           icon={field.icon ? <span className="text-[9px]">{field.icon}</span> : <Type size={9} />}
           placeholder={field.placeholder}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -282,7 +346,7 @@ function renderField(
           placeholder={field.placeholder}
           multiline
           rows={field.rows || 3}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -295,7 +359,7 @@ function renderField(
           min={field.min}
           max={field.max}
           step={field.step}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -305,7 +369,7 @@ function renderField(
           key={field.key}
           label={field.label}
           value={String(value || field.defaultValue || 'y')}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -316,7 +380,7 @@ function renderField(
           label={field.label}
           value={String(value || '')}
           options={field.options || []}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -326,7 +390,7 @@ function renderField(
           key={field.key}
           label={field.label}
           value={Boolean(value)}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -338,7 +402,7 @@ function renderField(
           items={(value as Array<Record<string, unknown>>) || []}
           fieldDefs={field.fields || []}
           maxItems={field.maxItems}
-          onUpdate={items => onUpdate({ [field.key]: items })}
+          onUpdate={items => handleUpdate(items)}
         />
       );
 
@@ -348,7 +412,7 @@ function renderField(
           key={field.key}
           label={field.label}
           value={String(value || 'A')}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -360,7 +424,7 @@ function renderField(
           value={String(value || '')}
           icon={<span className="text-[9px]">🎨</span>}
           placeholder={field.placeholder || '🏠'}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 
@@ -370,7 +434,7 @@ function renderField(
           key={field.key}
           label={field.label}
           value={value}
-          onChange={v => onUpdate({ [field.key]: v })}
+          onChange={v => handleUpdate(v)}
         />
       );
 

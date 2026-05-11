@@ -30,10 +30,9 @@ export { editBus } from './edit-bus';
 export { PatchHistory, patchHistory, connectHistoryToEditBus } from './patch-history';
 export type { PatchHistoryEntry, PatchHistoryState } from './patch-history';
 
-// Property schemas
+// Property schemas — FASE 2: Individual named exports only.
+// Lookup is via getBlockPropertySchema() from SceneRegistry.
 export {
-  getPropertySchema,
-  getAllPropertySchemas,
   COVER_PROPERTY_SCHEMA,
   PETUNJUK_PROPERTY_SCHEMA,
   TP_PROPERTY_SCHEMA,
