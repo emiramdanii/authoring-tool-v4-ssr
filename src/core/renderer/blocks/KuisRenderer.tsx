@@ -50,25 +50,26 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('y') }}>
           {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
         </div>
-        <div className="text-[11px] text-white/55 mb-4">
+        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
           Skor kamu: {totalCorrect}/{questions.length} ({pct}%)
         </div>
         <div className="flex justify-center gap-3">
           <div className="px-4 py-2 rounded-xl"
             style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
-            <div className="text-[10px] font-extrabold" style={{ color: tokens.color('g') }}>Benar</div>
+            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>Benar</div>
             <div className="font-black" style={{ color: tokens.color('g') }}>{totalCorrect}</div>
           </div>
           <div className="px-4 py-2 rounded-xl"
             style={{ background: tokens.colorAlpha('r', 0.12), border: '1px solid ' + tokens.colorAlpha('r', 0.3) }}>
-            <div className="text-[10px] font-extrabold" style={{ color: tokens.color('r') }}>Salah</div>
+            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>Salah</div>
             <div className="font-black" style={{ color: tokens.color('r') }}>{questions.length - totalCorrect}</div>
           </div>
         </div>
         {interactive && (
-          <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+          <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => { setAnswers({}); setCurrent(0); }}
             style={{
+              fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
@@ -86,7 +87,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
     <div className="space-y-3">
       {/* Header with progress */}
       <div className="flex items-center justify-between">
-        <div className="text-[11px] font-extrabold" style={{ color: tokens.color('y') }}>
+        <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
           <Gamepad2 size={14} className="inline" /> <InlineTextEditor
             {...titleEditor}
             className="text-[11px] font-extrabold"
@@ -94,8 +95,9 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
             placeholder="Ketik judul kuis..."
           />
         </div>
-        <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
+        <span className="px-2.5 py-1 rounded-full font-extrabold"
           style={{
+            fontSize: '11px',
             background: tokens.colorAlpha('y', 0.15),
             color: tokens.color('y'),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
@@ -106,7 +108,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
 
       {/* Progress bar */}
       <div className="h-1.5 rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,.08)' }}>
+        style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all"
           style={{
             width: (totalAnswered / questions.length) * 100 + '%',
@@ -133,14 +135,14 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
             const isAnswered = answers[current] !== undefined;
             const isCorrect = i === q.ans;
             const isPicked = answers[current] === i;
-            const bg = !isAnswered ? 'rgba(255,255,255,.06)' : isCorrect ? tokens.colorAlpha('g', 0.15) : isPicked ? tokens.colorAlpha('r', 0.15) : 'rgba(255,255,255,.06)';
-            const bdr = !isAnswered ? 'rgba(255,255,255,.1)' : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : 'rgba(255,255,255,.1)';
+            const bg = !isAnswered ? tokens.subtleBg(0.06) : isCorrect ? tokens.colorAlpha('g', 0.15) : isPicked ? tokens.colorAlpha('r', 0.15) : tokens.subtleBg(0.06);
+            const bdr = !isAnswered ? tokens.subtleBorder(0.1) : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : tokens.subtleBorder(0.1);
             const bxSh = !isAnswered ? 'none' : isCorrect ? ('0 0 12px ' + tokens.colorAlpha('g', 0.2)) : isPicked ? ('0 0 12px ' + tokens.colorAlpha('r', 0.2)) : 'none';
             return (
               <button key={i} disabled={isAnswered}
                 onClick={() => interactive && setAnswers(prev => ({ ...prev, [current]: i }))}
-                className="p-2.5 rounded-xl text-[11px] font-bold text-center transition-all hover:scale-[1.02]"
-                style={{ background: bg, border: '2px solid ' + bdr, boxShadow: bxSh }}>
+                className="p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0"
+                style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh }}>
                 {opt}
               </button>
             );
@@ -148,8 +150,9 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
         </div>
         {/* Answer feedback */}
         {answers[current] !== undefined && (
-          <div className="mt-3 p-3 rounded-xl text-[10px] leading-relaxed"
+          <div className="mt-3 p-3 rounded-xl leading-relaxed"
             style={{
+              fontSize: '12px',
               background: answers[current] === q.ans ? tokens.colorAlpha('g', 0.1) : tokens.colorAlpha('r', 0.1),
               border: '1px solid ' + (answers[current] === q.ans ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
               color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
@@ -166,9 +169,10 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
 
       {/* Next button */}
       {answers[current] !== undefined && current < questions.length - 1 && (
-        <button className="px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+        <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
           onClick={() => setCurrent(current + 1)}
           style={{
+            fontSize: '13px',
             background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
             color: tokens.color('bg'),
             boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),

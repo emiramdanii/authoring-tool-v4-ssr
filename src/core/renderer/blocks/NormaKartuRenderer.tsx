@@ -53,8 +53,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           }}>
           {block.icon}
         </div>
-        <div>
-          <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color }}>{block.label}</div>
+        <div className="min-w-0">
+          <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color }}>{block.label}</div>
           <div className="font-black text-[16px] mt-0.5" style={{ fontFamily: tokens.fontFamily('display'), color }}>
             <InlineTextEditor {...titleEditor} className="font-black text-[16px]" style={{ color }} />
           </div>
@@ -62,7 +62,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       </div>
 
       {/* Definition */}
-      <div className="text-[11px] leading-relaxed mb-4">
+      <div className="leading-relaxed mb-4" style={{ fontSize: '13px' }}>
         <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" placeholder="Ketik definisi..." />
       </div>
 
@@ -70,13 +70,13 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       {(block.characteristics || []).length > 0 && (
         <div className="grid grid-cols-2 gap-2.5">
           {(block.characteristics || []).map((c, i) => (
-            <div key={i} className="rounded-xl p-3"
+            <div key={i} className="rounded-xl p-3 min-w-0"
               style={{
                 background: tokens.colorAlpha(colorKey, 0.08),
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
               }}>
-              <div className="text-[10px] font-extrabold uppercase tracking-wider mb-1" style={{ color }}>{c.label}</div>
-              <div className="text-[10px] leading-relaxed">{c.value}</div>
+              <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color }}>{c.label}</div>
+              <div className="leading-relaxed" style={{ fontSize: '12px' }}>{c.value}</div>
             </div>
           ))}
         </div>
@@ -90,9 +90,9 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             border: '1px solid ' + tokens.colorAlpha('o', 0.2),
             borderLeft: '3px solid ' + tokens.color('o'),
           }}>
-          <div className="text-[10px] font-extrabold uppercase tracking-wider mb-1.5" style={{ color: tokens.color('o') }}>{block.sanksi.title}</div>
+          <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ fontSize: '12px', color: tokens.color('o') }}>{block.sanksi.title}</div>
           {block.sanksi.items.map((s, i) => (
-            <div key={i} className="flex items-start gap-2 text-[10px] mb-1.5 leading-relaxed">
+            <div key={i} className="flex items-start gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px' }}>
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: s.dot || color }} />
               {s.text}
             </div>
@@ -102,8 +102,9 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
 
       {/* Contoh */}
       {block.contoh && (
-        <div className="mt-3 p-3 rounded-xl text-[10px] leading-relaxed"
+        <div className="mt-3 p-3 rounded-xl leading-relaxed"
           style={{
+            fontSize: '12px',
             background: tokens.colorAlpha(colorKey, 0.08),
             border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
             borderLeft: '3px solid ' + color,
@@ -120,10 +121,10 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             border: '1px solid ' + tokens.colorAlpha('r', 0.25),
             borderLeft: '3px solid ' + tokens.color('r'),
           }}>
-          <div className="text-[10px] font-extrabold uppercase tracking-wider mb-1.5"
-            style={{ color: tokens.color('r') }}>{block.pelanggaran.title}</div>
+          <div className="font-extrabold uppercase tracking-wider mb-1.5"
+            style={{ fontSize: '12px', color: tokens.color('r') }}>{block.pelanggaran.title}</div>
           {block.pelanggaran.items.map((p, i) => (
-            <div key={i} className="flex gap-2 text-[10px] mb-1.5 leading-relaxed">
+            <div key={i} className="flex gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px' }}>
               <span>{p.icon}</span> {p.text}
             </div>
           ))}

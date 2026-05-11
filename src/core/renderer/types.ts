@@ -20,9 +20,49 @@ export type SchemaRenderMode = 'canvas' | 'preview' | 'export';
 
 export class TokenResolver {
   private tokens: DesignTokens;
+  private _themeId: string | undefined;
 
   constructor(themeId?: string) {
+    this._themeId = themeId;
     this.tokens = resolveTokens(themeId);
+  }
+
+  /** Whether the current theme is a dark theme */
+  isDark(): boolean {
+    const bg = this.color('bg');
+    // Simple luminance check: if bg is dark, theme is dark
+    if (!bg || !bg.startsWith('#') || bg.length < 7) return true; // Default to dark
+    const r = parseInt(bg.slice(1, 3), 16);
+    const g = parseInt(bg.slice(3, 5), 16);
+    const b = parseInt(bg.slice(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+  }
+
+  /** Get the theme ID */
+  get themeId(): string | undefined {
+    return this._themeId;
+  }
+
+  /** Muted text color — adapts to dark/light automatically
+   *  Dark: uses 'muted' token, Light: uses 'muted' token (both are theme-appropriate)
+   */
+  muted(a: number = 1): string {
+    return this.colorAlpha('muted', a);
+  }
+
+  /** Secondary text — slightly dimmer than main text
+   *  Uses text color with reduced alpha
+   */
+  textSecondary(a: number = 0.7): string {
+    return this.colorAlpha('text', a);
+  }
+
+  /** Subtle text — for hints, placeholders, captions
+   *  Uses text color with low alpha
+   */
+  textSubtle(a: number = 0.45): string {
+    return this.colorAlpha('text', a);
   }
 
   /** Get a color by token key (e.g., 'y' → '#f9c12e') */
@@ -63,5 +103,24 @@ export class TokenResolver {
   /** Get raw tokens */
   get raw(): DesignTokens {
     return this.tokens;
+  }
+
+  /** Surface/card background — adapts to theme */
+  surface(a: number = 1): string {
+    return this.colorAlpha('card', a);
+  }
+
+  /** Subtle background for inset areas — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light */
+  subtleBg(opacity: number): string {
+    return this.isDark()
+      ? `rgba(255,255,255,${opacity})`
+      : `rgba(0,0,0,${opacity})`;
+  }
+
+  /** Subtle border — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light */
+  subtleBorder(opacity: number): string {
+    return this.isDark()
+      ? `rgba(255,255,255,${opacity})`
+      : `rgba(0,0,0,${opacity})`;
   }
 }

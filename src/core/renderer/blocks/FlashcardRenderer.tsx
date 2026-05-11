@@ -33,8 +33,8 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
 
   return (
     <div className={isCompact ? 'mt-2' : 'mt-4'}>
-      <div className="text-[10px] font-extrabold uppercase tracking-wider mb-3"
-        style={{ color: tokens.color('y') }}>
+      <div className="font-extrabold uppercase tracking-wider mb-3"
+        style={{ fontSize: '12px', color: tokens.color('y') }}>
         🃏 Kartu Kilat — Uji Ingatanmu
       </div>
       <div className={`rounded-xl ${interactive ? 'cursor-pointer' : ''}`}
@@ -57,9 +57,9 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
           <div className="flex items-center gap-2 mb-2">
             <div className="w-6 h-6 rounded-full flex items-center justify-center"
               style={{ background: tokens.colorAlpha('y', 0.2) }}>
-              <span className="text-[10px]">❓</span>
+              <span style={{ fontSize: '12px' }}>❓</span>
             </div>
-            <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: tokens.color('y') }}>Pertanyaan</div>
+            <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color: tokens.color('y') }}>Pertanyaan</div>
           </div>
           <InlineTextEditor
             {...qEditor}
@@ -82,7 +82,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
                 style={{ background: tokens.colorAlpha('g', 0.2) }}>
                 <CheckCircle2 size={10} className="inline" />
               </div>
-              <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: tokens.color('g') }}>Jawaban</div>
+              <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color: tokens.color('g') }}>Jawaban</div>
             </div>
             <InlineTextEditor
               {...aEditor}
@@ -96,8 +96,9 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
 
       {/* Nav */}
       <div className="flex items-center justify-between mt-3">
-        <button className="px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-105"
+        <button className="px-3 py-1.5 rounded-full font-bold transition-all hover:scale-105"
           style={{
+            fontSize: '12px',
             background: tokens.colorAlpha('y', 0.15),
             color: tokens.color('y'),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
@@ -109,13 +110,14 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
           {cards.map((_, i) => (
             <div key={i} className="w-2 h-2 rounded-full transition-all"
               style={{
-                background: i === idx ? tokens.color('y') : i < idx ? tokens.color('g') : 'rgba(255,255,255,.12)',
+                background: i === idx ? tokens.color('y') : i < idx ? tokens.color('g') : tokens.subtleBg(0.12),
                 boxShadow: i === idx ? '0 0 8px ' + tokens.colorAlpha('y', 0.5) : 'none',
               }} />
           ))}
         </div>
-        <button className="px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-105"
+        <button className="px-3 py-1.5 rounded-full font-bold transition-all hover:scale-105"
           style={{
+            fontSize: '12px',
             background: tokens.colorAlpha('y', 0.15),
             color: tokens.color('y'),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),

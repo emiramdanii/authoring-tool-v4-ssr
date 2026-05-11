@@ -26,13 +26,14 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
 
   return (
     <button onClick={onActivate}
-      className={`relative px-3.5 py-1.5 rounded-full text-[10px] font-extrabold transition-all ${
+      className={`relative px-3.5 py-1.5 rounded-full font-extrabold transition-all ${
         isActive ? 'scale-105' : 'opacity-60 hover:opacity-90'
       }`}
       style={{
-        background: isActive ? tokens.color('y') : 'rgba(255,255,255,.06)',
-        color: isActive ? tokens.color('bg') : tokens.colorAlpha('muted', 0.6),
-        border: '1px solid ' + (isActive ? tokens.color('y') : 'rgba(255,255,255,.1)'),
+        fontSize: '12px',
+        background: isActive ? tokens.color('y') : tokens.subtleBg(0.06),
+        color: isActive ? tokens.color('bg') : tokens.muted(0.6),
+        border: '1px solid ' + (isActive ? tokens.color('y') : tokens.subtleBorder(0.1)),
         boxShadow: isActive ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : 'none',
       }}>
       {tab.icon} <InlineTextEditor {...labelEditor} style={{ color: 'inherit', fontSize: 'inherit' }} />
@@ -80,7 +81,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
       {tab && (
         <div className="mt-3 rounded-xl p-3"
           style={{
-            background: 'rgba(255,255,255,.04)',
+            background: tokens.subtleBg(0.04),
             border: '1px solid ' + tokens.colorAlpha('y', 0.15),
             animation: 'fadeIn 0.3s ease',
           }}>
@@ -94,7 +95,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
       {block.showProgress && tabs.length > 0 && (
         <div className="mt-3 flex items-center gap-2">
           <div className="flex-1 h-1.5 rounded-full overflow-hidden"
-            style={{ background: 'rgba(255,255,255,.08)' }}>
+            style={{ background: tokens.subtleBg(0.08) }}>
             <div className="h-full rounded-full transition-all"
               style={{
                 width: (readTabs.size / tabs.length) * 100 + '%',
@@ -102,7 +103,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
                 boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.4),
               }} />
           </div>
-          <span className="text-[10px] font-bold" style={{ color: tokens.color('g') }}>
+          <span className="font-bold" style={{ fontSize: '12px', color: tokens.color('g') }}>
             {readTabs.size}/{tabs.length}
           </span>
         </div>

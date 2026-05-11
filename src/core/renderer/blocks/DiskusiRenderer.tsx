@@ -9,7 +9,6 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing }: {
   block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
-  // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',
@@ -34,48 +33,53 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-full flex items-center justify-center"
           style={{ background: tokens.colorAlpha('c', 0.2), boxShadow: '0 4px 12px ' + tokens.colorAlpha('c', 0.25) }}>
-          <MessageCircle size={14} className="inline" />
+          <MessageCircle size={14} className="inline" style={{ color: tokens.color('c') }} />
         </div>
-        <div className="text-[12px] font-extrabold" style={{ color: tokens.color('c') }}>
+        <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '12px' : '14px' }}>
           <InlineTextEditor
             {...titleEditor}
-            className="text-[12px] font-extrabold"
+            className="font-extrabold"
             style={{ color: tokens.color('c'), fontSize: 'inherit' }}
           />
         </div>
       </div>
       {block.intro && <InlineTextEditor
         {...introEditor}
-        className="text-[11px] mt-1 leading-relaxed font-bold mb-3"
-        style={{ fontSize: 'inherit' }}
+        className="mt-1 leading-relaxed font-bold mb-3"
+        style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text') }}
         placeholder="Ketik intro..."
       />}
 
       {(block.questions || []).map((q, i) => {
         const qColor = q.color || 'c';
         return (
-        <div key={i} className="mt-4 rounded-xl p-3"
+        <div key={i} className="mt-4 rounded-xl p-3 min-w-0"
           style={{
-            background: 'rgba(255,255,255,.05)',
+            background: tokens.subtleBg(0.05),
             border: '1px solid ' + tokens.colorAlpha(qColor, 0.15),
             borderLeft: '3px solid ' + tokens.color(qColor),
           }}>
           <div className="flex items-center gap-2">
-            <span className="text-base">{q.icon}</span>
-            <span className="text-[11px] font-extrabold" style={{ color: tokens.color(qColor) }}>{q.label}</span>
+            <span style={{ fontSize: isCompact ? '14px' : '16px' }}>{q.icon}</span>
+            <span className="font-extrabold" style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>{q.label}</span>
           </div>
-          <p className="text-[11px] mt-1.5 leading-relaxed font-bold">{q.teks}</p>
+          <p className="mt-1.5 leading-relaxed font-bold" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text') }}>{q.teks}</p>
           {interactive ? (
-            <textarea className="w-full mt-2 rounded-lg p-2.5 text-[11px] text-white resize-y min-h-[60px]"
+            <textarea className="w-full mt-2 rounded-lg p-2.5 resize-y"
               style={{
-                background: 'rgba(255,255,255,.06)',
+                fontSize: isCompact ? '11px' : '13px',
+                color: tokens.color('text'),
+                background: tokens.subtleBg(0.06),
                 border: '1px solid ' + tokens.colorAlpha(qColor, 0.2),
+                minHeight: isCompact ? '40px' : '60px',
               }}
               placeholder={q.petunjuk} />
           ) : (
-            <div className="w-full mt-2 rounded-lg p-2.5 text-[10px] text-white/30 min-h-[40px]"
+            <div className="w-full mt-2 rounded-lg p-2.5 min-h-[40px]"
               style={{
-                background: 'rgba(255,255,255,.03)',
+                fontSize: isCompact ? '10px' : '12px',
+                color: tokens.textSubtle(0.5),
+                background: tokens.subtleBg(0.03),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
               }}>
               {q.petunjuk}

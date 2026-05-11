@@ -95,6 +95,8 @@ export interface CanvaState {
   setOverlay: (val: number) => void;
   /** Update schema-driven page background (type, color1, color2, imageUrl, overlay) */
   updateScreenBackground: (updates: Partial<NonNullable<import('@/core/schema/types').ScreenSchema['background']>>) => void;
+  /** Change the theme preset for the current page */
+  setSchemaThemeId: (themeId: string) => void;
 
   // ── Actions: Color Palette ───────────────────────────────────
   extractAndSetPalette: (dataUrl: string) => void;

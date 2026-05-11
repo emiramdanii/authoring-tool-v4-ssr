@@ -18,20 +18,25 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
     value: block.content ?? '',
     tag: 'span',
   });
+
   return (
-    <div className={isCompact ? 'rounded-lg p-2.5 my-2' : 'rounded-lg p-4 my-3'}
+    <div
       style={{
-        borderLeft: (isCompact ? 3 : 4) + 'px solid ' + borderColor,
+        borderLeft: `${isCompact ? 3 : 4}px solid ${borderColor}`,
         background: tokens.colorAlpha(colorKey, 0.1),
-        borderRadius: '0 ' + tokens.radius('xl') + 'px ' + tokens.radius('xl') + 'px 0',
-        fontSize: isCompact ? '10px' : '0.91rem',
+        borderRadius: `0 ${tokens.radius('xl')}px ${tokens.radius('xl')}px 0`,
+        fontSize: isCompact ? '12px' : '14.5px',
         lineHeight: 1.7,
         boxShadow: tokens.raw.shadow.card,
+        padding: isCompact ? '10px 12px' : '13px 15px',
+        margin: isCompact ? '6px 0' : '13px 0',
+        overflow: 'hidden',
+        color: tokens.color('text'),
       }}>
       <InlineTextEditor
         {...contentEditor}
         className=""
-        style={{ fontSize: 'inherit', lineHeight: 'inherit' }}
+        style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
       />
     </div>
   );

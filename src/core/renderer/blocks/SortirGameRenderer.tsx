@@ -36,8 +36,8 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
           style={{ background: tokens.colorAlpha(kolomDef.color, 0.2) }}>
           <FolderOpen size={12} className="inline" />
         </div>
-        <div className="text-[10px] font-extrabold uppercase tracking-wider"
-          style={{ color: tokens.color(kolomDef.color) }}>
+        <div className="font-extrabold uppercase tracking-wider"
+          style={{ fontSize: '12px', color: tokens.color(kolomDef.color) }}>
           <InlineTextEditor
             {...labelEditor}
             className="text-[10px] font-extrabold uppercase tracking-wider"
@@ -48,8 +48,9 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
       </div>
       <div className="flex flex-wrap gap-1.5">
         {kolomItems.map((text, i) => (
-          <span key={i} className="px-2.5 py-1 rounded-full text-[9px] font-bold"
+          <span key={i} className="px-2.5 py-1 rounded-full font-bold"
             style={{
+              fontSize: '11px',
               background: tokens.colorAlpha(kolomDef.color, 0.2),
               color: tokens.color(kolomDef.color),
               border: '1px solid ' + tokens.colorAlpha(kolomDef.color, 0.3),
@@ -119,11 +120,11 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('y') }}>
           Semua Benar!
         </div>
-        <div className="text-[11px] text-white/55 mb-4">
+        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
           {totalItems} item berhasil dikelompokkan dengan tepat!
         </div>
         {interactive && (
-          <button className="px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+          <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => {
               setPoolState(pool.map(p => ({ ...p, placed: false })));
               const init: Record<string, string[]> = {};
@@ -132,6 +133,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
               setSelected(null);
             }}
             style={{
+              fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
@@ -151,16 +153,17 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
           borderColor: tokens.colorAlpha('y', 0.25),
           background: tokens.colorAlpha('y', 0.04),
         }}>
-        <div className="w-full text-[9px] font-extrabold uppercase tracking-wider mb-2" style={{ color: tokens.color('y') }}>
+        <div className="w-full font-extrabold uppercase tracking-wider mb-2" style={{ fontSize: '11px', color: tokens.color('y') }}>
           <Package size={14} className="inline" /> Pilih Item ({totalPlaced}/{totalItems})
         </div>
         {poolState.filter(p => !p.placed).map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
-            className="px-3.5 py-2 rounded-full text-[10px] font-extrabold transition-all hover:scale-105"
+            className="px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105"
             style={{
-              background: selected === p.id ? tokens.colorAlpha('y', 0.2) : 'rgba(255,255,255,.07)',
-              border: '2px solid ' + (selected === p.id ? tokens.color('y') : 'rgba(255,255,255,.15)'),
+              background: selected === p.id ? tokens.colorAlpha('y', 0.2) : tokens.subtleBg(0.07),
+              border: '2px solid ' + (selected === p.id ? tokens.color('y') : tokens.subtleBorder(0.15)),
               boxShadow: selected === p.id ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : tokens.raw.shadow.card,
+              fontSize: '12px',
               animation: selected === p.id ? 'pulse 1.5s ease-in-out infinite' : 'none',
             }}>
             {p.text}

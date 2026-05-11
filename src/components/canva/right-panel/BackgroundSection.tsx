@@ -6,6 +6,7 @@ import { GRADIENT_PRESETS } from '../types';
 import Section from './Section';
 import type { CanvaPage } from '../types';
 import type { ScreenSchema } from '@/core/schema/types';
+import { THEME_PRESETS } from '@/core/themes/tokens';
 
 /** Schema background type for updates */
 type SchemaBg = NonNullable<ScreenSchema['background']>;
@@ -17,6 +18,10 @@ interface BackgroundSectionProps {
   setOverlay: (value: number) => void;
   /** Update schema-driven page background */
   updateScreenBackground: (updates: Partial<SchemaBg>) => void;
+  /** Current theme ID */
+  schemaThemeId?: string;
+  /** Change the theme preset */
+  onThemeChange: (themeId: string) => void;
   collapsed: boolean;
   onToggle: () => void;
 }
@@ -27,6 +32,8 @@ export default function BackgroundSection({
   setBgImage,
   setOverlay,
   updateScreenBackground,
+  schemaThemeId,
+  onThemeChange,
   collapsed,
   onToggle,
 }: BackgroundSectionProps) {
@@ -90,6 +97,27 @@ export default function BackgroundSection({
         collapsed={collapsed}
         onToggle={onToggle}
       >
+        {/* Theme preset selector */}
+        <div className="mb-3">
+          <label className="text-[10px] text-app-muted block mb-1">🎨 Tema Warna</label>
+          <div className="grid grid-cols-3 gap-1">
+            {THEME_PRESETS.map(t => (
+              <button
+                key={t.id}
+                onClick={() => onThemeChange(t.id)}
+                className={`py-1.5 px-1 rounded-lg text-[8px] font-bold transition-all border ${
+                  schemaThemeId === t.id || (!schemaThemeId && t.id === 'default')
+                    ? 'border-app-accent bg-app-accent/20 text-app-accent'
+                    : 'border-app-border bg-app-elevated text-app-muted hover:border-app-border-strong'
+                }`}
+                title={t.name}
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Background type selector */}
         <div className="mb-2">
           <label className="text-[10px] text-app-muted block mb-1">Tipe Background</label>

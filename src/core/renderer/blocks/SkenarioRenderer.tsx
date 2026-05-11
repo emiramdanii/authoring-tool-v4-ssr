@@ -86,19 +86,19 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
           <div className="font-black text-lg mb-2" style={{ fontFamily: tokens.fontFamily('display'), color: yellow }}>
             Skenario Selesai!
           </div>
-          <div className="text-[11px] text-white/55 mb-4">
+          <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
             Kamu telah menyelesaikan semua {chapters.length} babak skenario.
           </div>
           {/* Score summary */}
           <div className="inline-flex items-center gap-3">
             <div className="px-4 py-2 rounded-xl"
               style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
-              <div className="text-[10px] font-extrabold" style={{ color: green }}>Skor</div>
+              <div className="font-extrabold" style={{ color: green, fontSize: '12px' }}>Skor</div>
               <div className="font-black text-lg" style={{ color: green }}>{totalPts}/{totalMax}</div>
             </div>
             <div className="px-4 py-2 rounded-xl"
               style={{ background: tokens.colorAlpha('y', 0.12), border: '1px solid ' + tokens.colorAlpha('y', 0.3) }}>
-              <div className="text-[10px] font-extrabold" style={{ color: yellow }}>Pilihan Baik</div>
+              <div className="font-extrabold" style={{ color: yellow, fontSize: '12px' }}>Pilihan Baik</div>
               <div className="font-black text-lg" style={{ color: yellow }}>{history.filter(h => h.good).length}/{chapters.length}</div>
             </div>
           </div>
@@ -126,10 +126,10 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
                 const isNarrator = line.speaker.toUpperCase() === 'NARRATOR' || line.speaker.toUpperCase() === 'NARATOR';
                 return (
                   <div key={i} className={`flex gap-2 ${isNarrator ? 'italic' : ''}`}>
-                    <span className={`text-[10px] font-bold flex-shrink-0 mt-0.5 ${isNarrator ? 'text-white/40' : 'text-pink-300'}`}>
+                    <span className="font-bold flex-shrink-0 mt-0.5" style={{ fontSize: '12px', color: isNarrator ? tokens.textSubtle(0.4) : tokens.color('r') }}>
                       {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
-                    <span className={`text-[11px] leading-relaxed ${isNarrator ? 'text-white/50' : 'text-white/75'}`}>
+                    <span className="leading-relaxed" style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.5) : tokens.textSecondary(0.75) }}>
                       {line.text}
                     </span>
                   </div>
@@ -140,8 +140,8 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
 
           {/* Choice prompt */}
           {ch.choicePrompt && (
-            <div className="text-[10px] text-white/60 italic mb-3 p-2.5 rounded-lg"
-              style={{
+            <div className="italic mb-3 p-2.5 rounded-lg" style={{
+                fontSize: '12px', color: tokens.muted(0.7),
                 background: tokens.colorAlpha('c', 0.08),
                 border: '1px solid ' + tokens.colorAlpha('c', 0.2),
               }}>
@@ -156,28 +156,28 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
                 <button key={j} onClick={() => handleChoice(j)}
                   className="w-full flex items-start gap-2.5 px-4 py-3 rounded-xl text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
                   style={{
-                    background: 'rgba(255,255,255,.05)',
-                    border: `1px solid rgba(255,255,255,.12)`,
+                    background: tokens.subtleBg(0.05),
+                    border: `1px solid ${tokens.subtleBorder(0.12)}`,
                     boxShadow: tokens.raw.shadow.card,
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-bold text-white">{c.label}</div>
-                    {c.detail && <div className="text-[10px] text-white/40 mt-0.5 line-clamp-2">{c.detail}</div>}
+                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text') }}>{c.label}</div>
+                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4) }}>{c.detail}</div>}
                   </div>
                 </button>
               ) : (
                 <div key={j}
                   className="w-full flex items-start gap-2.5 px-4 py-3 rounded-xl text-left"
                   style={{
-                    background: 'rgba(255,255,255,.05)',
-                    border: `1px solid rgba(255,255,255,.12)`,
+                    background: tokens.subtleBg(0.05),
+                    border: `1px solid ${tokens.subtleBorder(0.12)}`,
                     boxShadow: tokens.raw.shadow.card,
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-bold text-white">{c.label}</div>
-                    {c.detail && <div className="text-[10px] text-white/40 mt-0.5 line-clamp-2">{c.detail}</div>}
+                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text') }}>{c.label}</div>
+                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4) }}>{c.detail}</div>}
                   </div>
                 </div>
               )
@@ -206,10 +206,10 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
           {selectedChoice.choice.resultBody && (
             <div className="p-3 rounded-xl"
               style={{
-                background: 'rgba(255,255,255,.05)',
-                border: '1px solid rgba(255,255,255,.1)',
+                background: tokens.subtleBg(0.05),
+                border: '1px solid ' + tokens.subtleBorder(0.1),
               }}>
-              <div className="text-[10px] text-white/75 leading-relaxed">{selectedChoice.choice.resultBody}</div>
+              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.textSecondary(0.75) }}>{selectedChoice.choice.resultBody}</div>
             </div>
           )}
 
@@ -217,19 +217,19 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
             <div className="p-3 rounded-xl"
               style={{ background: tokens.colorAlpha('y', 0.1), border: '1px solid ' + tokens.colorAlpha('y', 0.25) }}>
               <div className="text-[10px] font-bold mb-0.5" style={{ color: yellow }}><ScrollText size={14} className="inline" /> Kaitan Norma</div>
-              <div className="text-[10px] text-white/65 leading-relaxed">{selectedChoice.choice.norma}</div>
+              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.textSecondary(0.65) }}>{selectedChoice.choice.norma}</div>
             </div>
           )}
 
           {selectedChoice.choice.consequences && selectedChoice.choice.consequences.length > 0 && (
             <div className="p-3 rounded-xl"
               style={{
-                background: 'rgba(255,255,255,.05)',
-                border: '1px solid rgba(255,255,255,.1)',
+                background: tokens.subtleBg(0.05),
+                border: '1px solid ' + tokens.subtleBorder(0.1),
               }}>
-              <div className="text-[10px] font-bold text-white/50 mb-1.5"><Bell size={14} className="inline" /> Dampak</div>
+              <div className="font-bold mb-1.5" style={{ fontSize: '12px', color: tokens.textSubtle(0.5) }}><Bell size={14} className="inline" /> Dampak</div>
               {selectedChoice.choice.consequences.map((con, k) => (
-                <div key={k} className="flex items-start gap-1.5 text-[10px] text-white/60 leading-relaxed mb-1">
+                <div key={k} className="flex items-start gap-1.5 leading-relaxed mb-1" style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
                   <span className="mt-px">{con.icon}</span> {con.text}
                 </div>
               ))}

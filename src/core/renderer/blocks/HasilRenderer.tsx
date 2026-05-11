@@ -8,15 +8,11 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 export function HasilRenderer({ block, tokens, interactive, isEditing }: {
   block: HasilBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean;
 }) {
-  // Read score from interactive store when available
-  const totalScoreVal = interactive ? 0 : 0; // Score comes from HasilPage wrapper
+  const totalScoreVal = interactive ? 0 : 0;
   const totalMaxVal = interactive ? 100 : 100;
   const pct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 75;
-
-  // Fallback: use 75% as default visual when no score data
   const displayPct = pct || 75;
 
-  // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',
@@ -49,17 +45,17 @@ export function HasilRenderer({ block, tokens, interactive, isEditing }: {
         </div>
       </div>
 
-      <h2 className="font-black text-lg" style={{ fontFamily: tokens.fontFamily('display') }}>
+      <h2 className="font-black text-lg" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black text-lg"
-          style={{ fontFamily: 'inherit', fontSize: 'inherit' }}
+          style={{ fontFamily: 'inherit', fontSize: 'inherit', color: 'inherit' }}
         />
       </h2>
       <InlineTextEditor
         {...subtitleEditor}
-        className="text-[11px] text-white/55 mt-1 max-w-[320px]"
-        style={{ fontSize: 'inherit' }}
+        className="mt-1 max-w-[320px]"
+        style={{ fontSize: '13px', color: tokens.muted(0.8) }}
         placeholder="Ketik subtitle..."
       />
 
@@ -71,7 +67,7 @@ export function HasilRenderer({ block, tokens, interactive, isEditing }: {
             border: '1px solid ' + tokens.colorAlpha('g', 0.3),
             boxShadow: tokens.raw.shadow.card,
           }}>
-          <div className="text-[10px] font-extrabold" style={{ color: tokens.color('g') }}>Selesai!</div>
+          <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: '11px' }}>Selesai!</div>
           <div className="font-black text-sm" style={{ color: tokens.color('g') }}>🎉</div>
         </div>
         <div className="px-4 py-2 rounded-xl text-center"
@@ -80,7 +76,7 @@ export function HasilRenderer({ block, tokens, interactive, isEditing }: {
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
             boxShadow: tokens.raw.shadow.card,
           }}>
-          <div className="text-[10px] font-extrabold" style={{ color: tokens.color('y') }}>Hasil</div>
+          <div className="font-extrabold" style={{ color: tokens.color('y'), fontSize: '11px' }}>Hasil</div>
           <div className="font-black text-sm" style={{ color: tokens.color('y') }}>⭐</div>
         </div>
       </div>

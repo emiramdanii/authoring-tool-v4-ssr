@@ -9,7 +9,6 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing }: {
   block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
-  // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',
@@ -26,46 +25,51 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
   return (
     <div>
       {block.title && (
-        <h2 className="font-black text-sm mb-1" style={{ fontFamily: tokens.fontFamily('display') }}>
+        <h2 className="font-black mb-1" style={{ fontFamily: tokens.fontFamily('display'), fontSize: isCompact ? '14px' : '18px', color: tokens.color('text') }}>
           <InlineTextEditor
             {...titleEditor}
-            className="font-black text-sm"
-            style={{ fontFamily: 'inherit', fontSize: 'inherit' }}
+            className="font-black"
+            style={{ fontFamily: 'inherit', fontSize: 'inherit', color: 'inherit' }}
           />
         </h2>
       )}
       {block.intro && <InlineTextEditor
         {...introEditor}
-        className="text-[10px] text-white/55 mb-3"
-        style={{ fontSize: 'inherit' }}
+        className="mb-3"
+        style={{ fontSize: isCompact ? '11px' : '13px', color: tokens.muted(0.8) }}
         placeholder="Ketik intro..."
       />}
 
       {(block.questions || []).map((q, i) => {
         const qColor = q.warna || 'y';
         return (
-          <div key={i} className="rounded-xl p-3.5 mb-3 transition-all hover:-translate-y-0.5"
+          <div key={i} className="rounded-xl p-3.5 mb-3 transition-all hover:-translate-y-0.5 min-w-0"
             style={{
               background: tokens.colorAlpha(qColor, 0.06),
               border: '1px solid ' + tokens.colorAlpha(qColor, 0.2),
               borderLeft: '4px solid ' + tokens.color(qColor),
               boxShadow: tokens.raw.shadow.card,
             }}>
-            <label className="text-[11px] font-extrabold block mb-2"
-              style={{ color: tokens.color(qColor) }}>
+            <label className="font-extrabold block mb-2"
+              style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>
               {q.icon && <span className="mr-1">{q.icon}</span>} {q.teks}
             </label>
             {interactive ? (
-              <textarea className="w-full rounded-lg p-2.5 text-[11px] text-white resize-y min-h-[50px]"
+              <textarea className="w-full rounded-lg p-2.5 resize-y"
                 style={{
-                  background: 'rgba(255,255,255,.06)',
+                  fontSize: isCompact ? '11px' : '13px',
+                  color: tokens.color('text'),
+                  background: tokens.subtleBg(0.06),
                   border: '1px solid ' + tokens.colorAlpha(qColor, 0.2),
+                  minHeight: isCompact ? '40px' : '50px',
                 }}
                 placeholder={q.petunjuk} />
             ) : (
-              <div className="w-full mt-1 rounded-lg p-2.5 text-[10px] text-white/30 min-h-[40px]"
+              <div className="w-full mt-1 rounded-lg p-2.5 min-h-[40px]"
                 style={{
-                  background: 'rgba(255,255,255,.03)',
+                  fontSize: isCompact ? '10px' : '12px',
+                  color: tokens.textSubtle(0.4),
+                  background: tokens.subtleBg(0.03),
                   border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
                 }}>
                 {q.petunjuk}
@@ -86,14 +90,14 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{ background: tokens.colorAlpha('p', 0.2), boxShadow: '0 4px 12px ' + tokens.colorAlpha('p', 0.25) }}>
-              <PenLine size={14} className="inline" />
+              <PenLine size={14} className="inline" style={{ color: tokens.color('p') }} />
             </div>
-            <div className="text-[11px] font-extrabold" style={{ color: tokens.color('p') }}>{block.penugasan.judul}</div>
+            <div className="font-extrabold" style={{ color: tokens.color('p'), fontSize: isCompact ? '12px' : '14px' }}>{block.penugasan.judul}</div>
           </div>
-          <div className="text-[10px] text-white/60 leading-relaxed">{block.penugasan.isi}</div>
+          <div className="leading-relaxed" style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{block.penugasan.isi}</div>
           {block.penugasan.contoh && (
-            <div className="mt-2 text-[10px] text-white/40 italic p-2 rounded-lg"
-              style={{ background: tokens.colorAlpha('p', 0.06) }}>
+            <div className="mt-2 italic p-2 rounded-lg"
+              style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.textSubtle(0.5), background: tokens.colorAlpha('p', 0.06) }}>
               Contoh: {block.penugasan.contoh}
             </div>
           )}

@@ -36,6 +36,7 @@ export default function RightPanel() {
     setBgImage,
     setOverlay,
     updateScreenBackground,
+    setSchemaThemeId,
     updateElement,
     deleteSelected,
     updateNavConfig,
@@ -132,6 +133,8 @@ export default function RightPanel() {
         setBgImage={setBgImage}
         setOverlay={setOverlay}
         updateScreenBackground={updateScreenBackground}
+        schemaThemeId={(page?.templateData?.schemaThemeId as string) || undefined}
+        onThemeChange={setSchemaThemeId}
         collapsed={collapsed.bg}
         onToggle={() => toggleCollapse('bg')}
       />

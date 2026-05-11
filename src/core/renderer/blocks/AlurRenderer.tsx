@@ -8,7 +8,6 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
   block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
-  // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',
@@ -23,19 +22,20 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
   });
 
   return (
-    <div className={`mt-3 rounded-xl ${isCompact ? 'p-2' : 'p-4'}`}
+    <div className="mt-3 rounded-xl"
       style={{
+        padding: isCompact ? '8px' : '14px',
         background: tokens.colorAlpha('c', 0.08),
         border: '1px solid ' + tokens.colorAlpha('c', 0.2),
         boxShadow: tokens.raw.shadow.card,
       }}>
-      <div className="text-[10px] font-extrabold uppercase tracking-wider mb-3"
-        style={{ color: tokens.color('c') }}>
+      <div className="font-extrabold uppercase tracking-wider mb-3"
+        style={{ color: tokens.color('c'), fontSize: isCompact ? '10px' : '12px' }}>
         ⏱️ <InlineTextEditor {...titleEditor} /> — <InlineTextEditor {...durasiEditor} placeholder="Durasi..." />
       </div>
       <div className="flex flex-col gap-2">
         {(block.steps || []).map((step, i) => (
-          <div key={i} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5"
+          <div key={i} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5 min-w-0"
             style={{
               background: tokens.colorAlpha(step.dot, 0.08),
               border: '1px solid ' + tokens.colorAlpha(step.dot, 0.15),
@@ -43,12 +43,12 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
             }}>
             <div className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
               style={{ background: tokens.color(step.dot), boxShadow: '0 0 8px ' + tokens.colorAlpha(step.dot, 0.4) }} />
-            <span className="text-[11px] font-black min-w-[36px] flex-shrink-0 mt-0.5"
-              style={{ color: tokens.color(step.dot) }}>
+            <span className="font-black flex-shrink-0 mt-0.5"
+              style={{ color: tokens.color(step.dot), fontSize: isCompact ? '11px' : '13px', minWidth: isCompact ? '30px' : '36px' }}>
               {step.durasi}
             </span>
-            <span className="text-[10px] leading-relaxed">
-              <strong className="text-white">{step.judul}</strong> — {step.deskripsi}
+            <span className="leading-relaxed min-w-0" style={{ fontSize: isCompact ? '11px' : '13px' }}>
+              <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}>{step.deskripsi}</span>
             </span>
           </div>
         ))}

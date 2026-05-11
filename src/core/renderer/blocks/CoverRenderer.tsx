@@ -52,18 +52,18 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
         </div>
       </div>
 
-      <div className="text-[11px] font-extrabold tracking-widest uppercase"
-        style={{ color: c }}>
+      <div className="font-extrabold tracking-widest uppercase"
+        style={{ fontSize: '13px', color: c }}>
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
       {/* Title — inline editable when in editing mode */}
-      <h1 className="font-black text-white leading-tight mt-3"
-        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), textShadow: '0 2px 12px rgba(0,0,0,.5)' }}>
+      <h1 className="font-black leading-tight mt-3"
+        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px rgba(0,0,0,.5)' }}>
         <InlineTextEditor
           {...titleEditor}
-          className="font-black text-white leading-tight"
-          style={{ color: y, fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit' }}
+          className="font-black leading-tight"
+          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit' }}
         />
         {block.title.includes(' — ') && <><br /><span>{block.title.split(' — ')[1]}</span></>}
       </h1>
@@ -71,8 +71,8 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
       {/* Subtitle — inline editable when in editing mode */}
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-3 max-w-[380px] text-white/70"
-        style={{ fontSize: 'clamp(11px, 1.8vw, 16px)' }}
+        className="mt-3 max-w-[380px]"
+        style={{ fontSize: 'clamp(11px, 1.8vw, 16px)', color: tokens.textSecondary(0.7) }}
         placeholder="Ketik subtitle..."
       />
 
@@ -80,8 +80,9 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
       {block.badges && block.badges.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           {block.badges.map((b, i) => (
-            <span key={i} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-bold"
+            <span key={i} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold"
               style={{
+                fontSize: '12px',
                 background: tokens.colorAlpha(b.color, 0.2),
                 color: tokens.color(b.color),
                 border: '1px solid ' + tokens.colorAlpha(b.color, 0.35),
@@ -96,8 +97,10 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
 
       {/* Meta — glass card */}
       {block.meta && (
-        <div className="mt-5 px-4 py-2.5 rounded-xl text-[10px] text-white/60"
+        <div className="mt-5 px-4 py-2.5 rounded-xl"
           style={{
+            fontSize: '12px',
+            color: tokens.muted(0.8),
             background: tokens.colorAlpha('c', 0.08),
             border: '1px solid ' + tokens.colorAlpha('c', 0.2),
             backdropFilter: 'blur(8px)',

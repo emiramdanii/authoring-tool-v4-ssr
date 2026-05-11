@@ -29,8 +29,9 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
   });
 
   return (
-    <div className="rounded-xl p-2.5"
+    <div className="rounded-xl p-2.5 min-w-0"
       style={{
+        fontSize: '12px',
         background: tokens.colorAlpha(rowColor, 0.08),
         border: '1px solid ' + tokens.colorAlpha(rowColor, 0.12),
       }}>
@@ -73,7 +74,8 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle }: {
         background: isOpen ? tokens.colorAlpha(row.color, 0.08) : tokens.colorAlpha(row.color, 0.04),
         boxShadow: tokens.raw.shadow.card,
       }}>
-      <button className="w-full flex items-center gap-2.5 p-3 font-extrabold text-[11px] cursor-pointer transition-all hover:bg-white/[0.03]"
+      <button className="w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer transition-all hover:bg-white/[0.03]"
+        style={{ fontSize: '13px' }}
         onClick={onToggle}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ background: tokens.colorAlpha(row.color, 0.2), boxShadow: '0 2px 8px ' + tokens.colorAlpha(row.color, 0.2) }}>
@@ -85,8 +87,8 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle }: {
           style={{ color: tokens.color(row.color), fontSize: 'inherit' }}
           placeholder="Ketik judul baris..."
         />
-        <span className="ml-auto text-[10px] transition-transform duration-300"
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
+        <span className="ml-auto transition-transform duration-300"
+          style={{ fontSize: '12px', transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
       </button>
       {isOpen && (
         <div className="px-3.5 pb-3.5"

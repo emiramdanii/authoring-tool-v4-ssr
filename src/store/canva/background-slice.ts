@@ -12,7 +12,7 @@ export type BackgroundSlice = Pick<
   | 'setBgColor' | 'setBgImage' | 'setOverlay'
   | 'extractAndSetPalette' | 'setPaletteMapping'
   | 'updateNavConfig' | 'updateTemplateData'
-  | 'updateScreenBackground'
+  | 'updateScreenBackground' | 'setSchemaThemeId'
 >;
 
 export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundSlice> = (set, get) => ({
@@ -121,6 +121,24 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
           type: page.schema.background?.type || 'solid',
           ...updates,
         },
+      },
+    };
+    set({ pages: newPages });
+  },
+
+  // ── Schema Theme ID action ────────────────────────────────
+  // Changes the theme preset for the current page.
+  // Stored in page.templateData.schemaThemeId for backward compat.
+  setSchemaThemeId: (themeId: string) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...(page.templateData || {}),
+        schemaThemeId: themeId,
       },
     };
     set({ pages: newPages });
