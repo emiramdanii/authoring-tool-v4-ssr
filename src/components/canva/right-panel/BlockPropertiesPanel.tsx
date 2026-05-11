@@ -24,9 +24,8 @@ import { getBlockDefinition, getBlockCapabilities } from '@/core/registry/SceneR
 import { getPropertySchema } from '@/core/editor/property-schemas';
 import type { PropertyField, PropertySchema } from '@/core/editor/types';
 import { Settings2, X, Type, AlignLeft, List, Palette, LayoutGrid, HelpCircle, BookOpen, Hash, ToggleLeft, ChevronDown } from 'lucide-react';
-import type { SchemaBlock } from '@/core/schema/types';
-import type { ScreenSchema } from '@/core/schema/types';
-import { convertToSchema } from '@/core/engine/TemplateAdapter';
+import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { useMemo, useState } from 'react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -46,22 +45,14 @@ function useSelectedBlock(): { block: SchemaBlock | null; schema: ScreenSchema |
   const schema = useMemo<ScreenSchema | null>(() => {
     if (!page || !selectedBlockId) return null;
 
-    // Priority 1: schemaScreen already stored in templateData (preset pages)
-    const storedSchema = page.templateData?.schemaScreen as ScreenSchema | undefined;
-    if (storedSchema) return storedSchema;
-
-    // Priority 2: Convert legacy page via TemplateAdapter (adapted pages)
-    const isTemplate = page.templateType && page.templateType !== 'custom';
-    if (isTemplate) {
-      return convertToSchema(page);
-    }
-
-    return null;
+    // ═══ SCHEMA-FIRST: Use ensurePageSchema() ═════════════════
+    // This lazily migrates legacy pages on first access.
+    return ensurePageSchema(page);
   }, [page, selectedBlockId]);
 
   if (!selectedBlockId || !schema) return { block: null, schema: null };
 
-  // Find block by ID, or fall back to matching by type (for blocks without explicit id)
+  // Find block by ID
   const block = schema.blocks.find(b => b.id === selectedBlockId)
     ?? schema.blocks.find(b => (b.id || b.type) === selectedBlockId)
     ?? null;

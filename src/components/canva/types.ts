@@ -110,6 +110,12 @@ export interface CanvaPage {
   // false = template frozen, all elements draggable (data binding broken)
   // undefined = same as true for backward compat
   locked?: boolean;
+  // ── Schema-first (FASE 1 — Schema as Canonical State) ──
+  // First-class ScreenSchema — the canonical runtime representation.
+  // When present, renderer uses this DIRECTLY (no TemplateAdapter needed).
+  // When absent, legacy pages are lazily migrated via ensurePageSchema().
+  // After save+load, legacy pages become native schema pages automatically.
+  schema?: import('@/core/schema/types').ScreenSchema;
 }
 
 export type LeftTab = 'halaman' | 'tambah' | 'layer';

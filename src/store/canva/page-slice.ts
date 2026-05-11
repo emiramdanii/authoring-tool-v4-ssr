@@ -12,6 +12,7 @@ import {
 } from '@/lib/canva-constants';
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, buildTemplateData, getTemplateExtraProps } from './template-data';
+import { generatePageId } from '@/core/schema/ensure-schema';
 
 export type PageSlice = Pick<
   CanvaState,
@@ -55,7 +56,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const { pages, currentPageIndex } = get();
     const orig = pages[currentPageIndex];
     const clone: CanvaPage = structuredClone(orig);
-    clone.id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    clone.id = generatePageId();
     clone.label = orig.label + ' (Salinan)';
     clone.elements.forEach((el: CanvaElement) => {
       el.id = createElId();

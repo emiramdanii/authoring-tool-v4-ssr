@@ -6,7 +6,8 @@ import { PageFrame, type PageFrameMode } from './PageFrame';
 import { BlockRenderer, type BlockRendererMode } from './BlockRenderer';
 import { SchemaScreenRenderer, TokenResolver, type SchemaRenderMode } from '@/core/renderer/SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
-import { convertToSchema, paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
+import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
 
 // ═══════════════════════════════════════════════════════════════
@@ -72,23 +73,24 @@ export function PageRenderer({
   // Canvas mode: isSelected enables editable fields
   const isSelected = mode === 'canvas' && isTemplateSelected;
 
-  // ═══ UNIFIED RENDERING PIPELINE ════════════════════════════
-  // ALL template pages (locked & unlocked) go through SchemaRenderer.
+  // ═══ SCHEMA-FIRST RENDERING PIPELINE ══════════════════════
+  // FASE 1: Schema as Canonical State
+  // Priority: page.schema > templateData.schemaScreen > TemplateAdapter
+  // ensurePageSchema() handles lazy migration automatically.
+  // After migration, page.schema is the single source of truth.
 
-  const schemaScreen = page.templateData?.schemaScreen as ScreenSchema | undefined;
   const schemaThemeId = page.templateData?.schemaThemeId as string | undefined;
 
-  // Convert ALL template pages to schema on-the-fly (not just locked ones)
+  // Use ensurePageSchema() — the schema-first gateway
+  // This lazily migrates legacy pages on first read.
+  // After save, migrated pages become native schema pages.
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
-    // Already has schema from preset? Use it directly.
-    if (schemaScreen) return schemaScreen;
-    // Any template page? Convert it — locked OR unlocked.
-    // (isTemplate already means templateType !== 'custom')
-    if (isTemplate) {
-      return convertToSchema(page);
-    }
+    // Schema-first: page.schema is the canonical source
+    const schema = ensurePageSchema(page);
+    if (schema) return schema;
+    // Custom pages have no schema — return null
     return null;
-  }, [schemaScreen, isTemplate, templateType, page]);
+  }, [page.schema, page.templateData, isTemplate, templateType, page]);
 
   // Resolve tokens, applying palette overrides for legacy pages
   const tokens = React.useMemo(() => {

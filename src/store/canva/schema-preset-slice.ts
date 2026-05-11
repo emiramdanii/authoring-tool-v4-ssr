@@ -16,6 +16,7 @@ import type { CanvaState } from './types';
 import type { CanvaPage } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine';
+import { generatePageId } from '@/core/schema/ensure-schema';
 
 export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset'>;
 
@@ -37,8 +38,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       const rawPages = schemaToCanvaPages(schema);
 
       // Wrap into full CanvaPage objects (schemaToCanvaPages returns partial)
+      // FASE 1: Set page.schema as first-class field for schema-driven pages
       const pages: CanvaPage[] = rawPages.map((raw, i) => ({
-        id: raw.id || `p_${Date.now()}_${i}`,
+        id: raw.id || generatePageId(),
         label: raw.label,
         bgDataUrl: null,
         bgColor: raw.bgColor || '#0e1c2f',
@@ -49,6 +51,8 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         navConfig: { ...DEFAULT_NAV_CONFIG },
         templateData: raw.templateData,
         overlayElements: [],
+        // FASE 1: Promote schemaScreen to first-class page.schema
+        schema: raw.templateData?.schemaScreen as CanvaPage['schema'],
         // Schema-driven pages are locked (content from schema, not authoring store)
         locked: true,
       }));

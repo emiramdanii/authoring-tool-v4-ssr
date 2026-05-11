@@ -44,6 +44,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       const data = JSON.parse(raw);
       if (data.pages && Array.isArray(data.pages)) {
         // Ensure all pages have new fields (backward compat)
+        // FASE 1: Auto-migrate legacy pages on load — ensurePageSchema()
+        // will handle the rest at runtime, but we also proactively
+        // migrate here so page.schema is populated before first render.
         const pages = data.pages.map((p: CanvaPage) => ({
           ...p,
           templateType: p.templateType || 'custom',
@@ -64,6 +67,10 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           })),
           // v4: Migrate locked field — template pages without locked field default to locked
           locked: p.locked !== undefined ? p.locked : (p.templateType && p.templateType !== 'custom' ? true : undefined),
+          // FASE 1: Preserve page.schema if it was already migrated
+          // (saved as native schema page). This ensures that once a page
+          // is migrated, it stays native schema across sessions.
+          schema: p.schema || undefined,
         }));
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'halaman';

@@ -8,11 +8,11 @@ import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { CanvaElement } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
-import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
-import type { SchemaBlock } from '@/core/schema/types';
+import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
 import { editBus } from '@/core/editor/edit-bus';
 import { SCENE_REGISTRY } from '@/core/registry/SceneRegistry';
+import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
 
 export type UISlice = Pick<
   CanvaState,
@@ -121,50 +121,29 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // ── Schema Block Content Editing (DEEP PATCH MERGE) ──────────
   // This is THE core editing mechanism for the Visual Editing Engine.
   //
-  // Flow: UI editor → updateSchemaBlock(id, patch) → deep merge → schema store → renderer → rerender
+  // Flow: UI editor → updateSchemaBlock(id, patch) → deep merge → page.schema → renderer → rerender
   //
-  // Key improvements over the old shallow merge:
-  //   1. DEEP MERGE: { style: { color: '#fff' } } only updates style.color, not the entire style object
-  //   2. IMMUTABLE: Uses Immer for safe immutable updates with mutable draft API
-  //   3. UNDO-FRIENDLY: Patches can be reversed (future: store patches, not full snapshots)
-  //   4. COLLAB-READY: Partial updates make collaboration possible (merge patches from multiple users)
-  //   5. PATCH-BASED: Uses produceWithPatches to capture forward+inverse immer patches
-  //      for memory-efficient undo/redo via PatchHistory
+  // FASE 1: Now edits page.schema directly (not templateData.schemaScreen).
+  // ensurePageSchema() handles lazy migration from legacy pages automatically.
+  // After first edit, page.schema is populated and becomes canonical.
   //
-  // For pages without an existing schemaScreen (legacy adapted pages),
-  // this "freezes" the adapted schema into templateData on first edit.
+  // Key improvements:
+  //   1. DEEP MERGE via Immer
+  //   2. IMMUTABLE updates
+  //   3. PATCH-BASED undo/redo via PatchHistory
+  //   4. SCHEMA-FIRST: Edits go to page.schema, NOT templateData
   updateSchemaBlock: (blockId, updates) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
-    // Freeze adapted schema on first edit of legacy page
-    if (!page.templateData?.schemaScreen) {
-      const adapted = convertToSchema(page);
-      if (!adapted) return; // custom pages can't be edited this way
-      // Assign stable IDs to blocks that don't have one
-      const stabilized = produce(adapted, (draft) => {
-        draft.blocks.forEach((block, idx) => {
-          if (!block.id) {
-            block.id = `${block.type}-${idx}`;
-          }
-        });
-      });
-      const frozenPages = [...pages];
-      frozenPages[currentPageIndex] = {
-        ...page,
-        templateData: {
-          ...page.templateData,
-          schemaScreen: stabilized as unknown as Record<string, unknown>,
-        },
-      };
-      set({ pages: frozenPages });
-      // Re-read the page after freeze
-      return get().updateSchemaBlock(blockId, updates);
-    }
+    // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
+    // This lazily migrates legacy pages on first edit.
+    // After migration, page.schema is the canonical source.
+    const schema = ensurePageSchema(page);
+    if (!schema) return; // Custom pages can't be edited this way
 
-    const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
     const blockIdx = blocks.findIndex(b => b.id === blockId);
@@ -174,8 +153,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     get()._pushHistory();
 
     // ═══ DEEP PATCH MERGE via Immer (with patches) ═════════════
-    // Use mergeBlockInArray which operates at the blocks array level,
-    // producing patches scoped to the array for correct undo/redo.
     const { blocks: newBlocks, patches: forwardPatches, inversePatches } =
       mergeBlockInArray(blocks, blockIdx, updates);
 
@@ -189,7 +166,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         patch: updates,
         timestamp: Date.now(),
         source: 'user',
-        // Attach immer-level patches for PatchHistory to record
         _immerPatches: {
           forward: forwardPatches,
           inverse: inversePatches,
@@ -198,13 +174,12 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       },
     });
 
+    // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
+    const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: newSchema,
     };
     set({ pages: newPages });
   },
@@ -437,17 +412,17 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   // ── Schema Block CRUD ───────────────────────────────────────────
-  // deleteBlock: Remove a block from the schema screen by ID
+  // deleteBlock: Remove a block from the schema by ID
+  // FASE 1: Now operates on page.schema directly
   deleteBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
-    // Must have schema screen
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
     const blockIdx = blocks.findIndex(b => b.id === blockId);
@@ -460,25 +435,23 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success('Block dihapus');
   },
 
   // moveBlockUp: Move a block one position up in the flow order
+  // FASE 1: Now operates on page.schema directly
   moveBlockUp: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
     const blockIdx = blocks.findIndex(b => b.id === blockId);
@@ -491,24 +464,22 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
   },
 
   // moveBlockDown: Move a block one position down in the flow order
+  // FASE 1: Now operates on page.schema directly
   moveBlockDown: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
     const blockIdx = blocks.findIndex(b => b.id === blockId);
@@ -521,24 +492,22 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
   },
 
   // duplicateBlock: Clone a block and insert it after the original
+  // FASE 1: Now operates on page.schema + uses nanoid for clone ID
   duplicateBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
     const blockIdx = blocks.findIndex(b => b.id === blockId);
@@ -546,10 +515,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    // Deep clone the block with a new ID
+    // Deep clone the block with a stable nanoid
     const original = blocks[blockIdx];
     const clone = produce(original, (draft) => {
-      draft.id = `${original.type}-${Date.now()}`;
+      draft.id = generateBlockId(); // ← Stable nanoid, not Date.now()
     });
 
     // Insert clone after original
@@ -559,10 +528,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
     // Select the cloned block
@@ -572,43 +538,21 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
   // ── Add Schema Block from Registry ────────────────────────────
   // Adds a new block of the given type to the current page's schema.
-  // If the page doesn't have a schemaScreen yet, it first "freezes" the
-  // adapted schema (same as updateSchemaBlock's first-edit flow).
+  // FASE 1: Now operates on page.schema directly via ensurePageSchema().
+  // Uses nanoid for stable block IDs (not Date.now()).
   addSchemaBlock: (blockType) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
 
-    // Must have schema screen — freeze if needed
-    if (!page.templateData?.schemaScreen) {
-      const adapted = convertToSchema(page);
-      if (!adapted) {
-        toast.warning('Tidak dapat menambah block ke halaman ini');
-        return;
-      }
-      // Assign stable IDs
-      const stabilized = produce(adapted, (draft) => {
-        draft.blocks.forEach((block, idx) => {
-          if (!block.id) {
-            block.id = `${block.type}-${idx}`;
-          }
-        });
-      });
-      const frozenPages = [...pages];
-      frozenPages[currentPageIndex] = {
-        ...page,
-        templateData: {
-          ...page.templateData,
-          schemaScreen: stabilized as unknown as Record<string, unknown>,
-        },
-      };
-      set({ pages: frozenPages });
-      // Re-read after freeze
-      return get().addSchemaBlock(blockType);
+    // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
+    const schema = ensurePageSchema(page);
+    if (!schema) {
+      toast.warning('Tidak dapat menambah block ke halaman ini');
+      return;
     }
 
-    const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
 
     // Get block definition from registry
     const definition = SCENE_REGISTRY[blockType];
@@ -619,9 +563,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    // Create default block based on type
+    // Create default block — stable nanoid, data-driven from registry
     const newBlock: Record<string, unknown> = {
-      id: `${blockType}-${Date.now()}`,
+      id: generateBlockId(), // ← Stable nanoid, not Date.now()
       type: blockType,
       variant: 'A' as const,
       layout: {
@@ -651,13 +595,11 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       },
     });
 
+    // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
 
@@ -667,15 +609,16 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   // ── Schema Block Nudge (arrow keys) ────────────────────────────
+  // FASE 1: Now operates on page.schema directly
   nudgeSchemaBlocks: (dxPct, dyPct) => {
     const { pages, currentPageIndex, selectedBlockIds, selectedBlockId } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     const idsToNudge = selectedBlockIds.length > 1 ? selectedBlockIds : (selectedBlockId ? [selectedBlockId] : []);
     if (idsToNudge.length === 0) return;
 
@@ -709,24 +652,22 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
   },
 
   // ── Schema Block Bulk Delete ────────────────────────────────────
+  // FASE 1: Now operates on page.schema directly
   deleteSchemaBlocks: (blockIds) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || blockIds.length === 0) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     get()._pushHistory();
 
     const newBlocks = blocks.filter(b => !blockIds.includes(b.id || ''));
@@ -734,10 +675,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({
       pages: newPages,
@@ -752,15 +690,16 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // ── Schema Block Reorder (drag-sort) ────────────────────────────
   // Moves a block from fromIndex to toIndex in the blocks array.
   // Used by LayerPanel drag-sort for intuitive block reordering.
+  // FASE 1: Now operates on page.schema directly
   reorderSchemaBlocks: (fromIndex, toIndex) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
     if (fromIndex < 0 || fromIndex >= blocks.length) return;
     if (toIndex < 0 || toIndex >= blocks.length) return;
@@ -788,26 +727,22 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
   },
 
   // ── Schema Block Copy/Paste ───────────────────────────────────
-  // Copy a schema block to the internal clipboard (removes ID so a
-  // fresh one is assigned on paste). Deep-cloned via Immer `produce`.
+  // FASE 1: Now operates on page.schema directly + uses nanoid
   copySchemaBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
-    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
-    if (!schemaScreen) return;
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
 
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
     const block = blocks.find(b => b.id === blockId);
     if (!block) return;
 
@@ -821,7 +756,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   // Paste a schema block from the internal clipboard. Appends it to
-  // the current page's schema screen with a fresh ID.
+  // the current page's schema with a fresh nanoid.
   pasteSchemaBlock: () => {
     const { pages, currentPageIndex } = get();
     const clipboard = get()._schemaClipboard;
@@ -833,20 +768,19 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const page = pages[currentPageIndex];
     if (!page) return;
 
-    // Must have schema screen
-    if (!page.templateData?.schemaScreen) {
+    const schema = ensurePageSchema(page);
+    if (!schema) {
       toast.warning('Tidak dapat menambah block ke halaman ini');
       return;
     }
 
-    const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
-    const blocks = schemaScreen.blocks as SchemaBlock[];
+    const blocks = schema.blocks;
 
     get()._pushHistory();
 
-    // Deep clone with new ID
+    // Deep clone with stable nanoid
     const newBlock = produce(clipboard, (draft) => {
-      draft.id = `${clipboard.type}-${Date.now()}`;
+      draft.id = generateBlockId(); // ← Stable nanoid, not Date.now()
     });
 
     const newBlocks = [...blocks, newBlock];
@@ -866,10 +800,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      templateData: {
-        ...page.templateData,
-        schemaScreen: { ...schemaScreen, blocks: newBlocks },
-      },
+      schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages });
     get().selectBlock(newBlock.id!, clipboard.type);

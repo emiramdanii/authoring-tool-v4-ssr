@@ -13,6 +13,7 @@ import {
   getAllBlockDefinitions,
   type BlockDefinition,
 } from '@/core/registry/SceneRegistry';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 
 // ── Category display config ──────────────────────────────────────
 
@@ -34,15 +35,13 @@ export default function AddBlockPanel() {
   const page = pages[currentPageIndex];
 
   // Check if current page can accept schema blocks
+  // FASE 1: Schema-first — any page with schema can accept blocks.
+  // We also allow custom pages to be upgraded via ensurePageSchema().
   const canAddBlocks = useMemo(() => {
     if (!page) return false;
-    // Pages with schemaScreen can always accept blocks
-    if (page.templateData?.schemaScreen) return true;
-    // Template pages can be frozen and then accept blocks
-    const isTemplate = page.templateType && page.templateType !== 'custom';
-    if (isTemplate) return true;
-    // Custom pages without schema can't accept blocks
-    return false;
+    // Any page that can produce a schema (via ensurePageSchema) can accept blocks
+    const schema = ensurePageSchema(page);
+    return !!schema;
   }, [page]);
 
   // Get all block definitions, filter by search

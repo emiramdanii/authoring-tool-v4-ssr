@@ -11,7 +11,7 @@
 import { useMemo, useCallback, useRef, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
-import { convertToSchema } from '@/core/engine/TemplateAdapter';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { ScreenSchema } from '@/core/schema/types';
 import { MousePointer2, GripVertical } from 'lucide-react';
 
@@ -33,21 +33,12 @@ export default function LayerPanel() {
 
   const page = pages[currentPageIndex];
 
-  // Resolve the schema for the current page
+  // Resolve the schema for the current page — schema-first
   const schema = useMemo<ScreenSchema | null>(() => {
     if (!page) return null;
-
-    // Priority 1: schemaScreen in templateData (preset / edited pages)
-    const storedSchema = page.templateData?.schemaScreen as ScreenSchema | undefined;
-    if (storedSchema) return storedSchema;
-
-    // Priority 2: Convert legacy template page via TemplateAdapter
-    const isTemplate = page.templateType && page.templateType !== 'custom';
-    if (isTemplate) {
-      return convertToSchema(page);
-    }
-
-    return null;
+    // ═══ SCHEMA-FIRST: Use ensurePageSchema() ═════════════════
+    // Lazily migrates legacy pages on first access.
+    return ensurePageSchema(page);
   }, [page]);
 
   if (!schema) {

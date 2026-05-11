@@ -53,8 +53,13 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
         if (page.locked === false) {
           // Still run Layer 2 (orphan cleanup) and Layer 3 (ID re-sync) for unlocked pages
           freshData = null; // Don't rebind templateData
+        } else if (page.schema) {
+          // FASE 1: Native schema pages — skip templateData sync entirely.
+          // Their content is from page.schema, not the authoring store.
+          // Schema is updated via deriveSchema() in FASE 3, not here.
+          freshData = null;
         } else if (page.templateData?.schemaScreen) {
-          // Schema-driven pages: skip templateData sync entirely
+          // Legacy schema-driven pages: skip templateData sync entirely
           // Their content is from the schema preset, not the authoring store
           freshData = null;
         } else {
