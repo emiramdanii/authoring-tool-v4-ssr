@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
+import { patchHistory } from '@/core/editor/patch-history';
 import {
   Play,
   Undo2,
@@ -61,10 +62,22 @@ export default function Toolbar() {
     toggleLeftPanel,
   } = useCanvaStore();
 
-  // Reactive undo/redo — use value-based selectors so Zustand
-  // re-renders when history index changes (not function refs)
-  const canUndo = useCanvaStore((s) => s._historyIdx > 0);
-  const canRedo = useCanvaStore((s) => s._historyIdx < s._history.length - 1);
+  // Reactive undo/redo — checks BOTH snapshot history AND patch history.
+  // Previously only checked snapshot history, which meant the toolbar
+  // buttons stayed disabled after schema block edits that only record
+  // patches (not full snapshots). Now subscribes to PatchHistory changes
+  // so the UI stays reactive.
+  const snapshotCanUndo = useCanvaStore((s) => s._historyIdx > 0);
+  const snapshotCanRedo = useCanvaStore((s) => s._historyIdx < s._history.length - 1);
+
+  // Subscribe to PatchHistory state changes (patch-based undo/redo)
+  const [patchHistoryState, setPatchHistoryState] = useState(() => patchHistory.getState());
+  useEffect(() => {
+    return patchHistory.subscribe(() => setPatchHistoryState(patchHistory.getState()));
+  }, []);
+
+  const canUndo = snapshotCanUndo || patchHistoryState.canUndo;
+  const canRedo = snapshotCanRedo || patchHistoryState.canRedo;
 
   const mode = useInteractiveStore((s) => s.mode);
   const openPlay = useInteractiveStore((s) => s.openPlay);

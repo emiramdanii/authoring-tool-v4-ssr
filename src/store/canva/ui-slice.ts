@@ -26,7 +26,7 @@ export type UISlice = Pick<
   | 'deleteBlock' | 'moveBlockUp' | 'moveBlockDown' | 'duplicateBlock'
   | 'addSchemaBlock'
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
-  | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks'
+  | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
@@ -747,6 +747,53 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       selectedBlockIds: [],
     });
     toast.success(`${blockIds.length} block dihapus`);
+  },
+
+  // ── Schema Block Reorder (drag-sort) ────────────────────────────
+  // Moves a block from fromIndex to toIndex in the blocks array.
+  // Used by LayerPanel drag-sort for intuitive block reordering.
+  reorderSchemaBlocks: (fromIndex, toIndex) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+    if (!schemaScreen) return;
+
+    const blocks = schemaScreen.blocks as SchemaBlock[];
+    if (!Array.isArray(blocks)) return;
+    if (fromIndex < 0 || fromIndex >= blocks.length) return;
+    if (toIndex < 0 || toIndex >= blocks.length) return;
+    if (fromIndex === toIndex) return;
+
+    get()._pushHistory();
+
+    // Remove block at fromIndex, insert at toIndex
+    const newBlocks = [...blocks];
+    const [moved] = newBlocks.splice(fromIndex, 1);
+    newBlocks.splice(toIndex, 0, moved);
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: moved.id || '',
+        blockType: moved.type,
+        pageIndex: currentPageIndex,
+        patch: { _reordered: true, fromIndex, toIndex },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      templateData: {
+        ...page.templateData,
+        schemaScreen: { ...schemaScreen, blocks: newBlocks },
+      },
+    };
+    set({ pages: newPages });
   },
 
   // ── Schema Block Copy/Paste ───────────────────────────────────
