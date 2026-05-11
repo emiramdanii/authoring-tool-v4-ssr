@@ -155,7 +155,11 @@ export const LAYER_COLORS: Record<string, string> = {
 };
 
 // ── Template Gallery Constants ────────────────────────────────
+// @deprecated FASE 2: Use PagePresetRegistry instead.
+// TemplateInfo and TEMPLATE_TYPES are kept for backward compat only.
+// New code should import from @/core/preset/PagePresetRegistry.
 
+/** @deprecated Use PagePreset from @/core/preset/PagePresetRegistry instead */
 export interface TemplateInfo {
   id: PageTemplateType;
   icon: string;
@@ -165,6 +169,7 @@ export interface TemplateInfo {
   category: 'utama' | 'konten' | 'interaktif' | 'penutup';
 }
 
+/** @deprecated Use getAllPresets() from @/core/preset/PagePresetRegistry instead */
 export const TEMPLATE_TYPES: TemplateInfo[] = [
   { id: 'cover',    icon: '🏠', name: 'Cover',       desc: 'Halaman judul & pembuka',     color: '#f9c82e', category: 'utama' },
   { id: 'dokumen',  icon: '📋', name: 'Dokumen',     desc: 'CP, TP, ATP',                color: '#3ecfcf', category: 'utama' },

@@ -12,7 +12,8 @@ import {
 } from '@/lib/canva-constants';
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, buildTemplateData, getTemplateExtraProps } from './template-data';
-import { generatePageId } from '@/core/schema/ensure-schema';
+import { generatePageId, ensurePageSchema } from '@/core/schema/ensure-schema';
+import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
 export type PageSlice = Pick<
   CanvaState,
@@ -38,18 +39,15 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
   addTemplatePage: (templateType) => {
     const pages = get().pages;
-    const label = getTemplateLabel(templateType, pages.length);
-    const newPage = createPage(label, templateType);
-    newPage.templateData = buildTemplateData(templateType);
-    newPage.locked = true; // Template pages always start locked (auto-sync from authoring)
-    Object.assign(newPage, getTemplateExtraProps(templateType));
 
-    // Auto-fill elements for template (compatible with export)
-    newPage.elements = populateTemplateElements(newPage, createElId);
+    // ═══ FASE 2: Preset-first page creation ═══════════════════
+    // Pages are schema-native from creation — page.schema is populated
+    // directly by the PresetRegistry. No lazy migration needed.
+    const newPage = createPageFromPreset(templateType, pages.length);
 
     get()._pushHistory();
     set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null });
-    toast.success(`${label} ditambahkan`);
+    toast.success(`${newPage.label} ditambahkan`);
   },
 
   duplicatePage: () => {
@@ -113,6 +111,24 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       newPage.overlayElements = [];
     } else {
       newPage.locked = undefined;
+    }
+
+    // ═══ FASE 2: Create native schema from preset ════════════
+    // When changing template type, refresh the schema to match
+    // the new preset. This ensures page.schema stays in sync.
+    const preset = getPreset(templateType);
+    if (preset) {
+      const schema = preset.create({
+        pageId: newPage.id,
+        label: newPage.label,
+        variant: 'A',
+      });
+      if (schema) {
+        newPage.schema = schema;
+      } else {
+        // Custom pages have no schema
+        delete newPage.schema;
+      }
     }
 
     newPages[currentPageIndex] = newPage;
@@ -223,6 +239,22 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       elements: freshElements,
     };
     Object.assign(newPage, getTemplateExtraProps(page.templateType));
+
+    // ═══ FASE 2: Refresh schema from preset on relock ════════
+    // Re-lock refreshes the schema from the current authoring data.
+    // This ensures the schema reflects the latest content.
+    const preset = getPreset(page.templateType);
+    if (preset) {
+      const schema = preset.create({
+        pageId: newPage.id,
+        label: newPage.label,
+        variant: page.templateVariant || 'A',
+      });
+      if (schema) {
+        newPage.schema = schema;
+      }
+    }
+
     newPages[currentPageIndex] = newPage;
     set({ pages: newPages, selectedElId: null });
     toast.success(`🔓→🔒 ${page.label} dikunci kembali — auto-sync aktif, data diperbarui dari authoring`);

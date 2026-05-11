@@ -2,9 +2,10 @@
 
 import { LayoutTemplate, Zap, Lock, Unlock } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { TEMPLATE_TYPES, LAYOUT_PRESETS } from '../types';
+import { LAYOUT_PRESETS } from '../types';
 import type { PageTemplateType, CanvaPage } from '../types';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
+import { getAllPresets } from '@/core/preset/PagePresetRegistry';
 import { toast } from 'sonner';
 import Section from './Section';
 
@@ -76,8 +77,8 @@ export default function PageSettingsSection({
           }}
           className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
         >
-          {TEMPLATE_TYPES.map(t => (
-            <option key={t.id} value={t.id}>{t.icon} {t.name} — {t.desc}</option>
+          {getAllPresets().map(p => (
+            <option key={p.id} value={p.id}>{p.icon} {p.label} — {p.description}</option>
           ))}
         </select>
       </div>

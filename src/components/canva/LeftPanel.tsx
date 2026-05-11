@@ -15,7 +15,8 @@ import {
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { LeftTab, PageTemplateType } from './types';
-import { TEMPLATE_TYPES, RATIOS } from './types';
+import { RATIOS } from './types';
+import { getPresetsGroupedByCategory, type PagePreset } from '@/core/preset/PagePresetRegistry';
 import {
   TEMPLATE_BADGE_MAP,
   getModuleIcon,
@@ -281,12 +282,14 @@ function TambahContent() {
   };
   const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
 
-  const categories = [
-    { key: 'utama', label: 'Halaman Utama' },
-    { key: 'konten', label: 'Konten' },
-    { key: 'interaktif', label: 'Interaktif' },
-    { key: 'penutup', label: 'Penutup' },
-  ] as const;
+  // FASE 2: Metadata-driven categories from PresetRegistry
+  const presetCategories = getPresetsGroupedByCategory();
+  const categoryLabels: Record<string, string> = {
+    utama: 'Halaman Utama',
+    konten: 'Konten',
+    interaktif: 'Interaktif',
+    penutup: 'Penutup',
+  };
 
   return (
     <div className="space-y-3">
@@ -350,16 +353,13 @@ function TambahContent() {
           className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none"
         >
           <option value="" disabled>+ Tambah dari Template...</option>
-          {categories.map(cat => {
-            const templates = TEMPLATE_TYPES.filter(t => t.category === cat.key);
-            return (
-              <optgroup key={cat.key} label={cat.label}>
-                {templates.map(t => (
-                  <option key={t.id} value={t.id}>{t.icon} {t.name} — {t.desc}</option>
+          {presetCategories.map(cat => (
+              <optgroup key={cat.category} label={categoryLabels[cat.category] || cat.category}>
+                {cat.presets.map(p => (
+                  <option key={p.id} value={p.id}>{p.icon} {p.label} — {p.description}</option>
                 ))}
               </optgroup>
-            );
-          })}
+            ))}
         </select>
       </div>
 
