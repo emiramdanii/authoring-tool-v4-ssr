@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import ExportApp from './ExportApp';
 import './export.css';
@@ -53,7 +54,7 @@ class ExportErrorBoundary extends React.Component<
           fontFamily: "'Nunito', sans-serif",
         }}>
           <div style={{ textAlign: 'center', maxWidth: 400 }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+            <AlertTriangle size={48} className="text-amber-400" />
             <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
               Terjadi Kesalahan
             </div>

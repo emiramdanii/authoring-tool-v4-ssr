@@ -3,6 +3,7 @@ import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str, num } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: FLASHCARD
@@ -38,9 +39,9 @@ export function PreviewMatching({ mod, variant, compact }: { mod: M; variant: La
     return (
       <div className="space-y-1">
         {pasangan.slice(0, max).map((p, i) => (
-          <div key={i} style={{ borderLeft: '3px solid #60a5fa', paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor="#60a5fa">
             <span className="text-[11px]" style={{ color: T.text }}>{str(p.kiri)} ↔ {str(p.kanan)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );
@@ -67,9 +68,9 @@ export function PreviewTrueFalse({ mod, variant, compact }: { mod: M; variant: L
     return (
       <div className="space-y-1">
         {soal.slice(0, max).map((s, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.g}`, paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor={T.g}>
             <span className="text-[11px]" style={{ color: T.text }}>{str(s.teks)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );
@@ -136,9 +137,9 @@ export function PreviewSorting({ mod, variant, compact }: { mod: M; variant: Lay
     return (
       <div className="space-y-1">
         {items.slice(0, max).map((it, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.c}`, paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor={T.c}>
             <span className="text-[11px]" style={{ color: T.text }}>{str(it.icon, '📌')} {str(it.teks || it.label)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );

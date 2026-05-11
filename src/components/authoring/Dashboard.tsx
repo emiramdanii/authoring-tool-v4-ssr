@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
+import { ChevronDown } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 
 // Schema-driven presets use this path for beautiful rendering
@@ -312,7 +313,7 @@ export default function Dashboard() {
         <details className="group bg-slate-900/40 border border-slate-800/40 rounded-xl">
           <summary className="px-5 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold text-slate-300 hover:text-slate-200 transition-colors">
             <span>Kelengkapan Proyek</span>
-            <span className="text-[0.7rem] text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            <span className="text-[0.7rem] text-slate-500 group-open:rotate-180 transition-transform"><ChevronDown size={14} className="inline" /></span>
           </summary>
           <div className="px-5 pb-4 space-y-3">
             {/* Stats row */}

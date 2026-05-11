@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { RotateCcw, MessageCircle, CheckCircle2, XCircle } from 'lucide-react';
 import type { RodaGameBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -63,7 +64,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('c', 0.35),
             }}>
-            🔄 Ulangi Roda
+            <RotateCcw size={14} className="inline" /> Ulangi Roda
           </button>
         )}
       </div>
@@ -114,7 +115,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
               border: '1px solid ' + tokens.colorAlpha('c', 0.25),
               borderLeft: '3px solid ' + tokens.color('c'),
             }}>
-            <div className="text-[10px] leading-relaxed"><strong style={{ color: tokens.color('c') }}>💬 Diskusi:</strong> <InlineTextEditor
+            <div className="text-[10px] leading-relaxed"><strong style={{ color: tokens.color('c') }}><MessageCircle size={14} className="inline" /> Diskusi:</strong> <InlineTextEditor
               {...diskusiHintEditor}
               className="text-[10px]"
               style={{ fontSize: 'inherit' }}
@@ -174,7 +175,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
               border: '1px solid ' + (q.opts[answers[current]].correct ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
               color: q.opts[answers[current]].correct ? tokens.color('g') : tokens.color('r'),
             }}>
-            {q.opts[answers[current]].correct ? '✅ ' : '❌ '}
+            {q.opts[answers[current]].correct ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
             {q.opts[answers[current]].correct ? (q.feedbackCorrect || 'Benar!') : (q.feedbackWrong || 'Kurang tepat.')}
           </div>
         )}

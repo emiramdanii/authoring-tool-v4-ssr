@@ -8,6 +8,7 @@ import { CanvasErrorBoundary } from '../CanvasErrorBoundary';
 import { StageElement } from './StageElement';
 import { useStageKeyboard } from './use-stage-keyboard';
 import { useStageDrag } from './use-stage-drag';
+import { Z } from './constants';
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Canvas editing area with snap feedback & multi-select
@@ -227,7 +228,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Snap Guide Lines */}
           {snapLines.length > 0 && (
-            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 40 }}>
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: Z.CANVAS_OVERLAY }}>
               {snapLines.map((line, i) => (
                 <div key={i}>
                   {line.x != null && (
@@ -261,7 +262,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Overlay elements on LOCKED template pages — editable in canvas */}
           {isTemplateMode && isLocked && (page.overlayElements || []).length > 0 && (
-            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: Z.CANVAS_ELEMENT }}>
               {(page.overlayElements || []).map(el => (
                 <StageElement
                   key={el.id}
@@ -282,7 +283,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Custom Mode + Unlocked Template: Render editable elements on top of PageRenderer */}
           {(!isTemplateMode || isUnlockedTemplate) && (
-            <div className="absolute inset-0" style={isUnlockedTemplate ? { zIndex: 20 } : undefined}>
+            <div className="absolute inset-0" style={isUnlockedTemplate ? { zIndex: Z.CANVAS_LABEL } : undefined}>
               {page.elements.map(el => (
                 <StageElement
                   key={el.id}
@@ -302,27 +303,27 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
           {/* Template mode badge */}
           {isTemplateMode && (
-            <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 z-[60] ${
+            <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 ${
               isSchemaDriven
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                 : isLocked
                   ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                   : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-            }`}>
+            }`} style={{ zIndex: Z.INFO_BADGE }}>
               {isSchemaDriven ? '⚡' : isLocked ? '🔒' : '🔓'} {isSchemaDriven ? 'SCHEMA' : page.templateType}
             </div>
           )}
 
           {/* Multi-select info badge (elements) */}
           {selectedElIds.length > 1 && !selectedBlockId && (
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none z-50">
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
               {selectedElIds.length} elemen terpilih • Shift+klik untuk tambah • Del untuk hapus
             </div>
           )}
 
           {/* Multi-select info badge (schema blocks) */}
           {selectedBlockIds.length > 1 && (
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none z-50">
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
               {selectedBlockIds.length} block terpilih • Shift+klik untuk tambah • Del untuk hapus
             </div>
           )}

@@ -3,6 +3,7 @@ import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: STUDI-KASUS
@@ -13,9 +14,9 @@ export function PreviewStudiKasus({ mod, variant, compact }: { mod: M; variant: 
   if (variant === 'D') {
     return (
       <div>
-        <div style={{ borderLeft: `3px solid ${T.o}`, paddingLeft: 8 }}>
+        <AccentListItem accentColor={T.o}>
           <span className="text-[11px]" style={{ color: T.muted }}>{str(mod.teks).slice(0, 100)}</span>
-        </div>
+        </AccentListItem>
         {pertanyaan.map((p, i) => <div key={i} className="text-[10px] py-0.5" style={{ color: T.text }}>📌 {str(p.teks || p.label)}</div>)}
       </div>
     );

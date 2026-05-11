@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Trophy, Star, Dumbbell, RotateCcw, Gamepad2, CheckCircle2, XCircle } from 'lucide-react';
 import type { KuisBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -44,7 +45,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
     return (
       <div className="text-center p-5">
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
-          {pct >= 80 ? '🏆' : pct >= 50 ? '⭐' : '💪'}
+          {pct >= 80 ? <Trophy size={28} className="inline text-amber-400" /> : pct >= 50 ? <Star size={28} className="inline text-amber-400" /> : <Dumbbell size={28} className="inline text-amber-400" />}
         </div>
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('y') }}>
           {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
@@ -72,7 +73,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
             }}>
-            🔄 Ulangi
+            <RotateCcw size={14} className="inline" /> Ulangi
           </button>
         )}
       </div>
@@ -86,7 +87,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
       {/* Header with progress */}
       <div className="flex items-center justify-between">
         <div className="text-[11px] font-extrabold" style={{ color: tokens.color('y') }}>
-          🎮 <InlineTextEditor
+          <Gamepad2 size={14} className="inline" /> <InlineTextEditor
             {...titleEditor}
             className="text-[11px] font-extrabold"
             style={{ color: tokens.color('y'), fontSize: 'inherit' }}
@@ -153,7 +154,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
               border: '1px solid ' + (answers[current] === q.ans ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
               color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             }}>
-            {answers[current] === q.ans ? '✅ ' : '❌ '}<InlineTextEditor
+            {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}<InlineTextEditor
               {...explanationEditor}
               className="text-[10px]"
               style={{ color: 'inherit', fontSize: 'inherit' }}

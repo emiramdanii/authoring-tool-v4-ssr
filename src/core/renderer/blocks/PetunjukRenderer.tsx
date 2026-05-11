@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Lightbulb } from 'lucide-react';
 import type { PetunjukBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -83,7 +84,7 @@ export function PetunjukRenderer({ block, tokens, isCompact, isEditing }: {
           <div className="flex items-start gap-2">
             <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ background: tokens.colorAlpha(accentKey, 0.25), boxShadow: '0 2px 8px ' + tokens.colorAlpha(accentKey, 0.2) }}>
-              <span className="text-xs">💡</span>
+              <Lightbulb size={12} className="inline" />
             </div>
             <div>
               <strong style={{ color: tokens.color(accentKey) }}>Tips:</strong> <InlineTextEditor

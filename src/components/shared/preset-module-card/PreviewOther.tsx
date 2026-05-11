@@ -3,6 +3,7 @@ import type { LayoutVariant, M, ModuleTypeMeta } from './types';
 import { T } from './tokens';
 import { arr, str, num, getItemCount } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: EMBED
@@ -32,9 +33,9 @@ export function PreviewPolling({ mod, variant, compact }: { mod: M; variant: Lay
     return (
       <div className="space-y-1">
         {opsi.slice(0, max).map((o, i) => (
-          <div key={i} style={{ borderLeft: '3px solid #60a5fa', paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor="#60a5fa">
             <span className="text-[11px]" style={{ color: T.text }}>{str(o.icon, '📊')} {str(o.teks)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );
@@ -67,7 +68,7 @@ export function PreviewComparison({ mod, variant, compact }: { mod: M; variant: 
       <div className="space-y-1">
         {baris.map((row, i) => {
           const cells = Array.isArray(row) ? row : [str((row as Record<string, unknown>).kiri), str((row as Record<string, unknown>).kanan)];
-          return <div key={i} style={{ borderLeft: `3px solid ${T.p}`, paddingLeft: 8 }}><span className="text-[11px]" style={{ color: T.text }}>{cells.join(' vs ')}</span></div>;
+          return <AccentListItem key={i} accentColor={T.p}><span className="text-[11px]" style={{ color: T.text }}>{cells.join(' vs ')}</span></AccentListItem>;
         })}
       </div>
     );
@@ -121,9 +122,9 @@ export function PreviewHotspotImage({ mod, variant, compact }: { mod: M; variant
     return (
       <div className="space-y-1">
         {hotspots.map((h, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.r}`, paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor={T.r}>
             <span className="text-[11px]" style={{ color: T.text }}>{i + 1}. {str(h.text || h.judul)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );
@@ -151,9 +152,9 @@ export function PreviewTabIcons({ mod, variant, compact }: { mod: M; variant: La
     return (
       <div className="space-y-1">
         {tabs.map((t, i) => (
-          <div key={i} style={{ borderLeft: `3px solid ${T.y}`, paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor={T.y}>
             <span className="text-[10px]">{str(t.icon, '📌')}</span> <span className="text-[11px] font-semibold" style={{ color: T.text }}>{str(t.judul)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );
@@ -203,7 +204,7 @@ export function PreviewFallback({ mod, meta, compact }: { mod: M; meta: ModuleTy
   const count = getItemCount(mod);
 
   return (
-    <div className="flex flex-col items-center justify-center py-3 gap-2" style={{ background: alpha(meta.color, 0.03), borderRadius: 8 }}>
+    <div className="flex flex-col items-center justify-center py-3 gap-2 rounded-lg" style={{ background: alpha(meta.color, 0.03) }}>
       <div className={`flex items-center gap-1.5`}>
         <span className={compact ? 'text-base' : 'text-xl'}>{meta.icon}</span>
         <span className={`font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`} style={{ color: meta.color }}>

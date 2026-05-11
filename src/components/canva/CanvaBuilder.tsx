@@ -191,7 +191,7 @@ export default function CanvaBuilder() {
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
         {leftPanelOpen && (
-          <div className="border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
+          <div className="border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden w-56 md:w-60 lg:w-[280px]">
             <LeftPanel />
           </div>
         )}
@@ -202,7 +202,7 @@ export default function CanvaBuilder() {
         </div>
 
         {rightPanelOpen && (
-          <div className="border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden" style={{ width: 240 }}>
+          <div className="border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden w-56 md:w-60 lg:w-[280px]">
             <CanvasErrorBoundary name="RightPanel">
               <RightPanel />
             </CanvasErrorBoundary>

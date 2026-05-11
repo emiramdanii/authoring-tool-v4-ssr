@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { MessageCircle } from 'lucide-react';
 import type { DiskusiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -33,7 +34,7 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-full flex items-center justify-center"
           style={{ background: tokens.colorAlpha('c', 0.2), boxShadow: '0 4px 12px ' + tokens.colorAlpha('c', 0.25) }}>
-          <span className="text-sm">💬</span>
+          <MessageCircle size={14} className="inline" />
         </div>
         <div className="text-[12px] font-extrabold" style={{ color: tokens.color('c') }}>
           <InlineTextEditor

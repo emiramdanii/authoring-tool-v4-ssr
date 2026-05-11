@@ -1,5 +1,18 @@
 import type { ResizeDir } from '../types';
 
+// ── Z-Index Scale (canonical — use across all canva components) ──
+// Ensures consistent stacking order and avoids z-index conflicts.
+export const Z = {
+  CANVAS_ELEMENT: 10,     // In-canvas elements (selection box)
+  CANVAS_LABEL: 20,       // In-canvas labels (element headers)
+  RESIZE_HANDLE: 30,      // Resize handles
+  CANVAS_OVERLAY: 40,     // Canvas overlays (snap lines, grid)
+  DROPDOWN_MENU: 50,      // Dropdown menus, popovers
+  INFO_BADGE: 60,         // Page info badges (schema/template)
+  FULLSCREEN_OVERLAY: 70, // Full-screen overlays (PlayOverlay)
+  MODAL: 9999,            // Modal / shortcut overlay
+} as const;
+
 // ── Module-level constants (avoid re-creation on every render) ──
 
 export const RESIZE_HANDLES: { dir: ResizeDir; style: React.CSSProperties; cursor: string }[] = [

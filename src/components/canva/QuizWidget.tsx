@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { CheckCircle2, XCircle, Lightbulb } from 'lucide-react';
 import { useAuthoringStore, type KuisItem } from '@/store/authoring-store';
 import { resolveKuis } from '@/lib/module-resolver';
 import { playSound } from '@/lib/sounds';
@@ -171,17 +172,17 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
           if (!opt.trim()) return null;
           let bg = 'bg-white/5 hover:bg-white/10 border-white/10';
           let textCol = 'text-amber-100/90';
-          let icon = '';
+          let icon: React.ReactNode = null;
 
           if (answered) {
             if (idx === q.ans) {
               bg = 'bg-emerald-500/20 border-emerald-400/40';
               textCol = 'text-emerald-300';
-              icon = ' ✅';
+              icon = <CheckCircle2 size={12} className="inline ml-1" />;
             } else if (idx === selectedOpt && idx !== q.ans) {
               bg = 'bg-red-500/20 border-red-400/40';
               textCol = 'text-red-300';
-              icon = ' ❌';
+              icon = <XCircle size={12} className="inline ml-1" />;
             } else {
               bg = 'bg-white/[.02] border-white/5';
               textCol = 'text-white/30';
@@ -207,7 +208,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
         <div className="px-2 pb-1.5">
           <div className="bg-blue-500/10 border border-blue-400/20 rounded px-2 py-1">
             <span className={`font-bold text-blue-300 ${compact ? 'text-[8px]' : 'text-[9px]'}`}>
-              💡 {q.ex}
+              <Lightbulb size={12} className="inline" /> {q.ex}
             </span>
           </div>
         </div>

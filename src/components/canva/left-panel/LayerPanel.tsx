@@ -13,7 +13,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { ScreenSchema } from '@/core/schema/types';
-import { MousePointer2, GripVertical } from 'lucide-react';
+import { MousePointer2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function LayerPanel() {
   const pages = useCanvaStore(s => s.pages);
@@ -294,14 +294,14 @@ function LayerList({
                   className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
                   title="Pindah atas"
                 >
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 1L7 5H1Z"/></svg>
+                  <ChevronUp size={12} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockDown(blockId); }}
                   className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
                   title="Pindah bawah"
                 >
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 7L1 3H7Z"/></svg>
+                  <ChevronDown size={12} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); duplicateBlock(blockId); }}

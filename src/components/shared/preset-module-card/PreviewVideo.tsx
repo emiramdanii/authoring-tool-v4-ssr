@@ -1,4 +1,5 @@
 import React from 'react';
+import { Play } from 'lucide-react';
 import type { M } from './types';
 import { T } from './tokens';
 import { str } from './helpers';
@@ -17,7 +18,7 @@ export function PreviewVideo({ mod, compact }: { mod: M; compact: boolean }) {
       {/* Video placeholder area */}
       <div className="relative flex items-center justify-center" style={{ background: '#0a0a0a', minHeight: compact ? 32 : 56 }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: alpha(T.r, 0.19) }}>
-          <span className="text-sm">▶</span>
+          <Play size={12} />
         </div>
         {duration && (
           <div className="absolute bottom-1 right-1 text-[9px] px-1 rounded" style={{ background: 'rgba(0,0,0,0.7)', color: T.text }}>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PenLine } from 'lucide-react';
 import type { RefleksiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -85,7 +86,7 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{ background: tokens.colorAlpha('p', 0.2), boxShadow: '0 4px 12px ' + tokens.colorAlpha('p', 0.25) }}>
-              <span className="text-sm">📝</span>
+              <PenLine size={14} className="inline" />
             </div>
             <div className="text-[11px] font-extrabold" style={{ color: tokens.color('p') }}>{block.penugasan.judul}</div>
           </div>

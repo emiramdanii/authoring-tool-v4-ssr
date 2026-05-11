@@ -2,6 +2,7 @@ import React from 'react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: SKENARIO
@@ -14,9 +15,9 @@ export function PreviewSkenario({ mod, variant, compact }: { mod: M; variant: La
     return (
       <div className="space-y-1">
         {chapters.map((ch, i) => (
-          <div key={i} style={{ borderLeft: '3px solid #f9c82e', paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor="#f9c82e">
             <span className="text-[11px]" style={{ color: T.text }}>🎭 {str(ch.title)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );

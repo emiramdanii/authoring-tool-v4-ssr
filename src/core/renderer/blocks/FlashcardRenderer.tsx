@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import type { FlashcardSetBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -78,7 +79,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center"
                 style={{ background: tokens.colorAlpha('g', 0.2) }}>
-                <span className="text-[10px]">✅</span>
+                <CheckCircle2 size={10} className="inline" />
               </div>
               <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: tokens.color('g') }}>Jawaban</div>
             </div>

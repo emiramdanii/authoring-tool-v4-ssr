@@ -285,7 +285,7 @@ export default function Toolbar() {
           <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             {/* ── PREVIEW ── */}
             <div className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20">
-              <div className="text-[9px] font-bold text-teal-400 uppercase tracking-wider">▶ Preview</div>
+              <div className="text-[9px] font-bold text-teal-400 uppercase tracking-wider"><Play size={12} className="inline" /> Preview</div>
             </div>
             <button
               onClick={handlePreviewUnified}

@@ -3,6 +3,7 @@ import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: REFLEKSI
@@ -17,10 +18,10 @@ export function PreviewRefleksi({ mod, variant, compact }: { mod: M; variant: La
     return (
       <div className="space-y-1">
         {pertanyaan.slice(0, max).map((p, i) => (
-          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
+          <AccentListItem key={i} accentColor={accent} className="flex items-start gap-2">
             <div className="flex-shrink-0 min-w-[20px] h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: alpha(accent, 0.15), color: accent }}>{i + 1}</div>
             <span className="text-[11px]" style={{ color: T.text }}>{str(p.teks).slice(0, 80)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );

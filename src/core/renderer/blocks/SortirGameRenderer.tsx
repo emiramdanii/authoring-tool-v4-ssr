@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { FolderOpen, RotateCcw, Package } from 'lucide-react';
 import type { SortirGameBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -33,7 +34,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
       <div className="flex items-center gap-2 mb-2">
         <div className="w-7 h-7 rounded-full flex items-center justify-center"
           style={{ background: tokens.colorAlpha(kolomDef.color, 0.2) }}>
-          <span className="text-[10px]">📂</span>
+          <FolderOpen size={12} className="inline" />
         </div>
         <div className="text-[10px] font-extrabold uppercase tracking-wider"
           style={{ color: tokens.color(kolomDef.color) }}>
@@ -135,7 +136,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
             }}>
-            🔄 Ulangi Game
+            <RotateCcw size={14} className="inline" /> Ulangi Game
           </button>
         )}
       </div>
@@ -151,7 +152,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
           background: tokens.colorAlpha('y', 0.04),
         }}>
         <div className="w-full text-[9px] font-extrabold uppercase tracking-wider mb-2" style={{ color: tokens.color('y') }}>
-          📦 Pilih Item ({totalPlaced}/{totalItems})
+          <Package size={14} className="inline" /> Pilih Item ({totalPlaced}/{totalItems})
         </div>
         {poolState.filter(p => !p.placed).map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}

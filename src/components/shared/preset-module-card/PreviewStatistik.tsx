@@ -3,6 +3,7 @@ import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: STATISTIK
@@ -15,11 +16,11 @@ export function PreviewStatistik({ mod, variant, compact }: { mod: M; variant: L
     return (
       <div className="space-y-1.5">
         {items.slice(0, maxItems).map((it, i) => (
-          <div key={i} className="flex items-center gap-2" style={{ borderLeft: `3px solid ${str(it.color, T.o)}`, paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor={str(it.color, T.o)} className="flex items-center gap-2">
             <span className="text-xs">{str(it.icon, '📊')}</span>
             <span className="font-bold text-sm" style={{ color: str(it.color, T.o) }}>{str(it.angka, '-')}{str(it.satuan)}</span>
             <span className="text-[10px]" style={{ color: T.muted }}>{str(it.label)}</span>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );

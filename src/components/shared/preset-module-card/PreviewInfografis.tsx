@@ -1,8 +1,10 @@
 import React from 'react';
+import { Pin } from 'lucide-react';
 import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: INFOGRAFIS
@@ -15,13 +17,13 @@ export function PreviewInfografis({ mod, variant, compact }: { mod: M; variant: 
     return (
       <div className="space-y-1.5">
         {kartu.slice(0, maxItems).map((k, i) => (
-          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${str(k.color, T.c)}`, paddingLeft: 8 }}>
-            <span className="text-xs">{str(k.icon, '📌')}</span>
+          <AccentListItem key={i} accentColor={str(k.color, T.c)} className="flex items-start gap-2">
+            <span className="text-xs">{str(k.icon) ? <span>{str(k.icon)}</span> : <Pin size={12} className="inline" />}</span>
             <div>
               <div className="text-xs font-semibold" style={{ color: T.text }}>{str(k.judul) || `Kartu ${i + 1}`}</div>
               {str(k.isi) && <div className="text-[10px]" style={{ color: T.muted }}>{str(k.isi).slice(0, 60)}</div>}
             </div>
-          </div>
+          </AccentListItem>
         ))}
         {kartu.length > maxItems && <div className="text-[10px]" style={{ color: T.muted }}>+{kartu.length - maxItems} lagi</div>}
       </div>
@@ -35,7 +37,7 @@ export function PreviewInfografis({ mod, variant, compact }: { mod: M; variant: 
     <div className={`grid ${gridCols} gap-2`}>
       {kartu.slice(0, maxItems).map((k, i) => (
         <div key={i} className={`rounded-lg ${cardP}`} style={{ background: alpha(str(k.color, T.c), 0.09), border: `1px solid ${alpha(str(k.color, T.c), 0.19)}` }}>
-          <div className={`${compact ? 'text-sm' : variant === 'C' ? 'text-xl' : 'text-lg'} mb-1`}>{str(k.icon, '📌')}</div>
+          <div className={`${compact ? 'text-sm' : variant === 'C' ? 'text-xl' : 'text-lg'} mb-1`}>{str(k.icon) ? <span>{str(k.icon)}</span> : <Pin size={12} />}</div>
           <div className="font-semibold text-xs" style={{ color: str(k.color, T.c) }}>{str(k.judul) || `Kartu ${i + 1}`}</div>
           {!compact && str(k.isi) && <div className="text-[10px] mt-0.5" style={{ color: T.muted }}>{str(k.isi).slice(0, 50)}</div>}
         </div>

@@ -3,6 +3,7 @@ import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: REVIEW
@@ -17,13 +18,13 @@ export function PreviewReview({ mod, variant, compact }: { mod: M; variant: Layo
     return (
       <div className="space-y-1">
         {kartu.slice(0, max).map((k, i) => (
-          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>
+          <AccentListItem key={i} accentColor={accent} className="flex items-start gap-2">
             <span className="text-xs">{str(k.icon, '🔄')}</span>
             <div>
               <span className="text-[11px] font-semibold" style={{ color: T.text }}>{str(k.judul)}</span>
               {!compact && str(k.isi) && <div className="text-[10px]" style={{ color: T.muted }}>{str(k.isi).slice(0, 60)}</div>}
             </div>
-          </div>
+          </AccentListItem>
         ))}
       </div>
     );

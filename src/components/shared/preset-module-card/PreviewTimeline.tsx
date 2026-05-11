@@ -3,6 +3,7 @@ import type { LayoutVariant, M } from './types';
 import { T } from './tokens';
 import { arr, str } from './helpers';
 import { alpha } from '@/lib/color-palette';
+import { AccentListItem } from '@/components/shared/AccentListItem';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: TIMELINE
@@ -15,13 +16,13 @@ export function PreviewTimeline({ mod, variant, compact }: { mod: M; variant: La
     return (
       <div className="space-y-1">
         {events.slice(0, maxItems).map((ev, i) => (
-          <div key={i} className="flex items-start gap-2" style={{ borderLeft: `2px solid ${T.g}`, paddingLeft: 8 }}>
+          <AccentListItem key={i} accentColor={T.g} className="flex items-start gap-2">
             <span className="text-[10px]">{str(ev.icon, '📌')}</span>
             <div>
               <span className="text-[10px] font-bold" style={{ color: T.g }}>{str(ev.tahun)}</span>
               <span className="text-xs ml-1" style={{ color: T.text }}>{str(ev.judul) || `Event ${i + 1}`}</span>
             </div>
-          </div>
+          </AccentListItem>
         ))}
         {events.length > maxItems && <div className="text-[10px]" style={{ color: T.muted }}>+{events.length - maxItems} lagi</div>}
       </div>

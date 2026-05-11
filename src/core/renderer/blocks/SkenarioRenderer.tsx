@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Star, PartyPopper, RotateCcw, BookOpen, MessageSquare, CheckCircle2, XCircle, ScrollText, Bell } from 'lucide-react';
 import type { SkenarioBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -68,7 +69,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
           <div className="flex gap-2">
             <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
               style={{ background: tokens.colorAlpha('y', 0.15), color: yellow, border: '1px solid ' + tokens.colorAlpha('y', 0.3), boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.15) }}>
-              ⭐ {totalPts}
+              <Star size={14} className="inline" /> {totalPts}
             </span>
             <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
               style={{ background: tokens.colorAlpha('c', 0.15), color: tokens.color('c'), border: '1px solid ' + tokens.colorAlpha('c', 0.3) }}>
@@ -81,7 +82,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
       {/* ══ COMPLETION SCREEN ═══════════════════════════════════ */}
       {isCompleted && (
         <div className="p-6 text-center">
-          <div className="text-4xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🎉</div>
+          <div className="text-4xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}><PartyPopper size={32} className="inline" /></div>
           <div className="font-black text-lg mb-2" style={{ fontFamily: tokens.fontFamily('display'), color: yellow }}>
             Skenario Selesai!
           </div>
@@ -109,7 +110,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
                 color: tokens.color('bg'),
                 boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
               }}>
-              🔄 Ulangi Skenario
+              <RotateCcw size={14} className="inline" /> Ulangi Skenario
             </button>
           )}
         </div>
@@ -126,7 +127,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
                 return (
                   <div key={i} className={`flex gap-2 ${isNarrator ? 'italic' : ''}`}>
                     <span className={`text-[10px] font-bold flex-shrink-0 mt-0.5 ${isNarrator ? 'text-white/40' : 'text-pink-300'}`}>
-                      {isNarrator ? '📖' : line.speaker ? `${line.speaker}:` : ''}
+                      {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
                     <span className={`text-[11px] leading-relaxed ${isNarrator ? 'text-white/50' : 'text-white/75'}`}>
                       {line.text}
@@ -144,7 +145,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
                 background: tokens.colorAlpha('c', 0.08),
                 border: '1px solid ' + tokens.colorAlpha('c', 0.2),
               }}>
-              💭 {ch.choicePrompt}
+              <MessageSquare size={14} className="inline" /> {ch.choicePrompt}
             </div>
           )}
 
@@ -194,7 +195,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
               border: '2px solid ' + (selectedChoice.choice.good ? tokens.colorAlpha('g', 0.4) : tokens.colorAlpha('r', 0.4)),
               boxShadow: selectedChoice.choice.good ? '0 0 16px ' + tokens.colorAlpha('g', 0.15) : '0 0 16px ' + tokens.colorAlpha('r', 0.15),
             }}>
-            <div className="text-lg mb-1">{selectedChoice.choice.resultTitle || (selectedChoice.choice.good ? '✅' : '❌')}</div>
+            <div className="text-lg mb-1">{selectedChoice.choice.resultTitle || (selectedChoice.choice.good ? <CheckCircle2 size={20} className="inline text-emerald-400" /> : <XCircle size={20} className="inline text-red-400" />)}</div>
             <div className="text-xs font-bold" style={{ color: selectedChoice.choice.good ? tokens.color('g') : tokens.color('r') }}>
               {selectedChoice.choice.good
                 ? (selectedChoice.choice.feedbackGood || 'Pilihan tepat!')
@@ -215,7 +216,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
           {selectedChoice.choice.norma && (
             <div className="p-3 rounded-xl"
               style={{ background: tokens.colorAlpha('y', 0.1), border: '1px solid ' + tokens.colorAlpha('y', 0.25) }}>
-              <div className="text-[10px] font-bold mb-0.5" style={{ color: yellow }}>📜 Kaitan Norma</div>
+              <div className="text-[10px] font-bold mb-0.5" style={{ color: yellow }}><ScrollText size={14} className="inline" /> Kaitan Norma</div>
               <div className="text-[10px] text-white/65 leading-relaxed">{selectedChoice.choice.norma}</div>
             </div>
           )}
@@ -226,7 +227,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
                 background: 'rgba(255,255,255,.05)',
                 border: '1px solid rgba(255,255,255,.1)',
               }}>
-              <div className="text-[10px] font-bold text-white/50 mb-1.5">🔔 Dampak</div>
+              <div className="text-[10px] font-bold text-white/50 mb-1.5"><Bell size={14} className="inline" /> Dampak</div>
               {selectedChoice.choice.consequences.map((con, k) => (
                 <div key={k} className="flex items-start gap-1.5 text-[10px] text-white/60 leading-relaxed mb-1">
                   <span className="mt-px">{con.icon}</span> {con.text}
