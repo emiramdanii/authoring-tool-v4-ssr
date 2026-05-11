@@ -57,9 +57,14 @@ export interface PropertyField {
   fields?: Array<{
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select';
+    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
     options?: Array<{ label: string; value: string }>;
     placeholder?: string;
+    helpText?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    defaultValue?: unknown;
   }>;
   /** For 'array' type: max number of items */
   maxItems?: number;

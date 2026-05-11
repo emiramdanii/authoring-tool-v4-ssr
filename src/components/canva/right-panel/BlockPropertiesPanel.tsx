@@ -633,9 +633,14 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
   fieldDefs: Array<{
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select';
+    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
     options?: Array<{ label: string; value: string }>;
     placeholder?: string;
+    helpText?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    defaultValue?: unknown;
   }>;
   maxItems?: number;
   onUpdate: (items: Array<Record<string, unknown>>) => void;

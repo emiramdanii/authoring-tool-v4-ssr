@@ -123,11 +123,21 @@ export const ALUR_PROPERTY_SCHEMA: PropertySchema = {
 
 export const SKENARIO_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'skenario',
-  redirectToAuthoring: true,
-  redirectNote: 'Skenario memiliki editor khusus — edit chapter via authoring panel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'chapters', label: 'Chapter', icon: 'BookOpen' },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
-    { key: 'title', type: 'text', label: 'Judul' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'chapters', type: 'array', label: 'Chapter', group: 'chapters',
+      fields: [
+        { key: 'charEmoji', label: 'Karakter', type: 'icon', placeholder: '🎭' },
+        { key: 'title', label: 'Judul Chapter', type: 'text' },
+        { key: 'choicePrompt', label: 'Prompt Pilihan', type: 'textarea' },
+      ],
+    },
   ],
 };
 
@@ -184,10 +194,23 @@ export const FLASHCARD_PROPERTY_SCHEMA: PropertySchema = {
 
 export const FTAB_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'ftab',
-  redirectToAuthoring: true,
-  redirectNote: 'Tab memiliki editor khusus — edit via authoring panel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'tabs', label: 'Tab', icon: 'Columns' },
+  { key: 'options', label: 'Opsi', icon: 'Settings', collapsed: true },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'tabs', type: 'array', label: 'Tab', group: 'tabs',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📑' },
+        { key: 'label', label: 'Label Tab', type: 'text' },
+      ],
+    },
+    { key: 'showReadMarker', type: 'boolean', label: 'Read Marker', group: 'options', defaultValue: false },
+    { key: 'showProgress', type: 'boolean', label: 'Progress Bar', group: 'options', defaultValue: false },
   ],
 };
 
@@ -264,31 +287,71 @@ export const DISKUSI_PROPERTY_SCHEMA: PropertySchema = {
 
 export const KUIS_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'kuis',
-  redirectToAuthoring: true,
-  redirectNote: 'Pertanyaan kuis memiliki editor khusus — edit via authoring panel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'questions', label: 'Pertanyaan', icon: 'HelpCircle' },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
-    { key: 'title', type: 'text', label: 'Judul' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'questions', type: 'array', label: 'Pertanyaan', group: 'questions',
+      fields: [
+        { key: 'q', label: 'Pertanyaan', type: 'textarea' },
+        { key: 'opts', label: 'Pilihan (JSON)', type: 'json', helpText: 'Array string, contoh: ["A","B","C"]' },
+        { key: 'ans', label: 'Jawaban (index)', type: 'number', min: 0 },
+        { key: 'ex', label: 'Penjelasan', type: 'textarea' },
+      ],
+    },
   ],
 };
 
 export const SORTIRGAME_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'sortir-game',
-  redirectToAuthoring: true,
-  redirectNote: 'Game memiliki editor khusus — edit via authoring panel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'pool', label: 'Kartu', icon: 'Layers' },
+    { key: 'kolom', label: 'Kolom', icon: 'Columns' },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
-    { key: 'title', type: 'text', label: 'Judul' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'pool', type: 'array', label: 'Kartu Sortir', group: 'pool',
+      fields: [
+        { key: 'text', label: 'Teks Kartu', type: 'text' },
+        { key: 'category', label: 'Kategori', type: 'text', helpText: 'ID kolom tujuan' },
+      ],
+    },
+    {
+      key: 'kolom', type: 'array', label: 'Kolom', group: 'kolom',
+      fields: [
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
   ],
 };
 
 export const RODAGAME_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'roda-game',
-  redirectToAuthoring: true,
-  redirectNote: 'Game memiliki editor khusus — edit via authoring panel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'questions', label: 'Pertanyaan', icon: 'HelpCircle' },
+  ],
   properties: [
-    { key: 'variant', type: 'variant', label: 'Varian' },
-    { key: 'title', type: 'text', label: 'Judul' },
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'questions', type: 'array', label: 'Pertanyaan', group: 'questions',
+      fields: [
+        { key: 'q', label: 'Pertanyaan', type: 'textarea' },
+        { key: 'diskusiHint', label: 'Hint Diskusi', type: 'text' },
+        { key: 'opts', label: 'Pilihan (JSON)', type: 'json', helpText: 'Array {text, correct}, contoh: [{"text":"A","correct":true}]' },
+        { key: 'feedbackCorrect', label: 'Feedback Benar', type: 'text' },
+        { key: 'feedbackWrong', label: 'Feedback Salah', type: 'text' },
+      ],
+    },
   ],
 };
 
@@ -365,6 +428,10 @@ export const TABELACCORD_PROPERTY_SCHEMA: PropertySchema = {
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📊' },
         { key: 'title', label: 'Judul', type: 'text' },
         { key: 'color', label: 'Warna', type: 'color' },
+        {
+          key: 'details', label: 'Detail', type: 'json',
+          helpText: 'Array {label, value}, contoh: [{"label":"Asal","value":"Jawa"}]',
+        },
       ],
     },
   ],

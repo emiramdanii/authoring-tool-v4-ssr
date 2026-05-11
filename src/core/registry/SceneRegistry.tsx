@@ -171,7 +171,9 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
       title: 'Judul Baru',
       subtitle: 'Subtitle',
       badges: [],
+      meta: { durasi: '', fase: 'VII', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
+      accentColor: 'y',
     }),
   },
   'petunjuk': {
@@ -206,6 +208,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
       title: 'Tujuan Pembelajaran',
       titleHighlight: '',
       items: [{ num: 1, verb: 'Memahami', desc: 'Deskripsi tujuan', color: 'y' }],
+      profilColor: 'g',
     }),
   },
   'alur': {
@@ -237,7 +240,15 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     renderer: SkenarioRenderer,
     createDefault: () => ({
       title: 'Skenario',
-      chapters: [{ id: 'ch1', charEmoji: '🎭', title: 'Bab 1', choices: [] }],
+      chapters: [{
+        id: 'ch1',
+        charEmoji: '🎭',
+        title: 'Bab 1',
+        choices: [{
+          icon: '👉', label: 'Pilihan 1', detail: '', good: true, pts: 10,
+          level: 'good' as const,
+        }],
+      }],
     }),
   },
   'def-box': {
@@ -299,6 +310,8 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     renderer: FtabRenderer,
     createDefault: () => ({
       tabs: [{ icon: '📑', label: 'Tab 1', content: [] }],
+      showReadMarker: false,
+      showProgress: false,
     }),
   },
   'nk-card': {
@@ -336,7 +349,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     renderer: DiskusiRenderer,
     createDefault: () => ({
       title: 'Diskusi',
-      questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban' }],
+      questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban', color: 'c' }],
     }),
   },
   'kuis': {
@@ -353,6 +366,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     createDefault: () => ({
       title: 'Kuis',
       questions: [{ q: 'Pertanyaan?', opts: ['A', 'B', 'C'], ans: 0, ex: 'Penjelasan' }],
+      interactive: true,
     }),
   },
   'sortir-game': {
@@ -368,8 +382,9 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     renderer: SortirGameRenderer,
     createDefault: () => ({
       title: 'Game Sortir',
-      pool: [],
-      kolom: [],
+      pool: [{ id: 's1', text: 'Item 1', category: 'kolom-1' }],
+      kolom: [{ id: 'kolom-1', label: 'Kolom 1', color: 'y' }],
+      interactive: true,
     }),
   },
   'roda-game': {
@@ -385,7 +400,13 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     renderer: RodaGameRenderer,
     createDefault: () => ({
       title: 'Game Roda',
-      questions: [],
+      questions: [{
+        q: 'Pertanyaan?',
+        opts: [{ text: 'Jawaban A', correct: true }, { text: 'Jawaban B', correct: false }],
+        feedbackCorrect: 'Benar!',
+        feedbackWrong: 'Coba lagi',
+      }],
+      interactive: true,
     }),
   },
   'hasil': {
@@ -402,6 +423,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     createDefault: () => ({
       title: 'Hasil',
       subtitle: 'Subtitle hasil',
+      interactive: true,
     }),
   },
   'refleksi': {
@@ -418,6 +440,7 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     createDefault: () => ({
       title: 'Refleksi',
       questions: [{ teks: 'Pertanyaan refleksi?', petunjuk: 'Petunjuk refleksi' }],
+      interactive: true,
     }),
   },
   'penutup': {
@@ -449,7 +472,8 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     propertySchema: TABELACCORD_PROPERTY_SCHEMA,
     renderer: TabelAccordionRenderer,
     createDefault: () => ({
-      rows: [{ icon: '📊', title: 'Baris 1', color: 'y', details: [] }],
+      rows: [{ icon: '📊', title: 'Baris 1', color: 'y', details: [{ label: 'Label', value: 'Nilai' }] }],
+      interactive: true,
     }),
   },
 };
