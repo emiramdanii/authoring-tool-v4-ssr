@@ -1,11 +1,25 @@
 // ═══════════════════════════════════════════════════════════════
 // CANVA STORE — History slice (undo/redo)
 // ═══════════════════════════════════════════════════════════════
+// Hybrid undo/redo system:
+//   - Snapshot-based: for legacy CanvaElement operations (structuredClone)
+//   - Patch-based: for SchemaBlock operations via PatchHistory (immer patches)
+//
+// The patch-based system is more memory-efficient and enables:
+//   - Fine-grained undo at the block property level
+//   - Edit history debugging and replay
+//   - Future: collaboration sync via patches
+//
+// Both systems coexist. SchemaBlock edits record patches via the
+// editBus → PatchHistory pipeline, while legacy edits use snapshots.
 
+import { applyPatches } from 'immer';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { Snapshot } from './types';
 import { MAX_HISTORY } from './constants';
+import { patchHistory } from '@/core/editor/patch-history';
+import type { SchemaBlock } from '@/core/schema/types';
 
 export type HistorySlice = Pick<
   CanvaState,
@@ -29,6 +43,44 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
   },
 
   undo: () => {
+    // ═══ PRIORITY 1: Patch-based undo (SchemaBlock edits) ═══
+    // If PatchHistory has entries, apply inverse patches to the current
+    // page's schema blocks. This is more granular than snapshot undo.
+    if (patchHistory.canUndo()) {
+      const inversePatches = patchHistory.undo();
+      if (inversePatches && inversePatches.length > 0) {
+        const { pages, currentPageIndex } = get();
+        const page = pages[currentPageIndex];
+        if (page?.templateData?.schemaScreen) {
+          const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
+          const blocks = schemaScreen.blocks as SchemaBlock[];
+          try {
+            const newBlocks = applyPatches(blocks, inversePatches) as SchemaBlock[];
+            const newPages = [...pages];
+            newPages[currentPageIndex] = {
+              ...page,
+              templateData: {
+                ...page.templateData,
+                schemaScreen: { ...schemaScreen, blocks: newBlocks },
+              },
+            };
+            _set({
+              pages: newPages,
+              selectedBlockId: null,
+              selectedBlockType: null,
+              editingBlockId: null,
+              selectedBlockIds: [],
+            });
+            return;
+          } catch {
+            // Patch application failed (state diverged) — fall through to snapshot undo
+            console.warn('[History] Patch-based undo failed, falling back to snapshot undo');
+          }
+        }
+      }
+    }
+
+    // ═══ FALLBACK: Snapshot-based undo (legacy) ═══
     const { _history, _historyIdx } = get();
     if (_historyIdx <= 0) return;
     const prev = _history[_historyIdx - 1];
@@ -43,6 +95,41 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
   },
 
   redo: () => {
+    // ═══ PRIORITY 1: Patch-based redo (SchemaBlock edits) ═══
+    if (patchHistory.canRedo()) {
+      const forwardPatches = patchHistory.redo();
+      if (forwardPatches && forwardPatches.length > 0) {
+        const { pages, currentPageIndex } = get();
+        const page = pages[currentPageIndex];
+        if (page?.templateData?.schemaScreen) {
+          const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
+          const blocks = schemaScreen.blocks as SchemaBlock[];
+          try {
+            const newBlocks = applyPatches(blocks, forwardPatches) as SchemaBlock[];
+            const newPages = [...pages];
+            newPages[currentPageIndex] = {
+              ...page,
+              templateData: {
+                ...page.templateData,
+                schemaScreen: { ...schemaScreen, blocks: newBlocks },
+              },
+            };
+            _set({
+              pages: newPages,
+              selectedBlockId: null,
+              selectedBlockType: null,
+              editingBlockId: null,
+              selectedBlockIds: [],
+            });
+            return;
+          } catch {
+            console.warn('[History] Patch-based redo failed, falling back to snapshot redo');
+          }
+        }
+      }
+    }
+
+    // ═══ FALLBACK: Snapshot-based redo (legacy) ═══
     const { _history, _historyIdx } = get();
     if (_historyIdx >= _history.length - 1) return;
     const next = _history[_historyIdx + 1];
@@ -56,6 +143,6 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
     _set({ _skipHistory: false });
   },
 
-  canUndo: () => get()._historyIdx > 0,
-  canRedo: () => get()._historyIdx < get()._history.length - 1,
+  canUndo: () => get()._historyIdx > 0 || patchHistory.canUndo(),
+  canRedo: () => get()._historyIdx < get()._history.length - 1 || patchHistory.canRedo(),
 });

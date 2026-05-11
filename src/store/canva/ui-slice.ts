@@ -9,7 +9,7 @@ import type { CanvaState } from './types';
 import type { CanvaElement } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
 import { convertToSchema } from '@/core/engine/TemplateAdapter';
-import { deepMergeBlock } from '@/core/editor/deep-merge';
+import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import type { SchemaBlock } from '@/core/schema/types';
 import { editBus } from '@/core/editor/edit-bus';
 import { SCENE_REGISTRY } from '@/core/registry/SceneRegistry';
@@ -128,6 +128,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   //   2. IMMUTABLE: Uses Immer for safe immutable updates with mutable draft API
   //   3. UNDO-FRIENDLY: Patches can be reversed (future: store patches, not full snapshots)
   //   4. COLLAB-READY: Partial updates make collaboration possible (merge patches from multiple users)
+  //   5. PATCH-BASED: Uses produceWithPatches to capture forward+inverse immer patches
+  //      for memory-efficient undo/redo via PatchHistory
   //
   // For pages without an existing schemaScreen (legacy adapted pages),
   // this "freezes" the adapted schema into templateData on first edit.
@@ -168,18 +170,16 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blockIdx = blocks.findIndex(b => b.id === blockId);
     if (blockIdx === -1) return;
 
-    // Push history BEFORE the edit (for undo)
+    // Push history BEFORE the edit (for snapshot-based undo fallback)
     get()._pushHistory();
 
-    // ═══ DEEP PATCH MERGE via Immer ═══════════════════════════
-    // Instead of shallow merge: { ...block, ...updates }
-    // We use deepMergeBlock which recursively merges nested objects
-    // while preserving unmodified properties at every level.
-    const mergedBlock = deepMergeBlock(blocks[blockIdx], updates);
-    const newBlocks = [...blocks];
-    newBlocks[blockIdx] = mergedBlock;
+    // ═══ DEEP PATCH MERGE via Immer (with patches) ═════════════
+    // Use mergeBlockInArray which operates at the blocks array level,
+    // producing patches scoped to the array for correct undo/redo.
+    const { blocks: newBlocks, patches: forwardPatches, inversePatches } =
+      mergeBlockInArray(blocks, blockIdx, updates);
 
-    // Emit patch event for edit pipeline
+    // Emit patch event with immer patches for PatchHistory integration
     editBus.emit({
       type: 'patch',
       patch: {
@@ -189,6 +189,12 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         patch: updates,
         timestamp: Date.now(),
         source: 'user',
+        // Attach immer-level patches for PatchHistory to record
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
       },
     });
 

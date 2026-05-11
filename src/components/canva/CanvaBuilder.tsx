@@ -11,6 +11,7 @@ import Stage from './Stage';
 import RightPanel from './RightPanel';
 import PlayOverlay from './PlayOverlay';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
+import { connectHistoryToEditBus } from '@/core/editor/patch-history';
 
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
@@ -27,6 +28,15 @@ export default function CanvaBuilder() {
   useEffect(() => {
     useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
   }, [useCanvaStore((s) => s.pages.length)]);
+
+  // ── Connect PatchHistory to EditBus (patch-based undo/redo) ──
+  // This wires the immer patch pipeline: every SchemaBlock edit
+  // records forward+inverse patches in PatchHistory for efficient
+  // undo/redo. Called once on mount, disconnected on unmount.
+  useEffect(() => {
+    const disconnect = connectHistoryToEditBus();
+    return disconnect;
+  }, []);
 
   // ── Auto-save to localStorage on changes (debounced) ────────
   // This is the ONLY auto-save in the app. Toolbar and StatusBar

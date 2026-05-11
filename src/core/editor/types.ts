@@ -112,6 +112,15 @@ export interface SchemaPatch {
   timestamp: number;
   /** Optional source (for collaboration tracking) */
   source?: 'user' | 'ai' | 'sync' | 'auto';
+  /** Immer-level patches for efficient undo/redo (when available) */
+  _immerPatches?: {
+    /** Forward patches scoped to the blocks array level */
+    forward: import('immer').Patch[];
+    /** Inverse patches scoped to the blocks array level */
+    inverse: import('immer').Patch[];
+    /** Page index the patches apply to */
+    pageIndex: number;
+  };
 }
 
 // ── Selection Context ───────────────────────────────────────────

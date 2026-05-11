@@ -12,7 +12,8 @@
 //
 // Uses Immer for immutable updates with mutable draft API.
 
-import { produce } from 'immer';
+import { produce, produceWithPatches } from 'immer';
+import type { Patch } from 'immer';
 import type { SchemaBlock } from '../schema/types';
 
 /**
@@ -91,4 +92,76 @@ export function batchMergeBlocks(
       }
     }
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH-BASED MERGE — Returns immer patches for undo/redo
+// ═══════════════════════════════════════════════════════════════════
+// Uses produceWithPatches to capture forward and inverse patches.
+// These patches can be stored in PatchHistory and applied with
+// applyPatches for efficient, memory-friendly undo/redo.
+
+export interface DeepMergeResult {
+  /** The merged block (immutable, new reference) */
+  block: SchemaBlock;
+  /** Forward patches — apply to original to get merged result */
+  patches: Patch[];
+  /** Inverse patches — apply to merged result to get original */
+  inversePatches: Patch[];
+}
+
+/**
+ * Deep patch merge a SchemaBlock with partial updates, returning
+ * both the merged result and immer patches for undo/redo.
+ *
+ * @example
+ *   const { block, patches, inversePatches } = deepMergeBlockWithPatches(block, { title: 'baru' });
+ *   // block.title === 'baru'
+ *   // patches: [{ op: 'replace', path: ['title'], value: 'baru' }]
+ *   // inversePatches: [{ op: 'replace', path: ['title'], value: 'old title' }]
+ */
+export function deepMergeBlockWithPatches<T extends SchemaBlock>(
+  block: T,
+  patch: Record<string, unknown>
+): DeepMergeResult {
+  const [newBlock, patches, inversePatches] = produceWithPatches(block, (draft) => {
+    deepMergeInto(draft as Record<string, unknown>, patch);
+  });
+  return {
+    block: newBlock as T,
+    patches,
+    inversePatches,
+  };
+}
+
+/**
+ * Deep merge a block within a blocks array, returning the new array
+ * and immer patches scoped to the blocks array level.
+ * This is the correct level for undo/redo — patches reference
+ * paths like [blockIndex, 'title'] which can be applied to the
+ * blocks array directly.
+ *
+ * @example
+ *   const { blocks: newBlocks, patches, inversePatches } =
+ *     mergeBlockInArray(blocks, blockIdx, { title: 'baru' });
+ *   // patches: [{ op: 'replace', path: [2, 'title'], value: 'baru' }]
+ */
+export function mergeBlockInArray(
+  blocks: SchemaBlock[],
+  blockIndex: number,
+  patch: Record<string, unknown>
+): { blocks: SchemaBlock[]; patches: Patch[]; inversePatches: Patch[] } {
+  const [newBlocks, patches, inversePatches] = produceWithPatches(blocks, (draft) => {
+    if (blockIndex >= 0 && blockIndex < draft.length) {
+      deepMergeInto(
+        draft[blockIndex] as unknown as Record<string, unknown>,
+        patch
+      );
+    }
+  });
+  return {
+    blocks: newBlocks,
+    patches,
+    inversePatches,
+  };
 }

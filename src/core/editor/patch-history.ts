@@ -249,16 +249,27 @@ export const patchHistory = new PatchHistory(100);
 
 import { editBus } from './edit-bus';
 
+/**
+ * Connect PatchHistory to the EditBus so that schema block edits
+ * automatically record immer patches for undo/redo.
+ *
+ * The editBus 'patch' event carries forward+inverse immer patches
+ * when updateSchemaBlock uses produceWithPatches.
+ *
+ * Usage (call once at app init):
+ *   const disconnect = connectHistoryToEditBus();
+ *   // Later: disconnect() to stop recording
+ */
 export function connectHistoryToEditBus(): () => void {
   return editBus.subscribe((event) => {
-    if (event.type === 'patch') {
-      // The patch event contains the forward patch.
-      // For full undo/redo, we'd need the inverse patch too.
-      // This requires updating updateSchemaBlock to use produceWithPatches.
-      // For now, we log the event for future integration.
-      //
-      // TODO: Update deepMergeBlock to return both forward and inverse patches,
-      // then push them into patchHistory here.
+    if (event.type === 'patch' && event.patch._immerPatches) {
+      const { _immerPatches } = event.patch;
+      patchHistory.push({
+        patches: _immerPatches.forward,
+        inversePatches: _immerPatches.inverse,
+        source: event.patch.source ?? 'user',
+        description: `${event.patch.blockType}.${event.patch.blockId}`,
+      });
     }
   });
 }

@@ -20,7 +20,8 @@ export type {
 } from './types';
 
 // Deep merge
-export { deepMergeBlock, batchMergeBlocks } from './deep-merge';
+export { deepMergeBlock, batchMergeBlocks, deepMergeBlockWithPatches, mergeBlockInArray } from './deep-merge';
+export type { DeepMergeResult } from './deep-merge';
 
 // Edit event bus
 export { editBus } from './edit-bus';
