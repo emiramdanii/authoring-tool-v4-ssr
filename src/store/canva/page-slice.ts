@@ -11,8 +11,9 @@ import {
   populateTemplateElements,
 } from '@/lib/canva-constants';
 import { createPage, createElId } from './constants';
-import { getTemplateLabel, buildTemplateData, getTemplateExtraProps } from './template-data';
+import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
+import { deriveSchema, deriveSchemaForPage, createDeriveContext } from '@/core/schema/derive-schema';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
 export type PageSlice = Pick<
@@ -112,8 +113,8 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPages = [...pages];
 
     const isTemplate = templateType !== 'custom';
-    // Populate templateData using centralized builder
-    const newPage = { ...page, templateType, templateVariant: 'A' as const, templateData: buildTemplateData(templateType) };
+    // FASE 3: templateData is legacy — schema is derived directly
+    const newPage = { ...page, templateType, templateVariant: 'A' as const, templateData: {} as Record<string, unknown> };
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
     // Re-populate placeholder elements for export compat
@@ -128,22 +129,21 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       newPage.locked = undefined;
     }
 
-    // ═══ FASE 2: Create native schema from preset ════════════
-    // When changing template type, refresh the schema to match
-    // the new preset. This ensures page.schema stays in sync.
-    const preset = getPreset(templateType);
-    if (preset) {
-      const schema = preset.create({
-        pageId: newPage.id,
-        label: newPage.label,
-        variant: 'A',
-      });
+    // ═══ FASE 3: Derive schema directly from authoring ═════
+    // When changing template type, derive schema from the current
+    // authoring state. Pure one-way: Authoring → Schema → Canvas.
+    if (isTemplate) {
+      const ctx = createDeriveContext();
+      const schema = deriveSchema(templateType, ctx);
       if (schema) {
+        schema.id = newPage.id;
         newPage.schema = schema;
       } else {
-        // Custom pages have no schema
         delete newPage.schema;
       }
+    } else {
+      // Custom pages have no schema
+      delete newPage.schema;
     }
 
     newPages[currentPageIndex] = newPage;
@@ -226,10 +226,9 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     get()._pushHistory();
     const newPages = [...pages];
-    // Re-lock: refresh templateData from authoring, reset to locked template mode
-    const freshTemplateData = buildTemplateData(page.templateType);
-    // Populate fresh placeholder elements for the template
-    const freshElements = populateTemplateElements({ ...page, templateData: freshTemplateData }, createElId);
+    // Re-lock: derive fresh schema from authoring, reset to locked template mode
+    // FASE 3: Use deriveSchema instead of buildTemplateData
+    const freshElements = populateTemplateElements({ ...page, templateData: {} }, createElId);
 
     // Filter user elements: keep only non-placeholder elements that are
     // NOT full-page (x:0,y:0,w:100,h:100) — those were the original
@@ -249,25 +248,19 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPage: CanvaPage = {
       ...page,
       locked: true,
-      templateData: freshTemplateData,
+      templateData: {}, // FASE 3: legacy, no longer populated
       overlayElements: userElements, // Preserve genuine user elements as overlays
       elements: freshElements,
     };
     Object.assign(newPage, getTemplateExtraProps(page.templateType));
 
-    // ═══ FASE 2: Refresh schema from preset on relock ════════
-    // Re-lock refreshes the schema from the current authoring data.
+    // ═══ FASE 3: Derive schema directly from authoring ═══════
+    // Re-lock derives a fresh schema from the current authoring data.
     // This ensures the schema reflects the latest content.
-    const preset = getPreset(page.templateType);
-    if (preset) {
-      const schema = preset.create({
-        pageId: newPage.id,
-        label: newPage.label,
-        variant: page.templateVariant || 'A',
-      });
-      if (schema) {
-        newPage.schema = schema;
-      }
+    const ctx = createDeriveContext();
+    const schema = deriveSchemaForPage(newPage, ctx);
+    if (schema) {
+      newPage.schema = schema;
     }
 
     newPages[currentPageIndex] = newPage;

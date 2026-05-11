@@ -1,37 +1,43 @@
 // ═══════════════════════════════════════════════════════════════
-// CANVA STORE — Reactive sync from authoring → canvas
-// Updates page templateData when authoring data changes,
-// WITHOUT rebuilding the entire page layout.
+// CANVA STORE — Reactive sync from authoring → canvas (FASE 3)
+// ═══════════════════════════════════════════════════════════════
+// ONE-WAY DATA FLOW:
+//   Authoring Store → deriveSchema() → page.schema → Renderer → Canvas
+//
+// This replaces the old dual-path sync that used buildTemplateData().
+// Now, when authoring data changes:
+//   - Schema pages: page.schema is re-derived via deriveSchemaForPage()
+//   - Unlocked pages: schema is frozen, only orphan cleanup runs
+//   - Custom pages: only Layer 2/3 cleanup (no schema)
 //
 // Layers:
-//   Layer 1: templateData re-binding (buildTemplateData)
+//   Layer 1: Schema re-derivation (deriveSchema) — ONE-WAY
 //   Layer 2: Orphan cleanup (remove elements referencing deleted data)
 //   Layer 3: Element ID re-sync (update moduleId/kuisId on elements)
-//   Layer 4: Auto-subscription wiring (authoring store → syncTemplateData)
+//   Layer 4: Auto-subscription wiring (authoring store → syncSchema)
 // ═══════════════════════════════════════════════════════════════
 
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
-import type { CanvaElement } from '@/components/canva/types';
-import { buildTemplateData } from './template-data';
+import type { CanvaPage, CanvaElement } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES } from '@/lib/canva-constants';
+import { deriveSchemaForPage, createDeriveContext } from '@/core/schema/derive-schema';
+import type { ScreenSchema } from '@/core/schema/types';
 
 export type SyncSlice = Pick<CanvaState, 'syncTemplateData'>;
 
 export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set, get) => ({
   /**
-   * Sync all template pages' templateData from the authoring store.
-   * This preserves page layout, overlay elements, and custom elements —
-   * only the templateData binding is updated.
+   * Sync canvas pages from the authoring store.
    *
-   * Called automatically when authoring data changes (via useAuthoringStore.subscribe).
-   * Now uses the canonical buildTemplateData() from template-data.ts
-   * to eliminate the previous DRY violation.
+   * FASE 3: Now uses deriveSchema() for one-way data flow:
+   *   Authoring → deriveSchema() → page.schema → Renderer
    *
-   * Also performs:
-   *   Layer 2: Orphan cleanup — removes elements referencing deleted modules/kuis
-   *   Layer 3: Element ID re-sync — updates moduleId/kuisId on elements
+   * For schema-driven pages (page.schema exists), this re-derives
+   * the schema from the current authoring state, preserving block IDs.
+   * For legacy pages (no schema), falls back to buildTemplateData().
+   * For unlocked pages, schema is frozen — only cleanup runs.
    */
   syncTemplateData: () => {
     const { pages } = get();
@@ -40,41 +46,27 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
     const allKuisIds = new Set(authStore.kuis.map((k: { _id?: string }) => k._id).filter(Boolean));
     let changed = false;
 
+    // Create a single derive context for all pages (performance optimization)
+    let deriveCtx: ReturnType<typeof createDeriveContext> | null = null;
+    const getCtx = () => deriveCtx ?? (deriveCtx = createDeriveContext());
+
     const newPages = pages.map(page => {
-      // ── Layer 1: templateData re-binding (template pages only) ──
-      // Custom pages don't have templateData, but they still need Layer 2 & 3
-      let freshData: Record<string, unknown> | null = null;
-      let dataChanged = false;
+      const isTemplate = page.templateType && page.templateType !== 'custom';
+      const isUnlocked = page.locked === false;
 
-      if (page.templateType && page.templateType !== 'custom') {
-        // Skip templateData sync for unlocked pages (locked === false)
-        // Their templateData is frozen — they manage it manually
-        // Also skip for schema-driven pages — their content comes from SchemaScreenRenderer
-        if (page.locked === false) {
-          // Still run Layer 2 (orphan cleanup) and Layer 3 (ID re-sync) for unlocked pages
-          freshData = null; // Don't rebind templateData
-        } else if (page.schema) {
-          // FASE 1: Native schema pages — skip templateData sync entirely.
-          // Their content is from page.schema, not the authoring store.
-          // Schema is updated via deriveSchema() in FASE 3, not here.
-          freshData = null;
-        } else if (page.templateData?.schemaScreen) {
-          // Legacy schema-driven pages: skip templateData sync entirely
-          // Their content is from the schema preset, not the authoring store
-          freshData = null;
-        } else {
-          freshData = buildTemplateData(page.templateType);
-        }
+      // ── Layer 1: Schema re-derivation (FASE 3 — one-way flow) ──
+      let newSchema: ScreenSchema | null | undefined = undefined; // undefined = no change
+      let schemaChanged = false;
 
-        // Check if data actually changed (shallow comparison of keys)
-        if (freshData) {
-          const oldData = page.templateData || {};
-          const allKeys = new Set([...Object.keys(oldData), ...Object.keys(freshData)]);
-          for (const key of allKeys) {
-            if (JSON.stringify(oldData[key]) !== JSON.stringify(freshData[key])) {
-              dataChanged = true;
-              break;
-            }
+      if (isTemplate && !isUnlocked && page.schema) {
+        // Schema-driven locked page: re-derive schema from authoring
+        const ctx = getCtx();
+        const derived = deriveSchemaForPage(page, ctx);
+        if (derived) {
+          // Check if schema actually changed (compare serialized blocks)
+          if (JSON.stringify(derived.blocks) !== JSON.stringify(page.schema.blocks)) {
+            newSchema = derived;
+            schemaChanged = true;
           }
         }
       }
@@ -88,8 +80,6 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       });
 
       // Clean regular elements — but SKIP for unlocked pages
-      // Unlocked pages have manual control; auto-deleting user elements would be surprising
-      const isUnlocked = page.locked === false;
       const cleanedElements = isUnlocked
         ? page.elements
         : page.elements.filter(el => {
@@ -102,8 +92,6 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       const elementsChanged = cleanedElements.length !== page.elements.length;
 
       // ── Layer 3: Element ID re-sync ───────────────────────
-      // For game/kuis elements that still use dataIdx only, try to resolve
-      // their stable moduleId/kuisId from the authoring store
       const syncElementIds = (els: CanvaElement[]): { result: CanvaElement[]; changed: boolean } => {
         let changed = false;
         const result = els.map(el => {
@@ -129,24 +117,31 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
 
       const syncedOverlays = syncElementIds(cleanedOverlays);
       const syncedElements = syncElementIds(cleanedElements);
-
       const idsSynced = syncedOverlays.changed || syncedElements.changed;
 
-      if (!dataChanged && !overlaysChanged && !elementsChanged && !idsSynced) return page;
+      if (!schemaChanged && !overlaysChanged && !elementsChanged && !idsSynced) return page;
 
       changed = true;
-      return {
+      const result: CanvaPage = {
         ...page,
-        // Merge fresh data INTO existing templateData to preserve user-edited fields
-        // (e.g. title overrides) that aren't produced by buildTemplateData
-        templateData: dataChanged && freshData ? { ...page.templateData, ...freshData } : page.templateData,
-        // Also update label for cover pages if title changed
-        ...(page.templateType === 'cover' && freshData?.title
-          ? { label: 'Cover - ' + freshData.title }
-          : {}),
         overlayElements: (overlaysChanged || idsSynced) ? syncedOverlays.result : page.overlayElements,
         elements: (elementsChanged || idsSynced) ? syncedElements.result : page.elements,
       };
+
+      // Apply schema update if changed
+      if (schemaChanged && newSchema) {
+        result.schema = newSchema;
+      }
+
+      // Update label for cover pages if title changed in schema
+      if (schemaChanged && page.templateType === 'cover' && newSchema?.blocks?.[0]) {
+        const coverBlock = newSchema.blocks[0] as { title?: string };
+        if (coverBlock.title) {
+          result.label = 'Cover - ' + coverBlock.title;
+        }
+      }
+
+      return result;
     });
 
     if (changed) {
@@ -170,7 +165,7 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
 
 // ═══════════════════════════════════════════════════════════════
 // Layer 4: Auto-subscription wiring
-// Subscribes to authoring store changes and triggers syncTemplateData
+// Subscribes to authoring store changes and triggers syncSchema
 // automatically. This ensures canvas always reflects authoring data.
 // ═══════════════════════════════════════════════════════════════
 

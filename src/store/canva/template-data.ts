@@ -1,8 +1,22 @@
 // ═══════════════════════════════════════════════════════════════
 // CANVA STORE — Template data population helpers
 // ═══════════════════════════════════════════════════════════════
-// Extracted from canva-store.ts: addTemplatePage & setTemplateType
-// share identical switch logic for populating templateData.
+// ⚠️ FASE 3: DEPRECATED — This file is LEGACY.
+//
+// The new data flow is: Authoring → deriveSchema() → page.schema
+// buildTemplateData() is NO LONGER used by the main code paths:
+//   - PagePresetRegistry: uses deriveSchema() directly
+//   - sync-slice: uses deriveSchemaForPage() directly
+//   - page-slice: uses deriveSchema() directly
+//
+// This file is kept ONLY for:
+//   - getTemplateLabel() — still used for page label generation
+//   - getTemplateExtraProps() — still used for background colors
+//   - createTemplatePage() — may be used by export pipeline
+//
+// Do NOT add new code that depends on buildTemplateData().
+// Use deriveSchema() from @/core/schema/derive-schema instead.
+// ═══════════════════════════════════════════════════════════════
 
 import type { PageTemplateType } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -39,6 +53,12 @@ export function getTemplateLabel(templateType: PageTemplateType, pageCount: numb
 
 // ── Populate templateData for a given template type ───────────
 
+/**
+ * Populate templateData for a given template type.
+ * @deprecated FASE 3: Use deriveSchema() from @/core/schema/derive-schema instead.
+ * This function is kept for backward compat with export pipeline only.
+ * New code should NEVER call this function.
+ */
 export function buildTemplateData(templateType: PageTemplateType): Record<string, unknown> {
   const authStore = useAuthoringStore.getState();
   const meta = authStore.meta;
