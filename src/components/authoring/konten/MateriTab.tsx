@@ -5,6 +5,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
+import { Trash2, FileEdit } from 'lucide-react';
 
 // ── Blok Card ──────────────────────────────────────────────────
 function BlokCard({
@@ -72,7 +73,7 @@ function BlokCard({
               className="px-2 py-1 text-xs text-zinc-500 hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors"
               title="Hapus blok"
             >
-              🗑️ Hapus
+              <Trash2 size={12} className="inline" /> Hapus
             </button>
           </div>
 
@@ -113,7 +114,7 @@ export function MateriTab() {
       {/* Empty state */}
       {materi.blok.length === 0 ? (
         <div className="text-center py-8 bg-zinc-900 border border-zinc-800 rounded-xl">
-          <div className="text-3xl mb-2">📝</div>
+          <FileEdit size={28} className="text-zinc-500 mb-2" />
           <p className="text-sm text-zinc-500">Belum ada blok materi. Tambahkan blok di bawah.</p>
         </div>
       ) : (

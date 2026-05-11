@@ -20,21 +20,7 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
 }) {
   const b = block as unknown as Record<string, unknown>;
 
-  // If this block type should redirect to authoring panel, show note
-  if (schema.redirectToAuthoring) {
-    return (
-      <div className="mt-2 space-y-2">
-        {schema.properties
-          .filter(p => p.type === 'variant')
-          .map(field => renderField(field, b, onUpdate))}
-        <div className="text-[9px] text-slate-500 italic px-1">
-          {schema.redirectNote}
-        </div>
-      </div>
-    );
-  }
-
-  // Group fields by their group key
+  // Group fields by their group key — hooks must be called before any early returns
   const groupedFields = useMemo(() => {
     const groups: Map<string, PropertyField[]> = new Map();
     const ungrouped: PropertyField[] = [];
@@ -51,6 +37,20 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
 
     return { groups, ungrouped };
   }, [schema]);
+
+  // If this block type should redirect to authoring panel, show note
+  if (schema.redirectToAuthoring) {
+    return (
+      <div className="mt-2 space-y-2">
+        {schema.properties
+          .filter(p => p.type === 'variant')
+          .map(field => renderField(field, b, onUpdate))}
+        <div className="text-[9px] text-slate-500 italic px-1">
+          {schema.redirectNote}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-2 space-y-2">

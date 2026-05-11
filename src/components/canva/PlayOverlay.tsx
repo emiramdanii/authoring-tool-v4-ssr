@@ -6,8 +6,9 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { PageRenderer } from './page-renderer';
 import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
+import { COLORS } from '@/lib/color-palette';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
-import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2 } from 'lucide-react';
+import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, Lock, Unlock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
@@ -288,7 +289,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
             ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
             : p.bgColor?.includes('gradient')
               ? { background: p.bgColor }
-              : { background: p.bgColor || '#1e293b' };
+              : { background: p.bgColor || COLORS.bgDark };
           return (
             <button
               key={p.id}
@@ -307,10 +308,10 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
                 <div className="text-[9px] font-bold text-white truncate flex items-center gap-0.5">
                   {TEMPLATE_ICON_MAP[p.templateType] || '📄'} {p.label}
                   {p.templateType && p.templateType !== 'custom' && p.locked !== false && (
-                    <span className="text-amber-400/70 text-[7px]">🔒</span>
+                    <Lock size={12} className="text-amber-400/70" />
                   )}
                   {p.templateType && p.templateType !== 'custom' && p.locked === false && (
-                    <span className="text-emerald-400/70 text-[7px]">🔓</span>
+                    <Unlock size={12} className="text-emerald-400/70" />
                   )}
                 </div>
                 <div className="text-[7px] text-white/50">

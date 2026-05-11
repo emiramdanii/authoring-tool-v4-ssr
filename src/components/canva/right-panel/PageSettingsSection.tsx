@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutTemplate, Zap, Lock, Unlock } from 'lucide-react';
+import { LayoutTemplate, Zap, Lock, Unlock, Square } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { LAYOUT_PRESETS } from '../types';
 import type { PageTemplateType, CanvaPage } from '../types';
@@ -91,7 +91,7 @@ export default function PageSettingsSection({
           <div className="flex gap-1.5">
             {(page.templateType === 'cover'
               ? [
-                  { id: 'A', label: 'Centered', icon: '⬜' },
+                  { id: 'A', label: 'Centered', icon: <Square size={12} /> },
                   { id: 'B', label: 'Left Align', icon: '▐▌' },
                   { id: 'C', label: 'Split', icon: '◧◨' },
                 ]
@@ -102,56 +102,56 @@ export default function PageSettingsSection({
                   ]
               : page.templateType === 'kuis'
                 ? [
-                    { id: 'A', label: 'Widget', icon: '⬜' },
+                    { id: 'A', label: 'Widget', icon: <Square size={12} /> },
                     { id: 'B', label: 'Daftar Kartu', icon: '☵' },
                   ]
               : page.templateType === 'skenario'
                 ? [
-                    { id: 'A', label: 'Interaktif', icon: '⬜' },
+                    { id: 'A', label: 'Interaktif', icon: <Square size={12} /> },
                     { id: 'B', label: 'Timeline', icon: '┃' },
                   ]
               : page.templateType === 'dokumen'
                 ? [
-                    { id: 'A', label: 'Tab', icon: '⬜' },
+                    { id: 'A', label: 'Tab', icon: <Square size={12} /> },
                     { id: 'B', label: 'Side Nav', icon: '▐▌' },
                   ]
               : page.templateType === 'hasil'
                 ? [
-                    { id: 'A', label: 'Centered', icon: '⬜' },
+                    { id: 'A', label: 'Centered', icon: <Square size={12} /> },
                     { id: 'B', label: 'Dashboard', icon: '▥' },
                   ]
               : page.templateType === 'penutup'
                 ? [
-                    { id: 'A', label: 'Kartu', icon: '⬜' },
+                    { id: 'A', label: 'Kartu', icon: <Square size={12} /> },
                     { id: 'B', label: 'Checklist', icon: '☑' },
                   ]
               : page.templateType === 'hero'
                 ? [
-                    { id: 'A', label: 'Centered', icon: '⬜' },
+                    { id: 'A', label: 'Centered', icon: <Square size={12} /> },
                     { id: 'B', label: 'Split', icon: '◧◨' },
                   ]
               : page.templateType === 'petunjuk'
                 ? [
-                    { id: 'A', label: 'Langkah', icon: '⬜' },
+                    { id: 'A', label: 'Langkah', icon: <Square size={12} /> },
                     { id: 'B', label: 'Timeline', icon: '┃' },
                   ]
               : page.templateType === 'diskusi'
                 ? [
-                    { id: 'A', label: 'Satu-satu', icon: '⬜' },
+                    { id: 'A', label: 'Satu-satu', icon: <Square size={12} /> },
                     { id: 'B', label: 'Semua', icon: '▥' },
                   ]
               : page.templateType === 'refleksi'
                 ? [
-                    { id: 'A', label: 'Satu-satu', icon: '⬜' },
+                    { id: 'A', label: 'Satu-satu', icon: <Square size={12} /> },
                     { id: 'B', label: 'Jurnal', icon: '📓' },
                   ]
               : page.templateType === 'game'
                 ? [
-                    { id: 'A', label: 'Widget', icon: '⬜' },
+                    { id: 'A', label: 'Widget', icon: <Square size={12} /> },
                     { id: 'B', label: 'Galeri', icon: '▦' },
                   ]
                 : [
-                    { id: 'A', label: 'Default', icon: '⬜' },
+                    { id: 'A', label: 'Default', icon: <Square size={12} /> },
                     { id: 'B', label: 'Alt Layout', icon: '▥' },
                   ]
             ).map(v => (

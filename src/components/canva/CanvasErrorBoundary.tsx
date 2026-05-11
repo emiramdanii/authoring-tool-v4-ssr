@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // Canvas Error Boundary — prevents a single component crash
@@ -42,7 +43,7 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
 
       return (
         <div className="w-full h-full flex flex-col items-center justify-center bg-red-950/20 rounded-lg p-4 text-center">
-          <span className="text-2xl mb-2">⚠️</span>
+          <AlertTriangle size={24} className="mb-2" />
           <div className="text-xs text-red-400 font-semibold mb-1">
             {this.props.name ? `${this.props.name} error` : 'Component error'}
           </div>

@@ -2,6 +2,7 @@
 
 import { GEN_BUTTONS } from './constants';
 import { Spinner } from './Spinner';
+import { Zap, Search, Trash2, CheckCircle2, FileEdit } from 'lucide-react';
 import { renderPreviewContent } from './previews';
 import { useAutoGenerate } from './use-auto-generate';
 
@@ -33,7 +34,7 @@ export default function AutoGenerate() {
       {/* ── Header ──────────────────────────────────────────── */}
       <div>
         <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
-          <span>⚡</span> Auto-Generate
+          <Zap size={16} className="inline" /> Auto-Generate
         </h2>
         <p className="text-sm text-zinc-400 mt-1">
           Paste teks materi sekali → generate bertahap per section.
@@ -64,7 +65,7 @@ export default function AutoGenerate() {
             disabled={text.trim().length < 50}
             className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
           >
-            🔍 Parse Teks
+            <Search size={14} className="inline" /> Parse Teks
           </button>
           <button
             onClick={() => {
@@ -72,7 +73,7 @@ export default function AutoGenerate() {
             }}
             className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-xs rounded-lg transition-colors"
           >
-            🗑️ Bersihkan
+            <Trash2 size={14} className="inline" /> Bersihkan
           </button>
           <div className="ml-auto flex items-center gap-2 text-xs text-zinc-500">
             {text.trim().length < 50 && text.length > 0 && (
@@ -200,7 +201,7 @@ export default function AutoGenerate() {
               disabled={loading.size > 0}
               className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
             >
-              {loading.size > 0 ? <Spinner /> : '⚡'}
+              {loading.size > 0 ? <Spinner /> : <Zap size={14} className="inline" />}
               {loading.size > 0 ? `Generating ${loading.size}...` : 'Generate Semua'}
             </button>
           </div>
@@ -266,14 +267,14 @@ export default function AutoGenerate() {
                 onClick={() => handleApply(activePreview)}
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
               >
-                ✅ Terapkan ke Proyek
+                <CheckCircle2 size={14} className="inline" /> Terapkan ke Proyek
               </button>
               {previews.length > 1 && (
                 <button
                   onClick={handleApplyAll}
                   className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-lg transition-colors"
                 >
-                  ⚡ Terapkan Semua ({previews.length})
+                  <Zap size={14} className="inline" /> Terapkan Semua ({previews.length})
                 </button>
               )}
             </div>
@@ -308,20 +309,20 @@ export default function AutoGenerate() {
       {/* ── Empty state ─────────────────────────────────────── */}
       {!parsed && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-10 text-center">
-          <div className="text-5xl mb-4">📝</div>
+          <div className="text-5xl mb-4"><FileEdit size={40} className="text-zinc-500" /></div>
           <h3 className="text-lg font-semibold text-zinc-200 mb-2">Paste materi untuk memulai</h3>
           <p className="text-sm text-zinc-400 max-w-lg mx-auto">
             Salin teks materi PPKn dari buku atau sumber lain, lalu paste di kolom di atas.
             Sistem akan otomatis mem-parsing dan meng-generate berbagai jenis konten pembelajaran.
           </p>
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500">
-            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded">📝 Paste</span>
+            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded"><FileEdit size={12} className="inline" /> Paste</span>
             <span className="text-zinc-600">→</span>
-            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded">🔍 Parse</span>
+            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded"><Search size={12} className="inline" /> Parse</span>
             <span className="text-zinc-600">→</span>
-            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded">⚡ Generate</span>
+            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded"><Zap size={12} className="inline" /> Generate</span>
             <span className="text-zinc-600">→</span>
-            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded">✅ Terapkan</span>
+            <span className="inline-flex items-center gap-1 bg-zinc-800 px-2 py-1 rounded"><CheckCircle2 size={12} className="inline" /> Terapkan</span>
           </div>
         </div>
       )}

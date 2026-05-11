@@ -1,8 +1,9 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Target, Calendar, ClipboardList, HelpCircle, Puzzle, Gamepad2, FileEdit, Zap } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { COLORS } from '@/lib/color-palette';
 
 // Schema-driven presets use this path for beautiful rendering
 const SCHEMA_DRIVEN_PRESETS = new Set(['hakikat-norma', 'macam-norma']);
@@ -104,7 +105,7 @@ export default function Dashboard() {
                 className="h-full rounded-full transition-all duration-700"
                 style={{
                   width: `${completeness}%`,
-                  background: completeness === 100 ? '#34d399' : completeness >= 60 ? '#fbbf24' : '#f87171',
+                  background: completeness === 100 ? COLORS.success : completeness >= 60 ? COLORS.warning : COLORS.error,
                 }}
               />
             </div>
@@ -213,7 +214,7 @@ export default function Dashboard() {
                 <div className="text-xs font-semibold text-slate-200">{p.label}</div>
                 <div className="text-[0.6rem] text-slate-500 mt-0.5">{p.sub}</div>
                 {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
-                  <div className="text-[0.55rem] text-amber-400/80 font-bold mt-1">⚡ Schema-Driven</div>
+                  <div className="text-[0.55rem] text-amber-400/80 font-bold mt-1 flex items-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
                 )}
                 {isCurrentPreset && (
                   <div className="text-[0.6rem] text-amber-400 font-bold mt-1.5">AKTIF</div>
@@ -231,8 +232,8 @@ export default function Dashboard() {
           onClick={() => setActivePanel('dokumen')}
           className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-amber-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 text-lg flex-shrink-0">
-            📝
+          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 flex-shrink-0">
+            <FileEdit size={18} />
           </div>
           <div>
             <div className="text-sm font-semibold text-slate-200">Isi Dokumen</div>
@@ -245,8 +246,8 @@ export default function Dashboard() {
           onClick={() => setActivePanel('konten')}
           className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-cyan-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-lg flex-shrink-0">
-            🧩
+          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 flex-shrink-0">
+            <Puzzle size={18} />
           </div>
           <div>
             <div className="text-sm font-semibold text-slate-200">Tambah Konten</div>
@@ -260,8 +261,8 @@ export default function Dashboard() {
             onClick={() => setActivePanel('preview')}
             className="flex items-center gap-4 bg-gradient-to-br from-fuchsia-900/30 to-purple-900/20 border border-fuchsia-500/30 rounded-xl p-4 hover:border-fuchsia-400/50 hover:from-fuchsia-900/40 hover:to-purple-900/30 transition-all cursor-pointer text-left"
           >
-            <div className="w-10 h-10 rounded-lg bg-fuchsia-500/15 flex items-center justify-center text-fuchsia-400 text-lg flex-shrink-0">
-              ⚡
+            <div className="w-10 h-10 rounded-lg bg-fuchsia-500/15 flex items-center justify-center text-fuchsia-400 flex-shrink-0">
+              <Zap size={18} />
             </div>
             <div>
               <div className="text-sm font-semibold text-fuchsia-200">Schema Preview</div>
@@ -319,13 +320,13 @@ export default function Dashboard() {
             {/* Stats row */}
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
               {[
-                { label: 'TP', val: tp.length, icon: '🎯', color: 'text-amber-400' },
-                { label: 'ATP', val: atp.pertemuan.length, icon: '📅', color: 'text-cyan-400' },
-                { label: 'Alur', val: alur.length, icon: '📋', color: 'text-purple-400' },
-                { label: 'Kuis', val: kuis.length, icon: '❓', color: 'text-emerald-400' },
-                { label: 'Modul', val: modules.length, icon: '🧩', color: 'text-purple-400' },
-                { label: 'Game', val: games.length, icon: '🎮', color: 'text-orange-400' },
-                { label: 'Materi', val: materi.blok.length, icon: '📝', color: 'text-sky-400' },
+                { label: 'TP', val: tp.length, icon: <Target size={14} />, color: 'text-amber-400' },
+                { label: 'ATP', val: atp.pertemuan.length, icon: <Calendar size={14} />, color: 'text-cyan-400' },
+                { label: 'Alur', val: alur.length, icon: <ClipboardList size={14} />, color: 'text-purple-400' },
+                { label: 'Kuis', val: kuis.length, icon: <HelpCircle size={14} />, color: 'text-emerald-400' },
+                { label: 'Modul', val: modules.length, icon: <Puzzle size={14} />, color: 'text-purple-400' },
+                { label: 'Game', val: games.length, icon: <Gamepad2 size={14} />, color: 'text-orange-400' },
+                { label: 'Materi', val: materi.blok.length, icon: <FileEdit size={14} />, color: 'text-sky-400' },
               ].map((s) => (
                 <div key={s.label} className="bg-slate-800/30 rounded-lg p-2 text-center">
                   <div className="text-sm mb-0.5">{s.icon}</div>

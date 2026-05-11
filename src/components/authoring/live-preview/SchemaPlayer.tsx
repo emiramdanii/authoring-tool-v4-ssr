@@ -22,7 +22,7 @@ import {
   type LessonSchema,
   type DesignTokens,
 } from '@/core';
-import { alpha } from '@/lib/color-palette';
+import { alpha, COLORS } from '@/lib/color-palette';
 
 // ── Props ──────────────────────────────────────────────────────
 
@@ -131,7 +131,7 @@ export default function SchemaPlayer({
   // ── Loading / Error states ──────────────────────────────────
   if (loading) {
     return (
-      <div className={`flex items-center justify-center bg-[#0e1c2f] ${className || ''}`}>
+      <div className={`flex items-center justify-center ${className || ''}`} style={{ background: COLORS.bgPlayer }}>
         <div className="text-center">
           <div className="text-3xl mb-3 animate-pulse">⏳</div>
           <div className="text-white/50 text-sm">Memuat schema...</div>
@@ -143,7 +143,7 @@ export default function SchemaPlayer({
 
   if (error || !schema) {
     return (
-      <div className={`flex items-center justify-center bg-[#0e1c2f] ${className || ''}`}>
+      <div className={`flex items-center justify-center ${className || ''}`} style={{ background: COLORS.bgPlayer }}>
         <div className="text-center p-6">
           <div className="text-3xl mb-3">⚠️</div>
           <div className="text-red-400 text-sm">{error || 'Schema tidak tersedia'}</div>
@@ -159,8 +159,8 @@ export default function SchemaPlayer({
   const isCompact = mode === 'canvas';
 
   return (
-    <div className={`relative bg-[#0e1c2f] overflow-hidden ${className || ''}`}
-      style={{ fontFamily: tokens.typography.fontFamily.body }}>
+    <div className={`relative overflow-hidden ${className || ''}`}
+      style={{ fontFamily: tokens.typography.fontFamily.body, background: COLORS.bgPlayer }}>
 
       {/* ══ SCREEN CONTENT ══════════════════════════════════════ */}
       <div className="absolute inset-0" style={{ bottom: showControls ? (isCompact ? 48 : 72) : 0 }}>

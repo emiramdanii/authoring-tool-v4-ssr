@@ -1,9 +1,74 @@
 // ═══════════════════════════════════════════════════════════════
-// COLOR PALETTE — Extract dominant colors from an image
-// Ported from legacy canva.js k-means clustering algorithm
+// COLOR PALETTE — Shared color constants & image color extraction
+//
+// COLORS: Single source of truth for hardcoded hex values used
+// across the application. Use these instead of raw hex in JS/TSX
+// contexts (inline styles, style objects, JS variables).
+// For Tailwind CSS classes, prefer semantic tokens (bg-app-*, text-*).
+//
+// extractColorPalette: K-means clustering algorithm ported from
+// legacy canva.js to extract dominant colors from an image.
 // ═══════════════════════════════════════════════════════════════
 
 import type { ColorPalette } from '@/components/canva/types';
+
+// ═══════════════════════════════════════════════════════════════
+// SHARED COLOR CONSTANTS
+//
+// Use these instead of hardcoded hex values for:
+// - Consistency across components
+// - Easy theme updates
+// - Single source of truth
+//
+// For Tailwind CSS classes, prefer semantic tokens (bg-app-*, text-*)
+// For inline styles and SVG fills, use these constants.
+// ═══════════════════════════════════════════════════════════════
+
+export const COLORS = {
+  // Brand / Accent
+  amber: '#f59e0b',
+  amberLight: '#fbbf24',
+  amberDark: '#d97706',
+
+  // Semantic
+  success: '#34d399',
+  warning: '#fbbf24',
+  error: '#f87171',
+  info: '#3ecfcf',
+
+  // Module type colors
+  kuis: '#f5c842',
+  game: '#3ecfcf',
+  materi: '#a78bfa',
+  modul: '#34d399',
+  image: '#f97316',
+  shape: '#6366f1',
+
+  // Fase colors
+  faseMateri: '#34d399',
+  faseKuis: '#f9c82e',
+  faseGame: '#3ecfcf',
+  faseSosial: '#2563eb',
+
+  // Scenario choice colors
+  choiceA: '#34d399',
+  choiceB: '#f9c82e',
+  choiceC: '#f87171',
+  choiceD: '#3ecfcf',
+
+  // Background
+  bgDark: '#1e293b',
+  bgDarker: '#0f172a',
+  bgPlayer: '#0e1c2f',
+  bgCard: '#1a1a2e',
+  bgVideo: '#0a0a0a',
+
+  // Text
+  textDefault: '#e2e8f0',
+  textMuted: '#94a3b8',
+  textWhite: '#ffffff',
+  textIconMuted: '#888888',
+} as const;
 
 /**
  * Extract up to `maxColors` dominant colors from an image data URL

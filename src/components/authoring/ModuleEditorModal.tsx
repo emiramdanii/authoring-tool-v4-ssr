@@ -4,6 +4,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/PresetModuleCard';
 import { FieldLabel, INPUT_CLS } from './module-editors/shared';
 import type { EdProps } from './module-editors/shared';
+import { Pencil, Eye } from 'lucide-react';
 import {
   VideoEditor,
   FlashcardEditor,
@@ -68,7 +69,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 flex-shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-zinc-100">✏️ Edit Modul</h3>
+            <h3 className="text-lg font-bold text-zinc-100"><Pencil size={16} className="inline" /> Edit Modul</h3>
             <p className="text-xs text-zinc-400 mt-0.5 capitalize">{t} — {(mod.title as string) || '(tanpa judul)'}</p>
           </div>
           <button onClick={onClose} className="text-zinc-500 hover:text-zinc-200 transition-colors text-xl leading-none p-1">✕</button>
@@ -123,7 +124,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
           {/* ── Live Preview Panel ── */}
           <div className="border-t border-zinc-800 pt-4 mt-2">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-bold text-zinc-200">👁️ Pratinjau Langsung</h4>
+              <h4 className="text-sm font-bold text-zinc-200"><Eye size={16} className="inline" /> Pratinjau Langsung</h4>
               {/* Layout Variant Picker */}
               <div className="flex gap-1">
                 {LAYOUT_VARIANTS.map(v => {

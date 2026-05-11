@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
+import { Zap, Camera, FileEdit, RotateCcw, Trash2 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────
 interface VersionEntry {
@@ -243,7 +244,7 @@ export default function Riwayat() {
             onClick={openSaveInput}
             className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
           >
-            <span>📸</span> Simpan Snapshot Baru
+            <Camera size={14} className="inline" /> Simpan Snapshot Baru
           </button>
         )}
       </div>
@@ -304,7 +305,7 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex items-start sm:items-center gap-4 flex-col sm:flex-row hover:border-zinc-700 transition-colors group">
       {/* Icon */}
       <div className="flex-shrink-0 text-2xl w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center">
-        {entry.isAuto ? '⚡' : '📷'}
+        {entry.isAuto ? <Zap size={14} /> : <Camera size={14} />}
       </div>
 
       {/* Info */}
@@ -330,7 +331,7 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
           )}
           {entry.judul && (
             <span className="text-xs text-zinc-500 flex items-center gap-1">
-              📝 {entry.judul.length > 30 ? entry.judul.slice(0, 30) + '…' : entry.judul}
+              <FileEdit size={12} className="inline" /> {entry.judul.length > 30 ? entry.judul.slice(0, 30) + '…' : entry.judul}
             </span>
           )}
         </div>
@@ -344,14 +345,14 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
           className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Pulihkan versi ini"
         >
-          <span>↩️</span> Pulihkan
+          <RotateCcw size={14} className="inline" /> Pulihkan
         </button>
         <button
           onClick={() => onDelete(entry)}
           className="px-3 py-1.5 bg-zinc-800 hover:bg-red-900/60 text-zinc-200 hover:text-red-300 text-xs rounded-md transition-colors flex items-center gap-1.5"
           title="Hapus versi ini"
         >
-          <span>🗑️</span>
+          <Trash2 size={14} className="inline" />
         </button>
       </div>
     </div>

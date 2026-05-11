@@ -751,7 +751,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // Deep clone to clipboard
     const clone = produce(block, (draft) => {
       // Remove the ID so it gets a new one on paste
-      draft.id = undefined as any;
+      draft.id = undefined;
     });
     set({ _schemaClipboard: clone as SchemaBlock });
     toast.success('Block disalin');

@@ -11,6 +11,14 @@ import {
   Lock,
   Unlock,
   Layers,
+  Zap,
+  Puzzle,
+  Gamepad2,
+  HelpCircle,
+  Type,
+  Square,
+  Image as ImageIcon,
+  RefreshCw,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -23,6 +31,7 @@ import {
   getGameIcon,
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-constants';
+import { COLORS } from '@/lib/color-palette';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import LayerPanel from './left-panel/LayerPanel';
@@ -122,7 +131,7 @@ function HalamanContent() {
             ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
             : p.bgColor?.includes('gradient')
               ? { background: p.bgColor }
-              : { background: p.bgColor || '#1e293b' };
+              : { background: p.bgColor || COLORS.bgDark };
 
           const isTemplate = p.templateType && p.templateType !== 'custom';
           const isPageLocked = p.locked !== false; // true or undefined = locked
@@ -173,7 +182,7 @@ function HalamanContent() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] font-bold text-app-primary truncate flex items-center gap-1">
-                    {isSchemaDriven && <span className="text-emerald-400">⚡</span>}
+                    {isSchemaDriven && <Zap size={10} className="text-emerald-400 inline" />}
                     {!isSchemaDriven && isTemplate && isPageLocked && <Lock size={8} className="text-amber-400 flex-shrink-0" />}
                     {!isSchemaDriven && isTemplate && !isPageLocked && <Unlock size={8} className="text-emerald-400 flex-shrink-0" />}
                     <span className="truncate">{badge.icon} {p.label}</span>
@@ -377,7 +386,7 @@ function TambahContent() {
 
       {/* ── Tambah Modul ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">🧩 Tambah Modul</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><Puzzle size={12} className="inline" /> Tambah Modul</div>
         {isTemplatePage && isPageLocked && (
           <div className="text-[8px] text-amber-400/70 mb-2 px-2 py-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
             Modul ditambahkan sebagai overlay di atas template
@@ -419,7 +428,7 @@ function TambahContent() {
 
       {/* ── Tambah Game ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">🎮 Tambah Game</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><Gamepad2 size={12} className="inline" /> Tambah Game</div>
         {games.length > 0 ? (
           <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
             {games.map((g, i) => {
@@ -451,14 +460,14 @@ function TambahContent() {
 
       {/* ── Kuis Interaktif ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">❓ Kuis ({kuis.length} soal)</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><HelpCircle size={12} className="inline" /> Kuis ({kuis.length} soal)</div>
         {kuis.length > 0 ? (
           <button
             onClick={() => addElement('kuis')}
             className="card-hover accent-top w-full flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-grab active:scale-95 transition-transform"
-            style={{ '--accent-color': '#f5c842' } as React.CSSProperties}
+            style={{ '--accent-color': COLORS.kuis } as React.CSSProperties}
           >
-            <span className="text-xl">❓</span>
+            <HelpCircle size={20} />
             <div className="flex-1 text-left">
               <div className="text-[11px] font-bold text-amber-300">Kuis Interaktif</div>
               <div className="text-[9px] text-amber-400/60">{kuis.length} soal pilihan ganda</div>
@@ -479,9 +488,9 @@ function TambahContent() {
         <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">Elemen Dasar</div>
         <div className="grid grid-cols-3 gap-2">
           {[
-            { id: 'teks', icon: '🔤', name: 'Teks', note: 'Teks bebas', color: '#e2e8f0' },
-            { id: 'shape', icon: '⬜', name: 'Shape', note: 'Kotak/warna', color: '#6366f1' },
-            { id: 'image', icon: '🖼️', name: 'Gambar', note: 'URL / upload', color: '#f97316' },
+            { id: 'teks', icon: <Type size={20} />, name: 'Teks', note: 'Teks bebas', color: COLORS.textDefault },
+            { id: 'shape', icon: <Square size={20} />, name: 'Shape', note: 'Kotak/warna', color: COLORS.shape },
+            { id: 'image', icon: <ImageIcon size={20} />, name: 'Gambar', note: 'URL / upload', color: COLORS.image },
           ].map(t => (
             <button
               key={t.id}
@@ -508,7 +517,7 @@ function TambahContent() {
         }}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-app-elevated border border-app-border-subtle hover:border-red-500/30 text-app-secondary hover:text-red-400 text-[11px] font-bold transition-all active:scale-95"
       >
-        <span>🔄</span>
+        <RefreshCw size={14} className="inline" />
         <span>Reset Canvas</span>
       </button>
     </div>

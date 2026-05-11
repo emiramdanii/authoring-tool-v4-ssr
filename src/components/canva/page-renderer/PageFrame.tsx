@@ -117,7 +117,8 @@ export function PageFrame({
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
   // Fall back to creating one if not provided (backward compat)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
-  const tokens = externalTokens || React.useMemo(() => new TokenResolver(themeId), [themeId]);
+  const computedTokens = React.useMemo(() => new TokenResolver(themeId), [themeId]);
+  const tokens = externalTokens || computedTokens;
 
   // Score data
   const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));

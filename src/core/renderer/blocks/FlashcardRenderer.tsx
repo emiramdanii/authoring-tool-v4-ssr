@@ -12,23 +12,24 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
   const cards = block.cards || [];
-  if (cards.length === 0) return null;
   const card = cards[idx];
 
-  // ── Inline editing hooks ─────────────────────────────────────
+  // ── Inline editing hooks — must be called before any early returns ──
   const qEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: `cards.${idx}.q`,
-    value: card.q ?? '',
+    value: card?.q ?? '',
     tag: 'div',
   });
   const aEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: `cards.${idx}.a`,
-    value: card.a ?? '',
+    value: card?.a ?? '',
     tag: 'div',
     multiline: true,
   });
+
+  if (cards.length === 0) return null;
 
   return (
     <div className={isCompact ? 'mt-2' : 'mt-4'}>

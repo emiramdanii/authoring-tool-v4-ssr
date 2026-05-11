@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
+import { Target, ClipboardList, Trash2, Tag, Map } from 'lucide-react';
+import { COLORS } from '@/lib/color-palette';
 
 // ── Accordion Item ───────────────────────────────────────────────
 function AccordionSection({
@@ -12,7 +14,7 @@ function AccordionSection({
   defaultOpen,
   children,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -208,7 +210,7 @@ function TpSection() {
   if (!tp.length) {
     return (
       <div className="text-center py-8">
-        <div className="text-3xl mb-2">🎯</div>
+        <Target size={24} className="text-zinc-500 mb-2" />
         <p className="text-sm text-zinc-500">Belum ada Tujuan Pembelajaran.</p>
         <button
           onClick={addTp}
@@ -243,7 +245,7 @@ function TpSection() {
               onClick={() => deleteTp(i)}
               className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
             >
-              🗑️
+              <Trash2 size={14} className="inline" />
             </button>
           </div>
 
@@ -354,7 +356,7 @@ function AtpSection() {
                   onClick={() => deleteAtpPertemuan(i)}
                   className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
                 >
-                  🗑️
+                  <Trash2 size={14} className="inline" />
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -437,21 +439,21 @@ function AlurSection() {
   const { dragHandlers } = useDragSort(alur, handleReorder);
 
   const faseColors: Record<string, string> = {
-    Pendahuluan: '#f9c82e',
-    Inti: '#3ecfcf',
-    Penutup: '#34d399',
+    Pendahuluan: COLORS.faseKuis,
+    Inti: COLORS.faseGame,
+    Penutup: COLORS.faseMateri,
   };
 
   return (
     <div className="space-y-4">
       {!alur.length ? (
         <div className="text-center py-6">
-          <div className="text-3xl mb-2">📋</div>
+          <Map size={24} className="text-zinc-500 mb-2" />
           <p className="text-sm text-zinc-500">Belum ada langkah.</p>
         </div>
       ) : (
         alur.map((step, i) => {
-          const col = faseColors[step.fase] || '#a78bfa';
+          const col = faseColors[step.fase] || COLORS.materi;
           return (
             <div
               key={i}
@@ -472,7 +474,7 @@ function AlurSection() {
                   onClick={() => deleteAlur(i)}
                   className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
                 >
-                  🗑️
+                  <Trash2 size={14} className="inline" />
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -546,15 +548,15 @@ export default function Dokumen() {
       </div>
 
       <div className="space-y-3">
-        <AccordionSection icon="🏷️" title="Identitas Media" defaultOpen>
+        <AccordionSection icon={<Tag size={16} className="inline" />} title="Identitas Media" defaultOpen>
           <MetaSection />
         </AccordionSection>
 
-        <AccordionSection icon="📋" title="Capaian Pembelajaran">
+        <AccordionSection icon={<ClipboardList size={16} className="inline" />} title="Capaian Pembelajaran">
           <CpSection />
         </AccordionSection>
 
-        <AccordionSection icon="🎯" title="Tujuan Pembelajaran">
+        <AccordionSection icon={<Target size={16} className="inline" />} title="Tujuan Pembelajaran">
           <TpSection />
         </AccordionSection>
 
@@ -562,7 +564,7 @@ export default function Dokumen() {
           <AtpSection />
         </AccordionSection>
 
-        <AccordionSection icon="🗺️" title="Alur Kegiatan">
+        <AccordionSection icon={<Map size={16} className="inline" />} title="Alur Kegiatan">
           <AlurSection />
         </AccordionSection>
       </div>

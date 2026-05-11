@@ -6,6 +6,7 @@ import { RATIOS } from '../types';
 import { PageRenderer } from '../page-renderer';
 import { CanvasErrorBoundary } from '../CanvasErrorBoundary';
 import { StageElement } from './StageElement';
+import { Zap, Lock, Unlock } from 'lucide-react';
 import { useStageKeyboard } from './use-stage-keyboard';
 import { useStageDrag } from './use-stage-drag';
 import { Z } from './constants';
@@ -310,7 +311,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
                   ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                   : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
             }`} style={{ zIndex: Z.INFO_BADGE }}>
-              {isSchemaDriven ? '⚡' : isLocked ? '🔒' : '🔓'} {isSchemaDriven ? 'SCHEMA' : page.templateType}
+              {isSchemaDriven ? <Zap size={10} /> : isLocked ? <Lock size={10} /> : <Unlock size={10} />} {isSchemaDriven ? 'SCHEMA' : page.templateType}
             </div>
           )}
 

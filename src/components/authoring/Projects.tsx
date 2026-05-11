@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
+import { Sparkles, Trash2 } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -97,7 +98,7 @@ export default function Projects() {
           onClick={() => { newProject(); }}
           className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors"
         >
-          ✨ Proyek Baru
+          <Sparkles size={14} className="inline" /> Proyek Baru
         </button>
       </div>
 
@@ -129,7 +130,7 @@ export default function Projects() {
                   onClick={() => handleDelete(p.id)}
                   className="px-3 py-1.5 bg-zinc-800 hover:bg-red-900/50 text-zinc-400 hover:text-red-400 text-xs rounded-md transition-colors"
                 >
-                  🗑️
+                  <Trash2 size={14} className="inline" />
                 </button>
               </div>
             </div>

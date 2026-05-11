@@ -33,6 +33,7 @@ import {
   ArrowLeft,
   Volume2,
   VolumeX,
+  Rocket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -310,7 +311,7 @@ export default function Toolbar() {
 
             {/* ── EXPORT ── */}
             <div className="px-3 py-1.5 bg-emerald-500/10 border-y border-emerald-500/20">
-              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">🚀 Export</div>
+              <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider"><Rocket size={12} className="inline" /> Export</div>
             </div>
             <button
               onClick={handleExportUnified}

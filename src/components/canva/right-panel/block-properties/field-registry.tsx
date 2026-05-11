@@ -119,7 +119,7 @@ export function renderField(
           key={field.key}
           label={field.label}
           value={String(value || '')}
-          icon={<span className="text-[9px]">🎨</span>}
+          icon={<Palette size={9} />}
           placeholder={field.placeholder || '🏠'}
           onChange={v => handleUpdate(v)}
         />

@@ -8,16 +8,17 @@ import { ModulesTab } from './konten/ModulesTab';
 import { KuisTab } from './konten/KuisTab';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { FileEdit, Puzzle, HelpCircle } from 'lucide-react';
 
 // ── Main Konten Panel ──────────────────────────────────────────
 export default function Konten() {
   const [activeTab, setActiveTab] = useState<KontenTab>('materi');
 
-  const tabs: { id: KontenTab; icon: string; label: string }[] = [
-    { id: 'materi', icon: '📝', label: 'Materi' },
+  const tabs: { id: KontenTab; icon: React.ReactNode; label: string }[] = [
+    { id: 'materi', icon: <FileEdit size={14} className="inline" />, label: 'Materi' },
     { id: 'skenario', icon: '🎭', label: 'Skenario' },
-    { id: 'modules', icon: '🧩', label: 'Modul & Game' },
-    { id: 'kuis', icon: '❓', label: 'Evaluasi' },
+    { id: 'modules', icon: <Puzzle size={14} className="inline" />, label: 'Modul & Game' },
+    { id: 'kuis', icon: <HelpCircle size={14} className="inline" />, label: 'Evaluasi' },
   ];
 
   return (

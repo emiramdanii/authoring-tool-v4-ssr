@@ -8,6 +8,7 @@ import { resolveModule } from '@/lib/module-resolver';
 import QuizWidget from '../QuizWidget';
 import GameWidget from '../GameWidget';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import { COLORS } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════
 // BLOCK RENDERER — Unified element renderer for all contexts
@@ -101,7 +102,7 @@ export function BlockRenderer({
           style={{
             fontSize: `${element.fontSize || 20}px`,
             fontWeight: element.fontWeight || 700,
-            color: element.textColor || '#ffffff',
+            color: element.textColor || COLORS.textWhite,
             textAlign: element.textAlign || 'left',
             textShadow: '0 2px 8px rgba(0,0,0,.5)',
             lineHeight: 1.4,

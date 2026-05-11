@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { Drama, Trash2, Pencil } from 'lucide-react';
+import { COLORS } from '@/lib/color-palette';
 
 // ── Constants ────────────────────────────────────────────────────
 const BG_THEMES = [
@@ -15,9 +17,9 @@ const BG_THEMES = [
 ] as const;
 
 const LEVEL_COLORS: Record<string, string> = {
-  good: '#34d399',
-  mid: '#f9c82e',
-  bad: '#f87171',
+  good: COLORS.choiceA,
+  mid: COLORS.choiceB,
+  bad: COLORS.choiceC,
 };
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -93,8 +95,8 @@ function toChapter(raw: Record<string, unknown>): ChapterData {
     title: (raw.title as string) || '',
     bg: (raw.bg as string) || 'sbg-kampung',
     charEmoji: (raw.charEmoji as string) || '🧑',
-    charColor: (raw.charColor as string) || '#3ecfcf',
-    charPants: (raw.charPants as string) || '#2563eb',
+    charColor: (raw.charColor as string) || COLORS.choiceD,
+    charPants: (raw.charPants as string) || COLORS.faseSosial,
     choicePrompt: (raw.choicePrompt as string) || '',
     setup: (Array.isArray(raw.setup) ? raw.setup : []) as SetupItem[],
     choices: (Array.isArray(raw.choices) ? raw.choices : []) as ChoiceItem[],
@@ -145,13 +147,13 @@ function ChapterCard({
             onClick={onEdit}
             className="px-2.5 py-1.5 text-xs text-zinc-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors"
           >
-            ✏️ Edit
+            <Pencil size={12} className="inline" /> Edit
           </button>
           <button
             onClick={onRemove}
             className="px-2.5 py-1.5 text-xs text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
           >
-            🗑️
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
@@ -507,10 +509,10 @@ function ChapterDetail({
               <input
                 type="color"
                 className="w-8 h-8 rounded cursor-pointer border border-zinc-700 bg-transparent"
-                value={chapter.charColor || '#3ecfcf'}
+                value={chapter.charColor || COLORS.choiceD}
                 onChange={(e) => updateChapter(chapterIndex, 'charColor', e.target.value)}
               />
-              <span className="text-xs text-zinc-500 font-mono">{chapter.charColor || '#3ecfcf'}</span>
+              <span className="text-xs text-zinc-500 font-mono">{chapter.charColor || COLORS.choiceD}</span>
             </div>
           </div>
           <div>
@@ -519,10 +521,10 @@ function ChapterDetail({
               <input
                 type="color"
                 className="w-8 h-8 rounded cursor-pointer border border-zinc-700 bg-transparent"
-                value={chapter.charPants || '#2563eb'}
+                value={chapter.charPants || COLORS.faseSosial}
                 onChange={(e) => updateChapter(chapterIndex, 'charPants', e.target.value)}
               />
-              <span className="text-xs text-zinc-500 font-mono">{chapter.charPants || '#2563eb'}</span>
+              <span className="text-xs text-zinc-500 font-mono">{chapter.charPants || COLORS.faseSosial}</span>
             </div>
           </div>
         </div>
@@ -622,7 +624,7 @@ export default function Skenario() {
     <div className="p-6 space-y-5 max-w-5xl">
       <div>
         <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
-          <span>🎭</span> Skenario Interaktif
+          <Drama size={16} className="inline" /> Skenario Interaktif
         </h2>
         <p className="text-sm text-zinc-400 mt-1">
           Buat cerita bercabang untuk siswa belajar tentang norma dan nilai.
@@ -637,7 +639,7 @@ export default function Skenario() {
       {/* Empty state */}
       {skenario.length === 0 ? (
         <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
-          <div className="text-4xl mb-3">🎭</div>
+          <div className="text-4xl mb-3"><Drama size={36} className="text-zinc-500" /></div>
           <p className="text-sm text-zinc-400 mb-1">Belum ada bab skenario.</p>
           <p className="text-xs text-zinc-500 mb-4">
             Tambahkan bab pertama untuk mulai membuat skenario interaktif.

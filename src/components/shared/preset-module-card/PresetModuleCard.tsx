@@ -4,7 +4,7 @@ import React from 'react';
 import type { LayoutVariant, M, PresetModuleCardProps } from './types';
 import { T } from './tokens';
 import { str } from './helpers';
-import { alpha } from '@/lib/color-palette';
+import { alpha, COLORS } from '@/lib/color-palette';
 import { LAYOUT_VARIANTS } from './layout-variants';
 import { getModuleMeta } from './module-meta';
 import { PreviewInfografis } from './PreviewInfografis';
@@ -253,7 +253,7 @@ function FullCard({ mode, mod, variant, onEdit }: { mode: 'edit' | 'export'; mod
             className="px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-transform duration-150"
             style={{
               background: T.y,
-              color: '#1a1a2e',
+              color: COLORS.bgCard,
               transform: hovered ? 'scale(1)' : 'scale(0.9)',
             }}
           >

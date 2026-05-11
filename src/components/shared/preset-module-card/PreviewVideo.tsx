@@ -3,7 +3,7 @@ import { Play } from 'lucide-react';
 import type { M } from './types';
 import { T } from './tokens';
 import { str } from './helpers';
-import { alpha } from '@/lib/color-palette';
+import { alpha, COLORS } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW: VIDEO
@@ -16,7 +16,7 @@ export function PreviewVideo({ mod, compact }: { mod: M; compact: boolean }) {
   return (
     <div className="rounded-lg overflow-hidden" style={{ background: T.bg, border: `1px solid ${alpha(T.r, 0.15)}` }}>
       {/* Video placeholder area */}
-      <div className="relative flex items-center justify-center" style={{ background: '#0a0a0a', minHeight: compact ? 32 : 56 }}>
+      <div className="relative flex items-center justify-center" style={{ background: COLORS.bgVideo, minHeight: compact ? 32 : 56 }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: alpha(T.r, 0.19) }}>
           <Play size={12} />
         </div>

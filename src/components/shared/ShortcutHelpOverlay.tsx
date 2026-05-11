@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { shortcutRegistry } from '@/core/shortcuts/ShortcutRegistry';
 import type { ShortcutDefinition } from '@/core/shortcuts/ShortcutRegistry';
 import { Keyboard, X } from 'lucide-react';
@@ -12,13 +12,10 @@ import { Keyboard, X } from 'lucide-react';
  */
 export function ShortcutHelpOverlay() {
   const [open, setOpen] = useState(false);
-  const [shortcuts, setShortcuts] = useState<ShortcutDefinition[]>([]);
-
-  // Refresh shortcuts when overlay opens
-  useEffect(() => {
-    if (open) {
-      setShortcuts(shortcutRegistry.getAll());
-    }
+  // Derive shortcuts from registry when overlay opens
+  const shortcuts = useMemo(() => {
+    if (!open) return [];
+    return shortcutRegistry.getAll();
   }, [open]);
 
   // Toggle with Ctrl+/

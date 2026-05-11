@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, Download, FileSpreadsheet, CheckCircle2, Loader2 } from 'lucide-react';
+import { Upload, Download, FileSpreadsheet, CheckCircle2, Loader2, Rocket, Sparkles, Printer, ClipboardList, BarChart3, Lightbulb } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
@@ -46,7 +46,7 @@ export default function ImportExport() {
       {/* ── Export HTML Interaktif (Vite SSR) ──────────────────── */}
       <div className="bg-zinc-900 border border-emerald-800/50 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-emerald-300 mb-1 flex items-center gap-2">
-          🚀 Export HTML Interaktif
+          <Rocket size={16} className="inline" /> Export HTML Interaktif
         </h3>
         <p className="text-xs text-zinc-400 mb-4">
           Download HTML lengkap dengan <strong className="text-emerald-400">navbar + navigasi</strong> (sama persis dengan preview),
@@ -78,14 +78,14 @@ export default function ImportExport() {
           )}
         </button>
         <p className="text-[0.65rem] text-zinc-500 mt-2">
-          ✨ SSR Export — hasil sama persis dengan preview (React components + Tailwind CSS)
+          <Sparkles size={12} className="inline" /> SSR Export — hasil sama persis dengan preview (React components + Tailwind CSS)
         </p>
       </div>
 
       {/* ── Admin Print ───────────────────────────────────────── */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-zinc-200 mb-1 flex items-center gap-2">
-          🖨️ Cetak Dokumen Admin
+          <Printer size={16} className="inline" /> Cetak Dokumen Admin
         </h3>
         <p className="text-xs text-zinc-400 mb-4">
           Buka jendela cetak dengan tabel CP, TP, ATP, dan Alur Pembelajaran untuk dokumentasi guru.
@@ -94,7 +94,7 @@ export default function ImportExport() {
           onClick={cetakDokumenAdmin}
           className="w-full px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
         >
-          🖨️ Cetak Dokumen Admin
+          <Printer size={14} className="inline" /> Cetak Dokumen Admin
         </button>
       </div>
 
@@ -110,7 +110,7 @@ export default function ImportExport() {
             onClick={exportJSON}
             className="w-full px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors"
           >
-            📋 Export JSON
+            <ClipboardList size={14} className="inline" /> Export JSON
           </button>
         </div>
 
@@ -136,7 +136,7 @@ export default function ImportExport() {
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <FileSpreadsheet className="size-4 text-emerald-400" />
-          <h3 className="text-sm font-semibold text-zinc-200">📊 Import / Export Excel (.xlsx)</h3>
+          <h3 className="text-sm font-semibold text-zinc-200"><BarChart3 size={16} className="inline" /> Import / Export Excel (.xlsx)</h3>
         </div>
         <p className="text-xs text-zinc-400">
           Import data dari spreadsheet Excel atau download template yang sudah diisi dengan data saat ini.
@@ -216,7 +216,7 @@ export default function ImportExport() {
 
       {/* ── Info Section ─────────────────────────────────────── */}
       <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-4">
-        <h4 className="text-xs font-semibold text-zinc-400 mb-2 uppercase tracking-wider">💡 Tips</h4>
+        <h4 className="text-xs font-semibold text-zinc-400 mb-2 uppercase tracking-wider flex items-center gap-1.5"><Lightbulb size={14} className="inline" /> Tips</h4>
         <ul className="text-xs text-zinc-500 space-y-1.5">
           <li className="flex items-start gap-2">
             <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>

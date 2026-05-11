@@ -6,6 +6,41 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
 
+/** Minimal interfaces for the print-export context.
+ *  These capture only the properties accessed when generating
+ *  the admin print document. Fields are optional because the
+ *  data may come from imported JSON with varying shapes. */
+interface PrintableTpItem {
+  tujuan?: string;
+  label?: string;
+  indikator?: string;
+  [key: string]: unknown;
+}
+
+interface PrintableAtpPertemuan {
+  judul?: string;
+  pertemuan?: string;
+  tp?: string;
+  kegiatan?: string;
+  [key: string]: unknown;
+}
+
+interface PrintableAlurItem {
+  kegiatan?: string;
+  label?: string;
+  deskripsi?: string;
+  durasi?: string;
+  [key: string]: unknown;
+}
+
+interface PrintableKuisItem {
+  soal?: string;
+  question?: string;
+  jawaban?: string;
+  answer?: string;
+  [key: string]: unknown;
+}
+
 export function useExportActions() {
   const { exportHTML } = useViteExport();
 
@@ -40,9 +75,10 @@ export function useExportActions() {
 
     try {
       await exportHTML();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Export HTML failed:', err);
-      toast.error(`Gagal mengexport HTML: ${err.message}`);
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      toast.error(`Gagal mengexport HTML: ${message}`);
     }
   }, [exportHTML]);
 
@@ -89,28 +125,28 @@ export function useExportActions() {
       // TP section
       if (tp?.length) {
         html += `<h2>Tujuan Pembelajaran (TP)</h2><table><tr><th>#</th><th>Tujuan</th><th>Indikator</th></tr>`;
-        tp.forEach((t: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${t.tujuan || t.label || '-'}</td><td>${t.indikator || '-'}</td></tr>`; });
+        tp.forEach((t: PrintableTpItem, i: number) => { html += `<tr><td>${i + 1}</td><td>${t.tujuan || t.label || '-'}</td><td>${t.indikator || '-'}</td></tr>`; });
         html += `</table>`;
       }
 
       // ATP section
       if (s.atp?.pertemuan?.length) {
         html += `<h2>Alur Tujuan Pembelajaran (ATP)</h2><table><tr><th>#</th><th>Pertemuan</th><th>TP</th><th>Materi</th></tr>`;
-        s.atp.pertemuan.forEach((a: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.judul || a.pertemuan || '-'}</td><td>${a.tp || '-'}</td><td>${a.kegiatan || '-'}</td></tr>`; });
+        s.atp.pertemuan.forEach((a: PrintableAtpPertemuan, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.judul || a.pertemuan || '-'}</td><td>${a.tp || '-'}</td><td>${a.kegiatan || '-'}</td></tr>`; });
         html += `</table>`;
       }
 
       // Alur section
       if (s.alur?.length) {
         html += `<h2>Alur Pembelajaran</h2><table><tr><th>#</th><th>Kegiatan</th><th>Deskripsi</th><th>Durasi</th></tr>`;
-        s.alur.forEach((a: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.kegiatan || a.label || '-'}</td><td>${a.deskripsi || '-'}</td><td>${a.durasi || '-'}</td></tr>`; });
+        s.alur.forEach((a: PrintableAlurItem, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.kegiatan || a.label || '-'}</td><td>${a.deskripsi || '-'}</td><td>${a.durasi || '-'}</td></tr>`; });
         html += `</table>`;
       }
 
       // Kuis section
       if (s.kuis?.length) {
         html += `<h2>Soal Kuis</h2><table><tr><th>#</th><th>Soal</th><th>Jawaban</th></tr>`;
-        s.kuis.forEach((k: any, i: number) => { html += `<tr><td>${i + 1}</td><td>${k.soal || k.question || '-'}</td><td>${k.jawaban || k.answer || '-'}</td></tr>`; });
+        s.kuis.forEach((k: PrintableKuisItem, i: number) => { html += `<tr><td>${i + 1}</td><td>${k.soal || k.question || '-'}</td><td>${k.jawaban || k.answer || '-'}</td></tr>`; });
         html += `</table>`;
       }
 

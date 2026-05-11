@@ -111,12 +111,19 @@ export default function AuthoringTool() {
     useCanvaStore.getState().loadFromStorage();
   }, [loadFromStorage]);
 
+  // ── Tour: dismiss / advance ────────────────────────────────
+  // dismissTour must be declared before the useEffect that references it
+  const dismissTour = useCallback(() => {
+    setShowTour(false);
+    localStorage.setItem('at_tour_done', '1');
+  }, []);
+
   // Auto-dismiss tour when user navigates away from dashboard (e.g. clicks preset)
   useEffect(() => {
     if (activePanel !== 'dashboard' && showTour) {
       dismissTour();
     }
-  }, [activePanel]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activePanel, showTour, dismissTour]);
 
   // Auto-save every 8s when dirty — saves BOTH authoring + canva stores
   useEffect(() => {
@@ -204,12 +211,6 @@ export default function AuthoringTool() {
   const isCanva = activePanel === 'canva';
   // For Preview panel, render full-bleed (no header)
   const isPreview = activePanel === 'preview';
-
-  // ── Tour: dismiss / advance ────────────────────────────────
-  const dismissTour = useCallback(() => {
-    setShowTour(false);
-    localStorage.setItem('at_tour_done', '1');
-  }, []);
 
   const nextTourStep = useCallback(() => {
     if (tourStep < TOUR_STEPS.length - 1) {

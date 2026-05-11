@@ -6,6 +6,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import type { CanvaElement, ResizeDir } from '../types';
 import { RESIZE_HANDLES } from './constants';
 import { CanvasElementPreview } from './CanvasElementPreview';
+import { COLORS } from '@/lib/color-palette';
 
 interface StageElementProps {
   element: CanvaElement;
@@ -117,7 +118,7 @@ export const StageElement = memo(function StageElement({
             style={{
               fontSize: `${element.fontSize || 20}px`,
               fontWeight: element.fontWeight || 700,
-              color: element.textColor || '#ffffff',
+              color: element.textColor || COLORS.textWhite,
               textAlign: element.textAlign || 'left',
               textShadow: '0 2px 8px rgba(0,0,0,.5)',
               lineHeight: 1.4,

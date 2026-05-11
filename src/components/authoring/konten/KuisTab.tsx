@@ -4,6 +4,7 @@ import { useRef, useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { KuisItem } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
+import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
 
 // ── Kuis Tab (Fully Functional) ────────────────────────────────
 export function KuisTab() {
@@ -37,13 +38,13 @@ export function KuisTab() {
     <div className="space-y-4">
       {/* Preset Cards */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-        <h4 className="text-sm font-semibold text-zinc-200 mb-3">⚡ Preset Kuis</h4>
+        <h4 className="text-sm font-semibold text-zinc-200 mb-3"><Zap size={16} className="inline" /> Preset Kuis</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
           <button
             onClick={() => applyKuisPreset('norma-10-soal')}
             className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-3 text-center hover:border-zinc-600 transition-colors cursor-pointer"
           >
-            <div className="text-xl mb-1">❓</div>
+            <div className="text-xl mb-1"><HelpCircle size={20} className="inline" /></div>
             <div className="text-xs font-semibold text-zinc-200">Norma – 10 Soal</div>
             <div className="text-[0.65rem] text-zinc-500">Siap pakai, bisa diedit</div>
           </button>
@@ -51,7 +52,7 @@ export function KuisTab() {
             onClick={() => applyKuisPreset('blank')}
             className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-3 text-center hover:border-zinc-600 transition-colors cursor-pointer"
           >
-            <div className="text-xl mb-1">📋</div>
+            <div className="text-xl mb-1"><ClipboardList size={20} className="inline" /></div>
             <div className="text-xs font-semibold text-zinc-200">Kosong</div>
             <div className="text-[0.65rem] text-zinc-500">Buat dari nol</div>
           </button>
@@ -62,7 +63,7 @@ export function KuisTab() {
       <div ref={listRef} className="space-y-4">
         {!kuis.length ? (
           <div className="text-center py-6 bg-zinc-900 border border-zinc-800 rounded-lg">
-            <div className="text-3xl mb-2">❓</div>
+            <HelpCircle size={28} className="text-zinc-500 mb-2" />
             <p className="text-sm text-zinc-500">Belum ada soal.</p>
           </div>
         ) : (
@@ -87,7 +88,7 @@ export function KuisTab() {
                   onClick={() => deleteKuis(i)}
                   className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
                 >
-                  🗑️
+                  <Trash2 size={14} className="inline" />
                 </button>
               </div>
 
