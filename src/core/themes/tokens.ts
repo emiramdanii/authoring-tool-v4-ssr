@@ -189,6 +189,56 @@ export const THEME_PRESETS: ThemePreset[] = [
     },
   },
   {
+    id: 'nilai-pancasila',
+    name: 'Nilai Pancasila (Red Accent)',
+    tokens: {
+      colors: {
+        ...DEFAULT_TOKENS.colors,
+        // Red-driven, patriotic accent
+      },
+    },
+  },
+  {
+    id: 'bhinneka-tunggal-ika',
+    name: 'Bhinneka Tunggal Ika (Cyan Accent)',
+    tokens: {
+      colors: {
+        ...DEFAULT_TOKENS.colors,
+        // Cyan-driven, diversity accent
+      },
+    },
+  },
+  {
+    id: 'ham-hak-kewajiban',
+    name: 'HAM & Kewajiban (Purple Accent)',
+    tokens: {
+      colors: {
+        ...DEFAULT_TOKENS.colors,
+        // Purple-driven, justice accent
+      },
+    },
+  },
+  {
+    id: 'demokrasi-pancasila',
+    name: 'Demokrasi Pancasila (Orange Accent)',
+    tokens: {
+      colors: {
+        ...DEFAULT_TOKENS.colors,
+        // Orange-driven, democratic accent
+      },
+    },
+  },
+  {
+    id: 'globalisasi',
+    name: 'Globalisasi (Green Accent)',
+    tokens: {
+      colors: {
+        ...DEFAULT_TOKENS.colors,
+        // Green-driven, global accent
+      },
+    },
+  },
+  {
     id: 'colorful',
     name: 'Colorful',
     tokens: {
