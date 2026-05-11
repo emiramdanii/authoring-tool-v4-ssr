@@ -70,20 +70,54 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
   const flowBlocks = screen.blocks.filter(b => !b.layout || b.layout.position === 'flow');
   const absoluteBlocks = screen.blocks.filter(b => b.layout?.position === 'absolute');
 
+  // ═══ BACKGROUND STYLE — applies to ALL screen types ═══════════
+  // Previously only rendered for cover pages. Now every screen can
+  // have a background: solid color, gradient, radial, or image URL.
+  const bg = screen.background;
   const bgStyle: React.CSSProperties = {};
-  if (screen.background && hasCoverBlock) {
-    if (screen.background.type === 'radial') {
-      bgStyle.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(screen.background.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(screen.background.color2 || 'bg')}, ${tokens.color('bg2')})`;
-    } else if (screen.background.type === 'gradient') {
-      bgStyle.background = `linear-gradient(180deg, ${tokens.color(screen.background.color1 || 'y')}, ${tokens.color(screen.background.color2 || 'bg')})`;
+
+  if (bg) {
+    // ── Color/gradient background ───────────────────────────────
+    if (bg.type === 'radial') {
+      bgStyle.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+    } else if (bg.type === 'gradient') {
+      bgStyle.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
+    } else if (bg.type === 'solid') {
+      bgStyle.background = tokens.color(bg.color1 || 'bg');
     }
+  }
+
+  // If no background defined, default to base bg for non-cover pages
+  if (!bg && !hasCoverBlock) {
+    bgStyle.background = tokens.color('bg');
   }
 
   return (
     <div className={hasCoverBlock ? 'absolute inset-0' : 'relative flex flex-col h-full'}
       style={{ fontFamily: tokens.fontFamily('body'), color: tokens.color('text'), ...bgStyle }}>
+
+      {/* ══ BACKGROUND IMAGE LAYER — rendered behind content ════ */}
+      {bg?.imageUrl && (
+        <>
+          <img
+            src={bg.imageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 0 }}
+          />
+          {/* Dark overlay for text readability on image backgrounds */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              zIndex: 0,
+              background: `rgba(0,0,0,${(bg.overlay ?? 40) / 100})`,
+            }}
+          />
+        </>
+      )}
+
       {screen.sectionLabel && !hasCoverBlock && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3" style={{ position: 'relative', zIndex: 1 }}>
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-extrabold text-[10px] uppercase"
             style={{
@@ -99,7 +133,7 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
 
       {/* ══ FLOW BLOCKS: vertical stack, scrollable ══════════════ */}
       <div className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${hasCoverBlock ? '' : 'px-4 py-5'}`}
-        style={hasCoverBlock ? undefined : { maxWidth: 860, margin: '0 auto', width: '100%' }}>
+        style={{ ...(hasCoverBlock ? {} : { maxWidth: 860, margin: '0 auto', width: '100%' }), position: 'relative', zIndex: 1 }}>
         {flowBlocks.map((block, i) => {
           const blockKey = block.id || `flow-${block.type}-${i}`;
           return (

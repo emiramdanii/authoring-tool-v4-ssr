@@ -35,6 +35,7 @@ export default function RightPanel() {
     setBgColor,
     setBgImage,
     setOverlay,
+    updateScreenBackground,
     updateElement,
     deleteSelected,
     updateNavConfig,
@@ -134,6 +135,7 @@ export default function RightPanel() {
         setBgColor={setBgColor}
         setBgImage={setBgImage}
         setOverlay={setOverlay}
+        updateScreenBackground={updateScreenBackground}
         collapsed={collapsed.bg}
         onToggle={() => toggleCollapse('bg')}
       />

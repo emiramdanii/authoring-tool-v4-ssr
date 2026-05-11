@@ -413,6 +413,10 @@ export interface ScreenSchema {
     type: 'solid' | 'gradient' | 'radial';
     color1?: string;
     color2?: string;
+    /** Background image URL — rendered as cover image behind content */
+    imageUrl?: string;
+    /** Dark overlay opacity (0–60) for image readability */
+    overlay?: number;
   };
 }
 

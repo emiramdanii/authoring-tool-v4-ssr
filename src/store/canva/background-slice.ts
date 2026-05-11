@@ -12,6 +12,7 @@ export type BackgroundSlice = Pick<
   | 'setBgColor' | 'setBgImage' | 'setOverlay'
   | 'extractAndSetPalette' | 'setPaletteMapping'
   | 'updateNavConfig' | 'updateTemplateData'
+  | 'updateScreenBackground'
 >;
 
 export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundSlice> = (set, get) => ({
@@ -99,6 +100,28 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
     newPages[currentPageIndex] = {
       ...page,
       navConfig: { ...page.navConfig, ...updates },
+    };
+    set({ pages: newPages });
+  },
+
+  // ── Schema Background actions ────────────────────────────────
+  // Update the screen.schema.background for schema-driven pages.
+  // This is the canonical way to set background on schema pages.
+  updateScreenBackground: (updates) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page?.schema) return;
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: {
+        ...page.schema,
+        background: {
+          ...page.schema.background,
+          type: page.schema.background?.type || 'solid',
+          ...updates,
+        },
+      },
     };
     set({ pages: newPages });
   },

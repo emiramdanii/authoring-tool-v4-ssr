@@ -216,8 +216,7 @@ export function PageFrame({
   return (
     <>
       {/* ══ Background ════════════════════════════════════════ */}
-      {/* Schema-driven pages render their own backgrounds (radial gradients, etc.)
-          — skip the default bg overlay to avoid drowning them out */}
+      {/* Non-schema pages: legacy bgColor + bgDataUrl + dark overlay */}
       {!isSchemaDriven && (
         <>
           <div className="absolute inset-0" style={{ background: page.bgColor || tokens.color('bg') }} />
@@ -230,10 +229,35 @@ export function PageFrame({
           />
         </>
       )}
-      {/* Schema-driven: only set base bg color so schema gradients blend properly */}
-      {isSchemaDriven && (
-        <div className="absolute inset-0" style={{ background: page.bgColor || tokens.color('bg') }} />
-      )}
+      {/* Schema-driven: render background from screen schema (color + image + overlay) */}
+      {isSchemaDriven && (() => {
+        const schemaBg = page.schema?.background;
+        // Base color layer — either from schema or fallback
+        let baseBg = tokens.color('bg');
+        if (schemaBg?.type === 'solid') baseBg = tokens.color(schemaBg.color1 || 'bg');
+        else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
+        else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+        else baseBg = page.bgColor || tokens.color('bg');
+
+        return (
+          <>
+            <div className="absolute inset-0" style={{ background: baseBg }} />
+            {schemaBg?.imageUrl && (
+              <>
+                <img
+                  src={schemaBg.imageUrl}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: `rgba(0,0,0,${(schemaBg.overlay ?? 40) / 100})` }}
+                />
+              </>
+            )}
+          </>
+        );
+      })()}
 
       {/* ══ Top Navbar ════════════════════════════════════════ */}
       {showTopNav && (
