@@ -13,7 +13,8 @@ import {
   MATERI_RAKIT_TYPES,
 } from '@/lib/canva-constants';
 import { ensureModuleIds } from '@/lib/module-resolver';
-import { createTemplatePage } from './template-data';
+// FASE 3: Schema-native page creation — no more buildTemplateData()
+import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
 
 // ── Auto-generate modules from existing authoring data ────────
 export function autoGenerateContent(): {
@@ -161,72 +162,73 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       );
     }
 
-    // Step 2: Build pages using createTemplatePage (DRY — single source of truth)
+    // Step 2: Build pages using createPageFromPreset (FASE 3 — schema-native)
+    // All pages now get page.schema from creation via deriveSchema().
+    // One-way data flow: Authoring → deriveSchema() → page.schema → Renderer
     const newPages: CanvaPage[] = [];
 
     if (blueprint.includeCover) {
-      newPages.push(createTemplatePage('cover', newPages.length));
+      newPages.push(createPageFromPreset('cover', newPages.length));
     }
 
     if (blueprint.includeDokumen && (authStore.cp.capaianFase || authStore.tp.length > 0)) {
-      newPages.push(createTemplatePage('dokumen', newPages.length));
+      newPages.push(createPageFromPreset('dokumen', newPages.length));
     }
 
     if (blueprint.includeSkenario && authStore.skenario.length > 0) {
-      newPages.push(createTemplatePage('skenario', newPages.length));
+      newPages.push(createPageFromPreset('skenario', newPages.length));
     }
 
     if (blueprint.includeMateri && (materiModules.length > 0 || authStore.materi.blok.length > 0)) {
-      newPages.push(createTemplatePage('materi', newPages.length));
+      newPages.push(createPageFromPreset('materi', newPages.length));
     }
 
     // Kuis pages — split by soalPerHalaman
     if (blueprint.includeKuis && kuis.length > 0) {
       const perPage = blueprint.soalPerHalaman || 5;
       if (kuis.length <= perPage) {
-        newPages.push(createTemplatePage('kuis', newPages.length));
+        newPages.push(createPageFromPreset('kuis', newPages.length));
       } else {
         const totalPages = Math.ceil(kuis.length / perPage);
         for (let p = 0; p < totalPages; p++) {
-          newPages.push(createTemplatePage('kuis', newPages.length));
+          newPages.push(createPageFromPreset('kuis', newPages.length));
         }
       }
     }
 
     if (blueprint.includeGame && games.length > 0) {
-      newPages.push(createTemplatePage('game', newPages.length));
+      newPages.push(createPageFromPreset('game', newPages.length));
     }
 
     if (blueprint.includeHasil) {
-      newPages.push(createTemplatePage('hasil', newPages.length));
+      newPages.push(createPageFromPreset('hasil', newPages.length));
     }
 
     if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
-      newPages.push(createTemplatePage('petunjuk', newPages.length));
+      newPages.push(createPageFromPreset('petunjuk', newPages.length));
     }
 
     if (blueprint.includeDiskusi && authStore.diskusi.pertanyaan.length > 0) {
-      newPages.push(createTemplatePage('diskusi', newPages.length));
+      newPages.push(createPageFromPreset('diskusi', newPages.length));
     }
 
     if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
-      newPages.push(createTemplatePage('refleksi', newPages.length));
+      newPages.push(createPageFromPreset('refleksi', newPages.length));
     }
 
     if (blueprint.includePenutup && authStore.penutup.preview.length > 0) {
-      newPages.push(createTemplatePage('penutup', newPages.length));
+      newPages.push(createPageFromPreset('penutup', newPages.length));
     }
 
-    // Set navbar/timer config on all pages
+    // Set navbar/timer config on all pages (stored in templateData for export compat)
     newPages.forEach(p => {
-      if (p.templateData && typeof p.templateData === 'object') {
-        p.templateData.navbar = blueprint.navbar;
-        p.templateData.timer = blueprint.timer;
-      }
+      if (!p.templateData) p.templateData = {};
+      p.templateData.navbar = blueprint.navbar;
+      p.templateData.timer = blueprint.timer;
     });
 
     if (newPages.length === 0) {
-      newPages.push(createTemplatePage('custom', 0));
+      newPages.push(createPageFromPreset('custom', 0));
     }
 
     get()._pushHistory();

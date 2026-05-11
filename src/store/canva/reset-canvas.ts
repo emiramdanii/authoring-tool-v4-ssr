@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // CANVA STORE — Reset Canvas (nuclear reset)
 // Rebuilds all pages from current authoring data.
+// FASE 3: Schema-native — all pages get page.schema from creation.
 // ═══════════════════════════════════════════════════════════════
 
 import { toast } from 'sonner';
@@ -9,7 +10,8 @@ import type { CanvaPage } from '@/components/canva/types';
 import type { CanvaState } from './types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES, MATERI_RAKIT_TYPES } from '@/lib/canva-constants';
-import { createTemplatePage } from './template-data';
+// FASE 3: Schema-native page creation — no more buildTemplateData()
+import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
 
 export type ResetCanvasSlice = Pick<CanvaState, 'resetCanvas'>;
 
@@ -17,6 +19,9 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
   /**
    * Reset Canvas — rebuild all pages from current authoring data.
    * Should always be called with user confirmation first.
+   *
+   * FASE 3: All pages are now schema-native from creation.
+   * One-way data flow: Authoring → deriveSchema() → page.schema → Renderer
    */
   resetCanvas: () => {
     const authStore = useAuthoringStore.getState();
@@ -29,59 +34,59 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
     const newPages: CanvaPage[] = [];
 
     // 1. Cover page (always)
-    newPages.push(createTemplatePage('cover', newPages.length));
+    newPages.push(createPageFromPreset('cover', newPages.length));
 
     // 2. Petunjuk page
     if (authStore.petunjuk.langkah.length > 0) {
-      newPages.push(createTemplatePage('petunjuk', newPages.length));
+      newPages.push(createPageFromPreset('petunjuk', newPages.length));
     }
 
     // 3. Dokumen page (CP/TP/ATP)
     if (authStore.cp.capaianFase || authStore.tp.length > 0) {
-      newPages.push(createTemplatePage('dokumen', newPages.length));
+      newPages.push(createPageFromPreset('dokumen', newPages.length));
     }
 
     // 4. Skenario page
     if (authStore.skenario.length > 0) {
-      newPages.push(createTemplatePage('skenario', newPages.length));
+      newPages.push(createPageFromPreset('skenario', newPages.length));
     }
 
     // 5. Diskusi page
     if (authStore.diskusi.pertanyaan.length > 0) {
-      newPages.push(createTemplatePage('diskusi', newPages.length));
+      newPages.push(createPageFromPreset('diskusi', newPages.length));
     }
 
     // 6. Materi pages
     if (materiModules.length > 0 || authStore.materi.blok.length > 0) {
-      newPages.push(createTemplatePage('materi', newPages.length));
+      newPages.push(createPageFromPreset('materi', newPages.length));
     }
 
     // 7. Kuis page
     if (kuis.length > 0) {
-      newPages.push(createTemplatePage('kuis', newPages.length));
+      newPages.push(createPageFromPreset('kuis', newPages.length));
     }
 
     // 8. Game pages
     if (games.length > 0) {
-      newPages.push(createTemplatePage('game', newPages.length));
+      newPages.push(createPageFromPreset('game', newPages.length));
     }
 
     // 9. Hasil page (always)
-    newPages.push(createTemplatePage('hasil', newPages.length));
+    newPages.push(createPageFromPreset('hasil', newPages.length));
 
     // 10. Refleksi page
     if (authStore.refleksi.pertanyaan.length > 0) {
-      newPages.push(createTemplatePage('refleksi', newPages.length));
+      newPages.push(createPageFromPreset('refleksi', newPages.length));
     }
 
     // 11. Penutup page
     if (authStore.penutup.preview.length > 0) {
-      newPages.push(createTemplatePage('penutup', newPages.length));
+      newPages.push(createPageFromPreset('penutup', newPages.length));
     }
 
     // If no pages were created (very unlikely), add at least one custom
     if (newPages.length === 0) {
-      newPages.push(createTemplatePage('custom', 0));
+      newPages.push(createPageFromPreset('custom', 0));
     }
 
     get()._pushHistory();

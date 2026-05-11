@@ -4,15 +4,16 @@
 // ⚠️ FASE 3: DEPRECATED — This file is LEGACY.
 //
 // The new data flow is: Authoring → deriveSchema() → page.schema
-// buildTemplateData() is NO LONGER used by the main code paths:
+// buildTemplateData() is NO LONGER used by ANY main code path:
 //   - PagePresetRegistry: uses deriveSchema() directly
 //   - sync-slice: uses deriveSchemaForPage() directly
 //   - page-slice: uses deriveSchema() directly
+//   - auto-generate: now uses createPageFromPreset() directly
+//   - reset-canvas: now uses createPageFromPreset() directly
 //
 // This file is kept ONLY for:
 //   - getTemplateLabel() — still used for page label generation
 //   - getTemplateExtraProps() — still used for background colors
-//   - createTemplatePage() — may be used by export pipeline
 //
 // Do NOT add new code that depends on buildTemplateData().
 // Use deriveSchema() from @/core/schema/derive-schema instead.
