@@ -4,7 +4,70 @@
 // Legacy export HTML generation removed — now using Vite SSR Export
 // ═══════════════════════════════════════════════════════════════
 
-import type { CanvaPage, CanvaElement } from '@/components/canva/types';
+import type { CanvaPage, CanvaElement, Ratio } from '@/components/canva/types';
+
+// ═══════════════════════════════════════════════════════════════
+// VIRTUAL CANVAS — Fixed coordinate space for WYSIWYG editing
+//
+// The virtual canvas is the canonical editing space. All content
+// is designed within this fixed pixel space, then scaled/panned
+// to fit the available screen area.
+//
+// Zoom semantics:
+//   - zoom = 1.0  → canvas at native size (1280×720 for 16:9)
+//   - zoom = 0.5  → canvas at half size (640×360 visual)
+//   - zoom = -1   → auto-fit (calculated by Stage on mount)
+//   - "Fit" = zoom level that makes canvas fit the viewport
+//
+// Pan semantics:
+//   - panX, panY = offset in screen pixels from the viewport center
+//   - When zoom <= fitZoom, pan is auto-centered (no pan needed)
+//   - When zoom > fitZoom, user can pan to navigate the zoomed canvas
+// ═══════════════════════════════════════════════════════════════
+
+/** Minimum zoom level (10% of native size) */
+export const ZOOM_MIN = 0.1;
+/** Maximum zoom level (300% of native size) */
+export const ZOOM_MAX = 3.0;
+/** Zoom step for keyboard/scroll wheel */
+export const ZOOM_STEP = 0.1;
+/** Sentinel value meaning "auto-fit to viewport" */
+export const ZOOM_FIT = -1;
+
+/** Padding around the canvas in the viewport (px) */
+export const CANVAS_VIEWPORT_PADDING = 24;
+
+/**
+ * Calculate the zoom level that fits the canvas into the viewport.
+ * The canvas is scaled uniformly to fit within the viewport with padding.
+ */
+export function calcFitZoom(
+  viewportW: number,
+  viewportH: number,
+  canvasW: number,
+  canvasH: number,
+  padding = CANVAS_VIEWPORT_PADDING,
+): number {
+  const availW = viewportW - padding * 2;
+  const availH = viewportH - padding * 2;
+  if (availW <= 0 || availH <= 0) return 0.5; // fallback
+  return Math.min(availW / canvasW, availH / canvasH);
+}
+
+/**
+ * Clamp zoom to valid range.
+ */
+export function clampZoom(zoom: number): number {
+  if (zoom === ZOOM_FIT) return ZOOM_FIT;
+  return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom));
+}
+
+/**
+ * Get the effective zoom value, resolving ZOOM_FIT to the actual fit scale.
+ */
+export function resolveZoom(zoom: number, fitZoom: number): number {
+  return zoom === ZOOM_FIT ? fitZoom : clampZoom(zoom);
+}
 
 // ── Shared constants (used by canva-store + components) ────────
 export const GAME_TYPES = ['truefalse','memory','matching','roda','sorting','spinwheel','teambuzzer','wordsearch','flashcard','crossword','fillblank','dragdrop'] as const;
@@ -87,7 +150,7 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
     x: 0, y: 0, w: 100, h: 100,
     opacity: 100,
     dataIdx: -1,
-    isPlaceholder: true, // Mark as placeholder — filtered out on unlock
+    // isPlaceholder removed — all elements render uniformly in v4
     ...(moduleId ? { moduleId } : {}),
     ...(kuisId ? { kuisId } : {}),
     ...(kuisIds && kuisIds.length > 0 ? { kuisIds } : {}),

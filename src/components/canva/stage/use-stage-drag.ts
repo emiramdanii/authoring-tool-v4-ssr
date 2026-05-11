@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, useEffect } from 'react';
 import type { CanvaPage, ResizeDir } from '../types';
+import { screenDeltaToPctWithRect } from '@/lib/virtual-canvas';
 
 interface DragState {
   type: 'move' | 'resize';
@@ -17,8 +18,8 @@ interface DragState {
 
 interface UseStageDragParams {
   page: CanvaPage | undefined;
-  baseScale: number;
-  zoom: number;
+  /** The effective visual zoom (resolved from store zoom + fitZoom) */
+  effectiveZoom: number;
   stageW: number;
   stageH: number;
   snapEnabled: boolean;
@@ -30,11 +31,14 @@ interface UseStageDragParams {
 /**
  * Custom hook that manages drag/resize logic for Stage elements.
  * Handles snap line computation, mouse move, and mouse up events.
+ *
+ * Virtual Canvas: Uses effectiveZoom directly (no baseScale needed).
+ * Coordinate conversion uses getBoundingClientRect() for accuracy
+ * after CSS transforms (scale + translate).
  */
 export function useStageDrag({
   page,
-  baseScale,
-  zoom,
+  effectiveZoom,
   stageW,
   stageH,
   snapEnabled,
@@ -55,7 +59,7 @@ export function useStageDrag({
   const computeSnapLines = useCallback((elId: string, newX: number, newY: number, newW?: number, newH?: number) => {
     if (!snapEnabled || !page) return [];
     const lines: { x?: number; y?: number }[] = [];
-    const el = page.elements.find(e => e.id === elId) || page.overlayElements?.find(e => e.id === elId);
+    const el = page.elements.find(e => e.id === elId);
     if (!el) return [];
 
     const w = newW ?? el.w;
@@ -66,7 +70,7 @@ export function useStageDrag({
     const elBottom = newY + h;
 
     // Check alignment with other elements
-    const allEls = [...page.elements, ...(page.overlayElements || [])].filter(e => e.id !== elId && !e.hidden);
+    const allEls = page.elements.filter(e => e.id !== elId && !e.hidden);
     for (const other of allEls) {
       const oCenterX = other.x + other.w / 2;
       const oCenterY = other.y + other.h / 2;
@@ -92,22 +96,29 @@ export function useStageDrag({
   }, [snapEnabled, page, snapValue]);
 
   // Track mouse position + handle drag/resize
+  // Virtual Canvas: Uses centralized coordinate utilities for accurate
+  // conversion after CSS scale + translate transforms.
   const handleAreaMouseMove = useCallback((e: React.MouseEvent, onMouseMove?: (x: number, y: number) => void) => {
-    if (!stageWrapRef.current) return;
-    const rect = stageWrapRef.current.getBoundingClientRect();
-    const scale = baseScale * zoom;
-    const x = Math.round((e.clientX - rect.left) / scale);
-    const y = Math.round((e.clientY - rect.top) / scale);
-    if (x >= 0 && y >= 0 && x <= stageW && y <= stageH) {
-      onMouseMove?.(x, y);
+    // Report mouse position — convert screen coords to virtual canvas pixels
+    if (stageWrapRef.current) {
+      const rect = stageWrapRef.current.getBoundingClientRect();
+      const vx = Math.round(((e.clientX - rect.left) / rect.width) * stageW);
+      const vy = Math.round(((e.clientY - rect.top) / rect.height) * stageH);
+      if (vx >= 0 && vy >= 0 && vx <= stageW && vy <= stageH) {
+        onMouseMove?.(Math.max(0, Math.min(stageW, vx)), Math.max(0, Math.min(stageH, vy)));
+      }
     }
 
     if (!dragState.current || !stageWrapRef.current) return;
 
-    const dx = e.clientX - dragState.current.startX;
-    const dy = e.clientY - dragState.current.startY;
-    const dxPct = dx / scale / stageW * 100;
-    const dyPct = dy / scale / stageH * 100;
+    // Use centralized coordinate utility for accurate delta calculation
+    const rect = stageWrapRef.current.getBoundingClientRect();
+    // Convert mouse delta to percentage delta using the virtual canvas utility
+    const { dxPct, dyPct } = screenDeltaToPctWithRect(
+      e.clientX - dragState.current.startX,
+      e.clientY - dragState.current.startY,
+      rect,
+    );
 
     if (dragState.current.type === 'move') {
       const rawX = Math.max(0, Math.min(90, dragState.current.origX + dxPct));
@@ -158,7 +169,7 @@ export function useStageDrag({
         setSnapLines(lines);
       }
     }
-  }, [baseScale, zoom, stageW, stageH, updateElement, snapEnabled, snapValue, computeSnapLines]);
+  }, [effectiveZoom, stageW, stageH, updateElement, snapEnabled, snapValue, computeSnapLines]);
 
   const handleMouseUp = useCallback(() => {
     dragState.current = null;

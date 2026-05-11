@@ -27,8 +27,8 @@ export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
     // ── Initial state ────────────────────────────────────────────
     pages: [createPage('Halaman 1', 'custom')],
     currentPageIndex: 0,
-    ratioId: '9:16',
-    zoom: 1.0,
+    ratioId: '16:9',
+    zoom: -1, // -1 = auto-fit (calculated by Stage on mount)
     tool: 'select',
     leftTab: 'halaman',
     selectedElId: null,
@@ -53,8 +53,7 @@ export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
       const state = get();
       const page = state.pages[state.currentPageIndex];
       if (!page) return undefined;
-      return page.elements.find(e => e.id === state.selectedElId)
-        || (page.overlayElements || []).find(e => e.id === state.selectedElId);
+      return page.elements.find(e => e.id === state.selectedElId);
     },
 
     // ── Composed slices ─────────────────────────────────────────

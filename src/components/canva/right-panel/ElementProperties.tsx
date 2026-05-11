@@ -49,19 +49,11 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                 y: selectedEl.y + 2,
               };
               store._pushHistory();
-              const isOverlay = (page.overlayElements || []).some(oe => oe.id === selectedEl.id);
               const newPages = [...pages];
-              if (isOverlay) {
-                newPages[store.currentPageIndex] = {
-                  ...page,
-                  overlayElements: [...(page.overlayElements || []), newEl],
-                };
-              } else {
-                newPages[store.currentPageIndex] = {
-                  ...page,
-                  elements: [...page.elements, newEl],
-                };
-              }
+              newPages[store.currentPageIndex] = {
+                ...page,
+                elements: [...page.elements, newEl],
+              };
               useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id, selectedElIds: [newEl.id] });
               toast.success('Elemen diduplikasi');
             }}

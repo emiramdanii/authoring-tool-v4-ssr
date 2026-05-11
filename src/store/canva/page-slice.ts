@@ -13,6 +13,7 @@ import {
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
+import { patchHistory } from '@/core/editor/patch-history';
 import { deriveSchema, deriveSchemaForPage, createDeriveContext } from '@/core/schema/derive-schema';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
@@ -20,13 +21,15 @@ export type PageSlice = Pick<
   CanvaState,
   | 'goPage' | 'addPage' | 'addTemplatePage' | 'duplicatePage'
   | 'deletePage' | 'setPageLabel' | 'setTemplateType' | 'setVariant' | 'reorderPage'
-  | 'unlockPage' | 'relockPage'
 >;
 
 export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set, get) => ({
   goPage: (idx) => {
     const pages = get().pages;
     if (idx < 0 || idx >= pages.length) return;
+    // Clear patch history when switching pages to prevent cross-page
+    // patch application (patches from page N must not leak into page M)
+    patchHistory.clear();
     set({ currentPageIndex: idx, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
   },
 
@@ -60,9 +63,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     clone.elements.forEach((el: CanvaElement) => {
       el.id = createElId();
     });
-    (clone.overlayElements || []).forEach((el: CanvaElement) => {
-      el.id = createElId();
-    });
+
     // ═══ FASE 1: Re-assign schema block IDs on duplication ═══
     // Without this, the clone has identical block IDs as the original,
     // causing selection/editing conflicts (selecting a block in one page
@@ -120,15 +121,6 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     // Re-populate placeholder elements for export compat
     newPage.elements = populateTemplateElements(newPage, createElId);
 
-    // Reset lock state: template pages always start locked,
-    // custom pages don't have the lock concept
-    if (isTemplate) {
-      newPage.locked = true;
-      newPage.overlayElements = [];
-    } else {
-      newPage.locked = undefined;
-    }
-
     // ═══ FASE 3: Derive schema directly from authoring ═════
     // When changing template type, derive schema from the current
     // authoring state. Pure one-way: Authoring → Schema → Canvas.
@@ -175,96 +167,4 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     set({ pages: newPages, currentPageIndex: newCurrentIdx, selectedElId: null });
   },
 
-  unlockPage: () => {
-    const { pages, currentPageIndex } = get();
-    const page = pages[currentPageIndex];
-    if (!page) return;
-    // Only template pages can be unlocked
-    const isTemplate = page.templateType && page.templateType !== 'custom';
-    if (!isTemplate) {
-      toast.warning('Halaman ini sudah bebas edit');
-      return;
-    }
-    // Already unlocked
-    if (page.locked === false) {
-      toast.info('Halaman ini sudah terbuka kuncinya');
-      return;
-    }
-
-    get()._pushHistory();
-    const newPages = [...pages];
-    // Filter out placeholder elements (isPlaceholder: true — set by populateTemplateElements)
-    // These are full-page elements only for export compat and should NOT
-    // become visible draggable boxes after unlock.
-    const realElements = page.elements.filter(el => !el.isPlaceholder);
-    // Merge real elements + overlay elements so all are draggable
-    const mergedElements = [...realElements, ...(page.overlayElements || [])];
-    newPages[currentPageIndex] = {
-      ...page,
-      locked: false,
-      elements: mergedElements,
-      overlayElements: [], // No more overlay concept for unlocked pages
-    };
-    set({ pages: newPages, selectedElId: null });
-    toast.success(`🔒→🔓 ${page.label} dibuka kuncinya — template beku, semua elemen bisa diedit`);
-  },
-
-  relockPage: () => {
-    const { pages, currentPageIndex } = get();
-    const page = pages[currentPageIndex];
-    if (!page) return;
-    // Only unlocked template pages can be re-locked
-    const isTemplate = page.templateType && page.templateType !== 'custom';
-    if (!isTemplate) {
-      toast.warning('Halaman ini bukan template');
-      return;
-    }
-    if (page.locked !== false) {
-      toast.info('Halaman ini sudah terkunci');
-      return;
-    }
-
-    get()._pushHistory();
-    const newPages = [...pages];
-    // Re-lock: derive fresh schema from authoring, reset to locked template mode
-    // FASE 3: Use deriveSchema instead of buildTemplateData
-    const freshElements = populateTemplateElements({ ...page, templateData: {} }, createElId);
-
-    // Filter user elements: keep only non-placeholder elements that are
-    // NOT full-page (x:0,y:0,w:100,h:100) — those were the original
-    // template placeholder elements that got converted during unlock.
-    // Full-page elements that match placeholder positions are likely
-    // remnants of the old template, not user-placed content.
-    const userElements = page.elements.filter(el => {
-      if (el.isPlaceholder) return false; // Skip placeholders
-      // Skip elements that look like converted placeholders:
-      // full-page size with type modul/materi/kuis/game
-      const isFullPage = el.x <= 2 && el.y <= 2 && el.w >= 96 && el.h >= 96;
-      const isTemplateType = ['modul', 'materi', 'kuis', 'game'].includes(el.type);
-      if (isFullPage && isTemplateType) return false;
-      return true;
-    });
-
-    const newPage: CanvaPage = {
-      ...page,
-      locked: true,
-      templateData: {}, // FASE 3: legacy, no longer populated
-      overlayElements: userElements, // Preserve genuine user elements as overlays
-      elements: freshElements,
-    };
-    Object.assign(newPage, getTemplateExtraProps(page.templateType));
-
-    // ═══ FASE 3: Derive schema directly from authoring ═══════
-    // Re-lock derives a fresh schema from the current authoring data.
-    // This ensures the schema reflects the latest content.
-    const ctx = createDeriveContext();
-    const schema = deriveSchemaForPage(newPage, ctx);
-    if (schema) {
-      newPage.schema = schema;
-    }
-
-    newPages[currentPageIndex] = newPage;
-    set({ pages: newPages, selectedElId: null });
-    toast.success(`🔓→🔒 ${page.label} dikunci kembali — auto-sync aktif, data diperbarui dari authoring`);
-  },
 });

@@ -163,7 +163,10 @@ export default function SchemaPlayer({
       style={{ fontFamily: tokens.typography.fontFamily.body, background: COLORS.bgPlayer }}>
 
       {/* ══ SCREEN CONTENT ══════════════════════════════════════ */}
-      <div className="absolute inset-0" style={{ bottom: showControls ? (isCompact ? 48 : 72) : 0 }}>
+      {/* Content area offset for bottom nav — use CSS variable approach
+          so the nav height auto-adjusts via ResizeObserver.
+          Fallback values match PageFrame defaults. */}
+      <div className="absolute inset-0" style={{ bottom: showControls ? (isCompact ? '6.67%' : '10%') : 0 }}>
         <SchemaEngine
           schema={schema}
           screenIndex={screenIdx}

@@ -34,6 +34,7 @@ import {
   Volume2,
   VolumeX,
   Rocket,
+  Maximize,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -49,8 +50,9 @@ export default function Toolbar() {
   const {
     tool,
     setTool,
-    zoom,
+    zoom: storeZoom,
     zoomDelta,
+    zoomToFit,
     ratioId,
     setRatio,
     clearStage,
@@ -488,21 +490,30 @@ export default function Toolbar() {
         <Button
           variant="ghost"
           size="icon"
+          onClick={zoomToFit}
+          className="focus-ring hover:scale-105 active:scale-95 transition-transform"
+          title="Fit to screen (Ctrl+0)"
+        >
+          <Maximize size={13} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => zoomDelta(-0.1)}
           className="focus-ring hover:scale-105 active:scale-95 transition-transform"
-          title="Zoom out"
+          title="Zoom out (Ctrl+-)"
         >
           <Minus size={13} />
         </Button>
-        <span className="text-[11px] font-mono text-app-secondary w-10 text-center select-none">
-          {Math.round(zoom * 100)}%
+        <span className="text-[11px] font-mono text-app-secondary w-12 text-center select-none" title={storeZoom === -1 ? 'Auto-fit' : `${Math.round(storeZoom * 100)}% of native`}>
+          {storeZoom === -1 ? 'Fit' : `${Math.round(storeZoom * 100)}%`}
         </span>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => zoomDelta(0.1)}
           className="focus-ring hover:scale-105 active:scale-95 transition-transform"
-          title="Zoom in"
+          title="Zoom in (Ctrl++)"
         >
           <Plus size={13} />
         </Button>

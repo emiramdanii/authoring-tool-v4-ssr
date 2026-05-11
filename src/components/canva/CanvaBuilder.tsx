@@ -11,7 +11,8 @@ import Stage from './Stage';
 import RightPanel from './RightPanel';
 import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
-import { connectHistoryToEditBus } from '@/core/editor/patch-history';
+// connectHistoryToEditBus is called once in store.ts (canonical location).
+// Removed duplicate call — was causing double-recording in PatchHistory.
 
 // Lazy-loaded: PlayOverlay is only needed when user clicks "Play" — purely client-side
 const PlayOverlay = dynamic(() => import('./PlayOverlay'), { ssr: false });
@@ -32,14 +33,10 @@ export default function CanvaBuilder() {
     useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
   }, [useCanvaStore((s) => s.pages.length)]);
 
-  // ── Connect PatchHistory to EditBus (patch-based undo/redo) ──
-  // This wires the immer patch pipeline: every SchemaBlock edit
-  // records forward+inverse patches in PatchHistory for efficient
-  // undo/redo. Called once on mount, disconnected on unmount.
-  useEffect(() => {
-    const disconnect = connectHistoryToEditBus();
-    return disconnect;
-  }, []);
+  // ── PatchHistory ↔ EditBus connection ──────────────────────
+  // Removed: connectHistoryToEditBus() was already called in store.ts
+  // (line 83). Having it here too caused every schema edit to be
+  // recorded TWICE in PatchHistory, making undo/redo unreliable.
 
   // ── Auto-save to localStorage on changes (debounced) ────────
   // This is the ONLY auto-save in the app. Toolbar and StatusBar
@@ -170,15 +167,17 @@ export default function CanvaBuilder() {
       // Zoom shortcuts
       if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
         e.preventDefault();
-        store.zoomDelta(0.1);
+        if (store.zoom === -1) store.setZoom(1); // Exit auto-fit, go to 100%
+        else store.zoomDelta(0.1);
       }
       if ((e.ctrlKey || e.metaKey) && e.key === '-') {
         e.preventDefault();
-        store.zoomDelta(-0.1);
+        if (store.zoom === -1) store.setZoom(0.8); // Exit auto-fit, start from 80%
+        else store.zoomDelta(-0.1);
       }
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
-        store.setZoom(1);
+        store.zoomToFit();
       }
     };
 

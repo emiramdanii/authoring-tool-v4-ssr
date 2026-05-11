@@ -46,10 +46,10 @@ export interface CanvaElement {
   // ── Text styling (teks element) ──
   textAlign?: 'left' | 'center' | 'right';
   fontWeight?: number; // 100-900
-  // ── Placeholder flag (v4 — Unlock Mechanism) ──
-  // Elements created by populateTemplateElements() for export compat.
-  // They fill the entire page (x:0,y:0,w:100,h:100) and should NOT
-  // become visible draggable boxes after unlock.
+  // ── Placeholder flag (REMOVED in v4) ──
+  // Was used by the old lock/unlock model to mark template-generated elements.
+  // Now all elements are treated uniformly — no lock/unlock distinction.
+  /** @deprecated v4: No longer used. All elements render uniformly. */
   isPlaceholder?: boolean;
   // ── Image element properties ──
   imageUrl?: string;      // URL or data URL of the image
@@ -107,20 +107,16 @@ export interface CanvaPage {
    *  New code should NEVER write to templateData — use page.schema instead.
    */
   templateData: Record<string, unknown>;
-  // ── Overlay elements (v3 — Phase 1) ──
-  // Elements rendered ON TOP of template pages, allowing hybrid mode
-  /** @deprecated FASE 1 → FASE 4: Schema-driven pages render content via SchemaScreenRenderer.
-   *  Overlay elements only apply to non-schema legacy pages and unlocked templates.
-   *  MIGRATION PATH: After all pages are schema-native, this can be removed. */
-  overlayElements: CanvaElement[];
+  // ── Overlay elements (v3 — Phase 1) ── REMOVED in v4.
+  // All elements now live in elements[]. The overlay system was part of
+  // the old locked/unlocked model which has been removed.
+  // Kept as optional for backward compat during loadFromStorage migration.
+  /** @deprecated v4: Always empty after load. Merged into elements[] on load. */
+  overlayElements?: CanvaElement[];
   // ── Template layout variant (Phase 3) ──
   // Different visual layouts for the same template type (A/B/C)
   templateVariant?: 'A' | 'B' | 'C';
-  // ── Lock state (v4 — Unlock Mechanism) ──
-  // true = template auto-updates from authoring data, elements not draggable
-  // false = template frozen, all elements draggable (data binding broken)
-  // undefined = same as true for backward compat
-  locked?: boolean;
+
   // ── Schema-first (FASE 1 — Schema as Canonical State) ──
   // First-class ScreenSchema — the canonical runtime representation.
   // When present, renderer uses this DIRECTLY (no TemplateAdapter needed).
@@ -166,37 +162,9 @@ export const LAYER_COLORS: Record<string, string> = {
 };
 
 // ── Template Gallery Constants ────────────────────────────────
-// @deprecated FASE 2 → FASE 4: DEAD CODE — zero imports.
-// Use PagePresetRegistry instead: getAllPresets(), getPreset(id)
-// These constants will be removed in a future cleanup.
-// ═══════════════════════════════════════════════════════════════
-
-/** @deprecated Use PagePreset from @/core/preset/PagePresetRegistry instead */
-export interface TemplateInfo {
-  id: PageTemplateType;
-  icon: string;
-  name: string;
-  desc: string;
-  color: string;
-  category: 'utama' | 'konten' | 'interaktif' | 'penutup';
-}
-
-/** @deprecated Use getAllPresets() from @/core/preset/PagePresetRegistry instead */
-export const TEMPLATE_TYPES: TemplateInfo[] = [
-  { id: 'cover',    icon: '🏠', name: 'Cover',       desc: 'Halaman judul & pembuka',     color: '#f9c82e', category: 'utama' },
-  { id: 'dokumen',  icon: '📋', name: 'Dokumen',     desc: 'CP, TP, ATP',                color: '#3ecfcf', category: 'utama' },
-  { id: 'hero',     icon: '🚀', name: 'Hero',        desc: 'Banner dengan gradient',      color: '#fb923c', category: 'konten' },
-  { id: 'materi',   icon: '📝', name: 'Materi',      desc: 'Konten pembelajaran',         color: '#a78bfa', category: 'konten' },
-  { id: 'skenario', icon: '🎭', name: 'Skenario',    desc: 'Cerita interaktif pilihan',   color: '#f472b6', category: 'interaktif' },
-  { id: 'kuis',     icon: '❓', name: 'Kuis',        desc: 'Soal pilihan ganda',          color: '#f5c842', category: 'interaktif' },
-  { id: 'game',     icon: '🎮', name: 'Game',        desc: 'Game interaktif',             color: '#3ecfcf', category: 'interaktif' },
-  { id: 'hasil',    icon: '🏆', name: 'Hasil',       desc: 'Skor & apresiasi',            color: '#34d399', category: 'penutup' },
-  { id: 'petunjuk', icon: '📌', name: 'Petunjuk',   desc: 'Cara menggunakan media',      color: '#3ecfcf', category: 'utama' },
-  { id: 'diskusi',  icon: '💬', name: 'Diskusi',     desc: 'Pertanyaan diskusi & tulis',   color: '#34d399', category: 'interaktif' },
-  { id: 'refleksi', icon: '📝', name: 'Refleksi',    desc: 'Refleksi diri & portofolio',   color: '#a78bfa', category: 'penutup' },
-  { id: 'penutup',  icon: '🎊', name: 'Penutup',     desc: 'Penutup & preview berikutnya', color: '#fb923c', category: 'penutup' },
-  { id: 'custom',   icon: '⬜', name: 'Kosong',      desc: 'Canvas kosong (bebas)',       color: '#6366f1', category: 'utama' },
-];
+// DEAD CODE REMOVED (v4): TEMPLATE_TYPES and TemplateInfo were
+// superseded by PagePresetRegistry. Zero imports existed outside
+// this file. Use getAllPresets() from @/core/preset/PagePresetRegistry.
 
 // ── Gradient Presets ──────────────────────────────────────────
 

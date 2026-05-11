@@ -35,15 +35,13 @@ export interface PageFrameProps {
   currentPageIndex: number;
   /** Total pages */
   totalPages: number;
-  /** Whether the template is locked */
-  isLocked: boolean;
+  /** @deprecated v4: Removed — schema is always owned by the user */
+  // isLocked removed — no longer used
   /** Whether this is a schema-driven page (content from SchemaScreenRenderer) */
   isSchemaDriven?: boolean;
   /** Content children (PageRenderer or template content) */
   children: React.ReactNode;
-  /** Overlay elements rendered on top of content (for locked templates) */
-  overlayElements?: React.ReactNode;
-  /** Extra elements on top (for unlocked templates / custom mode) */
+  /** Extra elements on top of content (all user-placed elements) */
   extraElements?: React.ReactNode;
   /** Class/style overrides for the root container */
   className?: string;
@@ -92,10 +90,8 @@ export function PageFrame({
   page,
   currentPageIndex,
   totalPages,
-  isLocked,
   isSchemaDriven = false,
   children,
-  overlayElements,
   extraElements,
   className,
   style,
@@ -318,11 +314,8 @@ export function PageFrame({
         {/* Main content (template or custom elements) */}
         {children}
 
-        {/* Overlay elements on locked template pages */}
-        {isLocked && overlayElements}
-
-        {/* Extra elements on unlocked template / custom pages */}
-        {!isLocked && extraElements}
+        {/* Extra elements on top of content (user-placed in preview/export) */}
+        {extraElements}
       </div>
 
       {/* ══ Bottom Navbar ═════════════════════════════════════ */}

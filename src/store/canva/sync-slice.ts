@@ -22,8 +22,6 @@ import type { CanvaState } from './types';
 import type { CanvaPage, CanvaElement } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES } from '@/lib/canva-constants';
-import { deriveSchemaForPage, createDeriveContext } from '@/core/schema/derive-schema';
-import type { ScreenSchema } from '@/core/schema/types';
 
 export type SyncSlice = Pick<CanvaState, 'syncTemplateData'>;
 
@@ -46,49 +44,24 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
     const allKuisIds = new Set(authStore.kuis.map((k: { _id?: string }) => k._id).filter(Boolean));
     let changed = false;
 
-    // Create a single derive context for all pages (performance optimization)
-    let deriveCtx: ReturnType<typeof createDeriveContext> | null = null;
-    const getCtx = () => deriveCtx ?? (deriveCtx = createDeriveContext());
-
     const newPages = pages.map(page => {
       const isTemplate = page.templateType && page.templateType !== 'custom';
-      const isUnlocked = page.locked === false;
 
-      // ── Layer 1: Schema re-derivation (FASE 3 — one-way flow) ──
-      let newSchema: ScreenSchema | null | undefined = undefined; // undefined = no change
+      // ── Layer 1: Schema is now "owned" by the user ──
+      // No more auto-sync overwrites. Schema edits persist until the user
+      // explicitly refreshes via "Refresh Data dari Authoring" button.
+      // The old locked/unlocked model is removed — schema is always canonical.
       let schemaChanged = false;
 
-      if (isTemplate && !isUnlocked && page.schema) {
-        // Schema-driven locked page: re-derive schema from authoring
-        const ctx = getCtx();
-        const derived = deriveSchemaForPage(page, ctx);
-        if (derived) {
-          // Check if schema actually changed (compare serialized blocks)
-          if (JSON.stringify(derived.blocks) !== JSON.stringify(page.schema.blocks)) {
-            newSchema = derived;
-            schemaChanged = true;
-          }
-        }
-      }
-
       // ── Layer 2: Orphan cleanup ───────────────────────────
-      // Remove overlay elements that reference deleted modules or kuis
-      const cleanedOverlays = (page.overlayElements || []).filter(el => {
+      // Remove elements that reference deleted modules or kuis
+      // (overlayElements is always empty at runtime — merged into elements on load)
+      const cleanedElements = page.elements.filter(el => {
         if (el.moduleId && !allModuleIds.has(el.moduleId)) return false;
         if (el.kuisId && !allKuisIds.has(el.kuisId)) return false;
         return true;
       });
 
-      // Clean regular elements — but SKIP for unlocked pages
-      const cleanedElements = isUnlocked
-        ? page.elements
-        : page.elements.filter(el => {
-            if (el.moduleId && !allModuleIds.has(el.moduleId)) return false;
-            if (el.kuisId && !allKuisIds.has(el.kuisId)) return false;
-            return true;
-          });
-
-      const overlaysChanged = cleanedOverlays.length !== (page.overlayElements || []).length;
       const elementsChanged = cleanedElements.length !== page.elements.length;
 
       // ── Layer 3: Element ID re-sync ───────────────────────
@@ -115,31 +88,16 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
         return { result, changed };
       };
 
-      const syncedOverlays = syncElementIds(cleanedOverlays);
       const syncedElements = syncElementIds(cleanedElements);
-      const idsSynced = syncedOverlays.changed || syncedElements.changed;
+      const idsSynced = syncedElements.changed;
 
-      if (!schemaChanged && !overlaysChanged && !elementsChanged && !idsSynced) return page;
+      if (!schemaChanged && !elementsChanged && !idsSynced) return page;
 
       changed = true;
       const result: CanvaPage = {
         ...page,
-        overlayElements: (overlaysChanged || idsSynced) ? syncedOverlays.result : page.overlayElements,
         elements: (elementsChanged || idsSynced) ? syncedElements.result : page.elements,
       };
-
-      // Apply schema update if changed
-      if (schemaChanged && newSchema) {
-        result.schema = newSchema;
-      }
-
-      // Update label for cover pages if title changed in schema
-      if (schemaChanged && page.templateType === 'cover' && newSchema?.blocks?.[0]) {
-        const coverBlock = newSchema.blocks[0] as { title?: string };
-        if (coverBlock.title) {
-          result.label = 'Cover - ' + coverBlock.title;
-        }
-      }
 
       return result;
     });

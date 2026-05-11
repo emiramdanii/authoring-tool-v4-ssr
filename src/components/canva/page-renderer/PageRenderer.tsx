@@ -63,8 +63,6 @@ export function PageRenderer({
 }: PageRendererProps) {
   const templateType = page.templateType || 'custom';
   const isTemplate = templateType !== 'custom';
-  const isLocked = isTemplate && page.locked !== false;
-  const isUnlocked = isTemplate && page.locked === false;
 
   // In canvas mode, templates show design preview (NOT interactive)
   // In preview/export mode, templates are interactive (playable with score tracking)
@@ -204,34 +202,11 @@ export function PageRenderer({
     </>
   );
 
-  // ═══ Overlay elements (on top of locked templates) ════════
-  // Schema-driven pages render their own content — overlay elements
-  // (legacy CanvaElement[]) only apply to non-schema pages.
-  // In canvas mode, Stage.tsx renders its own StageElement overlays,
-  // so we skip BlockRenderer here to avoid double rendering.
-  const overlayElements = !useSchemaRenderer && isLocked && mode !== 'canvas' && (page.overlayElements || []).length > 0 ? (
-    <div className="absolute inset-0" style={{ zIndex: 10 }}>
-      {(page.overlayElements || []).filter(el => !el.hidden).map(el => (
-        <BlockRenderer
-          key={el.id}
-          element={el}
-          mode={blockModeMap[mode]}
-          pageIndex={currentPageIndex}
-          interactive={interactive}
-          compact={false}
-        />
-      ))}
-    </div>
-  ) : undefined;
-
-  // ═══ Extra elements (unlocked template / custom mode) ═════
-  // For unlocked templates using schema renderer: user elements render on top
-  // of the schema content. For custom pages: all elements.
-  // In canvas mode, Stage.tsx renders its own StageElement overlays,
-  // so we skip BlockRenderer here to avoid double rendering.
-  const extraElements = (isUnlocked || !isTemplate) && mode !== 'canvas' ? (
-    <div className="absolute inset-0" style={isUnlocked ? { zIndex: 20 } : undefined}>
-      {page.elements.filter(el => !el.hidden && !el.isPlaceholder).map(el => (
+  // v4: All elements render on top for preview/export mode
+  // (overlayElements was merged into elements[] on load — no separate overlay layer)
+  const extraElements = mode !== 'canvas' && page.elements.length > 0 ? (
+    <div className="absolute inset-0" style={{ zIndex: 20 }}>
+      {page.elements.filter(el => !el.hidden).map(el => (
         <BlockRenderer
           key={el.id}
           element={el}
@@ -258,9 +233,7 @@ export function PageRenderer({
       page={page}
       currentPageIndex={currentPageIndex}
       totalPages={totalPages}
-      isLocked={isLocked}
       isSchemaDriven={useSchemaRenderer}
-      overlayElements={overlayElements}
       extraElements={extraElements}
       tokens={tokens}
     >

@@ -125,28 +125,28 @@ export function useExportActions() {
       // TP section
       if (tp?.length) {
         html += `<h2>Tujuan Pembelajaran (TP)</h2><table><tr><th>#</th><th>Tujuan</th><th>Indikator</th></tr>`;
-        tp.forEach((t: PrintableTpItem, i: number) => { html += `<tr><td>${i + 1}</td><td>${t.tujuan || t.label || '-'}</td><td>${t.indikator || '-'}</td></tr>`; });
+        tp.forEach((t, i: number) => { const pt = t as unknown as PrintableTpItem; html += `<tr><td>${i + 1}</td><td>${pt.tujuan || pt.label || '-'}</td><td>${pt.indikator || '-'}</td></tr>`; });
         html += `</table>`;
       }
 
       // ATP section
       if (s.atp?.pertemuan?.length) {
         html += `<h2>Alur Tujuan Pembelajaran (ATP)</h2><table><tr><th>#</th><th>Pertemuan</th><th>TP</th><th>Materi</th></tr>`;
-        s.atp.pertemuan.forEach((a: PrintableAtpPertemuan, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.judul || a.pertemuan || '-'}</td><td>${a.tp || '-'}</td><td>${a.kegiatan || '-'}</td></tr>`; });
+        s.atp.pertemuan.forEach((a, i: number) => { const pa = a as unknown as PrintableAtpPertemuan; html += `<tr><td>${i + 1}</td><td>${pa.judul || pa.pertemuan || '-'}</td><td>${pa.tp || '-'}</td><td>${pa.kegiatan || '-'}</td></tr>`; });
         html += `</table>`;
       }
 
       // Alur section
       if (s.alur?.length) {
         html += `<h2>Alur Pembelajaran</h2><table><tr><th>#</th><th>Kegiatan</th><th>Deskripsi</th><th>Durasi</th></tr>`;
-        s.alur.forEach((a: PrintableAlurItem, i: number) => { html += `<tr><td>${i + 1}</td><td>${a.kegiatan || a.label || '-'}</td><td>${a.deskripsi || '-'}</td><td>${a.durasi || '-'}</td></tr>`; });
+        s.alur.forEach((a, i: number) => { const pa = a as unknown as PrintableAlurItem; html += `<tr><td>${i + 1}</td><td>${pa.kegiatan || pa.label || '-'}</td><td>${pa.deskripsi || '-'}</td><td>${pa.durasi || '-'}</td></tr>`; });
         html += `</table>`;
       }
 
       // Kuis section
       if (s.kuis?.length) {
         html += `<h2>Soal Kuis</h2><table><tr><th>#</th><th>Soal</th><th>Jawaban</th></tr>`;
-        s.kuis.forEach((k: PrintableKuisItem, i: number) => { html += `<tr><td>${i + 1}</td><td>${k.soal || k.question || '-'}</td><td>${k.jawaban || k.answer || '-'}</td></tr>`; });
+        s.kuis.forEach((k, i: number) => { const pk = k as unknown as PrintableKuisItem; html += `<tr><td>${i + 1}</td><td>${pk.soal || pk.question || '-'}</td><td>${pk.jawaban || pk.answer || '-'}</td></tr>`; });
         html += `</table>`;
       }
 

@@ -8,7 +8,7 @@ import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { COLORS } from '@/lib/color-palette';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
-import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, Lock, Unlock } from 'lucide-react';
+import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
@@ -307,12 +307,6 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
               <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-gradient-to-t from-black/80 to-transparent">
                 <div className="text-[9px] font-bold text-white truncate flex items-center gap-0.5">
                   {TEMPLATE_ICON_MAP[p.templateType] || '📄'} {p.label}
-                  {p.templateType && p.templateType !== 'custom' && p.locked !== false && (
-                    <Lock size={12} className="text-amber-400/70" />
-                  )}
-                  {p.templateType && p.templateType !== 'custom' && p.locked === false && (
-                    <Unlock size={12} className="text-emerald-400/70" />
-                  )}
                 </div>
                 <div className="text-[7px] text-white/50">
                   Halaman {i + 1}/{pages.length}

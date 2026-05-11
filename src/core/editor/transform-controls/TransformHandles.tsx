@@ -14,6 +14,7 @@ import React, { useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import type { SchemaBlock } from '../../schema/types';
 import type { BlockCapabilities } from '../../registry/SceneRegistry';
+import { screenDeltaToPctWithRect, getStageWrapRect } from '@/lib/virtual-canvas';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -100,9 +101,12 @@ export function TransformHandles({ blockId, capabilities }: TransformHandlesProp
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
 
-      // Convert pixel delta to percentage (approximate — assumes canvas ~1280x720)
-      const dxPct = dx / 12.8;
-      const dyPct = dy / 7.2;
+      // Convert pixel delta to percentage using the ACTUAL rendered stage size.
+      // This correctly handles any ratio (16:9, 9:16, 1:1, etc.) and any zoom level.
+      // DO NOT use hardcoded /12.8 /7.2 — those only work for 1280×720 at zoom=1.
+      const rect = getStageWrapRect();
+      if (!rect) return;
+      const { dxPct, dyPct } = screenDeltaToPctWithRect(dx, dy, rect);
 
       const newLayout: Record<string, unknown> = { position: layout?.position ?? 'flow' };
 
@@ -213,8 +217,11 @@ export function useTransformDrag({ blockId, isCompact, isSelected, isMovable }: 
         document.body.style.userSelect = 'none';
       }
 
-      const dxPct = dx / 12.8;
-      const dyPct = dy / 7.2;
+      // Convert pixel delta to percentage using the ACTUAL rendered stage size.
+      // This correctly handles any ratio and any zoom level.
+      const rect = getStageWrapRect();
+      if (!rect) return;
+      const { dxPct, dyPct } = screenDeltaToPctWithRect(dx, dy, rect);
 
       const newX = Math.max(0, Math.min(90, initialX + dxPct));
       const newY = Math.max(0, Math.min(90, initialY + dyPct));

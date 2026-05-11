@@ -1,6 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
 // CANVA STORE — Element actions slice
 // ═══════════════════════════════════════════════════════════════
+// v4: Lock model removed — all elements live in elements[].
+// The old overlayElements array is deprecated and always empty.
+// On loadFromStorage, any overlay elements are merged into elements[].
 
 import { toast } from 'sonner';
 import type { StateCreator } from 'zustand';
@@ -21,13 +24,6 @@ export type ElementSlice = Pick<
   | 'toggleElementVisibility' | 'saveTextContent' | 'moveElementZ'
   | 'copySelected' | 'pasteElements' | '_clipboard'
 >;
-
-// ── Helper: determine if page is in template mode AND locked ──
-// Unlocked template pages should add elements to elements[] (not overlayElements)
-// because their overlayElements were merged into elements during unlock.
-function isLockedTemplatePage(templateType: PageTemplateType | undefined, locked: boolean | undefined): boolean {
-  return !!templateType && templateType !== 'custom' && locked !== false;
-}
 
 export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> = (set, get) => ({
   addElement: (type, x, y) => {
@@ -75,18 +71,10 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       }
     }
     const newPages = [...pages];
-    // Locked template pages use overlayElements; custom + unlocked use elements
-    if (isLockedTemplatePage(page.templateType, page.locked)) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: [...(page.overlayElements || []), el],
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: [...page.elements, el],
-      };
-    }
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: [...page.elements, el],
+    };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
     toast.success(`${typeInfo?.name || type} ditambahkan`);
@@ -98,7 +86,6 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     if (!page) return;
     const kuis = useAuthoringStore.getState().kuis;
     const kuisItem = kuis[idx];
-    // Generate stable kuisId if item doesn't have one
     const kid = (kuisItem?._id as string) || generateKuisId();
     const el: CanvaElement = {
       id: createElId(),
@@ -111,17 +98,10 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       opacity: 100,
     };
     const newPages = [...pages];
-    if (isLockedTemplatePage(page.templateType, page.locked)) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: [...(page.overlayElements || []), el],
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: [...page.elements, el],
-      };
-    }
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: [...page.elements, el],
+    };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
   },
@@ -133,30 +113,22 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const modules = useAuthoringStore.getState().modules;
     const gameModules = modules.filter((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
     const gameMod = gameModules[idx];
-    // Also find the actual index in modules[] (not gameModules[]) for dataIdx
     const actualIdx = gameMod ? modules.indexOf(gameMod) : -1;
     const el: CanvaElement = {
       id: createElId(),
       type: 'game',
       icon: '🎮',
       label: 'Game #' + (idx + 1),
-      dataIdx: actualIdx >= 0 ? actualIdx : idx, // Index in modules[], not gameModules[]
+      dataIdx: actualIdx >= 0 ? actualIdx : idx,
       moduleId: (gameMod?._id as string) || undefined,
       x: 50, y: 5, w: 45, h: 50,
       opacity: 100,
     };
     const newPages = [...pages];
-    if (isLockedTemplatePage(page.templateType, page.locked)) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: [...(page.overlayElements || []), el],
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: [...page.elements, el],
-      };
-    }
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: [...page.elements, el],
+    };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
   },
@@ -180,17 +152,10 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       layoutVariant: layoutVariant || (mod?.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A',
     };
     const newPages = [...pages];
-    if (isLockedTemplatePage(page.templateType, page.locked)) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: [...(page.overlayElements || []), el],
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: [...page.elements, el],
-      };
-    }
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: [...page.elements, el],
+    };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
     toast.success(`${typeInfo.name} ditambahkan`);
@@ -198,42 +163,34 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
 
   selectElement: (elId) => set({ selectedElId: elId, selectedElIds: elId ? [elId] : [] }),
 
-  // Phase 4: Multi-select — toggle element in/out of selection
   toggleElementSelection: (elId) => {
     const { selectedElIds, selectedElId } = get();
     if (selectedElIds.includes(elId)) {
-      // Remove from selection
       const newIds = selectedElIds.filter(id => id !== elId);
       set({
         selectedElIds: newIds,
         selectedElId: newIds.length > 0 ? newIds[0] : null,
       });
     } else {
-      // Add to selection
       const newIds = [...selectedElIds, elId];
       set({
         selectedElIds: newIds,
-        selectedElId: elId, // Most recently clicked becomes primary
+        selectedElId: elId,
       });
     }
   },
 
-  // Phase 4: Select all elements on current page
   selectAllElements: () => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
-    const allIds = [
-      ...page.elements.map(e => e.id),
-      ...(page.overlayElements || []).map(e => e.id),
-    ];
+    // v4: All elements live in elements[] — no more overlayElements
+    const allIds = page.elements.map(e => e.id);
     set({ selectedElIds: allIds, selectedElId: allIds.length > 0 ? allIds[0] : null });
   },
 
-  // Phase 4: Clear all selections
   clearSelection: () => set({ selectedElIds: [], selectedElId: null }),
 
-  // Phase 4: Delete all selected elements
   deleteSelectedElements: () => {
     const { pages, currentPageIndex, selectedElIds } = get();
     const page = pages[currentPageIndex];
@@ -243,7 +200,6 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     newPages[currentPageIndex] = {
       ...page,
       elements: page.elements.filter(e => !selectedElIds.includes(e.id)),
-      overlayElements: (page.overlayElements || []).filter(e => !selectedElIds.includes(e.id)),
     };
     set({ pages: newPages, selectedElIds: [], selectedElId: null });
     toast.success(`${selectedElIds.length} elemen dihapus`);
@@ -254,23 +210,13 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const page = pages[currentPageIndex];
     if (!page) return;
     const newPages = [...pages];
-    // Check if element is in overlayElements or regular elements
-    const isInOverlay = (page.overlayElements || []).some(e => e.id === elId);
-    if (isInOverlay) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: (page.overlayElements || []).map(el =>
-          el.id === elId ? { ...el, ...props } : el
-        ),
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: page.elements.map(el =>
-          el.id === elId ? { ...el, ...props } : el
-        ),
-      };
-    }
+    // v4: All elements live in elements[] — no more overlay/regular split
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: page.elements.map(el =>
+        el.id === elId ? { ...el, ...props } : el
+      ),
+    };
     set({ pages: newPages });
   },
 
@@ -280,13 +226,10 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     if (!page) return;
     get()._pushHistory();
     const newPages = [...pages];
-    // Remove from both overlayElements and elements to be safe
     newPages[currentPageIndex] = {
       ...page,
       elements: page.elements.filter(e => e.id !== elId),
-      overlayElements: (page.overlayElements || []).filter(e => e.id !== elId),
     };
-    // Phase 4: Also remove from multi-select
     const newSelectedIds = selectedElIds.filter(id => id !== elId);
     set({
       pages: newPages,
@@ -297,7 +240,6 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
 
   deleteSelected: () => {
     const { selectedElIds, deleteSelectedElements, selectedElId, deleteElement } = get();
-    // Phase 4: If multi-select, use bulk delete
     if (selectedElIds.length > 1) {
       deleteSelectedElements();
     } else if (selectedElId) {
@@ -310,8 +252,8 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
-    const isInOverlay = (page.overlayElements || []).some(e => e.id === elId);
-    const elements = isInOverlay ? (page.overlayElements || []) : page.elements;
+    // v4: All elements in elements[] — single array for z-ordering
+    const elements = page.elements;
     const idx = elements.findIndex(e => e.id === elId);
     if (idx === -1) return;
     get()._pushHistory();
@@ -325,11 +267,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     else if (direction === 'bottom') newIdx = 0;
     els.splice(newIdx, 0, el);
     const newPages = [...pages];
-    if (isInOverlay) {
-      newPages[currentPageIndex] = { ...page, overlayElements: els };
-    } else {
-      newPages[currentPageIndex] = { ...page, elements: els };
-    }
+    newPages[currentPageIndex] = { ...page, elements: els };
     set({ pages: newPages });
   },
 
@@ -338,22 +276,13 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const page = pages[currentPageIndex];
     if (!page) return;
     const newPages = [...pages];
-    const isInOverlay = (page.overlayElements || []).some(e => e.id === elId);
-    if (isInOverlay) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: (page.overlayElements || []).map(el =>
-          el.id === elId ? { ...el, hidden: !el.hidden } : el
-        ),
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: page.elements.map(el =>
-          el.id === elId ? { ...el, hidden: !el.hidden } : el
-        ),
-      };
-    }
+    // v4: All elements in elements[]
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: page.elements.map(el =>
+        el.id === elId ? { ...el, hidden: !el.hidden } : el
+      ),
+    };
     set({ pages: newPages });
   },
 
@@ -364,7 +293,6 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
   // ── Clipboard: Copy / Paste ────────────────────────────────
   _clipboard: [],
 
-  /** Copy selected elements to internal clipboard */
   copySelected: () => {
     const { pages, currentPageIndex, selectedElId, selectedElIds } = get();
     const page = pages[currentPageIndex];
@@ -378,17 +306,15 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
 
     if (idsToCopy.length === 0) return;
 
-    const allEls = [...page.elements, ...(page.overlayElements || [])];
+    // v4: All elements in elements[]
     const copied = idsToCopy
-      .map(id => allEls.find(e => e.id === id))
+      .map(id => page.elements.find(e => e.id === id))
       .filter(Boolean) as CanvaElement[];
 
-    // Deep clone to avoid mutations
     set({ _clipboard: structuredClone(copied) });
     toast.success(`${copied.length} elemen disalin`);
   },
 
-  /** Paste clipboard elements at an offset position */
   pasteElements: () => {
     const { pages, currentPageIndex, _clipboard } = get();
     const page = pages[currentPageIndex];
@@ -405,17 +331,10 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     }));
 
     const newPages = [...pages];
-    if (isLockedTemplatePage(page.templateType, page.locked)) {
-      newPages[currentPageIndex] = {
-        ...page,
-        overlayElements: [...(page.overlayElements || []), ...newEls],
-      };
-    } else {
-      newPages[currentPageIndex] = {
-        ...page,
-        elements: [...page.elements, ...newEls],
-      };
-    }
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: [...page.elements, ...newEls],
+    };
 
     const newIds = newEls.map(e => e.id);
     set({

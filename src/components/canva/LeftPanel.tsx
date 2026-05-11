@@ -8,8 +8,6 @@ import {
   Trash2,
   PanelRightOpen,
   PanelRightClose,
-  Lock,
-  Unlock,
   Layers,
   Zap,
   Puzzle,
@@ -134,11 +132,10 @@ function HalamanContent() {
               : { background: p.bgColor || COLORS.bgDark };
 
           const isTemplate = p.templateType && p.templateType !== 'custom';
-          const isPageLocked = p.locked !== false; // true or undefined = locked
           const isSchemaDriven = !!p.schema;
-          const modulCount = (p.overlayElements || []).filter(e => e.type === 'modul' || e.type === 'materi').length + p.elements.filter(e => e.type === 'modul' || e.type === 'materi').length;
-          const kuisCount = (p.overlayElements || []).filter(e => e.type === 'kuis').length + p.elements.filter(e => e.type === 'kuis').length;
-          const gameCount = (p.overlayElements || []).filter(e => e.type === 'game').length + p.elements.filter(e => e.type === 'game').length;
+          const modulCount = p.elements.filter(e => e.type === 'modul' || e.type === 'materi').length;
+          const kuisCount = p.elements.filter(e => e.type === 'kuis').length;
+          const gameCount = p.elements.filter(e => e.type === 'game').length;
 
           return (
             <button
@@ -183,21 +180,14 @@ function HalamanContent() {
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] font-bold text-app-primary truncate flex items-center gap-1">
                     {isSchemaDriven && <Zap size={10} className="text-emerald-400 inline" />}
-                    {!isSchemaDriven && isTemplate && isPageLocked && <Lock size={8} className="text-amber-400 flex-shrink-0" />}
-                    {!isSchemaDriven && isTemplate && !isPageLocked && <Unlock size={8} className="text-emerald-400 flex-shrink-0" />}
                     <span className="truncate">{badge.icon} {p.label}</span>
                   </div>
                   <div className="text-[8px] text-app-muted">
-                    {isSchemaDriven && (
+                    {isSchemaDriven ? (
                       <span className="text-emerald-400/70">Schema</span>
-                    )}
-                    {!isSchemaDriven && isTemplate && isPageLocked && (
-                      <span className="text-amber-400/60">Terkunci</span>
-                    )}
-                    {isTemplate && !isPageLocked && !isSchemaDriven && (
-                      <span className="text-emerald-400/60">Terbuka</span>
-                    )}
-                    {!isTemplate && (
+                    ) : isTemplate ? (
+                      <span className="text-amber-400/60">Template</span>
+                    ) : (
                       <span className="text-emerald-400/60">Bebas edit</span>
                     )}
                     {modulCount > 0 && <span className="ml-1 text-emerald-400/70">{modulCount} modul</span>}
@@ -288,8 +278,6 @@ function TambahContent() {
 
   const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const isTemplatePage = page?.templateType && page.templateType !== 'custom';
-  const isPageLocked = page?.locked !== false; // true or undefined = locked
-
   // Schema preset info
   const availablePresets = getAvailablePresets();
   const presetInfo: Record<string, { label: string; icon: string; desc: string }> = {
@@ -388,14 +376,9 @@ function TambahContent() {
       {/* ── Tambah Modul ── */}
       <div>
         <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><Puzzle size={12} className="inline" /> Tambah Modul</div>
-        {isTemplatePage && isPageLocked && (
-          <div className="text-[8px] text-amber-400/70 mb-2 px-2 py-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
-            Modul ditambahkan sebagai overlay di atas template
-          </div>
-        )}
-        {isTemplatePage && !isPageLocked && (
+        {isTemplatePage && (
           <div className="text-[8px] text-emerald-400/70 mb-2 px-2 py-1 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-            Template beku — modul ditambahkan sebagai elemen bebas
+            Modul ditambahkan sebagai elemen di atas konten template
           </div>
         )}
         {materiModules.length > 0 ? (

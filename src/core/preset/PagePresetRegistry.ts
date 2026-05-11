@@ -301,8 +301,7 @@ export function createPageFromPreset(
   // Apply preset-specific extra props (bg color, etc.)
   Object.assign(page, getTemplateExtraProps(presetId));
 
-  // Template pages start locked
-  page.locked = true;
+  // v4: No more lock model — schema is always owned by the user
 
   // FASE 3: templateData is legacy — only populated for backward compat
   // with the export pipeline. Schema-driven pages don't use it.

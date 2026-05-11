@@ -133,6 +133,8 @@ export interface CanvaState {
   setLeftTab: (tab: LeftTab) => void;
   setZoom: (zoom: number) => void;
   zoomDelta: (delta: number) => void;
+  /** Reset zoom to auto-fit mode (calculated by Stage) */
+  zoomToFit: () => void;
   setRatio: (ratioId: string) => void;
   nudgeSelected: (dx: number, dy: number) => void;
   // Schema block selection — for editing overlay
@@ -180,12 +182,6 @@ export interface CanvaState {
 
   // ── Actions: Reset Canvas (nuclear reset — replaces old Auto Rakit) ──
   resetCanvas: () => void;
-
-  // ── Actions: Unlock Page (convert locked template → unlocked custom-edit) ──
-  /** Unlock a locked template page: freezes templateData, merges overlays → elements, enables free editing */
-  unlockPage: () => void;
-  /** Re-lock an unlocked template page: refreshes templateData from authoring, resets to locked template mode */
-  relockPage: () => void;
 
   // ── Actions: Reactive Sync ────────────────────────────────────
   /** Sync template pages' templateData from authoring store (incremental, no rebuild) */

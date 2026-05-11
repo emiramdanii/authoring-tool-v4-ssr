@@ -13,13 +13,14 @@ import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
 import { editBus } from '@/core/editor/edit-bus';
 import { SCENE_REGISTRY } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
+import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
 export type UISlice = Pick<
   CanvaState,
   | 'setTool' | 'setLeftTab' | 'toggleLeftPanel' | 'toggleRightPanel'
   | 'toggleGrid' | 'setGridSize' | 'toggleSnap' | 'snapValue'
   | 'applyLayoutPreset' | 'currentLayoutPreset'
-  | 'setZoom' | 'zoomDelta' | 'setRatio' | 'nudgeSelected'
+  | 'setZoom' | 'zoomDelta' | 'zoomToFit' | 'setRatio' | 'nudgeSelected'
   | 'alignSelected' | 'distributeSelected'
   | 'clearStage' | 'selectBlock' | 'updateSchemaBlock'
   | 'hoverBlock' | 'startEditing' | 'stopEditing'
@@ -202,10 +203,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!preset || preset.slots.length === 0) return; // 'free' = no change
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (!page || (page.templateType !== 'custom' && page.locked !== false)) {
-      toast.warning('Layout preset hanya untuk halaman Kosong atau template terbuka');
-      return;
-    }
+    if (!page) return;
     get()._pushHistory();
     const elements = [...page.elements];
     if (elements.length === 0) {
@@ -236,7 +234,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   currentLayoutPreset: () => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (!page || (page.templateType !== 'custom' && page.locked !== false) || page.elements.length === 0) return LAYOUT_PRESETS[0]; // free
+    if (!page || page.elements.length === 0) return LAYOUT_PRESETS[0]; // free
     // Try to match current element positions to a preset
     const els = page.elements;
     for (const preset of LAYOUT_PRESETS) {
@@ -279,29 +277,28 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         if (!idsToNudge.includes(e.id)) return e;
         return { ...e, x: Math.max(0, Math.min(95, e.x + dx)), y: Math.max(0, Math.min(95, e.y + dy)) };
       }),
-      overlayElements: (page.overlayElements || []).map(e => {
-        if (!idsToNudge.includes(e.id)) return e;
-        return { ...e, x: Math.max(0, Math.min(95, e.x + dx)), y: Math.max(0, Math.min(95, e.y + dy)) };
-      }),
     };
     set({ pages: newPages });
   },
 
-  setZoom: (zoom) => set({ zoom: Math.min(2, Math.max(0.25, zoom)) }),
+  setZoom: (zoom) => set({ zoom: clampZoom(zoom) }),
   zoomDelta: (delta) => {
     const current = get().zoom;
-    set({ zoom: Math.min(2, Math.max(0.25, current + delta)) });
+    const next = current === ZOOM_FIT ? ZOOM_FIT : current + delta;
+    set({ zoom: clampZoom(next) });
   },
+  /** Reset zoom to auto-fit mode (calculated by Stage) */
+  zoomToFit: () => set({ zoom: ZOOM_FIT }),
   setRatio: (ratioId) => set({ ratioId }),
 
   // ── Stage ────────────────────────────────────────────────────
   clearStage: () => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (page.elements.length === 0 && (page.overlayElements || []).length === 0) return;
+    if (page.elements.length === 0) return;
     get()._pushHistory();
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, elements: [], overlayElements: [] };
+    newPages[currentPageIndex] = { ...page, elements: [] };
     set({ pages: newPages, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success('Stage dibersihkan');
   },
@@ -317,7 +314,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       return;
     }
     get()._pushHistory();
-    const allEls = [...page.elements, ...(page.overlayElements || [])];
+    const allEls = page.elements;
     const targets = ids.map(id => allEls.find(e => e.id === id)).filter(Boolean) as CanvaElement[];
     if (targets.length < 2) return;
 
@@ -349,7 +346,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     newPages[currentPageIndex] = {
       ...page,
       elements: page.elements.map(e => ids.includes(e.id) ? updateEl(e) : e),
-      overlayElements: (page.overlayElements || []).map(e => ids.includes(e.id) ? updateEl(e) : e),
     };
     set({ pages: newPages });
     toast.success(`Align ${direction} diterapkan`);
@@ -365,7 +361,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       return;
     }
     get()._pushHistory();
-    const allEls = [...page.elements, ...(page.overlayElements || [])];
+    const allEls = page.elements;
     const targets = ids.map(id => allEls.find(e => e.id === id)).filter(Boolean) as CanvaElement[];
     if (targets.length < 3) return;
 
@@ -386,7 +382,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       newPages[currentPageIndex] = {
         ...page,
         elements: page.elements.map(e => updates.has(e.id) ? { ...e, x: updates.get(e.id)! } : e),
-        overlayElements: (page.overlayElements || []).map(e => updates.has(e.id) ? { ...e, x: updates.get(e.id)! } : e),
       };
       set({ pages: newPages });
     } else {
@@ -406,7 +401,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       newPages[currentPageIndex] = {
         ...page,
         elements: page.elements.map(e => updates.has(e.id) ? { ...e, y: updates.get(e.id)! } : e),
-        overlayElements: (page.overlayElements || []).map(e => updates.has(e.id) ? { ...e, y: updates.get(e.id)! } : e),
       };
       set({ pages: newPages });
     }

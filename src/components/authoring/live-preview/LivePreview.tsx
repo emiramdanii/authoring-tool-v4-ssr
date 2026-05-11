@@ -70,8 +70,6 @@ export default function LivePreview() {
   // ── Auto-detect mode (only on first load, not overriding user) ─
   const hasCanvasContent = canvaPages.some(
     (p) => p.elements && p.elements.length > 0
-  ) || canvaPages.some(
-    (p) => p.overlayElements && p.overlayElements.length > 0
   );
 
   const detectedMode = useMemo<PreviewMode>(() => {

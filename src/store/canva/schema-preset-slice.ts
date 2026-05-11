@@ -51,12 +51,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         colorPalette: null,
         navConfig: { ...DEFAULT_NAV_CONFIG },
         templateData: raw.templateData, // @deprecated — kept for legacy export compat
-        overlayElements: [],
         // FASE 3: Schema-first — set page.schema directly from schemaScreen
         // No need to store in templateData and promote on read
         schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
-        // Schema-driven pages are locked (content from schema, not authoring store)
-        locked: true,
       }));
 
       // Cover pages should hide the top navbar

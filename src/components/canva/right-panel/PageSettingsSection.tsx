@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutTemplate, Zap, Lock, Unlock, Square } from 'lucide-react';
+import { LayoutTemplate, Zap, Square } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { LAYOUT_PRESETS } from '../types';
 import type { PageTemplateType, CanvaPage } from '../types';
@@ -24,8 +24,6 @@ interface PageSettingsSectionProps {
   toggleGrid: () => void;
   setGridSize: (size: number) => void;
   toggleSnap: () => void;
-  unlockPage: () => void;
-  relockPage: () => void;
   setVariant: (variant: 'A' | 'B' | 'C') => void;
   collapsed: boolean;
   onToggle: () => void;
@@ -44,8 +42,6 @@ export default function PageSettingsSection({
   toggleGrid,
   setGridSize,
   toggleSnap,
-  unlockPage,
-  relockPage,
   setVariant,
   collapsed,
   onToggle,
@@ -64,7 +60,7 @@ export default function PageSettingsSection({
           value={page?.templateType || 'custom'}
           onChange={(e) => {
             const newType = e.target.value as PageTemplateType;
-            const hasElements = (page?.elements?.length || 0) > 0 || (page?.overlayElements?.length || 0) > 0;
+            const hasElements = (page?.elements?.length || 0) > 0;
             if (hasElements) {
               const confirmed = confirm(
                 'Mengubah jenis halaman akan menghapus semua elemen yang ada.\n\n' +
@@ -172,73 +168,8 @@ export default function PageSettingsSection({
         </div>
       )}
 
-      {/* Lock/Unlock status + button (template pages only) */}
-      {isTemplateMode && page && (
-        <div className="mb-3">
-          {page.locked !== false ? (
-            // LOCKED — show unlock button
-            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-2.5 space-y-2">
-              <div className="flex items-center gap-1.5">
-                <Lock size={12} className="text-amber-400" />
-                <span className="text-[10px] font-bold text-amber-300">Terkunci — Auto-sync aktif</span>
-              </div>
-              <div className="text-[8px] text-amber-400/60">
-                Template otomatis mengikuti data authoring. Buka kunci untuk edit bebas.
-              </div>
-              <button
-                onClick={() => {
-                  if (confirm(
-                    'Buka kunci halaman ini?\n\n' +
-                    '⚠️ Konsekuensi:\n' +
-                    '• Data template TIDAK lagi auto-update dari panel authoring\n' +
-                    '• Template visual menjadi beku (background)\n' +
-                    '• Semua elemen overlay bergabung dan bisa diedit bebas\n\n' +
-                    'Tindakan ini bisa di-undo (Ctrl+Z).'
-                  )) {
-                    unlockPage();
-                  }
-                }}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[10px] font-bold transition-colors active:scale-95"
-              >
-                <Unlock size={11} />
-                Buka Kunci Halaman
-              </button>
-            </div>
-          ) : (
-            // UNLOCKED — show status badge + re-lock button
-            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 space-y-2">
-              <div className="flex items-center gap-1.5">
-                <Unlock size={12} className="text-emerald-400" />
-                <span className="text-[10px] font-bold text-emerald-300">Terbuka — Edit bebas</span>
-              </div>
-              <div className="text-[8px] text-emerald-400/60">
-                Template beku sebagai background. Data TIDAK auto-update. Semua elemen bisa diedit.
-              </div>
-              <button
-                onClick={() => {
-                  if (confirm(
-                    'Kunci kembali halaman ini?\n\n' +
-                    '⚠️ Konsekuensi:\n' +
-                    '• Data template akan diperbarui dari panel authoring\n' +
-                    '• Elemen yang sudah ditempatkan dipertahankan sebagai overlay\n' +
-                    '• Auto-sync kembali aktif\n\n' +
-                    'Tindakan ini bisa di-undo (Ctrl+Z).'
-                  )) {
-                    relockPage();
-                  }
-                }}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-bold transition-colors active:scale-95"
-              >
-                <Lock size={11} />
-                Kunci Kembali
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Layout Presets (custom mode + unlocked template) */}
-      {(!isTemplateMode || page?.locked === false) && (
+      {/* Layout Presets */}
+      {(page?.elements && page.elements.length > 0) && (
         <div className="mb-3">
           <label className="text-[10px] text-slate-500 block mb-1">Layout Preset</label>
           <div className="grid grid-cols-3 gap-1.5">
@@ -264,9 +195,8 @@ export default function PageSettingsSection({
         </div>
       )}
 
-      {/* Grid & Snap (custom mode + unlocked template) */}
-      {(!isTemplateMode || page?.locked === false) && (
-        <div className="mb-3">
+      {/* Grid & Snap */}
+      <div className="mb-3">
           <label className="text-[10px] text-slate-500 block mb-1.5">Grid & Snap</label>
           <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
             <input
@@ -302,11 +232,10 @@ export default function PageSettingsSection({
               <span>Kasar (20%)</span>
             </div>
           </div>
-        </div>
-      )}
+      </div>
 
-      {/* Template Edit (LOCKED template mode only — unlocked pages don't need this) */}
-      {isTemplateMode && page?.locked !== false && page && (
+      {/* Template Edit */}
+      {isTemplateMode && page && (
         <div className="mb-2">
           <div className="text-[10px] font-bold text-amber-400 mb-1.5">
             {TEMPLATE_BADGE_MAP[page.templateType]?.icon || ''} {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType} Template
@@ -317,20 +246,10 @@ export default function PageSettingsSection({
             </span>
           </div>
 
-          {/* Refresh Data button — confirms if overlay elements exist */}
+          {/* Refresh Data button */}
           <Button
             variant="outline"
             onClick={() => {
-              const hasOverlays = (page.overlayElements?.length || 0) > 0;
-              if (hasOverlays) {
-                const confirmed = confirm(
-                  'Refresh data akan menghapus semua elemen overlay yang sudah ditambahkan.\n\n' +
-                  '⚠️ Elemen overlay (kuis, game, dll) akan hilang.\n' +
-                  'Tindakan ini bisa di-undo (Ctrl+Z).\n\n' +
-                  'Lanjutkan?'
-                );
-                if (!confirmed) return;
-              }
               const store = useCanvaStore.getState();
               store.setTemplateType(page.templateType);
               toast.success('Data template diperbarui dari panel authoring');

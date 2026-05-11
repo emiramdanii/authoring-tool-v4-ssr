@@ -2,7 +2,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import { RATIOS } from '@/components/canva/types';
-import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, Lock, Unlock } from 'lucide-react';
+import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 
@@ -15,7 +15,7 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle';
 // ═══════════════════════════════════════════════════════════════
 
 export default function StatusBar() {
-  const { pages, currentPageIndex, ratioId, zoom, setZoom } = useCanvaStore();
+  const { pages, currentPageIndex, ratioId, zoom: storeZoom, setZoom, zoomToFit } = useCanvaStore();
   const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
     const r = RATIOS.find(r => r.id === s.ratioId);
@@ -25,14 +25,11 @@ export default function StatusBar() {
   // ── Save indicator: subscribe to centralized save status ───
   const saveStatus = useCanvaStore((s) => s._saveStatus);
 
-  // Count all elements including overlays
-  const totalElements = (page?.elements.length || 0) + (page?.overlayElements?.length || 0);
+  // Count all elements (overlayElements is always empty at runtime — merged into elements on load)
+  const totalElements = page?.elements.length || 0;
   const templateBadge = TEMPLATE_BADGE_MAP[page?.templateType || 'custom'];
 
-  // Lock status
-  const isTemplate = page?.templateType && page.templateType !== 'custom';
-  const isPageLocked = isTemplate && page?.locked !== false;
-  const isPageUnlocked = isTemplate && page?.locked === false;
+
 
   return (
     <div className="flex items-center gap-3 px-4 py-1 glass-panel text-[10px] text-app-muted select-none">
@@ -42,15 +39,10 @@ export default function StatusBar() {
         <span className="font-mono">{ratio.w}×{ratio.h}</span>
       </span>
 
-      {/* Element count (includes overlays) */}
+      {/* Element count */}
       <span className="flex items-center gap-1.5">
         <Box size={11} className="text-app-muted" />
         <span>{totalElements} elemen</span>
-        {(page?.overlayElements?.length || 0) > 0 && (
-          <span className="text-amber-400/50 text-[8px]">
-            ({page.overlayElements.length} overlay)
-          </span>
-        )}
       </span>
 
       {/* Page info with template type + lock status */}
@@ -60,8 +52,7 @@ export default function StatusBar() {
         <span className="text-[8px] text-app-muted">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>
-        {isPageLocked && <Lock size={9} className="text-amber-400/60" />}
-        {isPageUnlocked && <Unlock size={9} className="text-emerald-400/60" />}
+
       </span>
 
       <div className="section-divider h-3 w-px mx-1" />
@@ -87,14 +78,20 @@ export default function StatusBar() {
         <Layers size={10} className="text-app-muted" />
         <input
           type="range"
-          min={25}
-          max={200}
+          min={10}
+          max={300}
           step={5}
-          value={Math.round(zoom * 100)}
+          value={storeZoom === -1 ? 0 : Math.round(storeZoom * 100)}
           onChange={e => setZoom(parseInt(e.target.value) / 100)}
           className="w-16 h-1 accent-amber-500"
         />
-        <span className="font-mono text-[9px] text-app-muted w-8">{Math.round(zoom * 100)}%</span>
+        <button
+          onClick={zoomToFit}
+          className="font-mono text-[9px] text-app-muted hover:text-amber-400 transition-colors w-10 text-right"
+          title="Fit to screen"
+        >
+          {storeZoom === -1 ? 'Fit' : `${Math.round(storeZoom * 100)}%`}
+        </button>
       </div>
     </div>
   );

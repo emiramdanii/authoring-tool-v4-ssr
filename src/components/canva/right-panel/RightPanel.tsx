@@ -50,8 +50,6 @@ export default function RightPanel() {
     toggleSnap,
     applyLayoutPreset,
     currentLayoutPreset,
-    unlockPage,
-    relockPage,
     setVariant,
   } = useCanvaStore();
 
@@ -61,9 +59,7 @@ export default function RightPanel() {
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
 
   const page = pages[currentPageIndex];
-  // Also search overlayElements for the selected element
-  const selectedEl = page?.elements.find(e => e.id === selectedElId)
-    || page?.overlayElements?.find(e => e.id === selectedElId);
+  const selectedEl = page?.elements.find(e => e.id === selectedElId);
   const isTemplateMode = page?.templateType && page.templateType !== 'custom';
 
   // ── Collapsible section state ────────────────────────────────
@@ -172,8 +168,6 @@ export default function RightPanel() {
         toggleGrid={toggleGrid}
         setGridSize={setGridSize}
         toggleSnap={toggleSnap}
-        unlockPage={unlockPage}
-        relockPage={relockPage}
         setVariant={setVariant}
         collapsed={collapsed.settings}
         onToggle={() => toggleCollapse('settings')}

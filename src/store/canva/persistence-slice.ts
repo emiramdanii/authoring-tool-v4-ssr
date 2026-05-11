@@ -61,20 +61,21 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             colorPalette: p.colorPalette || null,
             navConfig: p.navConfig || { ...DEFAULT_NAV_CONFIG },
             templateData: p.templateData || {},
-            // Phase 1: Ensure overlayElements array exists
-            overlayElements: (p.overlayElements || []).map((el: CanvaElement) => ({
-              ...el,
-              opacity: el.opacity ?? 100,
-              hidden: el.hidden ?? false,
-            })),
-            // Ensure elements have valid positions
-            elements: (p.elements || []).map((el: CanvaElement) => ({
-              ...el,
-              opacity: el.opacity ?? 100,
-              hidden: el.hidden ?? false,
-            })),
-            // v4: Migrate locked field — template pages without locked field default to locked
-            locked: p.locked !== undefined ? p.locked : (p.templateType && p.templateType !== 'custom' ? true : undefined),
+            // v4: locked field removed — schema is always owned by the user
+            // Merge any overlayElements into elements[] for backward compat
+            elements: [
+              ...(p.elements || []).map((el: CanvaElement) => ({
+                ...el,
+                opacity: el.opacity ?? 100,
+                hidden: el.hidden ?? false,
+              })),
+              ...(p.overlayElements || []).map((el: CanvaElement) => ({
+                ...el,
+                opacity: el.opacity ?? 100,
+                hidden: el.hidden ?? false,
+              })),
+            ],
+            overlayElements: [], // Cleared — all merged into elements[]
             // FASE 1: Preserve page.schema if already migrated
             schema: p.schema || undefined,
           };
