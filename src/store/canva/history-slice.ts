@@ -51,18 +51,16 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       if (inversePatches && inversePatches.length > 0) {
         const { pages, currentPageIndex } = get();
         const page = pages[currentPageIndex];
-        if (page?.templateData?.schemaScreen) {
-          const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
-          const blocks = schemaScreen.blocks as SchemaBlock[];
+        // FASE 3: Use page.schema directly (not templateData.schemaScreen)
+        if (page?.schema) {
+          const schema = page.schema;
+          const blocks = schema.blocks as SchemaBlock[];
           try {
             const newBlocks = applyPatches(blocks, inversePatches) as SchemaBlock[];
             const newPages = [...pages];
             newPages[currentPageIndex] = {
               ...page,
-              templateData: {
-                ...page.templateData,
-                schemaScreen: { ...schemaScreen, blocks: newBlocks },
-              },
+              schema: { ...schema, blocks: newBlocks },
             };
             _set({
               pages: newPages,
@@ -101,18 +99,16 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       if (forwardPatches && forwardPatches.length > 0) {
         const { pages, currentPageIndex } = get();
         const page = pages[currentPageIndex];
-        if (page?.templateData?.schemaScreen) {
-          const schemaScreen = page.templateData.schemaScreen as Record<string, unknown>;
-          const blocks = schemaScreen.blocks as SchemaBlock[];
+        // FASE 3: Use page.schema directly (not templateData.schemaScreen)
+        if (page?.schema) {
+          const schema = page.schema;
+          const blocks = schema.blocks as SchemaBlock[];
           try {
             const newBlocks = applyPatches(blocks, forwardPatches) as SchemaBlock[];
             const newPages = [...pages];
             newPages[currentPageIndex] = {
               ...page,
-              templateData: {
-                ...page.templateData,
-                schemaScreen: { ...schemaScreen, blocks: newBlocks },
-              },
+              schema: { ...schema, blocks: newBlocks },
             };
             _set({
               pages: newPages,

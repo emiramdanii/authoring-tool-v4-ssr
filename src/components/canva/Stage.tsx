@@ -428,8 +428,8 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const isTemplateMode = page && page.templateType && page.templateType !== 'custom';
   const isLocked = page?.locked !== false;
   const isUnlockedTemplate = !!isTemplateMode && !isLocked;
-  // Schema-driven pages: content comes from SchemaScreenRenderer, not overlay elements
-  const isSchemaDriven = !!(page?.templateData?.schemaScreen);
+  // FASE 3: Schema-driven pages use page.schema (not templateData.schemaScreen)
+  const isSchemaDriven = !!page?.schema;
 
   // Phase 4: Check if an element is in multi-select
   const isMultiSelected = (elId: string) => selectedElIds.includes(elId) && selectedElIds.length > 1;

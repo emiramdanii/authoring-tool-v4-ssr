@@ -38,7 +38,8 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       const rawPages = schemaToCanvaPages(schema);
 
       // Wrap into full CanvaPage objects (schemaToCanvaPages returns partial)
-      // FASE 1: Set page.schema as first-class field for schema-driven pages
+      // FASE 3: Set page.schema directly — no templateData.schemaScreen promotion needed
+      // Schema is the single source of truth. templateData is deprecated legacy.
       const pages: CanvaPage[] = rawPages.map((raw, i) => ({
         id: raw.id || generatePageId(),
         label: raw.label,
@@ -49,10 +50,11 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         templateType: (raw.templateType || 'custom') as CanvaPage['templateType'],
         colorPalette: null,
         navConfig: { ...DEFAULT_NAV_CONFIG },
-        templateData: raw.templateData,
+        templateData: raw.templateData, // @deprecated — kept for legacy export compat
         overlayElements: [],
-        // FASE 1: Promote schemaScreen to first-class page.schema
-        schema: raw.templateData?.schemaScreen as CanvaPage['schema'],
+        // FASE 3: Schema-first — set page.schema directly from schemaScreen
+        // No need to store in templateData and promote on read
+        schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
         // Schema-driven pages are locked (content from schema, not authoring store)
         locked: true,
       }));

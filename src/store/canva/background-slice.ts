@@ -104,15 +104,44 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   },
 
   // ── Template Data actions ────────────────────────────────────
+  // FASE 3: updateTemplateData is deprecated. New code should update
+  // page.schema directly. This action remains for backward compat
+  // with any UI that still writes to templateData.
+  // @deprecated — use updateSchemaBlock() or direct schema mutations instead
   updateTemplateData: (key, value) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      templateData: { ...page.templateData, [key]: value },
-    };
+
+    // FASE 3: If the page has a schema, write to schema instead
+    if (page.schema) {
+      // For known keys, map to schema fields
+      if (key === 'navbar' || key === 'timer') {
+        newPages[currentPageIndex] = {
+          ...page,
+          schema: {
+            ...page.schema,
+            nav: {
+              ...page.schema.nav,
+              [key]: value,
+            },
+          },
+        };
+      } else {
+        // Unknown key — still write to templateData for legacy compat
+        newPages[currentPageIndex] = {
+          ...page,
+          templateData: { ...page.templateData, [key]: value },
+        };
+      }
+    } else {
+      // No schema (custom page) — write to templateData
+      newPages[currentPageIndex] = {
+        ...page,
+        templateData: { ...page.templateData, [key]: value },
+      };
+    }
     set({ pages: newPages });
   },
 });

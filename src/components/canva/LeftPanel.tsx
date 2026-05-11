@@ -121,7 +121,7 @@ function HalamanContent() {
 
           const isTemplate = p.templateType && p.templateType !== 'custom';
           const isPageLocked = p.locked !== false; // true or undefined = locked
-          const isSchemaDriven = !!(p.templateData?.schemaScreen);
+          const isSchemaDriven = !!p.schema;
           const modulCount = (p.overlayElements || []).filter(e => e.type === 'modul' || e.type === 'materi').length + p.elements.filter(e => e.type === 'modul' || e.type === 'materi').length;
           const kuisCount = (p.overlayElements || []).filter(e => e.type === 'kuis').length + p.elements.filter(e => e.type === 'kuis').length;
           const gameCount = (p.overlayElements || []).filter(e => e.type === 'game').length + p.elements.filter(e => e.type === 'game').length;

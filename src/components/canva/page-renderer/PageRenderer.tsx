@@ -79,7 +79,11 @@ export function PageRenderer({
   // ensurePageSchema() handles lazy migration automatically.
   // After migration, page.schema is the single source of truth.
 
-  const schemaThemeId = page.templateData?.schemaThemeId as string | undefined;
+  // FASE 3: Read theme ID from page.schema (not templateData)
+  // templateData.schemaThemeId is the legacy path — schema is now canonical
+  const schemaThemeId = page.schema?.background?.type
+    ? undefined // Schema pages use token system, not theme IDs
+    : (page.templateData?.schemaThemeId as string | undefined);
 
   // Use ensurePageSchema() — the schema-first gateway
   // This lazily migrates legacy pages on first read.

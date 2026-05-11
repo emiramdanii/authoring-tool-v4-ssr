@@ -58,7 +58,8 @@ function getBlockLayout(blockId: string): { layout: SchemaBlock['layout']; isAbs
   const page = state.pages[state.currentPageIndex];
   if (!page) return { layout: { position: 'flow' }, isAbsolute: false };
 
-  const schemaScreen = page.templateData?.schemaScreen as Record<string, unknown> | undefined;
+  // FASE 3: Use page.schema directly (not templateData.schemaScreen)
+  const schemaScreen = page.schema as Record<string, unknown> | undefined;
   if (!schemaScreen) return { layout: { position: 'flow' }, isAbsolute: false };
 
   const blocks = schemaScreen.blocks as SchemaBlock[];

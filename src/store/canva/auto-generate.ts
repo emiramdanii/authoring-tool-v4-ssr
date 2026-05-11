@@ -220,11 +220,29 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       newPages.push(createPageFromPreset('penutup', newPages.length));
     }
 
-    // Set navbar/timer config on all pages (stored in templateData for export compat)
+    // FASE 3: Store navbar/timer config in page.schema.nav instead of templateData
+    // This ensures the schema is the single source of truth for all page content.
+    // templateData is deprecated — new code writes to schema directly.
     newPages.forEach(p => {
-      if (!p.templateData) p.templateData = {};
-      p.templateData.navbar = blueprint.navbar;
-      p.templateData.timer = blueprint.timer;
+      if (p.schema) {
+        const navUpdates: Record<string, unknown> = {};
+        if (blueprint.navbar) {
+          // blueprint.navbar can be boolean or object — schema stores only objects
+          navUpdates.navbar = typeof blueprint.navbar === 'object' ? blueprint.navbar : {};
+        }
+        if (blueprint.timer) {
+          navUpdates.timer = typeof blueprint.timer === 'object' ? blueprint.timer : {};
+        }
+        p.schema.nav = {
+          ...p.schema.nav,
+          ...navUpdates,
+        };
+      } else {
+        // Custom pages without schema — store in templateData as legacy fallback
+        if (!p.templateData) p.templateData = {};
+        p.templateData.navbar = blueprint.navbar;
+        p.templateData.timer = blueprint.timer;
+      }
     });
 
     if (newPages.length === 0) {

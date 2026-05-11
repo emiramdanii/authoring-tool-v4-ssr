@@ -396,11 +396,15 @@ export interface ScreenSchema {
   sectionColor?: string;
   /** Screen blocks in order */
   blocks: SchemaBlock[];
-  /** Navigation targets */
+  /** Navigation targets and config */
   nav?: {
     prev?: string;
     next?: string;
     nextLabel?: string;
+    /** Navbar configuration (from auto-generate blueprint) */
+    navbar?: Record<string, unknown>;
+    /** Timer configuration (from auto-generate blueprint) */
+    timer?: Record<string, unknown>;
   };
   /** Background style */
   background?: {
