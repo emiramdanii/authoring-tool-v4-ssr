@@ -12,7 +12,7 @@ import {
 } from '@/lib/canva-constants';
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, buildTemplateData, getTemplateExtraProps } from './template-data';
-import { generatePageId, ensurePageSchema } from '@/core/schema/ensure-schema';
+import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
 export type PageSlice = Pick<
@@ -62,6 +62,21 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     (clone.overlayElements || []).forEach((el: CanvaElement) => {
       el.id = createElId();
     });
+    // ═══ FASE 1: Re-assign schema block IDs on duplication ═══
+    // Without this, the clone has identical block IDs as the original,
+    // causing selection/editing conflicts (selecting a block in one page
+    // would highlight the same-ID block in the other page).
+    // Each block gets a fresh stable nanoid(10).
+    if (clone.schema?.blocks) {
+      clone.schema = {
+        ...clone.schema,
+        id: clone.id, // Update schema ID to match new page ID
+        blocks: clone.schema.blocks.map(block => ({
+          ...block,
+          id: generateBlockId(), // Fresh stable nanoid for each block
+        })),
+      };
+    }
     const newPages = [...pages];
     newPages.splice(currentPageIndex + 1, 0, clone);
     get()._pushHistory();

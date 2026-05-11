@@ -97,10 +97,14 @@ export interface CanvaPage {
   templateType: PageTemplateType;
   colorPalette: ColorPalette | null;
   navConfig: NavConfig;
-  // Template-specific data binding
+  /** @deprecated FASE 1: Legacy data binding. Schema-driven pages use page.schema instead.
+   *  Still needed for: export pipeline, relock flow, backward compat.
+   *  Will be removed in Phase 3 when deriveSchema() replaces buildTemplateData(). */
   templateData: Record<string, unknown>;
   // ── Overlay elements (v3 — Phase 1) ──
   // Elements rendered ON TOP of template pages, allowing hybrid mode
+  /** @deprecated FASE 1: Schema-driven pages render content via SchemaScreenRenderer.
+   *  Overlay elements only apply to non-schema legacy pages. */
   overlayElements: CanvaElement[];
   // ── Template layout variant (Phase 3) ──
   // Different visual layouts for the same template type (A/B/C)

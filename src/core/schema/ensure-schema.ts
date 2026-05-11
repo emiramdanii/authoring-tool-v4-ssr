@@ -127,3 +127,51 @@ export function generateBlockId(): string {
 export function generatePageId(): string {
   return `p_${nanoid(8)}`;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// SCHEMA-FIRST UTILITIES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if a page is schema-driven (has a native ScreenSchema).
+ * Returns true for any page with page.schema populated — either
+ * natively created (FASE 2 presets) or lazily migrated (FASE 1).
+ *
+ * Use this instead of `!!page.schema` for clarity and future-proofing.
+ * Schema-driven pages use SchemaScreenRenderer exclusively.
+ */
+export function isSchemaPage(page: CanvaPage): boolean {
+  return page.schema != null;
+}
+
+/**
+ * Check if a page uses the legacy templateData path.
+ * These pages need TemplateAdapter conversion before rendering.
+ * After ensurePageSchema() runs, this returns false even for
+ * originally-legacy pages.
+ */
+export function isLegacyPage(page: CanvaPage): boolean {
+  if (page.schema) return false; // Already migrated
+  if (page.templateType === 'custom' || !page.templateType) return false; // Custom pages aren't legacy
+  return true; // Template page without schema = legacy
+}
+
+/**
+ * Migrate all pages in an array to native schema.
+ * Called during persistence load to ensure all pages are
+ * schema-native before first render.
+ *
+ * Returns the same array reference if no migration was needed,
+ * or a new array with migrated pages.
+ */
+export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
+  let anyMigrated = false;
+  const result = pages.map(page => {
+    if (!page.schema && page.templateType && page.templateType !== 'custom') {
+      ensurePageSchema(page); // Mutates page.schema in-place
+      if (page.schema) anyMigrated = true;
+    }
+    return page;
+  });
+  return anyMigrated ? result : pages;
+}

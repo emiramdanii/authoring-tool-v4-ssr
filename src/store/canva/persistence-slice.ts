@@ -9,6 +9,7 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 
 // ── Legacy tab name migration map ──────────────────────────────
 const TAB_MIGRATION: Record<string, LeftTab> = {
@@ -45,33 +46,50 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       if (data.pages && Array.isArray(data.pages)) {
         // Ensure all pages have new fields (backward compat)
         // FASE 1: Auto-migrate legacy pages on load — ensurePageSchema()
-        // will handle the rest at runtime, but we also proactively
-        // migrate here so page.schema is populated before first render.
-        const pages = data.pages.map((p: CanvaPage) => ({
-          ...p,
-          templateType: p.templateType || 'custom',
-          colorPalette: p.colorPalette || null,
-          navConfig: p.navConfig || { ...DEFAULT_NAV_CONFIG },
-          templateData: p.templateData || {},
-          // Phase 1: Ensure overlayElements array exists
-          overlayElements: (p.overlayElements || []).map((el: CanvaElement) => ({
-            ...el,
-            opacity: el.opacity ?? 100,
-            hidden: el.hidden ?? false,
-          })),
-          // Ensure elements have valid positions
-          elements: (p.elements || []).map((el: CanvaElement) => ({
-            ...el,
-            opacity: el.opacity ?? 100,
-            hidden: el.hidden ?? false,
-          })),
-          // v4: Migrate locked field — template pages without locked field default to locked
-          locked: p.locked !== undefined ? p.locked : (p.templateType && p.templateType !== 'custom' ? true : undefined),
-          // FASE 1: Preserve page.schema if it was already migrated
-          // (saved as native schema page). This ensures that once a page
-          // is migrated, it stays native schema across sessions.
-          schema: p.schema || undefined,
-        }));
+        // proactively migrates all template pages so page.schema is
+        // populated BEFORE first render. This means:
+        //   - Legacy pages (no schema field) → migrated via TemplateAdapter
+        //   - Pages with schemaScreen in templateData → promoted to page.schema
+        //   - Already-native schema pages → preserved as-is
+        // After this, every template page has page.schema set.
+        // The TemplateAdapter is never called again for these pages.
+        const pages = data.pages.map((p: CanvaPage) => {
+          // Step 1: Basic field migration (backward compat)
+          const migrated: CanvaPage = {
+            ...p,
+            templateType: p.templateType || 'custom',
+            colorPalette: p.colorPalette || null,
+            navConfig: p.navConfig || { ...DEFAULT_NAV_CONFIG },
+            templateData: p.templateData || {},
+            // Phase 1: Ensure overlayElements array exists
+            overlayElements: (p.overlayElements || []).map((el: CanvaElement) => ({
+              ...el,
+              opacity: el.opacity ?? 100,
+              hidden: el.hidden ?? false,
+            })),
+            // Ensure elements have valid positions
+            elements: (p.elements || []).map((el: CanvaElement) => ({
+              ...el,
+              opacity: el.opacity ?? 100,
+              hidden: el.hidden ?? false,
+            })),
+            // v4: Migrate locked field — template pages without locked field default to locked
+            locked: p.locked !== undefined ? p.locked : (p.templateType && p.templateType !== 'custom' ? true : undefined),
+            // FASE 1: Preserve page.schema if already migrated
+            schema: p.schema || undefined,
+          };
+
+          // Step 2: Proactively migrate to native schema
+          // This populates page.schema for all template pages that
+          // don't have it yet. After load+save, legacy pages become
+          // native schema pages permanently.
+          if (!migrated.schema && migrated.templateType && migrated.templateType !== 'custom') {
+            ensurePageSchema(migrated);
+            // ensurePageSchema mutates migrated.schema in-place — intentional
+          }
+
+          return migrated;
+        });
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'halaman';
         if (data.leftTab) {
