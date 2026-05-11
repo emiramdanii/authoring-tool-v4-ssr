@@ -1,19 +1,14 @@
-// Re-exports for backward compatibility
-export { PageTemplate as default } from './PageTemplate';
-export { PageTemplate } from './PageTemplate';
+// ═══════════════════════════════════════════════════════════════════
+// FASE 4: LEGACY ARCHIVAL — Page Template components have been moved
+// ═══════════════════════════════════════════════════════════════════
+// All switch-based template components (CoverTemplate, DokumenTemplate,
+// etc.) have been archived to /src/legacy/templates/.
+//
+// The schema-driven rendering pipeline now uses:
+//   SchemaScreenRenderer → SCENE_REGISTRY → *Renderer.tsx (blocks/)
+//
+// This file preserves the types for backward compatibility.
+// Do NOT import legacy template components in new code.
+// ═══════════════════════════════════════════════════════════════════
+
 export type { PageTemplateProps, SubTemplateProps } from './types';
-export { EditableText } from './EditableText';
-export { getModuleIcon, getGameIcon, getGameModuleIndex } from './shared-helpers';
-export { MateriBlokRenderer } from './MateriBlokRenderer';
-export { CoverTemplate } from './CoverTemplate';
-export { DokumenTemplate } from './DokumenTemplate';
-export { MateriTemplate } from './MateriTemplate';
-export { KuisTemplate } from './KuisTemplate';
-export { GameTemplate } from './GameTemplate';
-export { HasilTemplate } from './HasilTemplate';
-export { HeroTemplate } from './HeroTemplate';
-export { SkenarioTemplate } from './SkenarioTemplate';
-export { PetunjukTemplate } from './PetunjukTemplate';
-export { DiskusiTemplate } from './DiskusiTemplate';
-export { RefleksiTemplate } from './RefleksiTemplate';
-export { PenutupTemplate } from './PenutupTemplate';

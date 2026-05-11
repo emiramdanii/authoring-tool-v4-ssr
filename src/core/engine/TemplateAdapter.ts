@@ -1,16 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════
 // TEMPLATE ADAPTER — Converts legacy CanvaPage → ScreenSchema
 // ═══════════════════════════════════════════════════════════════════
-// This bridges the gap between:
-//   - Legacy pages (templateData + colorPalette)
-//   - Schema-driven pages (ScreenSchema + TokenResolver)
+// @legacy FASE 4 — This module is a LEGACY BRIDGE.
 //
-// Instead of having two separate renderers (PageTemplate + SchemaRenderer),
-// we convert legacy data to ScreenSchema on-the-fly and always use
-// SchemaScreenRenderer. This ensures visual consistency.
+// It converts legacy pages (templateData + colorPalette) to ScreenSchema
+// for unified rendering via SchemaScreenRenderer. This bridge is still
+// needed for:
+//   1. ensurePageSchema() — lazy migration of legacy pages on first read
+//   2. PageRenderer.tsx — paletteToTokenOverrides() for token resolution
 //
-// The legacy template files are NOT deleted — they stay as reference
-// and fallback. But the rendering pipeline is now unified.
+// All NEW pages are created schema-native via createPageFromPreset()
+// which uses deriveSchema() directly — bypassing this adapter entirely.
+//
+// When all legacy pages have been migrated (after sufficient time for
+// users to open and re-save their projects), this adapter can be
+// archived to /src/legacy/ and ensurePageSchema() simplified.
+// ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage, ColorPalette } from '@/components/canva/types';
 import type {

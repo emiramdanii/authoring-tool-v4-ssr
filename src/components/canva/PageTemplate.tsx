@@ -1,6 +1,13 @@
-// Thin re-export — all template components have been split into ./page-template/
-export { PageTemplate as default } from './page-template';
-export { PageTemplate } from './page-template';
+// ═══════════════════════════════════════════════════════════════════
+// FASE 4: LEGACY ARCHIVAL — Template components moved to /src/legacy/
+// ═══════════════════════════════════════════════════════════════════
+// The switch-based PageTemplate component and all 12 sub-templates
+// have been archived to /src/legacy/templates/.
+//
+// Schema-driven rendering now uses:
+//   SchemaScreenRenderer → SCENE_REGISTRY → *Renderer.tsx (blocks/)
+//
+// This file preserves type exports for backward compatibility.
+// ═══════════════════════════════════════════════════════════════════
+
 export type { PageTemplateProps, SubTemplateProps } from './page-template/types';
-export { EditableText } from './page-template/EditableText';
-export { getModuleIcon, getGameIcon, getGameModuleIndex } from './page-template/shared-helpers';
