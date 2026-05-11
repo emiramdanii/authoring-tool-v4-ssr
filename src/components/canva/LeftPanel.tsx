@@ -295,6 +295,7 @@ function TambahContent() {
   const presetInfo: Record<string, { label: string; icon: string; desc: string }> = {
     'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII' },
     'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII' },
+    'perilaku-patuh': { label: 'Perilaku Patuh Norma', icon: '🛡️', desc: 'Pertemuan 3 — PPKn Kelas VII' },
   };
   const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
 

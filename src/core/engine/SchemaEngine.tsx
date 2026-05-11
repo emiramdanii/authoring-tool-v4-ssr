@@ -20,6 +20,7 @@ import { resolveTokens } from '../themes/tokens';
 const PRESET_MAP: Record<string, () => Promise<LessonSchema>> = {
   'hakikat-norma': () => import('@/presets/ppkn/hakikat-norma-schema').then(m => m.HAKIKAT_NORMA_LESSON),
   'macam-norma': () => import('@/presets/ppkn/macam-norma-schema').then(m => m.MACAM_NORMA_LESSON),
+  'perilaku-patuh': () => import('@/presets/ppkn/perilaku-patuh-schema').then(m => m.PERILAKU_PATUH_LESSON),
 };
 
 export function getAvailablePresets(): string[] {
