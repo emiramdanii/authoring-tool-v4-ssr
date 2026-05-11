@@ -26,34 +26,56 @@ export function getHeroData(authStore: { modules: Array<Record<string, unknown>>
 }
 
 // ── Helper: Populate template elements for backward compat ────
+// FASE 4: Now reads from page.schema first, falls back to templateData.
+// This ensures schema-native pages still get placeholder elements
+// for the export pipeline even without templateData.
 
 export function populateTemplateElements(page: CanvaPage, createElId: () => string): CanvaElement[] {
   if (page.templateType === 'custom') return [];
 
-  const td = page.templateData || {};
+  // FASE 4: Try to extract module/kuis IDs from page.schema blocks first
+  // Schema-native pages may not have templateData populated
+  const schema = page.schema;
   let moduleId: string | undefined;
   let kuisId: string | undefined;
   let kuisIds: string[] | undefined;
 
-  if (page.templateType === 'kuis') {
-    const kuisArr = td.kuis as Array<Record<string, unknown>> | undefined;
-    if (kuisArr && kuisArr.length > 0) {
-      kuisId = (kuisArr[0]._id as string) || undefined;
-      kuisIds = kuisArr.map(k => k._id as string).filter(Boolean);
+  if (schema?.blocks) {
+    // Scan schema blocks for interactive block types that reference authoring modules
+    for (const block of schema.blocks) {
+      if (block.type === 'kuis' || block.type === 'roda-game' || block.type === 'sortir-game') {
+        // These blocks reference kuis data — extract ID if available
+        const blockId = block.id;
+        if (block.type === 'kuis' && blockId) {
+          kuisId = blockId; // Schema block ID serves as reference
+        }
+      }
     }
   }
 
-  if (page.templateType === 'game') {
-    const gamesArr = td.games as Array<Record<string, unknown>> | undefined;
-    if (gamesArr && gamesArr.length > 0 && gamesArr[0]._id) {
-      moduleId = gamesArr[0]._id as string;
+  // Fallback to templateData for legacy pages
+  const td = page.templateData || {};
+  if (!moduleId || !kuisId) {
+    if (page.templateType === 'kuis') {
+      const kuisArr = td.kuis as Array<Record<string, unknown>> | undefined;
+      if (kuisArr && kuisArr.length > 0) {
+        if (!kuisId) kuisId = (kuisArr[0]._id as string) || undefined;
+        kuisIds = kuisArr.map(k => k._id as string).filter(Boolean);
+      }
     }
-  }
 
-  if (page.templateType === 'materi') {
-    const modulesArr = td.modules as Array<Record<string, unknown>> | undefined;
-    if (modulesArr && modulesArr.length > 0 && modulesArr[0]._id) {
-      moduleId = modulesArr[0]._id as string;
+    if (page.templateType === 'game') {
+      const gamesArr = td.games as Array<Record<string, unknown>> | undefined;
+      if (gamesArr && gamesArr.length > 0 && gamesArr[0]._id) {
+        if (!moduleId) moduleId = gamesArr[0]._id as string;
+      }
+    }
+
+    if (page.templateType === 'materi') {
+      const modulesArr = td.modules as Array<Record<string, unknown>> | undefined;
+      if (modulesArr && modulesArr.length > 0 && modulesArr[0]._id) {
+        if (!moduleId) moduleId = modulesArr[0]._id as string;
+      }
     }
   }
 

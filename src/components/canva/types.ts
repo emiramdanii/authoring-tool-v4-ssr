@@ -97,14 +97,21 @@ export interface CanvaPage {
   templateType: PageTemplateType;
   colorPalette: ColorPalette | null;
   navConfig: NavConfig;
-  /** @deprecated FASE 1: Legacy data binding. Schema-driven pages use page.schema instead.
-   *  Still needed for: export pipeline, relock flow, backward compat.
-   *  Will be removed in Phase 3 when deriveSchema() replaces buildTemplateData(). */
+  /** @deprecated FASE 1 → FASE 4: Legacy data binding.
+   *  Schema-driven pages use page.schema instead.
+   *  STILL NEEDED FOR (as of FASE 4):
+   *    - ensurePageSchema() Path 2: promotes templateData.schemaScreen → page.schema
+   *    - populateTemplateElements(): reads module/kuis IDs (now schema-first with fallback)
+   *    - background-slice updateTemplateData(): custom pages fallback
+   *  MIGRATION PATH: After all users have re-saved, this field can be removed.
+   *  New code should NEVER write to templateData — use page.schema instead.
+   */
   templateData: Record<string, unknown>;
   // ── Overlay elements (v3 — Phase 1) ──
   // Elements rendered ON TOP of template pages, allowing hybrid mode
-  /** @deprecated FASE 1: Schema-driven pages render content via SchemaScreenRenderer.
-   *  Overlay elements only apply to non-schema legacy pages. */
+  /** @deprecated FASE 1 → FASE 4: Schema-driven pages render content via SchemaScreenRenderer.
+   *  Overlay elements only apply to non-schema legacy pages and unlocked templates.
+   *  MIGRATION PATH: After all pages are schema-native, this can be removed. */
   overlayElements: CanvaElement[];
   // ── Template layout variant (Phase 3) ──
   // Different visual layouts for the same template type (A/B/C)
@@ -159,9 +166,10 @@ export const LAYER_COLORS: Record<string, string> = {
 };
 
 // ── Template Gallery Constants ────────────────────────────────
-// @deprecated FASE 2: Use PagePresetRegistry instead.
-// TemplateInfo and TEMPLATE_TYPES are kept for backward compat only.
-// New code should import from @/core/preset/PagePresetRegistry.
+// @deprecated FASE 2 → FASE 4: DEAD CODE — zero imports.
+// Use PagePresetRegistry instead: getAllPresets(), getPreset(id)
+// These constants will be removed in a future cleanup.
+// ═══════════════════════════════════════════════════════════════
 
 /** @deprecated Use PagePreset from @/core/preset/PagePresetRegistry instead */
 export interface TemplateInfo {

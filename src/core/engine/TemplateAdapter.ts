@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE ADAPTER — Converts legacy CanvaPage → ScreenSchema
+// TEMPLATE ADAPTER — Legacy Bridge (FASE 4: Archived)
 // ═══════════════════════════════════════════════════════════════════
 // @legacy FASE 4 — This module is a LEGACY BRIDGE.
 //
@@ -12,9 +12,14 @@
 // All NEW pages are created schema-native via createPageFromPreset()
 // which uses deriveSchema() directly — bypassing this adapter entirely.
 //
-// When all legacy pages have been migrated (after sufficient time for
-// users to open and re-save their projects), this adapter can be
-// archived to /src/legacy/ and ensurePageSchema() simplified.
+// REMAINING CONSUMERS (as of FASE 4):
+//   - src/core/schema/ensure-schema.ts → convertToSchema()
+//   - src/components/canva/page-renderer/PageRenderer.tsx → paletteToTokenOverrides()
+//   - src/core/index.ts → re-exports
+//
+// MIGRATION PATH: When all legacy pages have been re-saved (after
+// migration window), this file can be deleted and ensurePageSchema()
+// simplified to just `return page.schema`.
 // ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage, ColorPalette } from '@/components/canva/types';
@@ -52,14 +57,10 @@ function resolveColor(palette: ColorPalette | null, key: string, fallback: strin
 }
 
 /**
- * Create a "palette-aware" theme ID by checking if the palette
- * has custom mappings that differ from the defaults.
- * Returns undefined if palette is default/empty.
+ * @deprecated REMOVED in FASE 4 — always returned undefined.
+ * Theme resolution now uses TokenResolver directly.
  */
-export function inferThemeId(palette: ColorPalette | null): string | undefined {
-  if (!palette || !palette.mapping) return undefined;
-  // If palette has custom colors, we still use default tokens
-  // but the TemplateAdapter will inject palette overrides
+export function inferThemeId(_palette: ColorPalette | null): string | undefined {
   return undefined;
 }
 

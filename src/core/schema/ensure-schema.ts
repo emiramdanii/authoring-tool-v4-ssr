@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// ENSURE PAGE SCHEMA — Lazy Migration on Read (FASE 1)
+// ENSURE PAGE SCHEMA — Lazy Migration on Read (FASE 1 → FASE 4)
 // ═══════════════════════════════════════════════════════════════════
 // The central function that makes schema-first architecture work
 // WITHOUT breaking legacy pages.
@@ -14,6 +14,13 @@
 // After this function runs, page.schema is populated and the page
 // is effectively "upgraded" to native schema. Next save persists it.
 // The TemplateAdapter is only called ONCE per legacy page — ever.
+//
+// FASE 4 MIGRATION NOTE:
+//   After all users have loaded and re-saved their projects (migration
+//   window), this function can be simplified to just:
+//     return page.schema ?? null;
+//   The TemplateAdapter import and paths 2-3 can be removed entirely.
+// ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage } from '@/components/canva/types';
 import type { ScreenSchema, SchemaBlock } from './types';
