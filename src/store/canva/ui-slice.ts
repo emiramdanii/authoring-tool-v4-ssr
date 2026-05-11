@@ -627,93 +627,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       },
     };
 
-    // Add default content based on block type
-    switch (blockType) {
-      case 'cover':
-        newBlock.icon = '📄';
-        newBlock.title = 'Judul Baru';
-        newBlock.subtitle = 'Subtitle';
-        newBlock.badges = [];
-        newBlock.cta = { label: 'Mulai →', action: 'next' };
-        break;
-      case 'petunjuk':
-        newBlock.title = 'Petunjuk';
-        newBlock.titleHighlight = 'Penggunaan';
-        newBlock.items = [{ icon: '📌', title: 'Item 1', body: 'Deskripsi item' }];
-        break;
-      case 'tp':
-        newBlock.title = 'Tujuan Pembelajaran';
-        newBlock.titleHighlight = '';
-        newBlock.items = [{ num: 1, verb: 'Memahami', desc: 'Deskripsi tujuan', color: 'y' }];
-        break;
-      case 'alur':
-        newBlock.title = 'Alur Kegiatan';
-        newBlock.steps = [{ dot: 'y', durasi: '5 menit', judul: 'Langkah 1', deskripsi: 'Deskripsi langkah' }];
-        break;
-      case 'skenario':
-        newBlock.title = 'Skenario';
-        newBlock.chapters = [{ id: 'ch1', charEmoji: '🎭', title: 'Bab 1', choices: [] }];
-        break;
-      case 'def-box':
-        newBlock.content = 'Definisi baru';
-        newBlock.borderColor = 'y';
-        break;
-      case 'nc-grid':
-        newBlock.cards = [{ icon: '📋', title: 'Kartu 1', body: 'Deskripsi kartu', color: 'y' }];
-        break;
-      case 'flashcard-set':
-        newBlock.cards = [{ q: 'Pertanyaan?', a: 'Jawaban' }];
-        break;
-      case 'ftab':
-        newBlock.tabs = [{ icon: '📑', label: 'Tab 1', content: [] }];
-        break;
-      case 'nk-card':
-        newBlock.normaType = '';
-        newBlock.icon = '📜';
-        newBlock.title = 'Kartu Norma';
-        newBlock.label = '';
-        newBlock.definition = '';
-        newBlock.characteristics = [];
-        newBlock.sanksi = { title: 'Sanksi', items: [] };
-        newBlock.contoh = '';
-        break;
-      case 'diskusi':
-        newBlock.title = 'Diskusi';
-        newBlock.questions = [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban' }];
-        break;
-      case 'kuis':
-        newBlock.title = 'Kuis';
-        newBlock.questions = [{ q: 'Pertanyaan?', opts: ['A', 'B', 'C'], ans: 0, ex: 'Penjelasan' }];
-        break;
-      case 'sortir-game':
-        newBlock.title = 'Game Sortir';
-        newBlock.pool = [];
-        newBlock.kolom = [];
-        break;
-      case 'roda-game':
-        newBlock.title = 'Game Roda';
-        newBlock.questions = [];
-        break;
-      case 'hasil':
-        newBlock.title = 'Hasil';
-        newBlock.subtitle = 'Subtitle hasil';
-        break;
-      case 'refleksi':
-        newBlock.title = 'Refleksi';
-        newBlock.questions = [{ teks: 'Pertanyaan refleksi?', petunjuk: 'Petunjuk refleksi' }];
-        break;
-      case 'penutup':
-        newBlock.title = 'Penutup';
-        newBlock.subtitle = 'Terima kasih';
-        newBlock.preview = [];
-        break;
-      case 'tabel-accord':
-        newBlock.rows = [{ icon: '📊', title: 'Baris 1', color: 'y', details: [] }];
-        break;
-      default:
-        newBlock.title = definition.name;
-        break;
-    }
+    // Add default content from registry — data-driven, no switch needed
+    const defaultContent = definition.createDefault?.() ?? { title: definition.name };
+    Object.assign(newBlock, defaultContent);
 
     const newBlocks = [...blocks, newBlock as unknown as SchemaBlock];
 

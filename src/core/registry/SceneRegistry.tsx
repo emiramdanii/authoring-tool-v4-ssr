@@ -95,6 +95,11 @@ export interface BlockDefinition {
    *  The registry guarantees type-safe mapping: block.type → correct renderer.
    */
   renderer: React.ComponentType<any>;
+  /** Factory function that creates default content for a new block of this type.
+   *  Returns a partial block object (without `id`, `type`, `variant`, `layout`
+   *  which are added by addSchemaBlock).
+   */
+  createDefault: () => Record<string, unknown>;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -161,6 +166,13 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['cover'],
     propertySchema: COVER_PROPERTY_SCHEMA,
     renderer: CoverRenderer,
+    createDefault: () => ({
+      icon: '📄',
+      title: 'Judul Baru',
+      subtitle: 'Subtitle',
+      badges: [],
+      cta: { label: 'Mulai →', action: 'next' },
+    }),
   },
   'petunjuk': {
     type: 'petunjuk',
@@ -173,6 +185,11 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['petunjuk'],
     propertySchema: PETUNJUK_PROPERTY_SCHEMA,
     renderer: PetunjukRenderer,
+    createDefault: () => ({
+      title: 'Petunjuk',
+      titleHighlight: 'Penggunaan',
+      items: [{ icon: '📌', title: 'Item 1', body: 'Deskripsi item' }],
+    }),
   },
   'tp': {
     type: 'tp',
@@ -185,6 +202,11 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['dokumen'],
     propertySchema: TP_PROPERTY_SCHEMA,
     renderer: TpRenderer,
+    createDefault: () => ({
+      title: 'Tujuan Pembelajaran',
+      titleHighlight: '',
+      items: [{ num: 1, verb: 'Memahami', desc: 'Deskripsi tujuan', color: 'y' }],
+    }),
   },
   'alur': {
     type: 'alur',
@@ -197,6 +219,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['dokumen'],
     propertySchema: ALUR_PROPERTY_SCHEMA,
     renderer: AlurRenderer,
+    createDefault: () => ({
+      title: 'Alur Kegiatan',
+      steps: [{ dot: 'y', durasi: '5 menit', judul: 'Langkah 1', deskripsi: 'Deskripsi langkah' }],
+    }),
   },
   'skenario': {
     type: 'skenario',
@@ -209,6 +235,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['skenario'],
     propertySchema: SKENARIO_PROPERTY_SCHEMA,
     renderer: SkenarioRenderer,
+    createDefault: () => ({
+      title: 'Skenario',
+      chapters: [{ id: 'ch1', charEmoji: '🎭', title: 'Bab 1', choices: [] }],
+    }),
   },
   'def-box': {
     type: 'def-box',
@@ -221,6 +251,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['materi'],
     propertySchema: DEFBOX_PROPERTY_SCHEMA,
     renderer: DefBoxRenderer,
+    createDefault: () => ({
+      content: 'Definisi baru',
+      borderColor: 'y',
+    }),
   },
   'nc-grid': {
     type: 'nc-grid',
@@ -233,6 +267,9 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['materi', 'diskusi'],
     propertySchema: NCGRID_PROPERTY_SCHEMA,
     renderer: NcGridRenderer,
+    createDefault: () => ({
+      cards: [{ icon: '📋', title: 'Kartu 1', body: 'Deskripsi kartu', color: 'y' }],
+    }),
   },
   'flashcard-set': {
     type: 'flashcard-set',
@@ -245,6 +282,9 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['materi'],
     propertySchema: FLASHCARD_PROPERTY_SCHEMA,
     renderer: FlashcardRenderer,
+    createDefault: () => ({
+      cards: [{ q: 'Pertanyaan?', a: 'Jawaban' }],
+    }),
   },
   'ftab': {
     type: 'ftab',
@@ -257,6 +297,9 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['materi'],
     propertySchema: FTAB_PROPERTY_SCHEMA,
     renderer: FtabRenderer,
+    createDefault: () => ({
+      tabs: [{ icon: '📑', label: 'Tab 1', content: [] }],
+    }),
   },
   'nk-card': {
     type: 'nk-card',
@@ -269,6 +312,16 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['materi'],
     propertySchema: NKCARD_PROPERTY_SCHEMA,
     renderer: NormaKartuRenderer,
+    createDefault: () => ({
+      normaType: '',
+      icon: '📜',
+      title: 'Kartu Norma',
+      label: '',
+      definition: '',
+      characteristics: [],
+      sanksi: { title: 'Sanksi', items: [] },
+      contoh: '',
+    }),
   },
   'diskusi': {
     type: 'diskusi',
@@ -281,6 +334,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['diskusi'],
     propertySchema: DISKUSI_PROPERTY_SCHEMA,
     renderer: DiskusiRenderer,
+    createDefault: () => ({
+      title: 'Diskusi',
+      questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban' }],
+    }),
   },
   'kuis': {
     type: 'kuis',
@@ -293,6 +350,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['kuis'],
     propertySchema: KUIS_PROPERTY_SCHEMA,
     renderer: KuisRenderer,
+    createDefault: () => ({
+      title: 'Kuis',
+      questions: [{ q: 'Pertanyaan?', opts: ['A', 'B', 'C'], ans: 0, ex: 'Penjelasan' }],
+    }),
   },
   'sortir-game': {
     type: 'sortir-game',
@@ -305,6 +366,11 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['game'],
     propertySchema: SORTIRGAME_PROPERTY_SCHEMA,
     renderer: SortirGameRenderer,
+    createDefault: () => ({
+      title: 'Game Sortir',
+      pool: [],
+      kolom: [],
+    }),
   },
   'roda-game': {
     type: 'roda-game',
@@ -317,6 +383,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['game'],
     propertySchema: RODAGAME_PROPERTY_SCHEMA,
     renderer: RodaGameRenderer,
+    createDefault: () => ({
+      title: 'Game Roda',
+      questions: [],
+    }),
   },
   'hasil': {
     type: 'hasil',
@@ -329,6 +399,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['hasil'],
     propertySchema: HASIL_PROPERTY_SCHEMA,
     renderer: HasilRenderer,
+    createDefault: () => ({
+      title: 'Hasil',
+      subtitle: 'Subtitle hasil',
+    }),
   },
   'refleksi': {
     type: 'refleksi',
@@ -341,6 +415,10 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['refleksi'],
     propertySchema: REFLEKSI_PROPERTY_SCHEMA,
     renderer: RefleksiRenderer,
+    createDefault: () => ({
+      title: 'Refleksi',
+      questions: [{ teks: 'Pertanyaan refleksi?', petunjuk: 'Petunjuk refleksi' }],
+    }),
   },
   'penutup': {
     type: 'penutup',
@@ -353,6 +431,11 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['penutup'],
     propertySchema: PENUTUP_PROPERTY_SCHEMA,
     renderer: PenutupRenderer,
+    createDefault: () => ({
+      title: 'Penutup',
+      subtitle: 'Terima kasih',
+      preview: [],
+    }),
   },
   'tabel-accord': {
     type: 'tabel-accord',
@@ -365,6 +448,9 @@ export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
     usedInTemplates: ['materi'],
     propertySchema: TABELACCORD_PROPERTY_SCHEMA,
     renderer: TabelAccordionRenderer,
+    createDefault: () => ({
+      rows: [{ icon: '📊', title: 'Baris 1', color: 'y', details: [] }],
+    }),
   },
 };
 

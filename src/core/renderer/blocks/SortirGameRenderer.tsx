@@ -3,9 +3,66 @@
 import React from 'react';
 import type { SortirGameBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function SortirGameRenderer({ block, tokens, interactive, isCompact }: {
-  block: SortirGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean;
+/** Inner kolom component so hooks are not called in loops */
+function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomItems, onKolomClick }: {
+  kolomDef: SortirGameBlock['kolom'][number];
+  kolomIndex: number;
+  blockId: string;
+  tokens: TokenResolver;
+  selected: string | null;
+  kolomItems: string[];
+  onKolomClick: () => void;
+}) {
+  const labelEditor = useInlineEditor({
+    blockId,
+    fieldKey: `kolom.${kolomIndex}.label`,
+    value: kolomDef.label ?? '',
+    tag: 'span',
+  });
+
+  return (
+    <div onClick={onKolomClick}
+      className="rounded-xl p-3.5 min-h-[70px] border-2 transition-all cursor-pointer"
+      style={{
+        borderColor: selected ? tokens.colorAlpha(kolomDef.color, 0.5) : tokens.colorAlpha(kolomDef.color, 0.2),
+        background: selected ? tokens.colorAlpha(kolomDef.color, 0.08) : tokens.colorAlpha(kolomDef.color, 0.04),
+        boxShadow: selected ? '0 0 16px ' + tokens.colorAlpha(kolomDef.color, 0.15) : tokens.raw.shadow.card,
+      }}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center"
+          style={{ background: tokens.colorAlpha(kolomDef.color, 0.2) }}>
+          <span className="text-[10px]">📂</span>
+        </div>
+        <div className="text-[10px] font-extrabold uppercase tracking-wider"
+          style={{ color: tokens.color(kolomDef.color) }}>
+          <InlineTextEditor
+            {...labelEditor}
+            className="text-[10px] font-extrabold uppercase tracking-wider"
+            style={{ color: tokens.color(kolomDef.color), fontSize: 'inherit' }}
+            placeholder="Ketik label kolom..."
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {kolomItems.map((text, i) => (
+          <span key={i} className="px-2.5 py-1 rounded-full text-[9px] font-bold"
+            style={{
+              background: tokens.colorAlpha(kolomDef.color, 0.2),
+              color: tokens.color(kolomDef.color),
+              border: '1px solid ' + tokens.colorAlpha(kolomDef.color, 0.3),
+            }}>
+            {text}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+  block: SortirGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
   const pool = block.pool || [];
   const kolom = block.kolom || [];
@@ -17,6 +74,14 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact }: {
     return init;
   });
   const [selected, setSelected] = React.useState<string | null>(null);
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
 
   const totalPlaced = poolState.filter(p => p.placed).length;
   const totalItems = pool.length;
@@ -104,37 +169,17 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact }: {
 
       {/* Kolom grid */}
       <div className="grid grid-cols-2 gap-3">
-        {kolom.map(k => (
-          <div key={k.id} onClick={() => handleKolomClick(k.id)}
-            className="rounded-xl p-3.5 min-h-[70px] border-2 transition-all cursor-pointer"
-            style={{
-              borderColor: selected ? tokens.colorAlpha(k.color, 0.5) : tokens.colorAlpha(k.color, 0.2),
-              background: selected ? tokens.colorAlpha(k.color, 0.08) : tokens.colorAlpha(k.color, 0.04),
-              boxShadow: selected ? '0 0 16px ' + tokens.colorAlpha(k.color, 0.15) : tokens.raw.shadow.card,
-            }}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: tokens.colorAlpha(k.color, 0.2) }}>
-                <span className="text-[10px]">📂</span>
-              </div>
-              <div className="text-[10px] font-extrabold uppercase tracking-wider"
-                style={{ color: tokens.color(k.color) }}>
-                {k.label}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {(kolomItems[k.id] || []).map((text, i) => (
-                <span key={i} className="px-2.5 py-1 rounded-full text-[9px] font-bold"
-                  style={{
-                    background: tokens.colorAlpha(k.color, 0.2),
-                    color: tokens.color(k.color),
-                    border: '1px solid ' + tokens.colorAlpha(k.color, 0.3),
-                  }}>
-                  {text}
-                </span>
-              ))}
-            </div>
-          </div>
+        {kolom.map((k, i) => (
+          <SortirKolom
+            key={k.id}
+            kolomDef={k}
+            kolomIndex={i}
+            blockId={block.id!}
+            tokens={tokens}
+            selected={selected}
+            kolomItems={kolomItems[k.id] || []}
+            onKolomClick={() => handleKolomClick(k.id)}
+          />
         ))}
       </div>
     </div>

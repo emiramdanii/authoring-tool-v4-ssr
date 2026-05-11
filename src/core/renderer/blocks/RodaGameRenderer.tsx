@@ -3,9 +3,10 @@
 import React from 'react';
 import type { RodaGameBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
-  block: RodaGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean;
+export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+  block: RodaGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
@@ -15,6 +16,27 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
   const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.opts?.[ans]?.correct).length;
   const totalAnswered = Object.keys(answers).length;
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const questionEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: `questions.${current}.q`,
+    value: q?.q ?? '',
+    tag: 'div',
+    multiline: true,
+  });
+  const diskusiHintEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: `questions.${current}.diskusiHint`,
+    value: q?.diskusiHint ?? '',
+    tag: 'span',
+  });
 
   // ══ COMPLETION SCREEN ═══════════════════════════════════════
   if (isCompleted) {
@@ -65,7 +87,12 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
         }}>
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-extrabold" style={{ color: tokens.color('c'), fontFamily: tokens.fontFamily('display') }}>
-            🎡 Roda Pengetahuan
+            🎡 <InlineTextEditor
+              {...titleEditor}
+              className="text-[10px] font-extrabold"
+              style={{ color: tokens.color('c'), fontFamily: tokens.fontFamily('display'), fontSize: 'inherit' }}
+              placeholder="Ketik judul..."
+            />
           </span>
           <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
             style={{
@@ -87,7 +114,12 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
               border: '1px solid ' + tokens.colorAlpha('c', 0.25),
               borderLeft: '3px solid ' + tokens.color('c'),
             }}>
-            <div className="text-[10px] leading-relaxed"><strong style={{ color: tokens.color('c') }}>💬 Diskusi:</strong> {q.diskusiHint}</div>
+            <div className="text-[10px] leading-relaxed"><strong style={{ color: tokens.color('c') }}>💬 Diskusi:</strong> <InlineTextEditor
+              {...diskusiHintEditor}
+              className="text-[10px]"
+              style={{ fontSize: 'inherit' }}
+              placeholder="Ketik hint diskusi..."
+            /></div>
           </div>
         )}
 
@@ -97,7 +129,12 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact }: {
             background: tokens.colorAlpha('y', 0.08),
             border: '1px solid ' + tokens.colorAlpha('y', 0.2),
           }}>
-          <div className="text-[12px] font-bold leading-relaxed">{q.q}</div>
+          <InlineTextEditor
+            {...questionEditor}
+            className="text-[12px] font-bold leading-relaxed"
+            style={{ fontSize: 'inherit' }}
+            placeholder="Ketik pertanyaan..."
+          />
         </div>
 
         {/* Options */}

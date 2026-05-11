@@ -4,9 +4,48 @@ import React from 'react';
 import type { FtabBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
 import { SchemaBlockRenderer } from '../SchemaRenderer';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function FtabRenderer({ block, mode, tokens, interactive, isCompact }: {
-  block: FtabBlock; mode: SchemaRenderMode; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean;
+/** Inner tab button component so hooks are not called in loops */
+function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, showReadMarker, isRead }: {
+  tab: FtabBlock['tabs'][number];
+  tabIndex: number;
+  blockId: string;
+  isActive: boolean;
+  onActivate: () => void;
+  tokens: TokenResolver;
+  showReadMarker?: boolean;
+  isRead: boolean;
+}) {
+  const labelEditor = useInlineEditor({
+    blockId,
+    fieldKey: `tabs.${tabIndex}.label`,
+    value: tab.label ?? '',
+    tag: 'span',
+  });
+
+  return (
+    <button onClick={onActivate}
+      className={`relative px-3.5 py-1.5 rounded-full text-[10px] font-extrabold transition-all ${
+        isActive ? 'scale-105' : 'opacity-60 hover:opacity-90'
+      }`}
+      style={{
+        background: isActive ? tokens.color('y') : 'rgba(255,255,255,.06)',
+        color: isActive ? tokens.color('bg') : tokens.colorAlpha('muted', 0.6),
+        border: '1px solid ' + (isActive ? tokens.color('y') : 'rgba(255,255,255,.1)'),
+        boxShadow: isActive ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : 'none',
+      }}>
+      {tab.icon} <InlineTextEditor {...labelEditor} style={{ color: 'inherit', fontSize: 'inherit' }} />
+      {showReadMarker && isRead && (
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
+          style={{ background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
+      )}
+    </button>
+  );
+}
+
+export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEditing }: {
+  block: FtabBlock; mode: SchemaRenderMode; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean;
 }) {
   const [activeTab, setActiveTab] = React.useState(0);
   const [readTabs, setReadTabs] = React.useState<Set<number>>(new Set());
@@ -23,22 +62,17 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact }: {
     <div>
       <div className="flex gap-2 flex-wrap">
         {tabs.map((t, i) => (
-          <button key={i} onClick={() => handleTab(i)}
-            className={`relative px-3.5 py-1.5 rounded-full text-[10px] font-extrabold transition-all ${
-              activeTab === i ? 'scale-105' : 'opacity-60 hover:opacity-90'
-            }`}
-            style={{
-              background: activeTab === i ? tokens.color('y') : 'rgba(255,255,255,.06)',
-              color: activeTab === i ? tokens.color('bg') : tokens.colorAlpha('muted', 0.6),
-              border: '1px solid ' + (activeTab === i ? tokens.color('y') : 'rgba(255,255,255,.1)'),
-              boxShadow: activeTab === i ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : 'none',
-            }}>
-            {t.icon} {t.label}
-            {block.showReadMarker && readTabs.has(i) && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
-                style={{ background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
-            )}
-          </button>
+          <FtabButton
+            key={i}
+            tab={t}
+            tabIndex={i}
+            blockId={block.id!}
+            isActive={activeTab === i}
+            onActivate={() => handleTab(i)}
+            tokens={tokens}
+            showReadMarker={block.showReadMarker}
+            isRead={readTabs.has(i)}
+          />
         ))}
       </div>
 

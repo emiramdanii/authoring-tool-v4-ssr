@@ -3,9 +3,10 @@
 import React from 'react';
 import type { KuisBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function KuisRenderer({ block, tokens, interactive, isCompact }: {
-  block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean;
+export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+  block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
 }) {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
@@ -15,6 +16,27 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
   const totalAnswered = Object.keys(answers).length;
   const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.ans === ans).length;
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+  const questionEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: `questions.${current}.q`,
+    value: q?.q ?? '',
+    tag: 'div',
+    multiline: true,
+  });
+  const explanationEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: `questions.${current}.ex`,
+    value: q?.ex ?? '',
+    tag: 'span',
+  });
 
   // ══ COMPLETION SCREEN ═══════════════════════════════════════
   if (isCompleted) {
@@ -64,7 +86,12 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
       {/* Header with progress */}
       <div className="flex items-center justify-between">
         <div className="text-[11px] font-extrabold" style={{ color: tokens.color('y') }}>
-          🎮 {block.title}
+          🎮 <InlineTextEditor
+            {...titleEditor}
+            className="text-[11px] font-extrabold"
+            style={{ color: tokens.color('y'), fontSize: 'inherit' }}
+            placeholder="Ketik judul kuis..."
+          />
         </div>
         <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
           style={{
@@ -94,7 +121,12 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
           border: '1px solid ' + tokens.colorAlpha('y', 0.2),
           boxShadow: tokens.raw.shadow.card,
         }}>
-        <div className="text-[12px] font-bold leading-relaxed mb-3">{q.q}</div>
+        <InlineTextEditor
+          {...questionEditor}
+          className="text-[12px] font-bold leading-relaxed mb-3"
+          style={{ fontSize: 'inherit' }}
+          placeholder="Ketik pertanyaan..."
+        />
         <div className="grid grid-cols-2 gap-2.5">
           {(q.opts || []).map((opt, i) => {
             const isAnswered = answers[current] !== undefined;
@@ -121,7 +153,12 @@ export function KuisRenderer({ block, tokens, interactive, isCompact }: {
               border: '1px solid ' + (answers[current] === q.ans ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
               color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             }}>
-            {answers[current] === q.ans ? '✅ ' : '❌ '}{q.ex}
+            {answers[current] === q.ans ? '✅ ' : '❌ '}<InlineTextEditor
+              {...explanationEditor}
+              className="text-[10px]"
+              style={{ color: 'inherit', fontSize: 'inherit' }}
+              placeholder="Ketik penjelasan..."
+            />
           </div>
         )}
       </div>

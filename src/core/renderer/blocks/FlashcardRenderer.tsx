@@ -3,15 +3,31 @@
 import React from 'react';
 import type { FlashcardSetBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 
-export function FlashcardRenderer({ block, tokens, isCompact, interactive }: {
-  block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean;
+export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing }: {
+  block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean;
 }) {
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
   const cards = block.cards || [];
   if (cards.length === 0) return null;
   const card = cards[idx];
+
+  // ── Inline editing hooks ─────────────────────────────────────
+  const qEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: `cards.${idx}.q`,
+    value: card.q ?? '',
+    tag: 'div',
+  });
+  const aEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: `cards.${idx}.a`,
+    value: card.a ?? '',
+    tag: 'div',
+    multiline: true,
+  });
 
   return (
     <div className={isCompact ? 'mt-2' : 'mt-4'}>
@@ -43,7 +59,12 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive }: {
             </div>
             <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: tokens.color('y') }}>Pertanyaan</div>
           </div>
-          <div className="font-extrabold text-[12px] leading-relaxed">{card.q}</div>
+          <InlineTextEditor
+            {...qEditor}
+            className="font-extrabold text-[12px] leading-relaxed"
+            style={{ fontSize: 'inherit' }}
+            placeholder="Ketik pertanyaan..."
+          />
         </div>
 
         {/* Back */}
@@ -61,7 +82,12 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive }: {
               </div>
               <div className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: tokens.color('g') }}>Jawaban</div>
             </div>
-            <div className="text-[11px] leading-relaxed" style={{ color: tokens.color('g') }}>{card.a}</div>
+            <InlineTextEditor
+              {...aEditor}
+              className="text-[11px] leading-relaxed"
+              style={{ color: tokens.color('g'), fontSize: 'inherit' }}
+              placeholder="Ketik jawaban..."
+            />
           </div>
         )}
       </div>
