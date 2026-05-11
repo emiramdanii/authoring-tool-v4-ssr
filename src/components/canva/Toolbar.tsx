@@ -350,7 +350,7 @@ export default function Toolbar() {
           onClick={undo}
           disabled={!canUndo}
           title="Undo (Ctrl+Z)"
-          className={`focus-ring ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
+          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
           <Undo2 size={14} />
         </Button>
@@ -360,7 +360,7 @@ export default function Toolbar() {
           onClick={redo}
           disabled={!canRedo}
           title="Redo (Ctrl+Y)"
-          className={`focus-ring ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
+          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
           <Redo2 size={14} />
         </Button>
@@ -373,7 +373,7 @@ export default function Toolbar() {
           variant="ghost"
           size="icon"
           onClick={() => setTool('select')}
-          className={`focus-ring rounded-lg p-1.5 transition-all ${
+          className={`focus-ring rounded-lg p-1.5 transition-all hover:scale-105 active:scale-95 ${
             tool === 'select'
               ? 'nav-active'
               : ''
@@ -386,7 +386,7 @@ export default function Toolbar() {
           variant="ghost"
           size="icon"
           onClick={() => setTool('text')}
-          className={`focus-ring rounded-lg p-1.5 transition-all ${
+          className={`focus-ring rounded-lg p-1.5 transition-all hover:scale-105 active:scale-95 ${
             tool === 'text'
               ? 'nav-active'
               : ''
@@ -451,7 +451,7 @@ export default function Toolbar() {
         size="icon"
         onClick={() => useAuthoringStore.getState().toggleSuaraAll()}
         title={soundOn ? 'Matikan suara' : 'Nyalakan suara'}
-        className={`focus-ring ${soundOn ? 'text-emerald-400' : 'text-app-muted'}`}
+        className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${soundOn ? 'text-emerald-400' : 'text-app-muted'}`}
       >
         {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
       </Button>
@@ -466,7 +466,7 @@ export default function Toolbar() {
           size="icon"
           onClick={toggleLeftPanel}
           title={leftPanelOpen ? 'Sembunyikan Panel Kiri' : 'Tampilkan Panel Kiri'}
-          className={`focus-ring ${leftPanelOpen ? 'text-amber-400' : ''}`}
+          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${leftPanelOpen ? 'text-amber-400' : ''}`}
         >
           <PanelLeft size={14} />
         </Button>
@@ -476,7 +476,7 @@ export default function Toolbar() {
           size="icon"
           onClick={toggleRightPanel}
           title={rightPanelOpen ? 'Sembunyikan Panel Kanan' : 'Tampilkan Panel Kanan'}
-          className={`focus-ring ${rightPanelOpen ? 'text-amber-400' : ''}`}
+          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${rightPanelOpen ? 'text-amber-400' : ''}`}
         >
           <PanelRight size={14} />
         </Button>
@@ -488,7 +488,7 @@ export default function Toolbar() {
           variant="ghost"
           size="icon"
           onClick={() => zoomDelta(-0.1)}
-          className="focus-ring"
+          className="focus-ring hover:scale-105 active:scale-95 transition-transform"
           title="Zoom out"
         >
           <Minus size={13} />
@@ -500,7 +500,7 @@ export default function Toolbar() {
           variant="ghost"
           size="icon"
           onClick={() => zoomDelta(0.1)}
-          className="focus-ring"
+          className="focus-ring hover:scale-105 active:scale-95 transition-transform"
           title="Zoom in"
         >
           <Plus size={13} />

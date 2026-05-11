@@ -20,8 +20,11 @@ import type { PreviewMode, DeviceMode, LayoutTheme } from './types';
 import { DEVICE_MODES, LAYOUT_THEMES, SCREEN_OPTIONS, MODE_META } from './constants';
 import { usePreviewBuilder } from './use-preview-builder';
 import { usePreviewNavigation } from './use-preview-navigation';
-import SchemaPlayer from './SchemaPlayer';
+import dynamic from 'next/dynamic';
 import { getAvailablePresets } from '@/core';
+
+// Lazy-loaded: SchemaPlayer is only used in live preview (schema mode)
+const SchemaPlayer = dynamic(() => import('./SchemaPlayer'), { ssr: false });
 
 export default function LivePreview() {
   // ── Local state ────────────────────────────────────────────

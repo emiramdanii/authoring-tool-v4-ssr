@@ -9,9 +9,12 @@ import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
-import PlayOverlay from './PlayOverlay';
+import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { connectHistoryToEditBus } from '@/core/editor/patch-history';
+
+// Lazy-loaded: PlayOverlay is only needed when user clicks "Play" — purely client-side
+const PlayOverlay = dynamic(() => import('./PlayOverlay'), { ssr: false });
 
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
@@ -190,24 +193,24 @@ export default function CanvaBuilder() {
 
       {/* Main builder row — always visible (design view) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-        {leftPanelOpen && (
-          <div className="border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden w-56 md:w-60 lg:w-[280px]">
-            <LeftPanel />
-          </div>
-        )}
+        <div className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+          leftPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
+        }`}>
+          {leftPanelOpen && <LeftPanel />}
+        </div>
 
         {/* Stage Canvas Area — recessed with inner shadow */}
         <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg">
           <Stage onMouseMove={handleMouseMove} />
         </div>
 
-        {rightPanelOpen && (
-          <div className="border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden w-56 md:w-60 lg:w-[280px]">
-            <CanvasErrorBoundary name="RightPanel">
-              <RightPanel />
-            </CanvasErrorBoundary>
-          </div>
-        )}
+        <div className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+          rightPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
+        }`}>
+          <CanvasErrorBoundary name="RightPanel">
+            {rightPanelOpen && <RightPanel />}
+          </CanvasErrorBoundary>
+        </div>
       </div>
 
       {/* Status Bar */}

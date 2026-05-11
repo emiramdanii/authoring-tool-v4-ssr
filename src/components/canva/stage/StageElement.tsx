@@ -71,7 +71,7 @@ export const StageElement = memo(function StageElement({
 
   return (
     <div
-      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''} ${isOverlay ? 'pointer-events-auto' : ''}`}
+      className={`absolute group ${ringClass} ${element.hidden ? 'hidden' : ''} ${isOverlay ? 'pointer-events-auto' : ''} transition-[box-shadow,transform] duration-150`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,

@@ -23,11 +23,14 @@ import {
   getGameIcon,
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-constants';
-import PageTypeCreator from './PageTypeCreator';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import LayerPanel from './left-panel/LayerPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
+
+// Lazy-loaded: PageTypeCreator is a modal/overlay not always visible
+const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), { ssr: false });
 
 // ═══════════════════════════════════════════════════════════════
 // Left Panel — 3 tabs: Halaman (view & arrange) + Layer (schema blocks) + Tambah (add)

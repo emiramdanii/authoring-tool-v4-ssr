@@ -1,23 +1,27 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { resolveModule } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import type { CanvaElement } from './types';
-import { GenericGameWidget } from './games/shared';
-import { TrueFalseGame } from './games/TrueFalseGame';
-import { MemoryGame } from './games/MemoryGame';
-import { MatchingGame } from './games/MatchingGame';
-import { RodaGame } from './games/RodaGame';
-import { SortingGame } from './games/SortingGame';
-import { SpinWheelGame } from './games/SpinWheelGame';
-import { TeamBuzzerGame } from './games/TeamBuzzerGame';
-import { WordSearchGame } from './games/WordSearchGame';
-import { FlashcardGame } from './games/FlashcardGame';
-import { CrosswordGame } from './games/CrosswordGame';
-import { FillBlankGame } from './games/FillBlankGame';
-import { DragDropGame } from './games/DragDropGame';
 import { playSound } from '@/lib/sounds';
+
+// Lazy-loaded game renderers — only one game is rendered at a time based on gameType.
+// Using dynamic imports with ssr: false since these are purely client-side interactive components.
+const GenericGameWidget = dynamic(() => import('./games/shared').then(mod => ({ default: mod.GenericGameWidget })), { ssr: false });
+const TrueFalseGame = dynamic(() => import('./games/TrueFalseGame').then(mod => ({ default: mod.TrueFalseGame })), { ssr: false });
+const MemoryGame = dynamic(() => import('./games/MemoryGame').then(mod => ({ default: mod.MemoryGame })), { ssr: false });
+const MatchingGame = dynamic(() => import('./games/MatchingGame').then(mod => ({ default: mod.MatchingGame })), { ssr: false });
+const RodaGame = dynamic(() => import('./games/RodaGame').then(mod => ({ default: mod.RodaGame })), { ssr: false });
+const SortingGame = dynamic(() => import('./games/SortingGame').then(mod => ({ default: mod.SortingGame })), { ssr: false });
+const SpinWheelGame = dynamic(() => import('./games/SpinWheelGame').then(mod => ({ default: mod.SpinWheelGame })), { ssr: false });
+const TeamBuzzerGame = dynamic(() => import('./games/TeamBuzzerGame').then(mod => ({ default: mod.TeamBuzzerGame })), { ssr: false });
+const WordSearchGame = dynamic(() => import('./games/WordSearchGame').then(mod => ({ default: mod.WordSearchGame })), { ssr: false });
+const FlashcardGame = dynamic(() => import('./games/FlashcardGame').then(mod => ({ default: mod.FlashcardGame })), { ssr: false });
+const CrosswordGame = dynamic(() => import('./games/CrosswordGame').then(mod => ({ default: mod.CrosswordGame })), { ssr: false });
+const FillBlankGame = dynamic(() => import('./games/FillBlankGame').then(mod => ({ default: mod.FillBlankGame })), { ssr: false });
+const DragDropGame = dynamic(() => import('./games/DragDropGame').then(mod => ({ default: mod.DragDropGame })), { ssr: false });
 
 interface GameWidgetProps {
   dataIdx?: number;
