@@ -27,11 +27,13 @@ export type UISlice = Pick<
   | 'addSchemaBlock'
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
+  | '_lastNudgeTime'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
   _schemaClipboard: null,
   selectedBlockIds: [],
+  _lastNudgeTime: undefined,
 
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
@@ -269,7 +271,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!lastNudge || now - lastNudge > 500) {
       get()._pushHistory();
     }
-    set({ _lastNudgeTime: now } as any);
+    set({ _lastNudgeTime: now });
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
@@ -628,7 +630,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!lastNudge || now - lastNudge > 500) {
       get()._pushHistory();
     }
-    set({ _lastNudgeTime: now } as any);
+    set({ _lastNudgeTime: now });
 
     const newBlocks = blocks.map(block => {
       if (!idsToNudge.includes(block.id || '')) return block;

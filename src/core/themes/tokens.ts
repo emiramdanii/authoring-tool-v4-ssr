@@ -1,9 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════
 // DESIGN TOKEN SYSTEM — Single Source of Truth
 // ═══════════════════════════════════════════════════════════════════
-// Extracted from: pertemuan1-hakikat-norma-v2.html & pertemuan2-macam-norma-v3.html
-// These tokens replace ALL hardcoded CSS values across templates.
-// Renderer consumes tokens → produces consistent UI.
+// Color values are now sourced from primitive-tokens.ts to ensure
+// consistency between JS token consumers and CSS variable definitions.
+// The DesignTokens interface and resolveTokens function remain unchanged
+// to preserve backward compatibility with all consumers.
+
+import { PRIMITIVES } from './primitive-tokens';
 
 export interface DesignTokens {
   colors: {
@@ -76,31 +79,31 @@ export interface DesignTokens {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// DEFAULT THEME — Extracted from :root in both HTML preset files
+// DEFAULT THEME — Colors sourced from PRIMITIVES for single source of truth
 // ═══════════════════════════════════════════════════════════════════
 
 export const DEFAULT_TOKENS: DesignTokens = {
   colors: {
-    bg: '#0e1c2f',
-    bg2: '#13243a',
-    card: '#182d45',
+    bg: PRIMITIVES.color.canvasBg,
+    bg2: PRIMITIVES.color.canvasBg2,
+    card: PRIMITIVES.color.canvasCard,
     border: 'rgba(255,255,255,.09)',
-    y: '#f9c12e',
-    c: '#3ecfcf',
-    r: '#ff6b6b',
-    p: '#a78bfa',
-    g: '#34d399',
-    o: '#fb923c',
+    y: PRIMITIVES.color.nagama,
+    c: PRIMITIVES.color.cyan,
+    r: PRIMITIVES.color.red,
+    p: PRIMITIVES.color.purple,
+    g: PRIMITIVES.color.green,
+    o: PRIMITIVES.color.orange,
     text: '#e8f2ff',
     muted: '#6e90b5',
   },
   spacing: {
-    xs: 4,
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
+    xs: PRIMITIVES.spacing[1],
+    sm: PRIMITIVES.spacing[2],
+    md: PRIMITIVES.spacing[3],
+    lg: PRIMITIVES.spacing[4],
+    xl: PRIMITIVES.spacing[5],
+    xxl: PRIMITIVES.spacing[6],
   },
   radius: {
     sm: 8,
@@ -131,11 +134,11 @@ export const DEFAULT_TOKENS: DesignTokens = {
       h2: '1.6rem',
     },
     fontWeight: {
-      normal: 400,
-      semibold: 600,
-      bold: 700,
-      extrabold: 800,
-      black: 900,
+      normal: PRIMITIVES.fontWeight.normal,
+      semibold: PRIMITIVES.fontWeight.semibold,
+      bold: PRIMITIVES.fontWeight.bold,
+      extrabold: PRIMITIVES.fontWeight.extrabold,
+      black: PRIMITIVES.fontWeight.black,
     },
   },
   animation: {
@@ -178,10 +181,10 @@ export const THEME_PRESETS: ThemePreset[] = [
       colors: {
         ...DEFAULT_TOKENS.colors,
         // Cyan-driven, cool accent — hl color is cyan instead of yellow
-        nagama: '#f9c12e',
-        nkesusilaan: '#ff6b6b',
-        nkesopanan: '#3ecfcf',
-        nhukum: '#a78bfa',
+        nagama: PRIMITIVES.color.nagama,
+        nkesusilaan: PRIMITIVES.color.nkesusilaan,
+        nkesopanan: PRIMITIVES.color.nkesopanan,
+        nhukum: PRIMITIVES.color.nhukum,
       },
     },
   },
@@ -230,18 +233,18 @@ export const THEME_PRESETS: ThemePreset[] = [
     name: 'Glassmorphism',
     tokens: {
       colors: {
-        bg: '#1e293b',
+        bg: PRIMITIVES.color.slate800,
         bg2: '#263548',
         card: 'rgba(255,255,255,.06)',
         border: 'rgba(255,255,255,.1)',
-        y: '#fbbf24',
+        y: PRIMITIVES.color.yellow,
         c: '#22d3ee',
-        r: '#f87171',
-        p: '#a78bfa',
-        g: '#34d399',
-        o: '#fb923c',
-        text: '#f1f5f9',
-        muted: '#94a3b8',
+        r: PRIMITIVES.color.error,
+        p: PRIMITIVES.color.purple,
+        g: PRIMITIVES.color.green,
+        o: PRIMITIVES.color.orange,
+        text: PRIMITIVES.color.slate100,
+        muted: PRIMITIVES.color.slate400,
       },
     },
   },
@@ -256,9 +259,9 @@ export const THEME_PRESETS: ThemePreset[] = [
         border: 'rgba(0,0,0,.08)',
         y: '#eab308',
         c: '#0891b2',
-        r: '#dc2626',
+        r: PRIMITIVES.color.errorDark,
         p: '#7c3aed',
-        g: '#16a34a',
+        g: PRIMITIVES.color.successDark,
         o: '#ea580c',
         text: '#1a1a1a',
         muted: '#737373',

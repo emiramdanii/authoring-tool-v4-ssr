@@ -5,6 +5,7 @@
 'use client';
 
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 import type { AuthoringState } from './types';
 import { createNavigationSlice } from './navigation-slice';
 import { createMetaSlice } from './meta-slice';
@@ -19,7 +20,7 @@ import { createSkenarioSlice } from './skenario-slice';
 import { createSystemSlice } from './system-slice';
 import { createPresetSlice } from './preset-slice';
 
-export const useAuthoringStore = create<AuthoringState>()((...a) => ({
+export const useAuthoringStore = create<AuthoringState>()(devtools((...a) => ({
   ...createNavigationSlice(...a),
   ...createMetaSlice(...a),
   ...createCpSlice(...a),
@@ -32,4 +33,4 @@ export const useAuthoringStore = create<AuthoringState>()((...a) => ({
   ...createSkenarioSlice(...a),
   ...createSystemSlice(...a),
   ...createPresetSlice(...a),
-}));
+}), { name: 'AuthoringStore', enabled: process.env.NODE_ENV === 'development' }));

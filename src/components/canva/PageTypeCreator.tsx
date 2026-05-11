@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Zap, ChevronDown, ChevronUp, X, Sparkles } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { Button } from '@/components/ui/button';
 import { ALL_PAGE_TYPES, PAGE_TYPE_CATEGORIES, type PageTypeDefinition, type PageTypeOption } from '@/store/page-types';
 
 // ── Inline config panel for a selected page type ──────────────
@@ -48,12 +49,14 @@ function ConfigPanel({
             <div className="text-[9px] text-slate-400">{pageType.description}</div>
           </div>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onCancel}
-          className="btn-ghost w-6 h-6 rounded-md text-slate-500 hover:text-slate-300"
+          className="h-6 w-6 rounded-md text-slate-500 hover:text-slate-300"
         >
           <X size={12} />
-        </button>
+        </Button>
       </div>
 
       {/* Options */}
@@ -66,10 +69,10 @@ function ConfigPanel({
       )}
 
       {/* Generate button */}
-      <button
+      <Button
         onClick={handleGenerate}
         disabled={generating}
-        className="btn-primary w-full py-2.5 justify-center text-[11px] gap-2 disabled:opacity-50"
+        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-50"
       >
         {generating ? (
           <>
@@ -82,7 +85,7 @@ function ConfigPanel({
             Generate {pageType.name}
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -201,13 +204,13 @@ export default function PageTypeCreator() {
   // Collapsed: just the button
   if (!expanded) {
     return (
-      <button
+      <Button
         onClick={handleToggle}
-        className="btn-primary w-full py-2.5 justify-center text-[11px] gap-2"
+        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
       >
         <Zap size={14} />
         Auto-Generate Halaman
-      </button>
+      </Button>
     );
   }
 
@@ -215,14 +218,14 @@ export default function PageTypeCreator() {
   return (
     <div className="space-y-2">
       {/* Header button — click to collapse */}
-      <button
+      <Button
         onClick={handleToggle}
-        className="btn-primary w-full py-2.5 justify-center text-[11px] gap-2"
+        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
       >
         <Zap size={14} />
         Auto-Generate Halaman
         <ChevronUp size={12} className="ml-auto" />
-      </button>
+      </Button>
 
       {/* Category filter chips */}
       <div className="flex flex-wrap gap-1">

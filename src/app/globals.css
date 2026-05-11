@@ -3,7 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════════════════════════
+   TAILWIND v4 THEME — Semantic Token Mappings
+   ═══════════════════════════════════════════════════════════════════
+   These map CSS custom properties to Tailwind utility classes.
+   Usage: bg-app-bg, text-app-primary, border-app-default, etc.
+   ═══════════════════════════════════════════════════════════════════ */
 @theme inline {
+  /* ── shadcn/ui color mappings (existing) ─────────────────────── */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -41,9 +48,61 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* ── Semantic App Token Mappings ──────────────────────────────── */
+  /* Usage: bg-app-bg, text-app-primary, border-app-default, etc.  */
+
+  /* App Chrome Backgrounds */
+  --color-app-bg: var(--semantic-bg-app);
+  --color-app-surface: var(--semantic-bg-surface);
+  --color-app-elevated: var(--semantic-bg-elevated);
+  --color-app-overlay: var(--semantic-bg-overlay);
+
+  /* App Text */
+  --color-app-primary: var(--semantic-text-primary);
+  --color-app-secondary: var(--semantic-text-secondary);
+  --color-app-muted: var(--semantic-text-muted);
+  --color-app-inverse: var(--semantic-text-inverse);
+
+  /* App Borders */
+  --color-app-border: var(--semantic-border-default);
+  --color-app-border-subtle: var(--semantic-border-subtle);
+  --color-app-border-strong: var(--semantic-border-strong);
+
+  /* App Interactive / Accent */
+  --color-app-accent: var(--semantic-accent);
+  --color-app-accent-hover: var(--semantic-accent-hover);
+  --color-app-accent-secondary: var(--semantic-accent-secondary);
+
+  /* App Status */
+  --color-app-success: var(--semantic-success);
+  --color-app-warning: var(--semantic-warning);
+  --color-app-error: var(--semantic-error);
+  --color-app-info: var(--semantic-info);
+
+  /* App Navigation */
+  --color-app-nav-active: var(--semantic-nav-active-text);
+  --color-app-nav-bg: var(--semantic-nav-active-bg);
+  --color-app-nav-border: var(--semantic-nav-active-border);
+
+  /* App Glass */
+  --color-app-glass: var(--semantic-glass-bg);
+  --color-app-glass-strong: var(--semantic-glass-bg-strong);
+  --color-app-glass-border: var(--semantic-glass-border);
+
+  /* App Canvas (schema renderer) */
+  --color-app-canvas: var(--semantic-canvas-bg);
+  --color-app-canvas-2: var(--semantic-canvas-bg2);
+  --color-app-canvas-card: var(--semantic-canvas-card);
+  --color-app-canvas-text: var(--semantic-canvas-text);
+  --color-app-canvas-muted: var(--semantic-canvas-muted);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — :root (default when .dark class is NOT present)
+   ═══════════════════════════════════════════════════════════════════ */
 :root {
+  /* ── shadcn/ui Light ──────────────────────────────────────────── */
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -76,9 +135,70 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* ── Semantic Tokens — Light Mode ─────────────────────────────── */
+  /* App Chrome */
+  --semantic-bg-app: #f8fafc;
+  --semantic-bg-surface: #ffffff;
+  --semantic-bg-elevated: #f1f5f9;
+  --semantic-bg-overlay: rgba(0,0,0,0.3);
+
+  /* Text */
+  --semantic-text-primary: #0f172a;
+  --semantic-text-secondary: #64748b;
+  --semantic-text-muted: #94a3b8;
+  --semantic-text-inverse: #f8fafc;
+
+  /* Borders */
+  --semantic-border-default: #e2e8f0;
+  --semantic-border-subtle: #f1f5f9;
+  --semantic-border-strong: #cbd5e1;
+
+  /* Interactive */
+  --semantic-accent: #fbbf24;
+  --semantic-accent-hover: #f59e0b;
+  --semantic-accent-secondary: #3ecfcf;
+
+  /* Status */
+  --semantic-success: #16a34a;
+  --semantic-warning: #f59e0b;
+  --semantic-error: #dc2626;
+  --semantic-info: #3b82f6;
+
+  /* Navigation */
+  --semantic-nav-active-bg: rgba(251,191,36,0.1);
+  --semantic-nav-active-border: rgba(251,191,36,0.3);
+  --semantic-nav-active-text: #d97706;
+
+  /* Glass */
+  --semantic-glass-bg: rgba(255,255,255,0.8);
+  --semantic-glass-bg-strong: rgba(255,255,255,0.95);
+  --semantic-glass-border: #e2e8f0;
+
+  /* Canvas (schema renderer — uses lighter palette in light mode) */
+  --semantic-canvas-bg: #fafafa;
+  --semantic-canvas-bg2: #f5f5f5;
+  --semantic-canvas-card: #ffffff;
+  --semantic-canvas-text: #1a1a1a;
+  --semantic-canvas-muted: #737373;
+
+  /* Spacing (mode-independent) */
+  --semantic-panel-collapsed: 60px;
+  --semantic-panel-default: 240px;
+  --semantic-panel-expanded: 320px;
+  --semantic-toolbar-height: 48px;
+  --semantic-statusbar-height: 28px;
+
+  /* Font variables populated by next/font/google in layout.tsx */
+  --font-fredoka: var(--font-fredoka), 'Fredoka', cursive;
+  --font-nunito: var(--font-nunito), 'Nunito', sans-serif;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   DARK MODE — .dark class (toggled by next-themes ThemeProvider)
+   ═══════════════════════════════════════════════════════════════════ */
 .dark {
+  /* ── shadcn/ui Dark ───────────────────────────────────────────── */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -110,8 +230,57 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* ── Semantic Tokens — Dark Mode ──────────────────────────────── */
+  /* App Chrome */
+  --semantic-bg-app: #0f172a;
+  --semantic-bg-surface: #1e293b;
+  --semantic-bg-elevated: #334155;
+  --semantic-bg-overlay: rgba(0,0,0,0.5);
+
+  /* Text */
+  --semantic-text-primary: #f8fafc;
+  --semantic-text-secondary: #94a3b8;
+  --semantic-text-muted: #64748b;
+  --semantic-text-inverse: #0f172a;
+
+  /* Borders */
+  --semantic-border-default: rgba(148,163,184,0.15);
+  --semantic-border-subtle: rgba(148,163,184,0.08);
+  --semantic-border-strong: rgba(148,163,184,0.25);
+
+  /* Interactive */
+  --semantic-accent: #fbbf24;
+  --semantic-accent-hover: #f59e0b;
+  --semantic-accent-secondary: #3ecfcf;
+
+  /* Status */
+  --semantic-success: #34d399;
+  --semantic-warning: #f59e0b;
+  --semantic-error: #f87171;
+  --semantic-info: #3b82f6;
+
+  /* Navigation */
+  --semantic-nav-active-bg: rgba(251,191,36,0.15);
+  --semantic-nav-active-border: rgba(251,191,36,0.2);
+  --semantic-nav-active-text: #fbbf24;
+
+  /* Glass */
+  --semantic-glass-bg: rgba(30,41,59,0.75);
+  --semantic-glass-bg-strong: rgba(30,41,59,0.9);
+  --semantic-glass-border: rgba(148,163,184,0.15);
+
+  /* Canvas (schema renderer — uses darker palette in dark mode) */
+  --semantic-canvas-bg: #0e1c2f;
+  --semantic-canvas-bg2: #13243a;
+  --semantic-canvas-card: #182d45;
+  --semantic-canvas-text: #e8f2ff;
+  --semantic-canvas-muted: #6e90b5;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   BASE LAYER
+   ═══════════════════════════════════════════════════════════════════ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -121,17 +290,10 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DESIGN SYSTEM — Font Variables & Animations
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Animations
+   ═══════════════════════════════════════════════════════════════════ */
 
-:root {
-  /* Font variables populated by next/font/google in layout.tsx */
-  --font-fredoka: var(--font-fredoka), 'Fredoka', cursive;
-  --font-nunito: var(--font-nunito), 'Nunito', sans-serif;
-}
-
-/* ── Schema Renderer Animations ──────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12px); }
@@ -162,23 +324,23 @@
   50% { opacity: 0.3; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MPI v5.Z — Custom Design System
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   UTILITY CLASSES — Composed from semantic tokens
+   ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Glass Panel Effect ──────────────────────────────────────── */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.75);
+  background: var(--semantic-glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  border: 1px solid var(--semantic-glass-border);
 }
 
 .glass-panel-strong {
-  background: rgba(30, 41, 59, 0.9);
+  background: var(--semantic-glass-bg-strong);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--semantic-glass-border);
 }
 
 /* ── Subtle Inner Glow for Panels ────────────────────────────── */
@@ -190,9 +352,9 @@
 
 /* ── Active Item Indicator ───────────────────────────────────── */
 .nav-active {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
+  background: var(--semantic-nav-active-bg);
+  border: 1px solid var(--semantic-nav-active-border);
+  color: var(--semantic-nav-active-text);
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
 }
 
@@ -201,8 +363,8 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .card-hover:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(251, 191, 36, 0.15);
+  background: var(--semantic-bg-elevated);
+  border-color: var(--semantic-nav-active-border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transform: translateY(-1px);
 }
@@ -220,9 +382,9 @@
   margin-left: 8px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  color: #e2e8f0;
+  background: var(--semantic-bg-elevated);
+  border: 1px solid var(--semantic-border-default);
+  color: var(--semantic-text-primary);
   font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
@@ -243,11 +405,11 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.12);
+  background: var(--semantic-border-default);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.25);
+  background: var(--semantic-border-strong);
 }
 
 /* ── Range Input Styling ─────────────────────────────────────── */
@@ -255,7 +417,7 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: rgba(51, 65, 85, 0.6);
+  background: var(--semantic-bg-elevated);
   border-radius: 4px;
   outline: none;
 }
@@ -265,7 +427,7 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: linear-gradient(135deg, var(--semantic-accent), var(--semantic-accent-hover));
   cursor: pointer;
   box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
   transition: box-shadow 0.15s ease;
@@ -284,7 +446,7 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 2px;
 }
 input[type="color"]::-webkit-color-swatch {
-  border: 1px solid rgba(51, 65, 85, 0.6);
+  border: 1px solid var(--semantic-border-default);
   border-radius: 6px;
 }
 
@@ -300,7 +462,7 @@ select {
 /* ── Section Divider ─────────────────────────────────────────── */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, var(--semantic-border-subtle), transparent);
 }
 
 /* ── Accent Top Bar for Cards ────────────────────────────────── */
@@ -315,7 +477,7 @@ select {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--accent-color, #fbbf24);
+  background: var(--accent-color, var(--semantic-accent));
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
@@ -351,95 +513,6 @@ select {
 .focus-ring:focus-visible {
   outline: 2px solid rgba(251, 191, 36, 0.5);
   outline-offset: 1px;
-}
-
-/* ── Button Base Styles ──────────────────────────────────────── */
-.btn-ghost {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border-radius: 8px;
-  color: rgba(148, 163, 184, 0.7);
-  transition: all 0.15s ease;
-}
-.btn-ghost:hover {
-  background: rgba(30, 41, 59, 0.6);
-  color: #e2e8f0;
-}
-
-.btn-accent {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  transition: all 0.15s ease;
-}
-.btn-accent:hover {
-  background: rgba(251, 191, 36, 0.18);
-  border-color: rgba(251, 191, 36, 0.35);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #0f172a;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 3px rgba(251, 191, 36, 0.2);
-}
-.btn-primary:hover {
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
-  transform: translateY(-1px);
-}
-
-.btn-success {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.1);
-  border: 1px solid rgba(52, 211, 153, 0.2);
-  transition: all 0.15s ease;
-}
-.btn-success:hover {
-  background: rgba(52, 211, 153, 0.18);
-  border-color: rgba(52, 211, 153, 0.35);
-  box-shadow: 0 0 12px rgba(52, 211, 153, 0.08);
-}
-
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  transition: all 0.15s ease;
-}
-.btn-danger:hover {
-  background: rgba(248, 113, 113, 0.18);
-  border-color: rgba(248, 113, 113, 0.35);
 }
 
 /* ── Number Input ────────────────────────────────────────────── */

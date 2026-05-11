@@ -34,6 +34,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: Toolbar cleanup
@@ -158,14 +159,16 @@ export default function Toolbar() {
         </span>
         <div className="flex-1" />
         {/* Close button */}
-        <button
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={closePlay}
-          className="btn-danger focus-ring"
+          className="focus-ring"
           title="Tutup mode interaktif (Esc)"
         >
           <X size={12} />
           <span className="hidden sm:inline">Tutup</span>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -178,17 +181,18 @@ export default function Toolbar() {
       <div className="flex items-center gap-1">
         {/* Navigation dropdown — go to Dashboard, Dokumen, Konten */}
         <div className="relative" ref={navRef}>
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setNavOpen(!navOpen)}
-            className="btn-ghost focus-ring flex items-center gap-1 !text-amber-400 hover:!text-amber-300"
+            className="focus-ring flex items-center gap-1 text-amber-400 hover:text-amber-300"
             title="Navigasi — Kembali ke panel lain"
           >
             <ArrowLeft size={14} />
             <span className="hidden md:inline text-[9px] font-semibold">Menu</span>
             <ChevronDown size={8} className={`transition-transform ${navOpen ? 'rotate-180' : ''}`} />
-          </button>
+          </Button>
           {navOpen && (
-            <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+            <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
               <div className="px-3 py-1.5 bg-amber-500/10 border-b border-amber-500/20">
                 <div className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">🏠 Navigasi Utama</div>
               </div>
@@ -199,84 +203,86 @@ export default function Toolbar() {
                 <Home size={14} className="text-amber-400" />
                 <div>
                   <div className="text-[11px] text-amber-300 font-semibold">Dashboard</div>
-                  <div className="text-[8px] text-slate-500">Pilih preset, kelengkapan, quick actions</div>
+                  <div className="text-[8px] text-app-muted">Pilih preset, kelengkapan, quick actions</div>
                 </div>
               </button>
               <button
                 onClick={() => { setActivePanel('dokumen'); setNavOpen(false); }}
-                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-app-elevated transition-colors text-left"
               >
                 <FileText size={14} className="text-cyan-400" />
                 <div>
-                  <div className="text-[11px] text-slate-200 font-semibold">Dokumen</div>
-                  <div className="text-[8px] text-slate-500">Edit CP, TP, ATP, Alur Pembelajaran</div>
+                  <div className="text-[11px] text-app-primary font-semibold">Dokumen</div>
+                  <div className="text-[8px] text-app-muted">Edit CP, TP, ATP, Alur Pembelajaran</div>
                 </div>
               </button>
               <button
                 onClick={() => { setActivePanel('konten'); setNavOpen(false); }}
-                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-app-elevated transition-colors text-left"
               >
                 <BookOpen size={14} className="text-emerald-400" />
                 <div>
-                  <div className="text-[11px] text-slate-200 font-semibold">Konten</div>
-                  <div className="text-[8px] text-slate-500">Edit Kuis, Game, Materi, Skenario</div>
+                  <div className="text-[11px] text-app-primary font-semibold">Konten</div>
+                  <div className="text-[8px] text-app-muted">Edit Kuis, Game, Materi, Skenario</div>
                 </div>
               </button>
               <div className="section-divider mx-3" />
               <button
                 onClick={() => { setActivePanel('preview'); setNavOpen(false); }}
-                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-app-elevated transition-colors text-left"
               >
                 <MonitorPlay size={14} className="text-cyan-400" />
                 <div>
-                  <div className="text-[11px] text-slate-200 font-semibold">Live Preview</div>
-                  <div className="text-[8px] text-slate-500">Preview tampilan siswa lengkap</div>
+                  <div className="text-[11px] text-app-primary font-semibold">Live Preview</div>
+                  <div className="text-[8px] text-app-muted">Preview tampilan siswa lengkap</div>
                 </div>
               </button>
               <button
                 onClick={() => { setActivePanel('import'); setNavOpen(false); }}
-                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-slate-800/50 transition-colors text-left"
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-app-elevated transition-colors text-left"
               >
-                <Download size={14} className="text-slate-400" />
+                <Download size={14} className="text-app-secondary" />
                 <div>
-                  <div className="text-[11px] text-slate-200 font-semibold">Import / Export</div>
-                  <div className="text-[8px] text-slate-500">Import Excel/JSON, Export HTML</div>
+                  <div className="text-[11px] text-app-primary font-semibold">Import / Export</div>
+                  <div className="text-[8px] text-app-muted">Import Excel/JSON, Export HTML</div>
                 </div>
               </button>
             </div>
           )}
         </div>
         <span className="w-1 h-1 rounded-full bg-amber-400" />
-        <span className="text-xs font-semibold text-slate-200 min-w-0 truncate max-w-[140px]">
+        <span className="text-xs font-semibold text-app-primary min-w-0 truncate max-w-[140px]">
           {label}
         </span>
       </div>
       <div className="section-divider h-5 w-px mx-1" />
 
       {/* ── Play Button (MAIN action) ────────────────────────── */}
-      <button
+      <Button
+        variant="outline"
         onClick={openPlay}
         title="Play Preview — Preview interaktif dengan kuis, game, dan skor"
-        className="btn-success focus-ring"
+        className="focus-ring text-emerald-400 border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/18 hover:border-emerald-500/35"
       >
         <Play size={13} fill="currentColor" />
         <span>Play</span>
-      </button>
+      </Button>
 
       {/* ── Preview dropdown (Preview + Live merged) ── */}
       <div className="relative" ref={exportRef}>
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setExportOpen(!exportOpen)}
           disabled={exporting}
-          className={`btn-ghost focus-ring flex items-center gap-0.5 ${exporting ? 'opacity-50' : ''}`}
+          className={`focus-ring flex items-center gap-0.5 ${exporting ? 'opacity-50' : ''}`}
           title="Preview & Export"
         >
           <Eye size={14} />
           <span className="hidden md:inline text-[9px] font-semibold">Preview</span>
           <ChevronDown size={8} className={`transition-transform ${exportOpen ? 'rotate-180' : ''}`} />
-        </button>
+        </Button>
         {exportOpen && (
-          <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-full left-0 mt-1 w-64 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             {/* ── PREVIEW ── */}
             <div className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20">
               <div className="text-[9px] font-bold text-teal-400 uppercase tracking-wider">▶ Preview</div>
@@ -317,8 +323,8 @@ export default function Toolbar() {
               </div>
             </button>
 
-            <div className="px-3 py-1.5 bg-slate-800/30 border-y border-slate-700/30">
-              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Lainnya</div>
+            <div className="px-3 py-1.5 bg-app-elevated border-y border-app-border">
+              <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider">Lainnya</div>
             </div>
             <button
               onClick={handleClear}
@@ -327,7 +333,7 @@ export default function Toolbar() {
               <Trash2 size={14} className="text-red-400/60" />
               <div>
                 <div className="text-[11px] text-red-400/70 font-semibold">Bersihkan Halaman</div>
-                <div className="text-[8px] text-slate-500">Hapus semua elemen (bisa undo)</div>
+                <div className="text-[8px] text-app-muted">Hapus semua elemen (bisa undo)</div>
               </div>
             </button>
           </div>
@@ -338,62 +344,70 @@ export default function Toolbar() {
 
       {/* ── History group: Undo / Redo ───────────────────────── */}
       <div className="flex items-center gap-0.5">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={undo}
           disabled={!canUndo}
           title="Undo (Ctrl+Z)"
-          className={`btn-ghost focus-ring ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
+          className={`focus-ring ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
           <Undo2 size={14} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={redo}
           disabled={!canRedo}
           title="Redo (Ctrl+Y)"
-          className={`btn-ghost focus-ring ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
+          className={`focus-ring ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
           <Redo2 size={14} />
-        </button>
+        </Button>
       </div>
       <div className="section-divider h-5 w-px mx-1" />
 
       {/* ── Tool group: Select / Text ────────────────────────── */}
       <div className="flex items-center gap-0.5">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setTool('select')}
           className={`focus-ring rounded-lg p-1.5 transition-all ${
             tool === 'select'
               ? 'nav-active'
-              : 'btn-ghost'
+              : ''
           }`}
           title="Select (V)"
         >
           <MousePointer2 size={14} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setTool('text')}
           className={`focus-ring rounded-lg p-1.5 transition-all ${
             tool === 'text'
               ? 'nav-active'
-              : 'btn-ghost'
+              : ''
           }`}
           title="Text (T)"
         >
           <Type size={14} />
-        </button>
+        </Button>
       </div>
 
       {/* ── Ratio badge (clickable dropdown) ────────────────── */}
       <div className="relative" ref={ratioRef}>
         <button
           onClick={() => setRatioOpen(!ratioOpen)}
-          className="px-2 py-0.5 rounded-md bg-slate-800/60 text-amber-400 font-mono text-[10px] ml-1 hover:bg-slate-700/60 transition-colors flex items-center gap-0.5"
+          className="px-2 py-0.5 rounded-md bg-app-elevated text-amber-400 font-mono text-[10px] ml-1 hover:bg-app-surface transition-colors flex items-center gap-0.5"
         >
           {ratioId}
           <ChevronDown size={8} className={`transition-transform ${ratioOpen ? 'rotate-180' : ''}`} />
         </button>
         {ratioOpen && (
-          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl glass-panel-strong border border-slate-700/40 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             {[
               { id: '16:9', name: '16:9', desc: 'Landscape PPT' },
               { id: '9:16', name: '9:16', desc: 'Portrait HP' },
@@ -404,12 +418,12 @@ export default function Toolbar() {
               <button
                 key={r.id}
                 onClick={() => { setRatio(r.id); setRatioOpen(false); }}
-                className={`w-full px-3 py-2 flex items-center justify-between hover:bg-slate-800/50 transition-colors ${
-                  ratioId === r.id ? 'text-amber-400 bg-amber-500/5' : 'text-slate-300'
+                className={`w-full px-3 py-2 flex items-center justify-between hover:bg-app-elevated transition-colors ${
+                  ratioId === r.id ? 'text-amber-400 bg-amber-500/5' : 'text-app-secondary'
                 }`}
               >
                 <span className="text-[11px] font-mono font-bold">{r.name}</span>
-                <span className="text-[8px] text-slate-500">{r.desc}</span>
+                <span className="text-[8px] text-app-muted">{r.desc}</span>
               </button>
             ))}
           </div>
@@ -432,55 +446,65 @@ export default function Toolbar() {
       </div>
 
       {/* ── Sound toggle ──────────────────────────────────────── */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => useAuthoringStore.getState().toggleSuaraAll()}
         title={soundOn ? 'Matikan suara' : 'Nyalakan suara'}
-        className={`btn-ghost focus-ring ${soundOn ? '!text-emerald-400' : '!text-slate-500'}`}
+        className={`focus-ring ${soundOn ? 'text-emerald-400' : 'text-app-muted'}`}
       >
         {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-      </button>
+      </Button>
 
       <div className="section-divider h-5 w-px mx-1" />
 
       {/* ── Right group: Zoom + Panel toggle ─────────────────── */}
       <div className="flex items-center gap-0.5 ml-auto">
         {/* Left panel toggle */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={toggleLeftPanel}
           title={leftPanelOpen ? 'Sembunyikan Panel Kiri' : 'Tampilkan Panel Kiri'}
-          className={`btn-ghost focus-ring ${leftPanelOpen ? '!text-amber-400' : ''}`}
+          className={`focus-ring ${leftPanelOpen ? 'text-amber-400' : ''}`}
         >
           <PanelLeft size={14} />
-        </button>
+        </Button>
         {/* Right panel toggle */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={toggleRightPanel}
           title={rightPanelOpen ? 'Sembunyikan Panel Kanan' : 'Tampilkan Panel Kanan'}
-          className={`btn-ghost focus-ring ${rightPanelOpen ? '!text-amber-400' : ''}`}
+          className={`focus-ring ${rightPanelOpen ? 'text-amber-400' : ''}`}
         >
           <PanelRight size={14} />
-        </button>
+        </Button>
 
         <div className="section-divider h-5 w-px mx-1" />
 
         {/* Zoom controls */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => zoomDelta(-0.1)}
-          className="btn-ghost focus-ring"
+          className="focus-ring"
           title="Zoom out"
         >
           <Minus size={13} />
-        </button>
-        <span className="text-[11px] font-mono text-slate-400 w-10 text-center select-none">
+        </Button>
+        <span className="text-[11px] font-mono text-app-secondary w-10 text-center select-none">
           {Math.round(zoom * 100)}%
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => zoomDelta(0.1)}
-          className="btn-ghost focus-ring"
+          className="focus-ring"
           title="Zoom in"
         >
           <Plus size={13} />
-        </button>
+        </Button>
       </div>
     </div>
   );

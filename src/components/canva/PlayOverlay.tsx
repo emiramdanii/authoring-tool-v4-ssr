@@ -8,6 +8,7 @@ import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
@@ -78,13 +79,15 @@ function PlayOverlayHeader() {
           <span>Esc tutup</span>
         </div>
 
-        <button
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={closePlay}
-          className="btn-danger flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold"
         >
           <X size={14} />
           <span>Tutup</span>
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -214,15 +217,17 @@ function PlayCanvas() {
 
       {/* Bottom-right action buttons */}
       <div className="absolute bottom-4 right-4 flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setOverviewOpen(true)}
-          className="btn-ghost glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
+          className="glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
           title="Overview (O)"
         >
           <Grid3X3 size={12} />
           <span className="hidden sm:inline">Overview</span>
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => {
             if (!document.fullscreenElement) {
               document.documentElement.requestFullscreen().catch(() => {});
@@ -232,12 +237,12 @@ function PlayCanvas() {
               setIsFullscreen(false);
             }
           }}
-          className="btn-ghost glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
+          className="glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
           title="Fullscreen (F)"
         >
           {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
           <span className="hidden sm:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

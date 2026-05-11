@@ -4,6 +4,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { RATIOS } from '@/components/canva/types';
 import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, Lock, Unlock } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: StatusBar redesign
@@ -34,16 +35,16 @@ export default function StatusBar() {
   const isPageUnlocked = isTemplate && page?.locked === false;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-1 glass-panel text-[10px] text-slate-500 select-none">
+    <div className="flex items-center gap-3 px-4 py-1 glass-panel text-[10px] text-app-muted select-none">
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
-        <Ratio size={11} className="text-slate-600" />
+        <Ratio size={11} className="text-app-muted" />
         <span className="font-mono">{ratio.w}×{ratio.h}</span>
       </span>
 
       {/* Element count (includes overlays) */}
       <span className="flex items-center gap-1.5">
-        <Box size={11} className="text-slate-600" />
+        <Box size={11} className="text-app-muted" />
         <span>{totalElements} elemen</span>
         {(page?.overlayElements?.length || 0) > 0 && (
           <span className="text-amber-400/50 text-[8px]">
@@ -54,9 +55,9 @@ export default function StatusBar() {
 
       {/* Page info with template type + lock status */}
       <span className="flex items-center gap-1.5">
-        <FileText size={11} className="text-slate-600" />
+        <FileText size={11} className="text-app-muted" />
         <span>{currentPageIndex + 1}/{pages.length}</span>
-        <span className="text-[8px] text-slate-600">
+        <span className="text-[8px] text-app-muted">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>
         {isPageLocked && <Lock size={9} className="text-amber-400/60" />}
@@ -80,9 +81,10 @@ export default function StatusBar() {
         )}
       </span>
 
-      {/* Zoom slider (right side) */}
+      {/* Spacer + Theme toggle + Zoom slider (right side) */}
       <div className="flex items-center gap-1.5 ml-auto">
-        <Layers size={10} className="text-slate-600" />
+        <ThemeToggle />
+        <Layers size={10} className="text-app-muted" />
         <input
           type="range"
           min={25}
@@ -92,7 +94,7 @@ export default function StatusBar() {
           onChange={e => setZoom(parseInt(e.target.value) / 100)}
           className="w-16 h-1 accent-amber-500"
         />
-        <span className="font-mono text-[9px] text-slate-500 w-8">{Math.round(zoom * 100)}%</span>
+        <span className="font-mono text-[9px] text-app-muted w-8">{Math.round(zoom * 100)}%</span>
       </div>
     </div>
   );

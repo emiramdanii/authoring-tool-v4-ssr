@@ -5,6 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import type { CanvaElement } from '../types';
 import PropInput from './PropInput';
 import DataIdxSelector from './DataIdxSelector';
@@ -29,11 +30,13 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
             className="w-3 h-3 rounded-full flex-shrink-0"
             style={{ background: ELEMENT_TYPE_COLORS[selectedEl.type] || '#888' }}
           />
-          <span className="text-[11px] font-bold text-slate-200 truncate">
+          <span className="text-[11px] font-bold text-app-primary truncate">
             {selectedEl.icon} {selectedEl.label || selectedEl.type}
           </span>
           {/* Quick duplicate */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => {
               const store = useCanvaStore.getState();
               const pages = store.pages;
@@ -62,11 +65,11 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
               useCanvaStore.setState({ pages: newPages, selectedElId: newEl.id, selectedElIds: [newEl.id] });
               toast.success('Elemen diduplikasi');
             }}
-            className="btn-ghost w-6 h-6 ml-auto"
+            className="h-6 w-6 ml-auto"
             title="Duplikat elemen"
           >
             <Copy size={10} />
-          </button>
+          </Button>
         </div>
 
         {/* Position & size */}
@@ -82,7 +85,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
             <PropInput label="Font" value={selectedEl.fontSize || 20} min={8} max={72} onChange={v => updateElement(selectedEl.id, { fontSize: v })} />
             {/* Font weight */}
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-slate-500 w-14">Tebal</span>
+              <span className="text-[10px] text-app-muted w-14">Tebal</span>
               <div className="flex gap-0.5 flex-1">
                 {[400, 700, 900].map(w => (
                   <button
@@ -91,7 +94,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-colors ${
                       (selectedEl.fontWeight || 700) === w
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-slate-800/40 text-slate-400 border border-slate-700/20 hover:border-slate-600'
+                        : 'bg-app-elevated text-app-secondary border border-app-border-subtle hover:border-app-border-strong'
                     }`}
                   >
                     {w === 400 ? 'Ringan' : w === 700 ? 'Sedang' : 'Tebal'}
@@ -101,7 +104,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
             </div>
             {/* Text alignment */}
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-slate-500 w-14">Rata</span>
+              <span className="text-[10px] text-app-muted w-14">Rata</span>
               <div className="flex gap-0.5 flex-1">
                 {([
                   { val: 'left' as const, icon: '⬅' },
@@ -114,7 +117,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     className={`flex-1 py-1 rounded-lg text-[10px] font-bold transition-colors ${
                       (selectedEl.textAlign || 'left') === a.val
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-slate-800/40 text-slate-400 border border-slate-700/20 hover:border-slate-600'
+                        : 'bg-app-elevated text-app-secondary border border-app-border-subtle hover:border-app-border-strong'
                     }`}
                   >
                     {a.icon}
@@ -123,12 +126,12 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
               </div>
             </div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-slate-500 w-14">Warna</span>
+              <span className="text-[10px] text-app-muted w-14">Warna</span>
               <input
                 type="color"
                 value={selectedEl.textColor?.startsWith('#') ? selectedEl.textColor : '#ffffff'}
                 onChange={e => updateElement(selectedEl.id, { textColor: e.target.value })}
-                className="flex-1 h-7 rounded-lg border border-slate-700/30 cursor-pointer bg-slate-800/60"
+                className="flex-1 h-7 rounded-lg border border-app-border cursor-pointer bg-app-elevated"
               />
             </div>
           </>
@@ -138,12 +141,12 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
         {selectedEl.type === 'shape' && (
           <>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-slate-500 w-14">Warna</span>
+              <span className="text-[10px] text-app-muted w-14">Warna</span>
               <input
                 type="color"
                 value={selectedEl.color?.startsWith('#') ? selectedEl.color : '#ffffff'}
                 onChange={e => updateElement(selectedEl.id, { color: e.target.value })}
-                className="flex-1 h-7 rounded-lg border border-slate-700/30 cursor-pointer bg-slate-800/60"
+                className="flex-1 h-7 rounded-lg border border-app-border cursor-pointer bg-app-elevated"
               />
             </div>
             <PropInput label="Radius" value={selectedEl.radius || 8} min={0} max={50} onChange={v => updateElement(selectedEl.id, { radius: v })} />
@@ -154,17 +157,17 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
         {selectedEl.type === 'image' && (
           <>
             <div className="mb-2">
-              <label className="text-[10px] text-slate-500 block mb-1">URL Gambar</label>
+              <label className="text-[10px] text-app-muted block mb-1">URL Gambar</label>
               <input
                 type="text"
                 value={selectedEl.imageUrl || ''}
                 onChange={e => updateElement(selectedEl.id, { imageUrl: e.target.value })}
                 placeholder="https://... atau tempel URL"
-                className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none"
+                className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none"
               />
             </div>
             <div className="mb-2">
-              <label className="text-[10px] text-slate-500 block mb-1">Atau Upload File</label>
+              <label className="text-[10px] text-app-muted block mb-1">Atau Upload File</label>
               <input
                 type="file"
                 accept="image/*"
@@ -182,12 +185,12 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                   };
                   reader.readAsDataURL(file);
                 }}
-                className="w-full text-[9px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[9px] file:font-bold file:bg-orange-500/20 file:text-orange-300 hover:file:bg-orange-500/30 file:cursor-pointer"
+                className="w-full text-[9px] text-app-secondary file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[9px] file:font-bold file:bg-orange-500/20 file:text-orange-300 hover:file:bg-orange-500/30 file:cursor-pointer"
               />
-              <span className="text-[8px] text-slate-600">Maks 2MB (disimpan sebagai base64)</span>
+              <span className="text-[8px] text-app-muted">Maks 2MB (disimpan sebagai base64)</span>
             </div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-slate-500 w-14">Paskan</span>
+              <span className="text-[10px] text-app-muted w-14">Paskan</span>
               <div className="flex gap-0.5 flex-1">
                 {([
                   { val: 'cover' as const, label: 'Cover' },
@@ -201,7 +204,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     className={`flex-1 py-1 rounded-lg text-[8px] font-bold transition-colors ${
                       (selectedEl.imageFit || 'cover') === f.val
                         ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
-                        : 'bg-slate-800/40 text-slate-400 border border-slate-700/20 hover:border-slate-600'
+                        : 'bg-app-elevated text-app-secondary border border-app-border-subtle hover:border-app-border-strong'
                     }`}
                   >
                     {f.label}
@@ -224,7 +227,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
         {/* Layout Variant Picker for modul/materi elements */}
         {(selectedEl.type === 'modul' || selectedEl.type === 'materi') && (
           <div className="mt-2 mb-1">
-            <label className="text-[10px] text-slate-500 block mb-1">Layout Variant</label>
+            <label className="text-[10px] text-app-muted block mb-1">Layout Variant</label>
             <div className="flex gap-1">
               {LAYOUT_VARIANTS.map(v => {
                 const current = (selectedEl.layoutVariant as LayoutVariant) || 'A';
@@ -233,7 +236,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     key={v.id}
                     onClick={() => updateElement(selectedEl.id, { layoutVariant: v.id })}
                     className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-colors ${
-                      current === v.id ? 'bg-amber-500 text-slate-900' : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/60'
+                      current === v.id ? 'bg-amber-500 text-app-inverse' : 'bg-app-elevated text-app-secondary hover:bg-app-surface'
                     }`}
                     title={v.desc}
                   >
@@ -247,7 +250,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
 
         {/* Z-Order controls */}
         <div className="mt-2 mb-1">
-          <label className="text-[10px] text-slate-500 block mb-1">Urutan Layer</label>
+          <label className="text-[10px] text-app-muted block mb-1">Urutan Layer</label>
           <div className="flex gap-1">
             {[
               { dir: 'top' as const, icon: <ChevronsUp size={10} />, label: 'Paling Depan', shortcut: '⌘⇧]' },
@@ -258,7 +261,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
               <button
                 key={item.dir}
                 onClick={() => useCanvaStore.getState().moveElementZ(selectedEl.id, item.dir)}
-                className="flex-1 py-1.5 rounded-lg bg-slate-800/40 border border-slate-700/20 hover:border-slate-600 text-slate-400 hover:text-slate-200 transition-colors flex flex-col items-center gap-0.5"
+                className="flex-1 py-1.5 rounded-lg bg-app-elevated border border-app-border-subtle hover:border-app-border-strong text-app-secondary hover:text-app-primary transition-colors flex flex-col items-center gap-0.5"
                 title={`${item.label} (${item.shortcut})`}
               >
                 {item.icon}
@@ -268,13 +271,14 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
           </div>
         </div>
 
-        <button
+        <Button
+          variant="destructive"
           onClick={deleteSelected}
-          className="btn-danger w-full mt-3"
+          className="w-full mt-3"
         >
           <Trash2 size={12} />
           Hapus Elemen
-        </button>
+        </Button>
       </div>
     </div>
   );

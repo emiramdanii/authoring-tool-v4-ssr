@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 import { RATIOS } from '@/components/canva/types';
 import type { CanvaState } from './types';
 import { createPage } from './constants';
@@ -17,7 +18,7 @@ import { createSyncSlice, startAutoSync } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
 import { createSchemaPresetSlice } from './schema-preset-slice';
 
-export const useCanvaStore = create<CanvaState>()((...a) => {
+export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
   const set = a[0];
   const get = a[1];
 
@@ -67,7 +68,7 @@ export const useCanvaStore = create<CanvaState>()((...a) => {
     ...createPersistenceSlice(...a),
     ...createSchemaPresetSlice(...a),
   };
-});
+}, { name: 'CanvaStore', enabled: process.env.NODE_ENV === 'development' }));
 
 // ── Auto-sync: Wire authoring store changes → canva syncTemplateData ──
 // When authoring data changes (kuis, modules, meta, etc.), automatically

@@ -14,6 +14,7 @@ import {
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   SpaceHorizontal, SpaceVertical,
 } from './align-icons';
+import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: RightPanel redesign — 5 sections instead of 9
@@ -92,36 +93,36 @@ export default function RightPanel() {
 
       {/* ═══ Section 1b: Alignment Tools (multi-select) ═══ */}
       {selectedElIds.length >= 2 && (
-        <div className="px-3 py-2 border-b border-slate-800/40">
-          <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Align & Distribusi</div>
+        <div className="px-3 py-2 border-b border-app-border">
+          <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider mb-1.5">Align & Distribusi</div>
           <div className="grid grid-cols-6 gap-1">
-            <button onClick={() => alignSelected('left')} className="btn-ghost focus-ring p-1" title="Align Left">
+            <Button onClick={() => alignSelected('left')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Left">
               <AlignStartHorizontal size={13} />
-            </button>
-            <button onClick={() => alignSelected('centerH')} className="btn-ghost focus-ring p-1" title="Align Center Horizontal">
+            </Button>
+            <Button onClick={() => alignSelected('centerH')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Center Horizontal">
               <AlignCenterHorizontal size={13} />
-            </button>
-            <button onClick={() => alignSelected('right')} className="btn-ghost focus-ring p-1" title="Align Right">
+            </Button>
+            <Button onClick={() => alignSelected('right')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Right">
               <AlignEndHorizontal size={13} />
-            </button>
-            <button onClick={() => alignSelected('top')} className="btn-ghost focus-ring p-1" title="Align Top">
+            </Button>
+            <Button onClick={() => alignSelected('top')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Top">
               <AlignStartVertical size={13} />
-            </button>
-            <button onClick={() => alignSelected('centerV')} className="btn-ghost focus-ring p-1" title="Align Center Vertical">
+            </Button>
+            <Button onClick={() => alignSelected('centerV')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Center Vertical">
               <AlignCenterVertical size={13} />
-            </button>
-            <button onClick={() => alignSelected('bottom')} className="btn-ghost focus-ring p-1" title="Align Bottom">
+            </Button>
+            <Button onClick={() => alignSelected('bottom')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Bottom">
               <AlignEndVertical size={13} />
-            </button>
+            </Button>
           </div>
           {selectedElIds.length >= 3 && (
             <div className="grid grid-cols-2 gap-1 mt-1">
-              <button onClick={() => distributeSelected('horizontal')} className="btn-ghost focus-ring p-1 flex items-center gap-1" title="Distribute Horizontally">
+              <Button onClick={() => distributeSelected('horizontal')} variant="ghost" className="focus-ring p-1 flex items-center gap-1 h-7" title="Distribute Horizontally">
                 <SpaceHorizontal size={12} /> <span className="text-[8px]">H-Space</span>
-              </button>
-              <button onClick={() => distributeSelected('vertical')} className="btn-ghost focus-ring p-1 flex items-center gap-1" title="Distribute Vertically">
+              </Button>
+              <Button onClick={() => distributeSelected('vertical')} variant="ghost" className="focus-ring p-1 flex items-center gap-1 h-7" title="Distribute Vertically">
                 <SpaceVertical size={12} /> <span className="text-[8px]">V-Space</span>
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -181,7 +182,7 @@ export default function RightPanel() {
         <div className="mt-auto">
           <div className="section-divider" />
           <div className="p-2">
-            <div className="text-[9px] text-slate-600">
+            <div className="text-[9px] text-app-muted">
               Halaman {currentPageIndex + 1}/{pages.length} &middot; {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType}
             </div>
           </div>

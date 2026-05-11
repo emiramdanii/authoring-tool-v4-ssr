@@ -21,6 +21,7 @@ import {
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { Button } from '@/components/ui/button';
 
 import Dashboard from './Dashboard';
 import Dokumen from './Dokumen';
@@ -29,7 +30,7 @@ import AutoGenerate from './auto-generate';
 import Projects from './Projects';
 import ImportExport from './import-export';
 import Riwayat from './Riwayat';
-import LivePreview from './LivePreview';
+import LivePreview from './live-preview';
 
 // Lazy-load CanvaBuilder (heavy component, SSR disabled)
 const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
@@ -296,14 +297,14 @@ export default function AuthoringTool() {
             <div className="section-divider mb-2" />
             <button
               onClick={saveToStorage}
-              className="btn-primary w-full text-xs"
+              className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all"
             >
               <Save size={14} />
               Simpan Semua
             </button>
             <button
               onClick={exportJSON}
-              className="btn-accent w-full text-xs"
+              className="text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35 w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-bold transition-all"
             >
               <Download size={14} />
               Export JSON
@@ -335,12 +336,13 @@ export default function AuthoringTool() {
         {/* ── Header ───────────────────────────────────────── */}
         {!isCanva && !isPreview && (
           <header className="h-12 flex-shrink-0 glass-panel-strong flex items-center gap-3 px-4">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="btn-ghost"
             >
               {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-            </button>
+            </Button>
 
             <div className="text-sm font-medium text-slate-200">
               {PANEL_TITLES[activePanel]}
@@ -356,34 +358,35 @@ export default function AuthoringTool() {
             />
 
             <div className="ml-auto flex items-center gap-2">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setActivePanel('preview')}
-                className="btn-success"
+                className="text-emerald-400 border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/18 hover:border-emerald-500/35"
               >
                 <Eye size={14} />
                 Preview
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => setActivePanel('canva')}
-                className="btn-ghost"
               >
                 <Palette size={14} />
                 Canva
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => setActivePanel('import')}
-                className="btn-ghost"
               >
                 <ArrowLeftRight size={14} />
                 Import
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={saveToStorage}
-                className="btn-primary"
+                className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
               >
                 <Save size={14} />
                 Simpan
-              </button>
+              </Button>
             </div>
           </header>
         )}
@@ -447,18 +450,19 @@ export default function AuthoringTool() {
 
               {/* Actions */}
               <div className="px-5 pb-5 pt-3 flex items-center gap-3">
-                <button
+                <Button
+                  variant="ghost"
                   onClick={dismissTour}
-                  className="btn-ghost px-4 py-2 text-xs font-medium"
+                  className="px-4 py-2 text-xs font-medium"
                 >
                   Lewati
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={nextTourStep}
-                  className="btn-primary flex-1"
+                  className="flex-1 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
                 >
                   {tourStep < TOUR_STEPS.length - 1 ? 'Berikutnya →' : 'Mulai ✨'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

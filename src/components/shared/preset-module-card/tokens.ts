@@ -1,17 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════
-// DESIGN TOKENS
+// DESIGN TOKENS — Preset Module Card
 // ═══════════════════════════════════════════════════════════════════
+// Colors are now sourced from primitive-tokens.ts to ensure
+// consistency with the unified design system.
+
+import { PRIMITIVES } from '@/core/themes/primitive-tokens';
 
 export const T = {
-  bg: '#0e1c2f',
-  bg2: '#13243a',
-  card: '#182d45',
-  y: '#f9c12e',
-  c: '#3ecfcf',
-  r: '#ff6b6b',
-  p: '#a78bfa',
-  g: '#34d399',
-  o: '#fb923c',
+  bg: PRIMITIVES.color.canvasBg,
+  bg2: PRIMITIVES.color.canvasBg2,
+  card: PRIMITIVES.color.canvasCard,
+  y: PRIMITIVES.color.nagama,
+  c: PRIMITIVES.color.cyan,
+  r: PRIMITIVES.color.red,
+  p: PRIMITIVES.color.purple,
+  g: PRIMITIVES.color.green,
+  o: PRIMITIVES.color.orange,
   text: '#e8f2ff',
   muted: '#6e90b5',
 } as const;

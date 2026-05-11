@@ -26,7 +26,7 @@ export default function NavigationSection({ navConfig, updateNavConfig, collapse
           onChange={e => updateNavConfig({ showNavbar: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-slate-400">Navbar</span>
+        <span className="text-[9px] text-app-secondary">Navbar</span>
       </label>
 
       <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
@@ -36,7 +36,7 @@ export default function NavigationSection({ navConfig, updateNavConfig, collapse
           onChange={e => updateNavConfig({ showPrevNext: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-slate-400">Tombol Prev/Next</span>
+        <span className="text-[9px] text-app-secondary">Tombol Prev/Next</span>
       </label>
 
       <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
@@ -46,7 +46,7 @@ export default function NavigationSection({ navConfig, updateNavConfig, collapse
           onChange={e => updateNavConfig({ showScore: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-slate-400">Tampilkan Skor</span>
+        <span className="text-[9px] text-app-secondary">Tampilkan Skor</span>
       </label>
 
       <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
@@ -56,16 +56,16 @@ export default function NavigationSection({ navConfig, updateNavConfig, collapse
           onChange={e => updateNavConfig({ showProgress: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-slate-400">Progress Bar</span>
+        <span className="text-[9px] text-app-secondary">Progress Bar</span>
       </label>
 
       {/* Navbar style */}
       <div className="mt-1.5">
-        <label className="text-[9px] text-slate-500 block mb-1">Style Navbar</label>
+        <label className="text-[9px] text-app-muted block mb-1">Style Navbar</label>
         <select
           value={navConfig?.navbarStyle || 'colorful'}
           onChange={e => updateNavConfig({ navbarStyle: e.target.value as NavConfig['navbarStyle'] })}
-          className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+          className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
         >
           <option value="colorful">Colorful</option>
           <option value="minimal">Minimal</option>

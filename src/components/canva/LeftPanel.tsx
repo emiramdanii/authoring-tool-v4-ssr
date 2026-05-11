@@ -24,6 +24,7 @@ import {
 } from '@/lib/canva-icon-maps';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import PageTypeCreator from './PageTypeCreator';
+import { Button } from '@/components/ui/button';
 import LayerPanel from './left-panel/LayerPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
@@ -44,7 +45,7 @@ export default function LeftPanel() {
   return (
     <div className="w-full flex flex-col glass-panel overflow-hidden">
       {/* Tab bar — 2 tabs */}
-      <div className="glass-panel border-b border-slate-700/30">
+      <div className="glass-panel border-b border-app-border">
         <div className="flex">
           {TABS.map(tab => (
             <button
@@ -53,7 +54,7 @@ export default function LeftPanel() {
               className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-semibold transition-colors ${
                 leftTab === tab.id
                   ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-500/5'
-                  : 'text-slate-500 hover:text-slate-300 border-b-2 border-transparent'
+                  : 'text-app-muted hover:text-app-secondary border-b-2 border-transparent'
               }`}
               title={tab.label}
             >
@@ -72,10 +73,11 @@ export default function LeftPanel() {
       </div>
 
       {/* Bottom: Right Panel toggle */}
-      <div className="p-2 border-t border-slate-700/30">
-        <button
+      <div className="p-2 border-t border-app-border">
+        <Button
+          variant="ghost"
           onClick={toggleRightPanel}
-          className="btn-ghost w-full py-1.5 rounded-lg text-[9px] font-bold gap-1.5"
+          className="w-full py-1.5 rounded-lg text-[9px] font-bold gap-1.5"
         >
           {rightPanelOpen ? (
             <>
@@ -88,7 +90,7 @@ export default function LeftPanel() {
               <span>Tampilkan Panel Kanan</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -106,7 +108,7 @@ function HalamanContent() {
 
   return (
     <div className="space-y-3">
-      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Daftar Halaman</div>
+      <div className="text-[10px] font-bold text-app-secondary uppercase tracking-wider">Daftar Halaman</div>
 
       {/* Page list */}
       <div className="space-y-1.5">
@@ -153,7 +155,7 @@ function HalamanContent() {
                     ? 'ring-2 ring-amber-400/60 ring-offset-1 ring-offset-slate-950 translate-y-0.5'
                     : isActive
                       ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
-                      : 'hover:ring-1 hover:ring-slate-600'
+                      : 'hover:ring-1 hover:ring-app-border-strong'
               }`}
             >
               <div className="flex items-center gap-2 p-2">
@@ -167,13 +169,13 @@ function HalamanContent() {
                 </div>
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-bold text-slate-200 truncate flex items-center gap-1">
+                  <div className="text-[10px] font-bold text-app-primary truncate flex items-center gap-1">
                     {isSchemaDriven && <span className="text-emerald-400">⚡</span>}
                     {!isSchemaDriven && isTemplate && isPageLocked && <Lock size={8} className="text-amber-400 flex-shrink-0" />}
                     {!isSchemaDriven && isTemplate && !isPageLocked && <Unlock size={8} className="text-emerald-400 flex-shrink-0" />}
                     <span className="truncate">{badge.icon} {p.label}</span>
                   </div>
-                  <div className="text-[8px] text-slate-500">
+                  <div className="text-[8px] text-app-muted">
                     {isSchemaDriven && (
                       <span className="text-emerald-400/70">Schema</span>
                     )}
@@ -200,7 +202,7 @@ function HalamanContent() {
       {/* Add page button */}
       <button
         onClick={() => { useCanvaStore.getState().addPage(); }}
-        className="w-full py-2 rounded-xl border border-dashed border-slate-600 hover:border-amber-500/30 text-[11px] text-slate-400 hover:text-amber-400 transition-colors flex items-center justify-center gap-1"
+        className="w-full py-2 rounded-xl border border-dashed border-app-border hover:border-amber-500/30 text-[11px] text-app-secondary hover:text-amber-400 transition-colors flex items-center justify-center gap-1"
       >
         <Plus size={12} />
         Halaman Kosong
@@ -208,30 +210,32 @@ function HalamanContent() {
 
       {/* Action buttons */}
       <div className="flex gap-1">
-        <button
+        <Button
+          variant="ghost"
           onClick={duplicatePage}
-          className="btn-ghost flex-1 py-1.5 rounded-lg text-[10px] gap-1"
+          className="flex-1 py-1.5 rounded-lg text-[10px] gap-1"
         >
           <Copy size={10} />
           Duplikat
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => {
             if (pages.length <= 1) return;
             if (confirm(`Hapus "${pages[currentPageIndex].label}"?`)) deletePage();
           }}
-          className="btn-ghost flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-red-400/70 hover:text-red-400 hover:bg-red-500/10"
+          className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-red-400/70 hover:text-red-400 hover:bg-red-500/10"
         >
           <Trash2 size={10} />
           Hapus
-        </button>
+        </Button>
       </div>
 
       <div className="section-divider" />
 
       {/* Rasio */}
       <div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">📐 Rasio: {ratioId}</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">📐 Rasio: {ratioId}</div>
         <div className="flex flex-wrap gap-1.5">
           {RATIOS.map(r => {
             const isActive = ratioId === r.id;
@@ -242,7 +246,7 @@ function HalamanContent() {
                 className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
                   isActive
                     ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
-                    : 'bg-slate-800/40 border border-slate-700/20 text-slate-400 hover:border-slate-600'
+                    : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
                 }`}
               >
                 {r.name}
@@ -342,7 +346,7 @@ function TambahContent() {
 
       {/* ── Jenis Halaman ── */}
       <div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Jenis Halaman</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">Jenis Halaman</div>
         <select
           onChange={(e) => {
             const val = e.target.value;
@@ -350,7 +354,7 @@ function TambahContent() {
             e.target.value = '';
           }}
           defaultValue=""
-          className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none"
+          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none"
         >
           <option value="" disabled>+ Tambah dari Template...</option>
           {presetCategories.map(cat => (
@@ -370,7 +374,7 @@ function TambahContent() {
 
       {/* ── Tambah Modul ── */}
       <div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">🧩 Tambah Modul</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">🧩 Tambah Modul</div>
         {isTemplatePage && isPageLocked && (
           <div className="text-[8px] text-amber-400/70 mb-2 px-2 py-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
             Modul ditambahkan sebagai overlay di atas template
@@ -402,7 +406,7 @@ function TambahContent() {
             })}
           </div>
         ) : (
-          <div className="text-[9px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">
+          <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
             Belum ada modul. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-emerald-400 underline">Tambah di panel Konten → Modul</button>
           </div>
         )}
@@ -412,7 +416,7 @@ function TambahContent() {
 
       {/* ── Tambah Game ── */}
       <div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">🎮 Tambah Game</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">🎮 Tambah Game</div>
         {games.length > 0 ? (
           <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
             {games.map((g, i) => {
@@ -434,7 +438,7 @@ function TambahContent() {
             })}
           </div>
         ) : (
-          <div className="text-[9px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">
+          <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
             Belum ada game. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
           </div>
         )}
@@ -444,7 +448,7 @@ function TambahContent() {
 
       {/* ── Kuis Interaktif ── */}
       <div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">❓ Kuis ({kuis.length} soal)</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">❓ Kuis ({kuis.length} soal)</div>
         {kuis.length > 0 ? (
           <button
             onClick={() => addElement('kuis')}
@@ -459,7 +463,7 @@ function TambahContent() {
             <Plus size={14} className="text-amber-400" />
           </button>
         ) : (
-          <div className="text-[9px] text-slate-500 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20">
+          <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
             Belum ada soal kuis. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-amber-400 underline">Isi di panel Konten → Evaluasi</button>
           </div>
         )}
@@ -469,7 +473,7 @@ function TambahContent() {
 
       {/* ── Elemen Dasar ── */}
       <div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Elemen Dasar</div>
+        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">Elemen Dasar</div>
         <div className="grid grid-cols-3 gap-2">
           {[
             { id: 'teks', icon: '🔤', name: 'Teks', note: 'Teks bebas', color: '#e2e8f0' },
@@ -479,12 +483,12 @@ function TambahContent() {
             <button
               key={t.id}
               onClick={() => addElement(t.id)}
-              className="card-hover accent-top flex flex-col items-center gap-1 p-3 rounded-xl bg-slate-800/40 border border-slate-700/20 cursor-pointer active:scale-95"
+              className="card-hover accent-top flex flex-col items-center gap-1 p-3 rounded-xl bg-app-elevated border border-app-border-subtle cursor-pointer active:scale-95"
               style={{ '--accent-color': t.color } as React.CSSProperties}
             >
               <span className="text-2xl">{t.icon}</span>
-              <span className="text-[11px] font-bold text-slate-200">{t.name}</span>
-              <span className="text-[9px] text-slate-500">{t.note}</span>
+              <span className="text-[11px] font-bold text-app-primary">{t.name}</span>
+              <span className="text-[9px] text-app-muted">{t.note}</span>
             </button>
           ))}
         </div>
@@ -499,7 +503,7 @@ function TambahContent() {
             resetCanvas();
           }
         }}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/40 border border-slate-700/20 hover:border-red-500/30 text-slate-400 hover:text-red-400 text-[11px] font-bold transition-all active:scale-95"
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-app-elevated border border-app-border-subtle hover:border-red-500/30 text-app-secondary hover:text-red-400 text-[11px] font-bold transition-all active:scale-95"
       >
         <span>🔄</span>
         <span>Reset Canvas</span>

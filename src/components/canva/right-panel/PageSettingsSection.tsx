@@ -8,6 +8,7 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { getAllPresets } from '@/core/preset/PagePresetRegistry';
 import { toast } from 'sonner';
 import Section from './Section';
+import { Button } from '@/components/ui/button';
 
 interface PageSettingsSectionProps {
   page: CanvaPage | undefined;
@@ -317,7 +318,8 @@ export default function PageSettingsSection({
           </div>
 
           {/* Refresh Data button — confirms if overlay elements exist */}
-          <button
+          <Button
+            variant="outline"
             onClick={() => {
               const hasOverlays = (page.overlayElements?.length || 0) > 0;
               if (hasOverlays) {
@@ -333,11 +335,11 @@ export default function PageSettingsSection({
               store.setTemplateType(page.templateType);
               toast.success('Data template diperbarui dari panel authoring');
             }}
-            className="btn-accent w-full justify-center py-2 mb-2"
+            className="w-full justify-center py-2 mb-2 text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35"
           >
             <Zap size={12} />
             Refresh Data dari Authoring
-          </button>
+          </Button>
 
           {/* Quick edit for common template fields */}
           {page.templateData && (
