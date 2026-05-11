@@ -2,6 +2,7 @@ import type { LessonSchema } from '@/core/schema/types';
 
 export const HAKIKAT_NORMA_LESSON: LessonSchema = {
   id: 'hakikat-norma',
+  version: 1,
   title: 'Hakikat Norma',
   mapel: 'PPKn',
   kelas: 'VII',

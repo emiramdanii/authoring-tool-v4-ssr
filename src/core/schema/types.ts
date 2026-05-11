@@ -388,6 +388,8 @@ export type SchemaBlock =
 export interface ScreenSchema {
   /** Unique screen ID */
   id: string;
+  /** Schema version for future migration tracking */
+  version?: number;
   /** Maps to PageTemplateType */
   templateType: string;
   /** Section label chip */
@@ -419,6 +421,8 @@ export interface ScreenSchema {
 export interface LessonSchema {
   /** Lesson ID */
   id: string;
+  /** Schema version for future migration tracking — start at 1 */
+  version: number;
   /** Lesson title */
   title: string;
   /** Subject */

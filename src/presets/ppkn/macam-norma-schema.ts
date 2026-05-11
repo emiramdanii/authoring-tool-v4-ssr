@@ -2,6 +2,7 @@ import type { LessonSchema } from '@/core/schema/types';
 
 export const MACAM_NORMA_LESSON: LessonSchema = {
   id: 'macam-norma',
+  version: 1,
   title: 'Macam-Macam Norma',
   mapel: 'PPKn',
   kelas: 'VII',

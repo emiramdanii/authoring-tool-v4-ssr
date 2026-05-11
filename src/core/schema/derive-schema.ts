@@ -129,6 +129,7 @@ export function deriveSchema(
 
   return {
     id: existingSchema?.id || '', // Will be set by caller with page.id
+    version: existingSchema?.version ?? 1,
     templateType,
     sectionLabel: getSectionLabel(templateType),
     sectionColor: getSectionColor(templateType),

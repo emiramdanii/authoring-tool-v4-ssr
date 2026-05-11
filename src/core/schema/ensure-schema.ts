@@ -85,7 +85,7 @@ export function findBlockInPage(page: CanvaPage, blockId: string): SchemaBlock |
  * that survive across sessions (unlike Date.now() or position-based IDs).
  */
 function assignStableIds(schema: ScreenSchema): ScreenSchema {
-  let needsUpdate = false;
+  let needsUpdate = !schema.version; // Migrate: add version if missing
 
   const blocks = schema.blocks.map((block, idx) => {
     if (!block.id || isUnstableId(block.id)) {
@@ -97,7 +97,7 @@ function assignStableIds(schema: ScreenSchema): ScreenSchema {
 
   if (!needsUpdate) return schema;
 
-  return { ...schema, blocks };
+  return { ...schema, blocks, version: schema.version ?? 1 };
 }
 
 /**

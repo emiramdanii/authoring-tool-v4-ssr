@@ -17,6 +17,7 @@ import { createAutoGenerateSlice } from './auto-generate';
 import { createSyncSlice, startAutoSync } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
 import { createSchemaPresetSlice } from './schema-preset-slice';
+import { connectHistoryToEditBus } from '@/core/editor/patch-history';
 
 export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
   const set = a[0];
@@ -75,4 +76,10 @@ export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
 // sync the canva store's templateData so canvas stays up-to-date.
 if (typeof window !== 'undefined') {
   startAutoSync(() => useCanvaStore.getState().syncTemplateData());
+
+  // ── Patch-based undo/redo: Wire editBus → PatchHistory ──
+  // Every schema block edit emits immer patches via editBus.
+  // PatchHistory records forward + inverse patches so undo/redo
+  // can apply granular patches instead of full state snapshots.
+  connectHistoryToEditBus();
 }
