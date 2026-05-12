@@ -30,7 +30,7 @@ export default function PlayOverlay() {
   if (!isPlaying) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900 flex flex-col select-none" style={{ zIndex: 70 }}>
+    <div className="fixed inset-0 bg-app-surface flex flex-col select-none" style={{ zIndex: 70 }}>
       {/* Top bar */}
       <PlayOverlayHeader />
 
@@ -55,12 +55,12 @@ function PlayOverlayHeader() {
   const hasScore = totalMaxVal > 0;
 
   return (
-    <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-slate-700/50">
+    <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-app-border/50">
       <div className="flex items-center gap-3">
         <Gamepad2 size={14} className="text-emerald-400" />
         <span className="text-xs font-bold text-emerald-400">Mode Interaktif</span>
-        <span className="text-[10px] text-slate-600">•</span>
-        <span className="text-[10px] text-slate-200 font-semibold truncate max-w-[200px]">
+        <span className="text-[10px] text-app-muted">•</span>
+        <span className="text-[10px] text-app-primary font-semibold truncate max-w-[200px]">
           {page?.label || `Halaman ${interactivePageIdx + 1}`}
         </span>
       </div>
@@ -73,7 +73,7 @@ function PlayOverlayHeader() {
           </div>
         )}
 
-        <div className="hidden sm:flex items-center gap-2 text-[10px] text-slate-500">
+        <div className="hidden sm:flex items-center gap-2 text-[10px] text-app-muted">
           <span>← → navigasi</span>
           <span>F fullscreen</span>
           <span>O overview</span>
@@ -184,7 +184,7 @@ function PlayCanvas() {
   if (!page) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <div className="text-slate-500 text-sm">Tidak ada halaman</div>
+        <div className="text-app-muted text-sm">Tidak ada halaman</div>
       </div>
     );
   }
@@ -197,7 +197,7 @@ function PlayCanvas() {
   return (
     <div ref={canvasRef} className="w-full h-full flex items-center justify-center relative">
       <div
-        className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-slate-700/30"
+        className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
         style={{
           width: ratio.w,
           height: ratio.h,
@@ -273,13 +273,13 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
   return (
     <div className="w-full h-full overflow-auto p-6">
       <div className="text-center mb-4">
-        <div className="text-sm font-bold text-slate-200">Overview — {pages.length} Halaman</div>
+        <div className="text-sm font-bold text-app-primary">Overview — {pages.length} Halaman</div>
         {totalMaxVal > 0 && (
           <div className="text-[10px] text-emerald-400/60 mt-1">
             Skor: {totalScoreVal}/{totalMaxVal} ({totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0}%)
           </div>
         )}
-        <div className="text-[9px] text-slate-500 mt-1">Klik halaman untuk navigasi • Tekan O atau Esc untuk tutup</div>
+        <div className="text-[9px] text-app-muted mt-1">Klik halaman untuk navigasi • Tekan O atau Esc untuk tutup</div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
         {pages.map((p, i) => {
@@ -297,7 +297,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
               className={`relative rounded-xl overflow-hidden transition-all hover:scale-105 ${
                 isActive
                   ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
-                  : 'ring-1 ring-slate-700/40 hover:ring-slate-500/60'
+                  : 'ring-1 ring-app-border/40 hover:ring-app-border/60'
               }`}
               style={{ aspectRatio: `${ratio.w}/${ratio.h}` }}
             >

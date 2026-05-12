@@ -45,7 +45,7 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
         {schema.properties
           .filter(p => p.type === 'variant')
           .map(field => renderField(field, b, onUpdate))}
-        <div className="text-[9px] text-slate-500 italic px-1">
+        <div className="text-[9px] text-app-muted italic px-1">
           {schema.redirectNote}
         </div>
       </div>

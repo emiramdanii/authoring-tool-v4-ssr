@@ -13,21 +13,21 @@ export function FlashcardEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Kartu ({kartu.length})</FieldLabel>
         {kartu.map((k, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 grid grid-cols-3 gap-2 items-start">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 grid grid-cols-3 gap-2 items-start">
             <div>
-              <span className="text-[10px] text-zinc-500 block mb-1">Depan</span>
+              <span className="text-[10px] text-app-muted block mb-1">Depan</span>
               <input className={INPUT_CLS} value={(k.depan as string) || ''} onChange={(e) => ui!('kartu', i, 'depan', e.target.value)} placeholder="Pertanyaan" />
             </div>
             <div>
-              <span className="text-[10px] text-zinc-500 block mb-1">Belakang</span>
+              <span className="text-[10px] text-app-muted block mb-1">Belakang</span>
               <input className={INPUT_CLS} value={(k.belakang as string) || ''} onChange={(e) => ui!('kartu', i, 'belakang', e.target.value)} placeholder="Jawaban" />
             </div>
             <div className="flex items-end gap-2">
               <div className="flex-1">
-                <span className="text-[10px] text-zinc-500 block mb-1">Hint</span>
+                <span className="text-[10px] text-app-muted block mb-1">Hint</span>
                 <input className={INPUT_CLS} value={(k.hint as string) || ''} onChange={(e) => ui!('kartu', i, 'hint', e.target.value)} placeholder="💡" />
               </div>
-              <button onClick={() => ri!('kartu', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 h-[38px]">✕</button>
+              <button onClick={() => ri!('kartu', i)} className="text-app-muted hover:text-red-400 text-sm p-1 h-[38px]">✕</button>
             </div>
           </div>
         ))}

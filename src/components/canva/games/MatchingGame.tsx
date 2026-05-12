@@ -113,7 +113,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
               className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-all ${
                 matchedLeft.has(i) ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 line-through opacity-60' :
                 selectedLeft === i ? 'bg-cyan-500/30 border-cyan-400/50 text-cyan-200' :
-                'bg-white/5 hover:bg-white/10 border-white/10 text-cyan-200 cursor-pointer'
+                'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10 text-cyan-200 cursor-pointer'
               }`}>
               {p.kiri as string}
             </button>
@@ -126,7 +126,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
               className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-all ${
                 matchedRight.has(r.idx) ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 line-through opacity-60' :
                 wrongRightIdx === r.idx ? 'bg-red-500/30 border-red-400/40 text-red-300' :
-                'bg-white/5 hover:bg-white/10 border-white/10 text-cyan-200 cursor-pointer'
+                'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10 text-cyan-200 cursor-pointer'
               }`}>
               {r.text}
             </button>

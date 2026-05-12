@@ -78,11 +78,11 @@ function PoinEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
         <div className="space-y-2">
           {butir.map((b, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-zinc-500 text-sm flex-shrink-0">•</span>
+              <span className="text-app-muted text-sm flex-shrink-0">•</span>
               <input className={INPUT_CLS} placeholder={`Poin ${i + 1}…`} value={b} onChange={(e) => updateButir(i, e.target.value)} />
               <button
                 onClick={() => removeButir(i)}
-                className="text-zinc-600 hover:text-red-400 transition-colors flex-shrink-0 text-sm p-1"
+                className="text-app-muted hover:text-red-400 transition-colors flex-shrink-0 text-sm p-1"
                 title="Hapus poin"
               >
                 ✕
@@ -143,7 +143,7 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
       </div>
       <div>
         <FieldLabel>Isi Tabel</FieldLabel>
-        <div className="overflow-x-auto rounded-lg border border-zinc-700">
+        <div className="overflow-x-auto rounded-lg border border-app-border">
           <table className="w-full text-sm">
             <tbody>
               {baris.map((row, r) => (
@@ -151,7 +151,7 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
                   {row.map((cell, c) => (
                     <td key={c} className="p-0.5">
                       <input
-                        className="w-full bg-zinc-800 border border-zinc-700/50 rounded px-2 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500/50 min-w-[100px]"
+                        className="w-full bg-app-elevated border border-app-border/50 rounded px-2 py-1.5 text-xs text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-1 focus:ring-amber-500/50 min-w-[100px]"
                         placeholder={r === 0 ? `Kolom ${c + 1}` : ''}
                         value={cell}
                         onChange={(e) => updateCell(r, c, e.target.value)}
@@ -170,10 +170,10 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
           <button onClick={addCol} className="text-xs text-amber-500 hover:text-amber-400 transition-colors">
             ＋ Tambah Kolom
           </button>
-          <button onClick={() => removeRow(baris.length - 1)} className="text-xs text-zinc-500 hover:text-red-400 transition-colors">
+          <button onClick={() => removeRow(baris.length - 1)} className="text-xs text-app-muted hover:text-red-400 transition-colors">
             － Hapus Baris
           </button>
-          <button onClick={removeCol} className="text-xs text-zinc-500 hover:text-red-400 transition-colors">
+          <button onClick={removeCol} className="text-xs text-app-muted hover:text-red-400 transition-colors">
             － Hapus Kolom
           </button>
         </div>
@@ -214,7 +214,7 @@ function GambarEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
         <input className={INPUT_CLS} placeholder="https://contoh.com/gambar.png" value={url} onChange={(e) => update(idx, 'isi', e.target.value)} />
       </div>
       {url && (
-        <div className="rounded-lg border border-zinc-700 overflow-hidden bg-zinc-800/50">
+        <div className="rounded-lg border border-app-border overflow-hidden bg-app-elevated/50">
           <img
             src={url}
             alt={blok.judul || 'Pratinjau gambar'}
@@ -267,11 +267,11 @@ function TimelineEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
         <FieldLabel>Langkah-langkah</FieldLabel>
         <div className="space-y-3">
           {langkah.map((l, i) => (
-            <div key={i} className="relative pl-6 border-l-2 border-zinc-700 ml-2 pb-1">
-              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-zinc-700 border-2 border-zinc-600" />
+            <div key={i} className="relative pl-6 border-l-2 border-app-border ml-2 pb-1">
+              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-app-elevated border-2 border-app-border" />
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-zinc-500 w-12 flex-shrink-0">Ikon</span>
+                  <span className="text-xs text-app-muted w-12 flex-shrink-0">Ikon</span>
                   <input
                     className={`${INPUT_CLS} w-24`}
                     value={l.icon}
@@ -293,7 +293,7 @@ function TimelineEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
                   onChange={(e) => updateLangkah(i, 'isi', e.target.value)}
                 />
                 {langkah.length > 1 && (
-                  <button onClick={() => removeLangkah(i)} className="text-xs text-zinc-600 hover:text-red-400 transition-colors">
+                  <button onClick={() => removeLangkah(i)} className="text-xs text-app-muted hover:text-red-400 transition-colors">
                     Hapus langkah
                   </button>
                 )}
@@ -328,11 +328,11 @@ function HighlightEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
           <div className="flex items-center gap-2">
             <input
               type="color"
-              className="w-8 h-8 rounded cursor-pointer border border-zinc-700 bg-transparent"
+              className="w-8 h-8 rounded cursor-pointer border border-app-border bg-transparent"
               value={blok.warna || '#f9c82e'}
               onChange={(e) => update(idx, 'warna', e.target.value)}
             />
-            <span className="text-xs text-zinc-500 font-mono">{blok.warna || '#f9c82e'}</span>
+            <span className="text-xs text-app-muted font-mono">{blok.warna || '#f9c82e'}</span>
           </div>
         </div>
       </div>
@@ -402,7 +402,7 @@ function InfoboxEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                 currentStyle === s.id
                   ? 'border-current'
-                  : 'border-zinc-700/50 opacity-60 hover:opacity-100'
+                  : 'border-app-border/50 opacity-60 hover:opacity-100'
               }`}
               style={{
                 backgroundColor: s.color + (currentStyle === s.id ? '25' : '10'),
@@ -462,13 +462,13 @@ function ChecklistEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
         <div className="space-y-2">
           {butir.map((b, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="w-4 h-4 flex-shrink-0 rounded border border-zinc-600 flex items-center justify-center text-[10px] text-zinc-500">
+              <span className="w-4 h-4 flex-shrink-0 rounded border border-app-border flex items-center justify-center text-[10px] text-app-muted">
                 {i + 1}
               </span>
               <input className={INPUT_CLS} placeholder={`Item ${i + 1}…`} value={b} onChange={(e) => updateButir(i, e.target.value)} />
               <button
                 onClick={() => removeButir(i)}
-                className="text-zinc-600 hover:text-red-400 transition-colors flex-shrink-0 text-sm p-1"
+                className="text-app-muted hover:text-red-400 transition-colors flex-shrink-0 text-sm p-1"
                 title="Hapus item"
               >
                 ✕
@@ -519,7 +519,7 @@ function StatistikEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
         <FieldLabel>Item Statistik</FieldLabel>
         <div className="space-y-3">
           {items.map((item, i) => (
-            <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 space-y-2">
+            <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 space-y-2">
               <div className="flex items-center gap-2">
                 <input className={`${INPUT_CLS} w-16`} placeholder="📊" value={item.icon || ''} onChange={(e) => updateItem(i, 'icon', e.target.value)} />
                 <input className={INPUT_CLS} placeholder="Angka (contoh: 85%)" value={item.angka || ''} onChange={(e) => updateItem(i, 'angka', e.target.value)} />
@@ -530,12 +530,12 @@ function StatistikEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <input
                     type="color"
-                    className="w-7 h-7 rounded cursor-pointer border border-zinc-700 bg-transparent"
+                    className="w-7 h-7 rounded cursor-pointer border border-app-border bg-transparent"
                     value={item.warna || '#3ecfcf'}
                     onChange={(e) => updateItem(i, 'warna', e.target.value)}
                   />
                   {items.length > 1 && (
-                    <button onClick={() => removeItem(i)} className="text-zinc-600 hover:text-red-400 transition-colors text-sm p-1">
+                    <button onClick={() => removeItem(i)} className="text-app-muted hover:text-red-400 transition-colors text-sm p-1">
                       ✕
                     </button>
                   )}
@@ -597,6 +597,6 @@ export function BlockEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
     case 'checklist': return <ChecklistEditor blok={blok} idx={idx} />;
     case 'statistik': return <StatistikEditor blok={blok} idx={idx} />;
     case 'studi':     return <StudiEditor blok={blok} idx={idx} />;
-    default:          return <div className="text-sm text-zinc-500">Tipe blok tidak dikenali: {blok.tipe}</div>;
+    default:          return <div className="text-sm text-app-muted">Tipe blok tidak dikenali: {blok.tipe}</div>;
   }
 }

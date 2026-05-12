@@ -170,7 +170,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
       <div className="px-1.5 pb-1.5 space-y-1">
         {q.opts.map((opt, idx) => {
           if (!opt.trim()) return null;
-          let bg = 'bg-white/5 hover:bg-white/10 border-white/10';
+          let bg = 'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10';
           let textCol = 'text-amber-100/90';
           let icon: React.ReactNode = null;
 
@@ -184,7 +184,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
               textCol = 'text-red-300';
               icon = <XCircle size={12} className="inline ml-1" />;
             } else {
-              bg = 'bg-white/[.02] border-white/5';
+              bg = 'bg-white/[.02] border-app-border/5';
               textCol = 'text-white/30';
             }
           }

@@ -27,7 +27,7 @@ export function HeroEditor({ mod, uf }: EdProps) {
         <FieldLabel>Gradient Tema</FieldLabel>
         <div className="flex flex-wrap gap-2">
           {gradients.map((g) => (
-            <button key={g.id} onClick={() => uf('gradient', g.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${(mod.gradient as string) === g.id ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-zinc-700/50 text-zinc-400 hover:border-zinc-500'}`}>
+            <button key={g.id} onClick={() => uf('gradient', g.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${(mod.gradient as string) === g.id ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-app-border/50 text-app-secondary hover:border-app-border'}`}>
               {g.label}
             </button>
           ))}

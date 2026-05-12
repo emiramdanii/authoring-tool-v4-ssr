@@ -161,9 +161,9 @@ function HalamanContent() {
                 dragIdx === i
                   ? 'opacity-40 scale-95'
                   : dragOverIdx === i
-                    ? 'ring-2 ring-amber-400/60 ring-offset-1 ring-offset-slate-950 translate-y-0.5'
+                    ? 'ring-2 ring-amber-400/60 ring-offset-1 ring-offset-app-surface translate-y-0.5'
                     : isActive
-                      ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
+                      ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-app-surface'
                       : 'hover:ring-1 hover:ring-app-border-strong'
               }`}
             >

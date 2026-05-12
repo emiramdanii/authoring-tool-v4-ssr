@@ -18,13 +18,13 @@ export function StudiKasusEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Pertanyaan Analisis ({pertanyaan.length})</FieldLabel>
         {pertanyaan.map((p, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <div className="flex items-center gap-2">
               <select className={`${SELECT_CLS} w-20`} value={(p.level as string) || 'C1'} onChange={(e) => ui!('pertanyaan', i, 'level', e.target.value)}>
                 {bloomLevels.map((l) => <option key={l} value={l}>{l}</option>)}
               </select>
               <input className={INPUT_CLS} placeholder="Label pertanyaan…" value={(p.label as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'label', e.target.value)} />
-              <button onClick={() => ri!('pertanyaan', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+              <button onClick={() => ri!('pertanyaan', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Teks pertanyaan…" value={(p.teks as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'teks', e.target.value)} />
           </div>

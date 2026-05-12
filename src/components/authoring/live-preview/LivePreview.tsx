@@ -132,9 +132,9 @@ export default function LivePreview() {
   // ══════════════════════════════════════════════════════════════
 
   return (
-    <div className="h-full flex flex-col bg-slate-900">
+    <div className="h-full flex flex-col bg-app-surface">
       {/* ══ TOOLBAR ══════════════════════════════════════════════ */}
-      <div className="flex-shrink-0 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 px-3 py-2 flex items-center gap-2 flex-wrap">
+      <div className="flex-shrink-0 bg-app-surface/95 backdrop-blur-md border-b border-app-border px-3 py-2 flex items-center gap-2 flex-wrap">
 
         {/* ── Back button (default to Canva) ──────────────────── */}
         <button
@@ -146,32 +146,32 @@ export default function LivePreview() {
           <span className="hidden sm:inline">Canva</span>
         </button>
 
-        <div className="w-px h-5 bg-zinc-700/50" />
+        <div className="w-px h-5 bg-app-elevated/50" />
 
         {/* ── Quick navigation ─────────────────────────────────── */}
         <button
           onClick={() => setActivePanel('dashboard')}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Dashboard"
         >
           <Home size={13} />
         </button>
         <button
           onClick={() => setActivePanel('dokumen')}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Edit Dokumen (CP/TP/ATP)"
         >
           <FileText size={13} />
         </button>
         <button
           onClick={() => setActivePanel('konten')}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Edit Konten (Kuis/Game/Materi)"
         >
           <BookOpen size={13} />
         </button>
 
-        <div className="w-px h-5 bg-zinc-700/50" />
+        <div className="w-px h-5 bg-app-elevated/50" />
 
         {/* ── Mode selector dropdown ──────────────────────────── */}
         <div className="relative" ref={modeRef}>
@@ -184,7 +184,7 @@ export default function LivePreview() {
             <ChevronDown size={10} className={`transition-transform ${modeOpen ? 'rotate-180' : ''}`} />
           </button>
           {modeOpen && (
-            <div className="absolute top-full left-0 mt-1 w-48 rounded-xl bg-zinc-900 border border-zinc-700/50 shadow-xl z-50 overflow-hidden">
+            <div className="absolute top-full left-0 mt-1 w-48 rounded-xl bg-app-surface border border-app-border/50 shadow-xl z-50 overflow-hidden">
               {([
                 { id: 'unified' as PreviewMode, icon: '🚀', label: 'Unified', desc: 'Navigasi pintar + game + layout', disabled: false },
                 { id: 'schema' as PreviewMode, icon: '⚡', label: 'Schema', desc: 'Schema-driven JSON → React (baru!)', disabled: !activePreset },
@@ -205,14 +205,14 @@ export default function LivePreview() {
                     m.disabled
                       ? 'opacity-40 cursor-not-allowed'
                       : previewMode === m.id
-                        ? 'bg-zinc-800/60'
-                        : 'hover:bg-zinc-800/40'
+                        ? 'bg-app-elevated/60'
+                        : 'hover:bg-app-elevated/40'
                   }`}
                 >
                   <span className="text-base">{m.icon}</span>
                   <div>
-                    <div className="text-[11px] text-zinc-200 font-semibold">{m.label}</div>
-                    <div className="text-[9px] text-zinc-500">{m.desc}</div>
+                    <div className="text-[11px] text-app-primary font-semibold">{m.label}</div>
+                    <div className="text-[9px] text-app-muted">{m.desc}</div>
                   </div>
                   {previewMode === m.id && (
                     <span className="ml-auto text-emerald-400 text-[10px]">✓</span>
@@ -228,14 +228,14 @@ export default function LivePreview() {
           <div className="relative" ref={themeRef}>
             <button
               onClick={() => setThemeOpen(!themeOpen)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 border border-zinc-700/50 text-zinc-300 hover:bg-zinc-700/60 transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-app-elevated border border-app-border/50 text-app-secondary hover:bg-app-elevated/60 transition-colors"
             >
               {LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.icon}{' '}
               {LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.label}
               <ChevronDown size={10} className={`transition-transform ${themeOpen ? 'rotate-180' : ''}`} />
             </button>
             {themeOpen && (
-              <div className="absolute top-full left-0 mt-1 w-44 rounded-xl bg-zinc-900 border border-zinc-700/50 shadow-xl z-50 overflow-hidden">
+              <div className="absolute top-full left-0 mt-1 w-44 rounded-xl bg-app-surface border border-app-border/50 shadow-xl z-50 overflow-hidden">
                 {LAYOUT_THEMES.map((t) => (
                   <button
                     key={t.id}
@@ -246,8 +246,8 @@ export default function LivePreview() {
                     }}
                     className={`w-full px-3 py-2 flex items-center gap-2 transition-colors ${
                       layoutTheme === t.id
-                        ? 'bg-zinc-800/60 text-zinc-100'
-                        : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200'
+                        ? 'bg-app-elevated/60 text-app-primary'
+                        : 'text-app-secondary hover:bg-app-elevated/40 hover:text-app-primary'
                     }`}
                   >
                     <span>{t.icon}</span>
@@ -263,10 +263,10 @@ export default function LivePreview() {
         )}
 
         {/* ── Divider ─────────────────────────────────────────── */}
-        <div className="w-px h-5 bg-zinc-700/50" />
+        <div className="w-px h-5 bg-app-elevated/50" />
 
         {/* ── Device mode buttons ─────────────────────────────── */}
-        <div className="flex items-center gap-0.5 bg-zinc-800 rounded-lg p-0.5">
+        <div className="flex items-center gap-0.5 bg-app-elevated rounded-lg p-0.5">
           {DEVICE_MODES.map((mode) => {
             const Icon = mode.icon;
             return (
@@ -276,7 +276,7 @@ export default function LivePreview() {
                 className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
                   deviceMode === mode.id
                     ? 'bg-emerald-500/15 text-emerald-400'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
+                    : 'text-app-secondary hover:text-app-primary hover:bg-app-elevated'
                 }`}
                 title={mode.label}
               >
@@ -295,7 +295,7 @@ export default function LivePreview() {
             <select
               value={activeSlide}
               onChange={(e) => handleSlideSelect(Number(e.target.value))}
-              className="bg-zinc-800 border border-zinc-700/50 text-zinc-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer"
+              className="bg-app-elevated border border-app-border/50 text-app-primary text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer"
             >
               {Array.from({ length: slideCount }, (_, i) => (
                 <option key={i} value={i}>
@@ -303,7 +303,7 @@ export default function LivePreview() {
                 </option>
               ))}
             </select>
-            <span className="text-[0.65rem] text-zinc-600">
+            <span className="text-[0.65rem] text-app-muted">
               {slideCount} halaman
             </span>
           </div>
@@ -311,7 +311,7 @@ export default function LivePreview() {
           <select
             value={activeScreen}
             onChange={(e) => handleScreenSelect(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700/50 text-zinc-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer"
+            className="bg-app-elevated border border-app-border/50 text-app-primary text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer"
           >
             {SCREEN_OPTIONS.map((s) => (
               <option key={s.id} value={s.id}>
@@ -342,7 +342,7 @@ export default function LivePreview() {
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${
               htmlContent
                 ? 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30'
-                : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed border border-transparent'
+                : 'bg-app-elevated/50 text-app-muted cursor-not-allowed border border-transparent'
             }`}
             title="Export HTML — download file siap pakai"
           >
@@ -356,8 +356,8 @@ export default function LivePreview() {
             disabled={!htmlContent}
             className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${
               htmlContent
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'
-                : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
+                ? 'bg-app-elevated text-app-secondary hover:bg-app-elevated hover:text-app-primary'
+                : 'bg-app-elevated/50 text-app-muted cursor-not-allowed'
             }`}
             title="Buka di tab baru"
           >
@@ -372,7 +372,7 @@ export default function LivePreview() {
             className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${
               building
                 ? 'bg-amber-500/10 text-amber-400 cursor-wait'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                : 'bg-app-elevated text-app-secondary hover:bg-app-elevated hover:text-app-primary'
             }`}
             title="Force rebuild preview"
           >
@@ -395,30 +395,30 @@ export default function LivePreview() {
                 dirty ? 'bg-amber-400' : 'bg-emerald-500'
               }`}
             />
-            <span className="text-[0.6rem] text-zinc-500">
+            <span className="text-[0.6rem] text-app-muted">
               {dirty ? 'Ada perubahan' : 'Up to date'}
             </span>
           </div>
 
           {/* Last build time */}
           {buildTimeStr && (
-            <span className="text-[0.6rem] text-zinc-600 hidden lg:inline">
+            <span className="text-[0.6rem] text-app-muted hidden lg:inline">
               {buildTimeStr}
             </span>
           )}
 
-          <span className="text-[0.6rem] text-zinc-600 hidden xl:inline">
+          <span className="text-[0.6rem] text-app-muted hidden xl:inline">
             Auto-refresh 500ms
           </span>
         </div>
       </div>
 
       {/* ══ PREVIEW AREA ═════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-slate-900">
+      <div className="flex-1 flex flex-col overflow-hidden bg-app-surface">
         {/* Banner */}
-        <div className="flex-shrink-0 w-full bg-gradient-to-r from-emerald-600/90 to-cyan-600/90 text-white text-xs font-bold px-4 py-1.5 flex items-center gap-2 z-10">
+        <div className="flex-shrink-0 w-full bg-gradient-to-r from-emerald-600/90 to-cyan-600/90 text-app-primary text-xs font-bold px-4 py-1.5 flex items-center gap-2 z-10">
           <span className="flex items-center gap-1.5">
-            <span className="bg-white/20 rounded px-1.5 py-0.5 text-[0.6rem]">
+            <span className="bg-app-elevated/20 rounded px-1.5 py-0.5 text-[0.6rem]">
               <Eye size={10} className="inline -mt-0.5" />
             </span>
             <span>LIVE PREVIEW</span>
@@ -427,12 +427,12 @@ export default function LivePreview() {
             — Tampilan persis seperti yang dilihat siswa
           </span>
           <span className="ml-auto flex items-center gap-2">
-            <span className="bg-white/20 rounded px-2 py-0.5 text-[0.6rem]">
+            <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
               {currentModeMeta.icon} {currentModeMeta.label}
               {previewMode === 'template' && layoutTheme !== 'default' && ` · ${LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.icon} ${layoutTheme}`}
             </span>
             {deviceMode !== 'desktop' && (
-              <span className="bg-white/20 rounded px-2 py-0.5 text-[0.6rem]">
+              <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
                 {currentDevice.icon && <currentDevice.icon size={10} className="inline -mt-0.5" />} {currentDevice.width}px
               </span>
             )}
@@ -444,8 +444,8 @@ export default function LivePreview() {
           <div
             className={`transition-all duration-300 overflow-hidden relative ${
               currentDevice.width > 0
-                ? 'rounded-[2rem] border-[3px] border-zinc-700/50 shadow-2xl shadow-black/30'
-                : 'rounded-xl border border-zinc-800/50'
+                ? 'rounded-[2rem] border-[3px] border-app-border/50 shadow-2xl shadow-black/30'
+                : 'rounded-xl border border-app-border/50'
             }`}
             style={{
               width: currentDevice.width > 0 ? `${currentDevice.width}px` : '100%',
@@ -457,15 +457,15 @@ export default function LivePreview() {
           >
             {/* Mobile notch indicator */}
             {currentDevice.width > 0 && currentDevice.id === 'mobile' && (
-              <div className="flex justify-center py-1 bg-zinc-900">
-                <div className="w-20 h-4 bg-zinc-800 rounded-b-xl" />
+              <div className="flex justify-center py-1 bg-app-surface">
+                <div className="w-20 h-4 bg-app-elevated rounded-b-xl" />
               </div>
             )}
 
             {/* Tablet camera indicator */}
             {currentDevice.width > 0 && currentDevice.id === 'tablet' && (
-              <div className="flex justify-center py-0.5 bg-zinc-900">
-                <div className="w-3 h-3 bg-zinc-800 rounded-full border border-zinc-700/50" />
+              <div className="flex justify-center py-0.5 bg-app-surface">
+                <div className="w-3 h-3 bg-app-elevated rounded-full border border-app-border/50" />
               </div>
             )}
 
@@ -486,11 +486,11 @@ export default function LivePreview() {
                 sandbox="allow-scripts allow-same-origin"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+              <div className="w-full h-full flex items-center justify-center bg-app-surface">
                 <div className="text-center">
                   <div className="text-3xl mb-3 animate-pulse">⏳</div>
-                  <div className="text-zinc-400 text-sm">Membuat preview...</div>
-                  <div className="text-zinc-600 text-xs mt-1">
+                  <div className="text-app-secondary text-sm">Membuat preview...</div>
+                  <div className="text-app-muted text-xs mt-1">
                     {currentModeMeta.icon} {currentModeMeta.label} mode
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export default function LivePreview() {
             {/* Watermark for device frame */}
             {currentDevice.width > 0 && (
               <div className="absolute bottom-2 left-0 right-0 text-center">
-                <span className="text-[0.55rem] text-zinc-600 bg-zinc-900/80 px-2 py-0.5 rounded-full">
+                <span className="text-[0.55rem] text-app-muted bg-app-surface/80 px-2 py-0.5 rounded-full">
                   {currentDevice.label} · {currentDevice.width}px
                 </span>
               </div>

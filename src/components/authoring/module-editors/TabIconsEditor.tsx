@@ -32,12 +32,12 @@ export function TabIconsEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Tabs ({tabs.length})</FieldLabel>
         {tabs.map((tab, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <div className="flex items-center gap-2">
               <input className={`${INPUT_CLS} w-16`} value={(tab.icon as string) || ''} onChange={(e) => ui!('tabs', i, 'icon', e.target.value)} placeholder="📌" />
               <input className={INPUT_CLS} placeholder="Judul tab…" value={(tab.judul as string) || ''} onChange={(e) => ui!('tabs', i, 'judul', e.target.value)} />
               <ColorPicker value={(tab.warna as string) || '#3ecfcf'} onChange={(v) => ui!('tabs', i, 'warna', v)} />
-              <button onClick={() => ri!('tabs', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+              <button onClick={() => ri!('tabs', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Isi tab…" value={(tab.isi as string) || ''} onChange={(e) => ui!('tabs', i, 'isi', e.target.value)} />
             <div>

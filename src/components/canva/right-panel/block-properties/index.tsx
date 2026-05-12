@@ -64,13 +64,13 @@ export default function BlockPropertiesPanel() {
             variant="ghost"
             size="icon"
             onClick={() => selectBlock(null)}
-            className="ml-auto h-5 w-5 text-slate-500 hover:text-slate-300"
+            className="ml-auto h-5 w-5 text-app-muted hover:text-app-secondary"
           >
             <X size={10} />
           </Button>
         </div>
         <div className="px-3 pb-3 pt-2">
-          <div className="text-[9px] text-slate-500 italic">Block ini tidak dapat diedit</div>
+          <div className="text-[9px] text-app-muted italic">Block ini tidak dapat diedit</div>
         </div>
       </div>
     );
@@ -86,7 +86,7 @@ export default function BlockPropertiesPanel() {
           variant="ghost"
           size="icon"
           onClick={() => { selectBlock(null); stopEditing(); }}
-          className="ml-auto h-5 w-5 text-slate-500 hover:text-slate-300"
+          className="ml-auto h-5 w-5 text-app-muted hover:text-app-secondary"
         >
           <X size={10} />
         </Button>
@@ -97,8 +97,8 @@ export default function BlockPropertiesPanel() {
         <div className="flex items-center gap-2">
           <span className="text-lg">{definition?.icon || '📦'}</span>
           <div>
-            <div className="text-[11px] font-bold text-slate-200">{definition?.name || selectedBlockType}</div>
-            <div className="text-[9px] text-slate-500">{definition?.category || 'unknown'} &middot; {selectedBlockType}</div>
+            <div className="text-[11px] font-bold text-app-primary">{definition?.name || selectedBlockType}</div>
+            <div className="text-[9px] text-app-muted">{definition?.category || 'unknown'} &middot; {selectedBlockType}</div>
           </div>
           {editingBlockId === selectedBlockId && (
             <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
@@ -109,8 +109,8 @@ export default function BlockPropertiesPanel() {
 
         {/* Block ID */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-500 w-14">ID</span>
-          <span className="text-[10px] text-slate-300 font-mono truncate flex-1">{selectedBlockId}</span>
+          <span className="text-[10px] text-app-muted w-14">ID</span>
+          <span className="text-[10px] text-app-secondary font-mono truncate flex-1">{selectedBlockId}</span>
         </div>
 
         {/* ═══ SCHEMA-DRIVEN DYNAMIC EDITOR ═════════════════ */}
@@ -125,7 +125,7 @@ export default function BlockPropertiesPanel() {
         {/* Capabilities (collapsed) */}
         {definition && (
           <details className="mt-2">
-            <summary className="text-[9px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-400">
+            <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
               Kemampuan
             </summary>
             <div className="grid grid-cols-2 gap-1 mt-1">
@@ -142,11 +142,11 @@ export default function BlockPropertiesPanel() {
         {/* Layout info (collapsed) */}
         {definition && (
           <details className="mt-1">
-            <summary className="text-[9px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-400">
+            <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
               Layout
             </summary>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-slate-500">Posisi</span>
+              <span className="text-[10px] text-app-muted">Posisi</span>
               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                 definition.defaultLayout.position === 'flow'
                   ? 'bg-emerald-500/20 text-emerald-300'

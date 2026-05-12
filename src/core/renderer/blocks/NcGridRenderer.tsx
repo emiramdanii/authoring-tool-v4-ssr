@@ -51,7 +51,7 @@ function NcGridCard({ card, cardIndex, blockId, tokens, isCompact, interactive }
       <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl"
         style={{ background: `linear-gradient(90deg, ${cardColor}, ${tokens.colorAlpha(card.color, 0.3)})` }} />
 
-      <div className="flex items-center gap-2.5 mb-2">
+      <div className="flex items-center gap-2.5 mb-2 min-w-0">
         <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
           style={{
             background: tokens.colorAlpha(card.color, 0.2),
@@ -61,14 +61,14 @@ function NcGridCard({ card, cardIndex, blockId, tokens, isCompact, interactive }
         </div>
         <InlineTextEditor
           {...titleEditor}
-          className="font-extrabold"
-          style={{ color: cardColor, fontSize: isCompact ? '12px' : '14px' }}
+          className="font-extrabold min-w-0"
+          style={{ color: cardColor, fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}
         />
       </div>
       <InlineTextEditor
         {...bodyEditor}
-        className="leading-relaxed"
-        style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', lineHeight: 1.55 }}
+        className={`leading-relaxed ${isCompact ? 'line-clamp-3' : ''}`}
+        style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', lineHeight: 1.55, wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik deskripsi kartu..."
       />
       {/* Expand toggle for long text in compact mode */}

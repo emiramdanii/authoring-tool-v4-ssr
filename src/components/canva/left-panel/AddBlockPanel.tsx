@@ -81,11 +81,11 @@ export default function AddBlockPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
         <div className="text-2xl mb-2 opacity-40">📦</div>
-        <div className="text-[10px] text-slate-500">Tidak dapat menambah block</div>
-        <div className="text-[8px] text-slate-600 mt-1">
+        <div className="text-[10px] text-app-muted">Tidak dapat menambah block</div>
+        <div className="text-[8px] text-app-muted mt-1">
           Block hanya bisa ditambahkan ke halaman template/schema
         </div>
-        <div className="text-[8px] text-slate-600 mt-0.5">
+        <div className="text-[8px] text-app-muted mt-0.5">
           Gunakan tab Halaman untuk menambah template terlebih dahulu
         </div>
       </div>
@@ -95,21 +95,21 @@ export default function AddBlockPanel() {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+      <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
         <Blocks size={10} />
         Tambah Block
-        <span className="text-slate-600">({allBlocks.length})</span>
+        <span className="text-app-muted">({allBlocks.length})</span>
       </div>
 
       {/* Search input */}
       <div className="relative">
-        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari block..."
-          className="w-full h-7 pl-7 pr-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none placeholder:text-slate-600"
+          className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-amber-500/50 focus:outline-none placeholder:text-app-muted"
         />
       </div>
 
@@ -119,7 +119,7 @@ export default function AddBlockPanel() {
           const config = CATEGORY_CONFIG[category] || {
             label: category,
             icon: '📦',
-            colorClass: 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+            colorClass: 'text-app-secondary bg-app-elevated/10 border-app-border/20',
           };
 
           return (
@@ -128,7 +128,7 @@ export default function AddBlockPanel() {
               <div className="text-[9px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <span>{config.icon}</span>
                 <span className={config.colorClass.split(' ')[0]}>{config.label}</span>
-                <span className="text-slate-600 font-normal">({blocks.length})</span>
+                <span className="text-app-muted font-normal">({blocks.length})</span>
               </div>
 
               {/* Block cards */}
@@ -137,7 +137,7 @@ export default function AddBlockPanel() {
                   <button
                     key={block.type}
                     onClick={() => addSchemaBlock(block.type)}
-                    className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-800/40 border border-slate-700/20 active:scale-[0.97] transition-transform text-left group"
+                    className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
                   >
                     {/* Block icon */}
                     <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">
@@ -146,10 +146,10 @@ export default function AddBlockPanel() {
 
                     {/* Block info */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-[11px] font-bold text-slate-200 truncate group-hover:text-amber-300 transition-colors">
+                      <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-amber-300 transition-colors">
                         {block.name}
                       </div>
-                      <div className="text-[8px] text-slate-500 leading-tight line-clamp-2">
+                      <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
                         {block.description}
                       </div>
                       {/* Used-in templates */}
@@ -158,7 +158,7 @@ export default function AddBlockPanel() {
                           {block.usedInTemplates.slice(0, 3).map((t) => (
                             <span
                               key={t}
-                              className="text-[7px] px-1 py-0 rounded bg-slate-700/40 text-slate-500"
+                              className="text-[7px] px-1 py-0 rounded bg-app-elevated/40 text-app-muted"
                             >
                               {t}
                             </span>
@@ -170,7 +170,7 @@ export default function AddBlockPanel() {
                     {/* Add button */}
                     <Plus
                       size={14}
-                      className="text-slate-500 group-hover:text-amber-400 transition-colors flex-shrink-0"
+                      className="text-app-muted group-hover:text-amber-400 transition-colors flex-shrink-0"
                     />
                   </button>
                 ))}
@@ -183,14 +183,14 @@ export default function AddBlockPanel() {
       {/* Empty search state */}
       {filteredBlocks.length === 0 && search.trim() && (
         <div className="text-center py-4">
-          <div className="text-[10px] text-slate-500">
+          <div className="text-[10px] text-app-muted">
             Tidak ada block yang cocok dengan &quot;{search}&quot;
           </div>
         </div>
       )}
 
       {/* Footer hint */}
-      <div className="text-[8px] text-slate-600 mt-2 pt-2 border-t border-slate-700/20">
+      <div className="text-[8px] text-app-muted mt-2 pt-2 border-t border-app-border/20">
         Klik block untuk menambahkan ke halaman saat ini
       </div>
     </div>

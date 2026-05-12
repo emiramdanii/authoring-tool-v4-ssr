@@ -104,7 +104,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
       {/* Unsorted items */}
       <div className="flex flex-wrap gap-1 mb-2">
         {unsorted.map((item, i) => (
-          <span key={i} className={`${compact ? 'text-[8px]' : 'text-[9px]'} px-2 py-0.5 bg-white/10 border border-white/15 rounded text-cyan-200`}>
+          <span key={i} className={`${compact ? 'text-[8px]' : 'text-[9px]'} px-2 py-0.5 bg-app-elevated/10 border border-app-border/15 rounded text-cyan-200`}>
             {item.teks as string}
           </span>
         ))}
@@ -116,7 +116,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
           const catColor = cat.color as string || '#3ecfcf';
           const sortedItems = sorted[catId] || [];
           return (
-            <div key={catId} className={`rounded border p-1.5 min-h-[32px] transition-colors ${wrong === catId ? 'bg-red-500/20 border-red-400/40' : 'bg-white/5 border-white/10'}`}
+            <div key={catId} className={`rounded border p-1.5 min-h-[32px] transition-colors ${wrong === catId ? 'bg-red-500/20 border-red-400/40' : 'bg-app-elevated/5 border-app-border/10'}`}
               style={{ borderLeftColor: catColor, borderLeftWidth: 3 }}>
               <div className="text-[9px] font-bold mb-0.5" style={{ color: catColor }}>{cat.label as string}</div>
               <div className="flex flex-wrap gap-0.5">
@@ -130,7 +130,7 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
                   const origIdx = validItems.indexOf(item);
                   return (
                   <button key={origIdx} onClick={() => handleDrop(origIdx, catId)}
-                    className="text-[7px] px-1 py-0.5 rounded bg-white/5 border border-dashed border-white/15 text-white/40 hover:bg-white/10 hover:text-white/60 cursor-pointer transition-colors">
+                    className="text-[7px] px-1 py-0.5 rounded bg-app-elevated/5 border border-dashed border-app-border/15 text-app-primary/40 hover:bg-app-elevated/10 hover:text-app-primary/60 cursor-pointer transition-colors">
                     + {item.teks as string}
                   </button>
                   );

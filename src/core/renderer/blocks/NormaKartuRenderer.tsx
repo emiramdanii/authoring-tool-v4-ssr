@@ -43,6 +43,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       border: '1px solid ' + tokens.colorAlpha(colorKey, 0.3),
       boxShadow: tokens.raw.shadow.card,
       animation: 'fadeIn 0.3s ease',
+      overflow: 'hidden',
     }}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
@@ -62,8 +63,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       </div>
 
       {/* Definition */}
-      <div className="leading-relaxed mb-4" style={{ fontSize: '13px', color: tokens.color('text') }}>
-        <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" placeholder="Ketik definisi..." />
+      <div className="leading-relaxed mb-4" style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+        <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" style={{ overflowWrap: 'break-word' }} placeholder="Ketik definisi..." />
       </div>
 
       {/* Characteristics 2-col */}
@@ -75,8 +76,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
                 background: tokens.colorAlpha(colorKey, 0.08),
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
               }}>
-              <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color }}>{c.label}</div>
-              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text') }}>{c.value}</div>
+              <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.label}</div>
+              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.value}</div>
             </div>
           ))}
         </div>
@@ -89,12 +90,13 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             background: tokens.colorAlpha('o', 0.08),
             border: '1px solid ' + tokens.colorAlpha('o', 0.2),
             borderLeft: '3px solid ' + tokens.color('o'),
+            overflow: 'hidden',
           }}>
-          <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ fontSize: '12px', color: tokens.color('o') }}>{block.sanksi.title}</div>
+          <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ fontSize: '12px', color: tokens.color('o'), wordBreak: 'break-word' }}>{block.sanksi.title}</div>
           {block.sanksi.items.map((s, i) => (
-            <div key={i} className="flex items-start gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text') }}>
+            <div key={i} className="flex items-start gap-2 mb-1.5 leading-relaxed min-w-0" style={{ fontSize: '12px', color: tokens.color('text') }}>
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: s.dot || color }} />
-              {s.text}
+              <span className="min-w-0" style={{ wordBreak: 'break-word' }}>{s.text}</span>
             </div>
           ))}
         </div>
@@ -108,8 +110,10 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             background: tokens.colorAlpha(colorKey, 0.08),
             border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
             borderLeft: '3px solid ' + color,
+            overflow: 'hidden',
+            wordBreak: 'break-word',
           }}>
-          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className="text-[10px] leading-relaxed" placeholder="Ketik contoh..." />
+          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className="text-[10px] leading-relaxed" style={{ overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
         </div>
       )}
 
@@ -120,12 +124,13 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             background: tokens.colorAlpha('r', 0.08),
             border: '1px solid ' + tokens.colorAlpha('r', 0.25),
             borderLeft: '3px solid ' + tokens.color('r'),
+            overflow: 'hidden',
           }}>
           <div className="font-extrabold uppercase tracking-wider mb-1.5"
-            style={{ fontSize: '12px', color: tokens.color('r') }}>{block.pelanggaran.title}</div>
+            style={{ fontSize: '12px', color: tokens.color('r'), wordBreak: 'break-word' }}>{block.pelanggaran.title}</div>
           {block.pelanggaran.items.map((p, i) => (
-            <div key={i} className="flex gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text') }}>
-              <span>{p.icon}</span> {p.text}
+            <div key={i} className="flex gap-2 mb-1.5 leading-relaxed min-w-0" style={{ fontSize: '12px', color: tokens.color('text') }}>
+              <span className="flex-shrink-0">{p.icon}</span> <span className="min-w-0" style={{ wordBreak: 'break-word' }}>{p.text}</span>
             </div>
           ))}
         </div>

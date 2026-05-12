@@ -67,8 +67,8 @@ export default function Dashboard() {
       {/* ══ HEADER ════════════════════════════════════════════════ */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-1">Buat media pembelajaran interaktif dalam 5 langkah.</p>
+          <h1 className="text-2xl font-bold text-app-primary tracking-tight">Dashboard</h1>
+          <p className="text-sm text-app-secondary mt-1">Buat media pembelajaran interaktif dalam 5 langkah.</p>
         </div>
         {isPresetMode && (
           <button
@@ -91,7 +91,7 @@ export default function Dashboard() {
             ? 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
             : hasData
               ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
-              : 'bg-slate-700/30 border border-slate-600/30 text-slate-500'
+              : 'bg-app-elevated/30 border border-app-border/30 text-app-muted'
         }`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
           {isPresetMode ? `Preset: ${presetLabels[activePreset || ''] || activePreset}` : hasData ? 'Proyek Aktif' : 'Belum Ada Data'}
@@ -100,7 +100,7 @@ export default function Dashboard() {
         {/* Completeness mini-bar */}
         {hasData && (
           <div className="flex items-center gap-2 flex-1">
-            <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-app-elevated rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{
@@ -109,14 +109,14 @@ export default function Dashboard() {
                 }}
               />
             </div>
-            <span className="text-[0.7rem] text-slate-500 tabular-nums">{completeness}%</span>
+            <span className="text-[0.7rem] text-app-muted tabular-nums">{completeness}%</span>
           </div>
         )}
       </div>
 
       {/* ══ FLOW PROGRESS ════════════════════════════════════════ */}
-      <div className="bg-slate-900/60 border border-slate-800/60 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-slate-300 mb-4">Alur Kerja</h2>
+      <div className="bg-app-surface/60 border border-app-border/60 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-app-secondary mb-4">Alur Kerja</h2>
         <div className="flex items-start gap-0">
           {flowSteps.map((step, i) => {
             const isActive = step.active;
@@ -126,23 +126,23 @@ export default function Dashboard() {
                 {/* Connector line */}
                 {i > 0 && (
                   <div className={`absolute top-3.5 right-1/2 left-[-50%] h-[2px] ${
-                    isActive ? 'bg-amber-500/40' : 'bg-slate-700/50'
+                    isActive ? 'bg-amber-500/40' : 'bg-app-elevated/50'
                   }`} />
                 )}
                 {/* Circle */}
                 <div className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                   isActive
                     ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                    : 'bg-slate-800 text-slate-600 border border-slate-700/50'
+                    : 'bg-app-elevated text-app-muted border border-app-border/50'
                 } ${isCurrent ? 'ring-2 ring-amber-500/30' : ''}`}>
                   {isActive ? '✓' : step.num}
                 </div>
                 {/* Label */}
                 <div className="mt-2 text-center">
-                  <div className={`text-[0.7rem] font-semibold ${isActive ? 'text-slate-200' : 'text-slate-600'}`}>
+                  <div className={`text-[0.7rem] font-semibold ${isActive ? 'text-app-primary' : 'text-app-muted'}`}>
                     {step.label}
                   </div>
-                  <div className="text-[0.6rem] text-slate-500 mt-0.5">{step.desc}</div>
+                  <div className="text-[0.6rem] text-app-muted mt-0.5">{step.desc}</div>
                 </div>
               </div>
             );
@@ -152,8 +152,8 @@ export default function Dashboard() {
 
       {/* ══ TEMPLATE SELECTION ════════════════════════════════════ */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-300 mb-1">Mulai dengan Template</h2>
-        <p className="text-xs text-slate-500 mb-3">Pilih preset data PPKn atau mulai dari proyek kosong.</p>
+        <h2 className="text-sm font-semibold text-app-secondary mb-1">Mulai dengan Template</h2>
+        <p className="text-xs text-app-muted mb-3">Pilih preset data PPKn atau mulai dari proyek kosong.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { key: 'hakikat-norma', icon: '🧑‍🤝‍🧑', label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'amber' },
@@ -166,13 +166,13 @@ export default function Dashboard() {
               amber: 'hover:border-amber-500/40 hover:bg-amber-500/5',
               cyan: 'hover:border-cyan-500/40 hover:bg-cyan-500/5',
               emerald: 'hover:border-emerald-500/40 hover:bg-emerald-500/5',
-              slate: 'hover:border-slate-500/40 hover:bg-slate-500/5',
+              slate: 'hover:border-app-border/40 hover:bg-app-elevated/5',
             };
             const activeColorMap: Record<string, string> = {
               amber: 'border-amber-500/50 bg-amber-500/10 ring-1 ring-amber-500/20',
               cyan: 'border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/20',
               emerald: 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/20',
-              slate: 'border-slate-500/50 bg-slate-500/10 ring-1 ring-slate-500/20',
+              slate: 'border-app-border/50 bg-app-elevated/10 ring-1 ring-app-border/20',
             };
             return (
               <button
@@ -207,12 +207,12 @@ export default function Dashboard() {
                 className={`rounded-xl p-4 text-center transition-all cursor-pointer border ${
                   isCurrentPreset
                     ? activeColorMap[p.color]
-                    : `border-slate-700/40 bg-slate-800/30 ${colorMap[p.color]}`
+                    : `border-app-border/40 bg-app-elevated/30 ${colorMap[p.color]}`
                 }`}
               >
                 <div className="text-2xl mb-2">{p.icon}</div>
-                <div className="text-xs font-semibold text-slate-200">{p.label}</div>
-                <div className="text-[0.6rem] text-slate-500 mt-0.5">{p.sub}</div>
+                <div className="text-xs font-semibold text-app-primary">{p.label}</div>
+                <div className="text-[0.6rem] text-app-muted mt-0.5">{p.sub}</div>
                 {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
                   <div className="text-[0.55rem] text-amber-400/80 font-bold mt-1 flex items-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
                 )}
@@ -230,28 +230,28 @@ export default function Dashboard() {
         {/* Dokumen — primary CTA */}
         <button
           onClick={() => setActivePanel('dokumen')}
-          className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-amber-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-amber-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
         >
           <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 flex-shrink-0">
             <FileEdit size={18} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-slate-200">Isi Dokumen</div>
-            <div className="text-xs text-slate-500">CP, TP, ATP, Alur Pembelajaran</div>
+            <div className="text-sm font-semibold text-app-primary">Isi Dokumen</div>
+            <div className="text-xs text-app-muted">CP, TP, ATP, Alur Pembelajaran</div>
           </div>
         </button>
 
         {/* Konten — secondary CTA */}
         <button
           onClick={() => setActivePanel('konten')}
-          className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-cyan-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-cyan-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
         >
           <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 flex-shrink-0">
             <Puzzle size={18} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-slate-200">Tambah Konten</div>
-            <div className="text-xs text-slate-500">Kuis, modul interaktif, materi</div>
+            <div className="text-sm font-semibold text-app-primary">Tambah Konten</div>
+            <div className="text-xs text-app-muted">Kuis, modul interaktif, materi</div>
           </div>
         </button>
 
@@ -274,14 +274,14 @@ export default function Dashboard() {
         {/* Preview — tertiary CTA */}
         <button
           onClick={() => setActivePanel('preview')}
-          className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-emerald-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-emerald-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
         >
           <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-lg flex-shrink-0">
             📱
           </div>
           <div>
-            <div className="text-sm font-semibold text-slate-200">Preview Siswa</div>
-            <div className="text-xs text-slate-500">Lihat tampilan lengkap siswa</div>
+            <div className="text-sm font-semibold text-app-primary">Preview Siswa</div>
+            <div className="text-xs text-app-muted">Lihat tampilan lengkap siswa</div>
           </div>
         </button>
 
@@ -297,24 +297,24 @@ export default function Dashboard() {
               setActivePanel('canva');
             }
           }}
-          className="flex items-center gap-4 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 hover:border-purple-500/30 hover:bg-slate-800/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-purple-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
         >
           <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 text-lg flex-shrink-0">
             🎨
           </div>
           <div>
-            <div className="text-sm font-semibold text-slate-200">Desain Canva</div>
-            <div className="text-xs text-slate-500">Layout & visual slide</div>
+            <div className="text-sm font-semibold text-app-primary">Desain Canva</div>
+            <div className="text-xs text-app-muted">Layout & visual slide</div>
           </div>
         </button>
       </div>
 
       {/* ══ Kelenkapan (collapsible) ═════════════════════════════ */}
       {hasData && (
-        <details className="group bg-slate-900/40 border border-slate-800/40 rounded-xl">
-          <summary className="px-5 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold text-slate-300 hover:text-slate-200 transition-colors">
+        <details className="group bg-app-surface/40 border border-app-border/40 rounded-xl">
+          <summary className="px-5 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold text-app-secondary hover:text-app-primary transition-colors">
             <span>Kelengkapan Proyek</span>
-            <span className="text-[0.7rem] text-slate-500 group-open:rotate-180 transition-transform"><ChevronDown size={14} className="inline" /></span>
+            <span className="text-[0.7rem] text-app-muted group-open:rotate-180 transition-transform"><ChevronDown size={14} className="inline" /></span>
           </summary>
           <div className="px-5 pb-4 space-y-3">
             {/* Stats row */}
@@ -328,10 +328,10 @@ export default function Dashboard() {
                 { label: 'Game', val: games.length, icon: <Gamepad2 size={14} />, color: 'text-orange-400' },
                 { label: 'Materi', val: materi.blok.length, icon: <FileEdit size={14} />, color: 'text-sky-400' },
               ].map((s) => (
-                <div key={s.label} className="bg-slate-800/30 rounded-lg p-2 text-center">
+                <div key={s.label} className="bg-app-elevated/30 rounded-lg p-2 text-center">
                   <div className="text-sm mb-0.5">{s.icon}</div>
                   <div className={`text-sm font-bold ${s.color}`}>{s.val}</div>
-                  <div className="text-[0.6rem] text-slate-600">{s.label}</div>
+                  <div className="text-[0.6rem] text-app-muted">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -347,8 +347,8 @@ export default function Dashboard() {
                 { label: 'Modul konten (min 1)', done: modules.length > 0 },
               ].map((c, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs py-1">
-                  <span className={c.done ? 'text-emerald-400' : 'text-slate-600'}>{c.done ? '✓' : '○'}</span>
-                  <span className={c.done ? 'text-slate-300' : 'text-slate-600'}>{c.label}</span>
+                  <span className={c.done ? 'text-emerald-400' : 'text-app-muted'}>{c.done ? '✓' : '○'}</span>
+                  <span className={c.done ? 'text-app-secondary' : 'text-app-muted'}>{c.label}</span>
                 </div>
               ))}
             </div>
@@ -357,28 +357,28 @@ export default function Dashboard() {
       )}
 
       {/* ══ BOTTOM TOOLBAR ═══════════════════════════════════════ */}
-      <div className="flex items-center gap-2 pt-2 border-t border-slate-800/40">
+      <div className="flex items-center gap-2 pt-2 border-t border-app-border/40">
         <button
           onClick={() => newProject()}
-          className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg border border-slate-700/30 transition-colors"
+          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
         >
           Proyek Baru
         </button>
         <button
           onClick={() => setActivePanel('projects')}
-          className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg border border-slate-700/30 transition-colors"
+          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
         >
           Buka Proyek
         </button>
         <button
           onClick={() => setActivePanel('import')}
-          className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg border border-slate-700/30 transition-colors"
+          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
         >
           Import
         </button>
         <button
           onClick={exportJSON}
-          className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg border border-slate-700/30 transition-colors"
+          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
         >
           Export JSON
         </button>
@@ -391,7 +391,7 @@ export default function Dashboard() {
         <div className="flex-1" />
         <button
           onClick={saveToStorage}
-          className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary transition-colors"
         >
           Simpan
         </button>

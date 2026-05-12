@@ -55,7 +55,7 @@ export default function PageSettingsSection({
     >
       {/* Jenis Halaman */}
       <div className="mb-3">
-        <label className="text-[10px] text-slate-500 block mb-1">Jenis Halaman</label>
+        <label className="text-[10px] text-app-muted block mb-1">Jenis Halaman</label>
         <select
           value={page?.templateType || 'custom'}
           onChange={(e) => {
@@ -72,7 +72,7 @@ export default function PageSettingsSection({
             }
             setTemplateType(newType);
           }}
-          className="w-full h-8 px-2 text-[11px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
         >
           {getAllPresets().map(p => (
             <option key={p.id} value={p.id}>{p.icon} {p.label} — {p.description}</option>
@@ -83,7 +83,7 @@ export default function PageSettingsSection({
       {/* Phase 3: Template Layout Variant picker — available for all template types */}
       {isTemplateMode && page && (
         <div className="mb-3">
-          <label className="text-[10px] text-slate-500 block mb-1.5">Varian Tampilan</label>
+          <label className="text-[10px] text-app-muted block mb-1.5">Varian Tampilan</label>
           <div className="flex gap-1.5">
             {(page.templateType === 'cover'
               ? [
@@ -157,7 +157,7 @@ export default function PageSettingsSection({
                 className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] font-bold transition-colors ${
                   (page?.templateVariant || 'A') === v.id
                     ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
-                    : 'bg-slate-800/40 border border-slate-700/20 text-slate-400 hover:border-slate-600'
+                    : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
                 }`}
               >
                 <span className="text-sm">{v.icon}</span>
@@ -171,7 +171,7 @@ export default function PageSettingsSection({
       {/* Layout Presets */}
       {(page?.elements && page.elements.length > 0) && (
         <div className="mb-3">
-          <label className="text-[10px] text-slate-500 block mb-1">Layout Preset</label>
+          <label className="text-[10px] text-app-muted block mb-1">Layout Preset</label>
           <div className="grid grid-cols-3 gap-1.5">
             {LAYOUT_PRESETS.map(p => {
               const isActive = currentLayoutPreset()?.id === p.id;
@@ -182,7 +182,7 @@ export default function PageSettingsSection({
                   className={`card-hover flex flex-col items-center gap-0.5 rounded-xl p-2 border text-center transition-all ${
                     isActive
                       ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
-                      : 'border-slate-700/20 text-slate-400'
+                      : 'border-app-border/20 text-app-secondary'
                   }`}
                   title={p.desc}
                 >
@@ -197,7 +197,7 @@ export default function PageSettingsSection({
 
       {/* Grid & Snap */}
       <div className="mb-3">
-          <label className="text-[10px] text-slate-500 block mb-1.5">Grid & Snap</label>
+          <label className="text-[10px] text-app-muted block mb-1.5">Grid & Snap</label>
           <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
             <input
               type="checkbox"
@@ -205,7 +205,7 @@ export default function PageSettingsSection({
               onChange={toggleGrid}
               className="accent-amber-500 w-3 h-3"
             />
-            <span className="text-[9px] text-slate-400">Tampilkan Grid</span>
+            <span className="text-[9px] text-app-secondary">Tampilkan Grid</span>
           </label>
           <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
             <input
@@ -214,10 +214,10 @@ export default function PageSettingsSection({
               onChange={toggleSnap}
               className="accent-amber-500 w-3 h-3"
             />
-            <span className="text-[9px] text-slate-400">Snap ke Grid</span>
+            <span className="text-[9px] text-app-secondary">Snap ke Grid</span>
           </label>
           <div className="mt-1">
-            <label className="text-[9px] text-slate-500 block mb-1">Ukuran Grid: {gridSize}%</label>
+            <label className="text-[9px] text-app-muted block mb-1">Ukuran Grid: {gridSize}%</label>
             <input
               type="range"
               min={2}
@@ -227,7 +227,7 @@ export default function PageSettingsSection({
               onChange={e => setGridSize(parseInt(e.target.value))}
               className="w-full"
             />
-            <div className="flex justify-between text-[7px] text-slate-600 mt-0.5">
+            <div className="flex justify-between text-[7px] text-app-muted mt-0.5">
               <span>Halus (2%)</span>
               <span>Kasar (20%)</span>
             </div>
@@ -240,8 +240,8 @@ export default function PageSettingsSection({
           <div className="text-[10px] font-bold text-amber-400 mb-1.5">
             {TEMPLATE_BADGE_MAP[page.templateType]?.icon || ''} {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType} Template
           </div>
-          <div className="rounded-xl bg-slate-800/40 border border-slate-700/20 p-2 mb-2">
-            <span className="text-[8px] text-slate-500">
+          <div className="rounded-xl bg-app-elevated/40 border border-app-border/20 p-2 mb-2">
+            <span className="text-[8px] text-app-muted">
               Klik langsung teks di canvas untuk mengedit. Data otomatis diambil dari panel authoring.
             </span>
           </div>
@@ -268,12 +268,12 @@ export default function PageSettingsSection({
                 .slice(0, 5)
                 .map(([key, value]) => (
                   <div key={key}>
-                    <label className="text-[8px] text-slate-500 block mb-0.5">{key}</label>
+                    <label className="text-[8px] text-app-muted block mb-0.5">{key}</label>
                     <input
                       type="text"
                       value={String(value)}
                       onChange={e => updateTemplateData(key, e.target.value)}
-                      className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-800/60 border border-slate-700/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+                      className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
                     />
                   </div>
                 ))}

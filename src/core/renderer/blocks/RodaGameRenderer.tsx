@@ -26,8 +26,8 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
 
   // ── Theme-aware contrast colors ────────────────────────────────
-  const contrastBg = tokens.isDark() ? tokens.color('bg') : '#ffffff';
-  const contrastText = tokens.isDark() ? '#ffffff' : tokens.color('bg');
+  const contrastBg = tokens.color('card');
+  const contrastText = tokens.isDark() ? tokens.color('bg') : tokens.color('text');
 
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -246,8 +246,8 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                   <defs>
                     {/* Gradient for each segment for glossy effect */}
                     <radialGradient id="wheelSheen" cx="50%" cy="30%" r="60%">
-                      <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
-                      <stop offset="100%" stopColor="rgba(0,0,0,0.1)" />
+                      <stop offset="0%" stopColor={tokens.isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.2)'} />
+                      <stop offset="100%" stopColor={tokens.isDark() ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.06)'} />
                     </radialGradient>
                   </defs>
 
@@ -286,7 +286,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                         <path
                           d={`M${svgCenter},${svgCenter} L${x1},${y1} A${svgRadius},${svgRadius} 0 ${largeArc},1 ${x2},${y2} Z`}
                           fill="none"
-                          stroke={tokens.isDark() ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'}
+                          stroke={tokens.isDark() ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.08)'}
                           strokeWidth="1"
                           transform={`translate(${Math.cos(midRad) * 1.5}, ${Math.sin(midRad) * 1.5})`}
                         />
@@ -299,7 +299,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                           fill={contrastText}
                           fontSize={questions.length > 6 ? "13" : "16"}
                           fontWeight="900"
-                          style={{ textShadow: `0 1px 3px ${tokens.isDark() ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)'}` }}
+                          style={{ textShadow: `0 1px 3px ${tokens.isDark() ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)'}` }}
                         >
                           {i + 1}
                         </text>

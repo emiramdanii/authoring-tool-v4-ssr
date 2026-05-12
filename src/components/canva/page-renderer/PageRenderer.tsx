@@ -219,7 +219,7 @@ export function PageRenderer({
       {/* Empty state for custom pages */}
       {!isTemplate && page.elements.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="text-slate-400 text-sm mb-2">
+          <div className="text-app-secondary text-sm mb-2">
             Halaman kosong
           </div>
         </div>

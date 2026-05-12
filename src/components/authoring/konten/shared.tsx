@@ -22,7 +22,7 @@ export const BLOCK_TYPES = [
 
 // ── Constants ──────────────────────────────────────────────────
 export const INPUT_CLS =
-  'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
+  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
 
 export const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 
@@ -147,13 +147,13 @@ export function modulePreview(mod: Record<string, unknown>): string {
 
 // ── Shared small components ────────────────────────────────────
 export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-zinc-400 mb-1.5">{children}</label>;
+  return <label className="block text-xs font-medium text-app-secondary mb-1.5">{children}</label>;
 }
 
 export function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      className={`w-4 h-4 text-zinc-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+      className={`w-4 h-4 text-app-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
       fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -189,8 +189,8 @@ export function CompareSideForm({
   onUpdate: (side: 'kiri' | 'kanan', key: string, val: string) => void;
 }) {
   return (
-    <div className="space-y-2 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
-      <div className="text-xs font-semibold text-zinc-300 mb-1">{label}</div>
+    <div className="space-y-2 p-3 bg-app-elevated/50 rounded-lg border border-app-border/50">
+      <div className="text-xs font-semibold text-app-secondary mb-1">{label}</div>
       <div>
         <FieldLabel>Ikon</FieldLabel>
         <input className={INPUT_CLS} placeholder="🎯" value={data.icon || ''} onChange={(e) => onUpdate(side, 'icon', e.target.value)} />

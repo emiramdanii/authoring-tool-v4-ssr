@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /home/z/my-project/authoring-tool-v4-ssr
+cd /home/z/authoring-tool-v4-ssr
 export PORT=3000
 export HOSTNAME=0.0.0.0
 while true; do

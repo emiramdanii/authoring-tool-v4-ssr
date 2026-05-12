@@ -22,21 +22,21 @@ function AccordionSection({
   const [open, setOpen] = useState(defaultOpen ?? false);
 
   return (
-    <div className="border border-zinc-800 rounded-lg overflow-hidden">
+    <div className="border border-app-border rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-zinc-900 hover:bg-zinc-800/80 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-elevated/80 transition-colors"
       >
         <div className="flex items-center gap-2.5">
           <span>{icon}</span>
-          <span className="text-sm font-semibold text-zinc-200">{title}</span>
+          <span className="text-sm font-semibold text-app-primary">{title}</span>
         </div>
-        <span className={`text-zinc-500 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+        <span className={`text-app-muted text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
           ▾
         </span>
       </button>
       {open && (
-        <div className="p-4 bg-slate-900/80 space-y-4 border-t border-zinc-800">
+        <div className="p-4 bg-app-surface/80 space-y-4 border-t border-app-border">
           {children}
         </div>
       )}
@@ -45,9 +45,9 @@ function AccordionSection({
 }
 
 // ── Shared field styles ──────────────────────────────────────────
-const fieldLabel = 'block text-xs font-medium text-zinc-400 mb-1.5';
-const fieldInput = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
-const fieldTextarea = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors resize-none';
+const fieldLabel = 'block text-xs font-medium text-app-secondary mb-1.5';
+const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
+const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors resize-none';
 
 // ── Identitas Media ─────────────────────────────────────────────
 function MetaSection() {
@@ -139,25 +139,25 @@ function CpSection() {
       <div>
         <label className={fieldLabel}>
           Profil Pelajar Pancasila{' '}
-          <span className="text-zinc-600 font-normal">(ketik + Enter)</span>
+          <span className="text-app-muted font-normal">(ketik + Enter)</span>
         </label>
-        <div className="flex flex-wrap gap-2 p-2 bg-zinc-800 border border-zinc-700 rounded-lg min-h-[42px]">
+        <div className="flex flex-wrap gap-2 p-2 bg-app-elevated border border-app-border rounded-lg min-h-[42px]">
           {cp.profil.map((p, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 bg-zinc-700 text-zinc-200 text-xs px-2.5 py-1 rounded-md"
+              className="inline-flex items-center gap-1 bg-app-elevated text-app-primary text-xs px-2.5 py-1 rounded-md"
             >
               {p}
               <button
                 onClick={() => removeProfil(i)}
-                className="text-zinc-400 hover:text-red-400 ml-0.5"
+                className="text-app-secondary hover:text-red-400 ml-0.5"
               >
                 ×
               </button>
             </span>
           ))}
           <input
-            className="bg-transparent text-sm text-zinc-200 placeholder:text-zinc-600 outline-none flex-1 min-w-[120px]"
+            className="bg-transparent text-sm text-app-primary placeholder:text-app-muted outline-none flex-1 min-w-[120px]"
             placeholder="Tambah profil…"
             value={profilInput}
             onChange={(e) => setProfilInput(e.target.value)}
@@ -183,7 +183,7 @@ function DragHandle({ onPointerDown, index }: { onPointerDown: (e: React.Pointer
   return (
     <span
       onPointerDown={(e) => onPointerDown(e, index)}
-      className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
+      className="text-app-muted hover:text-app-secondary cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
       aria-label="Drag to reorder"
     >
       ⠿
@@ -210,8 +210,8 @@ function TpSection() {
   if (!tp.length) {
     return (
       <div className="text-center py-8">
-        <Target size={24} className="text-zinc-500 mb-2" />
-        <p className="text-sm text-zinc-500">Belum ada Tujuan Pembelajaran.</p>
+        <Target size={24} className="text-app-muted mb-2" />
+        <p className="text-sm text-app-muted">Belum ada Tujuan Pembelajaran.</p>
         <button
           onClick={addTp}
           className="mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
@@ -227,7 +227,7 @@ function TpSection() {
       {tp.map((item, i) => (
         <div
           key={i}
-          className={`bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
+          className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
             dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
           } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-amber-500' : ''}`}
         >
@@ -240,10 +240,10 @@ function TpSection() {
             >
               {i + 1}
             </div>
-            <span className="text-sm font-medium text-zinc-200">Tujuan Pembelajaran {i + 1}</span>
+            <span className="text-sm font-medium text-app-primary">Tujuan Pembelajaran {i + 1}</span>
             <button
               onClick={() => deleteTp(i)}
-              className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
+              className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
             >
               <Trash2 size={14} className="inline" />
             </button>
@@ -341,20 +341,20 @@ function AtpSection() {
       {!atp.pertemuan.length ? (
         <div className="text-center py-6">
           <div className="text-3xl mb-2">📅</div>
-          <p className="text-sm text-zinc-500">Belum ada pertemuan.</p>
+          <p className="text-sm text-app-muted">Belum ada pertemuan.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {atp.pertemuan.map((p, i) => (
-            <div key={i} className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-4 space-y-3">
+            <div key={i} className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-md bg-amber-500/15 text-amber-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
                   P{i + 1}
                 </div>
-                <span className="text-sm font-medium text-zinc-200">Pertemuan {i + 1}</span>
+                <span className="text-sm font-medium text-app-primary">Pertemuan {i + 1}</span>
                 <button
                   onClick={() => deleteAtpPertemuan(i)}
-                  className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
+                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
                 >
                   <Trash2 size={14} className="inline" />
                 </button>
@@ -448,8 +448,8 @@ function AlurSection() {
     <div className="space-y-4">
       {!alur.length ? (
         <div className="text-center py-6">
-          <Map size={24} className="text-zinc-500 mb-2" />
-          <p className="text-sm text-zinc-500">Belum ada langkah.</p>
+          <Map size={24} className="text-app-muted mb-2" />
+          <p className="text-sm text-app-muted">Belum ada langkah.</p>
         </div>
       ) : (
         alur.map((step, i) => {
@@ -457,7 +457,7 @@ function AlurSection() {
           return (
             <div
               key={i}
-              className={`bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
+              className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
                 dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
               } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-amber-500' : ''}`}
             >
@@ -469,10 +469,10 @@ function AlurSection() {
                 >
                   {i + 1}
                 </div>
-                <span className="text-sm font-medium text-zinc-200">{step.judul || `Langkah ${i + 1}`}</span>
+                <span className="text-sm font-medium text-app-primary">{step.judul || `Langkah ${i + 1}`}</span>
                 <button
                   onClick={() => deleteAlur(i)}
-                  className="ml-auto text-zinc-500 hover:text-red-400 transition-colors text-sm"
+                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
                 >
                   <Trash2 size={14} className="inline" />
                 </button>
@@ -539,10 +539,10 @@ export default function Dokumen() {
   return (
     <div className="p-6 space-y-5 max-w-4xl">
       <div>
-        <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
           <span>📐</span> Dokumen Pembelajaran
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-app-secondary mt-1">
           Lengkapi semua dokumen perencanaan pembelajaran dalam satu halaman.
         </p>
       </div>
@@ -569,7 +569,7 @@ export default function Dokumen() {
         </AccordionSection>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex justify-end">
+      <div className="mt-6 pt-4 border-t border-app-border flex justify-end">
         <button
           onClick={() => useAuthoringStore.getState().setActivePanel('konten')}
           className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"

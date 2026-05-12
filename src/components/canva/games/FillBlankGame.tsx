@@ -111,7 +111,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
         className={`w-full px-3 py-2 rounded-lg border text-[11px] font-semibold outline-none transition-all ${
           answered
             ? lastCorrect ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300' : 'border-red-400/40 bg-red-500/10 text-red-300'
-            : 'border-white/15 bg-white/5 text-white focus:border-cyan-400/50 focus:bg-white/10'
+            : 'border-app-border/15 bg-app-elevated/5 text-app-primary focus:border-cyan-400/50 focus:bg-app-elevated/10'
         }`}
       />
       {String(q.petunjuk || '') && !answered && (

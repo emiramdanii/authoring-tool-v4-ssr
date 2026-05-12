@@ -14,7 +14,7 @@ export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
         <FieldLabel>Layout</FieldLabel>
         <div className="flex gap-2">
           {['grid', 'row'].map((l) => (
-            <button key={l} onClick={() => uf('layout', l)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.layout as string) === l ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-zinc-700/50 text-zinc-400'}`}>
+            <button key={l} onClick={() => uf('layout', l)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.layout as string) === l ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-app-border/50 text-app-secondary'}`}>
               {l}
             </button>
           ))}
@@ -23,14 +23,14 @@ export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Item Statistik ({items.length})</FieldLabel>
         {items.map((item, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <div className="flex items-center gap-2">
               <input className={`${INPUT_CLS} w-16`} placeholder="📊" value={(item.icon as string) || ''} onChange={(e) => ui!('items', i, 'icon', e.target.value)} />
               <input className={`${INPUT_CLS} w-28`} placeholder="Angka" value={(item.angka as string) || ''} onChange={(e) => ui!('items', i, 'angka', e.target.value)} />
               <input className={`${INPUT_CLS} w-20`} placeholder="Satuan" value={(item.satuan as string) || ''} onChange={(e) => ui!('items', i, 'satuan', e.target.value)} />
               <input className={INPUT_CLS} placeholder="Label…" value={(item.label as string) || ''} onChange={(e) => ui!('items', i, 'label', e.target.value)} />
               <ColorPicker value={(item.color as string) || '#3ecfcf'} onChange={(v) => ui!('items', i, 'color', v)} />
-              <button onClick={() => ri!('items', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+              <button onClick={() => ri!('items', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
           </div>
         ))}

@@ -202,7 +202,7 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
                 className={`${fontSize} w-full aspect-square rounded flex items-center justify-center font-bold transition-colors ${
                   isStart ? 'bg-amber-500/40 text-amber-200 ring-2 ring-amber-400/50' :
                   isFound ? 'bg-emerald-500/30 text-emerald-300' :
-                  'bg-white/5 text-white/60 hover:bg-white/15 cursor-pointer'
+                  'bg-app-elevated/5 text-app-primary/60 hover:bg-app-elevated/15 cursor-pointer'
                 }`}>
                 {letter}
               </button>
@@ -213,7 +213,7 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
         <div className="flex-1 flex flex-col gap-0.5 min-w-[60px]">
           {placements.map((p, i) => (
             <span key={i} className={`text-[8px] px-1.5 py-0.5 rounded ${
-              found.has(p.word) ? 'bg-emerald-500/20 text-emerald-300 line-through' : 'bg-white/5 text-white/40'
+              found.has(p.word) ? 'bg-emerald-500/20 text-emerald-300 line-through' : 'bg-app-elevated/5 text-app-primary/40'
             }`}>{p.word}</span>
           ))}
         </div>

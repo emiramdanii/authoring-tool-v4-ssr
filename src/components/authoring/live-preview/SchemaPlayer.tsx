@@ -135,8 +135,8 @@ export default function SchemaPlayer({
       <div className={`flex items-center justify-center ${className || ''}`} style={{ background: COLORS.bgPlayer }}>
         <div className="text-center">
           <div className="text-3xl mb-3 animate-pulse">⏳</div>
-          <div className="text-white/50 text-sm">Memuat schema...</div>
-          <div className="text-white/30 text-xs mt-1">Preset: {presetId}</div>
+          <div className="text-app-primary/50 text-sm">Memuat schema...</div>
+          <div className="text-app-primary/30 text-xs mt-1">Preset: {presetId}</div>
         </div>
       </div>
     );
@@ -148,7 +148,7 @@ export default function SchemaPlayer({
         <div className="text-center p-6">
           <div className="text-3xl mb-3">⚠️</div>
           <div className="text-red-400 text-sm">{error || 'Schema tidak tersedia'}</div>
-          <div className="text-white/30 text-xs mt-2">
+          <div className="text-app-primary/30 text-xs mt-2">
             Preset tersedia: {getAvailablePresets().join(', ') || 'tidak ada'}
           </div>
         </div>
@@ -190,13 +190,13 @@ export default function SchemaPlayer({
 
       {/* ══ BOTTOM NAVIGATION BAR ══════════════════════════════ */}
       {showControls && (
-        <div className="absolute bottom-0 left-0 right-0 z-50 border-t border-white/10"
+        <div className="absolute bottom-0 left-0 right-0 z-50 border-t border-app-border/10"
           style={{
             background: 'rgba(15,23,42,0.92)',
             backdropFilter: 'blur(12px)',
           }}>
           {/* Progress bar */}
-          <div className="bg-white/5" style={{ height: isCompact ? 2 : 4 }}>
+          <div className="bg-app-elevated/5" style={{ height: isCompact ? 2 : 4 }}>
             <div className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${totalScreens > 0 ? ((screenIdx + 1) / totalScreens) * 100 : 0}%`,
@@ -216,8 +216,8 @@ export default function SchemaPlayer({
                 isCompact ? 'text-[7px] px-1.5 py-0.5' : 'text-xs px-3 py-1.5'
               } ${
                 canPrev
-                  ? 'hover:bg-white/10 text-white/60 cursor-pointer'
-                  : 'opacity-30 cursor-not-allowed text-white/20'
+                  ? 'hover:bg-app-elevated/10 text-app-primary/60 cursor-pointer'
+                  : 'opacity-30 cursor-not-allowed text-app-primary/20'
               }`}>
               ← Prev
             </button>
@@ -245,11 +245,11 @@ export default function SchemaPlayer({
                     className={`relative flex-shrink-0 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
                       isActive
                         ? isCompact
-                          ? 'w-6 h-6 text-[10px] bg-slate-700/40 ring-2 ring-emerald-400/60'
-                          : 'w-8 h-8 text-base bg-slate-700/40 ring-2 ring-emerald-400/60 shadow-lg shadow-emerald-500/20'
+                          ? 'w-6 h-6 text-[10px] bg-app-elevated/40 ring-2 ring-emerald-400/60'
+                          : 'w-8 h-8 text-base bg-app-elevated/40 ring-2 ring-emerald-400/60 shadow-lg shadow-emerald-500/20'
                         : isCompact
-                          ? 'w-4 h-4 text-[7px] hover:bg-slate-800/40'
-                          : 'w-6 h-6 text-xs hover:bg-slate-800/40'
+                          ? 'w-4 h-4 text-[7px] hover:bg-app-elevated/40'
+                          : 'w-6 h-6 text-xs hover:bg-app-elevated/40'
                     }`}>
                     <span>{icon}</span>
                   </button>
@@ -265,8 +265,8 @@ export default function SchemaPlayer({
                 isCompact ? 'text-[7px] px-1.5 py-0.5' : 'text-xs px-3 py-1.5'
               } ${
                 canNext
-                  ? 'hover:-translate-y-0.5 hover:shadow-lg cursor-pointer text-slate-900'
-                  : 'opacity-50 cursor-not-allowed text-slate-900'
+                  ? 'hover:-translate-y-0.5 hover:shadow-lg cursor-pointer text-app-primary'
+                  : 'opacity-50 cursor-not-allowed text-app-primary'
               }`}
               style={{
                 background: canNext ? tokens.colors.y : alpha(tokens.colors.y, 0.3),
@@ -277,7 +277,7 @@ export default function SchemaPlayer({
 
           {/* Info row (preview mode only) */}
           {!isCompact && (
-            <div className="flex items-center justify-between px-3 pb-2 text-[10px] text-white/30">
+            <div className="flex items-center justify-between px-3 pb-2 text-[10px] text-app-primary/30">
               <span>{currentScreen?.sectionLabel || currentScreen?.id}</span>
               <span>{screenIdx + 1}/{totalScreens} · Schema: {schema.id}</span>
               <span>Theme: {themeId}</span>
@@ -317,12 +317,7 @@ function ThemeSwitcher({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all"
-        style={{
-          background: 'rgba(255,255,255,.08)',
-          borderColor: 'rgba(255,255,255,.15)',
-          color: 'rgba(255,255,255,.7)',
-        }}>
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all bg-app-border/8 border-app-border/15 text-app-primary/70">
         🎨 {THEME_PRESETS.find(t => t.id === currentTheme)?.name || currentTheme}
       </button>
 
@@ -332,10 +327,9 @@ function ThemeSwitcher({
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           {/* Dropdown */}
-          <div className="absolute top-full right-0 mt-1 w-48 rounded-xl overflow-hidden z-50"
+          <div className="absolute top-full right-0 mt-1 w-48 rounded-xl overflow-hidden z-50 border border-app-border/10"
             style={{
               background: 'rgba(15,23,42,0.95)',
-              border: '1px solid rgba(255,255,255,.1)',
               boxShadow: '0 8px 32px rgba(0,0,0,.6)',
             }}>
             <div className="p-2 space-y-0.5">
@@ -352,7 +346,7 @@ function ThemeSwitcher({
                       setOpen(false);
                     }}
                     className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all ${
-                      isActive ? 'bg-white/10' : 'hover:bg-white/5'
+                      isActive ? 'bg-app-elevated/10' : 'hover:bg-app-elevated/5'
                     }`}>
                     {/* Color swatch */}
                     <div className="flex gap-0.5 flex-shrink-0">
@@ -361,7 +355,7 @@ function ThemeSwitcher({
                       ))}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-bold text-white/80 truncate">{t.name}</div>
+                      <div className="text-[10px] font-bold text-app-primary/80 truncate">{t.name}</div>
                       {isPreset && (
                         <div className="text-[8px] text-amber-400">Preset asli</div>
                       )}

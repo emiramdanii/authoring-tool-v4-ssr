@@ -32,12 +32,12 @@ export function CardShowcaseEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Cards ({cards.length})</FieldLabel>
         {cards.map((c, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <div className="flex items-center gap-2">
               <input className={`${INPUT_CLS} w-16`} value={(c.icon as string) || ''} onChange={(e) => ui!('cards', i, 'icon', e.target.value)} placeholder="📌" />
               <input className={INPUT_CLS} placeholder="Judul…" value={(c.judul as string) || ''} onChange={(e) => ui!('cards', i, 'judul', e.target.value)} />
               <ColorPicker value={(c.warna as string) || '#3ecfcf'} onChange={(v) => ui!('cards', i, 'warna', v)} />
-              <button onClick={() => ri!('cards', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+              <button onClick={() => ri!('cards', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
             <input className={INPUT_CLS} placeholder="Subtitle…" value={(c.subtitle as string) || ''} onChange={(e) => ui!('cards', i, 'subtitle', e.target.value)} />
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Isi kartu…" value={(c.isi as string) || ''} onChange={(e) => ui!('cards', i, 'isi', e.target.value)} />

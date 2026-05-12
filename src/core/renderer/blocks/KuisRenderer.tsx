@@ -123,8 +123,8 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
   return (
     <div className="space-y-3">
       {/* Header with progress */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
             <Gamepad2 size={14} className="inline" /> <InlineTextEditor
               {...titleEditor}
@@ -176,14 +176,15 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
           background: tokens.colorAlpha('y', 0.06),
           border: '1px solid ' + tokens.colorAlpha('y', 0.2),
           boxShadow: tokens.raw.shadow.card,
+          overflow: 'hidden',
         }}>
         <InlineTextEditor
           {...questionEditor}
           className="text-[12px] font-bold leading-relaxed mb-3"
-          style={{ fontSize: 'inherit' }}
+          style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
           placeholder="Ketik pertanyaan..."
         />
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5" style={{ overflow: 'hidden' }}>
           {(q.opts || []).map((opt, i) => {
             const isAnswered = answers[current] !== undefined;
             const isCorrect = i === q.ans;
@@ -216,11 +217,13 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
               background: answers[current] === q.ans ? tokens.colorAlpha('g', 0.1) : tokens.colorAlpha('r', 0.1),
               border: '1px solid ' + (answers[current] === q.ans ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
               color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
+              overflow: 'hidden',
+              wordBreak: 'break-word',
             }}>
             {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}<InlineTextEditor
               {...explanationEditor}
               className="text-[10px]"
-              style={{ color: 'inherit', fontSize: 'inherit' }}
+              style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
               placeholder="Ketik penjelasan..."
             />
           </div>

@@ -13,12 +13,12 @@ export function MatchingEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Pasangan ({pasangan.length})</FieldLabel>
         {pasangan.map((p, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 flex items-center gap-2">
-            <span className="text-xs text-zinc-500 flex-shrink-0">{i + 1}</span>
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 flex items-center gap-2">
+            <span className="text-xs text-app-muted flex-shrink-0">{i + 1}</span>
             <input className={INPUT_CLS} placeholder="Kiri…" value={(p.kiri as string) || ''} onChange={(e) => ui!('pasangan', i, 'kiri', e.target.value)} />
-            <span className="text-zinc-500 flex-shrink-0">↔</span>
+            <span className="text-app-muted flex-shrink-0">↔</span>
             <input className={INPUT_CLS} placeholder="Kanan…" value={(p.kanan as string) || ''} onChange={(e) => ui!('pasangan', i, 'kanan', e.target.value)} />
-            <button onClick={() => ri!('pasangan', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            <button onClick={() => ri!('pasangan', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
         <button onClick={() => ai!('pasangan', { kiri: '', kanan: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pasangan</button>

@@ -45,8 +45,8 @@ export default function LayerPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
         <div className="text-2xl mb-2 opacity-40">📦</div>
-        <div className="text-[10px] text-slate-500">Tidak ada schema block</div>
-        <div className="text-[8px] text-slate-600 mt-1">
+        <div className="text-[10px] text-app-muted">Tidak ada schema block</div>
+        <div className="text-[8px] text-app-muted mt-1">
           Layer panel hanya tersedia untuk halaman template/schema
         </div>
       </div>
@@ -55,10 +55,10 @@ export default function LayerPanel() {
 
   return (
     <div className="space-y-1">
-      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+      <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
         <MousePointer2 size={10} />
         Block Layer
-        <span className="text-slate-600">({schema.blocks.length})</span>
+        <span className="text-app-muted">({schema.blocks.length})</span>
       </div>
 
       <LayerList
@@ -78,16 +78,16 @@ export default function LayerPanel() {
       />
 
       {/* Screen info */}
-      <div className="mt-3 pt-2 border-t border-slate-700/20">
-        <div className="text-[8px] text-slate-600">
+      <div className="mt-3 pt-2 border-t border-app-border/20">
+        <div className="text-[8px] text-app-muted">
           {schema.sectionLabel && (
-            <span className="text-slate-500">{schema.sectionLabel}</span>
+            <span className="text-app-muted">{schema.sectionLabel}</span>
           )}
           {schema.templateType && (
             <span className="ml-1">· {schema.templateType}</span>
           )}
         </div>
-        <div className="text-[8px] text-slate-600 mt-0.5">
+        <div className="text-[8px] text-app-muted mt-0.5">
           Klik = select · Double-klik = edit · Drag = reorder
         </div>
       </div>
@@ -226,14 +226,14 @@ function LayerList({
                   : isSelected
                     ? 'bg-blue-500/15 border border-blue-500/30 text-blue-200'
                     : isHovered
-                      ? 'bg-slate-800/60 border border-slate-700/20 text-slate-300'
-                      : 'border border-transparent text-slate-400 hover:bg-slate-800/40 hover:text-slate-300'
+                      ? 'bg-app-elevated/60 border border-app-border/20 text-app-secondary'
+                      : 'border border-transparent text-app-secondary hover:bg-app-elevated/40 hover:text-app-secondary'
             }`}
           >
             {/* Drag handle */}
             <button
               onPointerDown={(e) => handleDragStart(e, idx)}
-              className="flex-shrink-0 cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition-colors p-0.5"
+              className="flex-shrink-0 cursor-grab active:cursor-grabbing text-app-muted hover:text-app-secondary transition-colors p-0.5"
               title="Drag untuk reorder"
             >
               <GripVertical size={12} />
@@ -266,7 +266,7 @@ function LayerList({
                     </span>
                   )}
                 </div>
-                <div className="text-[8px] text-slate-500 flex items-center gap-1">
+                <div className="text-[8px] text-app-muted flex items-center gap-1">
                   <span className={`px-1 py-0 rounded text-[7px] font-bold ${
                     layout === 'flow'
                       ? 'bg-emerald-500/10 text-emerald-400/60'
@@ -275,13 +275,13 @@ function LayerList({
                     {layout}
                   </span>
                   {block.variant && (
-                    <span className="text-[7px] text-slate-600">V{block.variant}</span>
+                    <span className="text-[7px] text-app-muted">V{block.variant}</span>
                   )}
                 </div>
               </div>
 
               {/* Block type badge */}
-              <span className="text-[7px] text-slate-600 font-mono truncate max-w-[60px]">
+              <span className="text-[7px] text-app-muted font-mono truncate max-w-[60px]">
                 {block.type}
               </span>
             </button>
@@ -291,28 +291,28 @@ function LayerList({
               <div className="flex items-center gap-0.5 flex-shrink-0">
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockUp(blockId); }}
-                  className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="p-0.5 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
                   title="Pindah atas"
                 >
                   <ChevronUp size={12} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockDown(blockId); }}
-                  className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="p-0.5 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
                   title="Pindah bawah"
                 >
                   <ChevronDown size={12} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); duplicateBlock(blockId); }}
-                  className="p-0.5 rounded hover:bg-slate-600/50 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="p-0.5 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
                   title="Duplikat"
                 >
                   ⧉
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteBlock(blockId); }}
-                  className="p-0.5 rounded hover:bg-red-500/30 text-slate-500 hover:text-red-400 transition-colors"
+                  className="p-0.5 rounded hover:bg-red-500/30 text-app-muted hover:text-red-400 transition-colors"
                   title="Hapus"
                 >
                   ✕

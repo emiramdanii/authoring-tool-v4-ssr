@@ -29,7 +29,7 @@ export function KutipanEditor({ mod, uf }: EdProps) {
           <FieldLabel>Gaya Tampilan</FieldLabel>
           <div className="flex gap-2">
             {displays.map((d) => (
-              <button key={d.id} onClick={() => uf('display', d.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${(mod.display as string) === d.id ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-zinc-700/50 text-zinc-400'}`}>
+              <button key={d.id} onClick={() => uf('display', d.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${(mod.display as string) === d.id ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-app-border/50 text-app-secondary'}`}>
                 {d.label}
               </button>
             ))}

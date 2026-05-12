@@ -37,16 +37,16 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
           }}>
           <Target size={16} style={{ color: tokens.color('y') }} />
         </div>
-        <h2 className="font-black leading-tight"
-          style={{ fontSize: isCompact ? '16px' : '1.6rem', fontFamily: tokens.fontFamily('display') }}>
+        <h2 className="font-black leading-tight min-w-0"
+          style={{ fontSize: isCompact ? '16px' : '1.6rem', fontFamily: tokens.fontFamily('display'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
-            style={{ fontSize: 'inherit', fontFamily: 'inherit', color: tokens.color('text') }}
+            style={{ fontSize: 'inherit', fontFamily: 'inherit', color: tokens.color('text'), wordBreak: 'break-word' }}
           /> <InlineTextEditor
             {...titleHighlightEditor}
             className="font-black leading-tight"
-            style={{ color: tokens.color('y'), fontSize: 'inherit', fontFamily: 'inherit' }}
+            style={{ color: tokens.color('y'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
           />
         </h2>
       </div>
@@ -85,8 +85,8 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
                   {item.num}
                 </div>
                 <div className="min-w-0">
-                  <div className="font-extrabold" style={{ color: tokens.color(item.color), fontSize: isCompact ? '12px' : '14px' }}>{item.verb}</div>
-                  <div className="leading-relaxed mt-0.5" style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px' }}>{item.desc}</div>
+                  <div className="font-extrabold" style={{ color: tokens.color(item.color), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.verb}</div>
+                  <div className="leading-relaxed mt-0.5" style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
                 </div>
               </div>
               {/* Connector dot between items */}
@@ -111,11 +111,13 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
             boxShadow: tokens.raw.shadow.card,
             color: tokens.color('text'),
             fontSize: isCompact ? '11px' : '13px',
+            overflow: 'hidden',
+            wordBreak: 'break-word',
           }}>
           <div className="flex items-start gap-2">
             <Link2 size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color('g') }} />
             <div>
-              <strong style={{ color: tokens.color('g') }}>Profil Pelajar Pancasila:</strong> {block.profil}
+              <strong style={{ color: tokens.color('g') }}>Profil Pelajar Pancasila:</strong> <span style={{ wordBreak: 'break-word' }}>{block.profil}</span>
             </div>
           </div>
         </div>

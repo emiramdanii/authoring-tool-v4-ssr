@@ -274,11 +274,11 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
         {/* Grid */}
         <div className="flex-shrink-0 overflow-auto" style={{ display: 'grid', gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`, gap: 1 }}>
           {grid.map((row, r) => row.map((cell, c) => {
-            if (!cell.letter) return <div key={`${r}-${c}`} className="rounded bg-black/30" style={{ width: cellSize, height: cellSize }} />;
+            if (!cell.letter) return <div key={`${r}-${c}`} className="rounded bg-app-surface/30" style={{ width: cellSize, height: cellSize }} />;
             const val = userGrid[`${r},${c}`] || '';
             const isRevealed = revealed.has(`${r},${c}`);
             const isActive = activeCell?.r === r && activeCell?.c === c;
-            let cls = 'bg-white/10 border text-white/70 cursor-pointer';
+            let cls = 'bg-app-elevated/10 border text-app-primary/70 cursor-pointer';
             if (isActive) cls = 'bg-cyan-500/30 border-cyan-400 text-cyan-200 ring-1 ring-cyan-400/50';
             if (checked) {
               if (val === cell.letter) cls = 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300';
@@ -288,9 +288,9 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             return (
               <button key={`${r}-${c}`}
                 onClick={() => setActiveCell({ r, c })}
-                className={`rounded flex items-center justify-center font-bold transition-colors border-white/10 border ${compact ? 'text-[7px]' : 'text-[9px]'} ${cls}`}
+                className={`rounded flex items-center justify-center font-bold transition-colors border-app-border/10 border ${compact ? 'text-[7px]' : 'text-[9px]'} ${cls}`}
                 style={{ width: cellSize, height: cellSize, position: 'relative' }}>
-                {cell.num > 0 && <span className="absolute top-0 left-0.5 text-[5px] text-white/40 font-bold">{cell.num}</span>}
+                {cell.num > 0 && <span className="absolute top-0 left-0.5 text-[5px] text-app-primary/40 font-bold">{cell.num}</span>}
                 {val}
               </button>
             );
@@ -304,7 +304,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
               {acrossClues.map((cl, i) => (
                 <button key={`a${i}`}
                   onClick={() => setActiveCell({ r: cl.startR, c: cl.startC })}
-                  className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
+                  className="text-[7px] px-1 py-0.5 rounded text-app-primary/50 hover:bg-app-elevated/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
               ))}
             </>
           )}
@@ -314,7 +314,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
               {downClues.map((cl, i) => (
                 <button key={`d${i}`}
                   onClick={() => setActiveCell({ r: cl.startR, c: cl.startC })}
-                  className="text-[7px] px-1 py-0.5 rounded text-white/50 hover:bg-white/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
+                  className="text-[7px] px-1 py-0.5 rounded text-app-primary/50 hover:bg-app-elevated/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
               ))}
             </>
           )}

@@ -65,14 +65,14 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative bg-zinc-900 border border-zinc-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-app-surface border border-app-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-app-border flex-shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-zinc-100"><Pencil size={16} className="inline" /> Edit Modul</h3>
-            <p className="text-xs text-zinc-400 mt-0.5 capitalize">{t} — {(mod.title as string) || '(tanpa judul)'}</p>
+            <h3 className="text-lg font-bold text-app-primary"><Pencil size={16} className="inline" /> Edit Modul</h3>
+            <p className="text-xs text-app-secondary mt-0.5 capitalize">{t} — {(mod.title as string) || '(tanpa judul)'}</p>
           </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-200 transition-colors text-xl leading-none p-1">✕</button>
+          <button onClick={onClose} className="text-app-muted hover:text-app-primary transition-colors text-xl leading-none p-1">✕</button>
         </div>
 
         {/* Body */}
@@ -112,8 +112,8 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
           {t === 'teambuzzer' && <TeambuzzerEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
           {t === 'wordsearch' && <WordsearchEditor mod={mod} uf={uf} />}
           {t === 'skenario' && (
-            <div className="p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-center">
-              <p className="text-sm text-zinc-400">Skenario memiliki editor khusus di tab <strong className="text-amber-400">Skenario</strong>.</p>
+            <div className="p-4 bg-app-elevated/50 border border-app-border/50 rounded-xl text-center">
+              <p className="text-sm text-app-secondary">Skenario memiliki editor khusus di tab <strong className="text-amber-400">Skenario</strong>.</p>
             </div>
           )}
           {t === 'petunjuk' && <PetunjukEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
@@ -122,9 +122,9 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
           {t === 'refleksi' && <RefleksiEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
 
           {/* ── Live Preview Panel ── */}
-          <div className="border-t border-zinc-800 pt-4 mt-2">
+          <div className="border-t border-app-border pt-4 mt-2">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-bold text-zinc-200"><Eye size={16} className="inline" /> Pratinjau Langsung</h4>
+              <h4 className="text-sm font-bold text-app-primary"><Eye size={16} className="inline" /> Pratinjau Langsung</h4>
               {/* Layout Variant Picker */}
               <div className="flex gap-1">
                 {LAYOUT_VARIANTS.map(v => {
@@ -134,7 +134,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
                       key={v.id}
                       onClick={() => uf('layoutVariant', v.id)}
                       className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
-                        currentVariant === v.id ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                        currentVariant === v.id ? 'bg-amber-500 text-black' : 'bg-app-elevated text-app-secondary hover:bg-app-elevated'
                       }`}
                       title={v.desc}
                     >
@@ -144,7 +144,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
                 })}
               </div>
             </div>
-            <div className="bg-slate-900 rounded-xl p-4 border border-zinc-800 overflow-auto max-h-80">
+            <div className="bg-app-surface rounded-xl p-4 border border-app-border overflow-auto max-h-80">
               <PresetModuleCard
                 mode="edit"
                 module={mod}
@@ -155,7 +155,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-zinc-800 flex-shrink-0 flex justify-end">
+        <div className="px-6 py-4 border-t border-app-border flex-shrink-0 flex justify-end">
           <button onClick={onClose} className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-900 rounded-lg font-bold text-sm transition-colors">
             Simpan & Tutup
           </button>

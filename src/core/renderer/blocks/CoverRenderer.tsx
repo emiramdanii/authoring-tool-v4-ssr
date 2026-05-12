@@ -58,12 +58,12 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
       </div>
 
       {/* Title — inline editable when in editing mode */}
-      <h1 className="font-black leading-tight mt-3"
-        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5) }}>
+      <h1 className="font-black leading-tight mt-3 min-w-0 line-clamp-3"
+        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
-          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit' }}
+          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit', wordBreak: 'break-word' }}
         />
         {block.title.includes(' — ') && <><br /><span>{block.title.split(' — ')[1]}</span></>}
       </h1>
@@ -78,9 +78,9 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
 
       {/* Badges — glass-morphism pill style */}
       {block.badges && block.badges.length > 0 && (
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 max-w-full">
           {block.badges.map((b, i) => (
-            <span key={i} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold"
+            <span key={i} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold min-w-0"
               style={{
                 fontSize: '12px',
                 background: tokens.colorAlpha(b.color, 0.2),
@@ -88,8 +88,12 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
                 border: '1px solid ' + tokens.colorAlpha(b.color, 0.35),
                 backdropFilter: 'blur(12px)',
                 boxShadow: '0 2px 8px ' + tokens.colorAlpha(b.color, 0.15),
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                wordBreak: 'break-word',
+                maxWidth: '100%',
               }}>
-              {b.icon && <span>{b.icon}</span>} {b.text}
+              {b.icon && <span className="flex-shrink-0">{b.icon}</span>} <span className="min-w-0">{b.text}</span>
             </span>
           ))}
         </div>

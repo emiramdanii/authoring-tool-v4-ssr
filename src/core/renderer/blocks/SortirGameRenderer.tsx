@@ -51,12 +51,15 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
       </div>
       <div className="flex flex-wrap gap-1.5">
         {kolomItems.map((text, i) => (
-          <span key={i} className="px-2.5 py-1 rounded-full font-bold"
+          <span key={i} className="px-2.5 py-1 rounded-full font-bold min-w-0"
             style={{
               fontSize: '11px',
               background: tokens.colorAlpha(kolomDef.color, 0.2),
               color: tokens.color(kolomDef.color),
               border: '1px solid ' + tokens.colorAlpha(kolomDef.color, 0.3),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              maxWidth: '100%',
             }}>
             {text}
           </span>
@@ -240,13 +243,15 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         </div>
         {poolState.filter(p => !p.placed).map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
-            className="px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105"
+            className="px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0"
             style={{
               background: selected === p.id ? tokens.colorAlpha('y', 0.2) : tokens.subtleBg(0.07),
               border: '2px solid ' + (selected === p.id ? tokens.color('y') : tokens.subtleBorder(0.15)),
               boxShadow: selected === p.id ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : tokens.raw.shadow.card,
               fontSize: '12px',
               animation: selected === p.id ? 'pulse 1.5s ease-in-out infinite' : 'none',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}>
             {p.text}
           </button>

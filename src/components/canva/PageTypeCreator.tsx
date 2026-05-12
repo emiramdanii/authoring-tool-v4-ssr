@@ -39,21 +39,21 @@ function ConfigPanel({
   }, [config, onGenerate]);
 
   return (
-    <div className="mt-2 p-3 rounded-xl bg-slate-800/60 border border-amber-500/20 space-y-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="mt-2 p-3 rounded-xl bg-app-elevated/60 border border-amber-500/20 space-y-3 animate-in slide-in-from-top-2 duration-200">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-lg">{pageType.icon}</span>
           <div>
             <div className="text-[11px] font-bold text-amber-300">{pageType.name}</div>
-            <div className="text-[9px] text-slate-400">{pageType.description}</div>
+            <div className="text-[9px] text-app-secondary">{pageType.description}</div>
           </div>
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={onCancel}
-          className="h-6 w-6 rounded-md text-slate-500 hover:text-slate-300"
+          className="h-6 w-6 rounded-md text-app-muted hover:text-app-secondary"
         >
           <X size={12} />
         </Button>
@@ -103,11 +103,11 @@ function OptionControl({
   if (opt.type === 'toggle') {
     return (
       <label className="flex items-center justify-between gap-3">
-        <span className="text-[10px] text-slate-300">{opt.label}</span>
+        <span className="text-[10px] text-app-secondary">{opt.label}</span>
         <button
           onClick={() => onChange(!value)}
           className={`relative w-9 h-5 rounded-full transition-colors ${
-            value ? 'bg-amber-500' : 'bg-slate-600'
+            value ? 'bg-amber-500' : 'bg-app-elevated'
           }`}
         >
           <span
@@ -124,7 +124,7 @@ function OptionControl({
     return (
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-slate-300">{opt.label}</span>
+          <span className="text-[10px] text-app-secondary">{opt.label}</span>
           <span className="text-[10px] font-bold text-amber-400">{value as number}</span>
         </div>
         <input
@@ -134,7 +134,7 @@ function OptionControl({
           step={opt.step ?? 1}
           value={value as number}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+          className="w-full h-1.5 bg-app-elevated rounded-lg appearance-none cursor-pointer accent-amber-500"
         />
       </div>
     );
@@ -143,11 +143,11 @@ function OptionControl({
   if (opt.type === 'select' && opt.options) {
     return (
       <div className="space-y-1">
-        <span className="text-[10px] text-slate-300">{opt.label}</span>
+        <span className="text-[10px] text-app-secondary">{opt.label}</span>
         <select
           value={String(value)}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-7 px-2 text-[10px] text-slate-200 bg-slate-700/80 border border-slate-600/40 rounded-lg focus:border-amber-500/50 focus:outline-none"
+          className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/80 border border-app-border/40 rounded-lg focus:border-amber-500/50 focus:outline-none"
         >
           {opt.options.map((o) => (
             <option key={String(o.value)} value={String(o.value)}>{o.label}</option>
@@ -234,7 +234,7 @@ export default function PageTypeCreator() {
           className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
             !activeCategory
               ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
-              : 'bg-slate-800/40 border border-slate-700/20 text-slate-400 hover:border-slate-600'
+              : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
           }`}
         >
           Semua
@@ -246,7 +246,7 @@ export default function PageTypeCreator() {
             className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
               activeCategory === cat.id
                 ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
-                : 'bg-slate-800/40 border border-slate-700/20 text-slate-400 hover:border-slate-600'
+                : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
             }`}
           >
             {cat.label}
@@ -265,7 +265,7 @@ export default function PageTypeCreator() {
                 className={`card-hover w-full flex items-center gap-2 p-2 rounded-xl transition-all active:scale-95 ${
                   isSelected
                     ? 'bg-amber-500/10 border border-amber-500/30 ring-1 ring-amber-500/20'
-                    : 'bg-slate-800/40 border border-slate-700/20 hover:border-slate-600'
+                    : 'bg-app-elevated/40 border border-app-border/20 hover:border-app-border'
                 }`}
               >
                 <span
@@ -275,12 +275,12 @@ export default function PageTypeCreator() {
                   {pt.icon}
                 </span>
                 <div className="flex-1 text-left min-w-0">
-                  <div className="text-[11px] font-bold text-slate-200 truncate">{pt.name}</div>
-                  <div className="text-[9px] text-slate-500 truncate">{pt.description}</div>
+                  <div className="text-[11px] font-bold text-app-primary truncate">{pt.name}</div>
+                  <div className="text-[9px] text-app-muted truncate">{pt.description}</div>
                 </div>
                 <ChevronDown
                   size={12}
-                  className={`text-slate-500 transition-transform flex-shrink-0 ${isSelected ? 'rotate-180' : ''}`}
+                  className={`text-app-muted transition-transform flex-shrink-0 ${isSelected ? 'rotate-180' : ''}`}
                 />
               </button>
 

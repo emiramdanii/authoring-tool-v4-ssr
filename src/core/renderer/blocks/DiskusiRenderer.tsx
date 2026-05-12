@@ -143,7 +143,7 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
               <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
             )}
           </div>
-          <p className="mt-1.5 leading-relaxed font-bold" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text') }}>{q.teks}</p>
+          <p className="mt-1.5 leading-relaxed font-bold" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
           {interactive ? (
             <textarea className="w-full mt-2 rounded-lg p-2.5 resize-y"
               style={{
@@ -153,6 +153,8 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
                 border: '1px solid ' + tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.3 : 0.2),
                 minHeight: isCompact ? '40px' : '60px',
                 transition: 'border-color 0.2s',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
               }}
               placeholder={q.petunjuk}
               value={responses[i] || ''}

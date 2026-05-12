@@ -15,7 +15,7 @@ export function ComparisonEditor({ mod, uf, ai, ri, ui }: EdProps) {
         <FieldLabel>Kolom</FieldLabel>
         <div className="flex gap-2">
           {kolom.map((k, i) => (
-            <div key={i} className="flex-1 p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 space-y-1">
+            <div key={i} className="flex-1 p-2 bg-app-elevated/50 rounded-lg border border-app-border/50 space-y-1">
               <div className="flex items-center gap-1">
                 <input className={`${INPUT_CLS} w-12`} value={(k.icon as string) || ''} onChange={(e) => ui!('kolom', i, 'icon', e.target.value)} placeholder="📌" />
                 <input className={INPUT_CLS} placeholder="Judul kolom…" value={(k.judul as string) || ''} onChange={(e) => ui!('kolom', i, 'judul', e.target.value)} />
@@ -31,11 +31,11 @@ export function ComparisonEditor({ mod, uf, ai, ri, ui }: EdProps) {
         {baris.map((b, i) => {
           const nilai = (b.nilai as string[]) || [''];
           return (
-            <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+            <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
               <div className="flex items-center gap-2">
                 <input className={`${INPUT_CLS} w-12`} value={(b.icon as string) || ''} onChange={(e) => ui!('baris', i, 'icon', e.target.value)} placeholder="📌" />
                 <input className={INPUT_CLS} placeholder="Label baris…" value={(b.label as string) || ''} onChange={(e) => ui!('baris', i, 'label', e.target.value)} />
-                <button onClick={() => ri!('baris', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+                <button onClick={() => ri!('baris', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
               </div>
               <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${kolom.length}, 1fr)` }}>
                 {kolom.map((_, ci) => (

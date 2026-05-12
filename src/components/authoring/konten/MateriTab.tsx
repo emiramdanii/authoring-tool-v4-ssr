@@ -30,31 +30,31 @@ function BlokCard({
   return (
     <div
       ref={cardRef}
-      className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-all"
+      className="bg-app-surface border border-app-border rounded-xl overflow-hidden transition-all"
       style={{ borderLeftWidth: '3px', borderLeftColor: info.color }}
     >
       {/* Header */}
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zinc-800/30 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-app-elevated/30 transition-colors"
       >
         <TypeBadge tipe={blok.tipe} />
-        <span className="flex-1 text-sm text-zinc-300 truncate">
+        <span className="flex-1 text-sm text-app-secondary truncate">
           {blok.judul || info.label}
         </span>
-        <span className="text-xs text-zinc-600">#{idx + 1}</span>
+        <span className="text-xs text-app-muted">#{idx + 1}</span>
         <ChevronIcon open={open} />
       </button>
 
       {/* Body */}
       {open && (
-        <div className="px-4 pb-4 pt-1 border-t border-zinc-800">
+        <div className="px-4 pb-4 pt-1 border-t border-app-border">
           {/* Action buttons */}
           <div className="flex items-center gap-1 mb-3 pt-2">
             <button
               onClick={onMoveUp}
               disabled={idx === 0}
-              className="px-2 py-1 text-xs text-zinc-500 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors"
+              className="px-2 py-1 text-xs text-app-muted hover:text-app-primary disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-app-elevated transition-colors"
               title="Pindah ke atas"
             >
               ↑ Naik
@@ -62,7 +62,7 @@ function BlokCard({
             <button
               onClick={onMoveDown}
               disabled={idx === total - 1}
-              className="px-2 py-1 text-xs text-zinc-500 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors"
+              className="px-2 py-1 text-xs text-app-muted hover:text-app-primary disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-app-elevated transition-colors"
               title="Pindah ke bawah"
             >
               ↓ Turun
@@ -70,7 +70,7 @@ function BlokCard({
             <div className="flex-1" />
             <button
               onClick={onRemove}
-              className="px-2 py-1 text-xs text-zinc-500 hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors"
+              className="px-2 py-1 text-xs text-app-muted hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors"
               title="Hapus blok"
             >
               <Trash2 size={12} className="inline" /> Hapus
@@ -107,15 +107,15 @@ export function MateriTab() {
   return (
     <div className="space-y-4">
       {/* Block count */}
-      <div className="text-xs text-zinc-500">
+      <div className="text-xs text-app-muted">
         {materi.blok.length} blok materi
       </div>
 
       {/* Empty state */}
       {materi.blok.length === 0 ? (
-        <div className="text-center py-8 bg-zinc-900 border border-zinc-800 rounded-xl">
-          <FileEdit size={28} className="text-zinc-500 mb-2" />
-          <p className="text-sm text-zinc-500">Belum ada blok materi. Tambahkan blok di bawah.</p>
+        <div className="text-center py-8 bg-app-surface border border-app-border rounded-xl">
+          <FileEdit size={28} className="text-app-muted mb-2" />
+          <p className="text-sm text-app-muted">Belum ada blok materi. Tambahkan blok di bawah.</p>
         </div>
       ) : (
         /* Block list */
@@ -135,18 +135,18 @@ export function MateriTab() {
       )}
 
       {/* Add Block Grid */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-        <h4 className="text-sm font-semibold text-zinc-200 mb-3">➕ Tambah Blok</h4>
+      <div className="bg-app-surface border border-app-border rounded-xl p-4">
+        <h4 className="text-sm font-semibold text-app-primary mb-3">➕ Tambah Blok</h4>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
           {BLOCK_TYPES.map((t) => (
             <button
               key={t.id}
               onClick={() => handleAdd(t.id)}
-              className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-2.5 text-center hover:border-zinc-600 transition-colors cursor-pointer"
+              className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-2.5 text-center hover:border-app-border transition-colors cursor-pointer"
               title={`Tambah blok ${t.label}`}
             >
               <div className="text-lg mb-0.5">{t.icon}</div>
-              <div className="text-[0.65rem] text-zinc-400">{t.label}</div>
+              <div className="text-[0.65rem] text-app-secondary">{t.label}</div>
             </button>
           ))}
         </div>

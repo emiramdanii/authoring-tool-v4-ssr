@@ -137,7 +137,7 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
               className={`rounded-lg border text-center flex items-center justify-center p-1 transition-all duration-300 ${
                 isMatched ? 'bg-emerald-500/20 border-emerald-400/40 scale-95' :
                 isFlipped ? 'bg-cyan-500/30 border-cyan-400/40' :
-                'bg-white/10 hover:bg-white/15 border-white/10 cursor-pointer'
+                'bg-app-elevated/10 hover:bg-app-elevated/15 border-app-border/10 cursor-pointer'
               }`}
             >
               {(isFlipped || isMatched) ? (

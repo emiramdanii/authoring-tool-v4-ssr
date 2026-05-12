@@ -79,10 +79,10 @@ export default function Projects() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
           <span>📁</span> Kelola Proyek
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-app-secondary mt-1">
           Simpan dan muat kembali proyek yang tersimpan di browser ini.
         </p>
       </div>
@@ -96,39 +96,39 @@ export default function Projects() {
         </button>
         <button
           onClick={() => { newProject(); }}
-          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors"
         >
           <Sparkles size={14} className="inline" /> Proyek Baru
         </button>
       </div>
 
       {!projects.length ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
+        <div className="bg-app-surface border border-app-border rounded-xl p-8 text-center">
           <div className="text-4xl mb-3">📂</div>
-          <p className="text-zinc-400 text-sm">Belum ada proyek tersimpan.</p>
+          <p className="text-app-secondary text-sm">Belum ada proyek tersimpan.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {projects.map((p) => (
             <div
               key={p.id}
-              className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex items-center gap-4 hover:border-zinc-700 transition-colors"
+              className="bg-app-surface border border-app-border rounded-lg p-4 flex items-center gap-4 hover:border-app-border transition-colors"
             >
               <div className="text-2xl">📁</div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-zinc-200 truncate">{p.name}</div>
-                <div className="text-xs text-zinc-500">{formatDate(p.timestamp)}</div>
+                <div className="text-sm font-semibold text-app-primary truncate">{p.name}</div>
+                <div className="text-xs text-app-muted">{formatDate(p.timestamp)}</div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleLoad(p)}
-                  className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-md transition-colors"
+                  className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated text-app-primary text-xs rounded-md transition-colors"
                 >
                   Muat
                 </button>
                 <button
                   onClick={() => handleDelete(p.id)}
-                  className="px-3 py-1.5 bg-zinc-800 hover:bg-red-900/50 text-zinc-400 hover:text-red-400 text-xs rounded-md transition-colors"
+                  className="px-3 py-1.5 bg-app-elevated hover:bg-red-900/50 text-app-secondary hover:text-red-400 text-xs rounded-md transition-colors"
                 >
                   <Trash2 size={14} className="inline" />
                 </button>

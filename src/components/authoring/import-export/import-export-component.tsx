@@ -35,20 +35,20 @@ export default function ImportExport() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
           <span>📥</span> Import / Export
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-app-secondary mt-1">
           Export media pembelajaran untuk siswa, cetak dokumen admin, atau import data proyek.
         </p>
       </div>
 
       {/* ── Export HTML Interaktif (Vite SSR) ──────────────────── */}
-      <div className="bg-zinc-900 border border-emerald-800/50 rounded-xl p-5">
+      <div className="bg-app-surface border border-emerald-800/50 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-emerald-300 mb-1 flex items-center gap-2">
           <Rocket size={16} className="inline" /> Export HTML Interaktif
         </h3>
-        <p className="text-xs text-zinc-400 mb-4">
+        <p className="text-xs text-app-secondary mb-4">
           Download HTML lengkap dengan <strong className="text-emerald-400">navbar + navigasi</strong> (sama persis dengan preview),
           <strong className="text-emerald-400"> game engines</strong> (11+ tipe), <strong className="text-emerald-400">skor tracking</strong>, dan semua komponen interaktif.
           Satu file HTML — siap dibagikan ke siswa.
@@ -77,22 +77,22 @@ export default function ImportExport() {
             </>
           )}
         </button>
-        <p className="text-[0.65rem] text-zinc-500 mt-2">
+        <p className="text-[0.65rem] text-app-muted mt-2">
           <Sparkles size={12} className="inline" /> SSR Export — hasil sama persis dengan preview (React components + Tailwind CSS)
         </p>
       </div>
 
       {/* ── Admin Print ───────────────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-zinc-200 mb-1 flex items-center gap-2">
+      <div className="bg-app-surface border border-app-border rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-app-primary mb-1 flex items-center gap-2">
           <Printer size={16} className="inline" /> Cetak Dokumen Admin
         </h3>
-        <p className="text-xs text-zinc-400 mb-4">
+        <p className="text-xs text-app-secondary mb-4">
           Buka jendela cetak dengan tabel CP, TP, ATP, dan Alur Pembelajaran untuk dokumentasi guru.
         </p>
         <button
           onClick={cetakDokumenAdmin}
-          className="w-full px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2.5 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Printer size={14} className="inline" /> Cetak Dokumen Admin
         </button>
@@ -101,26 +101,26 @@ export default function ImportExport() {
       {/* ── JSON Import / Export ─────────────────────────────── */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Export JSON */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-200 mb-3">📤 Export JSON</h3>
-          <p className="text-xs text-zinc-400 mb-4">
+        <div className="bg-app-surface border border-app-border rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-app-primary mb-3">📤 Export JSON</h3>
+          <p className="text-xs text-app-secondary mb-4">
             Download semua data proyek sebagai file JSON untuk backup atau transfer antar perangkat.
           </p>
           <button
             onClick={exportJSON}
-            className="w-full px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors"
+            className="w-full px-4 py-2.5 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors"
           >
             <ClipboardList size={14} className="inline" /> Export JSON
           </button>
         </div>
 
         {/* Import JSON */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-200 mb-3">📥 Import JSON</h3>
-          <p className="text-xs text-zinc-400 mb-4">
+        <div className="bg-app-surface border border-app-border rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-app-primary mb-3">📥 Import JSON</h3>
+          <p className="text-xs text-app-secondary mb-4">
             Upload file JSON yang sebelumnya di-export untuk mengembalikan data proyek.
           </p>
-          <label className="block w-full px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors text-center cursor-pointer">
+          <label className="block w-full px-4 py-2.5 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors text-center cursor-pointer">
             📂 Pilih File JSON
             <input
               type="file"
@@ -133,12 +133,12 @@ export default function ImportExport() {
       </div>
 
       {/* ── Excel Import / Export ────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
+      <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <FileSpreadsheet className="size-4 text-emerald-400" />
-          <h3 className="text-sm font-semibold text-zinc-200"><BarChart3 size={16} className="inline" /> Import / Export Excel (.xlsx)</h3>
+          <h3 className="text-sm font-semibold text-app-primary"><BarChart3 size={16} className="inline" /> Import / Export Excel (.xlsx)</h3>
         </div>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-app-secondary">
           Import data dari spreadsheet Excel atau download template yang sudah diisi dengan data saat ini.
           File .xlsx berisi 6 sheet: META, CP, TP, ATP, ALUR, dan KUIS.
         </p>
@@ -154,7 +154,7 @@ export default function ImportExport() {
           </button>
 
           {/* Upload Excel */}
-          <label className="flex items-center justify-center gap-2 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-lg transition-colors cursor-pointer">
+          <label className="flex items-center justify-center gap-2 px-4 py-3 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors cursor-pointer">
             <Upload className="size-4" />
             Pilih File .xlsx
             <input
@@ -176,7 +176,7 @@ export default function ImportExport() {
             relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200
             ${isDragOver
               ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]'
-              : 'border-zinc-700 bg-zinc-800/30 hover:border-zinc-600 hover:bg-zinc-800/50'
+              : 'border-app-border bg-app-elevated/30 hover:border-app-border hover:bg-app-elevated/50'
             }
           `}
         >
@@ -190,11 +190,11 @@ export default function ImportExport() {
               </>
             ) : (
               <>
-                <FileSpreadsheet className="size-8 text-zinc-500" />
-                <p className="text-sm text-zinc-400">
-                  <span className="font-medium text-zinc-300">Drag & drop</span> file .xlsx ke sini
+                <FileSpreadsheet className="size-8 text-app-muted" />
+                <p className="text-sm text-app-secondary">
+                  <span className="font-medium text-app-secondary">Drag & drop</span> file .xlsx ke sini
                 </p>
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-app-muted">
                   atau gunakan tombol &quot;Pilih File .xlsx&quot; di atas
                 </p>
               </>
@@ -215,28 +215,28 @@ export default function ImportExport() {
       />
 
       {/* ── Info Section ─────────────────────────────────────── */}
-      <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-4">
-        <h4 className="text-xs font-semibold text-zinc-400 mb-2 uppercase tracking-wider flex items-center gap-1.5"><Lightbulb size={14} className="inline" /> Tips</h4>
-        <ul className="text-xs text-zinc-500 space-y-1.5">
+      <div className="bg-app-surface/50 border border-app-border/50 rounded-xl p-4">
+        <h4 className="text-xs font-semibold text-app-secondary mb-2 uppercase tracking-wider flex items-center gap-1.5"><Lightbulb size={14} className="inline" /> Tips</h4>
+        <ul className="text-xs text-app-muted space-y-1.5">
           <li className="flex items-start gap-2">
             <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
             Gunakan <strong className="text-emerald-300">Export Interaktif (Unified)</strong> untuk hasil terbaik — navigasi pintar, game engines, dan layout canvas dalam satu file.
           </li>
           <li className="flex items-start gap-2">
             <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
-            <strong className="text-zinc-300">Cetak Dokumen Admin</strong> berguna untuk bahan administrasi guru — berisi tabel CP, TP, ATP, dan Alur.
+            <strong className="text-app-secondary">Cetak Dokumen Admin</strong> berguna untuk bahan administrasi guru — berisi tabel CP, TP, ATP, dan Alur.
           </li>
           <li className="flex items-start gap-2">
             <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
-            <strong className="text-zinc-300">Export/Import JSON</strong> untuk backup data proyek atau pindah antar perangkat.
+            <strong className="text-app-secondary">Export/Import JSON</strong> untuk backup data proyek atau pindah antar perangkat.
           </li>
           <li className="flex items-start gap-2">
             <span className="text-emerald-400 flex-shrink-0 mt-0.5">•</span>
-            <strong className="text-zinc-300">Template Excel</strong> memudahkan mengisi data di spreadsheet lalu import ke editor. Download template, isi di Excel/Sheets, lalu upload kembali.
+            <strong className="text-app-secondary">Template Excel</strong> memudahkan mengisi data di spreadsheet lalu import ke editor. Download template, isi di Excel/Sheets, lalu upload kembali.
           </li>
           <li className="flex items-start gap-2">
             <span className="text-emerald-400 flex-shrink-0 mt-0.5">•</span>
-            <strong className="text-zinc-300">Import Excel</strong> akan menimpa data META, CP, TP, ATP, ALUR, dan KUIS. Pastikan untuk preview sebelum mengkonfirmasi.
+            <strong className="text-app-secondary">Import Excel</strong> akan menimpa data META, CP, TP, ATP, ALUR, dan KUIS. Pastikan untuk preview sebelum mengkonfirmasi.
           </li>
         </ul>
       </div>

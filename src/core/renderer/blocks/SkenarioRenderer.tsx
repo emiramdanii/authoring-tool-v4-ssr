@@ -157,7 +157,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                     <span className="font-bold flex-shrink-0 mt-0.5" style={{ fontSize: '12px', color: isNarrator ? tokens.textSubtle(0.4) : tokens.color('r') }}>
                       {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
-                    <span className="leading-relaxed" style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.5) : tokens.textSecondary(0.75) }}>
+                    <span className="leading-relaxed" style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.5) : tokens.textSecondary(0.75), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {line.text}
                     </span>
                   </div>
@@ -190,8 +190,8 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text') }}>{c.label}</div>
-                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4) }}>{c.detail}</div>}
+                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
+                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
                   </div>
                 </button>
               ) : (
@@ -204,8 +204,8 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text') }}>{c.label}</div>
-                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4) }}>{c.detail}</div>}
+                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
+                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
                   </div>
                 </div>
               )

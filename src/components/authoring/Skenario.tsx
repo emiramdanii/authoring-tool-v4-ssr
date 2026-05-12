@@ -29,13 +29,13 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 const INPUT_CLS =
-  'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
+  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
 
 const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 
 // ── Helper: field label ─────────────────────────────────────────
 function FieldLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <label className={`block text-xs font-medium text-zinc-400 mb-1.5 ${className || ''}`}>{children}</label>;
+  return <label className={`block text-xs font-medium text-app-secondary mb-1.5 ${className || ''}`}>{children}</label>;
 }
 
 // ── Helper: bg theme info ───────────────────────────────────────
@@ -47,7 +47,7 @@ function bgThemeInfo(bgId: string) {
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      className={`w-4 h-4 text-zinc-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+      className={`w-4 h-4 text-app-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
       fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -120,23 +120,23 @@ function ChapterCard({
   const choiceCount = chapter.choices.length;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
+    <div className="bg-app-surface border border-app-border rounded-xl p-4 hover:border-app-border transition-colors">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
           {index + 1}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-zinc-200 truncate">
+          <h3 className="text-sm font-semibold text-app-primary truncate">
             {chapter.title || 'Bab Tanpa Judul'}
           </h3>
           <div className="flex flex-wrap items-center gap-2 mt-1.5">
-            <span className="inline-flex items-center gap-1 text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-md">
+            <span className="inline-flex items-center gap-1 text-xs text-app-secondary bg-app-elevated px-2 py-0.5 rounded-md">
               {bgInfo.emoji} {bgInfo.label}
             </span>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-app-muted">
               💬 {setupCount} dialog
             </span>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-app-muted">
               🔀 {choiceCount} pilihan
             </span>
             <span className="text-lg leading-none ml-1">{chapter.charEmoji}</span>
@@ -145,13 +145,13 @@ function ChapterCard({
         <div className="flex gap-1 flex-shrink-0">
           <button
             onClick={onEdit}
-            className="px-2.5 py-1.5 text-xs text-zinc-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors"
+            className="px-2.5 py-1.5 text-xs text-app-secondary hover:text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors"
           >
             <Pencil size={12} className="inline" /> Edit
           </button>
           <button
             onClick={onRemove}
-            className="px-2.5 py-1.5 text-xs text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+            className="px-2.5 py-1.5 text-xs text-app-secondary hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
           >
             <Trash2 size={14} />
           </button>
@@ -187,7 +187,7 @@ function SetupEditor({ chapterIndex }: { chapterIndex: number }) {
       </div>
       <div ref={listRef} className="space-y-2">
         {chapter.setup.map((s, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 space-y-2">
             <div className="flex items-center gap-2">
               <input
                 className={`${INPUT_CLS} w-40`}
@@ -198,7 +198,7 @@ function SetupEditor({ chapterIndex }: { chapterIndex: number }) {
               {chapter.setup.length > 1 && (
                 <button
                   onClick={() => removeSetup(chapterIndex, i)}
-                  className="text-zinc-600 hover:text-red-400 transition-colors text-sm p-1 flex-shrink-0"
+                  className="text-app-muted hover:text-red-400 transition-colors text-sm p-1 flex-shrink-0"
                 >
                   ✕
                 </button>
@@ -238,13 +238,13 @@ function ChoiceEditor({
 
   return (
     <div
-      className="bg-zinc-800/40 border rounded-xl p-4 space-y-4"
+      className="bg-app-elevated/40 border rounded-xl p-4 space-y-4"
       style={{ borderColor: levelColor + '40' }}
     >
       {/* Choice header */}
       <div className="flex items-center gap-2">
         <span className="text-lg">{choice.icon || '🔍'}</span>
-        <span className="text-xs font-medium text-zinc-400">
+        <span className="text-xs font-medium text-app-secondary">
           Pilihan {choiceIndex + 1}
         </span>
         <span
@@ -261,7 +261,7 @@ function ChoiceEditor({
             ✅ Benar
           </span>
         )}
-        <span className="text-xs text-zinc-500 ml-auto">{choice.pts || 0} poin</span>
+        <span className="text-xs text-app-muted ml-auto">{choice.pts || 0} poin</span>
       </div>
 
       {/* Icon + Label + Detail */}
@@ -298,10 +298,10 @@ function ChoiceEditor({
       {/* Good toggle + Points + Level */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex items-center gap-2 pb-2">
-          <label className="text-xs text-zinc-400">Benar?</label>
+          <label className="text-xs text-app-secondary">Benar?</label>
           <button
             onClick={() => updateChoice(chapterIndex, choiceIndex, 'good', !choice.good)}
-            className={`relative w-10 h-5 rounded-full transition-colors ${choice.good ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+            className={`relative w-10 h-5 rounded-full transition-colors ${choice.good ? 'bg-emerald-500' : 'bg-app-elevated'}`}
           >
             <span
               className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${choice.good ? 'translate-x-5' : ''}`}
@@ -326,7 +326,7 @@ function ChoiceEditor({
                 key={lvl}
                 onClick={() => updateChoice(chapterIndex, choiceIndex, 'level', lvl)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                  choice.level === lvl ? 'border-current' : 'border-zinc-700/50 opacity-50 hover:opacity-100'
+                  choice.level === lvl ? 'border-current' : 'border-app-border/50 opacity-50 hover:opacity-100'
                 }`}
                 style={{
                   backgroundColor: LEVEL_COLORS[lvl] + (choice.level === lvl ? '25' : '10'),
@@ -398,7 +398,7 @@ function ChoiceEditor({
             {consequences.length > 1 && (
               <button
                 onClick={() => removeConsequence(chapterIndex, choiceIndex, ci)}
-                className="text-zinc-600 hover:text-red-400 transition-colors text-sm p-1 flex-shrink-0"
+                className="text-app-muted hover:text-red-400 transition-colors text-sm p-1 flex-shrink-0"
               >
                 ✕
               </button>
@@ -438,7 +438,7 @@ function ChapterDetail({
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+        className="flex items-center gap-1 text-sm text-app-secondary hover:text-app-primary transition-colors"
       >
         ← Kembali ke Daftar Bab
       </button>
@@ -449,16 +449,16 @@ function ChapterDetail({
           {chapterIndex + 1}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold text-zinc-100">
+          <h3 className="text-lg font-bold text-app-primary">
             Bab {chapterIndex + 1}: {chapter.title || 'Tanpa Judul'}
           </h3>
-          <span className="text-xs text-zinc-500">{bgInfo.emoji} {bgInfo.label}</span>
+          <span className="text-xs text-app-muted">{bgInfo.emoji} {bgInfo.label}</span>
         </div>
       </div>
 
       {/* ── Basic Info ──────────────────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-        <h4 className="text-sm font-semibold text-zinc-200">📋 Informasi Dasar</h4>
+      <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-4">
+        <h4 className="text-sm font-semibold text-app-primary">📋 Informasi Dasar</h4>
 
         {/* Title */}
         <div>
@@ -482,7 +482,7 @@ function ChapterDetail({
                 className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-center ${
                   chapter.bg === theme.id
                     ? 'border-amber-500/50 bg-amber-500/15 text-amber-300'
-                    : 'border-zinc-700/50 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                    : 'border-app-border/50 bg-app-elevated/50 text-app-secondary hover:border-app-border hover:text-app-primary'
                 }`}
               >
                 <div className="text-lg mb-0.5">{theme.emoji}</div>
@@ -508,11 +508,11 @@ function ChapterDetail({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                className="w-8 h-8 rounded cursor-pointer border border-zinc-700 bg-transparent"
+                className="w-8 h-8 rounded cursor-pointer border border-app-border bg-transparent"
                 value={chapter.charColor || COLORS.choiceD}
                 onChange={(e) => updateChapter(chapterIndex, 'charColor', e.target.value)}
               />
-              <span className="text-xs text-zinc-500 font-mono">{chapter.charColor || COLORS.choiceD}</span>
+              <span className="text-xs text-app-muted font-mono">{chapter.charColor || COLORS.choiceD}</span>
             </div>
           </div>
           <div>
@@ -520,25 +520,25 @@ function ChapterDetail({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                className="w-8 h-8 rounded cursor-pointer border border-zinc-700 bg-transparent"
+                className="w-8 h-8 rounded cursor-pointer border border-app-border bg-transparent"
                 value={chapter.charPants || COLORS.faseSosial}
                 onChange={(e) => updateChapter(chapterIndex, 'charPants', e.target.value)}
               />
-              <span className="text-xs text-zinc-500 font-mono">{chapter.charPants || COLORS.faseSosial}</span>
+              <span className="text-xs text-app-muted font-mono">{chapter.charPants || COLORS.faseSosial}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Dialog Setup ────────────────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-3">
-        <h4 className="text-sm font-semibold text-zinc-200">💬 Dialog & Narasi</h4>
+      <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-3">
+        <h4 className="text-sm font-semibold text-app-primary">💬 Dialog & Narasi</h4>
         <SetupEditor chapterIndex={chapterIndex} />
       </div>
 
       {/* ── Choice Prompt ───────────────────────────────────────── */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-3">
-        <h4 className="text-sm font-semibold text-zinc-200">🔀 Pilihan Siswa</h4>
+      <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-3">
+        <h4 className="text-sm font-semibold text-app-primary">🔀 Pilihan Siswa</h4>
         <div>
           <FieldLabel>Pertanyaan Pilihan</FieldLabel>
           <input
@@ -569,7 +569,7 @@ function ChapterDetail({
                 removeChoice(chapterIndex, chapter.choices.length - 1);
                 toast.success('Pilihan terakhir dihapus');
               }}
-              className="text-xs text-zinc-500 hover:text-red-400 transition-colors"
+              className="text-xs text-app-muted hover:text-red-400 transition-colors"
             >
               Hapus Pilihan Terakhir
             </button>
@@ -623,25 +623,25 @@ export default function Skenario() {
   return (
     <div className="p-6 space-y-5 max-w-5xl">
       <div>
-        <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
           <Drama size={16} className="inline" /> Skenario Interaktif
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-app-secondary mt-1">
           Buat cerita bercabang untuk siswa belajar tentang norma dan nilai.
         </p>
       </div>
 
       {/* Chapter count */}
-      <div className="text-xs text-zinc-500">
+      <div className="text-xs text-app-muted">
         {skenario.length} bab skenario
       </div>
 
       {/* Empty state */}
       {skenario.length === 0 ? (
-        <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
-          <div className="text-4xl mb-3"><Drama size={36} className="text-zinc-500" /></div>
-          <p className="text-sm text-zinc-400 mb-1">Belum ada bab skenario.</p>
-          <p className="text-xs text-zinc-500 mb-4">
+        <div className="text-center py-12 bg-app-surface border border-app-border rounded-xl">
+          <div className="text-4xl mb-3"><Drama size={36} className="text-app-muted" /></div>
+          <p className="text-sm text-app-secondary mb-1">Belum ada bab skenario.</p>
+          <p className="text-xs text-app-muted mb-4">
             Tambahkan bab pertama untuk mulai membuat skenario interaktif.
           </p>
           <button
@@ -669,7 +669,7 @@ export default function Skenario() {
           {/* Add chapter button */}
           <button
             onClick={handleAdd}
-            className="w-full px-4 py-3 bg-zinc-900 border border-dashed border-zinc-700 rounded-xl text-sm text-zinc-400 hover:text-amber-400 hover:border-amber-500/50 transition-colors"
+            className="w-full px-4 py-3 bg-app-surface border border-dashed border-app-border rounded-xl text-sm text-app-secondary hover:text-amber-400 hover:border-amber-500/50 transition-colors"
           >
             ＋ Tambah Bab Baru
           </button>
@@ -678,9 +678,9 @@ export default function Skenario() {
 
       {/* Tips */}
       {skenario.length > 0 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <h4 className="text-sm font-semibold text-zinc-200 mb-2">💡 Tips Membuat Skenario</h4>
-          <ul className="text-xs text-zinc-400 space-y-1.5">
+        <div className="bg-app-surface border border-app-border rounded-xl p-4">
+          <h4 className="text-sm font-semibold text-app-primary mb-2">💡 Tips Membuat Skenario</h4>
+          <ul className="text-xs text-app-secondary space-y-1.5">
             <li>• Setiap bab merepresentasikan satu situasi konflik norma</li>
             <li>• Buat 2-4 pilihan per bab dengan tingkat kebaikan yang berbeda</li>
             <li>• Tambahkan norma terkait di setiap pilihan untuk memperkuat pembelajaran</li>

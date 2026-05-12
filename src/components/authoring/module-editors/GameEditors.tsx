@@ -15,10 +15,10 @@ export function SortingEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Kategori ({kategori.length})</FieldLabel>
         {kategori.map((k, i) => (
-          <div key={i} className="p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 flex items-center gap-2">
+          <div key={i} className="p-2 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 flex items-center gap-2">
             <input className={INPUT_CLS} placeholder="Nama kategori…" value={(k.label as string) || ''} onChange={(e) => ui!('kategori', i, 'label', e.target.value)} />
             <ColorPicker value={(k.color as string) || '#3ecfcf'} onChange={(v) => ui!('kategori', i, 'color', v)} />
-            <button onClick={() => ri!('kategori', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            <button onClick={() => ri!('kategori', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
         <button onClick={() => ai!('kategori', { label: '', color: '#60a5fa', id: 'cat' + Date.now() })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Kategori</button>
@@ -26,13 +26,13 @@ export function SortingEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Item ({items.length})</FieldLabel>
         {items.map((item, i) => (
-          <div key={i} className="p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 flex items-center gap-2">
+          <div key={i} className="p-2 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 flex items-center gap-2">
             <input className={INPUT_CLS} placeholder="Teks item…" value={(item.teks as string) || ''} onChange={(e) => ui!('items', i, 'teks', e.target.value)} />
             <select className={`${SELECT_CLS} w-36`} value={(item.kategori as string) || ''} onChange={(e) => ui!('items', i, 'kategori', e.target.value)}>
               <option value="">Pilih kategori</option>
               {kategori.map((k, ci) => <option key={ci} value={String(k.id)}>{String(k.label)}</option>)}
             </select>
-            <button onClick={() => ri!('items', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+            <button onClick={() => ri!('items', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
         <button onClick={() => ai!('items', { teks: '', kategori: (kategori[0]?.id as string) || '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Item</button>
@@ -53,11 +53,11 @@ export function SpinwheelEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Soal ({soal.length})</FieldLabel>
         {soal.map((s, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pertanyaan…" value={(s.teks as string) || ''} onChange={(e) => ui!('soal', i, 'teks', e.target.value)} />
             <div className="flex items-center gap-2">
               <input className={INPUT_CLS} placeholder="Kategori…" value={(s.kategori as string) || ''} onChange={(e) => ui!('soal', i, 'kategori', e.target.value)} />
-              <button onClick={() => ri!('soal', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
+              <button onClick={() => ri!('soal', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
           </div>
         ))}
@@ -89,7 +89,7 @@ export function TeambuzzerEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div>
         <FieldLabel>Soal ({soal.length})</FieldLabel>
         {soal.map((s, i) => (
-          <div key={i} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 mb-2 space-y-2">
+          <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pertanyaan…" value={(s.teks as string) || ''} onChange={(e) => ui!('soal', i, 'teks', e.target.value)} />
             <div className="flex items-center gap-2">
               <input className={INPUT_CLS} placeholder="Jawaban…" value={(s.jawaban as string) || ''} onChange={(e) => ui!('soal', i, 'jawaban', e.target.value)} />
@@ -97,7 +97,7 @@ export function TeambuzzerEditor({ mod, uf, ai, ri, ui }: EdProps) {
                 <FieldLabel>Poin</FieldLabel>
                 <input className={INPUT_CLS} type="number" value={(s.poin as number) || 10} onChange={(e) => ui!('soal', i, 'poin', Number(e.target.value))} />
               </div>
-              <button onClick={() => ri!('soal', i)} className="text-zinc-600 hover:text-red-400 text-sm p-1 flex-shrink-0 mt-4">✕</button>
+              <button onClick={() => ri!('soal', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0 mt-4">✕</button>
             </div>
           </div>
         ))}

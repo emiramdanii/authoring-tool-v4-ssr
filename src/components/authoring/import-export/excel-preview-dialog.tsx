@@ -50,13 +50,13 @@ export function ExcelPreviewDialog({
       }
       setPreviewOpen(open);
     }}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-zinc-100 sm:max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="bg-app-surface border-app-border text-app-primary sm:max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-6 pb-4 flex-shrink-0">
-          <DialogTitle className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+          <DialogTitle className="text-lg font-bold text-app-primary flex items-center gap-2">
             <Eye className="size-5 text-amber-400" />
             Preview Import Excel
           </DialogTitle>
-          <DialogDescription className="text-zinc-400 text-sm">
+          <DialogDescription className="text-app-secondary text-sm">
             Periksa data dari setiap sheet sebelum mengimport. Data yang sudah ada akan ditimpa.
           </DialogDescription>
         </DialogHeader>
@@ -72,7 +72,7 @@ export function ExcelPreviewDialog({
                 variant="outline"
                 className={`
                   text-xs cursor-pointer transition-all
-                  ${hasData ? SHEET_COLORS[name] : 'bg-zinc-800 text-zinc-500 border-zinc-700'}
+                  ${hasData ? SHEET_COLORS[name] : 'bg-app-elevated text-app-muted border-app-border'}
                   ${activePreviewTab === name ? 'ring-2 ring-amber-500/50' : ''}
                 `}
                 onClick={() => setActivePreviewTab(name)}
@@ -95,22 +95,22 @@ export function ExcelPreviewDialog({
                 <TabsContent key={name} value={name} className="mt-0 h-full flex flex-col">
                   <div className="flex items-center justify-between mb-2 flex-shrink-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-zinc-200">{name}</span>
-                      <span className="text-xs text-zinc-500">{SHEET_DESCRIPTIONS[name]}</span>
+                      <span className="text-sm font-semibold text-app-primary">{name}</span>
+                      <span className="text-xs text-app-muted">{SHEET_DESCRIPTIONS[name]}</span>
                     </div>
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-app-muted">
                       {sheet.rows.filter((r) => r.some((c) => c.trim() !== '')).length} baris data
                     </span>
                   </div>
 
-                  <ScrollArea className="flex-1 rounded-lg border border-zinc-800 max-h-[45vh]">
+                  <ScrollArea className="flex-1 rounded-lg border border-app-border max-h-[45vh]">
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-zinc-800 hover:bg-transparent">
+                        <TableRow className="border-app-border hover:bg-transparent">
                           {sheet.headers.map((h, i) => (
                             <TableHead
                               key={i}
-                              className="bg-zinc-800/80 text-zinc-300 text-xs font-semibold py-2 px-3 whitespace-nowrap"
+                              className="bg-app-elevated/80 text-app-secondary text-xs font-semibold py-2 px-3 whitespace-nowrap"
                             >
                               {h}
                             </TableHead>
@@ -122,7 +122,7 @@ export function ExcelPreviewDialog({
                           <TableRow>
                             <TableCell
                               colSpan={sheet.headers.length}
-                              className="text-center text-zinc-500 py-8"
+                              className="text-center text-app-muted py-8"
                             >
                               Tidak ada data
                             </TableCell>
@@ -131,11 +131,11 @@ export function ExcelPreviewDialog({
                           sheet.rows
                             .filter((r) => r.some((c) => c.trim() !== ''))
                             .map((row, ri) => (
-                              <TableRow key={ri} className="border-zinc-800/50">
+                              <TableRow key={ri} className="border-app-border/50">
                                 {sheet.headers.map((_, ci) => (
                                   <TableCell
                                     key={ci}
-                                    className="text-xs text-zinc-300 py-1.5 px-3 max-w-[200px] truncate"
+                                    className="text-xs text-app-secondary py-1.5 px-3 max-w-[200px] truncate"
                                     title={row[ci] ?? ''}
                                   >
                                     {row[ci] ?? ''}
@@ -154,14 +154,14 @@ export function ExcelPreviewDialog({
         </div>
 
         {/* Warning + Actions */}
-        <DialogFooter className="p-6 pt-3 border-t border-zinc-800 flex-shrink-0 gap-3">
+        <DialogFooter className="p-6 pt-3 border-t border-app-border flex-shrink-0 gap-3">
           <div className="flex items-center gap-2 text-xs text-amber-400/80 mr-auto">
             <AlertTriangle className="size-3.5 flex-shrink-0" />
             <span>Data yang sudah ada di editor akan ditimpa.</span>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-app-secondary hover:text-app-primary bg-app-elevated hover:bg-app-elevated rounded-lg transition-colors"
           >
             Batal
           </button>

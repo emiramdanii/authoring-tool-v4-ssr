@@ -196,10 +196,10 @@ export default function Riwayat() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
           <span>🕐</span> Riwayat Versi
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-app-secondary mt-1">
           Simpan snapshot proyek kapan saja dan kembalikan ke versi sebelumnya.
           Maksimal {MAX_VERSIONS} versi tersimpan.
         </p>
@@ -208,8 +208,8 @@ export default function Riwayat() {
       {/* Save button area */}
       <div className="space-y-3">
         {showSaveInput ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
-            <label className="text-sm text-zinc-300 font-medium">
+          <div className="bg-app-surface border border-app-border rounded-lg p-4 space-y-3">
+            <label className="text-sm text-app-secondary font-medium">
               Nama snapshot (opsional):
             </label>
             <input
@@ -219,7 +219,7 @@ export default function Riwayat() {
               onChange={(e) => setSaveName(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Contoh: Sebelum revisi alur…"
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-colors"
+              className="w-full px-3 py-2 bg-app-elevated border border-app-border rounded-md text-sm text-app-primary placeholder-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-colors"
             />
             <div className="flex items-center gap-2">
               <button
@@ -230,11 +230,11 @@ export default function Riwayat() {
               </button>
               <button
                 onClick={cancelSave}
-                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-md transition-colors"
+                className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated text-app-primary text-xs rounded-md transition-colors"
               >
                 Batal
               </button>
-              <span className="text-xs text-zinc-500 ml-auto">
+              <span className="text-xs text-app-muted ml-auto">
                 Kosongkan = timestamp otomatis
               </span>
             </div>
@@ -253,12 +253,12 @@ export default function Riwayat() {
       <div className="space-y-2">
         {versions.length === 0 ? (
           /* Empty state */
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
+          <div className="bg-app-surface border border-app-border rounded-xl p-8 text-center">
             <div className="text-5xl mb-4">📭</div>
-            <h3 className="text-lg font-semibold text-zinc-200 mb-2">
+            <h3 className="text-lg font-semibold text-app-primary mb-2">
               Belum ada versi tersimpan
             </h3>
-            <p className="text-sm text-zinc-400 max-w-md mx-auto">
+            <p className="text-sm text-app-secondary max-w-md mx-auto">
               Klik &quot;Simpan Snapshot Baru&quot; di atas untuk mulai menyimpan versi proyek Anda.
               Setiap snapshot merekam seluruh data meta, CP, TP, ATP, alur, kuis, dan lainnya.
             </p>
@@ -266,7 +266,7 @@ export default function Riwayat() {
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-app-muted">
                 {versions.length} / {MAX_VERSIONS} versi tersimpan
               </p>
             </div>
@@ -302,16 +302,16 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
     entry.name.length > 50 ? entry.name.slice(0, 50) + '…' : entry.name;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex items-start sm:items-center gap-4 flex-col sm:flex-row hover:border-zinc-700 transition-colors group">
+    <div className="bg-app-surface border border-app-border rounded-lg p-4 flex items-start sm:items-center gap-4 flex-col sm:flex-row hover:border-app-border transition-colors group">
       {/* Icon */}
-      <div className="flex-shrink-0 text-2xl w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center">
+      <div className="flex-shrink-0 text-2xl w-10 h-10 rounded-lg bg-app-elevated flex items-center justify-center">
         {entry.isAuto ? <Zap size={14} /> : <Camera size={14} />}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-zinc-100 truncate">
+          <p className="text-sm font-medium text-app-primary truncate">
             {displayName}
           </p>
           {entry.isAuto && (
@@ -321,16 +321,16 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
           )}
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xs text-zinc-400 flex items-center gap-1">
+          <span className="text-xs text-app-secondary flex items-center gap-1">
             📅 {formatDate(entry.savedAt)}
           </span>
           {entry.mapel && (
-            <span className="text-xs text-zinc-500 flex items-center gap-1">
+            <span className="text-xs text-app-muted flex items-center gap-1">
               📚 {entry.mapel}
             </span>
           )}
           {entry.judul && (
-            <span className="text-xs text-zinc-500 flex items-center gap-1">
+            <span className="text-xs text-app-muted flex items-center gap-1">
               <FileEdit size={12} className="inline" /> {entry.judul.length > 30 ? entry.judul.slice(0, 30) + '…' : entry.judul}
             </span>
           )}
@@ -342,14 +342,14 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
         <button
           onClick={() => onRestore(entry)}
           disabled={isRestoring}
-          className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated text-app-primary text-xs rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Pulihkan versi ini"
         >
           <RotateCcw size={14} className="inline" /> Pulihkan
         </button>
         <button
           onClick={() => onDelete(entry)}
-          className="px-3 py-1.5 bg-zinc-800 hover:bg-red-900/60 text-zinc-200 hover:text-red-300 text-xs rounded-md transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 bg-app-elevated hover:bg-red-900/60 text-app-primary hover:text-red-300 text-xs rounded-md transition-colors flex items-center gap-1.5"
           title="Hapus versi ini"
         >
           <Trash2 size={14} className="inline" />

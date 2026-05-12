@@ -36,10 +36,10 @@ import LivePreview from './live-preview';
 const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-slate-900">
+    <div className="h-full w-full flex items-center justify-center bg-app-surface">
       <div className="text-center">
         <Palette className="mx-auto mb-4 size-10 text-amber-400 animate-pulse" />
-        <div className="text-slate-400 text-sm">Memuat Canva Editor...</div>
+        <div className="text-app-secondary text-sm">Memuat Canva Editor...</div>
       </div>
     </div>
   ),
@@ -221,7 +221,7 @@ export default function AuthoringTool() {
   }, [tourStep, dismissTour]);
 
   return (
-    <div className="h-screen w-screen flex bg-slate-900 text-slate-200 overflow-hidden">
+    <div className="h-screen w-screen flex bg-app-surface text-app-primary overflow-hidden">
       {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside
         className={`${
@@ -234,7 +234,7 @@ export default function AuthoringTool() {
           {sidebarOpen ? (
             <div>
               <div className="text-sm font-bold text-amber-400">Authoring Tool</div>
-              <div className="text-[0.65rem] text-slate-500 mt-0.5">Media Pembelajaran Interaktif</div>
+              <div className="text-[0.65rem] text-app-muted mt-0.5">Media Pembelajaran Interaktif</div>
               <span className="inline-block mt-1.5 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-amber-500/20">
                 v6
               </span>
@@ -259,7 +259,7 @@ export default function AuthoringTool() {
                 className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
                   activePanel === item.id
                     ? 'nav-active font-semibold'
-                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                    : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
                 }`}
                 title={item.label}
               >
@@ -281,7 +281,7 @@ export default function AuthoringTool() {
                 className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
                   activePanel === item.id
                     ? 'nav-active font-semibold'
-                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                    : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
                 }`}
                 title={item.label}
               >
@@ -345,9 +345,9 @@ export default function AuthoringTool() {
               {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
             </Button>
 
-            <div className="text-sm font-medium text-slate-200">
+            <div className="text-sm font-medium text-app-primary">
               {PANEL_TITLES[activePanel]}
-              <span className="text-slate-500 font-normal"> / {meta.judulPertemuan || 'Proyek Baru'}</span>
+              <span className="text-app-muted font-normal"> / {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
             {/* Dirty indicator */}
@@ -395,7 +395,7 @@ export default function AuthoringTool() {
         {/* ── Content ──────────────────────────────────────── */}
         <main
           className={`flex-1 ${
-            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-slate-900'
+            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-app-surface'
           }`}
         >
           {renderPanel()}
@@ -410,7 +410,7 @@ export default function AuthoringTool() {
 
           {/* Tooltip Card */}
           <div className="relative z-10 w-full max-w-sm mx-4 page-transition">
-            <div className="bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-app-surface border border-app-border/50 rounded-2xl shadow-2xl overflow-hidden">
               {/* Step icon + badge */}
               <div className="bg-amber-500/10 px-5 pt-5 pb-3">
                 <div className="flex items-center gap-3">
@@ -421,7 +421,7 @@ export default function AuthoringTool() {
                     <div className="text-xs font-medium text-amber-400/70">
                       Langkah {tourStep + 1} dari {TOUR_STEPS.length}
                     </div>
-                    <h3 className="text-base font-bold text-slate-100">
+                    <h3 className="text-base font-bold text-app-primary">
                       {TOUR_STEPS[tourStep].title}
                     </h3>
                   </div>
@@ -430,7 +430,7 @@ export default function AuthoringTool() {
 
               {/* Description */}
               <div className="px-5 py-4">
-                <p className="text-sm text-slate-300 leading-relaxed">
+                <p className="text-sm text-app-secondary leading-relaxed">
                   {TOUR_STEPS[tourStep].desc}
                 </p>
               </div>
@@ -443,7 +443,7 @@ export default function AuthoringTool() {
                     className={`block h-1.5 rounded-full transition-all duration-300 ${
                       i === tourStep
                         ? 'w-5 bg-amber-500'
-                        : 'w-1.5 bg-slate-600'
+                        : 'w-1.5 bg-app-elevated'
                     }`}
                   />
                 ))}

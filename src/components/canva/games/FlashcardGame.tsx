@@ -106,7 +106,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
         >
           {/* Front face */}
           <div
-            className="absolute inset-0 rounded-xl border border-white/10 flex items-center justify-center p-4 backface-hidden"
+            className="absolute inset-0 rounded-xl border border-app-border/10 flex items-center justify-center p-4 backface-hidden"
             style={{
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
@@ -139,7 +139,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
       <div className="flex gap-1 w-full">
         {currentIdx > 0 && (
           <button onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            className="flex-1 py-1 bg-white/5 hover:bg-white/10 rounded text-[9px] text-cyan-300 border border-white/10 cursor-pointer transition-colors">
+            className="flex-1 py-1 bg-app-elevated/5 hover:bg-app-elevated/10 rounded text-[9px] text-cyan-300 border border-app-border/10 cursor-pointer transition-colors">
             ← Sebelumnya
           </button>
         )}

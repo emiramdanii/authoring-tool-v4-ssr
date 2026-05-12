@@ -22,23 +22,23 @@ function ModulePickerModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative bg-zinc-900 border border-zinc-700 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="relative bg-app-surface border border-app-border rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-app-border">
           <div>
-            <h3 className="text-lg font-bold text-zinc-100">Pilih Tipe Modul / Game</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">Pilih modul pembelajaran atau game yang ingin ditambahkan</p>
+            <h3 className="text-lg font-bold text-app-primary">Pilih Tipe Modul / Game</h3>
+            <p className="text-xs text-app-secondary mt-0.5">Pilih modul pembelajaran atau game yang ingin ditambahkan</p>
           </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-200 transition-colors text-xl leading-none p-1">✕</button>
+          <button onClick={onClose} className="text-app-muted hover:text-app-primary transition-colors text-xl leading-none p-1">✕</button>
         </div>
 
         {/* Body */}
         <div className="overflow-y-auto flex-1 p-6 space-y-6">
           {/* Learning Modules */}
           <div>
-            <h4 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-app-secondary mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-500" />
               Modul Pembelajaran
             </h4>
@@ -47,13 +47,13 @@ function ModulePickerModal({
                 <button
                   key={t.id}
                   onClick={() => onPick(t.id)}
-                  className="bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-4 text-left hover:border-zinc-500 hover:bg-zinc-800 transition-all group cursor-pointer"
+                  className="bg-app-elevated/60 border border-app-border/60 rounded-xl p-4 text-left hover:border-app-border hover:bg-app-elevated transition-all group cursor-pointer"
                 >
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">{t.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-zinc-200 group-hover:text-zinc-100">{t.label}</div>
-                      <div className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{t.desc}</div>
+                      <div className="text-sm font-semibold text-app-primary group-hover:text-app-primary">{t.label}</div>
+                      <div className="text-xs text-app-muted mt-0.5 leading-relaxed">{t.desc}</div>
                     </div>
                   </div>
                 </button>
@@ -63,7 +63,7 @@ function ModulePickerModal({
 
           {/* Games */}
           <div>
-            <h4 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-app-secondary mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               Game Interaktif
             </h4>
@@ -72,13 +72,13 @@ function ModulePickerModal({
                 <button
                   key={t.id}
                   onClick={() => onPick(t.id)}
-                  className="bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-4 text-left hover:border-zinc-500 hover:bg-zinc-800 transition-all group cursor-pointer"
+                  className="bg-app-elevated/60 border border-app-border/60 rounded-xl p-4 text-left hover:border-app-border hover:bg-app-elevated transition-all group cursor-pointer"
                 >
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">{t.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-zinc-200 group-hover:text-zinc-100">{t.label}</div>
-                      <div className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{t.desc}</div>
+                      <div className="text-sm font-semibold text-app-primary group-hover:text-app-primary">{t.label}</div>
+                      <div className="text-xs text-app-muted mt-0.5 leading-relaxed">{t.desc}</div>
                     </div>
                   </div>
                 </button>
@@ -101,7 +101,7 @@ function LayoutVariantPicker({ value, onChange }: { value: LayoutVariant; onChan
           key={v.id}
           onClick={() => onChange(v.id as LayoutVariant)}
           className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
-            value === v.id ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            value === v.id ? 'bg-amber-500 text-black' : 'bg-app-elevated text-app-secondary hover:bg-app-elevated'
           }`}
           title={v.desc}
         >
@@ -151,7 +151,7 @@ function ModuleCard({
         <button
           onClick={onMoveUp}
           disabled={idx === 0}
-          className="p-1 text-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors text-xs"
+          className="p-1 text-app-muted hover:text-app-primary disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-app-elevated transition-colors text-xs"
           title="Pindah ke atas"
         >
           ↑
@@ -159,21 +159,21 @@ function ModuleCard({
         <button
           onClick={onMoveDown}
           disabled={idx === total - 1}
-          className="p-1 text-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-zinc-800 transition-colors text-xs"
+          className="p-1 text-app-muted hover:text-app-primary disabled:opacity-30 disabled:cursor-not-allowed rounded-md hover:bg-app-elevated transition-colors text-xs"
           title="Pindah ke bawah"
         >
           ↓
         </button>
         <button
           onClick={onEdit}
-          className="p-1 text-zinc-600 hover:text-amber-400 rounded-md hover:bg-zinc-800 transition-colors text-sm"
+          className="p-1 text-app-muted hover:text-amber-400 rounded-md hover:bg-app-elevated transition-colors text-sm"
           title="Edit modul"
         >
           <Pencil size={14} />
         </button>
         <button
           onClick={onRemove}
-          className="p-1 text-zinc-600 hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors text-sm"
+          className="p-1 text-app-muted hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors text-sm"
           title="Hapus modul"
         >
           <Trash2 size={14} />
@@ -215,7 +215,7 @@ export function ModulesTab() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-zinc-500">{modules.length} modul & game</span>
+        <span className="text-xs text-app-muted">{modules.length} modul & game</span>
         <button
           onClick={() => setPickerOpen(true)}
           className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
@@ -226,10 +226,10 @@ export function ModulesTab() {
 
       {/* Empty state */}
       {modules.length === 0 ? (
-        <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
-          <Puzzle size={36} className="text-zinc-500 mb-3" />
-          <p className="text-sm text-zinc-400 font-medium">Belum ada modul atau game</p>
-          <p className="text-xs text-zinc-500 mt-1">Klik tombol di atas untuk menambahkan modul pembelajaran atau game interaktif.</p>
+        <div className="text-center py-12 bg-app-surface border border-app-border rounded-xl">
+          <Puzzle size={36} className="text-app-muted mb-3" />
+          <p className="text-sm text-app-secondary font-medium">Belum ada modul atau game</p>
+          <p className="text-xs text-app-muted mt-1">Klik tombol di atas untuk menambahkan modul pembelajaran atau game interaktif.</p>
         </div>
       ) : (
         /* Module list */
@@ -251,18 +251,18 @@ export function ModulesTab() {
       )}
 
       {/* Quick Add Grid */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-        <h4 className="text-sm font-semibold text-zinc-200 mb-3"><Zap size={16} className="inline" /> Tambah Cepat</h4>
+      <div className="bg-app-surface border border-app-border rounded-xl p-4">
+        <h4 className="text-sm font-semibold text-app-primary mb-3"><Zap size={16} className="inline" /> Tambah Cepat</h4>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {ALL_MODULE_TYPES.map((t) => (
             <button
               key={t.id}
               onClick={() => handlePick(t.id)}
-              className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-2.5 text-center hover:border-zinc-500 transition-colors cursor-pointer"
+              className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-2.5 text-center hover:border-app-border transition-colors cursor-pointer"
               title={`Tambah ${t.label}`}
             >
               <div className="text-lg mb-0.5">{t.icon}</div>
-              <div className="text-[0.6rem] text-zinc-400 leading-tight">{t.label}</div>
+              <div className="text-[0.6rem] text-app-secondary leading-tight">{t.label}</div>
             </button>
           ))}
         </div>

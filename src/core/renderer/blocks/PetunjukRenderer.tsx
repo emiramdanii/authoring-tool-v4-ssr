@@ -69,8 +69,8 @@ export function PetunjukRenderer({ block, tokens, isCompact, isEditing }: {
                 }}>
                 <span style={{ fontSize: isCompact ? '15px' : '20px' }}>{item.icon}</span>
               </div>
-              <div className="font-extrabold mb-1.5" style={{ color: tokens.color(itemColor), fontSize: isCompact ? '12px' : '14px' }}>{item.title}</div>
-              <div className="leading-relaxed" style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{item.body}</div>
+              <div className="font-extrabold mb-1.5" style={{ color: tokens.color(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
+              <div className="leading-relaxed" style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.body}</div>
             </div>
           );
         })}
