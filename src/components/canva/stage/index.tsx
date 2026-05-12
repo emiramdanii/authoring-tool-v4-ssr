@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCanvaStore } from '@/store/canva-store';
 import { RATIOS } from '../types';
 import { PageRenderer } from '../page-renderer';
@@ -49,6 +50,30 @@ import { screenToPct } from '@/lib/virtual-canvas';
 //   - Uses getBoundingClientRect() for accuracy after transforms
 // ═══════════════════════════════════════════════════════════════
 
+// ── Design-mode page transition variants (subtle fade + scale) ───
+const designPageVariants = {
+  enter: {
+    opacity: 0,
+    scale: 0.98,
+  },
+  center: {
+    opacity: 1,
+    scale: 1,
+    pointerEvents: 'auto' as const,
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.98,
+    pointerEvents: 'none' as const,
+  },
+};
+
+const designPageTransition = {
+  type: 'tween' as const,
+  ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+  duration: 0.22,
+};
+
 export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
   const {
     pages,
@@ -95,6 +120,16 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
   });
+
+  // ── Page transition direction tracking ──────────────────────
+  const prevPageRef = useRef(currentPageIndex);
+  const [pageDirection, setPageDirection] = useState(0);
+
+  useEffect(() => {
+    if (currentPageIndex > prevPageRef.current) setPageDirection(1);
+    else if (currentPageIndex < prevPageRef.current) setPageDirection(-1);
+    prevPageRef.current = currentPageIndex;
+  }, [currentPageIndex]);
 
   // ── Local state for zoom/pan ─────────────────────────────────
   const canvasAreaRef = useRef<HTMLDivElement>(null);
@@ -340,14 +375,27 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
         >
           {/* ══ Use PageRenderer for consistent rendering ══════ */}
           <CanvasErrorBoundary name="PageRenderer">
-            <PageRenderer
-              mode="canvas"
-              page={page}
-              currentPageIndex={currentPageIndex}
-              totalPages={pages.length}
-              isTemplateSelected={true}
-              onEditField={handleTemplateEdit}
-            />
+            <AnimatePresence mode="wait" custom={pageDirection}>
+              <motion.div
+                key={`stage-page-${currentPageIndex}`}
+                custom={pageDirection}
+                variants={designPageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={designPageTransition}
+                className="absolute inset-0"
+              >
+                <PageRenderer
+                  mode="canvas"
+                  page={page}
+                  currentPageIndex={currentPageIndex}
+                  totalPages={pages.length}
+                  isTemplateSelected={true}
+                  onEditField={handleTemplateEdit}
+                />
+              </motion.div>
+            </AnimatePresence>
           </CanvasErrorBoundary>
 
           {/* ══ Canvas-only overlays ═══════════════════════════ */}

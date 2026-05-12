@@ -35,8 +35,11 @@ import {
   VolumeX,
   Rocket,
   Maximize,
+  Store,
+  Printer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import TemplateMarketplace from '@/components/canva/TemplateMarketplace';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: Toolbar cleanup
@@ -92,10 +95,11 @@ export default function Toolbar() {
   const [exportOpen, setExportOpen] = useState(false);
   const [ratioOpen, setRatioOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const ratioRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
-  const { exportHTML: viteExportHTML, previewHTML: vitePreviewHTML } = useViteExport();
+  const { exportHTML: viteExportHTML, previewHTML: vitePreviewHTML, exportClientSide, exportWithFallback } = useViteExport();
 
   const isInteractive = mode === 'interactive';
   const page = pages[currentPageIndex];
@@ -125,6 +129,26 @@ export default function Toolbar() {
     setExporting(true);
     try {
       await viteExportHTML();
+    } finally {
+      setExporting(false);
+    }
+    setExportOpen(false);
+  };
+
+  const handleExportClientSide = async () => {
+    setExporting(true);
+    try {
+      await exportClientSide();
+    } finally {
+      setExporting(false);
+    }
+    setExportOpen(false);
+  };
+
+  const handleExportWithFallback = async () => {
+    setExporting(true);
+    try {
+      await exportWithFallback();
     } finally {
       setExporting(false);
     }
@@ -260,6 +284,17 @@ export default function Toolbar() {
       </div>
       <div className="section-divider h-5 w-px mx-1" />
 
+      {/* ── Template Marketplace Button ─────────────────────── */}
+      <Button
+        variant="outline"
+        onClick={() => setMarketplaceOpen(true)}
+        title="Template Marketplace — Pilih template siap pakai"
+        className="focus-ring text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35 gap-1"
+      >
+        <Store size={13} />
+        <span className="hidden sm:inline">Template</span>
+      </Button>
+
       {/* ── Play Button (MAIN action) ────────────────────────── */}
       <Button
         variant="outline"
@@ -321,13 +356,49 @@ export default function Toolbar() {
             >
               <Download size={14} className="text-emerald-400" />
               <div>
-                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Download HTML</div>
-                <div className="text-[8px] text-emerald-500/70">Navbar + navigasi + game + skor — siap bagi ke siswa</div>
+                <div className="text-[11px] text-emerald-300 font-semibold">⬇ Download HTML (Vite)</div>
+                <div className="text-[8px] text-emerald-500/70">Full export: navbar + navigasi + game + skor</div>
+              </div>
+            </button>
+            <button
+              onClick={handleExportClientSide}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-cyan-500/10 transition-colors text-left"
+            >
+              <Download size={14} className="text-cyan-400" />
+              <div>
+                <div className="text-[11px] text-cyan-300 font-semibold">⬇ Download HTML (Client-Side)</div>
+                <div className="text-[8px] text-cyan-500/70">Fallback — selalu berfungsi tanpa Vite template</div>
+              </div>
+            </button>
+            <button
+              onClick={handleExportWithFallback}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-teal-500/10 transition-colors text-left"
+            >
+              <Rocket size={14} className="text-teal-400" />
+              <div>
+                <div className="text-[11px] text-teal-300 font-semibold">🔄 Auto-Fallback Export</div>
+                <div className="text-[8px] text-teal-500/70">Coba Vite dulu, fallback ke client-side jika gagal</div>
+              </div>
+            </button>
+
+            {/* ── PRINT ── */}
+            <div className="px-3 py-1.5 bg-amber-500/10 border-y border-amber-500/20">
+              <div className='text-[9px] font-bold text-amber-400 uppercase tracking-wider'><Printer size={12} className='inline' /> Cetak</div>
+            </div>
+            <button
+              onClick={() => { window.print(); setExportOpen(false); }}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-amber-500/10 transition-colors text-left"
+              aria-label="Cetak halaman MPI"
+            >
+              <Printer size={14} className="text-amber-400" />
+              <div>
+                <div className="text-[11px] text-amber-300 font-semibold">Cetak (Print)</div>
+                <div className="text-[8px] text-amber-500/70">Cetak halaman MPI untuk referensi guru</div>
               </div>
             </button>
 
             <div className="px-3 py-1.5 bg-app-elevated border-y border-app-border">
-              <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider">Lainnya</div>
+              <div className='text-[9px] font-bold text-app-muted uppercase tracking-wider'>Lainnya</div>
             </div>
             <button
               onClick={handleClear}
@@ -518,6 +589,12 @@ export default function Toolbar() {
           <Plus size={13} />
         </Button>
       </div>
+
+      {/* ── Template Marketplace Overlay ─────────────────────── */}
+      <TemplateMarketplace
+        open={marketplaceOpen}
+        onClose={() => setMarketplaceOpen(false)}
+      />
     </div>
   );
 }

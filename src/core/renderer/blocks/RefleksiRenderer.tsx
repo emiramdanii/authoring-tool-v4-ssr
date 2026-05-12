@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 
-export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [responses, setResponses] = React.useState<Record<number, string>>({});
@@ -219,4 +219,4 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
       )}
     </div>
   );
-}
+});

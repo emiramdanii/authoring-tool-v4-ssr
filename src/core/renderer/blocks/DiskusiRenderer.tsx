@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 
-export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [responses, setResponses] = React.useState<Record<number, string>>({});
@@ -196,4 +196,4 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
       )}
     </div>
   );
-}
+});

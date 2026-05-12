@@ -7,7 +7,8 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti } from '@/lib/confetti';
+import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
+import { announceToScreenReader } from '@/lib/a11y';
 
 /** Inner kolom component so hooks are not called in loops */
 function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomItems, onKolomClick, isCompact }: {
@@ -52,7 +53,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
       </div>
       <div className="flex flex-wrap gap-1.5">
         {kolomItems.map((text, i) => (
-          <span key={`sortir-item-${text?.slice(0,8)}-${i}`} className={`px-2.5 py-1 rounded-full font-bold min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+          <span key={`sortir-item-${blockId}-${kolomIndex}-${i}`} className={`px-2.5 py-1 rounded-full font-bold min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               fontSize: '11px',
               background: tokens.colorAlpha(kolomDef.color, 0.2),
@@ -70,7 +71,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
   );
 }
 
-export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: SortirGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const pool = block.pool || [];
@@ -85,6 +86,18 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
   const [selected, setSelected] = React.useState<string | null>(null);
   const [wrongFeedback, setWrongFeedback] = React.useState<{ itemId: string; kolomId: string; message: string } | null>(null);
   const [attempts, setAttempts] = React.useState<Record<string, number>>({});
+
+  // ── Replay watcher: reset all state when replayGeneration bumps ──
+  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+  React.useEffect(() => {
+    setPoolState(pool.map(p => ({ ...p, placed: false })));
+    const init: Record<string, string[]> = {};
+    kolom.forEach(k => { init[k.id] = []; });
+    setKolomItems(init);
+    setSelected(null);
+    setWrongFeedback(null);
+    setAttempts({});
+  }, [replayGeneration]);
 
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -101,9 +114,11 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
   const totalItems = pool.length;
   const isCompleted = totalItems > 0 && totalPlaced >= totalItems;
 
-  // Report score when completed
+  // Report score when completed (guard: only fire once per completion cycle)
+  const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
-    if (isCompleted && interactive && block.id) {
+    if (isCompleted && interactive && block.id && !hasReportedRef.current) {
+      hasReportedRef.current = true;
       const totalAttempts = Object.values(attempts).reduce((s, a) => s + a, 0);
       const accuracy = totalAttempts > 0 ? Math.round((totalItems / totalAttempts) * 100) : 100;
       reportScore({
@@ -113,10 +128,18 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         maxScore: 100,
         completed: true,
       });
-      playSound('complete');
-      fireConfetti({ count: 50 });
+      const perfectScore = totalAttempts <= totalItems;
+      if (perfectScore) {
+        playSound('complete');
+        fireConfettiCelebration();
+      } else {
+        playSound('complete');
+        fireConfetti({ count: 50 });
+      }
+      announceToScreenReader(`Game selesai! Skor kamu: ${accuracy} dari ${totalItems}`, 'assertive');
     }
-  }, [isCompleted]);
+    if (!isCompleted) hasReportedRef.current = false;
+  }, [isCompleted, interactive, block.id, attempts, totalItems, reportScore, pageIndex]);
 
   // Auto-dismiss wrong feedback after 2.5 seconds
   React.useEffect(() => {
@@ -142,6 +165,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
       setPoolState(prev => prev.map(p => p.id === selected ? { ...p, placed: true } : p));
       setKolomItems(prev => ({ ...prev, [kolomId]: [...(prev[kolomId] || []), item.text] }));
       playSound('correct');
+      announceToScreenReader('Item benar!', 'assertive');
     } else {
       // ── Educational feedback on wrong answer ────────────────
       const correctKolom = kolom.find(k => k.id === item.category);
@@ -156,6 +180,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
       // Track attempts
       setAttempts(prev => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }));
       playSound('incorrect');
+      announceToScreenReader('Kolom salah', 'assertive');
     }
     setSelected(null);
   };
@@ -200,6 +225,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
               setSelected(null);
               setWrongFeedback(null);
               setAttempts({});
+              hasReportedRef.current = false;
               playSound('click');
             }}
             style={{
@@ -216,7 +242,13 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
   }
 
   return (
-    <div>
+    <div className="game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Sortir: ${totalPlaced} dari ${totalItems} item ditempatkan`} aria-describedby={`sortir-instructions-${block.id || 'sortir'}`} data-interactive>
+      {/* Hidden instruction for screen readers */}
+      <span id={`sortir-instructions-${block.id || 'sortir'}`} className="sr-only">Pilih item dari kolam, lalu klik kolom yang tepat untuk mengelompokkannya</span>
+      {/* Screen reader live region for sort feedback */}
+      <div className="sr-only" aria-live="polite" role="status">
+        {selected ? `Item ${selected} dipilih. Pilih kolom yang tepat.` : ''}
+      </div>
       {/* Wrong answer feedback toast */}
       {wrongFeedback && (
         <div className="mb-3 p-3 rounded-xl flex items-start gap-2"
@@ -244,6 +276,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         </div>
         {poolState.filter(p => !p.placed).map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
+            aria-selected={selected === p.id}
             className={`px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               background: selected === p.id ? tokens.colorAlpha('y', 0.2) : tokens.subtleBg(0.07),
@@ -277,4 +310,4 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
       </div>
     </div>
   );
-}
+});

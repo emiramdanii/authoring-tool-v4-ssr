@@ -9,12 +9,20 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 
-export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing, pageIndex }: {
+export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing, pageIndex }: {
   block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
   const [viewedCards, setViewedCards] = React.useState<Set<number>>(new Set());
+
+  // ── Replay watcher: reset all state when replayGeneration bumps ──
+  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+  React.useEffect(() => {
+    setIdx(0);
+    setFlipped(false);
+    setViewedCards(new Set());
+  }, [replayGeneration]);
 
   const cards = block.cards || [];
   const card = cards[idx];
@@ -23,7 +31,8 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
-  // Track viewed cards & report completion
+  // Track viewed cards & report completion (guard: only fire once)
+  const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
     if (flipped && interactive && idx < cards.length) {
       setViewedCards(prev => {
@@ -35,7 +44,8 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
   }, [flipped, idx, interactive, cards.length]);
 
   React.useEffect(() => {
-    if (isCompleted && block.id) {
+    if (isCompleted && block.id && !hasReportedRef.current) {
+      hasReportedRef.current = true;
       reportScore({
         elementId: block.id,
         pageIndex: pageIndex ?? 0,
@@ -46,7 +56,8 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
       playSound('complete');
       fireConfetti({ count: 40 });
     }
-  }, [isCompleted]);
+    if (!isCompleted) hasReportedRef.current = false;
+  }, [isCompleted, block.id, cards.length, reportScore, pageIndex]);
 
   // ── Inline editing hooks — must be called before any early returns ──
   const qEditor = useInlineEditor({
@@ -251,4 +262,4 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
       </div>
     </div>
   );
-}
+});

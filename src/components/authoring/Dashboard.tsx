@@ -2,6 +2,7 @@
 
 import { useAuthoringStore } from '@/store/authoring-store';
 import { ChevronDown, Target, Calendar, ClipboardList, HelpCircle, Puzzle, Gamepad2, FileEdit, Zap } from 'lucide-react';
+import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
 
@@ -149,6 +150,9 @@ export default function Dashboard() {
           })}
         </div>
       </div>
+
+      {/* ══ BSNP COMPLIANCE ═══════════════════════════════════════ */}
+      <BsnpCompliancePanel />
 
       {/* ══ TEMPLATE SELECTION ════════════════════════════════════ */}
       <div>
@@ -309,11 +313,11 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* ══ Kelenkapan (collapsible) ═════════════════════════════ */}
+      {/* ══ Kelenkapan (collapsible — compact stats) ═════════════ */}
       {hasData && (
         <details className="group bg-app-surface/40 border border-app-border/40 rounded-xl">
           <summary className="px-5 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold text-app-secondary hover:text-app-primary transition-colors">
-            <span>Kelengkapan Proyek</span>
+            <span>Statistik Proyek</span>
             <span className="text-[0.7rem] text-app-muted group-open:rotate-180 transition-transform"><ChevronDown size={14} className="inline" /></span>
           </summary>
           <div className="px-5 pb-4 space-y-3">
@@ -332,23 +336,6 @@ export default function Dashboard() {
                   <div className="text-sm mb-0.5">{s.icon}</div>
                   <div className={`text-sm font-bold ${s.color}`}>{s.val}</div>
                   <div className="text-[0.6rem] text-app-muted">{s.label}</div>
-                </div>
-              ))}
-            </div>
-            {/* Checklist */}
-            <div className="space-y-1">
-              {[
-                { label: 'Identitas media diisi', done: !!(meta.judulPertemuan && meta.kelas) },
-                { label: 'Capaian Pembelajaran', done: !!cp.capaianFase },
-                { label: 'Tujuan Pembelajaran (min 1)', done: tp.length > 0 },
-                { label: 'ATP / Pertemuan (min 1)', done: atp.pertemuan.length > 0 },
-                { label: 'Alur Pembelajaran (min 3)', done: alur.length >= 3 },
-                { label: 'Kuis (min 5 soal)', done: kuis.length >= 5 },
-                { label: 'Modul konten (min 1)', done: modules.length > 0 },
-              ].map((c, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs py-1">
-                  <span className={c.done ? 'text-emerald-400' : 'text-app-muted'}>{c.done ? '✓' : '○'}</span>
-                  <span className={c.done ? 'text-app-secondary' : 'text-app-muted'}>{c.label}</span>
                 </div>
               ))}
             </div>

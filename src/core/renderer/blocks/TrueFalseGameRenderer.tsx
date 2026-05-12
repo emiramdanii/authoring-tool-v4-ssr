@@ -1,0 +1,463 @@
+'use client';
+
+import React from 'react';
+import { Trophy, Star, Dumbbell, RotateCcw, CheckCircle2, XCircle } from 'lucide-react';
+import type { TrueFalseGameBlock } from '../../schema/types';
+import type { TokenResolver } from '../types';
+import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { playSound } from '@/lib/sounds';
+import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
+import { announceToScreenReader } from '@/lib/a11y';
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TRUE/FALSE GAME RENDERER (Benar/Salah)
+   ──────────────────────────────────────────────────────────────────────
+   Ported from canva/games/TrueFalseGame.tsx to the SSR renderer system.
+   Follows the exact same patterns as KuisRenderer and FillBlankGameRenderer
+   (replay watcher, score guard, token-aware styling, inline editing,
+   stable React keys, timer cleanup on unmount).
+
+   Game flow:
+     1. Show questions one at a time with progress bar
+     2. Player clicks "Benar" (true) or "Salah" (false) button
+     3. Compare user's choice with question.correct (normalized)
+     4. Show feedback with explanation if available
+     5. Auto-advance to next question after 1200ms delay
+     6. On completion, show tiered result screen with score
+   ═══════════════════════════════════════════════════════════════════════ */
+
+export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+  block: TrueFalseGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
+}) {
+  // ── Game state ────────────────────────────────────────────────
+  const [currentQ, setCurrentQ] = React.useState(0);
+  const [score, setScore] = React.useState(0);
+  const [answered, setAnswered] = React.useState(false);
+  const [selected, setSelected] = React.useState<boolean | null>(null);
+  const [phase, setPhase] = React.useState<'play' | 'result'>('play');
+
+  // ── Timer cleanup on unmount ──────────────────────────────────
+  const timersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+  React.useEffect(() => {
+    return () => { timersRef.current.forEach(clearTimeout); };
+  }, []);
+
+  // ── Normalize questions ───────────────────────────────────────
+  // Filter out questions with empty text; also normalize the `correct`
+  // field which may arrive as the string "true"/"false" from JSON
+  const rawQuestions = block.questions || [];
+  const validQuestions = React.useMemo(
+    () => rawQuestions
+      .filter(q => q.text)
+      .map(q => ({
+        ...q,
+        correct: typeof q.correct === 'string'
+          ? q.correct.toLowerCase() === 'true'
+          : Boolean(q.correct),
+      })),
+    [rawQuestions]
+  );
+
+  // ── Data-change state reset (soalKey) ─────────────────────────
+  // When the question data changes structurally, reset all game state
+  const soalKey = React.useMemo(
+    () => JSON.stringify(validQuestions.map(q => ({ t: q.text, c: q.correct }))),
+    [validQuestions]
+  );
+  React.useEffect(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setCurrentQ(0);
+    setScore(0);
+    setAnswered(false);
+    setSelected(null);
+    setPhase('play');
+  }, [soalKey]);
+
+  // ── Replay watcher (MANDATORY) ────────────────────────────────
+  // Reset all state when replayGeneration bumps
+  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+  React.useEffect(() => {
+    setCurrentQ(0);
+    setScore(0);
+    setAnswered(false);
+    setSelected(null);
+    setPhase('play');
+  }, [replayGeneration]);
+
+  // ── Interactive store: score reporting ────────────────────────
+  const reportScore = useInteractiveStore(s => s.reportScore);
+
+  // ── Score guard (MANDATORY) ───────────────────────────────────
+  // Report score on completion — only fire once per completion cycle
+  const hasReportedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (phase === 'result' && interactive && block.id && !hasReportedRef.current) {
+      hasReportedRef.current = true;
+      reportScore({
+        elementId: block.id,
+        pageIndex: pageIndex ?? 0,
+        score,
+        maxScore: validQuestions.length,
+        completed: true,
+      });
+      // Play tier-appropriate sound & confetti
+      const pct = validQuestions.length > 0 ? Math.round((score / validQuestions.length) * 100) : 0;
+      if (pct >= 80) { playSound('complete'); fireConfettiCelebration(); }
+      else if (pct >= 50) { playSound('complete'); fireConfetti({ count: 30 }); }
+      else playSound('ding');
+      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${validQuestions.length} (${pct}%)`, 'assertive');
+    }
+    // Reset reported flag when no longer in result phase (replay)
+    if (phase !== 'result') hasReportedRef.current = false;
+  }, [phase, interactive, block.id, score, validQuestions.length, reportScore, pageIndex]);
+
+  // ── Inline editing hooks ──────────────────────────────────────
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+
+  // ── Answer handler ────────────────────────────────────────────
+  const handleAnswer = React.useCallback((userChoice: boolean) => {
+    if (answered || currentQ >= validQuestions.length) return;
+
+    const q = validQuestions[currentQ];
+    const isCorrect = userChoice === q.correct;
+
+    setSelected(userChoice);
+    setAnswered(true);
+
+    if (isCorrect) {
+      setScore(s => s + 1);
+      playSound('correct');
+      announceToScreenReader('Benar!', 'assertive');
+    } else {
+      playSound('incorrect');
+      announceToScreenReader(`Salah. Jawaban yang benar: ${q.correct ? 'Benar' : 'Salah'}`, 'assertive');
+    }
+
+    // Auto-advance after brief delay
+    const tid = setTimeout(() => {
+      if (currentQ + 1 < validQuestions.length) {
+        setCurrentQ(q => q + 1);
+        setAnswered(false);
+        setSelected(null);
+      } else {
+        setPhase('result');
+      }
+    }, 1200);
+    timersRef.current.push(tid);
+  }, [answered, currentQ, validQuestions]);
+
+  // ── Restart handler ───────────────────────────────────────────
+  const handleRestart = React.useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setCurrentQ(0);
+    setScore(0);
+    setAnswered(false);
+    setSelected(null);
+    setPhase('play');
+    hasReportedRef.current = false;
+    playSound('click');
+  }, []);
+
+  // ══ EMPTY STATE ═══════════════════════════════════════════════
+  if (validQuestions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl"
+        style={{
+          background: tokens.subtleBg(0.04),
+          border: '2px dashed ' + tokens.subtleBorder(0.15),
+        }}>
+        <CheckCircle2 size={24} style={{ color: tokens.muted(0.4) }} />
+        <div className="mt-2 font-extrabold" style={{ fontSize: '13px', color: tokens.muted(0.5) }}>
+          Benar / Salah
+        </div>
+        <div style={{ fontSize: '11px', color: tokens.muted(0.35) }}>
+          Belum ada soal Benar/Salah ditambahkan
+        </div>
+      </div>
+    );
+  }
+
+  // ══ COMPLETION SCREEN ═════════════════════════════════════════
+  if (phase === 'result') {
+    const pct = validQuestions.length > 0 ? Math.round((score / validQuestions.length) * 100) : 0;
+    const tierIcon = pct >= 80
+      ? <Trophy size={28} className="inline" style={{ color: tokens.color('y') }} />
+      : pct >= 50
+        ? <Star size={28} className="inline" style={{ color: tokens.color('y') }} />
+        : <Dumbbell size={28} className="inline" style={{ color: tokens.color('y') }} />;
+    const tierMessage = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!';
+
+    return (
+      <div className="text-center p-5 rounded-2xl"
+        style={{
+          background: tokens.color('bg'),
+          border: '2px solid ' + tokens.colorAlpha('y', 0.3),
+          boxShadow: tokens.raw.shadow.elevated,
+          animation: 'popSuccess 0.5s ease-out',
+        }}>
+        <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
+          {tierIcon}
+        </div>
+        <div className="font-black text-lg mb-1"
+          style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('y') }}>
+          {tierMessage}
+        </div>
+        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
+          Skor kamu: {score}/{validQuestions.length} ({pct}%)
+        </div>
+        <div className="flex justify-center gap-3 mb-2">
+          <div className="px-4 py-2 rounded-xl"
+            style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
+            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>Benar</div>
+            <div className="font-black" style={{ color: tokens.color('g') }}>{score}</div>
+          </div>
+          <div className="px-4 py-2 rounded-xl"
+            style={{ background: tokens.colorAlpha('r', 0.12), border: '1px solid ' + tokens.colorAlpha('r', 0.3) }}>
+            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>Salah</div>
+            <div className="font-black" style={{ color: tokens.color('r') }}>{validQuestions.length - score}</div>
+          </div>
+        </div>
+        {interactive && (
+          <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            onClick={handleRestart}
+            style={{
+              fontSize: '13px',
+              background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+              color: tokens.color('bg'),
+              boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
+            }}>
+            <RotateCcw size={14} className="inline" /> Ulangi
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // ══ PLAY PHASE ════════════════════════════════════════════════
+  const q = validQuestions[currentQ];
+  if (!q) return null;
+
+  const isCorrectAnswer = selected !== null && selected === q.correct;
+  const progress = ((currentQ + (answered ? 1 : 0)) / validQuestions.length) * 100;
+
+  return (
+    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Benar/Salah: Soal ${currentQ + 1} dari ${validQuestions.length}, Skor: ${score}`} aria-describedby={`tf-instructions-${block.id || 'tf'}`} data-interactive>
+      {/* Screen reader live region for answer feedback */}
+      <div className="sr-only" aria-live="polite" role="status">
+        {answered && (isCorrectAnswer ? 'Jawaban benar!' : `Jawaban salah. Jawaban yang benar: ${q.correct ? 'Benar' : 'Salah'}`)}
+      </div>
+      {/* Hidden instruction for screen readers */}
+      <span id={`tf-instructions-${block.id || 'tf'}`} className="sr-only">Tentukan apakah pernyataan benar atau salah</span>
+      {/* ── Header with title and question counter ──────────────── */}
+      <div className="flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
+            <CheckCircle2 size={14} className="inline" />{' '}
+            <InlineTextEditor
+              {...titleEditor}
+              className="text-[11px] font-extrabold"
+              style={{ color: tokens.color('y'), fontSize: 'inherit' }}
+              placeholder="Ketik judul Benar/Salah..."
+            />
+          </div>
+        </div>
+        <span className="px-2.5 py-1 rounded-full font-extrabold flex-shrink-0"
+          style={{
+            fontSize: '11px',
+            background: tokens.colorAlpha('y', 0.15),
+            color: tokens.color('y'),
+            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
+          }}>
+          {currentQ + 1}/{validQuestions.length}
+        </span>
+      </div>
+
+      {/* ── Progress bar ────────────────────────────────────────── */}
+      <div className="h-1.5 rounded-full overflow-hidden"
+        role="progressbar"
+        aria-valuenow={currentQ + (answered ? 1 : 0)}
+        aria-valuemin={0}
+        aria-valuemax={validQuestions.length}
+        style={{ background: tokens.subtleBg(0.08) }}>
+        <div className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${progress}%`,
+            background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
+            boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
+          }} />
+      </div>
+
+      {/* ── Score indicator ─────────────────────────────────────── */}
+      <div className="flex justify-between items-center">
+        <span className="font-bold" style={{ fontSize: '11px', color: tokens.color('y') }}>
+          Soal {currentQ + 1}/{validQuestions.length}
+        </span>
+        <span style={{ fontSize: '11px', color: tokens.muted(0.6) }} aria-live="polite">
+          Skor: {score}
+        </span>
+      </div>
+
+      {/* ── Question card ───────────────────────────────────────── */}
+      <div className="p-4 rounded-xl"
+        style={{
+          background: tokens.colorAlpha('y', 0.06),
+          border: '1px solid ' + tokens.colorAlpha('y', 0.2),
+          boxShadow: tokens.raw.shadow.card,
+          overflow: 'hidden',
+        }}>
+        {/* Question text */}
+        <p className={`font-bold leading-relaxed mb-4 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
+          style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          {q.text}
+        </p>
+
+        {/* ── Benar / Salah buttons ────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* ✅ Benar button */}
+          <button
+            key={`tf-opt-${block.id || 'tf'}-${currentQ}-benar`}
+            disabled={answered}
+            onClick={() => { if (interactive) handleAnswer(true); }}
+            aria-pressed={selected === true}
+            className="p-3 rounded-xl font-extrabold text-center transition-all hover:scale-[1.02] min-w-0"
+            style={{
+              fontSize: '14px',
+              background: !answered
+                ? tokens.colorAlpha('g', 0.08)
+                : selected === true
+                  ? isCorrectAnswer
+                    ? tokens.colorAlpha('g', 0.2)
+                    : tokens.colorAlpha('r', 0.2)
+                  : tokens.colorAlpha('g', 0.04),
+              border: '2px solid ' + (
+                !answered
+                  ? tokens.colorAlpha('g', 0.3)
+                  : selected === true
+                    ? isCorrectAnswer
+                      ? tokens.color('g')
+                      : tokens.color('r')
+                    : tokens.subtleBorder(0.08)
+              ),
+              boxShadow: !answered
+                ? 'none'
+                : selected === true
+                  ? isCorrectAnswer
+                    ? '0 0 12px ' + tokens.colorAlpha('g', 0.25)
+                    : '0 0 12px ' + tokens.colorAlpha('r', 0.25)
+                  : 'none',
+              color: !answered
+                ? tokens.color('g')
+                : selected === true
+                  ? isCorrectAnswer
+                    ? tokens.color('g')
+                    : tokens.color('r')
+                  : tokens.muted(0.35),
+              cursor: answered ? 'default' : 'pointer',
+              opacity: answered && selected !== true ? 0.55 : 1,
+            }}>
+            ✅ Benar
+          </button>
+
+          {/* ❌ Salah button */}
+          <button
+            key={`tf-opt-${block.id || 'tf'}-${currentQ}-salah`}
+            disabled={answered}
+            onClick={() => { if (interactive) handleAnswer(false); }}
+            aria-pressed={selected === false}
+            className="p-3 rounded-xl font-extrabold text-center transition-all hover:scale-[1.02] min-w-0"
+            style={{
+              fontSize: '14px',
+              background: !answered
+                ? tokens.colorAlpha('r', 0.08)
+                : selected === false
+                  ? isCorrectAnswer
+                    ? tokens.colorAlpha('g', 0.2)
+                    : tokens.colorAlpha('r', 0.2)
+                  : tokens.colorAlpha('r', 0.04),
+              border: '2px solid ' + (
+                !answered
+                  ? tokens.colorAlpha('r', 0.3)
+                  : selected === false
+                    ? isCorrectAnswer
+                      ? tokens.color('g')
+                      : tokens.color('r')
+                    : tokens.subtleBorder(0.08)
+              ),
+              boxShadow: !answered
+                ? 'none'
+                : selected === false
+                  ? isCorrectAnswer
+                    ? '0 0 12px ' + tokens.colorAlpha('g', 0.25)
+                    : '0 0 12px ' + tokens.colorAlpha('r', 0.25)
+                  : 'none',
+              color: !answered
+                ? tokens.color('r')
+                : selected === false
+                  ? isCorrectAnswer
+                    ? tokens.color('g')
+                    : tokens.color('r')
+                  : tokens.muted(0.35),
+              cursor: answered ? 'default' : 'pointer',
+              opacity: answered && selected !== false ? 0.55 : 1,
+            }}>
+            ❌ Salah
+          </button>
+        </div>
+
+        {/* ── Answer feedback ───────────────────────────────────── */}
+        {answered && (
+          <div className="mt-3 p-3 rounded-xl leading-relaxed"
+            style={{
+              fontSize: '12px',
+              background: isCorrectAnswer
+                ? tokens.colorAlpha('g', 0.1)
+                : tokens.colorAlpha('r', 0.1),
+              border: '1px solid ' + (isCorrectAnswer
+                ? tokens.colorAlpha('g', 0.3)
+                : tokens.colorAlpha('r', 0.3)),
+              color: isCorrectAnswer
+                ? tokens.color('g')
+                : tokens.color('r'),
+              animation: 'fadeIn 0.3s ease',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+            }}>
+            {isCorrectAnswer ? (
+              <>
+                <CheckCircle2 size={14} className="inline mr-1" /> Benar!
+              </>
+            ) : (
+              <>
+                <XCircle size={14} className="inline mr-1" /> Salah. Jawaban yang benar: {q.correct ? 'Benar' : 'Salah'}
+              </>
+            )}
+            {/* Show explanation if available */}
+            {q.explanation && (
+              <div className="mt-1" style={{ fontSize: '11px', opacity: 0.85, overflowWrap: 'break-word' }}>
+                {q.explanation}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Print Answer Key (teacher only) ── */}
+      <div className="print-only print-answer-key">
+        <h3>Kunci Jawaban: Benar/Salah</h3>
+        <ul>
+          {validQuestions.map((q, i) => (
+            <li key={`tf-ans-${block.id || 'tf'}-${i}`}>{i + 1}. {q.text} — <strong>{q.correct ? 'Benar' : 'Salah'}</strong>{q.explanation ? ` (${q.explanation})` : ''}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+});

@@ -12,6 +12,7 @@ import { useCanvaStore } from '@/store/canva-store';
 // NOTE: Import from BlockDefinitionRegistry (NOT SceneRegistry) to break
 // the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
 import { getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
+import { createFocusTrap } from '@/lib/a11y';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -37,6 +38,7 @@ type MenuItem =
 export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [adjustedPos, setAdjustedPos] = React.useState({ x, y });
+  const focusTrapRef = useRef<ReturnType<typeof createFocusTrap> | null>(null);
 
   const deleteBlock = useCanvaStore(s => s.deleteBlock);
   const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
@@ -72,6 +74,18 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
       setAdjustedPos({ x: adjustedX, y: adjustedY });
     }
   }, [x, y]);
+
+  // ── Focus trap: contain Tab within context menu while open ────
+  useEffect(() => {
+    if (!menuRef.current) return;
+    const trap = createFocusTrap(menuRef.current);
+    focusTrapRef.current = trap;
+    trap.activate();
+    return () => {
+      trap.deactivate();
+      focusTrapRef.current = null;
+    };
+  }, []);
 
   // ── Close on click outside or Escape ──────────────────────────
   useEffect(() => {
@@ -141,6 +155,8 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   return (
     <div
       ref={menuRef}
+      role="menu"
+      aria-label={`Menu konteks: ${definition?.name || blockType}`}
       className="fixed z-[100] min-w-[200px] rounded-xl glass-panel-strong border border-app-border-strong shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
       style={{ left: adjustedPos.x, top: adjustedPos.y }}
     >
@@ -158,6 +174,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
         return (
           <button
             key={i}
+            role="menuitem"
             onClick={item.action}
             className={`w-full px-3 py-2 flex items-center justify-between text-left transition-colors ${
               item.danger

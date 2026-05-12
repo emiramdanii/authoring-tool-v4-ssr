@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
-import { RotateCcw, MessageCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { RotateCcw, MessageCircle, CheckCircle2, XCircle, Trophy, Star } from 'lucide-react';
 import type { RodaGameBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti } from '@/lib/confetti';
+import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
+import { announceToScreenReader } from '@/lib/a11y';
 
-export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: RodaGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [current, setCurrent] = React.useState(0);
@@ -18,6 +19,16 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   const [spinRotation, setSpinRotation] = React.useState(0);
   const [showQuestion, setShowQuestion] = React.useState(false);
   const tickIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Replay watcher: reset all state when replayGeneration bumps ──
+  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+  React.useEffect(() => {
+    setCurrent(0);
+    setAnswers({});
+    setSpinRotation(0);
+    setShowQuestion(false);
+    setSpinning(false);
+  }, [replayGeneration]);
 
   const questions = block.questions || [];
   const q = questions[current];
@@ -32,9 +43,11 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
-  // Report score on completion
+  // Report score on completion (guard: only fire once per completion cycle)
+  const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
-    if (isCompleted && interactive && block.id) {
+    if (isCompleted && interactive && block.id && !hasReportedRef.current) {
+      hasReportedRef.current = true;
       reportScore({
         elementId: block.id,
         pageIndex: pageIndex ?? 0,
@@ -43,10 +56,14 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
         completed: true,
       });
       const pct = Math.round((totalCorrect / questions.length) * 100);
-      if (pct >= 80) { playSound('complete'); fireConfetti({ count: 60 }); }
+      if (pct === 100) { playSound('complete'); fireConfettiCelebration(); }
+      else if (pct >= 80) { playSound('complete'); fireConfetti({ count: 60 }); }
       else playSound('ding');
+      announceToScreenReader(`Game selesai! Skor kamu: ${totalCorrect} dari ${questions.length}`, 'assertive');
     }
-  }, [isCompleted]);
+    // Reset reported flag when no longer completed (replay)
+    if (!isCompleted) hasReportedRef.current = false;
+  }, [isCompleted, interactive, block.id, totalCorrect, questions.length, reportScore, pageIndex]);
 
   // Cleanup tick interval on unmount
   React.useEffect(() => {
@@ -124,23 +141,38 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   // ══ COMPLETION SCREEN ═══════════════════════════════════════
   if (isCompleted) {
     const pct = questions.length > 0 ? Math.round((totalCorrect / questions.length) * 100) : 0;
+    const grade = pct >= 80 ? 'Sempurna' : pct >= 60 ? 'Bagus' : pct >= 40 ? 'Cukup' : 'Ayo Ulang';
+    const gradeEmoji = pct >= 80 ? '🌟' : pct >= 60 ? '👏' : pct >= 40 ? '💪' : '🔄';
+    const gradeColor = pct >= 80 ? 'g' : pct >= 60 ? 'c' : pct >= 40 ? 'y' : 'r';
     return (
       <div className="rounded-2xl overflow-hidden p-6 text-center"
         style={{
           background: tokens.color('bg'),
-          border: '2px solid ' + tokens.colorAlpha('c', 0.3),
+          border: '2px solid ' + tokens.colorAlpha(gradeColor, 0.3),
           boxShadow: tokens.raw.shadow.elevated,
         }}>
-        <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🎡</div>
-        <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('c') }}>
-          Roda Selesai!
+        <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>{gradeEmoji}</div>
+        <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color(gradeColor) }}>
+          {grade}!
         </div>
-        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
+        <div className="mb-3" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
           Skor: {totalCorrect}/{questions.length} ({pct}%)
+        </div>
+        {/* Stars based on score */}
+        <div className="flex justify-center gap-1 mb-4">
+          {[1, 2, 3].map(star => (
+            <Star
+              key={`star-${block.id || 'roda'}-${star}`}
+              size={20}
+              fill={pct >= star * 33 ? tokens.color('y') : 'none'}
+              stroke={pct >= star * 33 ? tokens.color('y') : tokens.muted(0.3)}
+              strokeWidth={2}
+            />
+          ))}
         </div>
         {interactive && (
           <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
-            onClick={() => { setAnswers({}); setCurrent(0); setSpinRotation(0); setShowQuestion(false); playSound('click'); }}
+            onClick={() => { setAnswers({}); setCurrent(0); setSpinRotation(0); setShowQuestion(false); hasReportedRef.current = false; playSound('click'); }}
             style={{
               fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')',
@@ -171,7 +203,11 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   const svgRadius = 94;
 
   return (
-    <div className="rounded-2xl overflow-hidden"
+    <div className="rounded-2xl overflow-hidden game-block"
+      {...(interactive ? { role: 'application' } : {})}
+      aria-label={`Roda Kuis: Soal ${current + 1} dari ${questions.length}, Skor: ${totalCorrect}${isCurrentAnswered ? ', sudah dijawab' : ''}`}
+      aria-describedby={`roda-instructions-${block.id || 'roda'}`}
+      data-interactive
       style={{
         background: tokens.color('bg'),
         border: '2px solid ' + tokens.colorAlpha('c', 0.3),
@@ -193,6 +229,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
             />
           </span>
           <span className="px-2.5 py-1 rounded-full font-extrabold"
+            aria-label={`Soal ${current + 1} dari ${questions.length}`}
             style={{
               fontSize: '11px',
               background: tokens.colorAlpha('c', 0.15),
@@ -205,6 +242,12 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
       </div>
 
       <div className="p-4">
+        {/* Hidden instruction for screen readers */}
+        <span id={`roda-instructions-${block.id || 'roda'}`} className="sr-only">Putar roda untuk mendapat soal, lalu pilih jawaban yang benar</span>
+        {/* Screen reader live region */}
+        <div className="sr-only" aria-live="polite" role="status">
+          {isCurrentAnswered && (q.opts?.[answers[current]]?.correct ? 'Jawaban benar!' : 'Jawaban salah.')}
+        </div>
         {/* ═══ ENHANCED SPINNING WHEEL ══════════════════════════════ */}
         {!isCurrentAnswered && (
           <div className="flex justify-center mb-4">
@@ -267,7 +310,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                     const midRad = (startRad + endRad) / 2;
 
                     return (
-                      <g key={`roda-seg-${i}`}>
+                      <g key={`roda-seg-${block.id || 'roda'}-${i}`}>
                         {/* Main segment */}
                         <path
                           d={`M${svgCenter},${svgCenter} L${x1},${y1} A${svgRadius},${svgRadius} 0 ${largeArc},1 ${x2},${y2} Z`}
@@ -384,6 +427,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
         {!isCurrentAnswered && interactive && (
           <div className="text-center mb-4">
             <button className="px-6 py-2.5 rounded-xl font-extrabold transition-all hover:scale-105"
+              aria-label="Putar roda"
               onClick={handleSpin}
               disabled={spinning}
               style={{
@@ -455,12 +499,12 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                 }
               }
               return (
-                <button key={`opt-${i}-${opt.text.slice(0,10)}`} disabled={isCurrentAnswered || spinning}
+                <button key={`opt-${block.id || 'roda'}-${i}`} disabled={isCurrentAnswered || spinning}
                   onClick={() => {
                     if (interactive && !isCurrentAnswered && !spinning) {
                       setAnswers(prev => ({ ...prev, [current]: i }));
-                      if (opt.correct) playSound('correct');
-                      else playSound('incorrect');
+                      if (opt.correct) { playSound('correct'); announceToScreenReader('Benar!', 'assertive'); }
+                      else { playSound('incorrect'); announceToScreenReader('Salah', 'assertive'); }
                     }
                   }}
                   className={`w-full p-3 rounded-xl font-bold text-left transition-all hover:scale-[1.01] min-w-0 overflow-hidden ${isCompact ? 'canvas-truncate-1' : ''}`}
@@ -490,6 +534,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
         {/* Next button */}
         {isCurrentAnswered && current < questions.length - 1 && (
           <button className="mt-3 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            aria-label="Soal berikutnya"
             onClick={() => { setCurrent(current + 1); setShowQuestion(false); playSound('click'); }}
             style={{
               fontSize: '13px',
@@ -500,7 +545,33 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
             Soal Berikutnya →
           </button>
         )}
+        {/* Progress bar */}
+        {questions.length > 1 && (
+          <div className="mt-4 px-1">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-extrabold" style={{ fontSize: '11px', color: tokens.color('c') }}>
+                <Trophy size={12} className="inline" /> Progres
+              </span>
+              <span style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
+                {totalAnswered}/{questions.length} soal
+              </span>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={totalAnswered}
+              aria-valuemin={0}
+              aria-valuemax={questions.length}
+              style={{ background: tokens.subtleBg(0.08) }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${questions.length > 0 ? (totalAnswered / questions.length) * 100 : 0}%`,
+                  background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')})`,
+                  boxShadow: `0 0 8px ${tokens.colorAlpha('c', 0.3)}`,
+                }} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+});

@@ -59,13 +59,19 @@ export interface BlockDefinition extends BlockDefinitionMeta {
 // ═══════════════════════════════════════════════════════════════════
 // Each renderer is now in its own file under ../renderer/blocks/
 // The registry maps block types directly to these renderers.
+//
+// PERFORMANCE: Heavy game renderers are lazy-loaded via React.lazy()
+// to reduce initial bundle size. Light renderers are eagerly imported.
+// ═══════════════════════════════════════════════════════════════════
 
+import React from 'react';
+
+// ── Eager imports (lightweight, frequently used) ─────────────────
 import {
   CoverRenderer,
   PetunjukRenderer,
   TpRenderer,
   AlurRenderer,
-  SkenarioRenderer,
   DefBoxRenderer,
   NcGridRenderer,
   FlashcardRenderer,
@@ -73,13 +79,52 @@ import {
   NormaKartuRenderer,
   DiskusiRenderer,
   KuisRenderer,
-  SortirGameRenderer,
-  RodaGameRenderer,
   HasilRenderer,
   RefleksiRenderer,
   PenutupRenderer,
   TabelAccordionRenderer,
+  TujuanDisplayRenderer,
+  MotivasiRenderer,
+  RangkumanRenderer,
 } from '../renderer/blocks';
+
+// ── Eager imports (game renderers used in most lessons) ──────────
+import {
+  SortirGameRenderer,
+  RodaGameRenderer,
+} from '../renderer/blocks';
+
+// ── Lazy imports (heavy game renderers — grid generation, etc.) ──
+const MemoryGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/MemoryGameRenderer').then(m => ({ default: m.MemoryGameRenderer }))
+);
+const MatchingGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/MatchingGameRenderer').then(m => ({ default: m.MatchingGameRenderer }))
+);
+const FillBlankGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/FillBlankGameRenderer').then(m => ({ default: m.FillBlankGameRenderer }))
+);
+const WordSearchGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/WordSearchGameRenderer').then(m => ({ default: m.WordSearchGameRenderer }))
+);
+const TrueFalseGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/TrueFalseGameRenderer').then(m => ({ default: m.TrueFalseGameRenderer }))
+);
+const DragDropGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/DragDropGameRenderer').then(m => ({ default: m.DragDropGameRenderer }))
+);
+const CrosswordGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/CrosswordGameRenderer').then(m => ({ default: m.CrosswordGameRenderer }))
+);
+const TeamBuzzerGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/TeamBuzzerGameRenderer').then(m => ({ default: m.TeamBuzzerGameRenderer }))
+);
+const MateriSectionRenderer = React.lazy(() =>
+  import('../renderer/blocks/MateriSectionRenderer').then(m => ({ default: m.MateriSectionRenderer }))
+);
+const SkenarioRenderer = React.lazy(() =>
+  import('../renderer/blocks/SkenarioRenderer').then(m => ({ default: m.SkenarioRenderer }))
+);
 
 import { BLOCK_DEFINITIONS } from './BlockDefinitionRegistry';
 
@@ -106,6 +151,18 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'refleksi': RefleksiRenderer,
   'penutup': PenutupRenderer,
   'tabel-accord': TabelAccordionRenderer,
+  'materi-section': MateriSectionRenderer,
+  'tujuan-display': TujuanDisplayRenderer,
+  'motivasi': MotivasiRenderer,
+  'rangkuman': RangkumanRenderer,
+  'memory-game': MemoryGameRenderer,
+  'matching-game': MatchingGameRenderer,
+  'fill-blank-game': FillBlankGameRenderer,
+  'word-search-game': WordSearchGameRenderer,
+  'true-false-game': TrueFalseGameRenderer,
+  'drag-drop-game': DragDropGameRenderer,
+  'crossword-game': CrosswordGameRenderer,
+  'team-buzzer-game': TeamBuzzerGameRenderer,
 };
 
 // ═══════════════════════════════════════════════════════════════════

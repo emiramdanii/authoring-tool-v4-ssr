@@ -580,3 +580,155 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-line-clamp: 3;
   text-overflow: ellipsis;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRINT STYLES — For teachers who want to print MPI pages
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Helper class for print-only content */
+.print-only {
+  display: none;
+}
+
+.screen-only {
+  display: initial;
+}
+
+@media print {
+  /* Hide non-essential UI elements */
+  nav,
+  .toolbar,
+  .left-panel,
+  .right-panel,
+  .status-bar,
+  .play-overlay,
+  .block-selection-overlay,
+  .editing-overlay,
+  .marketplace-overlay,
+  .skip-nav-link,
+  .live-announcer,
+  button[aria-label="Ulangi"],
+  button[aria-label="Cetak"] {
+    display: none !important;
+  }
+
+  /* Reset backgrounds for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Make canvas fill the page */
+  .virtual-canvas {
+    transform: none !important;
+    width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure blocks are print-friendly */
+  .block-container {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #ddd !important;
+    background: white !important;
+    color: black !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Page break between screens */
+  .screen-container {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .screen-container:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Print game blocks in solved state */
+  .game-block [data-interactive] {
+    opacity: 1 !important;
+  }
+
+  /* Show answers in print (for teacher reference) */
+  .game-block .print-answers {
+    display: block !important;
+  }
+
+  /* ── Game Block Print Enhancements ──────────────────────────── */
+  /* Force game cells to be visible and readable in print */
+  .game-block button {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Print-friendly game grids (WordSearch, Crossword) */
+  .game-block .grid {
+    break-inside: avoid;
+  }
+
+  /* Answer key section for teachers */
+  .print-answer-key {
+    display: block !important;
+    margin-top: 24px;
+    padding: 16px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+
+  .print-answer-key h3 {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+  }
+
+  .print-answer-key ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .print-answer-key li {
+    font-size: 11px;
+    padding: 3px 0;
+    border-bottom: 1px dotted #ccc;
+    color: #555;
+  }
+
+  .print-answer-key li strong {
+    color: #333;
+  }
+
+  /* Hide interactive-only elements in print (hints, progress bars) */
+  .game-block .sr-only,
+  .game-block input[type="text"] {
+    display: none !important;
+  }
+
+  /* Print header */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+
+  /* Ensure good contrast */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Toggle visibility for print/screen-only content */
+  .print-only {
+    display: block !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+}

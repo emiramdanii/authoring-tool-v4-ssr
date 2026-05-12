@@ -436,6 +436,31 @@ export const PENUTUP_PROPERTY_SCHEMA: PropertySchema = {
   ],
 };
 
+export const MATERISECTION_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'materi-section',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'takeaways', label: 'Poin Penting', icon: 'Star', collapsed: true },
+    { key: 'selfcheck', label: 'Evaluasi Diri', icon: 'Brain', collapsed: true },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'icon', type: 'icon', label: 'Icon', group: 'content', placeholder: '📚' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'subtitle', type: 'text', label: 'Subjudul', group: 'content' },
+    { key: 'bsnpRequired', type: 'boolean', label: 'WAJIB BSNP', group: 'style', defaultValue: false },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+    {
+      key: 'takeaways', type: 'array', label: 'Poin Penting', group: 'takeaways',
+      fields: [
+        { key: 'text', label: 'Poin', type: 'textarea' },
+      ],
+    },
+    { key: 'selfCheck', type: 'textarea', label: 'Evaluasi Diri', group: 'selfcheck', rows: 3 },
+  ],
+};
+
 export const TABELACCORD_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'tabel-accord',
   groups: [
@@ -458,6 +483,280 @@ export const TABELACCORD_PROPERTY_SCHEMA: PropertySchema = {
     },
   ],
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// BSNP TEMPLATE BLOCK PROPERTY SCHEMAS (Phase 4+)
+// ═══════════════════════════════════════════════════════════════════
+
+export const TUJUANDISPLAY_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'tujuan-display',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'objectives', label: 'Tujuan', icon: 'Target' },
+    { key: 'profil', label: 'Profil', icon: 'Link', collapsed: true },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'subtitle', type: 'text', label: 'Subjudul', group: 'content' },
+    { key: 'bsnpRequired', type: 'boolean', label: 'WAJIB BSNP', group: 'style', defaultValue: true },
+    {
+      key: 'objectives', type: 'array', label: 'Tujuan Pembelajaran', group: 'objectives',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '🎯' },
+        { key: 'text', label: 'Tujuan', type: 'textarea' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'profil', type: 'textarea', label: 'Profil Pelajar Pancasila', group: 'profil', rows: 3 },
+    { key: 'profilColor', type: 'color', label: 'Warna Profil', group: 'profil', defaultValue: 'g' },
+  ],
+};
+
+export const MOTIVASI_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'motivasi',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'connections', label: 'Koneksi', icon: 'Link' },
+    { key: 'visual', label: 'Visual', icon: 'Image', collapsed: true },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'bsnpRequired', type: 'boolean', label: 'WAJIB BSNP', group: 'style', defaultValue: false },
+    { key: 'hookQuestion', type: 'textarea', label: 'Pertanyaan Pemicu', group: 'content', rows: 3, required: true },
+    { key: 'visual.emoji', type: 'icon', label: 'Emoji Visual', group: 'visual', placeholder: '🤔' },
+    {
+      key: 'connections', type: 'array', label: 'Koneksi Pengetahuan', group: 'connections',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '💡' },
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'description', label: 'Deskripsi', type: 'textarea' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'transition', type: 'textarea', label: 'Transisi ke Materi', group: 'content', rows: 2 },
+  ],
+};
+
+export const RANGKUMAN_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'rangkuman',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'concepts', label: 'Konsep', icon: 'Lightbulb' },
+    { key: 'closing', label: 'Penutup', icon: 'CheckCircle', collapsed: true },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'bsnpRequired', type: 'boolean', label: 'WAJIB BSNP', group: 'style', defaultValue: false },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+    {
+      key: 'concepts', type: 'array', label: 'Konsep Kunci', group: 'concepts',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📌' },
+        { key: 'title', label: 'Judul', type: 'text' },
+        { key: 'body', label: 'Isi', type: 'textarea' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'closingStatement', type: 'textarea', label: 'Pernyataan Penutup', group: 'closing', rows: 3 },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// NEW GAME BLOCK PROPERTY SCHEMAS (Phase 5)
+// ═══════════════════════════════════════════════════════════════════
+
+export const MEMORYGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'memory-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'pairs', label: 'Pasangan', icon: 'Layers' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'pairs', type: 'array', label: 'Pasangan Kartu', group: 'pairs',
+      fields: [
+        { key: 'left', label: 'Kartu Kiri', type: 'text' },
+        { key: 'right', label: 'Kartu Kanan', type: 'text' },
+      ],
+    },
+  ],
+};
+
+export const MATCHINGGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'matching-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'pairs', label: 'Pasangan', icon: 'Layers' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'pairs', type: 'array', label: 'Pasangan', group: 'pairs',
+      fields: [
+        { key: 'left', label: 'Kolom Kiri', type: 'text' },
+        { key: 'right', label: 'Kolom Kanan', type: 'text' },
+      ],
+    },
+  ],
+};
+
+export const FILLBLANKGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'fill-blank-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'questions', label: 'Soal', icon: 'HelpCircle' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'questions', type: 'array', label: 'Soal Isian', group: 'questions',
+      fields: [
+        { key: 'text', label: 'Teks Soal', type: 'textarea', helpText: 'Gunakan ___ untuk menandai tempat jawaban' },
+        { key: 'answer', label: 'Jawaban', type: 'text', helpText: 'Gunakan / untuk beberapa jawaban yang diterima' },
+        { key: 'hint', label: 'Petunjuk', type: 'text' },
+      ],
+    },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// NEW GAME BLOCK PROPERTY SCHEMAS (Phase 6)
+// ═══════════════════════════════════════════════════════════════════
+
+export const WORDSEARCHGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'word-search-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'words', label: 'Kata', icon: 'List' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'words', type: 'array', label: 'Daftar Kata', group: 'words',
+      fields: [
+        { key: 'text', label: 'Kata', type: 'text' },
+      ],
+    },
+    { key: 'gridSize', type: 'number', label: 'Ukuran Grid', group: 'content', min: 6, max: 15, defaultValue: 10 },
+  ],
+};
+
+export const TRUEFALSEGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'true-false-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'questions', label: 'Soal', icon: 'HelpCircle' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'questions', type: 'array', label: 'Pernyataan', group: 'questions',
+      fields: [
+        { key: 'text', label: 'Pernyataan', type: 'textarea' },
+        { key: 'correct', label: 'Benar', type: 'boolean' },
+        { key: 'explanation', label: 'Penjelasan', type: 'text' },
+      ],
+    },
+  ],
+};
+
+export const DRAGDROPGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'drag-drop-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'items', label: 'Item', icon: 'Layers' },
+    { key: 'targets', label: 'Target', icon: 'Columns' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'items', type: 'array', label: 'Item Seret', group: 'items',
+      fields: [
+        { key: 'text', label: 'Teks Item', type: 'text' },
+        { key: 'target', label: 'Target ID', type: 'text', helpText: 'ID target tujuan' },
+      ],
+    },
+    {
+      key: 'targets', type: 'array', label: 'Area Target', group: 'targets',
+      fields: [
+        { key: 'id', label: 'ID', type: 'text' },
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// NEW GAME BLOCK PROPERTY SCHEMAS (Phase 7)
+// ═══════════════════════════════════════════════════════════════════
+
+export const CROSSWORDGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'crossword-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'words', label: 'Kata', icon: 'List' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    {
+      key: 'words', type: 'array', label: 'Daftar Kata', group: 'words',
+      fields: [
+        { key: 'teks', label: 'Kata', type: 'text' },
+        { key: 'hint', label: 'Petunjuk', type: 'text' },
+        { key: 'arah', label: 'Arah', type: 'select', options: [
+          { label: 'Mendatar', value: 'across' },
+          { label: 'Menurun', value: 'down' },
+        ]},
+      ],
+    },
+    { key: 'gridSize', type: 'number', label: 'Ukuran Grid', group: 'content', min: 8, max: 15, defaultValue: 12 },
+  ],
+};
+
+export const TEAMBUZZERGAME_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'team-buzzer-game',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'teams', label: 'Tim', icon: 'Users' },
+    { key: 'questions', label: 'Soal', icon: 'HelpCircle' },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'teamA', type: 'text', label: 'Nama Tim A', group: 'teams', defaultValue: 'Tim Merah' },
+    { key: 'teamB', type: 'text', label: 'Nama Tim B', group: 'teams', defaultValue: 'Tim Biru' },
+    {
+      key: 'questions', type: 'array', label: 'Soal', group: 'questions',
+      fields: [
+        { key: 'teks', label: 'Pertanyaan', type: 'textarea' },
+        { key: 'poin', label: 'Poin', type: 'number', min: 1, max: 100 },
+      ],
+    },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// NOTE: The takeaways field in MATERISECTION_PROPERTY_SCHEMA uses a
+// simplified schema with a single 'text' field. At runtime, the
+// MateriSectionBlock.takeaways is a string[] — the array schema here
+// drives the property panel UI. The createDefault() in
+// BlockDefinitionRegistry produces the correct string[] shape.
+// ═══════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════
 // PROPERTY SCHEMA LOOKUP — DELEGATED TO SCENE REGISTRY

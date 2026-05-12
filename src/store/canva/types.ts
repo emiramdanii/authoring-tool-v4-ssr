@@ -195,6 +195,8 @@ export interface CanvaState {
   // ── Actions: Schema Preset Loading ───────────────────────────
   /** Load a schema preset (e.g. 'hakikat-norma') into the canvas, replacing all pages */
   loadSchemaPreset: (presetId: string) => Promise<void>;
+  /** Load a custom LessonSchema into the canvas (used by Template Marketplace) */
+  loadCustomSchema: (schema: import('@/core/schema/types').LessonSchema) => void;
 
   // ── Actions: Persistence ─────────────────────────────────────
   saveToStorage: () => void;

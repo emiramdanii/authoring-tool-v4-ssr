@@ -19,6 +19,10 @@ const SOUND_FILES: Record<string, string> = {
   tap: '/sounds/tap.mp3',
   ding: '/sounds/ding.mp3',
   buzz: '/sounds/buzz.mp3',
+  // Phase 5: New sound effects for memory/matching/fill-blank games
+  flip: '/sounds/tap.mp3',       // Card flip (memory game) — reuses tap
+  match: '/sounds/correct.mp3',  // Pair matched — reuses correct
+  typing: '/sounds/tap.mp3',     // Key press feedback — reuses tap
 };
 
 // ── Sound ID → SuaraConfig key mapping ───────────────────────
@@ -30,6 +34,10 @@ const SOUND_CONFIG: Record<string, keyof import('@/store/authoring/types').Suara
   tap: 'klik',
   ding: 'skor',
   buzz: 'salah',
+  // Phase 5: New sound config mappings
+  flip: 'klik',
+  match: 'benar',
+  typing: 'klik',
 };
 
 // ── Volume ────────────────────────────────────────────────────

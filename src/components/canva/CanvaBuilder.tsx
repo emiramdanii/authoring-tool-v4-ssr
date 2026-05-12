@@ -186,7 +186,7 @@ export default function CanvaBuilder() {
   }, []);
 
   return (
-    <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring">
+    <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
       {/* Top Toolbar */}
       <Toolbar />
 

@@ -9,7 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 
-export function HasilRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: HasilBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   // ── Read actual scores from interactive store ───────────────
@@ -174,6 +174,7 @@ export function HasilRenderer({ block, tokens, interactive, isCompact, isEditing
             resetAllScores();
             playSound('click');
           }}
+          aria-label="Ulangi semua"
           style={{
             fontSize: '13px',
             background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
@@ -185,4 +186,4 @@ export function HasilRenderer({ block, tokens, interactive, isCompact, isEditing
       )}
     </div>
   );
-}
+});

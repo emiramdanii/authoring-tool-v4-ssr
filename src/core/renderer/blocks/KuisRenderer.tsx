@@ -7,9 +7,9 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti } from '@/lib/confetti';
+import { fireConfetti, fireConfettiCelebration, fireConfettiMini } from '@/lib/confetti';
 
-export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [current, setCurrent] = React.useState(0);
@@ -17,6 +17,15 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
   const [showExplanation, setShowExplanation] = React.useState(false);
   const [streak, setStreak] = React.useState(0);
   const [showStreak, setShowStreak] = React.useState(false);
+
+  // ── Replay watcher: reset all state when replayGeneration bumps ──
+  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+  React.useEffect(() => {
+    setCurrent(0);
+    setAnswers({});
+    setShowExplanation(false);
+    setStreak(0);
+  }, [replayGeneration]);
 
   const questions = block.questions || [];
   const q = questions[current];
@@ -37,9 +46,11 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
-  // Report score on completion
+  // Report score on completion (guard: only fire once per completion cycle)
+  const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
-    if (isCompleted && interactive && block.id) {
+    if (isCompleted && interactive && block.id && !hasReportedRef.current) {
+      hasReportedRef.current = true;
       reportScore({
         elementId: block.id,
         pageIndex: pageIndex ?? 0,
@@ -47,13 +58,14 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
         maxScore: questions.length * 20,
         completed: true,
       });
-      // Play tier-appropriate sound
+      // Play tier-appropriate sound & confetti
       const pct = Math.round((totalCorrect / questions.length) * 100);
-      if (pct >= 80) { playSound('complete'); fireConfetti({ count: 60 }); }
+      if (pct >= 80) { playSound('complete'); fireConfettiCelebration(); }
       else if (pct >= 50) { playSound('complete'); fireConfetti({ count: 30 }); }
       else playSound('ding');
     }
-  }, [isCompleted]);
+    if (!isCompleted) hasReportedRef.current = false;
+  }, [isCompleted, interactive, block.id, totalCorrect, questions.length, reportScore, pageIndex]);
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -104,7 +116,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
         </div>
         {interactive && (
           <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
-            onClick={() => { setAnswers({}); setCurrent(0); playSound('click'); }}
+            onClick={() => { setAnswers({}); setCurrent(0); hasReportedRef.current = false; playSound('click'); }}
             style={{
               fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
@@ -121,7 +133,13 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
   if (!q) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Kuis: Soal ${current + 1} dari ${questions.length}, Skor: ${totalCorrect}`} aria-describedby={`kuis-instructions-${block.id || 'kuis'}`} data-interactive>
+      {/* Hidden instruction for screen readers */}
+      <span id={`kuis-instructions-${block.id || 'kuis'}`} className="sr-only">Pilih jawaban yang benar untuk setiap soal kuis</span>
+      {/* Screen reader live region for score updates */}
+      <div className="sr-only" aria-live="polite" role="status">
+        {answers[current] !== undefined && (answers[current] === q.ans ? 'Jawaban benar!' : 'Jawaban salah.')}
+      </div>
       {/* Header with progress */}
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -161,7 +179,8 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
 
       {/* Progress bar */}
       <div className="h-1.5 rounded-full overflow-hidden"
-        style={{ background: tokens.subtleBg(0.08) }}>
+        style={{ background: tokens.subtleBg(0.08) }}
+        role="progressbar" aria-label={`Progres kuis ${totalAnswered} dari ${questions.length}`} aria-valuenow={totalAnswered} aria-valuemin={0} aria-valuemax={questions.length}>
         <div className="h-full rounded-full transition-all"
           style={{
             width: (totalAnswered / questions.length) * 100 + '%',
@@ -193,15 +212,16 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
             const bdr = !isAnswered ? tokens.subtleBorder(0.1) : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : tokens.subtleBorder(0.1);
             const bxSh = !isAnswered ? 'none' : isCorrect ? ('0 0 12px ' + tokens.colorAlpha('g', 0.2)) : isPicked ? ('0 0 12px ' + tokens.colorAlpha('r', 0.2)) : 'none';
             return (
-              <button key={`kuis-opt-${i}-${String(opt).slice(0,10)}`} disabled={isAnswered}
+              <button key={`kuis-opt-${block.id || 'kuis'}-${current}-${i}`} disabled={isAnswered}
                 onClick={() => {
                   if (interactive && !isAnswered) {
                     setAnswers(prev => ({ ...prev, [current]: i }));
                     // Play sound based on answer
-                    if (i === q.ans) playSound('correct');
+                    if (i === q.ans) { playSound('correct'); fireConfettiMini(); }
                     else playSound('incorrect');
                   }
                 }}
+                aria-pressed={answers[current] === i}
                 className={`p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh, wordBreak: 'break-word', overflowWrap: 'break-word', color: tokens.color('text') }}>
                 {opt}
@@ -233,6 +253,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
       {/* Next button */}
       {answers[current] !== undefined && current < questions.length - 1 && (
         <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+          aria-label="Lanjut ke soal berikutnya"
           onClick={() => { setCurrent(current + 1); playSound('click'); }}
           style={{
             fontSize: '13px',
@@ -245,4 +266,4 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
       )}
     </div>
   );
-}
+});

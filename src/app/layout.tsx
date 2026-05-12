@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Fredoka, Nunito } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { StoreInit } from "@/components/providers/StoreInit";
 import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
+import { SkipNavLink } from "@/components/shared/SkipNavLink";
+import { LiveAnnouncer } from "@/components/shared/LiveAnnouncer";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -62,9 +64,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${nunito.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
+          <SkipNavLink />
           <StoreInit />
           {children}
           <ShortcutHelpOverlay />
+          <LiveAnnouncer />
         </ThemeProvider>
         <Toaster />
       </body>

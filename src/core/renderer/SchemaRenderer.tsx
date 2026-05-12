@@ -11,7 +11,7 @@
 
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
 
 // Re-export from types.ts for backward compatibility
@@ -59,16 +59,16 @@ export interface ScreenRendererProps {
   onBlockDuplicate?: (blockId: string) => void;
 }
 
-export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, selectedBlockIds, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
+export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, selectedBlockIds, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
   const hasCoverBlock = screen.blocks.length === 1 && screen.blocks[0].type === 'cover';
 
   // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
-  // Separate blocks into flow (flexbox) and absolute (positioned).
-  // Flow blocks stack vertically in the scrollable content area.
-  // Absolute blocks render in an overlay layer with x/y/w/h/zIndex.
-
-  const flowBlocks = screen.blocks.filter(b => !b.layout || b.layout.position === 'flow');
-  const absoluteBlocks = screen.blocks.filter(b => b.layout?.position === 'absolute');
+  // Memoize the block split to avoid re-computing on every render
+  const { flowBlocks, absoluteBlocks } = useMemo(() => {
+    const flow = screen.blocks.filter(b => !b.layout || b.layout.position === 'flow');
+    const absolute = screen.blocks.filter(b => b.layout?.position === 'absolute');
+    return { flowBlocks: flow, absoluteBlocks: absolute };
+  }, [screen.blocks]);
 
   // ═══ BACKGROUND STYLE — applies to ALL screen types ═══════════
   // Previously only rendered for cover pages. Now every screen can
@@ -206,7 +206,7 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
       )}
     </div>
   );
-}
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK RENDERER — Dispatches to type-specific renderers via Registry
@@ -244,7 +244,7 @@ export interface BlockRenderProps {
   onDuplicate?: (blockId: string) => void;
 }
 
-export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
+export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   // ═══ STABLE BLOCK ID ═════════════════════════════════════════
   // CRITICAL: The block ID must be stable across re-renders.
@@ -256,10 +256,14 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
   // ═══ REGISTRY DISPATCH ══════════════════════════════════════
   // SceneRegistry is the SOLE dispatch mechanism.
   // New block types only need to be registered — no code change here.
-  const definition = SCENE_REGISTRY[block.type];
+  // Memoize the definition lookup to avoid repeated object access.
+  const BlockComponent = useMemo(() => {
+    const definition = SCENE_REGISTRY[block.type];
+    return definition?.renderer ?? null;
+  }, [block.type]);
 
   // Unregistered block type — show warning
-  if (!definition?.renderer) {
+  if (!BlockComponent) {
     return (
       <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
         Unregistered block type: <strong>{block.type}</strong>
@@ -269,11 +273,13 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
     );
   }
 
-  const BlockComponent = definition.renderer;
-
   // In non-canvas mode, render without overlay (pure rendering)
   if (!isCompact) {
-    return <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} />;
+    return (
+      <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} />
+      </React.Suspense>
+    );
   }
 
   // In canvas mode, wrap with BlockSelectionOverlay for editing interaction
@@ -294,7 +300,9 @@ export function SchemaBlockRenderer({ block, mode, tokens, interactive = false, 
       onMoveDown={onMoveDown}
       onDuplicate={onDuplicate}
     >
-      <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
+      <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
+      </React.Suspense>
     </BlockSelectionOverlay>
   );
-}
+});

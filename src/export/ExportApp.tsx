@@ -20,33 +20,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { RATIOS } from '@/components/canva/types';
 import { CanvasErrorBoundary } from '@/components/canva/CanvasErrorBoundary';
 import { PageRenderer } from '@/components/canva/page-renderer';
-
-// ── Confetti Effect ──────────────────────────────────────────────
-
-let confettiTimers: ReturnType<typeof setTimeout>[] = [];
-
-function launchConfetti() {
-  const wrap = document.getElementById('confWrap');
-  if (!wrap) return;
-  confettiTimers.forEach(t => clearTimeout(t));
-  confettiTimers = [];
-  const colors = ['#f9c12e', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
-  for (let i = 0; i < 60; i++) {
-    const c = document.createElement('div');
-    c.className = 'conf';
-    c.style.cssText = `left:${Math.random() * 100}%;top:-10px;width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;background:${colors[Math.floor(Math.random() * colors.length)]};animation-duration:${1.5 + Math.random() * 2}s;animation-delay:${Math.random() * 0.5}s`;
-    wrap.appendChild(c);
-    const timer = setTimeout(() => c.remove(), 4000);
-    confettiTimers.push(timer);
-  }
-}
-
-function clearConfetti() {
-  confettiTimers.forEach(t => clearTimeout(t));
-  confettiTimers = [];
-  const wrap = document.getElementById('confWrap');
-  if (wrap) wrap.innerHTML = '';
-}
+import { fireConfettiCelebration } from '@/lib/confetti';
 
 // ── Main Export App Component ────────────────────────────────────
 
@@ -64,7 +38,6 @@ export default function ExportApp() {
     (window as any).__INTERACTIVE_STORE__ = useInteractiveStore;
     return () => {
       delete (window as any).__INTERACTIVE_STORE__;
-      clearConfetti();
     };
   }, []);
 
@@ -88,7 +61,7 @@ export default function ExportApp() {
   // ── Navigation handlers ───────────────────────────────────
   const handleNext = useCallback(() => {
     if (isLastPage) {
-      launchConfetti();
+      fireConfettiCelebration();
     } else {
       nextInteractivePage();
     }
@@ -170,9 +143,6 @@ export default function ExportApp() {
           </CanvasErrorBoundary>
         </ExportScaleContainer>
       </div>
-
-      {/* ── Confetti container ── */}
-      <div id="confWrap" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9998 }} />
     </>
   );
 }

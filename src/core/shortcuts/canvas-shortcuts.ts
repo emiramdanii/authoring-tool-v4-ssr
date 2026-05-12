@@ -171,4 +171,74 @@ export const GLOBAL_SHORTCUTS: ShortcutDefinition[] = [
     description: 'Toggle dark/light mode',
     category: 'App',
   },
+  {
+    id: 'global.shortcut-help',
+    keys: 'ctrl+/',
+    scope: 'global',
+    priority: 20,
+    handler: () => {},
+    description: 'Tampilkan bantuan shortcut',
+    category: 'App',
+  },
+];
+
+/**
+ * Interactive mode shortcut definitions.
+ * Active when the PlayOverlay is shown.
+ */
+export const INTERACTIVE_SHORTCUTS: ShortcutDefinition[] = [
+  {
+    id: 'interactive.next-page',
+    keys: 'arrowright',
+    scope: 'canvas', // Reuses canvas scope since play overlay uses it
+    priority: 20, // Higher than canvas nudge
+    handler: () => {},
+    description: 'Halaman berikutnya',
+    category: 'Navigasi Interaktif',
+  },
+  {
+    id: 'interactive.prev-page',
+    keys: 'arrowleft',
+    scope: 'canvas',
+    priority: 20,
+    handler: () => {},
+    description: 'Halaman sebelumnya',
+    category: 'Navigasi Interaktif',
+  },
+  {
+    id: 'interactive.next-page-space',
+    keys: 'space',
+    scope: 'canvas',
+    priority: 15,
+    handler: () => {},
+    description: 'Halaman berikutnya (Space)',
+    category: 'Navigasi Interaktif',
+  },
+  {
+    id: 'interactive.close',
+    keys: 'escape',
+    scope: 'canvas',
+    priority: 25,
+    handler: () => {},
+    description: 'Tutup mode interaktif',
+    category: 'Navigasi Interaktif',
+  },
+  {
+    id: 'interactive.fullscreen',
+    keys: 'f',
+    scope: 'canvas',
+    priority: 10,
+    handler: () => {},
+    description: 'Toggle fullscreen',
+    category: 'Navigasi Interaktif',
+  },
+  {
+    id: 'interactive.overview',
+    keys: 'o',
+    scope: 'canvas',
+    priority: 10,
+    handler: () => {},
+    description: 'Toggle overview grid',
+    category: 'Navigasi Interaktif',
+  },
 ];

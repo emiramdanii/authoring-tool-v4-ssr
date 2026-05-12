@@ -240,6 +240,26 @@ export interface NormaKartuBlock extends BaseBlock {
   };
 }
 
+// ── Materi Section Schema (BSNP-compliant) ──────────────────────
+
+export interface MateriSectionBlock extends BaseBlock {
+  type: 'materi-section';
+  title: string;
+  subtitle?: string;
+  /** BSNP compliance badge — shows "WAJIB BSNP" when true */
+  bsnpRequired?: boolean;
+  /** Section icon emoji */
+  icon?: string;
+  /** Color accent token key */
+  accentColor?: string;
+  /** Content blocks within this section */
+  content: SchemaBlock[];
+  /** Key takeaways at the bottom */
+  takeaways?: string[];
+  /** "Apa yang sudah kamu pelajari?" self-check prompt */
+  selfCheck?: string;
+}
+
 // ── Diskusi Schema ─────────────────────────────────────────────
 
 export interface DiskusiBlock extends BaseBlock {
@@ -302,6 +322,105 @@ export interface RodaGameBlock extends BaseBlock {
     }>;
     feedbackCorrect?: string;
     feedbackWrong?: string;
+  }>;
+}
+
+// ── Memory Game Schema ─────────────────────────────────────────
+
+export interface MemoryGameBlock extends BaseBlock {
+  type: 'memory-game';
+  title: string;
+  pairs: Array<{
+    left: string;
+    right: string;
+  }>;
+}
+
+// ── Matching Game Schema ──────────────────────────────────────
+
+export interface MatchingGameBlock extends BaseBlock {
+  type: 'matching-game';
+  title: string;
+  pairs: Array<{
+    left: string;
+    right: string;
+  }>;
+}
+
+// ── Fill-Blank Game Schema ────────────────────────────────────
+
+export interface FillBlankGameBlock extends BaseBlock {
+  type: 'fill-blank-game';
+  title: string;
+  questions: Array<{
+    text: string;
+    answer: string;
+    hint?: string;
+  }>;
+}
+
+// ── Word Search Game Schema ────────────────────────────────────
+
+export interface WordSearchGameBlock extends BaseBlock {
+  type: 'word-search-game';
+  title: string;
+  words: string[];
+  gridSize?: number;
+}
+
+// ── True/False Game Schema ─────────────────────────────────────
+
+export interface TrueFalseGameBlock extends BaseBlock {
+  type: 'true-false-game';
+  title: string;
+  questions: Array<{
+    text: string;
+    correct: boolean;
+    explanation?: string;
+  }>;
+}
+
+// ── Drag & Drop Game Schema ────────────────────────────────────
+
+export interface DragDropGameBlock extends BaseBlock {
+  type: 'drag-drop-game';
+  title: string;
+  items: Array<{
+    text: string;
+    target: string;
+  }>;
+  targets: Array<{
+    id: string;
+    label: string;
+    color?: string;
+  }>;
+}
+
+// ── Crossword Game Schema ─────────────────────────────────────
+
+export interface CrosswordGameBlock extends BaseBlock {
+  type: 'crossword-game';
+  title: string;
+  words: Array<{
+    teks: string;
+    hint: string;
+    arah?: 'across' | 'down';
+    baris?: number;
+    kolom?: number;
+  }>;
+  gridSize?: number;
+}
+
+// ── Team Buzzer Game Schema ────────────────────────────────────
+
+export interface TeamBuzzerGameBlock extends BaseBlock {
+  type: 'team-buzzer-game';
+  title: string;
+  teamA: string;
+  teamB: string;
+  questions: Array<{
+    teks: string;
+    poin: number;
   }>;
 }
 
@@ -371,6 +490,70 @@ export interface TabelAccordionBlock extends BaseBlock {
   }>;
 }
 
+// ── Tujuan Display Schema (BSNP — student-facing TP) ───────────
+
+export interface TujuanDisplayBlock extends BaseBlock {
+  type: 'tujuan-display';
+  title: string;
+  subtitle?: string;
+  /** BSNP compliance badge */
+  bsnpRequired?: boolean;
+  /** Learning objectives displayed to students */
+  objectives: Array<{
+    icon: string;
+    text: string;
+    color: string;  // Token key
+  }>;
+  /** Profil Pelajar Pancasila connection */
+  profil?: string;
+  profilColor?: string;
+}
+
+// ── Motivasi Schema (BSNP — Apersepsi / motivation hook) ────────
+
+export interface MotivasiBlock extends BaseBlock {
+  type: 'motivasi';
+  title: string;
+  /** BSNP compliance badge */
+  bsnpRequired?: boolean;
+  /** Hook question to grab attention */
+  hookQuestion: string;
+  /** Visual/media element */
+  visual?: {
+    emoji: string;
+    bgGradient?: [string, string]; // [color1, color2] token keys
+  };
+  /** Connection points to prior knowledge */
+  connections: Array<{
+    icon: string;
+    label: string;
+    description: string;
+    color: string;  // Token key
+  }>;
+  /** Transition statement to the main content */
+  transition?: string;
+}
+
+// ── Rangkuman Schema (BSNP — Summary / reinforcement) ──────────
+
+export interface RangkumanBlock extends BaseBlock {
+  type: 'rangkuman';
+  title: string;
+  /** BSNP compliance badge */
+  bsnpRequired?: boolean;
+  /** Key concept cards */
+  concepts: Array<{
+    icon: string;
+    title: string;
+    body: string;
+    color: string;  // Token key
+  }>;
+  /** Final takeaway / closing statement */
+  closingStatement?: string;
+  /** Accent color token key */
+  accentColor?: string;
+}
+
 // ── Union Type ─────────────────────────────────────────────────
 
 export type SchemaBlock =
@@ -384,14 +567,26 @@ export type SchemaBlock =
   | FlashcardSetBlock
   | FtabBlock
   | NormaKartuBlock
+  | MateriSectionBlock
   | DiskusiBlock
   | KuisBlock
   | SortirGameBlock
   | RodaGameBlock
+  | MemoryGameBlock
+  | MatchingGameBlock
+  | FillBlankGameBlock
+  | WordSearchGameBlock
+  | TrueFalseGameBlock
+  | DragDropGameBlock
   | HasilBlock
   | RefleksiBlock
   | PenutupBlock
   | TabelAccordionBlock
+  | TujuanDisplayBlock
+  | MotivasiBlock
+  | RangkumanBlock
+  | CrosswordGameBlock
+  | TeamBuzzerGameBlock
   | BaseBlock;
 
 // ── Screen Schema ──────────────────────────────────────────────

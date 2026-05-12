@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { PageRenderer } from './page-renderer';
@@ -8,20 +9,44 @@ import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { COLORS } from '@/lib/color-palette';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
-import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2 } from 'lucide-react';
+import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, ChevronLeft, ChevronRight, RotateCcw, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
 //
-// Refactored: Uses PageRenderer for consistent rendering
-// (navbar, background, template, elements) — identical to
-// Stage and ExportApp. Only adds overlay-specific features:
-// - Full-screen overlay with header
-// - Overview mode (thumbnail grid)
-// - Fullscreen toggle
-// - Keyboard shortcuts
+// v4 Phase 3 enhancements:
+// - Framer Motion page transitions (slide/fade)
+// - Bottom navigation bar with progress dots
+// - Score summary with star rating
+// - Smooth page transition with directional awareness
+// - Keyboard shortcuts (Esc, ← →, F, O, Space)
 // ═══════════════════════════════════════════════════════════════
+
+// ── Transition variants ────────────────────────────────────────
+const pageVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : '-100%',
+    opacity: 0,
+    scale: 0.96,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? '-100%' : '100%',
+    opacity: 0,
+    scale: 0.96,
+  }),
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: [0.25, 0.46, 0.45, 0.94], // ease-out quad
+  duration: 0.35,
+};
 
 export default function PlayOverlay() {
   const mode = useInteractiveStore((s) => s.mode);
@@ -30,7 +55,14 @@ export default function PlayOverlay() {
   if (!isPlaying) return null;
 
   return (
-    <div className="fixed inset-0 bg-app-surface flex flex-col select-none" style={{ zIndex: 70 }}>
+    <motion.div
+      className="fixed inset-0 bg-app-surface flex flex-col select-none"
+      style={{ zIndex: 70 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
       {/* Top bar */}
       <PlayOverlayHeader />
 
@@ -38,7 +70,7 @@ export default function PlayOverlay() {
       <div className="flex-1 min-h-0 overflow-hidden">
         <PlayCanvas />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -53,6 +85,7 @@ function PlayOverlayHeader() {
 
   const page = pages[interactivePageIdx];
   const hasScore = totalMaxVal > 0;
+  const pct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0;
 
   return (
     <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-app-border/50">
@@ -67,9 +100,23 @@ function PlayOverlayHeader() {
 
       <div className="flex items-center gap-3">
         {hasScore && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-            <Trophy size={12} className="text-emerald-300" />
-            <span className="text-xs font-black text-emerald-300">{totalScoreVal}/{totalMaxVal}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <Trophy size={12} className="text-emerald-300" />
+              <span className="text-xs font-black text-emerald-300">{totalScoreVal}/{totalMaxVal}</span>
+            </div>
+            {/* Star rating in header */}
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3].map(star => (
+                <Star
+                  key={`hdr-star-${star}`}
+                  size={10}
+                  fill={pct >= star * 33 ? '#fbbf24' : 'none'}
+                  stroke={pct >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
+                  strokeWidth={2}
+                />
+              ))}
+            </div>
           </div>
         )}
 
@@ -94,7 +141,7 @@ function PlayOverlayHeader() {
   );
 }
 
-// ── Play Canvas — Renders the current page scaled to fit ──────
+// ── Play Canvas — Renders the current page with animated transitions ──
 
 function PlayCanvas() {
   const pages = useCanvaStore((s) => s.pages);
@@ -103,13 +150,30 @@ function PlayCanvas() {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
   });
+  const nextInteractivePage = useInteractiveStore((s) => s.nextInteractivePage);
+  const prevInteractivePage = useInteractiveStore((s) => s.prevInteractivePage);
+  const replayAll = useInteractiveStore((s) => s.replayAll);
+  const goPage = useCanvaStore((s) => s.goPage);
+  const replayGeneration = useInteractiveStore((s) => s.replayGeneration);
+  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
+  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [overviewOpen, setOverviewOpen] = useState(false);
+  const [direction, setDirection] = useState(0);
+  const prevIdxRef = useRef(interactivePageIdx);
 
   const page = pages[interactivePageIdx];
+  const totalPages = pages.length;
+
+  // Track direction for animation
+  useEffect(() => {
+    if (interactivePageIdx > prevIdxRef.current) setDirection(1);
+    else if (interactivePageIdx < prevIdxRef.current) setDirection(-1);
+    prevIdxRef.current = interactivePageIdx;
+  }, [interactivePageIdx]);
 
   // ResizeObserver for responsive scaling
   useEffect(() => {
@@ -181,6 +245,27 @@ function PlayCanvas() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [overviewOpen]);
 
+  // Navigation helpers
+  const handleNext = useCallback(() => {
+    const beforeIdx = interactivePageIdx;
+    nextInteractivePage();
+    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
+    if (afterIdx !== beforeIdx) goPage(afterIdx);
+  }, [interactivePageIdx, nextInteractivePage, goPage]);
+
+  const handlePrev = useCallback(() => {
+    const beforeIdx = interactivePageIdx;
+    prevInteractivePage();
+    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
+    if (afterIdx !== beforeIdx) goPage(afterIdx);
+  }, [interactivePageIdx, prevInteractivePage, goPage]);
+
+  const handleReplay = useCallback(() => {
+    replayAll();
+    goPage(0);
+    playClickSound();
+  }, [replayAll, goPage]);
+
   if (!page) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -194,59 +279,170 @@ function PlayCanvas() {
     return <OverviewGrid onClose={() => setOverviewOpen(false)} />;
   }
 
+  // Score percentage for star rating
+  const scorePct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0;
+
   return (
-    <div ref={canvasRef} className="w-full h-full flex items-center justify-center relative">
-      <div
-        className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
-        style={{
-          width: ratio.w,
-          height: ratio.h,
-          transform: `scale(${scale})`,
-          transformOrigin: 'center center',
-        }}
-      >
-        {/* ══ Use PageRenderer for consistent rendering ══════ */}
-        <CanvasErrorBoundary name="PlayPreview">
-          <PageRenderer
-            mode="preview"
-            page={page}
-            currentPageIndex={interactivePageIdx}
-            totalPages={pages.length}
-          />
-        </CanvasErrorBoundary>
+    <div ref={canvasRef} className="w-full h-full flex flex-col items-center justify-center relative">
+      {/* ══ Animated page content ══════════════════════════════ */}
+      <div className="flex-1 min-h-0 flex items-center justify-center w-full">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={`play-page-${interactivePageIdx}`}
+            custom={direction}
+            variants={pageVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={pageTransition}
+            className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
+            style={{
+              width: ratio.w,
+              height: ratio.h,
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
+            }}
+          >
+            <CanvasErrorBoundary name="PlayPreview">
+              <PageRenderer
+                mode="preview"
+                page={page}
+                currentPageIndex={interactivePageIdx}
+                totalPages={totalPages}
+              />
+            </CanvasErrorBoundary>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Bottom-right action buttons */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2">
-        <Button
-          variant="ghost"
-          onClick={() => setOverviewOpen(true)}
-          className="glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
-          title="Overview (O)"
-        >
-          <Grid3X3 size={12} />
-          <span className="hidden sm:inline">Overview</span>
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => {
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen().catch(() => {});
-              setIsFullscreen(true);
-            } else {
-              document.exitFullscreen().catch(() => {});
-              setIsFullscreen(false);
-            }
-          }}
-          className="glass-panel-strong px-2 py-1.5 rounded-lg text-[10px] font-bold gap-1"
-          title="Fullscreen (F)"
-        >
-          {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-          <span className="hidden sm:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
-        </Button>
+      {/* ══ Bottom Navigation Bar ══════════════════════════════ */}
+      <div className="w-full px-4 pb-3 pt-2">
+        <div className="max-w-2xl mx-auto">
+          <div className="glass-panel-strong rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
+
+            {/* Prev button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePrev}
+              disabled={interactivePageIdx <= 0}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30"
+              title="Halaman sebelumnya (←)"
+            >
+              <ChevronLeft size={14} />
+              <span className="hidden sm:inline">Prev</span>
+            </Button>
+
+            {/* Progress dots + page counter */}
+            <div className="flex items-center gap-2 flex-1 justify-center">
+              {/* Progress dots */}
+              <div className="flex items-center gap-1 overflow-x-auto max-w-[300px] px-1">
+                {pages.map((_, i) => {
+                  const isComplete = useInteractiveStore.getState().isPageComplete(i);
+                  return (
+                    <button
+                      key={`play-dot-${i}`}
+                      onClick={() => {
+                        useInteractiveStore.getState().goInteractivePage(i);
+                        goPage(i);
+                      }}
+                      className={`flex-shrink-0 transition-all duration-200 ${
+                        i === interactivePageIdx
+                          ? 'w-6 h-2 rounded-full'
+                          : 'w-2 h-2 rounded-full'
+                      }`}
+                      style={{
+                        background: i === interactivePageIdx
+                          ? 'linear-gradient(90deg, #34d399, #06b6d4)'
+                          : isComplete
+                            ? 'rgba(52, 211, 153, 0.5)'
+                            : 'rgba(255,255,255,0.15)',
+                        boxShadow: i === interactivePageIdx
+                          ? '0 0 8px rgba(52, 211, 153, 0.4)'
+                          : 'none',
+                      }}
+                      title={`Halaman ${i + 1}${isComplete ? ' (selesai)' : ''}`}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Page counter */}
+              <span className="text-[11px] font-bold text-emerald-300/80 whitespace-nowrap">
+                {interactivePageIdx + 1}/{totalPages}
+              </span>
+            </div>
+
+            {/* Next button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNext}
+              disabled={interactivePageIdx >= totalPages - 1}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30"
+              title="Halaman berikutnya (→)"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight size={14} />
+            </Button>
+          </div>
+
+          {/* Secondary actions row */}
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <Button
+              variant="ghost"
+              onClick={() => setOverviewOpen(true)}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold gap-1 text-app-muted hover:text-emerald-300"
+              title="Overview (O)"
+            >
+              <Grid3X3 size={10} /> Overview
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleReplay}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold gap-1 text-app-muted hover:text-amber-300"
+              title="Ulangi semua (reset skor)"
+            >
+              <RotateCcw size={10} /> Ulangi
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (!document.fullscreenElement) {
+                  document.documentElement.requestFullscreen().catch(() => {});
+                  setIsFullscreen(true);
+                } else {
+                  document.exitFullscreen().catch(() => {});
+                  setIsFullscreen(false);
+                }
+              }}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold gap-1 text-app-muted hover:text-cyan-300"
+              title="Fullscreen (F)"
+            >
+              {isFullscreen ? <Minimize2 size={10} /> : <Maximize2 size={10} />}
+              {isFullscreen ? 'Exit' : 'Fullscreen'}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
+}
+
+// ── Helper: Click sound without importing full sound library ──
+function playClickSound() {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 600;
+    gain.gain.value = 0.08;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.stop(ctx.currentTime + 0.08);
+  } catch { /* Audio not available */ }
 }
 
 // ── Overview Grid: Thumbnail navigation ────────────────────────
@@ -270,13 +466,34 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
+  const scorePct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0;
+
   return (
-    <div className="w-full h-full overflow-auto p-6">
+    <motion.div
+      className="w-full h-full overflow-auto p-6"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="text-center mb-4">
         <div className="text-sm font-bold text-app-primary">Overview — {pages.length} Halaman</div>
         {totalMaxVal > 0 && (
-          <div className="text-[10px] text-emerald-400/60 mt-1">
-            Skor: {totalScoreVal}/{totalMaxVal} ({totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0}%)
+          <div className="flex items-center justify-center gap-2 mt-1.5">
+            <span className="text-[10px] text-emerald-400/80">
+              Skor: {totalScoreVal}/{totalMaxVal} ({scorePct}%)
+            </span>
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3].map(star => (
+                <Star
+                  key={`overview-star-${star}`}
+                  size={10}
+                  fill={scorePct >= star * 33 ? '#fbbf24' : 'none'}
+                  stroke={scorePct >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
+                  strokeWidth={2}
+                />
+              ))}
+            </div>
           </div>
         )}
         <div className="text-[9px] text-app-muted mt-1">Klik halaman untuk navigasi • Tekan O atau Esc untuk tutup</div>
@@ -291,7 +508,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
               ? { background: p.bgColor }
               : { background: p.bgColor || COLORS.bgDark };
           return (
-            <button
+            <motion.button
               key={p.id}
               onClick={() => handleSelect(i)}
               className={`relative rounded-xl overflow-hidden transition-all hover:scale-105 ${
@@ -300,6 +517,11 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
                   : 'ring-1 ring-app-border/40 hover:ring-app-border/60'
               }`}
               style={{ aspectRatio: `${ratio.w}/${ratio.h}` }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
             >
               <div className="absolute inset-0" style={bgStyle}>
                 <div className="absolute inset-0 bg-black/30" />
@@ -322,10 +544,10 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
                   AKTIF
                 </div>
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }

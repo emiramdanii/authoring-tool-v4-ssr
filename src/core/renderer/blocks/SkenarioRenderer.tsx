@@ -9,7 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 
-export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
@@ -26,6 +26,15 @@ export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEdit
   const [showFeedback, setShowFeedback] = React.useState(false);
   const timersRef = React.useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
+  // ── Replay watcher: reset all state when replayGeneration bumps ──
+  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+  React.useEffect(() => {
+    setChapter(0);
+    setHistory([]);
+    setSelectedChoice(null);
+    setShowFeedback(false);
+  }, [replayGeneration]);
+
   const chapters = block.chapters || [];
   const ch = chapters[chapter];
   const isCompleted = chapter >= chapters.length;
@@ -38,9 +47,11 @@ export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEdit
     return () => { timersRef.current.forEach(t => clearTimeout(t)); };
   }, []);
 
-  // Report score on completion
+  // Report score on completion (guard: only fire once per completion cycle)
+  const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
-    if (isCompleted && interactive && block.id) {
+    if (isCompleted && interactive && block.id && !hasReportedRef.current) {
+      hasReportedRef.current = true;
       const totalPts = history.reduce((sum, h) => sum + h.pts, 0);
       const totalMax = chapters.length * 20;
       reportScore({
@@ -53,7 +64,8 @@ export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEdit
       playSound('complete');
       fireConfetti({ count: 60 });
     }
-  }, [isCompleted]);
+    if (!isCompleted) hasReportedRef.current = false;
+  }, [isCompleted, interactive, block.id, history, chapters.length, reportScore, pageIndex]);
 
   const handleChoice = (choiceIdx: number) => {
     if (!ch || !interactive) return;
@@ -132,7 +144,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEdit
           </div>
           {interactive && (
             <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
-              onClick={() => { setChapter(0); setHistory([]); playSound('click'); }}
+              onClick={() => { setChapter(0); setHistory([]); hasReportedRef.current = false; playSound('click'); }}
               style={{
                 background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
                 color: tokens.color('bg'),
@@ -290,4 +302,4 @@ export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEdit
       )}
     </div>
   );
-}
+});

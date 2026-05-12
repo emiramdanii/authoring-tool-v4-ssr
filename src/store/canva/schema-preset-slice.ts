@@ -20,8 +20,9 @@ import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine.utils
 // which create circular dependencies back to canva-store.
 // Use the renderer-free .utils file for store modules.
 import { generatePageId } from '@/core/schema/ensure-schema';
+import type { LessonSchema } from '@/core/schema/types';
 
-export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset'>;
+export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset' | 'loadCustomSchema'>;
 
 export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPresetSlice> = (set, get) => ({
   /**
@@ -84,6 +85,59 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
     } catch (err) {
       console.error('Failed to load schema preset:', err);
       toast.error(`Gagal memuat preset "${presetId}"`);
+    }
+  },
+
+  /**
+   * Load a custom LessonSchema into the canvas.
+   * Used by the Template Marketplace to apply marketplace templates.
+   * Works the same as loadSchemaPreset but takes a schema object directly.
+   */
+  loadCustomSchema: (schema: LessonSchema) => {
+    try {
+      // Convert LessonSchema → CanvaPage[]
+      const rawPages = schemaToCanvaPages(schema);
+
+      // Wrap into full CanvaPage objects
+      const pages: CanvaPage[] = rawPages.map((raw) => ({
+        id: raw.id || generatePageId(),
+        label: raw.label,
+        bgDataUrl: null,
+        bgColor: raw.bgColor || '#0e1c2f',
+        overlay: 20,
+        elements: [],
+        templateType: (raw.templateType || 'custom') as CanvaPage['templateType'],
+        colorPalette: null,
+        navConfig: { ...DEFAULT_NAV_CONFIG },
+        templateData: raw.templateData, // @deprecated — kept for legacy export compat
+        schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
+      }));
+
+      // Cover pages should show navbar + progress
+      if (pages.length > 0 && pages[0].templateType === 'cover') {
+        pages[0].navConfig = {
+          ...pages[0].navConfig,
+          showNavbar: true,
+          showProgress: true,
+        };
+      }
+
+      get()._pushHistory();
+      set({
+        pages,
+        currentPageIndex: 0,
+        selectedElId: null,
+        selectedElIds: [],
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
+      });
+
+      toast.success(`🏪 Template "${schema.title}" diterapkan — ${pages.length} layar`);
+    } catch (err) {
+      console.error('Failed to load custom schema:', err);
+      toast.error('Gagal menerapkan template');
     }
   },
 });

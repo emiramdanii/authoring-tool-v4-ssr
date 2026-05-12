@@ -83,6 +83,8 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
           fontSize: '13px',
           background: isOpen ? tokens.colorAlpha(row.color, 0.04) : 'transparent',
         }}
+        aria-expanded={isOpen}
+        aria-controls={`accord-panel-${blockId}-${rowIndex}`}
         onClick={() => {
           onToggle();
           if (interactive) playSound(isOpen ? 'click' : 'tap');
@@ -101,7 +103,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
           style={{ fontSize: '12px', transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
       </button>
       {isOpen && (
-        <div className="px-3.5 pb-3.5"
+        <div className="px-3.5 pb-3.5" id={`accord-panel-${blockId}-${rowIndex}`}
           style={{ animation: 'fadeIn 0.3s ease' }}>
           <div className="grid grid-cols-2 gap-2.5">
             {(row.details || []).map((d, j) => (
@@ -123,7 +125,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
   );
 }
 
-export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, interactive }: {
+export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, interactive }: {
   block: TabelAccordionBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
 }) {
   const [openIdx, setOpenIdx] = React.useState<number | null>(null);
@@ -145,4 +147,4 @@ export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, in
       ))}
     </div>
   );
-}
+});

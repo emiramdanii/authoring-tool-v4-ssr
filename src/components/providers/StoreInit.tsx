@@ -13,6 +13,7 @@
 import { useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { initCanvaStoreSubscriptions } from '@/store/canva/init';
+import { preloadSounds } from '@/lib/sounds';
 
 let _initCalled = false;
 
@@ -29,6 +30,9 @@ export function StoreInit() {
 
       // 2. Wire up subscriptions (auto-sync, auto-save, etc.)
       initCanvaStoreSubscriptions();
+
+      // 3. Preload sound effects so they play instantly on first interaction
+      preloadSounds();
     }
   }, []);
 
