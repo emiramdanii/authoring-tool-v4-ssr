@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import ElementProperties from './ElementProperties';
@@ -9,6 +9,8 @@ import PaletteSection from './PaletteSection';
 import NavigationSection from './NavigationSection';
 import PageSettingsSection from './PageSettingsSection';
 import BlockPropertiesPanel from './BlockPropertiesPanel';
+import AIAssistantPanel from '../ai-assistant/AIAssistantPanel';
+import Section from './Section';
 import {
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
@@ -69,8 +71,16 @@ export default function RightPanel() {
     palette: false,
     nav: true,
     settings: true,
+    ai: true,
   });
   const toggleCollapse = (key: string) => setCollapsed(p => ({ ...p, [key]: !p[key] }));
+
+  // ── Listen for "open-ai-assistant" custom event (from context menu) ──
+  useEffect(() => {
+    const handler = () => setCollapsed(p => ({ ...p, ai: false }));
+    window.addEventListener('open-ai-assistant', handler);
+    return () => window.removeEventListener('open-ai-assistant', handler);
+  }, []);
 
   if (!rightPanelOpen) return null;
 
@@ -79,6 +89,16 @@ export default function RightPanel() {
 
       {/* ═══ Section 0: Schema Block Properties (when block selected) ═══ */}
       <BlockPropertiesPanel />
+
+      {/* ═══ Section 0b: AI Content Assistant ═══ */}
+      <Section
+        icon={<span className="text-xs">🤖</span>}
+        title="AI Assistant"
+        collapsed={collapsed.ai}
+        onToggle={() => toggleCollapse('ai')}
+      >
+        <AIAssistantPanel />
+      </Section>
 
       {/* ═══ Section 1: Properti Elemen — ALWAYS VISIBLE (not collapsible) ═══ */}
       {selectedEl && (

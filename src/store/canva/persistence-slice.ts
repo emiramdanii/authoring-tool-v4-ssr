@@ -32,7 +32,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   saveToStorage: () => {
     try {
       const { pages, ratioId } = get();
-      localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({ pages, ratioId }));
+      localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({
+        pages,
+        ratioId,
+        _lastSavedAt: Date.now(),
+      }));
       set({ _saveStatus: 'saved' });
     } catch (err) {
       // Storage full or unavailable — still reset status to avoid stuck indicator

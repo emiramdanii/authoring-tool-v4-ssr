@@ -5,6 +5,7 @@ import { StoreInit } from "@/components/providers/StoreInit";
 import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
 import { SkipNavLink } from "@/components/shared/SkipNavLink";
 import { LiveAnnouncer } from "@/components/shared/LiveAnnouncer";
+import AutoSaveRecovery from "@/components/shared/AutoSaveRecovery";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -69,6 +70,7 @@ export default function RootLayout({
           {children}
           <ShortcutHelpOverlay />
           <LiveAnnouncer />
+          <AutoSaveRecovery />
         </ThemeProvider>
         <Toaster />
       </body>

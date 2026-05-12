@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './use-selected-block';
 import { SchemaDrivenEditor } from './SchemaDrivenEditor';
 import { CapabilityBadge } from './CapabilityBadge';
+import { BlockVariantSwitcher } from './BlockVariantSwitcher';
 
 export default function BlockPropertiesPanel() {
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
@@ -96,16 +97,19 @@ export default function BlockPropertiesPanel() {
         {/* Block type badge */}
         <div className="flex items-center gap-2">
           <span className="text-lg">{definition?.icon || '📦'}</span>
-          <div>
-            <div className="text-[11px] font-bold text-app-primary">{definition?.name || selectedBlockType}</div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] font-bold text-app-primary truncate">{definition?.name || selectedBlockType}</div>
             <div className="text-[9px] text-app-muted">{definition?.category || 'unknown'} &middot; {selectedBlockType}</div>
           </div>
           {editingBlockId === selectedBlockId && (
-            <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
               EDITING
             </span>
           )}
         </div>
+
+        {/* Block Variant Switcher */}
+        {block && <BlockVariantSwitcher block={block} />}
 
         {/* Block ID */}
         <div className="flex items-center gap-2">

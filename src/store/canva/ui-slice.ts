@@ -31,6 +31,7 @@ export type UISlice = Pick<
   | 'addSchemaBlock'
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
+  | 'moveBlockToPage'
   | '_lastNudgeTime'
 >;
 
@@ -804,5 +805,60 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     set({ pages: newPages });
     get().selectBlock(newBlock.id!, clipboard.type);
     toast.success('Block ditempel');
+  },
+
+  // ── Move Block to Another Page ──────────────────────────────────
+  // Removes the block from the current page and appends it to the
+  // target page. Used by context menu "Move to Page" action.
+  moveBlockToPage: (blockId, targetPageIndex) => {
+    const { pages, currentPageIndex } = get();
+    if (targetPageIndex === currentPageIndex) return;
+    if (targetPageIndex < 0 || targetPageIndex >= pages.length) return;
+
+    const sourcePage = pages[currentPageIndex];
+    const targetPage = pages[targetPageIndex];
+    if (!sourcePage || !targetPage) return;
+
+    const sourceSchema = ensurePageSchema(sourcePage);
+    const targetSchema = ensurePageSchema(targetPage);
+    if (!sourceSchema || !targetSchema) {
+      toast.warning('Tidak dapat memindahkan block ke halaman ini');
+      return;
+    }
+
+    const blockIdx = sourceSchema.blocks.findIndex(b => b.id === blockId);
+    if (blockIdx === -1) return;
+
+    get()._pushHistory();
+
+    // Remove from source page
+    const movedBlock = sourceSchema.blocks[blockIdx];
+    const newSourceBlocks = sourceSchema.blocks.filter((_, i) => i !== blockIdx);
+
+    // Add to target page with fresh nanoid to prevent ID conflicts
+    const newTargetBlock = produce(movedBlock, (draft) => {
+      draft.id = generateBlockId();
+    });
+    const newTargetBlocks = [...targetSchema.blocks, newTargetBlock];
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...sourcePage,
+      schema: { ...sourceSchema, blocks: newSourceBlocks },
+    };
+    newPages[targetPageIndex] = {
+      ...targetPage,
+      schema: { ...targetSchema, blocks: newTargetBlocks },
+    };
+
+    set({
+      pages: newPages,
+      selectedBlockId: null,
+      selectedBlockType: null,
+      editingBlockId: null,
+      selectedBlockIds: [],
+    });
+
+    toast.success(`Block dipindahkan ke ${targetPage.label}`);
   },
 });

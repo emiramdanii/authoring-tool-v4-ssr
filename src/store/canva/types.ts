@@ -171,6 +171,8 @@ export interface CanvaState {
   deleteSchemaBlocks: (blockIds: string[]) => void;
   /** Reorder schema blocks by moving a block from one index to another (drag-sort) */
   reorderSchemaBlocks: (fromIndex: number, toIndex: number) => void;
+  /** Move a schema block to another page */
+  moveBlockToPage: (blockId: string, targetPageIndex: number) => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;
