@@ -251,3 +251,34 @@ export function announceToScreenReader(
     }
   });
 }
+
+// ── Reduced Motion & High Contrast Preferences ──────────────────
+
+/**
+ * Check if the user prefers reduced motion.
+ * Returns false during SSR.
+ */
+export function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Check if the user prefers high contrast.
+ * Returns false during SSR.
+ */
+export function prefersHighContrast(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-contrast: more)').matches;
+}
+
+/**
+ * Return CSS styles that disable transitions and animations
+ * when the user prefers reduced motion.
+ */
+export function getReducedMotionStyles(): React.CSSProperties {
+  return prefersReducedMotion() ? {
+    transition: 'none',
+    animation: 'none',
+  } : {};
+}

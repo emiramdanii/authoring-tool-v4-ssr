@@ -93,6 +93,7 @@ export interface PetunjukData {
   intro: string;
   langkah: PetunjukLangkah[];
   tips?: string;
+  navigation?: string[];
 }
 
 export interface DiskusiPertanyaan {

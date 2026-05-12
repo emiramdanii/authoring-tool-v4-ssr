@@ -69,7 +69,7 @@ function escapeHtml(str: string): string {
 }
 
 function renderBlockHtml(block: SchemaBlock): string {
-  const b = block as Record<string, unknown>;
+  const b = block as unknown as Record<string, unknown>;
   const type = b.type as string;
 
   switch (type) {

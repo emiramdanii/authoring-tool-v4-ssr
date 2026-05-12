@@ -1,0 +1,97 @@
+// ═══════════════════════════════════════════════════════════════════════
+// PRISMA SCHEMA — MPI Authoring Tool v4
+// ═══════════════════════════════════════════════════════════════════════
+// SQLite-based persistence for projects, pages, blocks, and templates.
+// Replaces localStorage-only persistence with server-side database.
+// ═══════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ── Project ──────────────────────────────────────────────────────
+// Top-level entity representing a single MPI (Media Pembelajaran Interaktif)
+
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  subject      String?  // e.g., "PPKn", "Matematika", etc.
+  grade        String?  // e.g., "VII", "VIII", "IX"
+  semester     Int?     // 1 or 2
+  teacherName  String?
+  schoolName   String?
+  templateId   String?  // template used
+  themeId      String?  // theme preset
+  schemaPreset String?  // JSON string for schema preset
+  ratioId      String?  // aspect ratio, e.g., "16:9", "9:16"
+  pages        Page[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  publishedAt  DateTime?
+  isPublished  Boolean  @default(false)
+}
+
+// ── Page ─────────────────────────────────────────────────────────
+// A single screen/page within a project (e.g., cover, kuis, materi)
+
+model Page {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pageIndex     Int      // order within project
+  label         String?
+  templateType  String?  // e.g., "cover", "kuis", "materi", etc.
+  variant       String?  // "A" | "B" | "C"
+  bgColor       String?
+  bgImage       String?  // URL or base64
+  bgOverlay     Float?   // 0-1 opacity
+  schemaData    String?  // JSON string of ScreenSchema
+  navConfig     String?  // JSON string of NavConfig
+  templateData  String?  // JSON string of legacy templateData
+  colorPalette  String?  // JSON string of ColorPalette
+  blocks        Block[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+// ── Block ────────────────────────────────────────────────────────
+// An individual content block within a page (e.g., kuis, sortir-game, cover)
+
+model Block {
+  id         String   @id @default(cuid())
+  pageId     String
+  page       Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  blockType  String   // e.g., "kuis", "sortir-game", "cover", etc.
+  blockIndex Int      // order within page
+  content    String   // JSON string of block content/schema
+  layout     String?  // JSON string of layout config
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([pageId])
+}
+
+// ── Template ─────────────────────────────────────────────────────
+// Reusable project templates that can be used as starting points
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  subject     String?
+  category    String   // "official" | "community"
+  icon        String?
+  schemaData  String   // JSON string of full template schema
+  downloads   Int      @default(0)
+  rating      Float?   // 0-5
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

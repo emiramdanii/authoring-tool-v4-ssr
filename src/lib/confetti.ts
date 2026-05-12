@@ -236,11 +236,21 @@ function createWrapper(container: HTMLElement): HTMLElement {
 // ══════════════════════════════════════════════════════════════
 
 /**
+ * Check if the user prefers reduced motion.
+ * If so, confetti animations should be suppressed for accessibility.
+ */
+function shouldSuppressMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
  * Fire a confetti burst celebration from a center point.
  * Usage: fireConfetti() or fireConfetti({ count: 80, duration: 4000 })
  */
 export function fireConfetti(options: ConfettiOptions = {}) {
   if (typeof window === 'undefined') return;
+  if (shouldSuppressMotion()) return;
   injectKeyframes();
 
   const {
@@ -309,6 +319,7 @@ export function fireStarBurst(options: ConfettiOptions = {}) {
  */
 export function fireConfettiMini(options: ConfettiOptions = {}) {
   if (typeof window === 'undefined') return;
+  if (shouldSuppressMotion()) return;
   injectKeyframes();
 
   const {
@@ -362,6 +373,7 @@ export function fireConfettiMini(options: ConfettiOptions = {}) {
  */
 export function fireConfettiSideCannons(options: ConfettiOptions = {}) {
   if (typeof window === 'undefined') return;
+  if (shouldSuppressMotion()) return;
   injectKeyframes();
 
   const {
@@ -448,6 +460,7 @@ export function fireConfettiSideCannons(options: ConfettiOptions = {}) {
  */
 export function fireConfettiCelebration(options: ConfettiOptions = {}) {
   if (typeof window === 'undefined') return;
+  if (shouldSuppressMotion()) return;
 
   const {
     count = 60,

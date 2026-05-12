@@ -18,7 +18,7 @@ interface UndoRedoToastState {
 }
 
 let toastTimeout: ReturnType<typeof setTimeout> | null = null;
-let setToastExternal: ((state: UndoRedoToastState) => void) | null = null;
+let setToastExternal: ((state: UndoRedoToastState | ((prev: UndoRedoToastState) => UndoRedoToastState)) => void) | null = null;
 
 export function showUndoRedoToast(message: string) {
   if (setToastExternal) {

@@ -50,7 +50,8 @@ const LazyTeamBuzzerGameRenderer = lazy(() => import('./blocks/TeamBuzzerGameRen
 // ── Map of lazy renderers ─────────────────────────────────────────
 // Key = block type string, Value = lazy-loaded component
 
-export const LAZY_RENDERER_MAP: Record<string, React.LazyExoticComponent<ComponentType<Record<string, unknown>>>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Each renderer has specific block-type props; the map guarantees type-safe dispatch at runtime.
+export const LAZY_RENDERER_MAP: Record<string, React.LazyExoticComponent<ComponentType<any>>> = {
   'cover': LazyCoverRenderer,
   'petunjuk': LazyPetunjukRenderer,
   'tp': LazyTpRenderer,

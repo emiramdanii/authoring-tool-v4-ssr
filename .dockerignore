@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+coverage
+*.db
+*.db-journal
+.cache
+puppeteer
+.chromium

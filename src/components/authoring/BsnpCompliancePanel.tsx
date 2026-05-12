@@ -346,7 +346,7 @@ export default function BsnpCompliancePanel() {
       icon: <BookOpen size={16} />,
       subChecks: [
         { key: 'pet-langkah', label: 'Langkah penggunaan', status: petunjuk.langkah.length > 0 ? 'complete' : 'missing', fixHint: 'Tambahkan minimal 3 langkah', fixAction: 'konten' },
-        { key: 'pet-nav', label: 'Info navigasi', status: petunjuk.navigation?.length > 0 ? 'complete' : 'partial', fixHint: 'Tambahkan info navigasi', fixAction: 'konten' },
+        { key: 'pet-nav', label: 'Info navigasi', status: (petunjuk.navigation?.length ?? 0) > 0 ? 'complete' : 'partial', fixHint: 'Tambahkan info navigasi', fixAction: 'konten' },
       ],
     },
     {
@@ -501,7 +501,7 @@ export default function BsnpCompliancePanel() {
             className="h-full rounded-full transition-all duration-1000 ease-out"
             style={{
               width: `${overallPercent}%`,
-              background: `linear-gradient(90deg, ${COLORS.success}, ${COLORS.primary})`,
+              background: `linear-gradient(90deg, ${COLORS.success}, ${COLORS.amber})`,
               boxShadow: overallPercent > 0 ? `0 0 8px ${COLORS.success}40` : 'none',
             }}
           />

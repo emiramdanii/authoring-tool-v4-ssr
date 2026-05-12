@@ -123,7 +123,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
           padding: isCompact ? '14px 16px' : '20px 24px',
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.12)}, ${tokens.colorAlpha(gradientTo, 0.08)})`,
           border: `2px solid ${tokens.colorAlpha(gradientFrom, 0.25)}`,
-          borderRadius: tokens.radius('2xl') + 'px',
+          borderRadius: tokens.radius('xl'),
           position: 'relative',
           overflow: 'hidden',
         }}

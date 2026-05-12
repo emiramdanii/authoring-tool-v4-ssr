@@ -89,7 +89,12 @@ describe('SceneRegistry — Block Registration Completeness', () => {
       const def = getBlockDefinition(type);
       expect(def, `Block "${type}" should have a definition`).toBeDefined();
       expect(def!.renderer, `Block "${type}" should have a renderer`).toBeDefined();
-      expect(typeof def!.renderer, `Block "${type}" renderer should be a component`).toBe('function');
+      // React.lazy() returns an object (lazy component), not a plain function
+      const rendererType = typeof def!.renderer;
+      expect(
+        rendererType === 'function' || rendererType === 'object',
+        `Block "${type}" renderer should be a component (function or lazy object)`
+      ).toBe(true);
     }
   });
 

@@ -1019,3 +1019,62 @@ input[type="number"]::-webkit-outer-spin-button {
     color: #999;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   WCAG 2.1 AA COMPLIANCE — Reduced Motion & High Contrast
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* WCAG 2.1 AA: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .confetti-container,
+  [data-confetti] {
+    display: none !important;
+  }
+}
+
+/* WCAG 2.1 AA: High Contrast Mode */
+@media (prefers-contrast: more) {
+  :root {
+    --border-color: #000000;
+    --text-muted: #333333;
+  }
+  .game-card,
+  [data-game-card] {
+    border: 2px solid #000000 !important;
+  }
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible {
+    outline: 3px solid #000000 !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Focus visible indicators */
+:focus-visible {
+  outline: 2px solid var(--ring, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Skip navigation */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--background, #fff);
+  color: var(--foreground, #000);
+  border: 2px solid var(--foreground, #000);
+  font-weight: bold;
+  text-decoration: none;
+}
+.skip-nav:focus {
+  top: 0;
+}

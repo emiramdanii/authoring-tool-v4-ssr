@@ -42,7 +42,7 @@ const pageVariants = {
   }),
 };
 
-const pageTransition = {
+const pageTransition: Record<string, unknown> = {
   type: 'tween',
   ease: [0.25, 0.46, 0.45, 0.94], // ease-out quad
   duration: 0.35,

@@ -302,3 +302,56 @@ Stage Summary:
 - 22 TypeScript errors fixed → 0 errors in src/
 - SchemaBlockRenderer now dispatches via registry (18 block types registered)
 - Layout-aware rendering enables future editing overlay system
+
+---
+Task ID: 13
+Agent: Main Agent (Senior Dev Pro)
+Task: Phase 10 — AI Content Assistant + UX Power Features
+
+Work Log:
+- Created AI Content API route (src/app/api/ai/route.ts) using z-ai-web-dev-sdk
+  - 16 content generation actions: kuis, matching, fill-blank, word-search,
+    crossword, true-false, drag-drop, memory, roda, sortir, diskusi,
+    refleksi, materi-summary, tp, petunjuk, motivasi
+  - Indonesian SMP/BSNP curriculum-aware system prompts
+  - Per-action structured JSON output with parsing + markdown cleanup
+- Created use-ai-assistant hook (src/components/canva/ai-assistant/use-ai-assistant.ts)
+  - Loading state, error handling, abort controller for previous requests
+  - Generation history (last 10 results)
+- Created AIAssistantPanel (src/components/canva/ai-assistant/AIAssistantPanel.tsx)
+  - Context-aware: auto-detects existing block content as AI context
+  - Smart suggestions based on selected block type
+  - Action search/filter dropdown with 16 actions
+  - Configurable jumlah (1-20) and instruksi
+  - Result preview with rich formatting per action type (kuis, matching, etc.)
+  - One-click apply to selected block, copy JSON, regenerate
+- Integrated AI Assistant into RightPanel as collapsible section
+  - Custom event 'open-ai-assistant' from context menu
+  - Event listener auto-expands AI panel section
+- Created BlockVariantSwitcher (src/components/canva/right-panel/block-properties/BlockVariantSwitcher.tsx)
+  - A/B/C variant pills in property panel, color-coded
+  - Instant switching via updateSchemaBlock
+- Added moveBlockToPage to store (src/store/canva/ui-slice.ts)
+  - Moves block between pages with fresh nanoid (no ID conflicts)
+  - Removes from source, appends to target
+- Enhanced BlockContextMenu (src/core/editor/overlay/BlockContextMenu.tsx)
+  - Added submenu support (expand/collapse pattern)
+  - Variant switcher submenu (A/B/C)
+  - Move to page submenu (lists all other pages)
+  - AI Generate Konten shortcut (amber accent)
+- Created AutoSaveRecovery dialog (src/components/shared/AutoSaveRecovery.tsx)
+  - Detects saved localStorage data on mount
+  - Shows timestamp, page count, active page label
+  - Pulihkan Sesi or Mulai Baru options
+  - Added _lastSavedAt timestamp to persistence save
+- Build verification: Next.js 16.2.6 ✅ 0 errors
+- Committed as fadddc2, pushed to GitHub
+
+Stage Summary:
+- Phase 10 COMPLETE: AI Content Assistant + UX Power Features
+- AI Content generation for 16 action types via z-ai-web-dev-sdk
+- Block Variant Switcher (A/B/C) in property panel
+- Cross-page block operations (moveBlockToPage)
+- Enhanced context menu with submenus, variant, move-to-page, AI shortcut
+- Auto-Save Recovery dialog on app mount
+- 12 files changed, +1424 lines

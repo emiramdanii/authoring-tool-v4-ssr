@@ -244,7 +244,7 @@ export default function AIAssistantPanel() {
       )}
 
       {/* Result preview */}
-      {result?.success && result.data && (
+      {result?.success && result.data ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5"><CheckCircle2 size={10} className="text-emerald-400" /><span className="text-[9px] font-bold text-emerald-300">Konten Berhasil Dibuat</span></div>
@@ -260,7 +260,7 @@ export default function AIAssistantPanel() {
             {applied ? <><CheckCircle2 size={12} /> Sudah Diterapkan</> : <><Zap size={12} /> {selectedBlockId ? 'Terapkan ke Block' : 'Pilih Block Dulu'}</>}
           </Button>
         </div>
-      )}
+      ) : null}
 
       <div className="text-[7px] text-app-muted pt-1 border-t border-app-border/10 leading-relaxed">
         AI Content Assistant menggunakan kecerdasan buatan untuk membuat konten pembelajaran.
@@ -297,7 +297,7 @@ function ResultPreview({ data, action }: { data: unknown; action: AIAction }) {
                     </span>
                   ))}
                 </div>
-                {item.ex && <div className="text-[8px] text-app-muted mt-0.5 italic">{str(item.ex)}</div>}
+                {Boolean(item.ex) && <div className="text-[8px] text-app-muted mt-0.5 italic">{str(item.ex)}</div>}
               </div>
             );
           })}
@@ -336,7 +336,7 @@ function ResultPreview({ data, action }: { data: unknown; action: AIAction }) {
               <div key={i} className="pl-2 border-l-2 border-amber-500/20">
                 <div className="text-[9px] text-app-primary">{i + 1}. {str(item.text)}</div>
                 <div className="text-[8px] text-emerald-400 font-bold mt-0.5">Jawaban: {str(item.answer)}</div>
-                {item.hint && <div className="text-[8px] text-app-muted italic">Hint: {str(item.hint)}</div>}
+                {Boolean(item.hint) && <div className="text-[8px] text-app-muted italic">Hint: {str(item.hint)}</div>}
               </div>
             );
           })}
@@ -389,7 +389,7 @@ function ResultPreview({ data, action }: { data: unknown; action: AIAction }) {
                 <span className={`text-[8px] font-bold ${item.correct ? 'text-emerald-400' : 'text-red-400'}`}>
                   {item.correct ? '✅ Benar' : '❌ Salah'}
                 </span>
-                {item.explanation && <div className="text-[8px] text-app-muted italic ml-2">{str(item.explanation)}</div>}
+                {Boolean(item.explanation) && <div className="text-[8px] text-app-muted italic ml-2">{str(item.explanation)}</div>}
               </div>
             );
           })}

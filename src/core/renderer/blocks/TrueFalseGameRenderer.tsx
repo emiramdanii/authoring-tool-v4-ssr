@@ -53,7 +53,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
       .map(q => ({
         ...q,
         correct: typeof q.correct === 'string'
-          ? q.correct.toLowerCase() === 'true'
+          ? (q.correct as string).toLowerCase() === 'true'
           : Boolean(q.correct),
       })),
     [rawQuestions]

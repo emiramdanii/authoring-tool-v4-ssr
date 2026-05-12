@@ -154,6 +154,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
       const timer = setTimeout(() => setWrongFeedback(null), 2500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [wrongFeedback]);
 
   const handlePoolClick = (id: string) => {

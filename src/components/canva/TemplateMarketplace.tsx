@@ -83,7 +83,7 @@ const overlayVariants = {
 
 const panelVariants = {
   hidden: { opacity: 0, y: 40, scale: 0.97 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' as const } },
   exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.2 } },
 };
 
@@ -92,7 +92,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.05, duration: 0.3, ease: 'easeOut' },
+    transition: { delay: i * 0.05, duration: 0.3, ease: 'easeOut' as const },
   }),
 };
 

@@ -39,9 +39,11 @@ import {
   Maximize,
   Store,
   Printer,
+  FileDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TemplateMarketplace from '@/components/canva/TemplateMarketplace';
+import { PdfExportButton } from '@/components/canva/toolbar/PdfExportButton';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: Toolbar cleanup
@@ -380,6 +382,93 @@ export default function Toolbar() {
               <div>
                 <div className="text-[11px] text-teal-300 font-semibold">🔄 Auto-Fallback Export</div>
                 <div className="text-[8px] text-teal-500/70">Coba Vite dulu, fallback ke client-side jika gagal</div>
+              </div>
+            </button>
+
+            {/* ── PDF ── */}
+            <div className="px-3 py-1.5 bg-violet-500/10 border-y border-violet-500/20">
+              <div className='text-[9px] font-bold text-violet-400 uppercase tracking-wider'><FileDown size={12} className='inline' /> PDF</div>
+            </div>
+            <button
+              onClick={async () => {
+                setExportOpen(false);
+                // Trigger PDF export via the dedicated component logic
+                const { useCanvaStore } = await import('@/store/canva-store');
+                const { useAuthoringStore } = await import('@/store/authoring-store');
+                const canvaState = useCanvaStore.getState();
+                const authState = useAuthoringStore.getState();
+
+                setExporting(true);
+                toast.loading(`Membuat PDF (${canvaState.pages.length} halaman)...`, { id: 'export-pdf' });
+
+                try {
+                  const payload = {
+                    pages: canvaState.pages,
+                    ratioId: canvaState.ratioId,
+                    meta: authState.meta,
+                    allKuis: authState.kuis,
+                    allModules: authState.modules,
+                    games: authState.games,
+                    cp: authState.cp,
+                    tp: authState.tp,
+                    atp: authState.atp,
+                    alur: authState.alur,
+                    materi: authState.materi,
+                    skenario: authState.skenario,
+                    petunjuk: authState.petunjuk,
+                    diskusi: authState.diskusi,
+                    refleksi: authState.refleksi,
+                    penutup: authState.penutup,
+                    suara: authState.suara,
+                    format: 'A4',
+                    landscape: false,
+                    includeAnswerKeys: true,
+                  };
+
+                  const response = await fetch('/api/export/pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                  });
+
+                  if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    throw new Error(errorData.error || `PDF export failed with status ${response.status}`);
+                  }
+
+                  const blob = await response.blob();
+                  const contentDisposition = response.headers.get('Content-Disposition');
+                  let filename = 'mpi-export.pdf';
+                  if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                    if (match) filename = match[1];
+                  }
+
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+                  toast.success(`PDF berhasil dibuat (${canvaState.pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-pdf' });
+                } catch (err: any) {
+                  console.error('[PDF Export] Error:', err);
+                  toast.error(`Gagal membuat PDF: ${err.message}`, { id: 'export-pdf' });
+                } finally {
+                  setExporting(false);
+                }
+              }}
+              disabled={exporting}
+              className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-violet-500/10 transition-colors text-left disabled:opacity-50"
+              aria-label="Export PDF dari halaman MPI"
+            >
+              {exporting ? <Loader2 size={14} className="text-violet-400 animate-spin" /> : <FileDown size={14} className="text-violet-400" />}
+              <div>
+                <div className="text-[11px] text-violet-300 font-semibold">{exporting ? 'Generating PDF...' : 'Export PDF'}</div>
+                <div className="text-[8px] text-violet-500/70">Buat file PDF native — A4 dengan kunci jawaban</div>
               </div>
             </button>
 

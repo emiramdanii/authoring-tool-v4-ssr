@@ -131,6 +131,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
       const timer = setTimeout(() => setPhase('done'), 600);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isCompleted, phase]);
 
   // ── Score guard — only fire once per completion cycle ────────────

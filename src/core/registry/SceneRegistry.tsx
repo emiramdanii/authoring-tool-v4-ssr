@@ -45,7 +45,7 @@ export type {
 // TYPES
 // ═══════════════════════════════════════════════════════════════════
 
-import type { BlockDefinitionMeta } from './BlockDefinitionRegistry';
+import type { BlockDefinitionMeta, BlockCapabilities } from './BlockDefinitionRegistry';
 
 export interface BlockDefinition extends BlockDefinitionMeta {
   /** Renderer component — uses `any` because each renderer has specific block type props.
@@ -63,8 +63,6 @@ export interface BlockDefinition extends BlockDefinitionMeta {
 // PERFORMANCE: Heavy game renderers are lazy-loaded via React.lazy()
 // to reduce initial bundle size. Light renderers are eagerly imported.
 // ═══════════════════════════════════════════════════════════════════
-
-import React from 'react';
 
 // ── Eager imports (lightweight, frequently used) ─────────────────
 import {
@@ -126,7 +124,7 @@ const SkenarioRenderer = React.lazy(() =>
   import('../renderer/blocks/SkenarioRenderer').then(m => ({ default: m.SkenarioRenderer }))
 );
 
-import { BLOCK_DEFINITIONS } from './BlockDefinitionRegistry';
+import { BLOCK_DEFINITIONS, DEFAULT_CAPABILITIES } from './BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDERER MAP — Maps block types to their React renderer components
