@@ -5,18 +5,41 @@ import { Trophy, Star, Dumbbell, RotateCcw, Gamepad2, CheckCircle2, XCircle } fr
 import type { KuisBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { playSound } from '@/lib/sounds';
 
-export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing }: {
-  block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
+export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+  block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
+  const [showExplanation, setShowExplanation] = React.useState(false);
 
   const questions = block.questions || [];
   const q = questions[current];
   const totalAnswered = Object.keys(answers).length;
   const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.ans === ans).length;
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ── Interactive store: score reporting ──────────────────────
+  const reportScore = useInteractiveStore(s => s.reportScore);
+
+  // Report score on completion
+  React.useEffect(() => {
+    if (isCompleted && interactive && block.id) {
+      reportScore({
+        elementId: block.id,
+        pageIndex: pageIndex ?? 0,
+        score: totalCorrect * 20,
+        maxScore: questions.length * 20,
+        completed: true,
+      });
+      // Play tier-appropriate sound
+      const pct = Math.round((totalCorrect / questions.length) * 100);
+      if (pct >= 80) playSound('complete');
+      else playSound('ding');
+    }
+  }, [isCompleted]);
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -67,7 +90,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
         </div>
         {interactive && (
           <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
-            onClick={() => { setAnswers({}); setCurrent(0); }}
+            onClick={() => { setAnswers({}); setCurrent(0); playSound('click'); }}
             style={{
               fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
@@ -140,7 +163,14 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
             const bxSh = !isAnswered ? 'none' : isCorrect ? ('0 0 12px ' + tokens.colorAlpha('g', 0.2)) : isPicked ? ('0 0 12px ' + tokens.colorAlpha('r', 0.2)) : 'none';
             return (
               <button key={i} disabled={isAnswered}
-                onClick={() => interactive && setAnswers(prev => ({ ...prev, [current]: i }))}
+                onClick={() => {
+                  if (interactive && !isAnswered) {
+                    setAnswers(prev => ({ ...prev, [current]: i }));
+                    // Play sound based on answer
+                    if (i === q.ans) playSound('correct');
+                    else playSound('incorrect');
+                  }
+                }}
                 className="p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0"
                 style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh }}>
                 {opt}
@@ -170,7 +200,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing 
       {/* Next button */}
       {answers[current] !== undefined && current < questions.length - 1 && (
         <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
-          onClick={() => setCurrent(current + 1)}
+          onClick={() => { setCurrent(current + 1); playSound('click'); }}
           style={{
             fontSize: '13px',
             background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',

@@ -1,18 +1,50 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, RotateCcw, Sparkles, Eye, EyeOff } from 'lucide-react';
 import type { FlashcardSetBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { playSound } from '@/lib/sounds';
 
-export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing }: {
-  block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean;
+export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing, pageIndex }: {
+  block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
+  const [viewedCards, setViewedCards] = React.useState<Set<number>>(new Set());
+
   const cards = block.cards || [];
   const card = cards[idx];
+  const isCompleted = interactive && viewedCards.size >= cards.length && cards.length > 0;
+
+  // ── Interactive store: score reporting ──────────────────────
+  const reportScore = useInteractiveStore(s => s.reportScore);
+
+  // Track viewed cards & report completion
+  React.useEffect(() => {
+    if (flipped && interactive && idx < cards.length) {
+      setViewedCards(prev => {
+        const next = new Set(prev);
+        next.add(idx);
+        return next;
+      });
+    }
+  }, [flipped, idx, interactive, cards.length]);
+
+  React.useEffect(() => {
+    if (isCompleted && block.id) {
+      reportScore({
+        elementId: block.id,
+        pageIndex: pageIndex ?? 0,
+        score: cards.length,
+        maxScore: cards.length,
+        completed: true,
+      });
+      playSound('complete');
+    }
+  }, [isCompleted]);
 
   // ── Inline editing hooks — must be called before any early returns ──
   const qEditor = useInlineEditor({
@@ -31,12 +63,70 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
 
   if (cards.length === 0) return null;
 
+  // ══ COMPLETION SCREEN ═══════════════════════════════════════
+  if (isCompleted) {
+    return (
+      <div className="text-center p-5 rounded-2xl"
+        style={{
+          background: tokens.color('bg'),
+          border: '2px solid ' + tokens.colorAlpha('g', 0.3),
+          boxShadow: tokens.raw.shadow.elevated,
+        }}>
+        <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🧠</div>
+        <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('g') }}>
+          Semua Kartu Dipelajari!
+        </div>
+        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
+          Kamu telah mempelajari semua {cards.length} kartu kilat.
+        </div>
+        <div className="inline-flex items-center gap-2 mb-4">
+          {cards.map((_, i) => (
+            <div key={i} className="w-5 h-5 rounded-full flex items-center justify-center"
+              style={{
+                background: tokens.colorAlpha('g', 0.2),
+                border: '1px solid ' + tokens.colorAlpha('g', 0.3),
+              }}>
+              <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+            </div>
+          ))}
+        </div>
+        <div>
+          <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            onClick={() => {
+              setIdx(0);
+              setFlipped(false);
+              setViewedCards(new Set());
+              playSound('click');
+            }}
+            style={{
+              fontSize: '13px',
+              background: 'linear-gradient(135deg, ' + tokens.color('g') + ', ' + tokens.color('c') + ')',
+              color: tokens.color('bg'),
+              boxShadow: '0 4px 16px ' + tokens.colorAlpha('g', 0.35),
+            }}>
+            <RotateCcw size={14} className="inline" /> Ulangi Kartu
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={isCompact ? 'mt-2' : 'mt-4'}>
-      <div className="font-extrabold uppercase tracking-wider mb-3"
-        style={{ fontSize: '12px', color: tokens.color('y') }}>
-        🃏 Kartu Kilat — Uji Ingatanmu
+      <div className="flex items-center justify-between mb-3">
+        <div className="font-extrabold uppercase tracking-wider"
+          style={{ fontSize: '12px', color: tokens.color('y') }}>
+          🃏 Kartu Kilat — Uji Ingatanmu
+        </div>
+        {/* Progress indicator */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold" style={{ color: tokens.muted(0.6) }}>
+            {viewedCards.size}/{cards.length}
+          </span>
+          {flipped ? <EyeOff size={12} style={{ color: tokens.color('g') }} /> : <Eye size={12} style={{ color: tokens.muted(0.5) }} />}
+        </div>
       </div>
+
       <div className={`rounded-xl ${interactive ? 'cursor-pointer' : ''}`}
         style={{
           minHeight: isCompact ? 80 : 130,
@@ -44,7 +134,13 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
           transform: flipped ? 'rotateY(180deg)' : 'none',
           transition: 'transform 0.6s',
         }}
-        onClick={() => interactive && setFlipped(!flipped)}>
+        onClick={() => {
+          if (interactive) {
+            setFlipped(!flipped);
+            if (!flipped) playSound('tap');
+            else playSound('correct');
+          }
+        }}>
 
         {/* Front */}
         <div className="rounded-xl p-4 flex flex-col justify-center"
@@ -103,14 +199,14 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
             color: tokens.color('y'),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
           }}
-          onClick={() => { setIdx(Math.max(0, idx - 1)); setFlipped(false); }} disabled={idx === 0}>
+          onClick={() => { setIdx(Math.max(0, idx - 1)); setFlipped(false); playSound('click'); }} disabled={idx === 0}>
           ← Prev
         </button>
         <div className="flex gap-1.5">
           {cards.map((_, i) => (
             <div key={i} className="w-2 h-2 rounded-full transition-all"
               style={{
-                background: i === idx ? tokens.color('y') : i < idx ? tokens.color('g') : tokens.subtleBg(0.12),
+                background: i === idx ? tokens.color('y') : viewedCards.has(i) ? tokens.color('g') : tokens.subtleBg(0.12),
                 boxShadow: i === idx ? '0 0 8px ' + tokens.colorAlpha('y', 0.5) : 'none',
               }} />
           ))}
@@ -122,7 +218,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
             color: tokens.color('y'),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
           }}
-          onClick={() => { setIdx(Math.min(cards.length - 1, idx + 1)); setFlipped(false); }}
+          onClick={() => { setIdx(Math.min(cards.length - 1, idx + 1)); setFlipped(false); playSound('click'); }}
           disabled={idx >= cards.length - 1}>
           Next →
         </button>

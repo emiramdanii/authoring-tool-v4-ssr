@@ -5,9 +5,11 @@ import { Star, PartyPopper, RotateCcw, BookOpen, MessageSquare, CheckCircle2, XC
 import type { SkenarioBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { playSound } from '@/lib/sounds';
 
-export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
-  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isEditing?: boolean;
+export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIndex }: {
+  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -27,23 +29,47 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
   const ch = chapters[chapter];
   const isCompleted = chapter >= chapters.length;
 
+  // ── Interactive store: score reporting ──────────────────────
+  const reportScore = useInteractiveStore(s => s.reportScore);
+
   // Cleanup timers on unmount
   React.useEffect(() => {
     return () => { timersRef.current.forEach(t => clearTimeout(t)); };
   }, []);
 
+  // Report score on completion
+  React.useEffect(() => {
+    if (isCompleted && interactive && block.id) {
+      const totalPts = history.reduce((sum, h) => sum + h.pts, 0);
+      const totalMax = chapters.length * 20;
+      reportScore({
+        elementId: block.id,
+        pageIndex: pageIndex ?? 0,
+        score: totalPts,
+        maxScore: totalMax,
+        completed: true,
+      });
+      playSound('complete');
+    }
+  }, [isCompleted]);
+
   const handleChoice = (choiceIdx: number) => {
-    if (!ch) return;
+    if (!ch || !interactive) return;
     const choice = ch.choices[choiceIdx];
     setHistory(prev => [...prev, { chapterIdx: chapter, choiceIdx, good: choice.good, pts: choice.pts }]);
     setSelectedChoice({ choiceIdx, choice });
     setShowFeedback(true);
 
+    // Play sound based on choice quality
+    if (choice.good) playSound('correct');
+    else playSound('incorrect');
+
     const timer = setTimeout(() => {
       setShowFeedback(false);
       setSelectedChoice(null);
       const nextCh = choice.nextChapter != null ? choice.nextChapter : chapter + 1;
-      setChapter(nextCh); // Will mark completed if >= chapters.length
+      setChapter(nextCh);
+      playSound('click');
     }, 3000);
     timersRef.current.push(timer);
   };
@@ -104,7 +130,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing }: {
           </div>
           {interactive && (
             <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
-              onClick={() => { setChapter(0); setHistory([]); }}
+              onClick={() => { setChapter(0); setHistory([]); playSound('click'); }}
               style={{
                 background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
                 color: tokens.color('bg'),

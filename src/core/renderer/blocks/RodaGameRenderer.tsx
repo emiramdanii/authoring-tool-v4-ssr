@@ -5,9 +5,11 @@ import { RotateCcw, MessageCircle, CheckCircle2, XCircle } from 'lucide-react';
 import type { RodaGameBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { playSound } from '@/lib/sounds';
 
-export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEditing }: {
-  block: RodaGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean;
+export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+  block: RodaGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
@@ -17,6 +19,25 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.opts?.[ans]?.correct).length;
   const totalAnswered = Object.keys(answers).length;
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ── Interactive store: score reporting ──────────────────────
+  const reportScore = useInteractiveStore(s => s.reportScore);
+
+  // Report score on completion
+  React.useEffect(() => {
+    if (isCompleted && interactive && block.id) {
+      reportScore({
+        elementId: block.id,
+        pageIndex: pageIndex ?? 0,
+        score: totalCorrect * 20,
+        maxScore: questions.length * 20,
+        completed: true,
+      });
+      const pct = Math.round((totalCorrect / questions.length) * 100);
+      if (pct >= 80) playSound('complete');
+      else playSound('ding');
+    }
+  }, [isCompleted]);
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -58,7 +79,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
         </div>
         {interactive && (
           <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
-            onClick={() => { setAnswers({}); setCurrent(0); }}
+            onClick={() => { setAnswers({}); setCurrent(0); playSound('click'); }}
             style={{
               fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')',
@@ -160,7 +181,14 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
             }
             return (
               <button key={i} disabled={isAnswered}
-                onClick={() => interactive && setAnswers(prev => ({ ...prev, [current]: i }))}
+                onClick={() => {
+                  if (interactive && !isAnswered) {
+                    setAnswers(prev => ({ ...prev, [current]: i }));
+                    // Play sound based on answer
+                    if (opt.correct) playSound('correct');
+                    else playSound('incorrect');
+                  }
+                }}
                 className="w-full p-3 rounded-xl font-bold text-left transition-all hover:scale-[1.01] min-w-0"
                 style={{ fontSize: '13px', background: bg, border: '2px solid ' + border, boxShadow: boxShd }}>
                 {opt.text}
@@ -186,7 +214,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
         {/* Next button */}
         {answers[current] !== undefined && current < questions.length - 1 && (
           <button className="mt-3 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
-            onClick={() => setCurrent(current + 1)}
+            onClick={() => { setCurrent(current + 1); playSound('click'); }}
             style={{
               fontSize: '13px',
               background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
