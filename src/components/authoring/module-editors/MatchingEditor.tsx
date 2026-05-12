@@ -21,7 +21,7 @@ export function MatchingEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <button onClick={() => ri!('pasangan', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
-        <button onClick={() => ai!('pasangan', { kiri: '', kanan: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pasangan</button>
+        <button onClick={() => ai!('pasangan', { kiri: '', kanan: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Pasangan</button>
       </div>
     </div>
   );

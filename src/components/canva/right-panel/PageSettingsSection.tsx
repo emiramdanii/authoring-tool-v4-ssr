@@ -72,7 +72,7 @@ export default function PageSettingsSection({
             }
             setTemplateType(newType);
           }}
-          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none focus-ring"
         >
           {getAllPresets().map(p => (
             <option key={p.id} value={p.id}>{p.icon} {p.label} — {p.description}</option>
@@ -156,7 +156,7 @@ export default function PageSettingsSection({
                 onClick={() => setVariant(v.id as 'A' | 'B' | 'C')}
                 className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] font-bold transition-colors ${
                   (page?.templateVariant || 'A') === v.id
-                    ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                    ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
                     : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
                 }`}
               >
@@ -181,7 +181,7 @@ export default function PageSettingsSection({
                   onClick={() => applyLayoutPreset(p.id)}
                   className={`card-hover flex flex-col items-center gap-0.5 rounded-xl p-2 border text-center transition-all ${
                     isActive
-                      ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                      ? 'bg-app-accent/15 border-app-accent/30 text-app-accent'
                       : 'border-app-border/20 text-app-secondary'
                   }`}
                   title={p.desc}
@@ -203,7 +203,7 @@ export default function PageSettingsSection({
               type="checkbox"
               checked={showGrid}
               onChange={toggleGrid}
-              className="accent-amber-500 w-3 h-3"
+              className="accent-app-accent w-3 h-3"
             />
             <span className="text-[9px] text-app-secondary">Tampilkan Grid</span>
           </label>
@@ -212,7 +212,7 @@ export default function PageSettingsSection({
               type="checkbox"
               checked={snapEnabled}
               onChange={toggleSnap}
-              className="accent-amber-500 w-3 h-3"
+              className="accent-app-accent w-3 h-3"
             />
             <span className="text-[9px] text-app-secondary">Snap ke Grid</span>
           </label>
@@ -237,7 +237,7 @@ export default function PageSettingsSection({
       {/* Template Edit */}
       {isTemplateMode && page && (
         <div className="mb-2">
-          <div className="text-[10px] font-bold text-amber-400 mb-1.5">
+          <div className="text-[10px] font-bold text-app-accent mb-1.5">
             {TEMPLATE_BADGE_MAP[page.templateType]?.icon || ''} {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType} Template
           </div>
           <div className="rounded-xl bg-app-elevated/40 border border-app-border/20 p-2 mb-2">
@@ -254,7 +254,7 @@ export default function PageSettingsSection({
               store.setTemplateType(page.templateType);
               toast.success('Data template diperbarui dari panel authoring');
             }}
-            className="w-full justify-center py-2 mb-2 text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35"
+            className="w-full justify-center py-2 mb-2 text-app-accent border-app-accent/20 bg-app-accent/10 hover:bg-app-accent/18 hover:border-app-accent/35"
           >
             <Zap size={12} />
             Refresh Data dari Authoring
@@ -273,7 +273,7 @@ export default function PageSettingsSection({
                       type="text"
                       value={String(value)}
                       onChange={e => updateTemplateData(key, e.target.value)}
-                      className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+                      className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none focus-ring"
                     />
                   </div>
                 ))}

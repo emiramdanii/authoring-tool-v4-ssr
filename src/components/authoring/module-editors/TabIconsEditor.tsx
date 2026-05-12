@@ -46,7 +46,7 @@ export function TabIconsEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           </div>
         ))}
-        <button onClick={() => ai!('tabs', { icon: '', judul: '', warna: '#3ecfcf', isi: '', poin: [], refleksi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Tab</button>
+        <button onClick={() => ai!('tabs', { icon: '', judul: '', warna: '#3ecfcf', isi: '', poin: [], refleksi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Tab</button>
       </div>
     </div>
   );

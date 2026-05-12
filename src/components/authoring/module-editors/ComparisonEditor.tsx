@@ -23,7 +23,7 @@ export function ComparisonEditor({ mod, uf, ai, ri, ui }: EdProps) {
               </div>
             </div>
           ))}
-          <button onClick={() => ai!('kolom', { icon: '', judul: '', warna: '#60a5fa' })} className="text-xs text-amber-500">＋ Kolom</button>
+          <button onClick={() => ai!('kolom', { icon: '', judul: '', warna: '#60a5fa' })} className="text-xs text-app-accent">＋ Kolom</button>
         </div>
       </div>
       <div>
@@ -49,7 +49,7 @@ export function ComparisonEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           );
         })}
-        <button onClick={() => ai!('baris', { label: '', icon: '', nilai: kolom.map(() => '') })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Baris</button>
+        <button onClick={() => ai!('baris', { label: '', icon: '', nilai: kolom.map(() => '') })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Baris</button>
       </div>
       <div>
         <FieldLabel>Pertanyaan Refleksi</FieldLabel>

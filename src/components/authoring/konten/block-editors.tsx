@@ -90,7 +90,7 @@ function PoinEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
             </div>
           ))}
         </div>
-        <button onClick={addButir} className="mt-2 text-xs text-amber-500 hover:text-amber-400 transition-colors">
+        <button onClick={addButir} className="mt-2 text-xs text-app-accent hover:text-app-accent/80 transition-colors">
           ＋ Tambah Poin
         </button>
       </div>
@@ -151,7 +151,7 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
                   {row.map((cell, c) => (
                     <td key={c} className="p-0.5">
                       <input
-                        className="w-full bg-app-elevated border border-app-border/50 rounded px-2 py-1.5 text-xs text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-1 focus:ring-amber-500/50 min-w-[100px]"
+                        className="w-full bg-app-elevated border border-app-border/50 rounded px-2 py-1.5 text-xs text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-1 focus:ring-app-accent/50 min-w-[100px]"
                         placeholder={r === 0 ? `Kolom ${c + 1}` : ''}
                         value={cell}
                         onChange={(e) => updateCell(r, c, e.target.value)}
@@ -164,10 +164,10 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
           </table>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
-          <button onClick={addRow} className="text-xs text-amber-500 hover:text-amber-400 transition-colors">
+          <button onClick={addRow} className="text-xs text-app-accent hover:text-app-accent/80 transition-colors">
             ＋ Tambah Baris
           </button>
-          <button onClick={addCol} className="text-xs text-amber-500 hover:text-amber-400 transition-colors">
+          <button onClick={addCol} className="text-xs text-app-accent hover:text-app-accent/80 transition-colors">
             ＋ Tambah Kolom
           </button>
           <button onClick={() => removeRow(baris.length - 1)} className="text-xs text-app-muted hover:text-red-400 transition-colors">
@@ -301,7 +301,7 @@ function TimelineEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
             </div>
           ))}
         </div>
-        <button onClick={addLangkah} className="mt-3 text-xs text-amber-500 hover:text-amber-400 transition-colors">
+        <button onClick={addLangkah} className="mt-3 text-xs text-app-accent hover:text-app-accent/80 transition-colors">
           ＋ Tambah Langkah
         </button>
       </div>
@@ -476,7 +476,7 @@ function ChecklistEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
             </div>
           ))}
         </div>
-        <button onClick={addButir} className="mt-2 text-xs text-amber-500 hover:text-amber-400 transition-colors">
+        <button onClick={addButir} className="mt-2 text-xs text-app-accent hover:text-app-accent/80 transition-colors">
           ＋ Tambah Item
         </button>
       </div>
@@ -544,7 +544,7 @@ function StatistikEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
             </div>
           ))}
         </div>
-        <button onClick={addItem} className="mt-2 text-xs text-amber-500 hover:text-amber-400 transition-colors">
+        <button onClick={addItem} className="mt-2 text-xs text-app-accent hover:text-app-accent/80 transition-colors">
           ＋ Tambah Item
         </button>
       </div>

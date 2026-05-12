@@ -15,7 +15,7 @@ export function LangkahEditor({ mod, uf, ai, ri, ui }: EdProps) {
         <FieldLabel>Gaya</FieldLabel>
         <div className="flex gap-2">
           {styles.map((s) => (
-            <button key={s} onClick={() => uf('style', s)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.style as string) === s ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-app-border/50 text-app-secondary'}`}>
+            <button key={s} onClick={() => uf('style', s)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.style as string) === s ? 'border-app-accent bg-app-accent/20 text-app-accent' : 'border-app-border/50 text-app-secondary'}`}>
               {s}
             </button>
           ))}
@@ -35,7 +35,7 @@ export function LangkahEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Deskripsi langkah…" value={(st.isi as string) || ''} onChange={(e) => ui!('steps', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('steps', { icon: '📌', judul: '', isi: '', color: '#3ecfcf' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Langkah</button>
+        <button onClick={() => ai!('steps', { icon: '📌', judul: '', isi: '', color: '#3ecfcf' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Langkah</button>
       </div>
     </div>
   );

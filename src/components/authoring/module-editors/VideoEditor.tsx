@@ -43,7 +43,7 @@ export function VideoEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </label>
           </div>
         ))}
-        <button onClick={() => ai!('pertanyaan', { teks: '', wajib: false })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pertanyaan</button>
+        <button onClick={() => ai!('pertanyaan', { teks: '', wajib: false })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Pertanyaan</button>
       </div>
     </div>
   );

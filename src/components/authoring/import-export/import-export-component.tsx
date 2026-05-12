@@ -219,15 +219,15 @@ export default function ImportExport() {
         <h4 className="text-xs font-semibold text-app-secondary mb-2 uppercase tracking-wider flex items-center gap-1.5"><Lightbulb size={14} className="inline" /> Tips</h4>
         <ul className="text-xs text-app-muted space-y-1.5">
           <li className="flex items-start gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-app-accent flex-shrink-0 mt-0.5">•</span>
             Gunakan <strong className="text-emerald-300">Export Interaktif (Unified)</strong> untuk hasil terbaik — navigasi pintar, game engines, dan layout canvas dalam satu file.
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-app-accent flex-shrink-0 mt-0.5">•</span>
             <strong className="text-app-secondary">Cetak Dokumen Admin</strong> berguna untuk bahan administrasi guru — berisi tabel CP, TP, ATP, dan Alur.
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-app-accent flex-shrink-0 mt-0.5">•</span>
             <strong className="text-app-secondary">Export/Import JSON</strong> untuk backup data proyek atau pindah antar perangkat.
           </li>
           <li className="flex items-start gap-2">

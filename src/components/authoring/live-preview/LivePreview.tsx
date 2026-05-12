@@ -139,7 +139,7 @@ export default function LivePreview() {
         {/* ── Back button (default to Canva) ──────────────────── */}
         <button
           onClick={() => setActivePanel('canva')}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-accent hover:text-app-accent/80 hover:bg-app-accent/10 transition-colors"
           title="Kembali ke Canva (Esc)"
         >
           <Palette size={14} />
@@ -371,7 +371,7 @@ export default function LivePreview() {
             disabled={building}
             className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${
               building
-                ? 'bg-amber-500/10 text-amber-400 cursor-wait'
+                ? 'bg-app-accent/10 text-app-accent cursor-wait'
                 : 'bg-app-elevated text-app-secondary hover:bg-app-elevated hover:text-app-primary'
             }`}
             title="Force rebuild preview"
@@ -382,7 +382,7 @@ export default function LivePreview() {
 
           {/* Building indicator */}
           {building && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-400">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-app-accent/10 text-app-accent">
               <Loader2 size={11} className="animate-spin" />
               <span className="text-[10px] font-semibold">Building...</span>
             </div>
@@ -392,7 +392,7 @@ export default function LivePreview() {
           <div className="flex items-center gap-1.5">
             <div
               className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                dirty ? 'bg-amber-400' : 'bg-emerald-500'
+                dirty ? 'bg-app-accent' : 'bg-emerald-500'
               }`}
             />
             <span className="text-[0.6rem] text-app-muted">

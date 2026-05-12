@@ -5,6 +5,7 @@ import { RATIOS } from '@/components/canva/types';
 import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: StatusBar redesign
@@ -66,14 +67,15 @@ export default function StatusBar() {
           </>
         ) : (
           <>
-            <Loader2 size={10} className="text-amber-400/50 animate-spin" />
-            <span className="text-amber-400/50 hidden sm:inline">Menyimpan...</span>
+            <Loader2 size={10} className="text-app-accent/50 animate-spin" />
+            <span className="text-app-accent/50 hidden sm:inline">Menyimpan...</span>
           </>
         )}
       </span>
 
-      {/* Spacer + Theme toggle + Zoom slider (right side) */}
+      {/* Spacer + Theme preset picker + Theme toggle + Zoom slider (right side) */}
       <div className="flex items-center gap-1.5 ml-auto">
+        <ThemePresetPicker />
         <ThemeToggle />
         <Layers size={10} className="text-app-muted" />
         <input
@@ -83,11 +85,11 @@ export default function StatusBar() {
           step={5}
           value={storeZoom === -1 ? 0 : Math.round(storeZoom * 100)}
           onChange={e => setZoom(parseInt(e.target.value) / 100)}
-          className="w-16 h-1 accent-amber-500"
+          className="w-16 h-1 accent-app-accent"
         />
         <button
           onClick={zoomToFit}
-          className="font-mono text-[9px] text-app-muted hover:text-amber-400 transition-colors w-10 text-right"
+          className="font-mono text-[9px] text-app-muted hover:text-app-accent transition-colors w-10 text-right"
           title="Fit to screen"
         >
           {storeZoom === -1 ? 'Fit' : `${Math.round(storeZoom * 100)}%`}

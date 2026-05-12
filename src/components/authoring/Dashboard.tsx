@@ -88,7 +88,7 @@ export default function Dashboard() {
         {/* Mode Badge */}
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
           isPresetMode
-            ? 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
+            ? 'bg-app-accent/10 border border-app-accent/25 text-app-accent'
             : hasData
               ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
               : 'bg-app-elevated/30 border border-app-border/30 text-app-muted'
@@ -126,15 +126,15 @@ export default function Dashboard() {
                 {/* Connector line */}
                 {i > 0 && (
                   <div className={`absolute top-3.5 right-1/2 left-[-50%] h-[2px] ${
-                    isActive ? 'bg-amber-500/40' : 'bg-app-elevated/50'
+                    isActive ? 'bg-app-accent/40' : 'bg-app-elevated/50'
                   }`} />
                 )}
                 {/* Circle */}
                 <div className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                   isActive
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                    ? 'bg-app-accent/20 text-app-accent border border-app-accent/40'
                     : 'bg-app-elevated text-app-muted border border-app-border/50'
-                } ${isCurrent ? 'ring-2 ring-amber-500/30' : ''}`}>
+                } ${isCurrent ? 'ring-2 ring-app-accent/30' : ''}`}>
                   {isActive ? '✓' : step.num}
                 </div>
                 {/* Label */}
@@ -163,13 +163,13 @@ export default function Dashboard() {
           ].map((p) => {
             const isCurrentPreset = isPresetMode && activePreset === p.key;
             const colorMap: Record<string, string> = {
-              amber: 'hover:border-amber-500/40 hover:bg-amber-500/5',
+              amber: 'hover:border-app-accent/40 hover:bg-app-accent/5',
               cyan: 'hover:border-cyan-500/40 hover:bg-cyan-500/5',
               emerald: 'hover:border-emerald-500/40 hover:bg-emerald-500/5',
               slate: 'hover:border-app-border/40 hover:bg-app-elevated/5',
             };
             const activeColorMap: Record<string, string> = {
-              amber: 'border-amber-500/50 bg-amber-500/10 ring-1 ring-amber-500/20',
+              amber: 'border-app-accent/50 bg-app-accent/10 ring-1 ring-app-accent/20',
               cyan: 'border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/20',
               emerald: 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/20',
               slate: 'border-app-border/50 bg-app-elevated/10 ring-1 ring-app-border/20',
@@ -214,10 +214,10 @@ export default function Dashboard() {
                 <div className="text-xs font-semibold text-app-primary">{p.label}</div>
                 <div className="text-[0.6rem] text-app-muted mt-0.5">{p.sub}</div>
                 {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
-                  <div className="text-[0.55rem] text-amber-400/80 font-bold mt-1 flex items-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
+                  <div className="text-[0.55rem] text-app-accent/80 font-bold mt-1 flex items-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
                 )}
                 {isCurrentPreset && (
-                  <div className="text-[0.6rem] text-amber-400 font-bold mt-1.5">AKTIF</div>
+                  <div className="text-[0.6rem] text-app-accent font-bold mt-1.5">AKTIF</div>
                 )}
               </button>
             );
@@ -230,9 +230,9 @@ export default function Dashboard() {
         {/* Dokumen — primary CTA */}
         <button
           onClick={() => setActivePanel('dokumen')}
-          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-amber-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-app-accent/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-app-accent/10 flex items-center justify-center text-app-accent flex-shrink-0">
             <FileEdit size={18} />
           </div>
           <div>
@@ -320,7 +320,7 @@ export default function Dashboard() {
             {/* Stats row */}
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
               {[
-                { label: 'TP', val: tp.length, icon: <Target size={14} />, color: 'text-amber-400' },
+                { label: 'TP', val: tp.length, icon: <Target size={14} />, color: 'text-app-accent' },
                 { label: 'ATP', val: atp.pertemuan.length, icon: <Calendar size={14} />, color: 'text-cyan-400' },
                 { label: 'Alur', val: alur.length, icon: <ClipboardList size={14} />, color: 'text-purple-400' },
                 { label: 'Kuis', val: kuis.length, icon: <HelpCircle size={14} />, color: 'text-emerald-400' },
@@ -384,7 +384,7 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setActivePanel('autogen')}
-          className="px-3 py-1.5 text-xs text-amber-400 hover:text-amber-300 bg-amber-500/5 hover:bg-amber-500/10 rounded-lg border border-amber-500/15 transition-colors"
+          className="px-3 py-1.5 text-xs text-app-accent hover:text-app-accent/80 bg-app-accent/5 hover:bg-app-accent/10 rounded-lg border border-app-accent/15 transition-colors"
         >
           Auto-Generate
         </button>

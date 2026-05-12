@@ -31,7 +31,7 @@ export function FlashcardEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           </div>
         ))}
-        <button onClick={() => ai!('kartu', { depan: '', belakang: '', hint: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Kartu</button>
+        <button onClick={() => ai!('kartu', { depan: '', belakang: '', hint: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Kartu</button>
       </div>
     </div>
   );

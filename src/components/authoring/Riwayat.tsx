@@ -219,12 +219,12 @@ export default function Riwayat() {
               onChange={(e) => setSaveName(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Contoh: Sebelum revisi alur…"
-              className="w-full px-3 py-2 bg-app-elevated border border-app-border rounded-md text-sm text-app-primary placeholder-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-colors"
+              className="w-full px-3 py-2 bg-app-elevated border border-app-border rounded-md text-sm text-app-primary placeholder-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent transition-colors"
             />
             <div className="flex items-center gap-2">
               <button
                 onClick={confirmSave}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+                className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
               >
                 💾 Simpan
               </button>
@@ -242,7 +242,7 @@ export default function Riwayat() {
         ) : (
           <button
             onClick={openSaveInput}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
           >
             <Camera size={14} className="inline" /> Simpan Snapshot Baru
           </button>

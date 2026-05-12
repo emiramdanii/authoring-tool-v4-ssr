@@ -82,7 +82,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
     return (
       <div className="text-center p-5">
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
-          {pct >= 80 ? <Trophy size={28} className="inline text-amber-400" /> : pct >= 50 ? <Star size={28} className="inline text-amber-400" /> : <Dumbbell size={28} className="inline text-amber-400" />}
+          {pct >= 80 ? <Trophy size={28} className="inline text-app-accent" /> : pct >= 50 ? <Star size={28} className="inline text-app-accent" /> : <Dumbbell size={28} className="inline text-app-accent" />}
         </div>
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('y') }}>
           {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}

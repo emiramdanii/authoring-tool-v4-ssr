@@ -53,7 +53,7 @@ export function ExcelPreviewDialog({
       <DialogContent className="bg-app-surface border-app-border text-app-primary sm:max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-6 pb-4 flex-shrink-0">
           <DialogTitle className="text-lg font-bold text-app-primary flex items-center gap-2">
-            <Eye className="size-5 text-amber-400" />
+            <Eye className="size-5 text-app-accent" />
             Preview Import Excel
           </DialogTitle>
           <DialogDescription className="text-app-secondary text-sm">
@@ -73,7 +73,7 @@ export function ExcelPreviewDialog({
                 className={`
                   text-xs cursor-pointer transition-all
                   ${hasData ? SHEET_COLORS[name] : 'bg-app-elevated text-app-muted border-app-border'}
-                  ${activePreviewTab === name ? 'ring-2 ring-amber-500/50' : ''}
+                  ${activePreviewTab === name ? 'ring-2 ring-app-accent/50' : ''}
                 `}
                 onClick={() => setActivePreviewTab(name)}
               >
@@ -155,7 +155,7 @@ export function ExcelPreviewDialog({
 
         {/* Warning + Actions */}
         <DialogFooter className="p-6 pt-3 border-t border-app-border flex-shrink-0 gap-3">
-          <div className="flex items-center gap-2 text-xs text-amber-400/80 mr-auto">
+          <div className="flex items-center gap-2 text-xs text-app-accent/80 mr-auto">
             <AlertTriangle className="size-3.5 flex-shrink-0" />
             <span>Data yang sudah ada di editor akan ditimpa.</span>
           </div>
@@ -167,7 +167,7 @@ export function ExcelPreviewDialog({
           </button>
           <button
             onClick={onConfirm}
-            className="px-5 py-2 text-sm font-semibold text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors flex items-center gap-2"
+            className="px-5 py-2 text-sm font-semibold bg-app-accent hover:bg-app-accent/90 text-app-inverse rounded-lg transition-colors flex items-center gap-2"
           >
             <CheckCircle2 className="size-4" />
             Konfirmasi Import

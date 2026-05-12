@@ -29,7 +29,7 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 const INPUT_CLS =
-  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
+  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors';
 
 const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 
@@ -122,7 +122,7 @@ function ChapterCard({
   return (
     <div className="bg-app-surface border border-app-border rounded-xl p-4 hover:border-app-border transition-colors">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-app-accent/15 text-app-accent flex items-center justify-center text-sm font-bold flex-shrink-0">
           {index + 1}
         </div>
         <div className="flex-1 min-w-0">
@@ -145,7 +145,7 @@ function ChapterCard({
         <div className="flex gap-1 flex-shrink-0">
           <button
             onClick={onEdit}
-            className="px-2.5 py-1.5 text-xs text-app-secondary hover:text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors"
+            className="px-2.5 py-1.5 text-xs text-app-secondary hover:text-app-accent hover:bg-app-accent/10 rounded-md transition-colors"
           >
             <Pencil size={12} className="inline" /> Edit
           </button>
@@ -181,7 +181,7 @@ function SetupEditor({ chapterIndex }: { chapterIndex: number }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <FieldLabel>Dialog / Narasi ({chapter.setup.length})</FieldLabel>
-        <button onClick={handleAdd} className="text-xs text-amber-500 hover:text-amber-400 transition-colors">
+        <button onClick={handleAdd} className="text-xs text-app-accent hover:text-app-accent/80 transition-colors">
           ＋ Tambah Dialog
         </button>
       </div>
@@ -376,7 +376,7 @@ function ChoiceEditor({
           <FieldLabel className="mb-0">Konsekuensi ({consequences.length})</FieldLabel>
           <button
             onClick={() => addConsequence(chapterIndex, choiceIndex)}
-            className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
+            className="text-xs text-app-accent hover:text-app-accent/80 transition-colors"
           >
             ＋ Tambah
           </button>
@@ -445,7 +445,7 @@ function ChapterDetail({
 
       {/* Chapter header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-app-accent/15 text-app-accent flex items-center justify-center text-sm font-bold flex-shrink-0">
           {chapterIndex + 1}
         </div>
         <div className="flex-1 min-w-0">
@@ -481,7 +481,7 @@ function ChapterDetail({
                 onClick={() => updateChapter(chapterIndex, 'bg', theme.id)}
                 className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-center ${
                   chapter.bg === theme.id
-                    ? 'border-amber-500/50 bg-amber-500/15 text-amber-300'
+                    ? 'border-app-accent/50 bg-app-accent/15 text-app-accent'
                     : 'border-app-border/50 bg-app-elevated/50 text-app-secondary hover:border-app-border hover:text-app-primary'
                 }`}
               >
@@ -559,7 +559,7 @@ function ChapterDetail({
         <div className="flex items-center justify-between pt-2">
           <button
             onClick={handleAddChoice}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
           >
             ＋ Tambah Pilihan
           </button>
@@ -646,7 +646,7 @@ export default function Skenario() {
           </p>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
           >
             ＋ Tambah Bab Pertama
           </button>
@@ -669,7 +669,7 @@ export default function Skenario() {
           {/* Add chapter button */}
           <button
             onClick={handleAdd}
-            className="w-full px-4 py-3 bg-app-surface border border-dashed border-app-border rounded-xl text-sm text-app-secondary hover:text-amber-400 hover:border-amber-500/50 transition-colors"
+            className="w-full px-4 py-3 bg-app-surface border border-dashed border-app-border rounded-xl text-sm text-app-secondary hover:text-app-accent hover:border-app-accent/50 transition-colors"
           >
             ＋ Tambah Bab Baru
           </button>

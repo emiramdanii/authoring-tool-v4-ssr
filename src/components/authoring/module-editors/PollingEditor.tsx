@@ -36,7 +36,7 @@ export function PollingEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <button onClick={() => ri!('opsi', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
-        <button onClick={() => ai!('opsi', { icon: '', teks: '', warna: '#3ecfcf' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Opsi</button>
+        <button onClick={() => ai!('opsi', { icon: '', teks: '', warna: '#3ecfcf' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Opsi</button>
       </div>
     </div>
   );

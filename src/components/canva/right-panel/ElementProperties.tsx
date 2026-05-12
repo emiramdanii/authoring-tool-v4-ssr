@@ -18,10 +18,10 @@ interface ElementPropertiesProps {
 
 export default function ElementProperties({ selectedEl, updateElement, deleteSelected }: ElementPropertiesProps) {
   return (
-    <div className="border-b border-amber-500/10">
-      <div className="px-3 py-2 flex items-center gap-1.5 bg-amber-500/5">
-        <Settings2 size={12} className="text-amber-400" />
-        <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">Properti Elemen</span>
+    <div className="border-b border-app-accent/10">
+      <div className="px-3 py-2 flex items-center gap-1.5 bg-app-accent/5">
+        <Settings2 size={12} className="text-app-accent" />
+        <span className="text-[10px] font-bold text-app-accent uppercase tracking-widest">Properti Elemen</span>
       </div>
       <div className="px-3 pb-3 pt-2 space-y-1">
         {/* Element badge */}
@@ -85,7 +85,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     onClick={() => updateElement(selectedEl.id, { fontWeight: w })}
                     className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-colors ${
                       (selectedEl.fontWeight || 700) === w
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        ? 'bg-app-accent/20 text-app-accent border border-app-accent/30'
                         : 'bg-app-elevated text-app-secondary border border-app-border-subtle hover:border-app-border-strong'
                     }`}
                   >
@@ -108,7 +108,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     onClick={() => updateElement(selectedEl.id, { textAlign: a.val })}
                     className={`flex-1 py-1 rounded-lg text-[10px] font-bold transition-colors ${
                       (selectedEl.textAlign || 'left') === a.val
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        ? 'bg-app-accent/20 text-app-accent border border-app-accent/30'
                         : 'bg-app-elevated text-app-secondary border border-app-border-subtle hover:border-app-border-strong'
                     }`}
                   >
@@ -155,7 +155,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                 value={selectedEl.imageUrl || ''}
                 onChange={e => updateElement(selectedEl.id, { imageUrl: e.target.value })}
                 placeholder="https://... atau tempel URL"
-                className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none"
+                className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-app-accent/50 focus:outline-none"
               />
             </div>
             <div className="mb-2">
@@ -228,7 +228,7 @@ export default function ElementProperties({ selectedEl, updateElement, deleteSel
                     key={v.id}
                     onClick={() => updateElement(selectedEl.id, { layoutVariant: v.id })}
                     className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-colors ${
-                      current === v.id ? 'bg-amber-500 text-app-inverse' : 'bg-app-elevated text-app-secondary hover:bg-app-surface'
+                      current === v.id ? 'bg-app-accent text-app-inverse' : 'bg-app-elevated text-app-secondary hover:bg-app-surface'
                     }`}
                     title={v.desc}
                   >

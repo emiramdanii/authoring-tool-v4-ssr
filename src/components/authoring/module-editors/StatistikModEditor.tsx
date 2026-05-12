@@ -14,7 +14,7 @@ export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
         <FieldLabel>Layout</FieldLabel>
         <div className="flex gap-2">
           {['grid', 'row'].map((l) => (
-            <button key={l} onClick={() => uf('layout', l)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.layout as string) === l ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-app-border/50 text-app-secondary'}`}>
+            <button key={l} onClick={() => uf('layout', l)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.layout as string) === l ? 'border-app-accent bg-app-accent/20 text-app-accent' : 'border-app-border/50 text-app-secondary'}`}>
               {l}
             </button>
           ))}
@@ -34,7 +34,7 @@ export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           </div>
         ))}
-        <button onClick={() => ai!('items', { icon: '📊', angka: '', satuan: '', label: '', color: '#3ecfcf' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Item</button>
+        <button onClick={() => ai!('items', { icon: '📊', angka: '', satuan: '', label: '', color: '#3ecfcf' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Item</button>
       </div>
     </div>
   );

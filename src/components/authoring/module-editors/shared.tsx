@@ -2,7 +2,7 @@
 
 // ── Shared constants ──────────────────────────────────────────
 export const INPUT_CLS =
-  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
+  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors';
 export const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 export const SELECT_CLS = INPUT_CLS;
 
@@ -23,7 +23,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (v: 
 export function AddRemoveRow({ onAdd, canRemove, onRemove, addLabel }: { onAdd: () => void; canRemove: boolean; onRemove: () => void; addLabel: string }) {
   return (
     <div className="flex items-center gap-3">
-      <button onClick={onAdd} className="text-xs text-amber-500 hover:text-amber-400 transition-colors">＋ {addLabel}</button>
+      <button onClick={onAdd} className="text-xs text-app-accent hover:text-app-accent/80 transition-colors">＋ {addLabel}</button>
       {canRemove && (
         <button onClick={onRemove} className="text-xs text-app-muted hover:text-red-400 transition-colors">✕ Hapus</button>
       )}

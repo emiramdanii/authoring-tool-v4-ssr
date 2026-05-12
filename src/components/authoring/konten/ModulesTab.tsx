@@ -20,7 +20,7 @@ function ModulePickerModal({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" />
       <div
         className="relative bg-app-surface border border-app-border rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
@@ -39,7 +39,7 @@ function ModulePickerModal({
           {/* Learning Modules */}
           <div>
             <h4 className="text-sm font-semibold text-app-secondary mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="w-2 h-2 rounded-full bg-app-accent" />
               Modul Pembelajaran
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -101,7 +101,7 @@ function LayoutVariantPicker({ value, onChange }: { value: LayoutVariant; onChan
           key={v.id}
           onClick={() => onChange(v.id as LayoutVariant)}
           className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
-            value === v.id ? 'bg-amber-500 text-black' : 'bg-app-elevated text-app-secondary hover:bg-app-elevated'
+            value === v.id ? 'bg-app-accent text-app-inverse' : 'bg-app-elevated text-app-secondary hover:bg-app-elevated'
           }`}
           title={v.desc}
         >
@@ -166,7 +166,7 @@ function ModuleCard({
         </button>
         <button
           onClick={onEdit}
-          className="p-1 text-app-muted hover:text-amber-400 rounded-md hover:bg-app-elevated transition-colors text-sm"
+          className="p-1 text-app-muted hover:text-app-accent/80 rounded-md hover:bg-app-elevated transition-colors text-sm"
           title="Edit modul"
         >
           <Pencil size={14} />
@@ -218,7 +218,7 @@ export function ModulesTab() {
         <span className="text-xs text-app-muted">{modules.length} modul & game</span>
         <button
           onClick={() => setPickerOpen(true)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
         >
           ＋ Tambah Modul / Game
         </button>

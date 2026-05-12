@@ -43,7 +43,7 @@ export function IconExploreEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={3} placeholder="Isi lengkap…" value={(item.isi as string) || ''} onChange={(e) => ui!('items', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('items', { icon: '', judul: '', warna: '#3ecfcf', ringkasan: '', isi: '', contoh: [], sanksi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Item</button>
+        <button onClick={() => ai!('items', { icon: '', judul: '', warna: '#3ecfcf', ringkasan: '', isi: '', contoh: [], sanksi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Item</button>
       </div>
     </div>
   );

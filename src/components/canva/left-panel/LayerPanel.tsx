@@ -270,7 +270,7 @@ function LayerList({
                   <span className={`px-1 py-0 rounded text-[7px] font-bold ${
                     layout === 'flow'
                       ? 'bg-emerald-500/10 text-emerald-400/60'
-                      : 'bg-amber-500/10 text-amber-400/60'
+                      : 'bg-app-accent/10 text-app-accent/60'
                   }`}>
                     {layout}
                   </span>

@@ -45,7 +45,7 @@ export default function AutoGenerate() {
       <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-app-primary flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold">1</span>
+            <span className="w-5 h-5 rounded-full bg-app-accent/20 text-app-accent text-xs flex items-center justify-center font-bold">1</span>
             Paste Materi
           </h3>
           <span className="text-xs text-app-muted">
@@ -57,13 +57,13 @@ export default function AutoGenerate() {
           onChange={(e) => setText(e.target.value)}
           placeholder={`Paste teks materi PPKn di sini...\n\nContoh:\nNorma adalah aturan atau pedoman tingkah laku dalam kehidupan bermasyarakat. Norma berfungsi untuk menciptakan ketertiban dan ketenteraman dalam masyarakat. Norma terdiri dari empat jenis, yaitu norma agama, norma kesusilaan, norma kesopanan, dan norma hukum. Norma agama bersumber dari keyakinan tentang perintah dan larangan Tuhan. Norma hukum memiliki sanksi yang paling tegas karena diberlakukan oleh negara.`}
           rows={8}
-          className="w-full bg-app-elevated border border-app-border rounded-lg px-4 py-3 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 resize-y min-h-[160px]"
+          className="w-full bg-app-elevated border border-app-border rounded-lg px-4 py-3 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 resize-y min-h-[160px]"
         />
         <div className="flex items-center gap-3">
           <button
             onClick={handleParse}
             disabled={text.trim().length < 50}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-app-elevated disabled:text-app-muted text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 disabled:bg-app-elevated disabled:text-app-muted text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
           >
             <Search size={14} className="inline" /> Parse Teks
           </button>
@@ -86,7 +86,7 @@ export default function AutoGenerate() {
       {/* ── Step 2: Settings ────────────────────────────────── */}
       <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-4">
         <h3 className="text-sm font-semibold text-app-primary flex items-center gap-2">
-          <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold">2</span>
+          <span className="w-5 h-5 rounded-full bg-app-accent/20 text-app-accent text-xs flex items-center justify-center font-bold">2</span>
           Pengaturan Generate
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -96,7 +96,7 @@ export default function AutoGenerate() {
             <select
               value={settings.jumlahKuis}
               onChange={(e) => setSettings((s) => ({ ...s, jumlahKuis: parseInt(e.target.value) }))}
-              className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
+              className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50"
             >
               {[5, 10, 15, 20, 25, 30].map((n) => (
                 <option key={n} value={n}>{n} soal</option>
@@ -109,7 +109,7 @@ export default function AutoGenerate() {
             <select
               value={settings.pertemuan}
               onChange={(e) => setSettings((s) => ({ ...s, pertemuan: parseInt(e.target.value) }))}
-              className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
+              className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                 <option key={n} value={n}>{n} pertemuan</option>
@@ -122,7 +122,7 @@ export default function AutoGenerate() {
             <select
               value={settings.bloomMax}
               onChange={(e) => setSettings((s) => ({ ...s, bloomMax: parseInt(e.target.value) }))}
-              className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
+              className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50"
             >
               <option value={1}>C1 – Mengingat</option>
               <option value={2}>C2 – Memahami</option>
@@ -177,7 +177,7 @@ export default function AutoGenerate() {
               <div className="space-y-1.5 max-h-32 overflow-y-auto">
                 {parsed.definitions.map((d, i) => (
                   <div key={i} className="text-xs text-app-secondary bg-app-elevated/50 rounded-lg px-3 py-2">
-                    <span className="font-semibold text-amber-400">{d.term}</span>
+                    <span className="font-semibold text-app-accent">{d.term}</span>
                     {' → '}
                     <span className="text-app-secondary">{d.meaning}</span>
                   </div>
@@ -193,13 +193,13 @@ export default function AutoGenerate() {
         <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-app-primary flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold">3</span>
+              <span className="w-5 h-5 rounded-full bg-app-accent/20 text-app-accent text-xs flex items-center justify-center font-bold">3</span>
               Generate Konten
             </h3>
             <button
               onClick={handleGenerateAll}
               disabled={loading.size > 0}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-app-elevated disabled:text-app-muted text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 disabled:bg-app-elevated disabled:text-app-muted text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
             >
               {loading.size > 0 ? <Spinner /> : <Zap size={14} className="inline" />}
               {loading.size > 0 ? `Generating ${loading.size}...` : 'Generate Semua'}
@@ -224,7 +224,7 @@ export default function AutoGenerate() {
                   disabled={isLoading}
                   className={`relative bg-app-elevated border rounded-xl p-4 text-left transition-all hover:border-app-border hover:bg-app-elevated/80 disabled:opacity-50 ${
                     isActive
-                      ? 'border-amber-500/50 ring-1 ring-amber-500/30'
+                      ? 'border-app-accent/50 ring-1 ring-app-accent/30'
                       : 'border-app-border/50'
                   } ${preview ? 'ring-1 ring-green-500/20 border-green-500/30' : ''}`}
                 >
@@ -265,7 +265,7 @@ export default function AutoGenerate() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleApply(activePreview)}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
               >
                 <CheckCircle2 size={14} className="inline" /> Terapkan ke Proyek
               </button>
@@ -289,7 +289,7 @@ export default function AutoGenerate() {
                   onClick={() => setActivePreview(p)}
                   className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
                     activePreview.type === p.type
-                      ? 'bg-amber-500/15 text-amber-400 font-semibold'
+                      ? 'bg-app-accent/15 text-app-accent font-semibold'
                       : 'bg-app-elevated text-app-secondary hover:bg-app-elevated hover:text-app-primary'
                   }`}
                 >

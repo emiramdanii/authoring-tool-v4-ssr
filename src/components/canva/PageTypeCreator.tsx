@@ -39,13 +39,13 @@ function ConfigPanel({
   }, [config, onGenerate]);
 
   return (
-    <div className="mt-2 p-3 rounded-xl bg-app-elevated/60 border border-amber-500/20 space-y-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="mt-2 p-3 rounded-xl bg-app-elevated/60 border border-app-accent/20 space-y-3 animate-in slide-in-from-top-2 duration-200">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-lg">{pageType.icon}</span>
           <div>
-            <div className="text-[11px] font-bold text-amber-300">{pageType.name}</div>
+            <div className="text-[11px] font-bold text-app-accent">{pageType.name}</div>
             <div className="text-[9px] text-app-secondary">{pageType.description}</div>
           </div>
         </div>
@@ -72,7 +72,7 @@ function ConfigPanel({
       <Button
         onClick={handleGenerate}
         disabled={generating}
-        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-50"
+        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-50"
       >
         {generating ? (
           <>
@@ -107,7 +107,7 @@ function OptionControl({
         <button
           onClick={() => onChange(!value)}
           className={`relative w-9 h-5 rounded-full transition-colors ${
-            value ? 'bg-amber-500' : 'bg-app-elevated'
+            value ? 'bg-app-accent' : 'bg-app-elevated'
           }`}
         >
           <span
@@ -125,7 +125,7 @@ function OptionControl({
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-app-secondary">{opt.label}</span>
-          <span className="text-[10px] font-bold text-amber-400">{value as number}</span>
+          <span className="text-[10px] font-bold text-app-accent">{value as number}</span>
         </div>
         <input
           type="range"
@@ -134,7 +134,7 @@ function OptionControl({
           step={opt.step ?? 1}
           value={value as number}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-1.5 bg-app-elevated rounded-lg appearance-none cursor-pointer accent-amber-500"
+          className="w-full h-1.5 bg-app-elevated rounded-lg appearance-none cursor-pointer accent-app-accent"
         />
       </div>
     );
@@ -147,7 +147,7 @@ function OptionControl({
         <select
           value={String(value)}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/80 border border-app-border/40 rounded-lg focus:border-amber-500/50 focus:outline-none"
+          className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/80 border border-app-border/40 rounded-lg focus:border-app-accent/50 focus:outline-none"
         >
           {opt.options.map((o) => (
             <option key={String(o.value)} value={String(o.value)}>{o.label}</option>
@@ -206,7 +206,7 @@ export default function PageTypeCreator() {
     return (
       <Button
         onClick={handleToggle}
-        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
+        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
       >
         <Zap size={14} />
         Auto-Generate Halaman
@@ -220,7 +220,7 @@ export default function PageTypeCreator() {
       {/* Header button — click to collapse */}
       <Button
         onClick={handleToggle}
-        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
+        className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
       >
         <Zap size={14} />
         Auto-Generate Halaman
@@ -233,7 +233,7 @@ export default function PageTypeCreator() {
           onClick={() => setActiveCategory(null)}
           className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
             !activeCategory
-              ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
+              ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
               : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
           }`}
         >
@@ -245,7 +245,7 @@ export default function PageTypeCreator() {
             onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
             className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
               activeCategory === cat.id
-                ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
+                ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
                 : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
             }`}
           >
@@ -264,7 +264,7 @@ export default function PageTypeCreator() {
                 onClick={() => handleSelectType(pt)}
                 className={`card-hover w-full flex items-center gap-2 p-2 rounded-xl transition-all active:scale-95 ${
                   isSelected
-                    ? 'bg-amber-500/10 border border-amber-500/30 ring-1 ring-amber-500/20'
+                    ? 'bg-app-accent/10 border border-app-accent/30 ring-1 ring-app-accent/20'
                     : 'bg-app-elevated/40 border border-app-border/20 hover:border-app-border'
                 }`}
               >

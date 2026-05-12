@@ -98,9 +98,9 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
   // No questions state
   if (total === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-amber-500/10 rounded border border-amber-500/20 p-3">
+      <div className="h-full flex flex-col items-center justify-center bg-app-accent/10 rounded border border-app-accent/20 p-3">
         <span className="text-lg">❓</span>
-        <span className="text-[10px] text-amber-300/70 mt-1">
+        <span className="text-[10px] text-app-accent/70 mt-1">
           {interactive ? 'Belum ada soal tersedia' : compact ? 'Belum ada soal' : 'Tambahkan soal di panel Konten → Evaluasi'}
         </span>
       </div>
@@ -114,15 +114,15 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
     const levelColor = pct >= 85 ? 'text-emerald-400' : pct >= 70 ? 'text-amber-400' : 'text-red-400';
 
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-amber-500/10 rounded border border-amber-500/20 p-3 text-center">
+      <div className="h-full flex flex-col items-center justify-center bg-app-accent/10 rounded border border-app-accent/20 p-3 text-center">
         <div className={`text-2xl font-black ${levelColor}`}>{pct}%</div>
-        <div className="text-[10px] text-amber-200/80 mt-0.5">{level}</div>
-        <div className="text-[9px] text-amber-300/60 mt-1">
+        <div className="text-[10px] text-app-accent/80 mt-0.5">{level}</div>
+        <div className="text-[9px] text-app-accent/60 mt-1">
           Skor: {score} dari {total} soal benar
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); handleRestart(); }}
-          className="mt-2 px-3 py-1 bg-amber-500/30 hover:bg-amber-500/50 rounded text-[10px] font-bold text-amber-200 transition-colors border border-amber-500/30"
+          className="mt-2 px-3 py-1 bg-app-accent/30 hover:bg-app-accent/50 rounded text-[10px] font-bold text-app-accent transition-colors border border-app-accent/30"
         >
           Ulangi Kuis
         </button>
@@ -136,14 +136,14 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
 
   return (
     <div
-      className="h-full flex flex-col bg-amber-500/10 rounded border border-amber-500/20 overflow-hidden"
+      className="h-full flex flex-col bg-app-accent/10 rounded border border-app-accent/20 overflow-hidden"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Progress bar */}
       {!compact && (
-        <div className="h-1 bg-amber-500/20">
+        <div className="h-1 bg-app-accent/20">
           <div
-            className="h-full bg-amber-400 transition-all duration-500 ease-out"
+            className="h-full bg-app-accent transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -151,17 +151,17 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
 
       {/* Question number + score */}
       <div className="flex items-center justify-between px-2 pt-1.5 pb-0.5">
-        <span className="text-[9px] font-bold text-amber-300">
+        <span className="text-[9px] font-bold text-app-accent">
           Soal {currentQ + 1}/{total}
         </span>
-        <span className="text-[9px] text-amber-400/60">
+        <span className="text-[9px] text-app-accent/60">
           Skor: {score}
         </span>
       </div>
 
       {/* Question text */}
       <div className="px-2 py-1.5 flex-1 min-h-0 overflow-y-auto">
-        <p className={`font-bold text-amber-100 leading-snug ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
+        <p className={`font-bold text-app-accent leading-snug ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
           {q.q}
         </p>
       </div>
@@ -171,7 +171,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
         {q.opts.map((opt, idx) => {
           if (!opt.trim()) return null;
           let bg = 'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10';
-          let textCol = 'text-amber-100/90';
+          let textCol = 'text-app-accent/90';
           let icon: React.ReactNode = null;
 
           if (answered) {
@@ -196,7 +196,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
               disabled={answered}
               className={`w-full text-left px-2 py-1.5 rounded-md border transition-all duration-300 ${compact ? 'text-[8px] py-1 px-1.5' : 'text-[10px]'} ${bg} ${textCol} ${!answered ? 'cursor-pointer' : 'cursor-default'}`}
             >
-              <span className="font-bold text-amber-400/80 mr-1">{LETTERS[idx]}.</span>
+              <span className="font-bold text-app-accent/80 mr-1">{LETTERS[idx]}.</span>
               {opt}{icon}
             </button>
           );
@@ -217,7 +217,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
       {/* Compact: auto-advance indicator */}
       {compact && answered && (
         <div className="px-2 pb-1 text-center">
-          <span className="text-[8px] text-amber-400/50 animate-pulse">
+          <span className="text-[8px] text-app-accent/50 animate-pulse">
             → Soal berikutnya...
           </span>
         </div>

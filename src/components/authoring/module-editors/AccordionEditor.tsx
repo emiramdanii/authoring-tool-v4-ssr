@@ -22,7 +22,7 @@ export function AccordionEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Isi detail…" value={(item.isi as string) || ''} onChange={(e) => ui!('items', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('items', { icon: '📌', judul: '', isi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Item</button>
+        <button onClick={() => ai!('items', { icon: '📌', judul: '', isi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Item</button>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export const SCREEN_OPTIONS = [
 
 export const MODE_META: Record<PreviewMode, { label: string; color: string; icon: string }> = {
   unified: { label: 'Unified', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30', icon: '🚀' },
-  canvas: { label: 'Canvas', color: 'text-amber-400 bg-amber-500/15 border-amber-500/30', icon: '🎨' },
+  canvas: { label: 'Canvas', color: 'text-app-accent bg-app-accent/15 border-app-accent/30', icon: '🎨' },
   template: { label: 'Template', color: 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30', icon: '🧩' },
   schema: { label: 'Schema', color: 'text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30', icon: '⚡' },
   legacy: { label: 'Legacy', color: 'text-purple-400 bg-purple-500/15 border-purple-500/30', icon: '📝' },

@@ -33,7 +33,7 @@ export function InfografisEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Isi kartu…" value={(k.isi as string) || ''} onChange={(e) => ui!('kartu', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('kartu', { icon: '📌', judul: '', isi: '', color: '#3ecfcf' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Kartu</button>
+        <button onClick={() => ai!('kartu', { icon: '📌', judul: '', isi: '', color: '#3ecfcf' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Kartu</button>
       </div>
     </div>
   );

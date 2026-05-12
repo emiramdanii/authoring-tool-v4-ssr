@@ -21,7 +21,7 @@ export function SortingEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <button onClick={() => ri!('kategori', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
-        <button onClick={() => ai!('kategori', { label: '', color: '#60a5fa', id: 'cat' + Date.now() })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Kategori</button>
+        <button onClick={() => ai!('kategori', { label: '', color: '#60a5fa', id: 'cat' + Date.now() })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Kategori</button>
       </div>
       <div>
         <FieldLabel>Item ({items.length})</FieldLabel>
@@ -35,7 +35,7 @@ export function SortingEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <button onClick={() => ri!('items', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>
         ))}
-        <button onClick={() => ai!('items', { teks: '', kategori: (kategori[0]?.id as string) || '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Item</button>
+        <button onClick={() => ai!('items', { teks: '', kategori: (kategori[0]?.id as string) || '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Item</button>
       </div>
     </div>
   );
@@ -61,7 +61,7 @@ export function SpinwheelEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           </div>
         ))}
-        <button onClick={() => ai!('soal', { teks: '', kategori: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Soal</button>
+        <button onClick={() => ai!('soal', { teks: '', kategori: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Soal</button>
       </div>
     </div>
   );
@@ -101,7 +101,7 @@ export function TeambuzzerEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           </div>
         ))}
-        <button onClick={() => ai!('soal', { teks: '', jawaban: '', poin: 10 })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Soal</button>
+        <button onClick={() => ai!('soal', { teks: '', jawaban: '', poin: 10 })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Soal</button>
       </div>
     </div>
   );

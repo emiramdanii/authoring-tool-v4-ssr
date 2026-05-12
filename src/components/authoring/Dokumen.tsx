@@ -46,8 +46,8 @@ function AccordionSection({
 
 // ── Shared field styles ──────────────────────────────────────────
 const fieldLabel = 'block text-xs font-medium text-app-secondary mb-1.5';
-const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
-const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors resize-none';
+const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors';
+const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors resize-none';
 
 // ── Identitas Media ─────────────────────────────────────────────
 function MetaSection() {
@@ -214,7 +214,7 @@ function TpSection() {
         <p className="text-sm text-app-muted">Belum ada Tujuan Pembelajaran.</p>
         <button
           onClick={addTp}
-          className="mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+          className="mt-3 px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
         >
           ＋ Tambah TP
         </button>
@@ -229,7 +229,7 @@ function TpSection() {
           key={i}
           className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
             dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-          } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-amber-500' : ''}`}
+          } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2">
@@ -310,7 +310,7 @@ function TpSection() {
 
       <button
         onClick={addTp}
-        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
       >
         ＋ Tambah TP
       </button>
@@ -348,7 +348,7 @@ function AtpSection() {
           {atp.pertemuan.map((p, i) => (
             <div key={i} className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-amber-500/15 text-amber-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-7 h-7 rounded-md bg-app-accent/15 text-app-accent flex items-center justify-center text-xs font-bold flex-shrink-0">
                   P{i + 1}
                 </div>
                 <span className="text-sm font-medium text-app-primary">Pertemuan {i + 1}</span>
@@ -414,7 +414,7 @@ function AtpSection() {
 
       <button
         onClick={addAtpPertemuan}
-        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
       >
         ＋ Tambah Pertemuan
       </button>
@@ -459,7 +459,7 @@ function AlurSection() {
               key={i}
               className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
                 dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-              } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-amber-500' : ''}`}
+              } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}
             >
               <div className="flex items-center gap-2">
                 <DragHandle onPointerDown={dragHandlers.onPointerDown} index={i} />
@@ -526,7 +526,7 @@ function AlurSection() {
 
       <button
         onClick={addAlur}
-        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
       >
         ＋ Tambah Langkah
       </button>
@@ -572,7 +572,7 @@ export default function Dokumen() {
       <div className="mt-6 pt-4 border-t border-app-border flex justify-end">
         <button
           onClick={() => useAuthoringStore.getState().setActivePanel('konten')}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
         >
           Selanjutnya: Tambah Konten →
         </button>

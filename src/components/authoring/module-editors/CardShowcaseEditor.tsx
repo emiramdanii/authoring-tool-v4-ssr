@@ -43,7 +43,7 @@ export function CardShowcaseEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Isi kartu…" value={(c.isi as string) || ''} onChange={(e) => ui!('cards', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('cards', { icon: '', judul: '', subtitle: '', isi: '', tag: [], warna: '#3ecfcf' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Card</button>
+        <button onClick={() => ai!('cards', { icon: '', judul: '', subtitle: '', isi: '', tag: [], warna: '#3ecfcf' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Card</button>
       </div>
     </div>
   );

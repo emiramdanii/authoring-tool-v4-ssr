@@ -63,7 +63,7 @@ export default function LeftPanel() {
               onClick={() => setLeftTab(tab.id)}
               className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-semibold transition-colors ${
                 leftTab === tab.id
-                  ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-500/5'
+                  ? 'text-app-accent border-b-2 border-app-accent bg-app-accent/5'
                   : 'text-app-muted hover:text-app-secondary border-b-2 border-transparent'
               }`}
               title={tab.label}
@@ -161,9 +161,9 @@ function HalamanContent() {
                 dragIdx === i
                   ? 'opacity-40 scale-95'
                   : dragOverIdx === i
-                    ? 'ring-2 ring-amber-400/60 ring-offset-1 ring-offset-app-surface translate-y-0.5'
+                    ? 'ring-2 ring-app-accent/60 ring-offset-1 ring-offset-app-surface translate-y-0.5'
                     : isActive
-                      ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-app-surface'
+                      ? 'ring-2 ring-app-accent ring-offset-2 ring-offset-app-surface'
                       : 'hover:ring-1 hover:ring-app-border-strong'
               }`}
             >
@@ -186,12 +186,12 @@ function HalamanContent() {
                     {isSchemaDriven ? (
                       <span className="text-emerald-400/70">Schema</span>
                     ) : isTemplate ? (
-                      <span className="text-amber-400/60">Template</span>
+                      <span className="text-app-accent/60">Template</span>
                     ) : (
                       <span className="text-emerald-400/60">Bebas edit</span>
                     )}
                     {modulCount > 0 && <span className="ml-1 text-emerald-400/70">{modulCount} modul</span>}
-                    {kuisCount > 0 && <span className="ml-1 text-amber-400/70">{kuisCount} kuis</span>}
+                    {kuisCount > 0 && <span className="ml-1 text-app-accent/70">{kuisCount} kuis</span>}
                     {gameCount > 0 && <span className="ml-1 text-teal-400/70">{gameCount} game</span>}
                   </div>
                 </div>
@@ -204,7 +204,7 @@ function HalamanContent() {
       {/* Add page button */}
       <button
         onClick={() => { useCanvaStore.getState().addPage(); }}
-        className="w-full py-2 rounded-xl border border-dashed border-app-border hover:border-amber-500/30 text-[11px] text-app-secondary hover:text-amber-400 transition-colors flex items-center justify-center gap-1"
+        className="w-full py-2 rounded-xl border border-dashed border-app-border hover:border-app-accent/30 text-[11px] text-app-secondary hover:text-app-accent transition-colors flex items-center justify-center gap-1"
       >
         <Plus size={12} />
         Halaman Kosong
@@ -247,7 +247,7 @@ function HalamanContent() {
                 onClick={() => setRatio(r.id)}
                 className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
                   isActive
-                    ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
+                    ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
                     : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
                 }`}
               >
@@ -355,7 +355,7 @@ function TambahContent() {
             e.target.value = '';
           }}
           defaultValue=""
-          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none"
+          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-app-accent/50 focus:outline-none"
         >
           <option value="" disabled>+ Tambah dari Template...</option>
           {presetCategories.map(cat => (
@@ -448,19 +448,19 @@ function TambahContent() {
         {kuis.length > 0 ? (
           <button
             onClick={() => addElement('kuis')}
-            className="card-hover accent-top w-full flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-grab active:scale-95 transition-transform"
+            className="card-hover accent-top w-full flex items-center gap-2 p-2.5 rounded-xl bg-app-accent/10 border border-app-accent/20 cursor-grab active:scale-95 transition-transform"
             style={{ '--accent-color': COLORS.kuis } as React.CSSProperties}
           >
             <HelpCircle size={20} />
             <div className="flex-1 text-left">
-              <div className="text-[11px] font-bold text-amber-300">Kuis Interaktif</div>
-              <div className="text-[9px] text-amber-400/60">{kuis.length} soal pilihan ganda</div>
+              <div className="text-[11px] font-bold text-app-accent">Kuis Interaktif</div>
+              <div className="text-[9px] text-app-accent/60">{kuis.length} soal pilihan ganda</div>
             </div>
-            <Plus size={14} className="text-amber-400" />
+            <Plus size={14} className="text-app-accent" />
           </button>
         ) : (
           <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
-            Belum ada soal kuis. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-amber-400 underline">Isi di panel Konten → Evaluasi</button>
+            Belum ada soal kuis. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-app-accent underline">Isi di panel Konten → Evaluasi</button>
           </div>
         )}
       </div>

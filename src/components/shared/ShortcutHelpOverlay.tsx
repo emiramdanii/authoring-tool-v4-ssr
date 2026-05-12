@@ -43,7 +43,7 @@ export function ShortcutHelpOverlay() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm" style={{ zIndex: 9999 }}
+    <div className="fixed inset-0 flex items-center justify-center bg-app-overlay backdrop-blur-sm" style={{ zIndex: 9999 }}
       onClick={() => setOpen(false)}
     >
       <div

@@ -29,7 +29,7 @@ export function StudiKasusEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Teks pertanyaan…" value={(p.teks as string) || ''} onChange={(e) => ui!('pertanyaan', i, 'teks', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('pertanyaan', { level: 'C2', label: '', teks: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pertanyaan</button>
+        <button onClick={() => ai!('pertanyaan', { level: 'C2', label: '', teks: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Pertanyaan</button>
       </div>
     </div>
   );

@@ -72,7 +72,7 @@ function CpPreview({ data }: { data: CpState }) {
         <p className="text-[0.65rem] text-app-muted uppercase tracking-wider mb-2">Profil Pelajar Pancasila</p>
         <div className="flex flex-wrap gap-1.5">
           {data.profil.map((p, i) => (
-            <span key={i} className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300">
+            <span key={i} className="px-2.5 py-1 bg-app-accent/10 border border-app-accent/20 rounded-lg text-xs text-app-accent">
               {p}
             </span>
           ))}
@@ -107,7 +107,7 @@ function TpPreview({ data }: { data: TpItem[] }) {
               </span>
             </div>
             <p className="text-sm text-app-primary mt-1">
-              <span className="font-semibold text-amber-400">{tp.verb}</span>{' '}
+              <span className="font-semibold text-app-accent">{tp.verb}</span>{' '}
               {tp.desc}
             </p>
           </div>
@@ -155,14 +155,14 @@ function AlurPreview({ data }: { data: AlurItem[] }) {
   const faseColors: Record<string, string> = {
     Pendahuluan: 'text-green-400',
     Inti: 'text-purple-400',
-    Penutup: 'text-amber-400',
+    Penutup: 'text-app-accent',
   };
   return (
     <div className="space-y-2">
       {data.map((step, i) => (
         <div key={i} className="flex items-start gap-3">
           <div className="flex flex-col items-center mt-1">
-            <div className={`w-3 h-3 rounded-full ${step.fase === 'Pendahuluan' ? 'bg-green-500' : step.fase === 'Inti' ? 'bg-purple-500' : 'bg-amber-500'}`} />
+            <div className={`w-3 h-3 rounded-full ${step.fase === 'Pendahuluan' ? 'bg-green-500' : step.fase === 'Inti' ? 'bg-purple-500' : 'bg-app-accent'}`} />
             {i < data.length - 1 && <div className="w-px h-full min-h-[40px] bg-app-elevated" />}
           </div>
           <div className="bg-app-elevated/50 rounded-lg p-3 flex-1 min-w-0">
@@ -268,7 +268,7 @@ function SkenarioPreview({ data }: { data: SkenarioChapter[] }) {
             <p className="text-[0.65rem] text-app-muted uppercase tracking-wider">Dialog</p>
             {chapter.dialog.map((d, di) => (
               <div key={di} className="flex items-start gap-2">
-                <span className="text-xs font-semibold text-amber-400 flex-shrink-0 min-w-[60px]">
+                <span className="text-xs font-semibold text-app-accent flex-shrink-0 min-w-[60px]">
                   {d.speaker}:
                 </span>
                 <p className="text-xs text-app-secondary">&ldquo;{d.text}&rdquo;</p>
@@ -311,7 +311,7 @@ function MatchingPreview({ data }: { data: MatchingPair[] }) {
         <div className="space-y-1.5">
           <p className="text-[0.65rem] text-app-muted uppercase tracking-wider">Kolom Kiri</p>
           {data.map((p, i) => (
-            <div key={i} className="bg-app-elevated/50 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-app-primary">
+            <div key={i} className="bg-app-elevated/50 border border-app-accent/20 rounded-lg px-3 py-2 text-xs text-app-primary">
               {p.left}
             </div>
           ))}

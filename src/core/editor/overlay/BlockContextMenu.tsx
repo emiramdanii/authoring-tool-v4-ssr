@@ -139,7 +139,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   return (
     <div
       ref={menuRef}
-      className="fixed z-[100] min-w-[200px] rounded-xl glass-panel-strong border border-slate-700/50 shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+      className="fixed z-[100] min-w-[200px] rounded-xl glass-panel-strong border border-app-border-strong shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
       style={{ left: adjustedPos.x, top: adjustedPos.y }}
     >
       {items.map((item, i) => {
@@ -151,7 +151,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
           );
         }
         if (item.type === 'divider') {
-          return <div key={i} className="h-px bg-slate-700/30 mx-2" />;
+          return <div key={i} className="h-px bg-app-elevated mx-2" />;
         }
         return (
           <button
@@ -160,12 +160,12 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
             className={`w-full px-3 py-2 flex items-center justify-between text-left transition-colors ${
               item.danger
                 ? 'text-red-400 hover:bg-red-500/10'
-                : 'text-slate-300 hover:bg-slate-800/50'
+                : 'text-app-secondary hover:bg-app-elevated'
             }`}
           >
             <span className="text-[11px] font-medium">{item.label}</span>
             {item.shortcut && (
-              <span className="text-[9px] text-slate-500 ml-4">{item.shortcut}</span>
+              <span className="text-[9px] text-app-muted ml-4">{item.shortcut}</span>
             )}
           </button>
         );

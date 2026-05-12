@@ -419,7 +419,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 ${
               isSchemaDriven
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                : 'bg-app-accent/20 text-app-accent border-app-accent/30'
             }`} style={{ zIndex: Z.INFO_BADGE }}>
               <Zap size={10} /> {isSchemaDriven ? 'SCHEMA' : page.templateType}
             </div>

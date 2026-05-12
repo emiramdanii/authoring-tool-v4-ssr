@@ -67,7 +67,7 @@ export const StageElement = memo(function StageElement({
   const ringClass = isMultiSelected
     ? 'ring-2 ring-blue-400 ring-offset-0 z-10'
     : isSelected && !isInteractiveMode
-      ? 'ring-2 ring-amber-400 ring-offset-0 z-10'
+      ? 'ring-2 ring-app-accent ring-offset-0 z-10'
       : 'z-0';
 
   return (
@@ -89,7 +89,7 @@ export const StageElement = memo(function StageElement({
           isSelected
             ? isMultiSelected
               ? '-top-5 bg-blue-500/90 text-blue-950'
-              : '-top-5 bg-amber-500/90 text-amber-950'
+              : '-top-5 bg-app-accent/90 text-app-inverse'
             : '-top-4 bg-black/60 text-white/80 opacity-0 group-hover:opacity-100'
         }`}
         onMouseDown={handleBarMouseDown}
@@ -163,7 +163,7 @@ export const StageElement = memo(function StageElement({
             <div
               key={h.dir}
               onMouseDown={e => handleResizeMouseDown(e, h.dir)}
-              className="absolute w-4 h-4 bg-amber-400 border border-amber-600 rounded-sm z-30 hover:bg-amber-300 transition-colors"
+              className="absolute w-4 h-4 bg-app-accent border border-app-accent rounded-sm z-30 hover:bg-app-accent/80 transition-colors"
               style={{ ...h.style, cursor: h.cursor }}
             />
           ))}

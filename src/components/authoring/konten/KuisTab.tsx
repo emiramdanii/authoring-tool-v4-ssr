@@ -70,7 +70,7 @@ export function KuisTab() {
           kuis.map((soal, i) => (
             <div key={i} className={`bg-app-surface border border-app-border rounded-xl p-4 space-y-3 transition-all duration-200 ${
               dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-            } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-amber-500' : ''}`}>
+            } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}>
               {/* Header */}
               <div className="flex items-center gap-2">
                 <span
@@ -96,7 +96,7 @@ export function KuisTab() {
               <div>
                 <label className="block text-xs font-medium text-app-secondary mb-1.5">Pertanyaan</label>
                 <textarea
-                  className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors resize-none"
+                  className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors resize-none"
                   rows={2}
                   placeholder="Tulis pertanyaan…"
                   value={soal.q}
@@ -142,7 +142,7 @@ export function KuisTab() {
               <div>
                 <label className="block text-xs font-medium text-app-secondary mb-1.5">Penjelasan / Feedback</label>
                 <input
-                  className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors"
+                  className="w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors"
                   placeholder="Mengapa jawaban ini benar?"
                   value={soal.ex}
                   onChange={(e) => updateKuis(i, 'ex', e.target.value)}
@@ -155,7 +155,7 @@ export function KuisTab() {
                 <select
                   value={soal.pertemuan ?? ''}
                   onChange={(e) => updateKuis(i, 'pertemuan', e.target.value ? Number(e.target.value) : undefined)}
-                  className="bg-app-elevated border border-app-border rounded-lg px-2 py-1 text-xs text-app-primary focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="bg-app-elevated border border-app-border rounded-lg px-2 py-1 text-xs text-app-primary focus:outline-none focus:ring-2 focus:ring-app-accent/50"
                 >
                   <option value="">— Semua —</option>
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
@@ -170,7 +170,7 @@ export function KuisTab() {
 
       <button
         onClick={handleAdd}
-        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
       >
         ＋ Tambah Soal
       </button>

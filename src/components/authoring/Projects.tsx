@@ -90,7 +90,7 @@ export default function Projects() {
       <div className="flex gap-3">
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
         >
           💾 Simpan Proyek Aktif
         </button>

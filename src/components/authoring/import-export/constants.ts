@@ -28,7 +28,7 @@ export const SHEET_DESCRIPTIONS: Record<string, string> = {
 };
 
 export const SHEET_COLORS: Record<string, string> = {
-  META: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  META: 'bg-app-accent/20 text-app-accent border-app-accent/30',
   CP: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
   TP: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
   ATP: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',

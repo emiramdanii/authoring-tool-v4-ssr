@@ -22,7 +22,7 @@ export function PetunjukEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Deskripsi langkah…" value={(l.isi as string) || ''} onChange={(e) => ui!('langkah', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('langkah', { icon: '📌', judul: '', isi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Langkah</button>
+        <button onClick={() => ai!('langkah', { icon: '📌', judul: '', isi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Langkah</button>
       </div>
     </div>
   );

@@ -357,7 +357,7 @@ function ThemeSwitcher({
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] font-bold text-app-primary/80 truncate">{t.name}</div>
                       {isPreset && (
-                        <div className="text-[8px] text-amber-400">Preset asli</div>
+                        <div className="text-[8px] text-app-accent">Preset asli</div>
                       )}
                     </div>
                     {isActive && (

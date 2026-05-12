@@ -24,7 +24,7 @@ export function TimelineEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Deskripsi peristiwa…" value={(ev.isi as string) || ''} onChange={(e) => ui!('events', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('events', { icon: '📌', tahun: '', judul: '', isi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Peristiwa</button>
+        <button onClick={() => ai!('events', { icon: '📌', tahun: '', judul: '', isi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Peristiwa</button>
       </div>
     </div>
   );

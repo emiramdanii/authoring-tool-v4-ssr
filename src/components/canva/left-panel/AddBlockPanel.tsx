@@ -18,7 +18,7 @@ import { ensurePageSchema } from '@/core/schema/ensure-schema';
 // ── Category display config ──────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: string; colorClass: string; order: number }> = {
-  layout:     { label: 'Layout',      icon: '📐', colorClass: 'text-amber-400 bg-amber-500/10 border-amber-500/20', order: 0 },
+  layout:     { label: 'Layout',      icon: '📐', colorClass: 'text-app-accent bg-app-accent/10 border-app-accent/20', order: 0 },
   content:    { label: 'Konten',       icon: '📝', colorClass: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', order: 1 },
   interactive:{ label: 'Interaktif',   icon: '🎮', colorClass: 'text-teal-400 bg-teal-500/10 border-teal-500/20', order: 2 },
   navigation: { label: 'Navigasi',     icon: '🧭', colorClass: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', order: 3 },
@@ -109,7 +109,7 @@ export default function AddBlockPanel() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari block..."
-          className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-amber-500/50 focus:outline-none placeholder:text-app-muted"
+          className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none placeholder:text-app-muted"
         />
       </div>
 
@@ -146,7 +146,7 @@ export default function AddBlockPanel() {
 
                     {/* Block info */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-amber-300 transition-colors">
+                      <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
                         {block.name}
                       </div>
                       <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
@@ -170,7 +170,7 @@ export default function AddBlockPanel() {
                     {/* Add button */}
                     <Plus
                       size={14}
-                      className="text-app-muted group-hover:text-amber-400 transition-colors flex-shrink-0"
+                      className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
                     />
                   </button>
                 ))}

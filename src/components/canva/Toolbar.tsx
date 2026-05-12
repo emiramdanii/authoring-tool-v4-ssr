@@ -187,7 +187,7 @@ export default function Toolbar() {
           <Button
             variant="ghost"
             onClick={() => setNavOpen(!navOpen)}
-            className="focus-ring flex items-center gap-1 text-amber-400 hover:text-amber-300"
+            className="focus-ring flex items-center gap-1 text-app-accent hover:text-app-accent/80"
             title="Navigasi — Kembali ke panel lain"
           >
             <ArrowLeft size={14} />
@@ -196,16 +196,16 @@ export default function Toolbar() {
           </Button>
           {navOpen && (
             <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
-              <div className="px-3 py-1.5 bg-amber-500/10 border-b border-amber-500/20">
-                <div className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">🏠 Navigasi Utama</div>
+              <div className="px-3 py-1.5 bg-app-accent/10 border-b border-app-accent/20">
+                <div className="text-[9px] font-bold text-app-accent uppercase tracking-wider">🏠 Navigasi Utama</div>
               </div>
               <button
                 onClick={() => { setActivePanel('dashboard'); setNavOpen(false); }}
-                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-amber-500/10 transition-colors text-left"
+                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-app-accent/10 transition-colors text-left"
               >
-                <Home size={14} className="text-amber-400" />
+                <Home size={14} className="text-app-accent" />
                 <div>
-                  <div className="text-[11px] text-amber-300 font-semibold">Dashboard</div>
+                  <div className="text-[11px] text-app-accent font-semibold">Dashboard</div>
                   <div className="text-[8px] text-app-muted">Pilih preset, kelengkapan, quick actions</div>
                 </div>
               </button>
@@ -253,7 +253,7 @@ export default function Toolbar() {
             </div>
           )}
         </div>
-        <span className="w-1 h-1 rounded-full bg-amber-400" />
+        <span className="w-1 h-1 rounded-full bg-app-accent" />
         <span className="text-xs font-semibold text-app-primary min-w-0 truncate max-w-[140px]">
           {label}
         </span>
@@ -404,7 +404,7 @@ export default function Toolbar() {
       <div className="relative" ref={ratioRef}>
         <button
           onClick={() => setRatioOpen(!ratioOpen)}
-          className="px-2 py-0.5 rounded-md bg-app-elevated text-amber-400 font-mono text-[10px] ml-1 hover:bg-app-surface transition-colors flex items-center gap-0.5"
+          className="px-2 py-0.5 rounded-md bg-app-elevated text-app-accent font-mono text-[10px] ml-1 hover:bg-app-surface transition-colors flex items-center gap-0.5"
         >
           {ratioId}
           <ChevronDown size={8} className={`transition-transform ${ratioOpen ? 'rotate-180' : ''}`} />
@@ -422,7 +422,7 @@ export default function Toolbar() {
                 key={r.id}
                 onClick={() => { setRatio(r.id); setRatioOpen(false); }}
                 className={`w-full px-3 py-2 flex items-center justify-between hover:bg-app-elevated transition-colors ${
-                  ratioId === r.id ? 'text-amber-400 bg-amber-500/5' : 'text-app-secondary'
+                  ratioId === r.id ? 'text-app-accent bg-app-accent/5' : 'text-app-secondary'
                 }`}
               >
                 <span className="text-[11px] font-mono font-bold">{r.name}</span>
@@ -442,8 +442,8 @@ export default function Toolbar() {
           </>
         ) : (
           <>
-            <Loader2 size={12} className="text-amber-400/60 animate-spin" />
-            <span className="text-[9px] text-amber-400/60 hidden lg:inline">Menyimpan...</span>
+            <Loader2 size={12} className="text-app-accent/60 animate-spin" />
+            <span className="text-[9px] text-app-accent/60 hidden lg:inline">Menyimpan...</span>
           </>
         )}
       </div>
@@ -469,7 +469,7 @@ export default function Toolbar() {
           size="icon"
           onClick={toggleLeftPanel}
           title={leftPanelOpen ? 'Sembunyikan Panel Kiri' : 'Tampilkan Panel Kiri'}
-          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${leftPanelOpen ? 'text-amber-400' : ''}`}
+          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${leftPanelOpen ? 'text-app-accent' : ''}`}
         >
           <PanelLeft size={14} />
         </Button>
@@ -479,7 +479,7 @@ export default function Toolbar() {
           size="icon"
           onClick={toggleRightPanel}
           title={rightPanelOpen ? 'Sembunyikan Panel Kanan' : 'Tampilkan Panel Kanan'}
-          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${rightPanelOpen ? 'text-amber-400' : ''}`}
+          className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${rightPanelOpen ? 'text-app-accent' : ''}`}
         >
           <PanelRight size={14} />
         </Button>

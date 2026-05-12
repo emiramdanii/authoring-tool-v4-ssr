@@ -64,7 +64,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" />
       <div className="relative bg-app-surface border border-app-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border flex-shrink-0">
@@ -113,7 +113,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
           {t === 'wordsearch' && <WordsearchEditor mod={mod} uf={uf} />}
           {t === 'skenario' && (
             <div className="p-4 bg-app-elevated/50 border border-app-border/50 rounded-xl text-center">
-              <p className="text-sm text-app-secondary">Skenario memiliki editor khusus di tab <strong className="text-amber-400">Skenario</strong>.</p>
+              <p className="text-sm text-app-secondary">Skenario memiliki editor khusus di tab <strong className="text-app-accent">Skenario</strong>.</p>
             </div>
           )}
           {t === 'petunjuk' && <PetunjukEditor mod={mod} uf={uf} ai={ai} ri={ri} ui={ui} />}
@@ -134,7 +134,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
                       key={v.id}
                       onClick={() => uf('layoutVariant', v.id)}
                       className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
-                        currentVariant === v.id ? 'bg-amber-500 text-black' : 'bg-app-elevated text-app-secondary hover:bg-app-elevated'
+                        currentVariant === v.id ? 'bg-app-accent text-app-inverse' : 'bg-app-elevated text-app-secondary hover:bg-app-elevated'
                       }`}
                       title={v.desc}
                     >
@@ -156,7 +156,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-app-border flex-shrink-0 flex justify-end">
-          <button onClick={onClose} className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-900 rounded-lg font-bold text-sm transition-colors">
+          <button onClick={onClose} className="px-5 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse rounded-lg font-bold text-sm transition-colors">
             Simpan & Tutup
           </button>
         </div>

@@ -182,6 +182,10 @@
   --semantic-canvas-text: #1a1a1a;
   --semantic-canvas-muted: #737373;
 
+  /* Glow (pulseGlow animation — derived from accent) */
+  --glow-color: rgba(251, 191, 36, 0.3);
+  --glow-color-strong: rgba(251, 191, 36, 0.6);
+
   /* Spacing (mode-independent) */
   --semantic-panel-collapsed: 60px;
   --semantic-panel-default: 240px;
@@ -276,6 +280,10 @@
   --semantic-canvas-card: #182d45;
   --semantic-canvas-text: #e8f2ff;
   --semantic-canvas-muted: #6e90b5;
+
+  /* Glow (pulseGlow animation — derived from accent) */
+  --glow-color: rgba(251, 191, 36, 0.3);
+  --glow-color-strong: rgba(251, 191, 36, 0.6);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -305,8 +313,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 8px rgba(249, 193, 46, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(249, 193, 46, 0.6); }
+  0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(249, 193, 46, 0.3)); }
+  50% { box-shadow: 0 0 20px var(--glow-color-strong, rgba(249, 193, 46, 0.6)); }
 }
 
 @keyframes slideUp {

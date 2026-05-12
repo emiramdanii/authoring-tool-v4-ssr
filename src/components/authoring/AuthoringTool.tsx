@@ -38,7 +38,7 @@ const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
   loading: () => (
     <div className="h-full w-full flex items-center justify-center bg-app-surface">
       <div className="text-center">
-        <Palette className="mx-auto mb-4 size-10 text-amber-400 animate-pulse" />
+        <Palette className="mx-auto mb-4 size-10 text-app-accent animate-pulse" />
         <div className="text-app-secondary text-sm">Memuat Canva Editor...</div>
       </div>
     </div>
@@ -233,15 +233,15 @@ export default function AuthoringTool() {
         <div className="px-4 py-4">
           {sidebarOpen ? (
             <div>
-              <div className="text-sm font-bold text-amber-400">Authoring Tool</div>
+              <div className="text-sm font-bold text-app-accent">Authoring Tool</div>
               <div className="text-[0.65rem] text-app-muted mt-0.5">Media Pembelajaran Interaktif</div>
-              <span className="inline-block mt-1.5 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-amber-500/20">
+              <span className="inline-block mt-1.5 bg-app-accent/10 text-app-accent px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-app-accent/20">
                 v6
               </span>
             </div>
           ) : (
             <div className="flex items-center justify-center">
-              <span className="text-amber-400 font-bold text-lg">Z</span>
+              <span className="text-lg text-app-accent font-bold">Z</span>
             </div>
           )}
         </div>
@@ -298,14 +298,14 @@ export default function AuthoringTool() {
             <div className="section-divider mb-2" />
             <button
               onClick={saveToStorage}
-              className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all"
+              className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all"
             >
               <Save size={14} />
               Simpan Semua
             </button>
             <button
               onClick={exportJSON}
-              className="text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35 w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-bold transition-all"
+              className="text-app-accent border-app-accent/20 bg-app-accent/10 hover:bg-app-accent/18 hover:border-app-accent/35 w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-bold transition-all"
             >
               <Download size={14} />
               Export JSON
@@ -319,14 +319,14 @@ export default function AuthoringTool() {
               className="tooltip-trigger focus-ring"
               data-tip="Simpan"
             >
-              <Save size={16} className="text-amber-400" />
+              <Save size={16} className="text-app-accent" />
             </button>
             <button
               onClick={exportJSON}
               className="tooltip-trigger focus-ring"
               data-tip="Export JSON"
             >
-              <Download size={16} className="text-amber-300/70" />
+              <Download size={16} className="text-app-accent/70" />
             </button>
           </div>
         )}
@@ -352,7 +352,7 @@ export default function AuthoringTool() {
 
             {/* Dirty indicator */}
             <div
-              className={`w-2 h-2 rounded-full flex-shrink-0 bg-amber-400 transition-opacity duration-300 ${
+              className={`w-2 h-2 rounded-full flex-shrink-0 bg-app-accent transition-opacity duration-300 ${
                 dirty ? 'pulse-dot opacity-100' : 'opacity-0'
               }`}
               title="Perubahan belum disimpan"
@@ -383,7 +383,7 @@ export default function AuthoringTool() {
               </Button>
               <Button
                 onClick={saveToStorage}
-                className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
+                className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
               >
                 <Save size={14} />
                 Simpan
@@ -406,19 +406,19 @@ export default function AuthoringTool() {
       {showTour && activePanel === 'dashboard' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" />
 
           {/* Tooltip Card */}
           <div className="relative z-10 w-full max-w-sm mx-4 page-transition">
             <div className="bg-app-surface border border-app-border/50 rounded-2xl shadow-2xl overflow-hidden">
               {/* Step icon + badge */}
-              <div className="bg-amber-500/10 px-5 pt-5 pb-3">
+              <div className="bg-app-accent/10 px-5 pt-5 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <MapPin size={20} className="text-amber-400" />
+                  <div className="w-10 h-10 rounded-lg bg-app-accent/20 flex items-center justify-center">
+                    <MapPin size={20} className="text-app-accent" />
                   </div>
                   <div>
-                    <div className="text-xs font-medium text-amber-400/70">
+                    <div className="text-xs font-medium text-app-accent/70">
                       Langkah {tourStep + 1} dari {TOUR_STEPS.length}
                     </div>
                     <h3 className="text-base font-bold text-app-primary">
@@ -442,7 +442,7 @@ export default function AuthoringTool() {
                     key={i}
                     className={`block h-1.5 rounded-full transition-all duration-300 ${
                       i === tourStep
-                        ? 'w-5 bg-amber-500'
+                        ? 'w-5 bg-app-accent'
                         : 'w-1.5 bg-app-elevated'
                     }`}
                   />
@@ -460,7 +460,7 @@ export default function AuthoringTool() {
                 </Button>
                 <Button
                   onClick={nextTourStep}
-                  className="flex-1 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px"
+                  className="flex-1 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
                 >
                   {tourStep < TOUR_STEPS.length - 1 ? 'Berikutnya →' : 'Mulai ✨'}
                 </Button>

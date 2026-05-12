@@ -26,7 +26,7 @@ export function TrueFalseEditor({ mod, uf, ai, ri, ui }: EdProps) {
             </div>
           </div>
         ))}
-        <button onClick={() => ai!('soal', { teks: '', jawaban: true, penjelasan: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Pernyataan</button>
+        <button onClick={() => ai!('soal', { teks: '', jawaban: true, penjelasan: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Pernyataan</button>
       </div>
     </div>
   );

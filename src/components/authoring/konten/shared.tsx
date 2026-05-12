@@ -22,7 +22,7 @@ export const BLOCK_TYPES = [
 
 // ── Constants ──────────────────────────────────────────────────
 export const INPUT_CLS =
-  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
+  'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors';
 
 export const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 

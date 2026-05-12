@@ -63,7 +63,7 @@ export default function Konten() {
             useCanvaStore.getState().resetCanvas();
             useAuthoringStore.getState().setActivePanel('canva');
           }}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
         >
           Selanjutnya: Desain di Canva →
         </button>

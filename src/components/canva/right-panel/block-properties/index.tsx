@@ -150,7 +150,7 @@ export default function BlockPropertiesPanel() {
               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                 definition.defaultLayout.position === 'flow'
                   ? 'bg-emerald-500/20 text-emerald-300'
-                  : 'bg-amber-500/20 text-amber-300'
+                  : 'bg-app-accent/20 text-app-accent'
               }`}>
                 {definition.defaultLayout.position}
               </span>

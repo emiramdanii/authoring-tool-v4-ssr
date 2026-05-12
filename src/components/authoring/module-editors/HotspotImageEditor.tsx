@@ -24,7 +24,7 @@ export function HotspotImageEditor({ mod, uf, ai, ri, ui }: EdProps) {
         <FieldLabel>Mode</FieldLabel>
         <div className="flex gap-2">
           {['pin', 'tooltip', 'card'].map((m) => (
-            <button key={m} onClick={() => uf('mode', m)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.mode as string) === m ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-app-border/50 text-app-secondary'}`}>
+            <button key={m} onClick={() => uf('mode', m)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors ${(mod.mode as string) === m ? 'border-app-accent bg-app-accent/20 text-app-accent' : 'border-app-border/50 text-app-secondary'}`}>
               {m}
             </button>
           ))}
@@ -46,7 +46,7 @@ export function HotspotImageEditor({ mod, uf, ai, ri, ui }: EdProps) {
             <textarea className={TEXTAREA_CLS} rows={2} placeholder="Deskripsi hotspot…" value={(h.isi as string) || ''} onChange={(e) => ui!('hotspots', i, 'isi', e.target.value)} />
           </div>
         ))}
-        <button onClick={() => ai!('hotspots', { x: 50, y: 50, icon: '📌', judul: '', warna: '#f9c82e', isi: '' })} className="text-xs text-amber-500 hover:text-amber-400">＋ Tambah Hotspot</button>
+        <button onClick={() => ai!('hotspots', { x: 50, y: 50, icon: '📌', judul: '', warna: '#f9c82e', isi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Hotspot</button>
       </div>
     </div>
   );
