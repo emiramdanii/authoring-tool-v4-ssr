@@ -50,7 +50,10 @@ const TABS: { id: LeftTab; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function LeftPanel() {
-  const { leftTab, setLeftTab, rightPanelOpen, toggleRightPanel } = useCanvaStore();
+  const leftTab = useCanvaStore(s => s.leftTab);
+  const setLeftTab = useCanvaStore(s => s.setLeftTab);
+  const rightPanelOpen = useCanvaStore(s => s.rightPanelOpen);
+  const toggleRightPanel = useCanvaStore(s => s.toggleRightPanel);
 
   return (
     <div className="w-full flex flex-col glass-panel overflow-hidden">
@@ -111,7 +114,14 @@ export default function LeftPanel() {
    ══════════════════════════════════════════════════════════════════ */
 
 function HalamanContent() {
-  const { pages, currentPageIndex, goPage, duplicatePage, deletePage, ratioId, reorderPage, setRatio } = useCanvaStore();
+  const pages = useCanvaStore(s => s.pages);
+  const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const goPage = useCanvaStore(s => s.goPage);
+  const duplicatePage = useCanvaStore(s => s.duplicatePage);
+  const deletePage = useCanvaStore(s => s.deletePage);
+  const ratioId = useCanvaStore(s => s.ratioId);
+  const reorderPage = useCanvaStore(s => s.reorderPage);
+  const setRatio = useCanvaStore(s => s.setRatio);
   const ratio = useCanvaStore(s => s.currentRatio());
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
@@ -266,7 +276,13 @@ function HalamanContent() {
    ══════════════════════════════════════════════════════════════════ */
 
 function TambahContent() {
-  const { addTemplatePage, addElement, addKuisElement, addGameElement, addModuleElement, resetCanvas, loadSchemaPreset } = useCanvaStore();
+  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
+  const addElement = useCanvaStore(s => s.addElement);
+  const addKuisElement = useCanvaStore(s => s.addKuisElement);
+  const addGameElement = useCanvaStore(s => s.addGameElement);
+  const addModuleElement = useCanvaStore(s => s.addModuleElement);
+  const resetCanvas = useCanvaStore(s => s.resetCanvas);
+  const loadSchemaPreset = useCanvaStore(s => s.loadSchemaPreset);
   const authStore = useAuthoringStore();
   const kuis = authStore.kuis.filter(k => k.q.trim());
   const games = authStore.modules.filter((m: Record<string, unknown>) =>

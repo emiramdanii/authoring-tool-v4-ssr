@@ -1,23 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import { Compass } from 'lucide-react';
-import type { NavConfig } from '../types';
+import { useCanvaStore } from '@/store/canva-store';
 import Section from './Section';
 
-interface NavigationSectionProps {
-  navConfig: NavConfig | undefined;
-  updateNavConfig: (updates: Partial<NavConfig>) => void;
-  collapsed: boolean;
-  onToggle: () => void;
-}
+export default function NavigationSection() {
+  // ── Store selectors ──────────────────────────────────────────
+  const updateNavConfig = useCanvaStore(s => s.updateNavConfig);
 
-export default function NavigationSection({ navConfig, updateNavConfig, collapsed, onToggle }: NavigationSectionProps) {
+  // ── Derived page data ────────────────────────────────────────
+  const navConfig = useCanvaStore(s => s.pages[s.currentPageIndex]?.navConfig);
+
+  // ── Local UI state ───────────────────────────────────────────
+  const [collapsed, setCollapsed] = useState(true);
+
   return (
     <Section
       icon={<Compass size={12} />}
       title="Navigasi"
       collapsed={collapsed}
-      onToggle={onToggle}
+      onToggle={() => setCollapsed(c => !c)}
     >
       <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
         <input
@@ -64,7 +67,7 @@ export default function NavigationSection({ navConfig, updateNavConfig, collapse
         <label className="text-[9px] text-app-muted block mb-1">Style Navbar</label>
         <select
           value={navConfig?.navbarStyle || 'colorful'}
-          onChange={e => updateNavConfig({ navbarStyle: e.target.value as NavConfig['navbarStyle'] })}
+          onChange={e => updateNavConfig({ navbarStyle: e.target.value as 'colorful' | 'minimal' | 'glass' })}
           className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
         >
           <option value="colorful">Colorful</option>

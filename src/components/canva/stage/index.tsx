@@ -75,45 +75,44 @@ const designPageTransition = {
 };
 
 export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
-  const {
-    pages,
-    currentPageIndex,
-    zoom: storeZoom,
-    tool,
-    selectedElId,
-    selectedElIds,
-    selectElement,
-    toggleElementSelection,
-    selectAllElements,
-    clearSelection,
-    deleteSelectedElements,
-    addElement,
-    updateElement,
-    updateTemplateData,
-    showGrid,
-    gridSize,
-    snapEnabled,
-    snapValue,
-    _pushHistory,
-    selectBlock,
-    deleteBlock,
-    duplicateBlock,
-    moveBlockUp,
-    moveBlockDown,
-    selectedBlockId,
-    selectedBlockIds,
-    stopEditing,
-    editingBlockId,
-    copySchemaBlock,
-    pasteSchemaBlock,
-    nudgeSchemaBlocks,
-    deleteSchemaBlocks,
-    undo,
-    redo,
-    setZoom,
-    zoomDelta,
-    zoomToFit,
-  } = useCanvaStore();
+  // ── Targeted selectors to avoid unnecessary re-renders ──────────
+  const pages = useCanvaStore(s => s.pages);
+  const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const storeZoom = useCanvaStore(s => s.zoom);
+  const tool = useCanvaStore(s => s.tool);
+  const selectedElId = useCanvaStore(s => s.selectedElId);
+  const selectedElIds = useCanvaStore(s => s.selectedElIds);
+  const selectElement = useCanvaStore(s => s.selectElement);
+  const toggleElementSelection = useCanvaStore(s => s.toggleElementSelection);
+  const selectAllElements = useCanvaStore(s => s.selectAllElements);
+  const clearSelection = useCanvaStore(s => s.clearSelection);
+  const deleteSelectedElements = useCanvaStore(s => s.deleteSelectedElements);
+  const addElement = useCanvaStore(s => s.addElement);
+  const updateElement = useCanvaStore(s => s.updateElement);
+  const updateTemplateData = useCanvaStore(s => s.updateTemplateData);
+  const showGrid = useCanvaStore(s => s.showGrid);
+  const gridSize = useCanvaStore(s => s.gridSize);
+  const snapEnabled = useCanvaStore(s => s.snapEnabled);
+  const snapValue = useCanvaStore(s => s.snapValue);
+  const _pushHistory = useCanvaStore(s => s._pushHistory);
+  const selectBlock = useCanvaStore(s => s.selectBlock);
+  const deleteBlock = useCanvaStore(s => s.deleteBlock);
+  const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
+  const moveBlockUp = useCanvaStore(s => s.moveBlockUp);
+  const moveBlockDown = useCanvaStore(s => s.moveBlockDown);
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
+  const stopEditing = useCanvaStore(s => s.stopEditing);
+  const editingBlockId = useCanvaStore(s => s.editingBlockId);
+  const copySchemaBlock = useCanvaStore(s => s.copySchemaBlock);
+  const pasteSchemaBlock = useCanvaStore(s => s.pasteSchemaBlock);
+  const nudgeSchemaBlocks = useCanvaStore(s => s.nudgeSchemaBlocks);
+  const deleteSchemaBlocks = useCanvaStore(s => s.deleteSchemaBlocks);
+  const undo = useCanvaStore(s => s.undo);
+  const redo = useCanvaStore(s => s.redo);
+  const setZoom = useCanvaStore(s => s.setZoom);
+  const zoomDelta = useCanvaStore(s => s.zoomDelta);
+  const zoomToFit = useCanvaStore(s => s.zoomToFit);
 
   const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
@@ -442,8 +441,9 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
             </div>
           )}
 
-          {/* Render editable elements on top of PageRenderer */}
-          {page.elements.length > 0 && (
+          {/* Render editable elements on top of PageRenderer — ONLY for non-schema pages */}
+          {/* Schema-driven pages use SchemaScreenRenderer exclusively; legacy elements[] must not overlap */}
+          {!isSchemaDriven && page.elements.length > 0 && (
             <div className="absolute inset-0" style={{ zIndex: Z.CANVAS_ELEMENT }}>
               {page.elements.map(el => (
                 <StageElement

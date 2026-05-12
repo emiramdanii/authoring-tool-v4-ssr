@@ -1,57 +1,43 @@
 'use client';
 
+import { useState } from 'react';
 import { LayoutTemplate, Zap, Square } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { LAYOUT_PRESETS } from '../types';
-import type { PageTemplateType, CanvaPage } from '../types';
+import type { PageTemplateType } from '../types';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { getAllPresets } from '@/core/preset/PagePresetRegistry';
 import { toast } from 'sonner';
 import Section from './Section';
 import { Button } from '@/components/ui/button';
 
-interface PageSettingsSectionProps {
-  page: CanvaPage | undefined;
-  currentPageIndex: number;
-  isTemplateMode: boolean;
-  setTemplateType: (type: PageTemplateType) => void;
-  updateTemplateData: (key: string, value: unknown) => void;
-  applyLayoutPreset: (id: string) => void;
-  currentLayoutPreset: () => { id: string } | undefined;
-  showGrid: boolean;
-  gridSize: number;
-  snapEnabled: boolean;
-  toggleGrid: () => void;
-  setGridSize: (size: number) => void;
-  toggleSnap: () => void;
-  setVariant: (variant: 'A' | 'B' | 'C') => void;
-  collapsed: boolean;
-  onToggle: () => void;
-}
+export default function PageSettingsSection() {
+  // ── Store selectors ──────────────────────────────────────────
+  const setTemplateType = useCanvaStore(s => s.setTemplateType);
+  const updateTemplateData = useCanvaStore(s => s.updateTemplateData);
+  const applyLayoutPreset = useCanvaStore(s => s.applyLayoutPreset);
+  const currentLayoutPreset = useCanvaStore(s => s.currentLayoutPreset);
+  const toggleGrid = useCanvaStore(s => s.toggleGrid);
+  const setGridSize = useCanvaStore(s => s.setGridSize);
+  const toggleSnap = useCanvaStore(s => s.toggleSnap);
+  const setVariant = useCanvaStore(s => s.setVariant);
 
-export default function PageSettingsSection({
-  page,
-  isTemplateMode,
-  setTemplateType,
-  updateTemplateData,
-  applyLayoutPreset,
-  currentLayoutPreset,
-  showGrid,
-  gridSize,
-  snapEnabled,
-  toggleGrid,
-  setGridSize,
-  toggleSnap,
-  setVariant,
-  collapsed,
-  onToggle,
-}: PageSettingsSectionProps) {
+  // ── Derived page data ────────────────────────────────────────
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
+  const showGrid = useCanvaStore(s => s.showGrid);
+  const gridSize = useCanvaStore(s => s.gridSize);
+  const snapEnabled = useCanvaStore(s => s.snapEnabled);
+  const isTemplateMode = !!(page?.templateType && page.templateType !== 'custom');
+
+  // ── Local UI state ───────────────────────────────────────────
+  const [collapsed, setCollapsed] = useState(true);
+
   return (
     <Section
       icon={<LayoutTemplate size={12} />}
       title="Pengaturan Halaman"
       collapsed={collapsed}
-      onToggle={onToggle}
+      onToggle={() => setCollapsed(c => !c)}
     >
       {/* Jenis Halaman */}
       <div className="mb-3">

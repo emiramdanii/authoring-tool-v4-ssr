@@ -2,47 +2,35 @@
 
 import { useRef, useState } from 'react';
 import { Image as ImageIcon, Upload, Link, X } from 'lucide-react';
+import { useCanvaStore } from '@/store/canva-store';
 import { GRADIENT_PRESETS } from '../types';
 import Section from './Section';
-import type { CanvaPage } from '../types';
 import type { ScreenSchema } from '@/core/schema/types';
 import { THEME_PRESETS } from '@/core/themes/tokens';
 
 /** Schema background type for updates */
-type SchemaBg = NonNullable<ScreenSchema['background']>;
+type SchemaBg = NonNullable<ScreenSchema['background']>
 
-interface BackgroundSectionProps {
-  page: CanvaPage | undefined;
-  setBgColor: (color: string) => void;
-  setBgImage: (dataUrl: string) => void;
-  setOverlay: (value: number) => void;
-  /** Update schema-driven page background */
-  updateScreenBackground: (updates: Partial<SchemaBg>) => void;
-  /** Current theme ID */
-  schemaThemeId?: string;
-  /** Change the theme preset */
-  onThemeChange: (themeId: string) => void;
-  collapsed: boolean;
-  onToggle: () => void;
-}
+export default function BackgroundSection() {
+  // ── Store selectors ──────────────────────────────────────────
+  const setBgColor = useCanvaStore(s => s.setBgColor);
+  const setBgImage = useCanvaStore(s => s.setBgImage);
+  const setOverlay = useCanvaStore(s => s.setOverlay);
+  const updateScreenBackground = useCanvaStore(s => s.updateScreenBackground);
+  const setSchemaThemeId = useCanvaStore(s => s.setSchemaThemeId);
 
-export default function BackgroundSection({
-  page,
-  setBgColor,
-  setBgImage,
-  setOverlay,
-  updateScreenBackground,
-  schemaThemeId,
-  onThemeChange,
-  collapsed,
-  onToggle,
-}: BackgroundSectionProps) {
+  // ── Derived page data ────────────────────────────────────────
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
+
+  // ── Local UI state ───────────────────────────────────────────
+  const [collapsed, setCollapsed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageUrlInput, setImageUrlInput] = useState('');
 
-  // Determine if this is a schema-driven page
+  // ── Derived values from page ─────────────────────────────────
   const isSchemaDriven = !!page?.schema;
   const schemaBg = page?.schema?.background;
+  const schemaThemeId = (page?.templateData?.schemaThemeId as string) || undefined;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,7 +83,7 @@ export default function BackgroundSection({
         icon={<ImageIcon size={12} />}
         title="Background"
         collapsed={collapsed}
-        onToggle={onToggle}
+        onToggle={() => setCollapsed(c => !c)}
       >
         {/* Theme preset selector */}
         <div className="mb-3">
@@ -104,7 +92,7 @@ export default function BackgroundSection({
             {THEME_PRESETS.map(t => (
               <button
                 key={t.id}
-                onClick={() => onThemeChange(t.id)}
+                onClick={() => setSchemaThemeId(t.id)}
                 className={`py-1.5 px-1 rounded-lg text-[8px] font-bold transition-all border ${
                   schemaThemeId === t.id || (!schemaThemeId && t.id === 'default')
                     ? 'border-app-accent bg-app-accent/20 text-app-accent'
@@ -238,7 +226,7 @@ export default function BackgroundSection({
       icon={<ImageIcon size={12} />}
       title="Background"
       collapsed={collapsed}
-      onToggle={onToggle}
+      onToggle={() => setCollapsed(c => !c)}
     >
       {/* Upload area */}
       <input

@@ -2,11 +2,13 @@
 // TYPES
 // ═══════════════════════════════════════════════════════════════════
 
+import type { Module } from '@/store/authoring/types';
+
 export type LayoutVariant = 'A' | 'B' | 'C' | 'D';
 
 export interface PresetModuleCardProps {
   mode: 'edit' | 'canvas' | 'export';
-  module: Record<string, unknown>;
+  module: Module;
   onEdit?: () => void;
   compact?: boolean;
   layoutVariant?: LayoutVariant;
@@ -21,4 +23,4 @@ export interface ModuleTypeMeta {
 }
 
 /** Module data record type used by preview components */
-export type M = Record<string, unknown>;
+export type M = Module;

@@ -3,20 +3,27 @@
 import { Settings2, Trash2, Copy, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
-import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/preset-module-card';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import type { CanvaElement } from '../types';
 import PropInput from './PropInput';
 import DataIdxSelector from './DataIdxSelector';
 
-interface ElementPropertiesProps {
-  selectedEl: CanvaElement;
-  updateElement: (id: string, updates: Partial<CanvaElement>) => void;
-  deleteSelected: () => void;
-}
+export default function ElementProperties() {
+  // ── Store selectors ──────────────────────────────────────────
+  const updateElement = useCanvaStore(s => s.updateElement);
+  const deleteSelected = useCanvaStore(s => s.deleteSelected);
 
-export default function ElementProperties({ selectedEl, updateElement, deleteSelected }: ElementPropertiesProps) {
+  // ── Derived data ─────────────────────────────────────────────
+  const selectedEl = useCanvaStore(s => {
+    const page = s.pages[s.currentPageIndex];
+    if (!page || !s.selectedElId) return undefined;
+    return page.elements.find(e => e.id === s.selectedElId);
+  });
+
+  if (!selectedEl) return null;
+
   return (
     <div className="border-b border-app-accent/10">
       <div className="px-3 py-2 flex items-center gap-1.5 bg-app-accent/5">

@@ -1,26 +1,30 @@
 'use client';
 
+import { useState } from 'react';
 import { Palette } from 'lucide-react';
+import { useCanvaStore } from '@/store/canva-store';
 import Section from './Section';
-import type { ColorPalette } from '../types';
 
-interface PaletteSectionProps {
-  colorPalette: ColorPalette;
-  collapsed: boolean;
-  onToggle: () => void;
-}
+export default function PaletteSection() {
+  // ── Derived page data ────────────────────────────────────────
+  const colorPalette = useCanvaStore(s => s.pages[s.currentPageIndex]?.colorPalette);
 
-export default function PaletteSection({ colorPalette, collapsed, onToggle }: PaletteSectionProps) {
+  // ── Local UI state ───────────────────────────────────────────
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Only render if palette exists and has colors
+  if (!colorPalette || colorPalette.colors.length === 0) return null;
+
   return (
     <Section
       icon={<Palette size={12} />}
       title="Palet Warna"
       collapsed={collapsed}
-      onToggle={onToggle}
+      onToggle={() => setCollapsed(c => !c)}
     >
       {/* Color swatches */}
       <div className="flex gap-1 mb-2">
-        {colorPalette.colors.map((color, i) => (
+        {colorPalette.colors.map((color: string, i: number) => (
           <div
             key={i}
             className="w-7 h-7 rounded-lg border border-white/20 cursor-pointer hover:scale-110 transition-transform"
@@ -34,9 +38,9 @@ export default function PaletteSection({ colorPalette, collapsed, onToggle }: Pa
       <div className="space-y-1">
         {Object.entries(colorPalette.mapping).map(([key, value]) => (
           <div key={key} className="flex items-center gap-1.5 rounded-md bg-app-elevated px-1.5 py-1">
-            <div className="w-4 h-4 rounded border border-white/20 flex-shrink-0" style={{ background: value }} />
+            <div className="w-4 h-4 rounded border border-white/20 flex-shrink-0" style={{ background: value as string }} />
             <span className="text-[8px] text-app-muted flex-1">{key}</span>
-            <span className="text-[7px] text-app-muted">{value}</span>
+            <span className="text-[7px] text-app-muted">{value as string}</span>
           </div>
         ))}
       </div>

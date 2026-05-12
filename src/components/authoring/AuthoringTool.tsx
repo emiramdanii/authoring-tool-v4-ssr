@@ -22,6 +22,8 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { Button } from '@/components/ui/button';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
 
 import Dashboard from './Dashboard';
 import Dokumen from './Dokumen';
@@ -101,7 +103,6 @@ export default function AuthoringTool() {
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const dirty = useAuthoringStore((s) => s.dirty);
   const meta = useAuthoringStore((s) => s.meta);
-  const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
 
   // Load from storage on mount (authoring + canva)
@@ -125,49 +126,66 @@ export default function AuthoringTool() {
     }
   }, [activePanel, showTour, dismissTour]);
 
-  // Auto-save every 8s when dirty — saves BOTH authoring + canva stores
-  useEffect(() => {
-    if (!dirty) return;
-    const timer = setTimeout(() => {
-      const s = useAuthoringStore.getState();
-      if (s.dirty) {
-        s.saveToStorage(); // Authoring store
-      }
-      // Also persist canva store (canvas edits, page layouts, etc.)
-      useCanvaStore.getState().saveToStorage();
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [dirty]);
+  // NOTE: Auto-save has been unified into useAutoSave() hook, called from
+  // CanvaBuilder. There is no longer a competing auto-save here.
+  // Both stores are saved atomically with a single 2 000 ms debounce.
 
   // ── Reactive sync: authoring data → canvas templateData ─────
   // NOTE: Auto-sync is now handled by sync-slice.ts startAutoSync() (100ms debounce).
   // Previously there was a duplicate 300ms subscription here causing double-renders.
   // That has been removed to avoid redundant sync calls.
 
-  // Keyboard shortcut: Ctrl+S to save, Ctrl+P to toggle Live Preview
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveToStorage();
-        useCanvaStore.getState().saveToStorage(); // Also save canva state
-      }
-      // Ctrl+P → toggle Live Preview panel (only when not in text input)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-        const target = e.target as HTMLElement;
-        if (target.contentEditable === 'true' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+  // Unified save helper — saves both stores atomically (same as useAutoSave)
+  const saveAll = useCallback(() => {
+    useCanvaStore.getState().saveToStorage();
+    useAuthoringStore.getState().saveToStorage();
+  }, []);
+
+  // ── Unified keyboard shortcuts via registry ───────────────────
+  // Replaces the separate useEffect with window.addEventListener('keydown', ...)
+  // The keyboardManager handles context switching and the registry
+  // handles scope matching and priority.
+  useKeyboardShortcuts([
+    {
+      id: 'global.save',
+      keys: 'ctrl+s',
+      scope: 'global',
+      priority: 20,
+      handler: (e) => { e.preventDefault(); saveAll(); },
+      description: 'Simpan',
+      category: 'App',
+    },
+    {
+      id: 'global.toggle-preview',
+      keys: 'ctrl+p',
+      scope: 'global',
+      priority: 15,
+      handler: (e) => {
         e.preventDefault();
         const current = useAuthoringStore.getState().activePanel;
         if (current === 'preview') {
-          setActivePanel('canva');
+          useAuthoringStore.getState().setActivePanel('canva');
         } else {
-          setActivePanel('preview');
+          useAuthoringStore.getState().setActivePanel('preview');
         }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveToStorage, setActivePanel]);
+      },
+      description: 'Toggle Live Preview',
+      category: 'App',
+    },
+  ], [saveAll]);
+
+  // ── Context switching for keyboard shortcuts ───────────────────
+  // When the active panel changes, update the keyboard manager context
+  // so only relevant shortcuts fire.
+  useEffect(() => {
+    if (activePanel === 'canva') {
+      keyboardManager.setContext('canvas');
+    } else if (activePanel === 'preview') {
+      keyboardManager.setContext('canvas'); // Preview uses canvas shortcuts
+    } else {
+      keyboardManager.setContext('authoring');
+    }
+  }, [activePanel]);
 
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();
@@ -299,7 +317,7 @@ export default function AuthoringTool() {
           <div className="px-3 py-3 space-y-1.5">
             <div className="section-divider mb-2" />
             <button
-              onClick={saveToStorage}
+              onClick={saveAll}
               className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all"
             >
               <Save size={14} />
@@ -317,7 +335,7 @@ export default function AuthoringTool() {
           <div className="px-2 py-3 space-y-2 flex flex-col items-center">
             <div className="section-divider w-full mb-2" />
             <button
-              onClick={saveToStorage}
+              onClick={saveAll}
               className="tooltip-trigger focus-ring"
               data-tip="Simpan"
             >
@@ -384,7 +402,7 @@ export default function AuthoringTool() {
                 Import
               </Button>
               <Button
-                onClick={saveToStorage}
+                onClick={saveAll}
                 className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
               >
                 <Save size={14} />

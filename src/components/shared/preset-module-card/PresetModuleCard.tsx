@@ -52,7 +52,7 @@ import {
 // PREVIEW ROUTER
 // ═══════════════════════════════════════════════════════════════════
 export function ModulePreview({ mod, variant, compact }: { mod: M; variant: LayoutVariant; compact: boolean }) {
-  const t = str(mod.type);
+  const t = mod.type; // Already typed as string
   const meta = getModuleMeta(t);
 
   switch (t) {
@@ -199,8 +199,8 @@ function GameBadge() {
 // EDIT / EXPORT MODE (full card)
 // ═══════════════════════════════════════════════════════════════════
 function FullCard({ mode, mod, variant, onEdit }: { mode: 'edit' | 'export'; mod: M; variant: LayoutVariant; onEdit?: () => void }) {
-  const meta = getModuleMeta(str(mod.type));
-  const title = str(mod.title) || meta.label;
+  const meta = getModuleMeta(mod.type);
+  const title = mod.title || meta.label;
   const isEdit = mode === 'edit';
   const [hovered, setHovered] = React.useState(false);
 
@@ -269,8 +269,8 @@ function FullCard({ mode, mod, variant, onEdit }: { mode: 'edit' | 'export'; mod
 // CANVAS MODE (compact)
 // ═══════════════════════════════════════════════════════════════════
 function CompactCard({ mod, variant }: { mod: M; variant: LayoutVariant }) {
-  const meta = getModuleMeta(str(mod.type));
-  const title = str(mod.title) || meta.label;
+  const meta = getModuleMeta(mod.type);
+  const title = mod.title || meta.label;
 
   return (
     <CardShell moduleColor={meta.color} rounded="xl" className="group">

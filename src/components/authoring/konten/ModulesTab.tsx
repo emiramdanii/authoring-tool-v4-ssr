@@ -2,9 +2,10 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import type { Module } from '@/store/authoring/types';
 import { MODULE_TYPES, GAME_TYPES, ALL_MODULE_TYPES, moduleTypeInfo } from './shared';
 import ModuleEditorModal from '../ModuleEditorModal';
-import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/PresetModuleCard';
+import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/preset-module-card';
 import { Pencil, Trash2, Puzzle, Zap } from 'lucide-react';
 
 // ── Module Picker Modal ───────────────────────────────────────
@@ -123,7 +124,7 @@ function ModuleCard({
   onRemove,
   onVariantChange,
 }: {
-  mod: Record<string, unknown>;
+  mod: Module;
   idx: number;
   total: number;
   onEdit: () => void;
@@ -205,7 +206,7 @@ export function ModulesTab() {
   }, [addModule]);
 
   const handleRemove = useCallback((i: number) => {
-    if (confirm(`Hapus modul "${(modules[i].title as string) || moduleTypeInfo(modules[i].type as string).label}"?`)) {
+    if (confirm(`Hapus modul "${modules[i].title || moduleTypeInfo(modules[i].type).label}"?`)) {
       removeModule(i);
       if (editorIndex === i) setEditorIndex(null);
     }

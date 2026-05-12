@@ -38,7 +38,7 @@ export type FnRI = (ak: string, ii: number) => void;
 export type FnUI = (ak: string, ii: number, k: string, v: unknown) => void;
 
 export interface EdProps {
-  mod: Record<string, unknown>;
+  mod: import('@/store/authoring/types').Module;
   uf: Fn;
   ai?: FnAI;
   ri?: FnRI;

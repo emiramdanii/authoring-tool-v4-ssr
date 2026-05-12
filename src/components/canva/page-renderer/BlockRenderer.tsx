@@ -7,7 +7,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { resolveModule } from '@/lib/module-resolver';
 import QuizWidget from '../QuizWidget';
 import GameWidget from '../GameWidget';
-import PresetModuleCard, { type LayoutVariant } from '@/components/shared/PresetModuleCard';
+import PresetModuleCard, { type LayoutVariant } from '@/components/shared/preset-module-card';
 import { COLORS } from '@/lib/color-palette';
 
 // ═══════════════════════════════════════════════════════════════

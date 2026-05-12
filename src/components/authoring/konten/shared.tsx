@@ -78,8 +78,8 @@ export function moduleTypeInfo(typeId: string) {
 }
 
 // ── Module Mini Preview ───────────────────────────────────────
-export function modulePreview(mod: Record<string, unknown>): string {
-  const t = mod.type as string;
+export function modulePreview(mod: import('@/store/authoring/types').Module): string {
+  const t = mod.type; // Already typed as string
   switch (t) {
     case 'skenario': {
       const ch = (mod.chapters as unknown[]) || [];

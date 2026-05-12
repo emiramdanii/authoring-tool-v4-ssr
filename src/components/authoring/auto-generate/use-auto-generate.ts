@@ -219,7 +219,7 @@ export function useAutoGenerate() {
         }
         case 'skenario': {
           const skenarioData = preview.data as SkenarioChapter[];
-          store.getState().setSkenario(skenarioData as unknown as Array<Record<string, unknown>>);
+          store.getState().setSkenario(skenarioData as unknown as import('@/store/authoring/types').SkenarioChapter[]);
           toast.success(`🎭 ${skenarioData.length} bab skenario diterapkan`);
           break;
         }

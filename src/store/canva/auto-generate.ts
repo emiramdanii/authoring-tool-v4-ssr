@@ -8,6 +8,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import type { CanvaState } from './types';
 import type { PageTypeDefinition } from '@/store/page-types';
 import { useAuthoringStore } from '@/store/authoring-store';
+import type { Module } from '@/store/authoring/types';
 import {
   GAME_TYPES,
   MATERI_RAKIT_TYPES,
@@ -124,11 +125,11 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     const blueprint = pageType.generate(config);
     const authStore = useAuthoringStore.getState();
     const kuis = authStore.kuis.filter((k: { q: string }) => k.q.trim());
-    let games = authStore.modules.filter((m: Record<string, unknown>) =>
-      (GAME_TYPES as readonly string[]).includes(m.type as string)
+    let games = authStore.modules.filter((m: Module) =>
+      (GAME_TYPES as readonly string[]).includes(m.type)
     );
-    let materiModules = authStore.modules.filter((m: Record<string, unknown>) =>
-      (MATERI_RAKIT_TYPES as readonly string[]).includes(m.type as string)
+    let materiModules = authStore.modules.filter((m: Module) =>
+      (MATERI_RAKIT_TYPES as readonly string[]).includes(m.type)
     );
 
     // Step 1: Auto-generate content if enabled
@@ -137,15 +138,15 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       const generatedModules = generated.modules;
       // Merge generated modules into authoring store if not already there
       const existingTypes = new Set(
-        authStore.modules.map((m: Record<string, unknown>) => (m.type as string) + '_' + (m.title as string))
+        authStore.modules.map((m: Module) => m.type + '_' + m.title)
       );
       const newModules = generatedModules.filter(
-        m => !existingTypes.has((m.type as string) + '_' + (m.title as string))
+        m => !existingTypes.has((m as Record<string, unknown>).type as string + '_' + (m as Record<string, unknown>).title as string)
       );
       if (newModules.length > 0) {
         // Ensure all auto-generated modules have stable _id fields
         // so resolveModule() can find them by moduleId
-        const modulesWithIds = ensureModuleIds(newModules);
+        const modulesWithIds = ensureModuleIds(newModules) as Module[];
         useAuthoringStore.setState({
           modules: [...authStore.modules, ...modulesWithIds],
           dirty: true,
@@ -154,11 +155,11 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       }
       // Re-read after merge
       const updatedModules = useAuthoringStore.getState().modules;
-      games = updatedModules.filter((m: Record<string, unknown>) =>
-        (GAME_TYPES as readonly string[]).includes(m.type as string)
+      games = updatedModules.filter((m: Module) =>
+        (GAME_TYPES as readonly string[]).includes(m.type)
       );
-      materiModules = updatedModules.filter((m: Record<string, unknown>) =>
-        (MATERI_RAKIT_TYPES as readonly string[]).includes(m.type as string)
+      materiModules = updatedModules.filter((m: Module) =>
+        (MATERI_RAKIT_TYPES as readonly string[]).includes(m.type)
       );
     }
 

@@ -1,7 +1,7 @@
 // ── Preset Slice ──────────────────────────────────────────────────
 import type { StateCreator } from 'zustand';
 import { toast } from 'sonner';
-import type { AuthoringState, KuisItem, MateriBlok } from './types';
+import type { AuthoringState, KuisItem, MateriBlok, Module, SkenarioChapter } from './types';
 import { deepClone } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
@@ -78,10 +78,10 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       atp: atp ? deepClone(atp) : get().atp,
       alur: alur ? deepClone(alur.steps) : [],
       kuis: kuis ? ensureKuisIds(deepClone(kuis.soal) as KuisItem[]) : [],
-      skenario: skenario ? deepClone(skenario) : [],
+      skenario: skenario ? deepClone(skenario) as SkenarioChapter[] : [],
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
-      modules: modules ? ensureModuleIds(deepClone(modules)) : [],
-      games: modules ? ensureModuleIds(deepClone(modules)).filter((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string)) : [],
+      modules: modules ? ensureModuleIds(deepClone(modules)) as Module[] : [],
+      games: modules ? (ensureModuleIds(deepClone(modules)) as Module[]).filter(m => (GAME_TYPES as readonly string[]).includes(m.type)) : [],
       petunjuk: petunjuk ? deepClone(petunjuk) : { ...DEFAULT_PETUNJUK },
       diskusi: diskusi ? deepClone(diskusi) : { ...DEFAULT_DISKUSI },
       refleksi: refleksi ? deepClone(refleksi) : { ...DEFAULT_REFLEKSI },

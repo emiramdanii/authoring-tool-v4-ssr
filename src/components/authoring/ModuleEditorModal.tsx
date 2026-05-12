@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthoringStore } from '@/store/authoring-store';
-import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/PresetModuleCard';
+import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/preset-module-card';
 import { FieldLabel, INPUT_CLS } from './module-editors/shared';
 import type { EdProps } from './module-editors/shared';
 import { Pencil, Eye } from 'lucide-react';
@@ -55,7 +55,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
 
   if (!open || !mod) return null;
 
-  const t = mod.type as string;
+  const t = mod.type; // Already typed as string
 
   const uf = (key: string, value: unknown) => updateField(moduleIndex, key, value);
   const ai = (arrayKey: string, item: Record<string, unknown>) => add(moduleIndex, arrayKey, item);
@@ -70,7 +70,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border flex-shrink-0">
           <div>
             <h3 className="text-lg font-bold text-app-primary"><Pencil size={16} className="inline" /> Edit Modul</h3>
-            <p className="text-xs text-app-secondary mt-0.5 capitalize">{t} — {(mod.title as string) || '(tanpa judul)'}</p>
+            <p className="text-xs text-app-secondary mt-0.5 capitalize">{t} — {mod.title || '(tanpa judul)'}</p>
           </div>
           <button onClick={onClose} className="text-app-muted hover:text-app-primary transition-colors text-xl leading-none p-1">✕</button>
         </div>
@@ -80,7 +80,7 @@ export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props)
           {/* Common title field */}
           <div>
             <FieldLabel>Judul Modul</FieldLabel>
-            <input className={INPUT_CLS} placeholder="Judul modul…" value={(mod.title as string) || ''} onChange={(e) => uf('title', e.target.value)} />
+            <input className={INPUT_CLS} placeholder="Judul modul…" value={mod.title || ''} onChange={(e) => uf('title', e.target.value)} />
           </div>
 
           {/* Type-specific editors */}

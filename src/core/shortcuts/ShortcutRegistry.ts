@@ -73,6 +73,7 @@ function eventMatchesKeys(e: KeyboardEvent, parsed: ParsedKeys): boolean {
   const keyMap: Record<string, string[]> = {
     'escape': ['escape', 'esc'],
     'delete': ['delete', 'del'],
+    'backspace': ['backspace'],
     'arrowup': ['arrowup'],
     'arrowdown': ['arrowdown'],
     'arrowleft': ['arrowleft'],

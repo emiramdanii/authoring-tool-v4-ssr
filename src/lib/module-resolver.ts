@@ -4,7 +4,7 @@
 // ═════════════════════════════════════════════════════════════════════
 
 import type { CanvaElement } from '@/components/canva/types';
-import type { KuisItem } from '@/store/authoring/types';
+import type { KuisItem, Module } from '@/store/authoring/types';
 
 /**
  * Resolve a canva element's data reference to actual module data.
@@ -18,8 +18,8 @@ import type { KuisItem } from '@/store/authoring/types';
  */
 export function resolveModule(
   el: CanvaElement,
-  allModules: Array<Record<string, unknown>>,
-): Record<string, unknown> | null {
+  allModules: Module[],
+): Module | null {
   // Priority 1: moduleId (stable reference)
   if (el.moduleId) {
     const found = allModules.find(m => m._id === el.moduleId);
@@ -99,10 +99,10 @@ export function generateKuisId(): string {
  * Migrates existing modules that don't have stable IDs yet.
  * Returns a new array with _id fields added where missing.
  */
-export function ensureModuleIds(modules: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+export function ensureModuleIds(modules: Array<Record<string, unknown>>): Module[] {
   return modules.map(m => {
-    if (m._id) return m;
-    return { ...m, _id: generateModuleId() };
+    if (m._id) return m as Module;
+    return { ...m, _id: generateModuleId() } as Module;
   });
 }
 

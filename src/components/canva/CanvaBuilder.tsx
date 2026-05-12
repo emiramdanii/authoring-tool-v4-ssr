@@ -4,11 +4,13 @@ import { useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useAutoSave } from '@/hooks/use-auto-save';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
-import Stage from './Stage';
-import RightPanel from './RightPanel';
+import Stage from './stage';
+import RightPanel from './right-panel';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
 import CommandPalette, { useCommandPalette } from '@/components/shared/CommandPalette';
 import dynamic from 'next/dynamic';
@@ -30,8 +32,15 @@ export default function CanvaBuilder() {
   // It was causing a race condition: resetCanvas() creates fresh pages,
   // then CanvaBuilder mounts and loadFromStorage() overwrites them with
   // stale data from localStorage. Persistence is now handled by:
-  // 1. Auto-save (subscribe + 1500ms debounce) below
+  // 1. Unified auto-save via useAutoSave() hook (2 000 ms debounce)
   // 2. AuthoringTool initial load via loadFromStorage on first app mount
+
+  // ── Unified auto-save ──────────────────────────────────────
+  // useAutoSave() is the SINGLE source of truth for auto-saving.
+  // It subscribes to both canva and authoring stores, debounces at
+  // 2 000 ms, then saves both atomically. No other component should
+  // implement its own auto-save subscription.
+  useAutoSave();
 
   // ── Sync interactive page total with canva pages ─────────────
   useEffect(() => {
@@ -42,32 +51,6 @@ export default function CanvaBuilder() {
   // Removed: connectHistoryToEditBus() was already called in store.ts
   // (line 83). Having it here too caused every schema edit to be
   // recorded TWICE in PatchHistory, making undo/redo unreliable.
-
-  // ── Auto-save to localStorage on changes (debounced) ────────
-  // This is the ONLY auto-save in the app. Toolbar and StatusBar
-  // read _saveStatus from the store instead of implementing their own.
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    const unsub = useCanvaStore.subscribe(() => {
-      // Mark as "unsaved" immediately so UI responds
-      const currentStatus = useCanvaStore.getState()._saveStatus;
-      if (currentStatus !== 'saving') {
-        useCanvaStore.setState({ _saveStatus: 'unsaved' });
-      }
-      // Debounce: save after 1500ms of inactivity
-      clearTimeout(timer);
-      useCanvaStore.setState({ _saveStatus: 'saving' });
-      timer = setTimeout(() => {
-        // Also save authoring store if dirty
-        const authDirty = useAuthoringStore.getState().dirty;
-        if (authDirty) {
-          useAuthoringStore.getState().saveToStorage();
-        }
-        useCanvaStore.getState().saveToStorage();
-      }, 1500);
-    });
-    return () => { clearTimeout(timer); unsub(); };
-  }, []);
 
   // ── Warn before unload if authoring data is dirty ────────────
   useEffect(() => {
@@ -87,117 +70,281 @@ export default function CanvaBuilder() {
     // Mouse position no longer tracked — was only used by StatusBar
   }, []);
 
-  // ── Keyboard shortcuts (design mode only) ──────────────────
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept shortcuts when the interactive Play overlay is active.
-      // The Play overlay has its own keyboard handler for navigation.
-      const iMode = useInteractiveStore.getState().mode;
-      if (iMode === 'interactive') return;
+  // ── Unified keyboard shortcuts via registry ──────────────────
+  // Replaces the separate useEffect with window.addEventListener('keydown', ...)
+  // These shortcuts are scoped to 'canvas' and only fire when the
+  // keyboardManager's active context is 'canvas'.
+  useKeyboardShortcuts([
+    // ── History ────────────────────────────────────────────────────
+    {
+      id: 'canvas.undo',
+      keys: 'ctrl+z',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        e.preventDefault();
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        store.undo();
+      },
+      description: 'Undo',
+      category: 'History',
+    },
+    {
+      id: 'canvas.redo',
+      keys: 'ctrl+y',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        e.preventDefault();
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        store.redo();
+      },
+      description: 'Redo',
+      category: 'History',
+    },
+    {
+      id: 'canvas.redo-alt',
+      keys: 'ctrl+shift+z',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        e.preventDefault();
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        store.redo();
+      },
+      description: 'Redo (alternative)',
+      category: 'History',
+    },
 
-      // Only handle shortcuts when Canva panel is active
-      const activePanel = useAuthoringStore.getState().activePanel;
-      if (activePanel !== 'canva') return;
-
-      const store = useCanvaStore.getState();
-      const target = e.target as HTMLElement;
-
-      // Don't intercept when editing text
-      if (target.contentEditable === 'true' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        return;
-      }
-
-      // Delete selected element(s)
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+    // ── Block editing ──────────────────────────────────────────────
+    {
+      id: 'canvas.delete-block',
+      keys: 'delete',
+      scope: 'canvas',
+      priority: 8,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
         if (store.selectedElId || store.selectedElIds.length > 0) {
           e.preventDefault();
           store.deleteSelected();
         }
-        return;
-      }
-
-      // Undo / Redo
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) store.redo();
-        else store.undo();
-        return;
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-        e.preventDefault();
-        store.redo();
-        return;
-      }
-
-      // Copy / Paste
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+      },
+      description: 'Delete selected element',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.backspace-delete',
+      keys: 'backspace', // Note: 'backspace' maps to Backspace key
+      scope: 'canvas',
+      priority: 8,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (store.selectedElId || store.selectedElIds.length > 0) {
+          e.preventDefault();
+          store.deleteSelected();
+        }
+      },
+      description: 'Delete selected element (Backspace)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.duplicate-block',
+      keys: 'ctrl+d',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (store.selectedElId || store.selectedElIds.length > 0) {
+          e.preventDefault();
+          store.copySelected();
+          store.pasteElements();
+        }
+      },
+      description: 'Duplicate selected block',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.copy-block',
+      keys: 'ctrl+c',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
         if (store.selectedElId || store.selectedElIds.length > 0) {
           e.preventDefault();
           store.copySelected();
         }
-        return;
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+      },
+      description: 'Copy selected block',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.paste-block',
+      keys: 'ctrl+v',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
         if (store._clipboard.length > 0) {
           e.preventDefault();
           store.pasteElements();
         }
-        return;
-      }
-      // Duplicate (Ctrl+D)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-        if (store.selectedElId || store.selectedElIds.length > 0) {
-          e.preventDefault();
-          store.copySelected();
-          store.pasteElements();
-        }
-        return;
-      }
+      },
+      description: 'Paste block from clipboard',
+      category: 'Block',
+    },
 
-      // Arrow keys: nudge selected element(s)
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    // ── Arrow keys: nudge selected elements ────────────────────────
+    {
+      id: 'canvas.nudge-up',
+      keys: 'arrowup',
+      scope: 'canvas',
+      priority: 5,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
         if (!store.selectedElId && store.selectedElIds.length === 0) return;
         e.preventDefault();
-        const step = e.shiftKey ? 5 : 1;
-        switch (e.key) {
-          case 'ArrowUp': store.nudgeSelected(0, -step); break;
-          case 'ArrowDown': store.nudgeSelected(0, step); break;
-          case 'ArrowLeft': store.nudgeSelected(-step, 0); break;
-          case 'ArrowRight': store.nudgeSelected(step, 0); break;
-        }
-        return;
-      }
-
-      // Escape: deselect
-      if (e.key === 'Escape') {
-        store.selectElement(null);
-        return;
-      }
-
-      // Tool shortcuts
-      if (e.key === 'v' || e.key === 'V') store.setTool('select');
-      if (e.key === 't' || e.key === 'T') store.setTool('text');
-
-      // Zoom shortcuts
-      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        store.nudgeSelected(0, e.shiftKey ? -5 : -1);
+      },
+      description: 'Nudge up (Shift: 5px)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.nudge-down',
+      keys: 'arrowdown',
+      scope: 'canvas',
+      priority: 5,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedElId && store.selectedElIds.length === 0) return;
         e.preventDefault();
-        if (store.zoom === -1) store.setZoom(1); // Exit auto-fit, go to 100%
+        store.nudgeSelected(0, e.shiftKey ? 5 : 1);
+      },
+      description: 'Nudge down (Shift: 5px)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.nudge-left',
+      keys: 'arrowleft',
+      scope: 'canvas',
+      priority: 5,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedElId && store.selectedElIds.length === 0) return;
+        e.preventDefault();
+        store.nudgeSelected(e.shiftKey ? -5 : -1, 0);
+      },
+      description: 'Nudge left (Shift: 5px)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.nudge-right',
+      keys: 'arrowright',
+      scope: 'canvas',
+      priority: 5,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedElId && store.selectedElIds.length === 0) return;
+        e.preventDefault();
+        store.nudgeSelected(e.shiftKey ? 5 : 1, 0);
+      },
+      description: 'Nudge right (Shift: 5px)',
+      category: 'Block',
+    },
+
+    // ── Selection ──────────────────────────────────────────────────
+    {
+      id: 'canvas.escape',
+      keys: 'escape',
+      scope: 'canvas',
+      priority: 3,
+      handler: () => {
+        useCanvaStore.getState().selectElement(null);
+      },
+      description: 'Deselect / Exit editing',
+      category: 'Selection',
+    },
+
+    // ── Tool shortcuts (V=select, T=text) ─────────────────────────
+    {
+      id: 'canvas.tool-select',
+      keys: 'v',
+      scope: 'canvas',
+      priority: 2,
+      handler: () => {
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        useCanvaStore.getState().setTool('select');
+      },
+      description: 'Select tool',
+      category: 'Tools',
+    },
+    {
+      id: 'canvas.tool-text',
+      keys: 't',
+      scope: 'canvas',
+      priority: 2,
+      handler: () => {
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        useCanvaStore.getState().setTool('text');
+      },
+      description: 'Text tool',
+      category: 'Tools',
+    },
+
+    // ── Zoom shortcuts ─────────────────────────────────────────────
+    {
+      id: 'canvas.zoom-in',
+      keys: 'ctrl+=',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        e.preventDefault();
+        const store = useCanvaStore.getState();
+        if (store.zoom === -1) store.setZoom(1);
         else store.zoomDelta(0.1);
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+      },
+      description: 'Zoom in',
+      category: 'View',
+    },
+    {
+      id: 'canvas.zoom-out',
+      keys: 'ctrl+-',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
         e.preventDefault();
-        if (store.zoom === -1) store.setZoom(0.8); // Exit auto-fit, start from 80%
+        const store = useCanvaStore.getState();
+        if (store.zoom === -1) store.setZoom(0.8);
         else store.zoomDelta(-0.1);
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+      },
+      description: 'Zoom out',
+      category: 'View',
+    },
+    {
+      id: 'canvas.zoom-fit',
+      keys: 'ctrl+0',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
         e.preventDefault();
-        store.zoomToFit();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+        useCanvaStore.getState().zoomToFit();
+      },
+      description: 'Fit to screen',
+      category: 'View',
+    },
+  ], []);
 
   return (
     <MobileGuard>

@@ -1,6 +1,79 @@
 // ── Types ────────────────────────────────────────────────────────
 export type PanelId = 'dashboard' | 'dokumen' | 'konten' | 'canva' | 'autogen' | 'projects' | 'import' | 'preview' | 'versions';
 
+// ── Module Types ────────────────────────────────────────────────
+/**
+ * Base interface for all modules and games.
+ *
+ * Provides typed access to the most common fields (`_id`, `type`, `title`)
+ * while still allowing dynamic property access via the index signature.
+ * This eliminates the need for `as string` casts on core fields while
+ * remaining compatible with the 26+ module types that have varied shapes.
+ *
+ * MIGRATION NOTE: Components that previously used `Record<string, unknown>`
+ * should now use `Module`. Accessing `mod.type`, `mod._id`, `mod.title`
+ * no longer requires a type cast. Other fields like `mod.intro`,
+ * `mod.kartu`, etc. still return `unknown` from the index signature
+ * and may need individual casts until per-type interfaces are added.
+ */
+export interface Module {
+  /** Stable UUID reference (auto-generated on creation) */
+  _id: string;
+  /** Module type identifier (e.g. 'flashcard', 'roda', 'skenario') */
+  type: string;
+  /** Display title */
+  title: string;
+  /** Layout variant for preset card rendering ('A' | 'B' | 'C' | 'D') */
+  layoutVariant?: string;
+  /** Allow dynamic property access for type-specific fields */
+  [key: string]: unknown;
+}
+
+// ── Game Type ────────────────────────────────────────────────────
+/**
+ * A Game is simply a Module whose `type` is in the GAME_TYPES list.
+ * Games are derived from the modules array by filtering, so they
+ * share the same shape. This type alias makes intent clear.
+ */
+export type Game = Module;
+
+// ── Skenario Types ──────────────────────────────────────────────
+export interface SkenarioSetupLine {
+  speaker: string;
+  text: string;
+}
+
+export interface SkenarioConsequence {
+  icon: string;
+  text: string;
+}
+
+export interface SkenarioChoice {
+  icon: string;
+  label: string;
+  detail: string;
+  good: boolean;
+  pts: number;
+  level: string;
+  norma: string;
+  resultTitle: string;
+  resultBody: string;
+  consequences: SkenarioConsequence[];
+  [key: string]: unknown;
+}
+
+export interface SkenarioChapter {
+  title: string;
+  bg: string;
+  charEmoji: string;
+  charColor: string;
+  charPants: string;
+  choicePrompt: string;
+  setup: SkenarioSetupLine[];
+  choices: SkenarioChoice[];
+  [key: string]: unknown;
+}
+
 export interface MetaState {
   judulPertemuan: string;
   subjudul: string;
@@ -211,10 +284,10 @@ export interface AuthoringState {
   tp: TpItem[];
   atp: AtpState;
   alur: AlurItem[];
-  skenario: Array<Record<string, unknown>>;
+  skenario: SkenarioChapter[];
   kuis: KuisItem[];
-  modules: Array<Record<string, unknown>>;
-  games: Array<Record<string, unknown>>;
+  modules: Module[];
+  games: Game[];
   materi: MateriState;
   petunjuk: PetunjukData;
   diskusi: DiskusiData;
@@ -281,7 +354,7 @@ export interface AuthoringState {
   updateModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => void;
 
   // Skenario actions
-  setSkenario: (data: Array<Record<string, unknown>>) => void;
+  setSkenario: (data: SkenarioChapter[]) => void;
   addSkenarioChapter: () => void;
   removeSkenarioChapter: (index: number) => void;
   updateSkenarioChapter: (index: number, key: string, value: unknown) => void;

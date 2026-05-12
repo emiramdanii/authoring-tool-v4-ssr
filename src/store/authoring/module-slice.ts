@@ -1,12 +1,12 @@
 // ── Module Slice ──────────────────────────────────────────────────
 import type { StateCreator } from 'zustand';
-import type { AuthoringState } from './types';
+import type { AuthoringState, Module, Game } from './types';
 import { generateModuleId } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
 
 /** Derive games from modules — called on every modules change */
-function deriveGames(modules: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
-  return modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
+function deriveGames(modules: Module[]): Game[] {
+  return modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type));
 }
 
 export type ModuleSlice = Pick<AuthoringState, 'modules' | 'addModule' | 'removeModule' | 'updateModuleField' | 'moveModule' | 'addModuleItem' | 'removeModuleItem' | 'updateModuleItem'>;
@@ -48,7 +48,8 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       dragdrop: { type: 'dragdrop', title: '', instruksi: '', items: [], target: [] },
     };
     const base = defaults[typeId] || { type: typeId, title: '' };
-    set((s) => ({ modules: [...s.modules, { ...base, _id: generateModuleId() }], games: deriveGames([...s.modules, { ...base, _id: generateModuleId() }]), dirty: true }));
+    const newModule: Module = { ...base, _id: generateModuleId() } as Module;
+    set((s) => ({ modules: [...s.modules, newModule], games: deriveGames([...s.modules, newModule]), dirty: true }));
   },
   removeModule: (index: number) => {
     set((s) => { const modules = s.modules.filter((_, i) => i !== index); return { modules, games: deriveGames(modules), dirty: true }; });
@@ -74,7 +75,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       const mod = { ...modules[moduleIndex] };
       const arr = [...((mod[arrayKey] as unknown[]) || [])];
       arr.push(defaultItem);
-      (mod as Record<string, unknown>)[arrayKey] = arr;
+      mod[arrayKey] = arr;
       modules[moduleIndex] = mod;
       return { modules, games: deriveGames(modules), dirty: true };
     });
@@ -84,7 +85,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       const modules = [...s.modules];
       const mod = { ...modules[moduleIndex] };
       const arr = ((mod[arrayKey] as unknown[]) || []).filter((_, i) => i !== itemIndex);
-      (mod as Record<string, unknown>)[arrayKey] = arr;
+      mod[arrayKey] = arr;
       modules[moduleIndex] = mod;
       return { modules, games: deriveGames(modules), dirty: true };
     });
@@ -95,7 +96,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
       const mod = { ...modules[moduleIndex] };
       const arr = [...((mod[arrayKey] as Record<string, unknown>[]) || [])];
       arr[itemIndex] = { ...arr[itemIndex], [key]: value };
-      (mod as Record<string, unknown>)[arrayKey] = arr;
+      mod[arrayKey] = arr;
       modules[moduleIndex] = mod;
       return { modules, games: deriveGames(modules), dirty: true };
     });

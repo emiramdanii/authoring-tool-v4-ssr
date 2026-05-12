@@ -19,7 +19,12 @@ import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
 type SaveStatus = 'unsaved' | 'saving' | 'saved' | 'error';
 
 export default function StatusBar() {
-  const { pages, currentPageIndex, ratioId, zoom: storeZoom, setZoom, zoomToFit } = useCanvaStore();
+  const pages = useCanvaStore(s => s.pages);
+  const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const ratioId = useCanvaStore(s => s.ratioId);
+  const storeZoom = useCanvaStore(s => s.zoom);
+  const setZoom = useCanvaStore(s => s.setZoom);
+  const zoomToFit = useCanvaStore(s => s.zoomToFit);
   const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
     const r = RATIOS.find(r => r.id === s.ratioId);

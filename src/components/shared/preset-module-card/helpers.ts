@@ -22,7 +22,7 @@ export function obj(val: unknown): Record<string, unknown> {
 
 /** Count items in a module for fallback preview */
 export function getItemCount(mod: M): number {
-  const t = str(mod.type);
+  const t = mod.type; // Already typed as string on Module
   const keys: Record<string, string> = {
     video: 'pertanyaan', flashcard: 'kartu',
     infografis: 'kartu', 'studi-kasus': 'pertanyaan', timeline: 'events',

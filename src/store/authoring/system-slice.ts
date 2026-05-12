@@ -1,7 +1,7 @@
 // ── System Slice ──────────────────────────────────────────────────
 import type { StateCreator } from 'zustand';
 import { toast } from 'sonner';
-import type { AuthoringState, KuisItem } from './types';
+import type { AuthoringState, KuisItem, Module } from './types';
 import { STORAGE_KEY } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
@@ -67,13 +67,13 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         alur: data.alur || [],
         skenario: data.skenario || [],
         kuis: ensureKuisIds((data.kuis || []) as KuisItem[]),
-        modules: ensureModuleIds(data.modules || []),
+        modules: ensureModuleIds(data.modules || []) as Module[],
         // Derive games from modules — no longer stored separately
-        games: ensureModuleIds(
+        games: (ensureModuleIds(
           (data.modules || []).filter((m: Record<string, unknown>) =>
             (GAME_TYPES as readonly string[]).includes(m.type as string)
           )
-        ),
+        ) as Module[]),
         materi: data.materi || { blok: [] },
         guruPw: data.guruPw || 'guru123',
         petunjuk: data.petunjuk || get().petunjuk,
