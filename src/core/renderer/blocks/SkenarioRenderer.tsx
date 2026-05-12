@@ -88,7 +88,10 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
     timersRef.current.push(timer);
   };
 
-  const totalPts = history.reduce((sum, h) => sum + h.pts, 0);
+  const totalPts = React.useMemo(
+    () => history.reduce((sum, h) => sum + h.pts, 0),
+    [history],
+  );
   const totalMax = chapters.length * 20; // Max 20 pts per chapter
   const green = tokens.color('g');
   const red = tokens.color('r');

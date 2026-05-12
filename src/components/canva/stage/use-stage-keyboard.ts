@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { showUndoRedoToast } from '@/components/shared/StatusToast';
 
 interface UseStageKeyboardParams {
   selectedElIds: string[];
@@ -69,18 +70,21 @@ export function useStageKeyboard({
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
         e.preventDefault();
         undo();
+        showUndoRedoToast('↩ Undo');
         return;
       }
       // Ctrl+Y / Cmd+Y — redo
       if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
         e.preventDefault();
         redo();
+        showUndoRedoToast('↪ Redo');
         return;
       }
       // Ctrl+Shift+Z / Cmd+Shift+Z — redo (alternative)
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z') {
         e.preventDefault();
         redo();
+        showUndoRedoToast('↪ Redo');
         return;
       }
 

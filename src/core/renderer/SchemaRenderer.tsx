@@ -26,6 +26,9 @@ import { SCENE_REGISTRY, getBlockDefinition } from '../registry/SceneRegistry';
 // Import BlockSelectionOverlay — reusable editing overlay
 import { BlockSelectionOverlay } from '../editor/overlay/BlockSelectionOverlay';
 
+// Import BlockErrorBoundary — per-block crash isolation
+import { BlockErrorBoundary } from './BlockErrorBoundary';
+
 // ═══════════════════════════════════════════════════════════════════
 // SCREEN RENDERER — Renders a single ScreenSchema
 // ═══════════════════════════════════════════════════════════════════
@@ -276,9 +279,11 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   // In non-canvas mode, render without overlay (pure rendering)
   if (!isCompact) {
     return (
-      <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} />
-      </React.Suspense>
+      <BlockErrorBoundary blockType={block.type} blockId={blockId}>
+        <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} />
+        </React.Suspense>
+      </BlockErrorBoundary>
     );
   }
 
@@ -300,9 +305,11 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
       onMoveDown={onMoveDown}
       onDuplicate={onDuplicate}
     >
-      <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
-      </React.Suspense>
+      <BlockErrorBoundary blockType={block.type} blockId={blockId}>
+        <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
+        </React.Suspense>
+      </BlockErrorBoundary>
     </BlockSelectionOverlay>
   );
 });

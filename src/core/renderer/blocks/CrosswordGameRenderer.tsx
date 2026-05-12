@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 /* ═══════════════════════════════════════════════════════════════════════
    CROSSWORD GAME RENDERER (Teka Silang) — SSR renderer system
@@ -239,12 +239,21 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
       } else {
         playSound('ding');
       }
-      announceToScreenReader(`Teka Silang selesai! Skor kamu: ${score} dari ${validCount} (${pct}%)`, 'assertive');
+      a11y.announceComplete(score, validCount);
     }
     if (phase !== 'done') {
       hasReportedRef.current = false;
     }
   }, [phase, interactive, block.id, validCount, wordsWithReveals, reportScore, pageIndex]);
+
+  // ── Accessibility hook ────────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Teka Silang',
+    blockId: block.id,
+    score: 0,
+    maxScore: validCount,
+    interactive: interactive ?? false,
+  });
 
   // ── Inline editing hooks ────────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -552,13 +561,11 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
       className="space-y-3 game-block"
       onKeyDown={handleKeyDown}
       tabIndex={0}
-      {...(interactive ? { role: 'application' } : {})}
-      aria-label="Teka Silang: crossword puzzle"
-      aria-describedby={`cw-instructions-${block.id || 'cw'}`}
+      {...a11y.rootAria}
       data-interactive
     >
       {/* Hidden instruction for screen readers */}
-      <span id={`cw-instructions-${block.id || 'cw'}`} className="sr-only">Isi huruf pada sel kosong untuk menyelesaikan teka silang</span>
+      <div id={a11y.instructionId} className="sr-only">Isi huruf pada sel kosong untuk menyelesaikan teka silang</div>
       {/* ── Header with title and progress ────────────────────────── */}
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -652,6 +659,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                 return (
                   <button
                     key={`cw-cell-${block.id || 'cw'}-${r}-${c}`}
+                    role="gridcell"
                     onClick={() => { if (interactive && phase === 'play') setActiveCell({ r, c }); }}
                     disabled={!interactive || phase !== 'play'}
                     className="flex items-center justify-center font-bold transition-all rounded"

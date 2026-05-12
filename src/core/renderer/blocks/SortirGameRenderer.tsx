@@ -110,7 +110,14 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
     tag: 'span',
   });
 
-  const totalPlaced = poolState.filter(p => p.placed).length;
+  const totalPlaced = React.useMemo(
+    () => poolState.filter(p => p.placed).length,
+    [poolState],
+  );
+  const unplacedPoolItems = React.useMemo(
+    () => poolState.filter(p => !p.placed),
+    [poolState],
+  );
   const totalItems = pool.length;
   const isCompleted = totalItems > 0 && totalPlaced >= totalItems;
 
@@ -274,7 +281,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
         <div className="w-full font-extrabold uppercase tracking-wider mb-2" style={{ fontSize: '11px', color: tokens.color('y') }}>
           <Package size={14} className="inline" /> Pilih Item ({totalPlaced}/{totalItems})
         </div>
-        {poolState.filter(p => !p.placed).map(p => (
+        {unplacedPoolItems.map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
             aria-selected={selected === p.id}
             className={`px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}

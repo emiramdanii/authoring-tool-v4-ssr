@@ -9,6 +9,7 @@ import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
+import { UndoRedoToast } from '@/components/shared/StatusToast';
 import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 // connectHistoryToEditBus is called once in store.ts (canonical location).
@@ -187,6 +188,7 @@ export default function CanvaBuilder() {
 
   return (
     <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
+      <UndoRedoToast />
       {/* Top Toolbar */}
       <Toolbar />
 

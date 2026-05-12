@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 // ═══════════════════════════════════════════════════════════════════
 // MATCHING GAME RENDERER — Pasangkan Game for PPKn education
@@ -75,7 +75,10 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
   );
 
   // Data-key-based state: reset when pairs content changes
-  const pairsKey = validPairs.map(p => `${p.left}|${p.right}`).join(';;');
+  const pairsKey = React.useMemo(
+    () => validPairs.map(p => `${p.left}|${p.right}`).join(';;'),
+    [validPairs],
+  );
 
   const [shuffledRight, setShuffledRight] = React.useState<ShuffledRight[]>([]);
 
@@ -89,7 +92,6 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
     setWrongAttempts(0);
     setWrongRightIdx(null);
     setPhase('play');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pairsKey]);
 
   // ── Timer cleanup on unmount ────────────────────────────────────
@@ -110,7 +112,6 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
     setWrongRightIdx(null);
     setPhase('play');
     setShuffledRight(shuffleRightItems(validPairs));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [replayGeneration]);
 
   // ── Interactive store: score reporting ───────────────────────────
@@ -143,11 +144,20 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
       } else {
         playSound('ding');
       }
-      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${validPairs.length}`, 'assertive');
+      a11y.announceComplete(score, validPairs.length);
     }
     // Reset reported flag when replaying
     if (phase !== 'done') hasReportedRef.current = false;
   }, [phase, interactive, block.id, wrongAttempts, validPairs.length, reportScore, pageIndex]);
+
+  // ── Accessibility hook ──────────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Pasangkan',
+    blockId: block.id,
+    score: matchedLeft.size,
+    maxScore: validPairs.length,
+    interactive: interactive ?? false,
+  });
 
   // ── Inline editing hooks (before early returns) ─────────────────
   const titleEditor = useInlineEditor({
@@ -156,6 +166,64 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
     value: block.title ?? '',
     tag: 'span',
   });
+
+  // ── Build matched pair mapping (leftIdx → shuffledRightIdx) ──────
+  // Used to draw visual connection lines between matched left-right pairs
+  const matchedPairMap = React.useMemo(() => {
+    const map = new Map<number, number>();
+    matchedLeft.forEach(leftIdx => {
+      const rightShuffledIdx = shuffledRight.findIndex(
+        r => r.idx === leftIdx && matchedRight.has(shuffledRight.indexOf(r)),
+      );
+      if (rightShuffledIdx !== -1) {
+        map.set(leftIdx, rightShuffledIdx);
+      }
+    });
+    return map;
+  }, [matchedLeft, matchedRight, shuffledRight]);
+
+  // ── Refs for SVG line positioning ────────────────────────────────
+  const leftItemRefs = React.useRef<Map<number, HTMLButtonElement>>(new Map());
+  const rightItemRefs = React.useRef<Map<number, HTMLButtonElement>>(new Map());
+  const gridContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // ── SVG line coordinates (recalculated on render) ────────────────
+  const [lineCoords, setLineCoords] = React.useState<
+    Array<{ x1: number; y1: number; x2: number; y2: number; key: string }>
+  >([]);
+
+  // Recompute line positions when matches change
+  React.useEffect(() => {
+    if (matchedPairMap.size === 0) {
+      setLineCoords([]);
+      return;
+    }
+
+    const container = gridContainerRef.current;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const lines: Array<{ x1: number; y1: number; x2: number; y2: number; key: string }> = [];
+
+    matchedPairMap.forEach((rightShuffledIdx, leftIdx) => {
+      const leftEl = leftItemRefs.current.get(leftIdx);
+      const rightEl = rightItemRefs.current.get(rightShuffledIdx);
+      if (!leftEl || !rightEl) return;
+
+      const leftRect = leftEl.getBoundingClientRect();
+      const rightRect = rightEl.getBoundingClientRect();
+
+      lines.push({
+        x1: leftRect.right - containerRect.left,
+        y1: leftRect.top + leftRect.height / 2 - containerRect.top,
+        x2: rightRect.left - containerRect.left,
+        y2: rightRect.top + rightRect.height / 2 - containerRect.top,
+        key: `match-line-${block.id || 'match'}-${leftIdx}`,
+      });
+    });
+
+    setLineCoords(lines);
+  }, [matchedPairMap, block.id]);
 
   // ── Empty state ─────────────────────────────────────────────────
   if (validPairs.length === 0) {
@@ -290,7 +358,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
       setMatchedRight(prev => new Set(prev).add(shuffledIdx));
       setSelectedLeft(null);
       playSound('correct');
-      announceToScreenReader('Cocok! Pasangan benar', 'assertive');
+      a11y.announceCorrect();
 
       // Check if all pairs matched
       const newMatchedCount = matchedLeft.size + 1;
@@ -303,7 +371,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
       setWrongAttempts(prev => prev + 1);
       setWrongRightIdx(shuffledIdx);
       playSound('incorrect');
-      announceToScreenReader('Pasangan salah', 'assertive');
+      a11y.announceIncorrect();
 
       // Clear wrong highlight after brief flash
       if (wrongTimerRef.current) clearTimeout(wrongTimerRef.current);
@@ -313,69 +381,11 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
     }
   };
 
-  // ── Build matched pair mapping (leftIdx → shuffledRightIdx) ──────
-  // Used to draw visual connection lines between matched left-right pairs
-  const matchedPairMap = React.useMemo(() => {
-    const map = new Map<number, number>();
-    matchedLeft.forEach(leftIdx => {
-      const rightShuffledIdx = shuffledRight.findIndex(
-        r => r.idx === leftIdx && matchedRight.has(shuffledRight.indexOf(r)),
-      );
-      if (rightShuffledIdx !== -1) {
-        map.set(leftIdx, rightShuffledIdx);
-      }
-    });
-    return map;
-  }, [matchedLeft, matchedRight, shuffledRight]);
-
-  // ── Refs for SVG line positioning ────────────────────────────────
-  const leftItemRefs = React.useRef<Map<number, HTMLButtonElement>>(new Map());
-  const rightItemRefs = React.useRef<Map<number, HTMLButtonElement>>(new Map());
-  const gridContainerRef = React.useRef<HTMLDivElement>(null);
-
-  // ── SVG line coordinates (recalculated on render) ────────────────
-  const [lineCoords, setLineCoords] = React.useState<
-    Array<{ x1: number; y1: number; x2: number; y2: number; key: string }>
-  >([]);
-
-  // Recompute line positions when matches change
-  React.useEffect(() => {
-    if (matchedPairMap.size === 0) {
-      setLineCoords([]);
-      return;
-    }
-
-    const container = gridContainerRef.current;
-    if (!container) return;
-
-    const containerRect = container.getBoundingClientRect();
-    const lines: Array<{ x1: number; y1: number; x2: number; y2: number; key: string }> = [];
-
-    matchedPairMap.forEach((rightShuffledIdx, leftIdx) => {
-      const leftEl = leftItemRefs.current.get(leftIdx);
-      const rightEl = rightItemRefs.current.get(rightShuffledIdx);
-      if (!leftEl || !rightEl) return;
-
-      const leftRect = leftEl.getBoundingClientRect();
-      const rightRect = rightEl.getBoundingClientRect();
-
-      lines.push({
-        x1: leftRect.right - containerRect.left,
-        y1: leftRect.top + leftRect.height / 2 - containerRect.top,
-        x2: rightRect.left - containerRect.left,
-        y2: rightRect.top + rightRect.height / 2 - containerRect.top,
-        key: `match-line-${block.id || 'match'}-${leftIdx}`,
-      });
-    });
-
-    setLineCoords(lines);
-  }, [matchedPairMap, block.id]);
-
   // ══ PLAY SCREEN ══════════════════════════════════════════════════
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Pasangkan: ${matchedCount} dari ${totalPairs} pasangan cocok`} aria-describedby={`match-instructions-${block.id || 'match'}`} data-interactive>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`match-instructions-${block.id || 'match'}`} className="sr-only">Pilih item di kolom kiri, lalu cocokkan dengan jawaban di kolom kanan</span>
+      <div id={a11y.instructionId} className="sr-only">Pilih item di kolom kiri, lalu cocokkan dengan jawaban di kolom kanan</div>
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
@@ -404,10 +414,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
       {/* ── Progress bar ───────────────────────────────────────────── */}
       <div
         className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={matchedCount}
-        aria-valuemin={0}
-        aria-valuemax={totalPairs}
+        {...a11y.progressAria('Kemajuan Pasangkan', matchedCount, totalPairs)}
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
@@ -500,6 +507,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
                     ref={el => { if (el) leftItemRefs.current.set(i, el); }}
                     onClick={() => handleLeftClick(i)}
                     disabled={isMatched || !interactive}
+                    aria-label={`Soal: ${pair.left}${isMatched ? ', sudah cocok' : isSelected ? ', dipilih' : ''}`}
                     className={`p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
                       fontSize: '12px',
@@ -552,6 +560,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
                     ref={el => { if (el) rightItemRefs.current.set(si, el); }}
                     onClick={() => handleRightClick(r, si)}
                     disabled={isMatched || selectedLeft === null || !interactive}
+                    aria-label={`Jawaban: ${r.text}${isMatched ? ', sudah cocok' : ''}`}
                     className={`p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
                       fontSize: '12px',

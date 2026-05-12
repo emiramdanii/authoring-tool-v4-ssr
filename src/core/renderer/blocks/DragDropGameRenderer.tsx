@@ -24,7 +24,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 // ── Placed item entry (stored per target) ─────────────────────
 
@@ -72,8 +72,11 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
   const targets = block.targets || [];
 
   // Data-key-based state: reset when items or targets content changes
-  const dataKey = validItems.map(it => `${it.text}|${it.target}`).join(';;')
-    + '||' + targets.map(t => `${t.id}|${t.label}|${t.color ?? ''}`).join(';;');
+  const dataKey = React.useMemo(
+    () => validItems.map(it => `${it.text}|${it.target}`).join(';;')
+      + '||' + targets.map(t => `${t.id}|${t.label}|${t.color ?? ''}`).join(';;'),
+    [validItems, targets],
+  );
 
   // Reset all game state when block data changes
   React.useEffect(() => {
@@ -81,7 +84,6 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
     setSelectedIdx(null);
     setWrongAttempts(0);
     setPhase('play');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataKey]);
 
   // ── Replay watcher: reset all state when replayGeneration bumps ──
@@ -96,6 +98,22 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
   // ── Interactive store: score reporting ───────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
+  // ── Compute total placed count ──────────────────────────────────
+  const totalPlaced = React.useMemo(
+    () => Object.values(placed).reduce((sum, arr) => sum + arr.length, 0),
+    [placed],
+  );
+  const totalItems = validItems.length;
+
+  // ── Accessibility hook ──────────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Seret & Letakkan',
+    blockId: block.id,
+    score: totalPlaced,
+    maxScore: totalItems,
+    interactive: interactive ?? false,
+  });
+
   // ── Inline editing hooks (before early returns) ─────────────────
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -104,12 +122,6 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
     tag: 'span',
   });
 
-  // ── Compute total placed count ──────────────────────────────────
-  const totalPlaced = React.useMemo(
-    () => Object.values(placed).reduce((sum, arr) => sum + arr.length, 0),
-    [placed],
-  );
-  const totalItems = validItems.length;
   const isCompleted = totalItems > 0 && totalPlaced >= totalItems;
 
   // Auto-transition to 'done' when all items placed
@@ -148,7 +160,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
       } else {
         playSound('ding');
       }
-      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${validItems.length} (${pct}%)`, 'assertive');
+      a11y.announceComplete(score, validItems.length);
     }
     // Reset reported flag when replaying
     if (phase !== 'done') hasReportedRef.current = false;
@@ -295,13 +307,13 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
       }));
       setSelectedIdx(null);
       playSound('correct');
-      announceToScreenReader('Item ditempatkan dengan benar!', 'assertive');
+      a11y.announceCorrect();
     } else {
       // ❌ Wrong target — increment wrong attempts and deselect
       setWrongAttempts(prev => prev + 1);
       setSelectedIdx(null);
       playSound('incorrect');
-      announceToScreenReader('Target salah, coba lagi', 'assertive');
+      a11y.announceIncorrect();
     }
   };
 
@@ -321,9 +333,9 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
 
   // ══ PLAY SCREEN ══════════════════════════════════════════════════
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Seret & Letakkan: ${totalPlaced} dari ${totalItems} item ditempatkan`} aria-describedby={`dd-instructions-${block.id || 'dd'}`} data-interactive>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`dd-instructions-${block.id || 'dd'}`} className="sr-only">Pilih item dari kolam, lalu klik target yang tepat untuk menempatkannya</span>
+      <div id={a11y.instructionId} className="sr-only">Pilih item dari kolam, lalu klik target yang tepat untuk menempatkannya</div>
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
@@ -352,10 +364,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
       {/* ── Progress bar ───────────────────────────────────────────── */}
       <div
         className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={totalPlaced}
-        aria-valuemin={0}
-        aria-valuemax={totalItems}
+        {...a11y.progressAria('Kemajuan Seret & Letakkan', totalPlaced, totalItems)}
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
@@ -404,7 +413,8 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
             <button
               key={`dd-item-${block.id || 'dd'}-${origIdx}`}
               onClick={() => handleItemClick(origIdx)}
-              aria-selected={selectedIdx === origIdx}
+              aria-pressed={selectedIdx === origIdx}
+              aria-label={`Item: ${item.text}${selectedIdx === origIdx ? ', dipilih' : ''}`}
               className={`px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
               style={{
                 background: bg,
@@ -506,6 +516,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
                         textDecoration: 'none',
                       }}
                       title="Klik untuk menghapus dari target"
+                      aria-label={`Hapus ${it.text} dari target`}
                     >
                       {it.text}
                     </button>

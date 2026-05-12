@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader, handleRovingFocus } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 // ═══════════════════════════════════════════════════════════════════
 // WORD SEARCH GAME RENDERER — Teka-Teki Kata for PPKn education
@@ -215,6 +215,15 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
   const [wrongAttempts, setWrongAttempts] = React.useState(0);
   const [phase, setPhase] = React.useState<GamePhase>('play');
 
+  // ── Accessibility hook ──────────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Teka-Teki Kata',
+    blockId: block.id,
+    score: found.size,
+    maxScore: placements.length,
+    interactive: interactive ?? false,
+  });
+
   // ── Replay watcher: reset all state when replayGeneration bumps ──
   const replayGeneration = useInteractiveStore(s => s.replayGeneration);
   React.useEffect(() => {
@@ -256,7 +265,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
       } else {
         playSound('ding');
       }
-      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${placements.length} (${pct}%)`, 'assertive');
+      a11y.announceComplete(score, placements.length);
     }
     // Reset guard when game is no longer done (e.g., after replay)
     if (phase !== 'done') {
@@ -314,7 +323,8 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         const newFound = new Set(found);
         newFound.add(matchedPlacement.word);
         setFound(newFound);
-        announceToScreenReader(`Kata ditemukan: ${matchedPlacement.word}. ${newFound.size} dari ${placements.length}`, 'assertive');
+        a11y.announceCorrect();
+        a11y.announce(`Kata ditemukan: ${matchedPlacement.word}. ${newFound.size} dari ${placements.length}`, 'assertive');
 
         // Mark all cells of the found placement
         const newFoundCells = new Set(foundCells);
@@ -331,7 +341,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         // ── Wrong selection ──
         playSound('incorrect');
         setWrongAttempts(prev => prev + 1);
-        announceToScreenReader('Kata tidak cocok', 'assertive');
+        a11y.announceIncorrect();
       }
 
       // Reset start cell for next selection
@@ -482,9 +492,9 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
   const cellSize = gridSize <= 8 ? 36 : gridSize <= 10 ? 32 : gridSize <= 12 ? 28 : 24;
 
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Teka-Teki Kata: ${found.size} dari ${placements.length} kata ditemukan`} aria-describedby={`wordsearch-instructions-${block.id || 'ws'}`} data-interactive>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`wordsearch-instructions-${block.id || 'ws'}`} className="sr-only">Temukan kata tersembunyi di grid huruf dengan memilih huruf awal dan akhir</span>
+      <div id={a11y.instructionId} className="sr-only">Temukan kata tersembunyi di grid huruf dengan memilih huruf awal dan akhir</div>
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
@@ -516,10 +526,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
       {/* Progress bar */}
       <div
         className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={found.size}
-        aria-valuemin={0}
-        aria-valuemax={placements.length}
+        {...a11y.progressAria('Kemajuan Teka-Teki Kata', found.size, placements.length)}
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
@@ -588,12 +595,13 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
                 return (
                   <button
                     key={`ws-cell-${block.id || 'ws'}-${r}-${c}`}
+                    role="gridcell"
                     onClick={() => handleCellClick(r, c)}
                     onKeyDown={(e) => {
                       if (!interactive || phase !== 'play') return;
                       const totalCells = gridSize * gridSize;
                       const flatIndex = r * gridSize + c;
-                      const next = handleRovingFocus(totalCells, flatIndex, e.key, 'both', gridSize);
+                      const next = a11y.rovingFocus(totalCells, flatIndex, e.key, 'both', gridSize);
                       if (next !== flatIndex) {
                         e.preventDefault();
                         const nextR = Math.floor(next / gridSize);

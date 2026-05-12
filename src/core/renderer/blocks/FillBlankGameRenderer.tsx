@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 /* ═══════════════════════════════════════════════════════════════════════
    FILL-IN-THE-BLANK GAME RENDERER (Isian)
@@ -95,11 +95,20 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
       if (pct >= 80) { playSound('complete'); fireConfettiCelebration(); }
       else if (pct >= 50) { playSound('complete'); fireConfetti({ count: 30 }); }
       else playSound('ding');
-      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${validQuestions.length}`, 'assertive');
+      a11y.announceComplete(score, validQuestions.length);
     }
     // Reset reported flag when no longer in result phase (replay)
     if (phase !== 'result') hasReportedRef.current = false;
   }, [phase, interactive, block.id, score, validQuestions.length, reportScore, pageIndex]);
+
+  // ── Accessibility hook ──────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Isian',
+    blockId: block.id,
+    score,
+    maxScore: validQuestions.length,
+    interactive: interactive ?? false,
+  });
 
   // ── Inline editing hooks ──────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -123,10 +132,10 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
     if (isCorrect) {
       setScore(s => s + 1);
       playSound('correct');
-      announceToScreenReader('Benar!', 'assertive');
+      a11y.announceCorrect();
     } else {
       playSound('incorrect');
-      announceToScreenReader('Salah, coba lagi', 'assertive');
+      a11y.announceIncorrect(validQuestions[currentQ].answer);
     }
     setAnswered(true);
 
@@ -245,10 +254,10 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
   const parts = qText.split(blankMark);
 
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Isian: Soal ${currentQ + 1} dari ${validQuestions.length}, Skor: ${score}`} aria-describedby={`fillblank-instructions-${block.id || 'fb'}`} data-interactive>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`fillblank-instructions-${block.id || 'fb'}`} className="sr-only">Ketik jawaban yang benar pada kolom isian</span>
-      <div className="sr-only" aria-live="polite" role="status">
+      <div id={a11y.instructionId} className="sr-only">Ketik jawaban yang benar pada kolom isian</div>
+      <div className="sr-only" {...a11y.liveAria('polite')}>
         {answered && (lastCorrect ? 'Jawaban benar!' : `Jawaban salah. Jawaban yang benar: ${q.answer}`)}
       </div>
       <div className="flex items-center justify-between min-w-0">
@@ -276,10 +285,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
 
       {/* ── Progress bar ────────────────────────────────────────── */}
       <div className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={currentQ + (answered ? 1 : 0)}
-        aria-valuemin={0}
-        aria-valuemax={validQuestions.length}
+        {...a11y.progressAria('Kemajuan Isian', currentQ + (answered ? 1 : 0), validQuestions.length)}
         style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all duration-500"
           style={{
@@ -364,6 +370,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
           onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
           disabled={answered}
           placeholder="Ketik jawaban..."
+          aria-label="Jawaban isian"
           className="w-full px-3 py-2 rounded-lg font-semibold outline-none transition-all"
           style={{
             fontSize: '12px',

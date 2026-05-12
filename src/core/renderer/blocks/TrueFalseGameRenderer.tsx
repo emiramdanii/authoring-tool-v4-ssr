@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TRUE/FALSE GAME RENDERER (Benar/Salah)
@@ -107,11 +107,20 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
       if (pct >= 80) { playSound('complete'); fireConfettiCelebration(); }
       else if (pct >= 50) { playSound('complete'); fireConfetti({ count: 30 }); }
       else playSound('ding');
-      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${validQuestions.length} (${pct}%)`, 'assertive');
+      a11y.announceComplete(score, validQuestions.length);
     }
     // Reset reported flag when no longer in result phase (replay)
     if (phase !== 'result') hasReportedRef.current = false;
   }, [phase, interactive, block.id, score, validQuestions.length, reportScore, pageIndex]);
+
+  // ── Accessibility hook ──────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Benar/Salah',
+    blockId: block.id,
+    score,
+    maxScore: validQuestions.length,
+    interactive: interactive ?? false,
+  });
 
   // ── Inline editing hooks ──────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -134,10 +143,10 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
     if (isCorrect) {
       setScore(s => s + 1);
       playSound('correct');
-      announceToScreenReader('Benar!', 'assertive');
+      a11y.announceCorrect();
     } else {
       playSound('incorrect');
-      announceToScreenReader(`Salah. Jawaban yang benar: ${q.correct ? 'Benar' : 'Salah'}`, 'assertive');
+      a11y.announceIncorrect(q.correct ? 'Benar' : 'Salah');
     }
 
     // Auto-advance after brief delay
@@ -249,13 +258,9 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
   const progress = ((currentQ + (answered ? 1 : 0)) / validQuestions.length) * 100;
 
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Benar/Salah: Soal ${currentQ + 1} dari ${validQuestions.length}, Skor: ${score}`} aria-describedby={`tf-instructions-${block.id || 'tf'}`} data-interactive>
-      {/* Screen reader live region for answer feedback */}
-      <div className="sr-only" aria-live="polite" role="status">
-        {answered && (isCorrectAnswer ? 'Jawaban benar!' : `Jawaban salah. Jawaban yang benar: ${q.correct ? 'Benar' : 'Salah'}`)}
-      </div>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`tf-instructions-${block.id || 'tf'}`} className="sr-only">Tentukan apakah pernyataan benar atau salah</span>
+      <div id={a11y.instructionId} className="sr-only">Tentukan apakah pernyataan benar atau salah</div>
       {/* ── Header with title and question counter ──────────────── */}
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -282,10 +287,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
 
       {/* ── Progress bar ────────────────────────────────────────── */}
       <div className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={currentQ + (answered ? 1 : 0)}
-        aria-valuemin={0}
-        aria-valuemax={validQuestions.length}
+        {...a11y.progressAria('Kemajuan Benar/Salah', currentQ + (answered ? 1 : 0), validQuestions.length)}
         style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all duration-500"
           style={{
@@ -327,6 +329,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             disabled={answered}
             onClick={() => { if (interactive) handleAnswer(true); }}
             aria-pressed={selected === true}
+            aria-label="Benar"
             className="p-3 rounded-xl font-extrabold text-center transition-all hover:scale-[1.02] min-w-0"
             style={{
               fontSize: '14px',
@@ -372,6 +375,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             disabled={answered}
             onClick={() => { if (interactive) handleAnswer(false); }}
             aria-pressed={selected === false}
+            aria-label="Salah"
             className="p-3 rounded-xl font-extrabold text-center transition-all hover:scale-[1.02] min-w-0"
             style={{
               fontSize: '14px',

@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 // ═══════════════════════════════════════════════════════════════════
 // MEMORY GAME RENDERER — Card-matching game for PPKn education
@@ -99,7 +99,10 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
   // ── Derived data ──────────────────────────────────────────────────
   const pairs = block.pairs || [];
   // Filter valid pairs (both sides non-empty) for scoring
-  const validPairs = pairs.filter(p => p.left && p.right);
+  const validPairs = React.useMemo(
+    () => pairs.filter(p => p.left && p.right),
+    [pairs],
+  );
   const validPairsLen = validPairs.length;
 
   // ── Game state ────────────────────────────────────────────────────
@@ -146,7 +149,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
       clearTimeout(mismatchTimerRef.current);
       mismatchTimerRef.current = null;
     }
-  }, [replayGeneration]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [replayGeneration]);
 
   // ── Interactive store: score reporting ─────────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -176,13 +179,22 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
       } else {
         playSound('ding');
       }
-      announceToScreenReader(`Game selesai! Skor kamu: ${score} dari ${validPairsLen}`, 'assertive');
+      a11y.announceComplete(score, validPairsLen);
     }
     // Reset guard when game is no longer done (e.g., after replay)
     if (phase !== 'done') {
       hasReportedRef.current = false;
     }
   }, [phase, interactive, block.id, wrongAttempts, validPairsLen, reportScore, pageIndex]);
+
+  // ── Accessibility hook ──────────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Memory Match',
+    blockId: block.id,
+    score: matched.size / 2,
+    maxScore: validPairsLen,
+    interactive: interactive ?? false,
+  });
 
   // ── Inline editing hooks ──────────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -222,7 +234,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
       if (isMatch) {
         // ── Match found ──
         playSound('correct');
-        announceToScreenReader('Cocok! Pasangan ditemukan', 'assertive');
+        a11y.announceCorrect();
         const newMatched = new Set(matched);
         newMatched.add(card1.id);
         newMatched.add(card2.id);
@@ -239,7 +251,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
       } else {
         // ── Mismatch ──
         playSound('incorrect');
-        announceToScreenReader('Tidak cocok', 'assertive');
+        a11y.announceIncorrect();
         setWrongAttempts(prev => prev + 1);
 
         // Flip cards back after a short delay so the player can see both
@@ -364,9 +376,9 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
   const gridCols = getGridCols(cards.length);
 
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Memory Match: ${matched.size / 2} dari ${validPairsLen} pasangan cocok`} aria-describedby={`memory-instructions-${block.id || 'mem'}`} data-interactive>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`memory-instructions-${block.id || 'mem'}`} className="sr-only">Balik kartu untuk menemukan pasangan yang cocok</span>
+      <div id={a11y.instructionId} className="sr-only">Balik kartu untuk menemukan pasangan yang cocok</div>
       {/* Header with title and move counter */}
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -406,10 +418,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
 
       {/* Progress bar */}
       <div className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={matched.size / 2}
-        aria-valuemin={0}
-        aria-valuemax={validPairsLen}
+        {...a11y.progressAria('Kemajuan Memory Match', matched.size / 2, validPairsLen)}
         style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all"
           style={{

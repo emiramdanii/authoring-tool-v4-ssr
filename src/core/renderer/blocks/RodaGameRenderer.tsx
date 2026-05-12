@@ -32,8 +32,14 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
 
   const questions = block.questions || [];
   const q = questions[current];
-  const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.opts?.[ans]?.correct).length;
-  const totalAnswered = Object.keys(answers).length;
+  const totalCorrect = React.useMemo(
+    () => Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.opts?.[ans]?.correct).length,
+    [answers, questions],
+  );
+  const totalAnswered = React.useMemo(
+    () => Object.keys(answers).length,
+    [answers],
+  );
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
 
   // ── Theme-aware contrast colors ────────────────────────────────
@@ -138,6 +144,15 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
     tag: 'span',
   });
 
+  // ── Wheel segment colors (token-aware, must be before early returns) ──
+  const wheelColors = React.useMemo(
+    () => [
+      tokens.color('y'), tokens.color('c'), tokens.color('g'),
+      tokens.color('p'), tokens.color('r'), tokens.color('o'),
+    ],
+    [tokens],
+  );
+
   // ══ COMPLETION SCREEN ═══════════════════════════════════════
   if (isCompleted) {
     const pct = questions.length > 0 ? Math.round((totalCorrect / questions.length) * 100) : 0;
@@ -187,12 +202,6 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
   }
 
   if (!q) return null;
-
-  // ── Wheel segment colors (token-aware) ────────────────────────
-  const wheelColors = [
-    tokens.color('y'), tokens.color('c'), tokens.color('g'),
-    tokens.color('p'), tokens.color('r'), tokens.color('o'),
-  ];
 
   // ── Determine if current question is answered ────────────────
   const isCurrentAnswered = answers[current] !== undefined;

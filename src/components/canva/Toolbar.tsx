@@ -7,6 +7,8 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
 import { patchHistory } from '@/core/editor/patch-history';
+import { showUndoRedoToast } from '@/components/shared/StatusToast';
+import { AutoSaveIndicator } from '@/components/shared/StatusToast';
 import {
   Play,
   Undo2,
@@ -421,7 +423,7 @@ export default function Toolbar() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={undo}
+          onClick={() => { undo(); showUndoRedoToast('↩ Undo'); }}
           disabled={!canUndo}
           title="Undo (Ctrl+Z)"
           className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -431,7 +433,7 @@ export default function Toolbar() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={redo}
+          onClick={() => { redo(); showUndoRedoToast('↪ Redo'); }}
           disabled={!canRedo}
           title="Redo (Ctrl+Y)"
           className={`focus-ring hover:scale-105 active:scale-95 transition-transform ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -440,6 +442,9 @@ export default function Toolbar() {
         </Button>
       </div>
       <div className="section-divider h-5 w-px mx-1" />
+
+      {/* ── Auto-save status ────────────────────────────────── */}
+      <AutoSaveIndicator />
 
       {/* ── Tool group: Select / Text ────────────────────────── */}
       <div className="flex items-center gap-0.5">

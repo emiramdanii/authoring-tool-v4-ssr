@@ -590,6 +590,327 @@ function renderBlockHtml(block: SchemaBlock): string {
         </div>`;
     }
 
+    case 'memory-game': {
+      const title = b.title as string || 'Memory Game';
+      const pairs = (b.pairs as Array<{ left: string; right: string }>) || [];
+      const cardId = `mem-${Math.random().toString(36).slice(2, 8)}`;
+      // Create card array: each pair produces 2 cards
+      const cards: Array<{ pairIdx: number; side: 'left' | 'right'; text: string }> = [];
+      pairs.forEach((p, i) => {
+        cards.push({ pairIdx: i, side: 'left', text: p.left });
+        cards.push({ pairIdx: i, side: 'right', text: p.right });
+      });
+      // Shuffle (Fisher-Yates seeded by cardId hash for determinism)
+      const seed = cardId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = (seed * (i + 1) + i) % (i + 1);
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      return `
+        <div class="block memory-game-block" data-game="${cardId}">
+          <div class="block-header">
+            <span class="block-icon">🧠</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <p class="game-instruction">Temukan pasangan yang cocok!</p>
+          <div class="memory-grid">
+            ${cards.map((c, i) => `
+              <div class="memory-card" data-pair="${c.pairIdx}" data-side="${c.side}" data-game="${cardId}" data-idx="${i}" onclick="flipMemoryCard(this)">
+                <div class="memory-card-inner">
+                  <div class="memory-card-front">❓</div>
+                  <div class="memory-card-back">${escapeHtml(c.text)}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+          <div class="game-score" id="mem-score-${cardId}">👀 0/${pairs.length} pasangan</div>
+        </div>`;
+    }
+
+    case 'matching-game': {
+      const title = b.title as string || 'Matching Game';
+      const pairs = (b.pairs as Array<{ left: string; right: string }>) || [];
+      const matchId = `match-${Math.random().toString(36).slice(2, 8)}`;
+      // Shuffle right side
+      const rightIndices = pairs.map((_, i) => i);
+      for (let i = rightIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rightIndices[i], rightIndices[j]] = [rightIndices[j], rightIndices[i]];
+      }
+      return `
+        <div class="block matching-game-block" data-game="${matchId}">
+          <div class="block-header">
+            <span class="block-icon">🔗</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <p class="game-instruction">Cocokkan kolom kiri dengan kolom kanan!</p>
+          <div class="matching-columns">
+            <div class="matching-col matching-left">
+              ${pairs.map((p, i) => `
+                <button class="match-item match-left" data-idx="${i}" data-game="${matchId}" onclick="selectMatchLeft(this)">${escapeHtml(p.left)}</button>`).join('')}
+            </div>
+            <div class="matching-col matching-right">
+              ${rightIndices.map(ri => `
+                <button class="match-item match-right" data-idx="${ri}" data-game="${matchId}" onclick="selectMatchRight(this)">${escapeHtml(pairs[ri].right)}</button>`).join('')}
+            </div>
+          </div>
+          <div class="game-score" id="match-score-${matchId}">🔗 0/${pairs.length} cocok</div>
+        </div>`;
+    }
+
+    case 'fill-blank-game': {
+      const title = b.title as string || 'Isian Singkat';
+      const questions = (b.questions as Array<{ text: string; answer: string; hint?: string }>) || [];
+      const fbId = `fb-${Math.random().toString(36).slice(2, 8)}`;
+      return `
+        <div class="block fill-blank-game-block" data-game="${fbId}">
+          <div class="block-header">
+            <span class="block-icon">✏️</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          ${questions.map((q, i) => {
+            // Replace ___ with input field
+            const parts = q.text.split('___');
+            const inputHtml = `<input type="text" class="fb-input" data-idx="${i}" data-game="${fbId}" data-answer="${escapeHtml(q.answer)}" placeholder="${q.hint ? escapeHtml(q.hint) : '...'}" onkeydown="if(event.key==='Enter')checkFillBlank(this)">`;
+            const rendered = parts.length > 1
+              ? parts.map((p, pi) => pi < parts.length - 1 ? escapeHtml(p) + inputHtml : escapeHtml(p)).join('')
+              : escapeHtml(q.text);
+            return `
+              <div class="fb-question" id="fb-q-${fbId}-${i}">
+                <p><strong>${i + 1}.</strong> ${rendered}</p>
+                <div class="fb-feedback" id="fb-fb-${fbId}-${i}"></div>
+              </div>`;
+          }).join('')}
+          <button class="game-check-btn" onclick="checkAllFillBlanks('${fbId}')">✅ Periksa Jawaban</button>
+        </div>`;
+    }
+
+    case 'word-search-game': {
+      const title = b.title as string || 'Cari Kata';
+      const words = (b.words as string[]) || [];
+      const gridSize = (b.gridSize as number) || 10;
+      const wsId = `ws-${Math.random().toString(36).slice(2, 8)}`;
+      // Build a simple grid with words placed
+      const grid: string[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(''));
+      // Place words horizontally and vertically
+      const placedWords: string[] = [];
+      words.forEach(word => {
+        const w = word.toUpperCase();
+        let placed = false;
+        for (let attempt = 0; attempt < 50 && !placed; attempt++) {
+          const horizontal = Math.random() > 0.5;
+          if (horizontal) {
+            const row = Math.floor(Math.random() * gridSize);
+            const col = Math.floor(Math.random() * (gridSize - w.length + 1));
+            let canPlace = true;
+            for (let c = 0; c < w.length; c++) {
+              if (grid[row][col + c] !== '' && grid[row][col + c] !== w[c]) { canPlace = false; break; }
+            }
+            if (canPlace) {
+              for (let c = 0; c < w.length; c++) grid[row][col + c] = w[c];
+              placed = true; placedWords.push(w);
+            }
+          } else {
+            const row = Math.floor(Math.random() * (gridSize - w.length + 1));
+            const col = Math.floor(Math.random() * gridSize);
+            let canPlace = true;
+            for (let r = 0; r < w.length; r++) {
+              if (grid[row + r][col] !== '' && grid[row + r][col] !== w[r]) { canPlace = false; break; }
+            }
+            if (canPlace) {
+              for (let r = 0; r < w.length; r++) grid[row + r][col] = w[r];
+              placed = true; placedWords.push(w);
+            }
+          }
+        }
+      });
+      // Fill empty cells with random letters
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      for (let r = 0; r < gridSize; r++) {
+        for (let c = 0; c < gridSize; c++) {
+          if (!grid[r][c]) grid[r][c] = alphabet[Math.floor(Math.random() * 26)];
+        }
+      }
+      return `
+        <div class="block word-search-block" data-game="${wsId}">
+          <div class="block-header">
+            <span class="block-icon">🔍</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <p class="game-instruction">Temukan kata-kata tersembunyi!</p>
+          <div class="ws-container">
+            <div class="ws-grid" style="grid-template-columns: repeat(${gridSize}, 1fr);">
+              ${grid.flatMap((row, r) => row.map((cell, c) => `
+                <div class="ws-cell" data-r="${r}" data-c="${c}" data-game="${wsId}" onclick="toggleWsCell(this)">${cell}</div>`)).join('')}
+            </div>
+            <div class="ws-words">
+              <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px;">Kata yang dicari:</div>
+              ${words.map(w => `<div class="ws-word" data-word="${w.toUpperCase()}" data-game="${wsId}">${escapeHtml(w)}</div>`).join('')}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    case 'true-false-game': {
+      const title = b.title as string || 'Benar atau Salah';
+      const questions = (b.questions as Array<{ text: string; correct: boolean; explanation?: string }>) || [];
+      const tfId = `tf-${Math.random().toString(36).slice(2, 8)}`;
+      return `
+        <div class="block true-false-block" data-game="${tfId}">
+          <div class="block-header">
+            <span class="block-icon">✅</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          ${questions.map((q, i) => `
+            <div class="tf-question" id="tf-q-${tfId}-${i}">
+              <p><strong>${i + 1}.</strong> ${escapeHtml(q.text)}</p>
+              <div class="tf-buttons">
+                <button class="tf-btn tf-true" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, true)">✅ Benar</button>
+                <button class="tf-btn tf-false" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, false)">❌ Salah</button>
+              </div>
+              <div class="tf-feedback" id="tf-fb-${tfId}-${i}"></div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    case 'drag-drop-game': {
+      const title = b.title as string || 'Drag & Drop';
+      const items = (b.items as Array<{ text: string; target: string }>) || [];
+      const targets = (b.targets as Array<{ id: string; label: string; color?: string }>) || [];
+      const ddId = `dd-${Math.random().toString(36).slice(2, 8)}`;
+      // Shuffle items
+      const shuffledItems = [...items];
+      for (let i = shuffledItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+      }
+      return `
+        <div class="block drag-drop-block" data-game="${ddId}">
+          <div class="block-header">
+            <span class="block-icon">🖱️</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <p class="game-instruction">Seret item ke kotak yang tepat!</p>
+          <div class="dd-pool" id="dd-pool-${ddId}">
+            ${shuffledItems.map((item, i) => `
+              <div class="dd-item" draggable="true" data-target="${escapeHtml(item.target)}" data-game="${ddId}" id="dd-item-${ddId}-${i}"
+                   ondragstart="dragStart(event)" ontouchstart="touchDragStart(event, this)">${escapeHtml(item.text)}</div>`).join('')}
+          </div>
+          <div class="dd-targets">
+            ${targets.map(t => `
+              <div class="dd-target" data-tid="${escapeHtml(t.id)}" data-game="${ddId}"
+                   style="border-color: ${resolveColor(t.color, '#3ecfcf')}44;"
+                   ondragover="event.preventDefault(); this.classList.add('dd-hover')"
+                   ondragleave="this.classList.remove('dd-hover')"
+                   ondrop="dropItem(event, '${ddId}')">
+                <h4 style="color:${resolveColor(t.color, '#3ecfcf')};">${escapeHtml(t.label)}</h4>
+                <div class="dd-target-items"></div>
+              </div>`).join('')}
+          </div>
+          <button class="game-check-btn" onclick="checkDragDrop('${ddId}')">✅ Periksa Jawaban</button>
+        </div>`;
+    }
+
+    case 'crossword-game': {
+      const title = b.title as string || 'Teka-teki Silang';
+      const words = (b.words as Array<{ teks: string; hint: string; arah?: string; baris?: number; kolom?: number }>) || [];
+      const gridSize = (b.gridSize as number) || 12;
+      const cwId = `cw-${Math.random().toString(36).slice(2, 8)}`;
+      // Build grid with numbered cells
+      const cwGrid: (string | null)[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(null));
+      const cellNumbers: Record<string, number> = {};
+      let numCounter = 1;
+      words.forEach((w, wi) => {
+        const word = w.teks.toUpperCase();
+        const arah = w.arah || (wi % 2 === 0 ? 'across' : 'down');
+        let startRow = w.baris ?? (arah === 'across' ? Math.floor(wi / 2) * 2 + 1 : wi % 2 === 0 ? 0 : 1);
+        let startCol = w.kolom ?? (arah === 'down' ? Math.floor(wi / 2) * 3 + 1 : wi % 2 === 0 ? 0 : 1);
+        startRow = Math.min(startRow, gridSize - 1);
+        startCol = Math.min(startCol, gridSize - 1);
+        // Place word
+        for (let ci = 0; ci < word.length; ci++) {
+          const r = arah === 'down' ? startRow + ci : startRow;
+          const c = arah === 'across' ? startCol + ci : startCol;
+          if (r < gridSize && c < gridSize) {
+            cwGrid[r][c] = word[ci];
+            // Assign number to start cell
+            if (ci === 0) {
+              const key = `${r}-${c}`;
+              if (!cellNumbers[key]) cellNumbers[key] = numCounter++;
+            }
+          }
+        }
+      });
+      return `
+        <div class="block crossword-block" data-game="${cwId}">
+          <div class="block-header">
+            <span class="block-icon">🔤</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <div class="cw-container">
+            <div class="cw-grid" style="grid-template-columns: repeat(${gridSize}, 1fr);">
+              ${cwGrid.flatMap((row, r) => row.map((cell, c) => {
+                const key = `${r}-${c}`;
+                const num = cellNumbers[key];
+                return cell !== null
+                  ? `<div class="cw-cell" data-r="${r}" data-c="${c}" data-answer="${cell}">
+                      ${num ? `<span class="cw-num">${num}</span>` : ''}
+                      <input type="text" maxlength="1" class="cw-input" data-r="${r}" data-c="${c}" data-game="${cwId}"
+                             oninput="cwInput(this, '${cwId}')" onkeydown="cwKeyDown(event, this, '${cwId}')">
+                    </div>`
+                  : '<div class="cw-cell cw-blank"></div>';
+              })).join('')}
+            </div>
+            <div class="cw-clues">
+              <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px;">Petunjuk:</div>
+              ${words.map((w, i) => {
+                const arah = w.arah || (i % 2 === 0 ? 'across' : 'down');
+                const label = arah === 'across' ? 'Mendatar' : 'Menurun';
+                return `<div class="cw-clue"><span class="cw-clue-dir">${label}</span> ${escapeHtml(w.hint)} (${w.teks.length} huruf)</div>`;
+              }).join('')}
+            </div>
+          </div>
+          <button class="game-check-btn" onclick="checkCrossword('${cwId}')">✅ Periksa Jawaban</button>
+        </div>`;
+    }
+
+    case 'team-buzzer-game': {
+      const title = b.title as string || 'Kuis Tim';
+      const teamA = b.teamA as string || 'Tim A';
+      const teamB = b.teamB as string || 'Tim B';
+      const questions = (b.questions as Array<{ teks: string; poin: number }>) || [];
+      const tbId = `tb-${Math.random().toString(36).slice(2, 8)}`;
+      return `
+        <div class="block team-buzzer-block" data-game="${tbId}">
+          <div class="block-header">
+            <span class="block-icon">🏆</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <div class="tb-scoreboard">
+            <div class="tb-team tb-team-a" id="tb-team-a-${tbId}">
+              <div class="tb-team-name">${escapeHtml(teamA)}</div>
+              <div class="tb-team-score" id="tb-score-a-${tbId}">0</div>
+            </div>
+            <div class="tb-vs">VS</div>
+            <div class="tb-team tb-team-b" id="tb-team-b-${tbId}">
+              <div class="tb-team-name">${escapeHtml(teamB)}</div>
+              <div class="tb-team-score" id="tb-score-b-${tbId}">0</div>
+            </div>
+          </div>
+          <div class="tb-questions" id="tb-questions-${tbId}">
+            ${questions.map((q, i) => `
+              <div class="tb-question" id="tb-q-${tbId}-${i}">
+                <p><strong>Soal ${i + 1}</strong> (${q.poin} poin)</p>
+                <p>${escapeHtml(q.teks)}</p>
+                <div class="tb-actions">
+                  <button class="tb-btn tb-btn-a" onclick="buzzTeam('${tbId}', 'a', ${i}, ${q.poin})">${escapeHtml(teamA)} 🔔</button>
+                  <button class="tb-btn tb-btn-b" onclick="buzzTeam('${tbId}', 'b', ${i}, ${q.poin})">${escapeHtml(teamB)} 🔔</button>
+                  <button class="tb-btn tb-skip" onclick="skipQuestion('${tbId}', ${i})">⏭️ Lewati</button>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
     default: {
       // Fallback: render any block as a simple card with its type label
       const blockTitle = (b.title as string) || (b.type as string) || 'Block';
@@ -1195,6 +1516,172 @@ function getCss(ratioW: number, ratioH: number): string {
     .page::-webkit-scrollbar-track { background: transparent; }
     .page::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
+    /* ── Game shared ── */
+    .game-instruction { font-size: 0.75rem; color: #94a3b8; margin-bottom: 10px; font-style: italic; }
+    .game-score { margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-align: center; }
+    .game-check-btn {
+      display: block; width: 100%; margin-top: 12px; padding: 10px;
+      background: #3ecfcf22; border: 1px solid #3ecfcf44; border-radius: 10px;
+      color: #3ecfcf; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .game-check-btn:hover { background: #3ecfcf33; }
+
+    /* ── Memory Game ── */
+    .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+    .memory-card { perspective: 600px; height: 70px; cursor: pointer; }
+    .memory-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s ease; transform-style: preserve-3d; }
+    .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
+    .memory-card-front, .memory-card-back {
+      position: absolute; inset: 0; backface-visibility: hidden; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 0.78rem;
+      text-align: center; padding: 4px; font-weight: 600;
+    }
+    .memory-card-front { background: #3ecfcf22; border: 1px solid #3ecfcf44; font-size: 1.2rem; }
+    .memory-card-back { background: #a78bfa22; border: 1px solid #a78bfa44; color: #e8f2ff; transform: rotateY(180deg); }
+    .memory-card.matched .memory-card-inner { transform: rotateY(180deg); }
+    .memory-card.matched { opacity: 0.7; pointer-events: none; }
+    .memory-card.wrong .memory-card-inner { transform: rotateY(180deg); }
+    .memory-card.wrong .memory-card-back { border-color: #ff6b6b88; background: #ff6b6b22; animation: shake 0.4s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+    /* ── Matching Game ── */
+    .matching-columns { display: flex; gap: 16px; }
+    .matching-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .match-item {
+      padding: 8px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; color: #e8f2ff; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .match-item:hover { background: rgba(255,255,255,0.08); }
+    .match-item.selected { border-color: #fbbf2488; background: #fbbf2422; }
+    .match-item.matched-correct { border-color: #34d39988; background: #34d39922; opacity: 0.6; pointer-events: none; }
+    .match-item.matched-wrong { border-color: #ff6b6b88; background: #ff6b6b22; animation: shake 0.4s ease; }
+
+    /* ── Fill Blank Game ── */
+    .fb-question { margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+    .fb-input {
+      display: inline-block; width: 100px; padding: 4px 8px; margin: 0 4px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px; color: #fbbf24; font-size: 0.82rem; font-weight: 600;
+      text-align: center; outline: none;
+    }
+    .fb-input:focus { border-color: #fbbf2488; }
+    .fb-input.correct { border-color: #34d39988; background: #34d39911; color: #34d399; }
+    .fb-input.wrong { border-color: #ff6b6b88; background: #ff6b6b11; color: #ff6b6b; }
+    .fb-feedback { margin-top: 6px; font-size: 0.75rem; }
+
+    /* ── Word Search ── */
+    .ws-container { display: flex; gap: 12px; }
+    .ws-grid { display: grid; gap: 2px; flex: 1; }
+    .ws-cell {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; font-size: 0.72rem; font-weight: 700;
+      background: rgba(255,255,255,0.04); border-radius: 4px; cursor: pointer;
+      transition: all 0.15s; user-select: none; color: #94a3b8;
+    }
+    .ws-cell:hover { background: rgba(255,255,255,0.1); }
+    .ws-cell.selected { background: #fbbf2433; color: #fbbf24; border: 1px solid #fbbf2444; }
+    .ws-cell.found { background: #34d39933; color: #34d399; }
+    .ws-words { min-width: 120px; }
+    .ws-word { font-size: 0.75rem; padding: 3px 8px; margin-bottom: 3px; background: rgba(255,255,255,0.03); border-radius: 6px; }
+    .ws-word.found { color: #34d399; text-decoration: line-through; opacity: 0.6; }
+
+    /* ── True/False ── */
+    .tf-question { margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+    .tf-buttons { display: flex; gap: 8px; margin-top: 8px; }
+    .tf-btn {
+      flex: 1; padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 0.82rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tf-true { background: #34d39922; border: 1px solid #34d39944; color: #34d399; }
+    .tf-false { background: #ff6b6b22; border: 1px solid #ff6b6b44; color: #ff6b6b; }
+    .tf-btn:hover { opacity: 0.8; }
+    .tf-btn.disabled { pointer-events: none; opacity: 0.5; }
+    .tf-btn.correct-answer { background: #34d39944 !important; border-color: #34d399 !important; }
+    .tf-btn.wrong-answer { background: #ff6b6b44 !important; border-color: #ff6b6b !important; }
+    .tf-feedback { margin-top: 6px; font-size: 0.75rem; }
+
+    /* ── Drag & Drop ── */
+    .dd-pool { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; min-height: 40px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.08); }
+    .dd-item {
+      padding: 6px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; font-size: 0.78rem; cursor: grab; transition: all 0.2s; color: #e8f2ff;
+    }
+    .dd-item:active { cursor: grabbing; }
+    .dd-targets { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+    .dd-target {
+      padding: 10px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 10px; min-height: 60px;
+      transition: all 0.2s;
+    }
+    .dd-target h4 { font-size: 0.78rem; margin-bottom: 6px; }
+    .dd-target-items { display: flex; flex-wrap: wrap; gap: 4px; }
+    .dd-target .dd-item { font-size: 0.72rem; padding: 4px 8px; }
+    .dd-hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2) !important; }
+    .dd-item.correct { border-color: #34d39988; background: #34d39922; }
+    .dd-item.wrong { border-color: #ff6b6b88; background: #ff6b6b22; }
+
+    /* ── Crossword ── */
+    .cw-container { display: flex; gap: 12px; }
+    .cw-grid { display: grid; gap: 1px; flex: 1; }
+    .cw-cell {
+      position: relative; width: 28px; height: 28px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px;
+    }
+    .cw-blank { background: transparent; border-color: transparent; }
+    .cw-num { position: absolute; top: 1px; left: 2px; font-size: 7px; color: #94a3b8; font-weight: 700; z-index: 1; }
+    .cw-input {
+      width: 100%; height: 100%; background: transparent; border: none; text-align: center;
+      font-size: 0.78rem; font-weight: 700; color: #fbbf24; outline: none; text-transform: uppercase;
+    }
+    .cw-input:focus { background: rgba(251,191,36,0.08); }
+    .cw-input.correct { color: #34d399; background: rgba(52,211,153,0.08); }
+    .cw-input.wrong { color: #ff6b6b; background: rgba(255,107,107,0.08); }
+    .cw-clues { min-width: 140px; }
+    .cw-clue { font-size: 0.72rem; padding: 3px 0; color: #94a3b8; line-height: 1.4; }
+    .cw-clue-dir { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #6e90b5; margin-right: 4px; }
+
+    /* ── Team Buzzer ── */
+    .tb-scoreboard { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 14px; }
+    .tb-team { flex: 1; text-align: center; padding: 12px; border-radius: 10px; }
+    .tb-team-a { background: #3ecfcf15; border: 1px solid #3ecfcf33; }
+    .tb-team-b { background: #ff6b6b15; border: 1px solid #ff6b6b33; }
+    .tb-team-name { font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; }
+    .tb-team-score { font-size: 1.6rem; font-weight: 900; }
+    .tb-team-a .tb-team-score { color: #3ecfcf; }
+    .tb-team-b .tb-team-score { color: #ff6b6b; }
+    .tb-vs { font-size: 1.2rem; font-weight: 900; color: #6e90b5; }
+    .tb-questions { display: flex; flex-direction: column; gap: 8px; }
+    .tb-question { padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+    .tb-question.answered { opacity: 0.4; pointer-events: none; }
+    .tb-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .tb-btn {
+      flex: 1; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .tb-btn-a { background: #3ecfcf22; border: 1px solid #3ecfcf44; color: #3ecfcf; }
+    .tb-btn-b { background: #ff6b6b22; border: 1px solid #ff6b6b44; color: #ff6b6b; }
+    .tb-skip { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+    .tb-btn:hover { opacity: 0.8; }
+
+    /* ── BSNP Badge ── */
+    .bsnp-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.6rem;
+      font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444;
+    }
+    .block-subtitle { color: #6e90b5; font-size: 0.78rem; margin-bottom: 8px; }
+    .tujuan-list { display: flex; flex-direction: column; gap: 6px; }
+    .tujuan-item { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+    .tujuan-num { min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #fbbf2422; color: #fbbf24; font-size: 0.65rem; font-weight: 800; }
+    .tujuan-icon { font-size: 0.9rem; }
+    .tujuan-text { font-size: 0.78rem; }
+    .profil-box { margin-top: 8px; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.78rem; }
+    .takeaways { margin-top: 10px; padding: 10px; background: #fbbf2411; border: 1px solid #fbbf2433; border-radius: 10px; }
+    .takeaways h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+    .takeaway-item { font-size: 0.78rem; color: #34d399; margin-bottom: 2px; }
+    .self-check { margin-top: 8px; padding: 10px; background: #a78bfa11; border: 1px solid #a78bfa33; border-radius: 10px; }
+    .self-check h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
+    .self-check p { font-size: 0.78rem; color: #94a3b8; }
+
     /* ── Confetti ── */
     .confetti-piece {
       position: fixed;
@@ -1377,6 +1864,301 @@ function getJs(): string {
         document.body.appendChild(piece);
         setTimeout(function(p) { p.remove(); }.bind(null, piece), 3500);
       }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Memory Game
+    // ═══════════════════════════════════════════════════════════════════
+    var memFlipped = [];
+    var memMatched = 0;
+
+    function flipMemoryCard(card) {
+      if (card.classList.contains('flipped') || card.classList.contains('matched') || memFlipped.length >= 2) return;
+      card.classList.add('flipped');
+      memFlipped.push(card);
+      if (memFlipped.length === 2) {
+        var c1 = memFlipped[0], c2 = memFlipped[1];
+        var samePair = c1.dataset.pair === c2.dataset.pair && c1.dataset.side !== c2.dataset.side;
+        if (samePair) {
+          c1.classList.add('matched');
+          c2.classList.add('matched');
+          memMatched++;
+          var block = card.closest('.memory-game-block');
+          var game = block ? block.dataset.game : '';
+          var scoreEl = document.getElementById('mem-score-' + game);
+          var totalPairs = block ? block.querySelectorAll('.memory-card').length / 2 : 0;
+          if (scoreEl) scoreEl.textContent = '👀 ' + memMatched + '/' + totalPairs + ' pasangan';
+          if (memMatched >= totalPairs && totalPairs > 0) { launchConfetti(); if (scoreEl) scoreEl.textContent = '🎉 Semua pasangan ditemukan!'; }
+          memFlipped = [];
+        } else {
+          setTimeout(function() {
+            c1.classList.add('wrong'); c2.classList.add('wrong');
+            setTimeout(function() {
+              c1.classList.remove('flipped', 'wrong');
+              c2.classList.remove('flipped', 'wrong');
+              memFlipped = [];
+            }, 600);
+          }, 500);
+        }
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Matching Game
+    // ═══════════════════════════════════════════════════════════════════
+    var matchSelectedLeft = null;
+    var matchCorrect = 0;
+
+    function selectMatchLeft(btn) {
+      if (btn.classList.contains('matched-correct')) return;
+      document.querySelectorAll('.match-left.selected').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      matchSelectedLeft = btn;
+    }
+
+    function selectMatchRight(btn) {
+      if (!matchSelectedLeft || btn.classList.contains('matched-correct')) return;
+      if (btn.classList.contains('matched-correct')) return;
+      var leftIdx = matchSelectedLeft.dataset.idx;
+      var rightIdx = btn.dataset.idx;
+      if (leftIdx === rightIdx) {
+        matchSelectedLeft.classList.remove('selected');
+        matchSelectedLeft.classList.add('matched-correct');
+        btn.classList.add('matched-correct');
+        matchCorrect++;
+        matchSelectedLeft = null;
+        var block = btn.closest('.matching-game-block');
+        var game = block ? block.dataset.game : '';
+        var scoreEl = document.getElementById('match-score-' + game);
+        var total = block ? block.querySelectorAll('.match-left').length : 0;
+        if (scoreEl) scoreEl.textContent = '🔗 ' + matchCorrect + '/' + total + ' cocok';
+        if (matchCorrect >= total && total > 0) { launchConfetti(); if (scoreEl) scoreEl.textContent = '🎉 Semua cocok!'; }
+      } else {
+        matchSelectedLeft.classList.remove('selected');
+        matchSelectedLeft.classList.add('matched-wrong');
+        btn.classList.add('matched-wrong');
+        var ml = matchSelectedLeft, mr = btn;
+        setTimeout(function() { ml.classList.remove('matched-wrong'); mr.classList.remove('matched-wrong'); }, 500);
+        matchSelectedLeft = null;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Fill-in-the-Blank
+    // ═══════════════════════════════════════════════════════════════════
+    function checkFillBlank(input) {
+      var userAns = input.value.trim().toLowerCase();
+      var correctAns = input.dataset.answer.toLowerCase();
+      // Support multiple accepted answers separated by /
+      var accepted = correctAns.split('/');
+      if (accepted.some(function(a) { return a.trim() === userAns; })) {
+        input.classList.add('correct');
+        input.classList.remove('wrong');
+      } else {
+        input.classList.add('wrong');
+        input.classList.remove('correct');
+      }
+    }
+
+    function checkAllFillBlanks(fbId) {
+      var inputs = document.querySelectorAll('.fb-input[data-game="' + fbId + '"]');
+      var correct = 0;
+      inputs.forEach(function(input) {
+        checkFillBlank(input);
+        if (input.classList.contains('correct')) correct++;
+      });
+      if (correct === inputs.length && inputs.length > 0) launchConfetti();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Word Search
+    // ═══════════════════════════════════════════════════════════════════
+    var wsSelectedCells = [];
+    var wsFoundWords = [];
+
+    function toggleWsCell(cell) {
+      cell.classList.toggle('selected');
+      if (cell.classList.contains('selected')) {
+        wsSelectedCells.push(cell);
+      } else {
+        wsSelectedCells = wsSelectedCells.filter(function(c) { return c !== cell; });
+      }
+      // Check if selected cells form a word
+      var game = cell.dataset.game;
+      var wordEls = document.querySelectorAll('.ws-word[data-game="' + game + '"]');
+      var selectedText = wsSelectedCells.map(function(c) { return c.textContent; }).join('');
+      var selectedReverse = wsSelectedCells.map(function(c) { return c.textContent; }).reverse().join('');
+      wordEls.forEach(function(we) {
+        var word = we.dataset.word;
+        if ((selectedText === word || selectedReverse === word) && wsFoundWords.indexOf(word) === -1) {
+          wsFoundWords.push(word);
+          we.classList.add('found');
+          wsSelectedCells.forEach(function(c) { c.classList.remove('selected'); c.classList.add('found'); });
+          wsSelectedCells = [];
+          if (wsFoundWords.length === wordEls.length) launchConfetti();
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: True/False
+    // ═══════════════════════════════════════════════════════════════════
+    var tfCorrect = 0;
+    var tfTotal = 0;
+
+    function checkTrueFalse(btn, userAnswer) {
+      var correct = btn.dataset.correct === 'true';
+      var idx = btn.dataset.idx;
+      var game = btn.dataset.game;
+      var qEl = document.getElementById('tf-q-' + game + '-' + idx);
+      if (!qEl) return;
+      var btns = qEl.querySelectorAll('.tf-btn');
+      btns.forEach(function(b) { b.classList.add('disabled'); });
+      if (userAnswer === correct) {
+        btn.classList.add('correct-answer');
+        var fb = document.getElementById('tf-fb-' + game + '-' + idx);
+        if (fb) fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
+        tfCorrect++;
+      } else {
+        btn.classList.add('wrong-answer');
+        btns.forEach(function(b) { if (b.dataset.correct === String(!userAnswer) || (correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer'); });
+        var fb = document.getElementById('tf-fb-' + game + '-' + idx);
+        if (fb) fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah') + '</span>';
+      }
+      tfTotal++;
+      if (tfTotal >= document.querySelectorAll('.tf-question').length) {
+        if (tfCorrect >= tfTotal * 0.8) launchConfetti();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Drag & Drop
+    // ═══════════════════════════════════════════════════════════════════
+    var draggedItem = null;
+
+    function dragStart(e) {
+      draggedItem = e.target;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', e.target.id);
+    }
+
+    function touchDragStart(e, el) {
+      draggedItem = el;
+    }
+
+    function dropItem(e, ddId) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dd-hover');
+      if (!draggedItem) return;
+      var targetItems = e.currentTarget.querySelector('.dd-target-items');
+      if (targetItems) {
+        targetItems.appendChild(draggedItem);
+      }
+      draggedItem = null;
+    }
+
+    function checkDragDrop(ddId) {
+      var targets = document.querySelectorAll('.dd-target[data-game="' + ddId + '"]');
+      var correct = 0;
+      var total = 0;
+      targets.forEach(function(target) {
+        var tid = target.dataset.tid;
+        var items = target.querySelectorAll('.dd-item');
+        items.forEach(function(item) {
+          total++;
+          if (item.dataset.target === tid) {
+            item.classList.add('correct');
+            correct++;
+          } else {
+            item.classList.add('wrong');
+          }
+        });
+      });
+      // Also check pool items (not yet placed)
+      var poolItems = document.querySelectorAll('#dd-pool-' + ddId + ' .dd-item');
+      poolItems.forEach(function(item) { total++; item.classList.add('wrong'); });
+      if (correct === total && total > 0) launchConfetti();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Crossword
+    // ═══════════════════════════════════════════════════════════════════
+    function cwInput(input, cwId) {
+      var val = input.value.toUpperCase();
+      input.value = val;
+      if (val.length === 1) {
+        // Auto-advance to next input
+        var r = parseInt(input.dataset.r);
+        var c = parseInt(input.dataset.c);
+        var next = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c + 1) + '"][data-game="' + cwId + '"]');
+        if (next) next.focus();
+      }
+    }
+
+    function cwKeyDown(e, input, cwId) {
+      var r = parseInt(input.dataset.r);
+      var c = parseInt(input.dataset.c);
+      if (e.key === 'Backspace' && !input.value) {
+        var prev = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c - 1) + '"][data-game="' + cwId + '"]');
+        if (prev) { prev.focus(); prev.value = ''; }
+      } else if (e.key === 'ArrowRight') {
+        var next = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c + 1) + '"][data-game="' + cwId + '"]');
+        if (next) next.focus();
+      } else if (e.key === 'ArrowLeft') {
+        var prev = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c - 1) + '"][data-game="' + cwId + '"]');
+        if (prev) prev.focus();
+      } else if (e.key === 'ArrowDown') {
+        var next = document.querySelector('.cw-input[data-r="' + (r + 1) + '"][data-c="' + c + '"][data-game="' + cwId + '"]');
+        if (next) next.focus();
+      } else if (e.key === 'ArrowUp') {
+        var prev = document.querySelector('.cw-input[data-r="' + (r - 1) + '"][data-c="' + c + '"][data-game="' + cwId + '"]');
+        if (prev) prev.focus();
+      }
+    }
+
+    function checkCrossword(cwId) {
+      var inputs = document.querySelectorAll('.cw-input[data-game="' + cwId + '"]');
+      var correct = 0;
+      var total = 0;
+      inputs.forEach(function(input) {
+        total++;
+        var cell = input.closest('.cw-cell');
+        if (cell && input.value.toUpperCase() === cell.dataset.answer) {
+          input.classList.add('correct');
+          input.classList.remove('wrong');
+          correct++;
+        } else {
+          input.classList.add('wrong');
+          input.classList.remove('correct');
+        }
+      });
+      if (correct === total && total > 0) launchConfetti();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Team Buzzer
+    // ═══════════════════════════════════════════════════════════════════
+    var tbScoreA = 0;
+    var tbScoreB = 0;
+
+    function buzzTeam(tbId, team, qIdx, poin) {
+      var qEl = document.getElementById('tb-q-' + tbId + '-' + qIdx);
+      if (!qEl || qEl.classList.contains('answered')) return;
+      qEl.classList.add('answered');
+      if (team === 'a') {
+        tbScoreA += poin;
+        var sA = document.getElementById('tb-score-a-' + tbId);
+        if (sA) sA.textContent = tbScoreA;
+      } else {
+        tbScoreB += poin;
+        var sB = document.getElementById('tb-score-b-' + tbId);
+        if (sB) sB.textContent = tbScoreB;
+      }
+    }
+
+    function skipQuestion(tbId, qIdx) {
+      var qEl = document.getElementById('tb-q-' + tbId + '-' + qIdx);
+      if (qEl) qEl.classList.add('answered');
     }
   `;
 }

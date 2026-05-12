@@ -29,8 +29,14 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
   const questions = block.questions || [];
   const q = questions[current];
-  const totalAnswered = Object.keys(answers).length;
-  const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.ans === ans).length;
+  const totalAnswered = React.useMemo(
+    () => Object.keys(answers).length,
+    [answers],
+  );
+  const totalCorrect = React.useMemo(
+    () => Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.ans === ans).length,
+    [answers, questions],
+  );
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
 
   // ── Streak calculation ──────────────────────────────────────

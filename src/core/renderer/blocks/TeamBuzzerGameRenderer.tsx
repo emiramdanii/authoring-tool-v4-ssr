@@ -8,7 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
-import { announceToScreenReader } from '@/lib/a11y';
+import { useGameA11y } from '@/lib/use-game-a11y';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TEAM BUZZER GAME RENDERER (Kuis Tim)
@@ -130,12 +130,21 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
       } else {
         playSound('ding');
       }
-      announceToScreenReader(`Kuis Tim selesai! Total skor: ${combinedScore} dari ${totalPoints} (${pct}%). ${winner === 'Seri' ? 'Seri!' : `${winner} Menang!`}`, 'assertive');
+      a11y.announceComplete(combinedScore, totalPoints);
     }
     if (phase !== 'done') {
       hasReportedRef.current = false;
     }
   }, [phase, interactive, block.id, scoreA, scoreB, totalPoints, reportScore, pageIndex]);
+
+  // ── Accessibility hook ────────────────────────────────────────
+  const a11y = useGameA11y({
+    gameType: 'Kuis Tim',
+    blockId: block.id,
+    score: scoreA + scoreB,
+    maxScore: totalPoints,
+    interactive: interactive ?? false,
+  });
 
   // ── Inline editing hooks ────────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -165,7 +174,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
       else setScoreB(s => s + pts);
       setCorrect(team);
       playSound('correct');
-      announceToScreenReader(`${team === 'A' ? teamA : teamB} benar! +${pts} poin`, 'assertive');
+      a11y.announceCorrect();
 
       const tid = setTimeout(() => {
         if (currentQ + 1 < validQuestions.length) {
@@ -186,7 +195,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
     if (correct) return; // Guard against double-click
     setCorrect('wrong');
     playSound('incorrect');
-    announceToScreenReader('Salah! Lanjut ke soal berikutnya', 'assertive');
+    a11y.announceIncorrect();
 
     const tid = setTimeout(() => {
       if (currentQ + 1 < validQuestions.length) {
@@ -341,9 +350,9 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
   const progress = ((currentQ + (buzzed ? 1 : 0)) / validQuestions.length) * 100;
 
   return (
-    <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Kuis Tim: Soal ${currentQ + 1} dari ${validQuestions.length}, Skor: ${scoreA + scoreB}`} aria-describedby={`tb-instructions-${block.id || 'tb'}`} data-interactive>
+    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
-      <span id={`tb-instructions-${block.id || 'tb'}`} className="sr-only">Tekan buzzer tim lalu tentukan jawaban benar atau salah</span>
+      <div id={a11y.instructionId} className="sr-only">Tekan buzzer tim lalu tentukan jawaban benar atau salah</div>
       {/* ── Header with title and question counter ────────────────── */}
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -373,10 +382,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
       {/* ── Progress bar ──────────────────────────────────────────── */}
       <div
         className="h-1.5 rounded-full overflow-hidden"
-        role="progressbar"
-        aria-valuenow={currentQ + (buzzed ? 1 : 0)}
-        aria-valuemin={0}
-        aria-valuemax={validQuestions.length}
+        {...a11y.progressAria('Kemajuan Kuis Tim', currentQ + (buzzed ? 1 : 0), validQuestions.length)}
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
@@ -422,6 +428,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
             key={`tb-buzz-${block.id || 'tb'}-${currentQ}-A`}
             onClick={() => handleBuzz('A')}
             disabled={!interactive || !!buzzed || correct === 'wrong'}
+            aria-label={`${teamA} buzzer, skor ${scoreA}`}
             className="p-3 rounded-xl font-extrabold text-center transition-all min-w-0"
             style={{
               fontSize: '13px',
@@ -459,6 +466,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
             key={`tb-buzz-${block.id || 'tb'}-${currentQ}-B`}
             onClick={() => handleBuzz('B')}
             disabled={!interactive || !!buzzed || correct === 'wrong'}
+            aria-label={`${teamB} buzzer, skor ${scoreB}`}
             className="p-3 rounded-xl font-extrabold text-center transition-all min-w-0"
             style={{
               fontSize: '13px',
@@ -506,6 +514,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
               <button
                 key={`tb-judge-${block.id || 'tb'}-${currentQ}-correct`}
                 onClick={() => handleCorrect(buzzed)}
+                aria-label="Benar"
                 className="py-2 rounded-lg font-extrabold transition-all"
                 style={{
                   fontSize: '11px',
@@ -521,6 +530,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
               <button
                 key={`tb-judge-${block.id || 'tb'}-${currentQ}-wrong`}
                 onClick={handleWrong}
+                aria-label="Salah"
                 className="py-2 rounded-lg font-extrabold transition-all"
                 style={{
                   fontSize: '11px',

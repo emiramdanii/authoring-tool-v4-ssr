@@ -294,6 +294,7 @@ export default function BsnpCompliancePanel() {
     'kuis', 'sortir-game', 'roda-game', 'skenario',
     'memory-game', 'matching-game', 'fill-blank-game',
     'word-search-game', 'true-false-game', 'drag-drop-game',
+    'crossword-game', 'team-buzzer-game',
   ]);
   const schemaGameCount = [...schemaBlockTypes].filter(t => GAME_BLOCK_TYPES.has(t)).length;
 
