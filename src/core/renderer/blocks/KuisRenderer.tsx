@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Trophy, Star, Dumbbell, RotateCcw, Gamepad2, CheckCircle2, XCircle } from 'lucide-react';
+import { Trophy, Star, Dumbbell, RotateCcw, Gamepad2, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import type { KuisBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { fireConfetti } from '@/lib/confetti';
 
 export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -14,12 +15,24 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
   const [showExplanation, setShowExplanation] = React.useState(false);
+  const [streak, setStreak] = React.useState(0);
+  const [showStreak, setShowStreak] = React.useState(false);
 
   const questions = block.questions || [];
   const q = questions[current];
   const totalAnswered = Object.keys(answers).length;
   const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.ans === ans).length;
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ── Streak calculation ──────────────────────────────────────
+  const currentStreak = React.useMemo(() => {
+    let s = 0;
+    for (let i = current - 1; i >= 0; i--) {
+      if (answers[i] !== undefined && questions[i]?.ans === answers[i]) s++;
+      else break;
+    }
+    return s;
+  }, [answers, current, questions]);
 
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -36,7 +49,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
       });
       // Play tier-appropriate sound
       const pct = Math.round((totalCorrect / questions.length) * 100);
-      if (pct >= 80) playSound('complete');
+      if (pct >= 80) { playSound('complete'); fireConfetti({ count: 60 }); }
       else playSound('ding');
     }
   }, [isCompleted]);
@@ -110,13 +123,29 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
     <div className="space-y-3">
       {/* Header with progress */}
       <div className="flex items-center justify-between">
-        <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
-          <Gamepad2 size={14} className="inline" /> <InlineTextEditor
-            {...titleEditor}
-            className="text-[11px] font-extrabold"
-            style={{ color: tokens.color('y'), fontSize: 'inherit' }}
-            placeholder="Ketik judul kuis..."
-          />
+        <div className="flex items-center gap-2">
+          <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
+            <Gamepad2 size={14} className="inline" /> <InlineTextEditor
+              {...titleEditor}
+              className="text-[11px] font-extrabold"
+              style={{ color: tokens.color('y'), fontSize: 'inherit' }}
+              placeholder="Ketik judul kuis..."
+            />
+          </div>
+          {/* Streak indicator */}
+          {currentStreak >= 2 && (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style={{
+                background: tokens.colorAlpha('o', 0.15),
+                border: '1px solid ' + tokens.colorAlpha('o', 0.4),
+                animation: 'popIn 0.3s ease-out',
+              }}>
+              <Flame size={12} style={{ color: tokens.color('o') }} />
+              <span className="font-black" style={{ fontSize: '10px', color: tokens.color('o') }}>
+                {currentStreak}x Streak!
+              </span>
+            </div>
+          )}
         </div>
         <span className="px-2.5 py-1 rounded-full font-extrabold"
           style={{
@@ -172,7 +201,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
                   }
                 }}
                 className="p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0"
-                style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh }}>
+                style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                 {opt}
               </button>
             );

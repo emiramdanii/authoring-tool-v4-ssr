@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { fireConfetti } from '@/lib/confetti';
 
 export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing, pageIndex }: {
   block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean; pageIndex?: number;
@@ -43,6 +44,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
         completed: true,
       });
       playSound('complete');
+      fireConfetti({ count: 30 });
     }
   }, [isCompleted]);
 

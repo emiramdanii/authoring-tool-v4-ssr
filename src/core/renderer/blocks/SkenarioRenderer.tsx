@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { fireConfetti } from '@/lib/confetti';
 
 export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIndex }: {
   block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isEditing?: boolean; pageIndex?: number;
@@ -50,6 +51,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
         completed: true,
       });
       playSound('complete');
+      fireConfetti({ count: 45 });
     }
   }, [isCompleted]);
 

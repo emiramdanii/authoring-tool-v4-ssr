@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { fireConfetti } from '@/lib/confetti';
 
 /** Inner kolom component so hooks are not called in loops */
 function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomItems, onKolomClick }: {
@@ -109,6 +110,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         completed: true,
       });
       playSound('complete');
+      fireConfetti({ count: 40 });
     }
   }, [isCompleted]);
 

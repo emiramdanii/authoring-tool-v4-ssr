@@ -13,6 +13,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   SchemaEngine,
   loadPreset,
@@ -167,13 +168,24 @@ export default function SchemaPlayer({
           so the nav height auto-adjusts via ResizeObserver.
           Fallback values match PageFrame defaults. */}
       <div className="absolute inset-0" style={{ bottom: showControls ? (isCompact ? '6.67%' : '10%') : 0 }}>
-        <SchemaEngine
-          schema={schema}
-          screenIndex={screenIdx}
-          mode={mode === 'canvas' ? 'canvas' : 'preview'}
-          themeOverride={themeId}
-          interactive={interactive}
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={screenIdx}
+            className="absolute inset-0"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+          >
+            <SchemaEngine
+              schema={schema}
+              screenIndex={screenIdx}
+              mode={mode === 'canvas' ? 'canvas' : 'preview'}
+              themeOverride={themeId}
+              interactive={interactive}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* ══ BOTTOM NAVIGATION BAR ══════════════════════════════ */}

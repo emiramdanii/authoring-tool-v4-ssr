@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { fireConfetti } from '@/lib/confetti';
 
 export function HasilRenderer({ block, tokens, interactive, isEditing, pageIndex }: {
   block: HasilBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean; pageIndex?: number;
@@ -38,6 +39,7 @@ export function HasilRenderer({ block, tokens, interactive, isEditing, pageIndex
   React.useEffect(() => {
     if (interactive && allComplete) {
       playSound('complete');
+      if (totalPct >= 80) fireConfetti({ count: 80, duration: 4000 });
     }
   }, [interactive, allComplete]);
 

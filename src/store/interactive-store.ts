@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { useCanvaStore } from '@/store/canva-store';
 
 // ── Score Entry ────────────────────────────────────────────────
@@ -54,7 +54,10 @@ interface InteractiveState {
 
 // ── Store ──────────────────────────────────────────────────────
 
-export const useInteractiveStore = create<InteractiveState>()(devtools((set, get) => {
+export const useInteractiveStore = create<InteractiveState>()(
+  devtools(
+    persist(
+      (set, get) => {
   // ── Helper: Sync totalPages from canva store ─────────────────
   const syncTotalPages = () => {
     try {
@@ -204,7 +207,19 @@ export const useInteractiveStore = create<InteractiveState>()(devtools((set, get
     return true;
   },
   };
-}, { name: 'InteractiveStore', enabled: process.env.NODE_ENV === 'development' }));
+      },
+      {
+        name: 'mpi-interactive-store',
+        partialize: (state) => ({
+          scores: state.scores,
+          interactivePageIdx: state.interactivePageIdx,
+        }),
+        version: 1,
+      }
+    ),
+    { name: 'InteractiveStore', enabled: process.env.NODE_ENV === 'development' }
+  )
+);
 
 // ═══════════════════════════════════════════════════════════════
 // Reactive subscription: canva store pages → interactive store totalPages
