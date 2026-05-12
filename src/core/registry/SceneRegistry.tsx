@@ -10,96 +10,48 @@
 //
 // New block types can be added by simply registering them here.
 // No need to modify SchemaBlockRenderer anymore.
+//
+// ═══════════════════════════════════════════════════════════════════
+// ARCHITECTURE NOTE (Circular Dependency Fix):
+// Block metadata (type, name, icon, capabilities, etc.) is defined
+// in BlockDefinitionRegistry.ts — a RENDERER-FREE module that is
+// safe to import from store modules. This file adds the React
+// renderer components on top. DO NOT import this file from store
+// modules — use BlockDefinitionRegistry instead.
+// ═══════════════════════════════════════════════════════════════════
 
 import React from 'react';
-// Note: SchemaBlock & TokenResolver types available from sibling modules if needed
 import type { PropertySchema } from '../editor/types';
 
-// ═══════════════════════════════════════════════════════════════════
-// BLOCK CAPABILITIES
-// ═══════════════════════════════════════════════════════════════════
-
-export interface BlockCapabilities {
-  /** Can this block be edited in the canvas? */
-  editable: boolean;
-  /** Can this block be resized? */
-  resizable: boolean;
-  /** Can this block be repositioned? */
-  movable: boolean;
-  /** Can this block have a custom background? */
-  backgroundCustom: boolean;
-  /** Is this block interactive (has state/score tracking)? */
-  interactive: boolean;
-  /** Can this block be auto-generated? */
-  autoGeneratable: boolean;
-  /** Does this block support children (composite)? */
-  composite: boolean;
-  /** Supported variants */
-  variants: ('A' | 'B' | 'C')[];
-}
-
-export const DEFAULT_CAPABILITIES: BlockCapabilities = {
-  editable: true,
-  resizable: false,
-  movable: false,
-  backgroundCustom: false,
-  interactive: false,
-  autoGeneratable: true,
-  composite: false,
-  variants: ['A'],
-};
+// Re-export types and metadata from the renderer-free registry
+export {
+  BLOCK_DEFINITIONS,
+  DEFAULT_CAPABILITIES,
+  getBlockMeta,
+  getBlocksByCategoryMeta,
+  getBlocksForTemplateTypeMeta,
+  isBlockRegisteredMeta,
+  getBlockCapabilitiesMeta,
+  getBlockPropertySchemaMeta,
+  getAllBlockMeta,
+} from './BlockDefinitionRegistry';
+export type {
+  BlockCapabilities,
+  SceneBlockLayout,
+  BlockDefinitionMeta,
+} from './BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
-// BLOCK LAYOUT DEFAULTS
+// TYPES
 // ═══════════════════════════════════════════════════════════════════
 
-export interface SceneBlockLayout {
-  /** Layout strategy: flow (flexbox) or absolute (coordinate-based) */
-  position: 'flow' | 'absolute';
-  /** Default width in % (only for absolute) */
-  defaultWidth?: number;
-  /** Default height in % (only for absolute) */
-  defaultHeight?: number;
-  /** Default x position in % (only for absolute) */
-  defaultX?: number;
-  /** Default y position in % (only for absolute) */
-  defaultY?: number;
-  /** Z-index layer */
-  zIndex?: number;
-}
+import type { BlockDefinitionMeta } from './BlockDefinitionRegistry';
 
-// ═══════════════════════════════════════════════════════════════════
-// BLOCK DEFINITION
-// ═══════════════════════════════════════════════════════════════════
-
-export interface BlockDefinition {
-  /** Block type identifier (matches SchemaBlock.type) */
-  type: string;
-  /** Human-readable name */
-  name: string;
-  /** Icon for the editor UI */
-  icon: string;
-  /** Category for grouping */
-  category: 'layout' | 'content' | 'interactive' | 'navigation' | 'feedback' | 'decoration';
-  /** Description */
-  description: string;
-  /** What this block can do */
-  capabilities: BlockCapabilities;
-  /** Default layout */
-  defaultLayout: SceneBlockLayout;
-  /** Which template types commonly use this block */
-  usedInTemplates: string[];
-  /** Property schema for dynamic editing — auto-generates the property panel form */
-  propertySchema: PropertySchema;
+export interface BlockDefinition extends BlockDefinitionMeta {
   /** Renderer component — uses `any` because each renderer has specific block type props.
    *  The registry guarantees type-safe mapping: block.type → correct renderer.
    */
   renderer: React.ComponentType<any>;
-  /** Factory function that creates default content for a new block of this type.
-   *  Returns a partial block object (without `id`, `type`, `variant`, `layout`
-   *  which are added by addSchemaBlock).
-   */
-  createDefault: () => Record<string, unknown>;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -129,354 +81,46 @@ import {
   TabelAccordionRenderer,
 } from '../renderer/blocks';
 
-import {
-  COVER_PROPERTY_SCHEMA,
-  PETUNJUK_PROPERTY_SCHEMA,
-  TP_PROPERTY_SCHEMA,
-  ALUR_PROPERTY_SCHEMA,
-  SKENARIO_PROPERTY_SCHEMA,
-  DEFBOX_PROPERTY_SCHEMA,
-  NCGRID_PROPERTY_SCHEMA,
-  FLASHCARD_PROPERTY_SCHEMA,
-  FTAB_PROPERTY_SCHEMA,
-  NKCARD_PROPERTY_SCHEMA,
-  DISKUSI_PROPERTY_SCHEMA,
-  KUIS_PROPERTY_SCHEMA,
-  SORTIRGAME_PROPERTY_SCHEMA,
-  RODAGAME_PROPERTY_SCHEMA,
-  HASIL_PROPERTY_SCHEMA,
-  REFLEKSI_PROPERTY_SCHEMA,
-  PENUTUP_PROPERTY_SCHEMA,
-  TABELACCORD_PROPERTY_SCHEMA,
-} from '../editor/property-schemas';
+import { BLOCK_DEFINITIONS } from './BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
-// BLOCK REGISTRY
+// RENDERER MAP — Maps block types to their React renderer components
 // ═══════════════════════════════════════════════════════════════════
 
-export const SCENE_REGISTRY: Record<string, BlockDefinition> = {
-  'cover': {
-    type: 'cover',
-    name: 'Cover',
-    icon: '🏠',
-    category: 'layout',
-    description: 'Halaman judul dengan icon, title, badges, dan CTA',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
-    defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
-    usedInTemplates: ['cover'],
-    propertySchema: COVER_PROPERTY_SCHEMA,
-    renderer: CoverRenderer,
-    createDefault: () => ({
-      icon: '📄',
-      title: 'Judul Baru',
-      subtitle: 'Subtitle',
-      badges: [],
-      meta: { durasi: '', fase: 'VII', elemen: '' },
-      cta: { label: 'Mulai →', action: 'next' },
-      accentColor: 'y',
-    }),
-  },
-  'petunjuk': {
-    type: 'petunjuk',
-    name: 'Petunjuk',
-    icon: '📌',
-    category: 'content',
-    description: 'Petunjuk penggunaan dengan grid item dan tips',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['petunjuk'],
-    propertySchema: PETUNJUK_PROPERTY_SCHEMA,
-    renderer: PetunjukRenderer,
-    createDefault: () => ({
-      title: 'Petunjuk',
-      titleHighlight: 'Penggunaan',
-      items: [{ icon: '📌', title: 'Item 1', body: 'Deskripsi item' }],
-    }),
-  },
-  'tp': {
-    type: 'tp',
-    name: 'Tujuan Pembelajaran',
-    icon: '🎯',
-    category: 'content',
-    description: 'Daftar tujuan pembelajaran dengan nomor dan profil',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['dokumen'],
-    propertySchema: TP_PROPERTY_SCHEMA,
-    renderer: TpRenderer,
-    createDefault: () => ({
-      title: 'Tujuan Pembelajaran',
-      titleHighlight: '',
-      items: [{ num: 1, verb: 'Memahami', desc: 'Deskripsi tujuan', color: 'y' }],
-      profilColor: 'g',
-    }),
-  },
-  'alur': {
-    type: 'alur',
-    name: 'Alur Kegiatan',
-    icon: '⏱️',
-    category: 'navigation',
-    description: 'Timeline vertikal kegiatan pembelajaran',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['dokumen'],
-    propertySchema: ALUR_PROPERTY_SCHEMA,
-    renderer: AlurRenderer,
-    createDefault: () => ({
-      title: 'Alur Kegiatan',
-      steps: [{ dot: 'y', durasi: '5 menit', judul: 'Langkah 1', deskripsi: 'Deskripsi langkah' }],
-    }),
-  },
-  'skenario': {
-    type: 'skenario',
-    name: 'Skenario',
-    icon: '🎭',
-    category: 'interactive',
-    description: 'Cerita interaktif dengan pilihan dan konsekuensi',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['skenario'],
-    propertySchema: SKENARIO_PROPERTY_SCHEMA,
-    renderer: SkenarioRenderer,
-    createDefault: () => ({
-      title: 'Skenario',
-      chapters: [{
-        id: 'ch1',
-        charEmoji: '🎭',
-        title: 'Bab 1',
-        choices: [{
-          icon: '👉', label: 'Pilihan 1', detail: '', good: true, pts: 10,
-          level: 'good' as const,
-        }],
-      }],
-    }),
-  },
-  'def-box': {
-    type: 'def-box',
-    name: 'Definisi',
-    icon: '📖',
-    category: 'content',
-    description: 'Kotak definisi dengan border accent',
-    capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, resizable: true, movable: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: DEFBOX_PROPERTY_SCHEMA,
-    renderer: DefBoxRenderer,
-    createDefault: () => ({
-      content: 'Definisi baru',
-      borderColor: 'y',
-    }),
-  },
-  'nc-grid': {
-    type: 'nc-grid',
-    name: 'Kartu Norma',
-    icon: '📋',
-    category: 'content',
-    description: 'Grid kartu dengan icon, title, body',
-    capabilities: { ...DEFAULT_CAPABILITIES, resizable: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi', 'diskusi'],
-    propertySchema: NCGRID_PROPERTY_SCHEMA,
-    renderer: NcGridRenderer,
-    createDefault: () => ({
-      cards: [{ icon: '📋', title: 'Kartu 1', body: 'Deskripsi kartu', color: 'y' }],
-    }),
-  },
-  'flashcard-set': {
-    type: 'flashcard-set',
-    name: 'Kartu Kilat',
-    icon: '🃏',
-    category: 'interactive',
-    description: 'Set kartu kilat flip dengan navigasi',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: FLASHCARD_PROPERTY_SCHEMA,
-    renderer: FlashcardRenderer,
-    createDefault: () => ({
-      cards: [{ q: 'Pertanyaan?', a: 'Jawaban' }],
-    }),
-  },
-  'ftab': {
-    type: 'ftab',
-    name: 'Tab Fungsi',
-    icon: '📑',
-    category: 'navigation',
-    description: 'Tab konten dengan read marker dan progress',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, composite: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: FTAB_PROPERTY_SCHEMA,
-    renderer: FtabRenderer,
-    createDefault: () => ({
-      tabs: [{ icon: '📑', label: 'Tab 1', content: [] }],
-      showReadMarker: false,
-      showProgress: false,
-    }),
-  },
-  'nk-card': {
-    type: 'nk-card',
-    name: 'Kartu Norma Detail',
-    icon: '📜',
-    category: 'content',
-    description: 'Kartu detail jenis norma dengan sanksi dan contoh',
-    capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: NKCARD_PROPERTY_SCHEMA,
-    renderer: NormaKartuRenderer,
-    createDefault: () => ({
-      normaType: '',
-      icon: '📜',
-      title: 'Kartu Norma',
-      label: '',
-      definition: '',
-      characteristics: [],
-      sanksi: { title: 'Sanksi', items: [] },
-      contoh: '',
-    }),
-  },
-  'diskusi': {
-    type: 'diskusi',
-    name: 'Diskusi',
-    icon: '💬',
-    category: 'interactive',
-    description: 'Pertanyaan diskusi dengan area jawaban',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['diskusi'],
-    propertySchema: DISKUSI_PROPERTY_SCHEMA,
-    renderer: DiskusiRenderer,
-    createDefault: () => ({
-      title: 'Diskusi',
-      questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban', color: 'c' }],
-    }),
-  },
-  'kuis': {
-    type: 'kuis',
-    name: 'Kuis',
-    icon: '❓',
-    category: 'interactive',
-    description: 'Kuis pilihan ganda dengan feedback',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['kuis'],
-    propertySchema: KUIS_PROPERTY_SCHEMA,
-    renderer: KuisRenderer,
-    createDefault: () => ({
-      title: 'Kuis',
-      questions: [{ q: 'Pertanyaan?', opts: ['A', 'B', 'C'], ans: 0, ex: 'Penjelasan' }],
-      interactive: true,
-    }),
-  },
-  'sortir-game': {
-    type: 'sortir-game',
-    name: 'Game Sortir',
-    icon: '🎮',
-    category: 'interactive',
-    description: 'Game mengelompokkan kartu ke kolom',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['game'],
-    propertySchema: SORTIRGAME_PROPERTY_SCHEMA,
-    renderer: SortirGameRenderer,
-    createDefault: () => ({
-      title: 'Game Sortir',
-      pool: [{ id: 's1', text: 'Item 1', category: 'kolom-1' }],
-      kolom: [{ id: 'kolom-1', label: 'Kolom 1', color: 'y' }],
-      interactive: true,
-    }),
-  },
-  'roda-game': {
-    type: 'roda-game',
-    name: 'Game Roda',
-    icon: '🎡',
-    category: 'interactive',
-    description: 'Game roda putar dengan pertanyaan',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['game'],
-    propertySchema: RODAGAME_PROPERTY_SCHEMA,
-    renderer: RodaGameRenderer,
-    createDefault: () => ({
-      title: 'Game Roda',
-      questions: [{
-        q: 'Pertanyaan?',
-        opts: [{ text: 'Jawaban A', correct: true }, { text: 'Jawaban B', correct: false }],
-        feedbackCorrect: 'Benar!',
-        feedbackWrong: 'Coba lagi',
-      }],
-      interactive: true,
-    }),
-  },
-  'hasil': {
-    type: 'hasil',
-    name: 'Hasil',
-    icon: '🏆',
-    category: 'feedback',
-    description: 'Tampilan skor dan apresiasi',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['hasil'],
-    propertySchema: HASIL_PROPERTY_SCHEMA,
-    renderer: HasilRenderer,
-    createDefault: () => ({
-      title: 'Hasil',
-      subtitle: 'Subtitle hasil',
-      interactive: true,
-    }),
-  },
-  'refleksi': {
-    type: 'refleksi',
-    name: 'Refleksi',
-    icon: '📝',
-    category: 'interactive',
-    description: 'Refleksi diri dengan pertanyaan dan penugasan',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['refleksi'],
-    propertySchema: REFLEKSI_PROPERTY_SCHEMA,
-    renderer: RefleksiRenderer,
-    createDefault: () => ({
-      title: 'Refleksi',
-      questions: [{ teks: 'Pertanyaan refleksi?', petunjuk: 'Petunjuk refleksi' }],
-      interactive: true,
-    }),
-  },
-  'penutup': {
-    type: 'penutup',
-    name: 'Penutup',
-    icon: '🎊',
-    category: 'feedback',
-    description: 'Penutup dengan preview pertemuan berikutnya',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['penutup'],
-    propertySchema: PENUTUP_PROPERTY_SCHEMA,
-    renderer: PenutupRenderer,
-    createDefault: () => ({
-      title: 'Penutup',
-      subtitle: 'Terima kasih',
-      preview: [],
-    }),
-  },
-  'tabel-accord': {
-    type: 'tabel-accord',
-    name: 'Tabel Accordion',
-    icon: '📊',
-    category: 'content',
-    description: 'Tabel accordion dengan expandable rows',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: TABELACCORD_PROPERTY_SCHEMA,
-    renderer: TabelAccordionRenderer,
-    createDefault: () => ({
-      rows: [{ icon: '📊', title: 'Baris 1', color: 'y', details: [{ label: 'Label', value: 'Nilai' }] }],
-      interactive: true,
-    }),
-  },
+const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
+  'cover': CoverRenderer,
+  'petunjuk': PetunjukRenderer,
+  'tp': TpRenderer,
+  'alur': AlurRenderer,
+  'skenario': SkenarioRenderer,
+  'def-box': DefBoxRenderer,
+  'nc-grid': NcGridRenderer,
+  'flashcard-set': FlashcardRenderer,
+  'ftab': FtabRenderer,
+  'nk-card': NormaKartuRenderer,
+  'diskusi': DiskusiRenderer,
+  'kuis': KuisRenderer,
+  'sortir-game': SortirGameRenderer,
+  'roda-game': RodaGameRenderer,
+  'hasil': HasilRenderer,
+  'refleksi': RefleksiRenderer,
+  'penutup': PenutupRenderer,
+  'tabel-accord': TabelAccordionRenderer,
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// BLOCK REGISTRY — Composed from metadata + renderers
+// ═══════════════════════════════════════════════════════════════════
+
+export const SCENE_REGISTRY: Record<string, BlockDefinition> = Object.fromEntries(
+  Object.entries(BLOCK_DEFINITIONS).map(([type, meta]) => [
+    type,
+    {
+      ...meta,
+      renderer: RENDERER_MAP[type] ?? (() => null), // Fallback: render nothing
+    },
+  ])
+);
 
 // ═══════════════════════════════════════════════════════════════════
 // REGISTRY API
@@ -519,5 +163,3 @@ export function getBlockPropertySchema(type: string): PropertySchema | undefined
 export function getAllBlockDefinitions(): BlockDefinition[] {
   return Object.values(SCENE_REGISTRY);
 }
-
-

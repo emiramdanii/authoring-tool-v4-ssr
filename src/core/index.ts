@@ -34,7 +34,7 @@ export type {
   TabelAccordionBlock,
 } from './schema/types';
 
-// Scene registry — capability-based block dispatch
+// Scene registry — capability-based block dispatch (includes renderers)
 export {
   SCENE_REGISTRY,
   getBlockDefinition,
@@ -51,6 +51,21 @@ export type {
   SceneBlockLayout,
   BlockDefinition,
 } from './registry/SceneRegistry';
+
+// Block definition registry — renderer-free (safe for store imports)
+export {
+  BLOCK_DEFINITIONS,
+  getBlockMeta,
+  getBlocksByCategoryMeta,
+  getBlocksForTemplateTypeMeta,
+  isBlockRegisteredMeta,
+  getBlockCapabilitiesMeta,
+  getBlockPropertySchemaMeta,
+  getAllBlockMeta,
+} from './registry/BlockDefinitionRegistry';
+export type {
+  BlockDefinitionMeta,
+} from './registry/BlockDefinitionRegistry';
 
 // Renderer
 export { SchemaScreenRenderer, SchemaBlockRenderer, TokenResolver } from './renderer/SchemaRenderer';

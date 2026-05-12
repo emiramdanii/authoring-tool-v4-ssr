@@ -11,7 +11,10 @@ import { LAYOUT_PRESETS } from '@/components/canva/types';
 import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
 import { editBus } from '@/core/editor/edit-bus';
-import { SCENE_REGISTRY } from '@/core/registry/SceneRegistry';
+import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
+// NOTE: Do NOT import from SceneRegistry here — it pulls in React renderers
+// which import from @/store/canva-store, creating a circular dependency.
+// Use the renderer-free BlockDefinitionRegistry instead.
 import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
@@ -551,7 +554,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
 
     // Get block definition from registry
-    const definition = SCENE_REGISTRY[blockType];
+    const definition = BLOCK_DEFINITIONS[blockType];
     if (!definition) {
       toast.error(`Block type "${blockType}" tidak ditemukan`);
       return;

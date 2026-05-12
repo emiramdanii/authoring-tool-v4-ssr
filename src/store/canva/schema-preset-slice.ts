@@ -15,7 +15,10 @@ import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { CanvaPage } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
-import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine';
+import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine.utils';
+// NOTE: Do NOT import from SchemaEngine.tsx — it imports React renderers
+// which create circular dependencies back to canva-store.
+// Use the renderer-free .utils file for store modules.
 import { generatePageId } from '@/core/schema/ensure-schema';
 
 export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset'>;
