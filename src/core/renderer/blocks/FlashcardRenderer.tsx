@@ -71,6 +71,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('g', 0.3),
           boxShadow: tokens.raw.shadow.elevated,
+          animation: 'popSuccess 0.5s ease-out',
         }}>
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🧠</div>
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('g') }}>
@@ -85,6 +86,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
               style={{
                 background: tokens.colorAlpha('g', 0.2),
                 border: '1px solid ' + tokens.colorAlpha('g', 0.3),
+                animation: `popSuccess 0.3s ease-out ${i * 0.1}s both`,
               }}>
               <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
             </div>
@@ -111,6 +113,14 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
     );
   }
 
+  const handleFlip = () => {
+    if (!interactive) return;
+    const newFlipped = !flipped;
+    setFlipped(newFlipped);
+    if (newFlipped) playSound('tap');
+    else playSound('correct');
+  };
+
   return (
     <div className={isCompact ? 'mt-2' : 'mt-4'}>
       <div className="flex items-center justify-between mb-3">
@@ -118,7 +128,6 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
           style={{ fontSize: '12px', color: tokens.color('y') }}>
           🃏 Kartu Kilat — Uji Ingatanmu
         </div>
-        {/* Progress indicator */}
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-bold" style={{ color: tokens.muted(0.6) }}>
             {viewedCards.size}/{cards.length}
@@ -127,50 +136,62 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
         </div>
       </div>
 
-      <div className={`rounded-xl ${interactive ? 'cursor-pointer' : ''}`}
-        style={{
-          minHeight: isCompact ? 80 : 130,
-          transformStyle: 'preserve-3d',
-          transform: flipped ? 'rotateY(180deg)' : 'none',
-          transition: 'transform 0.6s',
-        }}
-        onClick={() => {
-          if (interactive) {
-            setFlipped(!flipped);
-            if (!flipped) playSound('tap');
-            else playSound('correct');
-          }
-        }}>
-
-        {/* Front */}
-        <div className="rounded-xl p-4 flex flex-col justify-center"
+      {/* 3D Flip Card Container */}
+      <div className="relative" style={{ perspective: '1000px' }}>
+        <div
+          className={`rounded-xl ${interactive ? 'cursor-pointer' : ''}`}
           style={{
-            background: tokens.color('card'),
-            border: '2px solid ' + tokens.colorAlpha('y', 0.3),
-            backfaceVisibility: 'hidden',
-            boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('y', 0.1),
-          }}>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center"
-              style={{ background: tokens.colorAlpha('y', 0.2) }}>
-              <span style={{ fontSize: '12px' }}>❓</span>
+            minHeight: isCompact ? 80 : 130,
+            transformStyle: 'preserve-3d',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+          onClick={handleFlip}
+        >
+          {/* FRONT FACE */}
+          <div className="rounded-xl p-4 flex flex-col justify-center"
+            style={{
+              background: tokens.color('card'),
+              border: '2px solid ' + tokens.colorAlpha('y', 0.3),
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              position: 'absolute',
+              inset: 0,
+              boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('y', 0.1),
+            }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ background: tokens.colorAlpha('y', 0.2) }}>
+                <span style={{ fontSize: '12px' }}>❓</span>
+              </div>
+              <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color: tokens.color('y') }}>Pertanyaan</div>
             </div>
-            <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color: tokens.color('y') }}>Pertanyaan</div>
+            <InlineTextEditor
+              {...qEditor}
+              className="font-extrabold text-[12px] leading-relaxed"
+              style={{ fontSize: 'inherit' }}
+              placeholder="Ketik pertanyaan..."
+            />
+            {interactive && (
+              <div className="mt-3 text-center">
+                <span className="text-[10px] font-bold px-2 py-1 rounded-full"
+                  style={{ background: tokens.colorAlpha('y', 0.1), color: tokens.color('y'), border: '1px solid ' + tokens.colorAlpha('y', 0.2) }}>
+                  👆 Ketuk untuk membalik
+                </span>
+              </div>
+            )}
           </div>
-          <InlineTextEditor
-            {...qEditor}
-            className="font-extrabold text-[12px] leading-relaxed"
-            style={{ fontSize: 'inherit' }}
-            placeholder="Ketik pertanyaan..."
-          />
-        </div>
 
-        {/* Back */}
-        {flipped && (
-          <div className="rounded-xl p-4 mt-2"
+          {/* BACK FACE */}
+          <div className="rounded-xl p-4 flex flex-col justify-center"
             style={{
               background: tokens.colorAlpha('g', 0.12),
               border: '2px solid ' + tokens.colorAlpha('g', 0.35),
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              position: 'absolute',
+              inset: 0,
               boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('g', 0.1),
             }}>
             <div className="flex items-center gap-2 mb-2">
@@ -187,7 +208,10 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
               placeholder="Ketik jawaban..."
             />
           </div>
-        )}
+        </div>
+
+        {/* Spacer to maintain height */}
+        <div style={{ minHeight: isCompact ? 80 : 130 }} />
       </div>
 
       {/* Nav */}

@@ -13,6 +13,8 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
 }) {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
+  const [spinning, setSpinning] = React.useState(false);
+  const [spinTarget, setSpinTarget] = React.useState<number | null>(null);
 
   const questions = block.questions || [];
   const q = questions[current];
@@ -38,6 +40,24 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
       else playSound('ding');
     }
   }, [isCompleted]);
+
+  // ── Spin animation handler ─────────────────────────────────
+  const handleSpin = () => {
+    if (spinning || !interactive) return;
+    setSpinning(true);
+    playSound('tap');
+
+    // Spin for 2 seconds then land on next question
+    const nextQ = current < questions.length - 1 ? current + 1 : current;
+    setSpinTarget(nextQ);
+
+    setTimeout(() => {
+      setSpinning(false);
+      setSpinTarget(null);
+      // Don't advance - just reveal the question. User answers to proceed.
+      playSound('ding');
+    }, 1500);
+  };
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -95,6 +115,12 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
 
   if (!q) return null;
 
+  // ── Wheel segment colors ──────────────────────────────────────
+  const wheelColors = ['#f9c12e', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
+
+  // ══ SPINNING WHEEL VIEW (before answering) ══════════════════
+  const showWheel = answers[current] === undefined && interactive && !spinning;
+
   return (
     <div className="rounded-2xl overflow-hidden"
       style={{
@@ -130,6 +156,105 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
       </div>
 
       <div className="p-4">
+        {/* Mini spinning wheel indicator */}
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            {/* Outer ring */}
+            <div className="w-16 h-16 rounded-full relative overflow-hidden"
+              style={{
+                border: '3px solid ' + tokens.color('c'),
+                boxShadow: '0 0 20px ' + tokens.colorAlpha('c', 0.2),
+                animation: spinning ? 'wheelSpin 1.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+              }}>
+              {/* Wheel segments */}
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                {questions.map((_, i) => {
+                  const angle = (360 / questions.length) * i;
+                  const nextAngle = (360 / questions.length) * (i + 1);
+                  const startRad = (angle - 90) * Math.PI / 180;
+                  const endRad = (nextAngle - 90) * Math.PI / 180;
+                  const x1 = 50 + 48 * Math.cos(startRad);
+                  const y1 = 50 + 48 * Math.sin(startRad);
+                  const x2 = 50 + 48 * Math.cos(endRad);
+                  const y2 = 50 + 48 * Math.sin(endRad);
+                  const largeArc = (nextAngle - angle) > 180 ? 1 : 0;
+                  const color = wheelColors[i % wheelColors.length];
+                  const isCurrentSegment = i === current;
+
+                  return (
+                    <g key={i}>
+                      <path
+                        d={`M50,50 L${x1},${y1} A48,48 0 ${largeArc},1 ${x2},${y2} Z`}
+                        fill={color}
+                        opacity={isCurrentSegment ? 0.9 : 0.4}
+                        stroke={tokens.isDark() ? '#1a1a2e' : '#ffffff'}
+                        strokeWidth="1"
+                      />
+                      {/* Question number */}
+                      <text
+                        x={50 + 30 * Math.cos((startRad + endRad) / 2)}
+                        y={50 + 30 * Math.sin((startRad + endRad) / 2)}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill={tokens.isDark() ? '#1a1a2e' : '#ffffff'}
+                        fontSize="8"
+                        fontWeight="bold"
+                      >
+                        {i + 1}
+                      </text>
+                    </g>
+                  );
+                })}
+                {/* Center circle */}
+                <circle cx="50" cy="50" r="12" fill={tokens.isDark() ? '#1a1a2e' : '#ffffff'} />
+                <text x="50" y="50" textAnchor="middle" dominantBaseline="central" fill={tokens.color('c')} fontSize="10" fontWeight="bold">
+                  🎡
+                </text>
+              </svg>
+            </div>
+            {/* Pointer arrow */}
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2"
+              style={{ color: tokens.color('y'), filter: 'drop-shadow(0 0 4px ' + tokens.colorAlpha('y', 0.5) + ')' }}>
+              ▼
+            </div>
+            {/* Answered indicators around wheel */}
+            {questions.map((_, i) => {
+              const answered = answers[i] !== undefined;
+              const angle = (360 / questions.length) * i - 90;
+              const rad = angle * Math.PI / 180;
+              const x = 50 + 40 * Math.cos(rad) / 100 * 16;
+              const y = 50 + 40 * Math.sin(rad) / 100 * 16;
+              return answered ? (
+                <div key={i} className="absolute w-3 h-3 rounded-full"
+                  style={{
+                    left: `calc(50% + ${Math.cos(rad) * 36}px - 6px)`,
+                    top: `calc(50% + ${Math.sin(rad) * 36}px - 6px)`,
+                    background: questions[i]?.opts?.[answers[i]]?.correct ? tokens.color('g') : tokens.color('r'),
+                    boxShadow: '0 0 6px ' + (questions[i]?.opts?.[answers[i]]?.correct ? tokens.colorAlpha('g', 0.5) : tokens.colorAlpha('r', 0.5)),
+                    zIndex: 5,
+                  }} />
+              ) : null;
+            })}
+          </div>
+        </div>
+
+        {/* Spin button */}
+        {showWheel && (
+          <div className="text-center mb-4">
+            <button className="px-6 py-2.5 rounded-xl font-extrabold transition-all hover:scale-105"
+              onClick={handleSpin}
+              style={{
+                fontSize: '14px',
+                background: 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')',
+                color: tokens.color('bg'),
+                boxShadow: '0 4px 16px ' + tokens.colorAlpha('c', 0.35),
+                animation: 'pulseGlow 2s ease-in-out infinite',
+              }}>
+              🎡 Putar Roda!
+            </button>
+          </div>
+        )}
+
         {/* Discussion hint */}
         {q.diskusiHint && (
           <div className="mb-3 p-3 rounded-xl"
@@ -152,6 +277,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
           style={{
             background: tokens.colorAlpha('y', 0.08),
             border: '1px solid ' + tokens.colorAlpha('y', 0.2),
+            animation: spinning ? 'none' : 'fadeIn 0.4s ease',
           }}>
           <InlineTextEditor
             {...questionEditor}
@@ -180,17 +306,16 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
               }
             }
             return (
-              <button key={i} disabled={isAnswered}
+              <button key={i} disabled={isAnswered || spinning}
                 onClick={() => {
-                  if (interactive && !isAnswered) {
+                  if (interactive && !isAnswered && !spinning) {
                     setAnswers(prev => ({ ...prev, [current]: i }));
-                    // Play sound based on answer
                     if (opt.correct) playSound('correct');
                     else playSound('incorrect');
                   }
                 }}
                 className="w-full p-3 rounded-xl font-bold text-left transition-all hover:scale-[1.01] min-w-0"
-                style={{ fontSize: '13px', background: bg, border: '2px solid ' + border, boxShadow: boxShd }}>
+                style={{ fontSize: '13px', background: bg, border: '2px solid ' + border, boxShadow: boxShd, opacity: spinning ? 0.5 : 1 }}>
                 {opt.text}
               </button>
             );

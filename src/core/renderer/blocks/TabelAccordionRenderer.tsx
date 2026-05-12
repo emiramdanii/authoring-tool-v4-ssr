@@ -4,6 +4,7 @@ import React from 'react';
 import type { TabelAccordionBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { playSound } from '@/lib/sounds';
 
 /** Inner detail item component so hooks are not called in loops */
 function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tokens }: {
@@ -44,7 +45,7 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
       <InlineTextEditor
         {...valueEditor}
         className="text-[10px] leading-relaxed"
-        style={{ fontSize: 'inherit' }}
+        style={{ fontSize: 'inherit', color: tokens.color('text') }}
         placeholder="Ketik nilai..."
       />
     </div>
@@ -52,13 +53,14 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
 }
 
 /** Inner row component so hooks are not called in loops */
-function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle }: {
+function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, interactive }: {
   row: TabelAccordionBlock['rows'][number];
   rowIndex: number;
   blockId: string;
   tokens: TokenResolver;
   isOpen: boolean;
   onToggle: () => void;
+  interactive?: boolean;
 }) {
   const titleEditor = useInlineEditor({
     blockId,
@@ -74,20 +76,26 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle }: {
         background: isOpen ? tokens.colorAlpha(row.color, 0.08) : tokens.colorAlpha(row.color, 0.04),
         boxShadow: tokens.raw.shadow.card,
       }}>
-      <button className="w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer transition-all hover:bg-white/[0.03]"
-        style={{ fontSize: '13px' }}
-        onClick={onToggle}>
+      <button className="w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer transition-all"
+        style={{
+          fontSize: '13px',
+          background: isOpen ? tokens.colorAlpha(row.color, 0.04) : 'transparent',
+        }}
+        onClick={() => {
+          onToggle();
+          if (interactive) playSound(isOpen ? 'click' : 'tap');
+        }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ background: tokens.colorAlpha(row.color, 0.2), boxShadow: '0 2px 8px ' + tokens.colorAlpha(row.color, 0.2) }}>
           <span className="text-sm">{row.icon}</span>
         </div>
         <InlineTextEditor
           {...titleEditor}
-          className="font-extrabold text-[11px]"
+          className="font-extrabold text-[11px] text-left min-w-0"
           style={{ color: tokens.color(row.color), fontSize: 'inherit' }}
           placeholder="Ketik judul baris..."
         />
-        <span className="ml-auto transition-transform duration-300"
+        <span className="ml-auto transition-transform duration-300 flex-shrink-0"
           style={{ fontSize: '12px', transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
       </button>
       {isOpen && (
@@ -112,8 +120,8 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle }: {
   );
 }
 
-export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing }: {
-  block: TabelAccordionBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, interactive }: {
+  block: TabelAccordionBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
 }) {
   const [openIdx, setOpenIdx] = React.useState<number | null>(null);
 
@@ -128,6 +136,7 @@ export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing }: 
           tokens={tokens}
           isOpen={openIdx === i}
           onToggle={() => setOpenIdx(openIdx === i ? null : i)}
+          interactive={interactive}
         />
       ))}
     </div>
