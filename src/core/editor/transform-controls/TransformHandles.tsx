@@ -13,7 +13,9 @@
 import React, { useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import type { SchemaBlock } from '../../schema/types';
-import type { BlockCapabilities } from '../../registry/SceneRegistry';
+// NOTE: Import type from BlockDefinitionRegistry (NOT SceneRegistry) to break
+// the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → TransformHandles → SceneRegistry
+import type { BlockCapabilities } from '../../registry/BlockDefinitionRegistry';
 import { screenDeltaToPctWithRect, getStageWrapRect } from '@/lib/virtual-canvas';
 
 // ═══════════════════════════════════════════════════════════════════

@@ -21,8 +21,9 @@
 'use client';
 
 import React, { useCallback, useState, type ReactNode } from 'react';
-import { getBlockDefinition, type BlockCapabilities } from '../../registry/SceneRegistry';
-import { useCanvaStore } from '@/store/canva-store';
+// NOTE: Import from BlockDefinitionRegistry (NOT SceneRegistry) to break
+// the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
+import { getBlockMeta, type BlockCapabilities } from '../../registry/BlockDefinitionRegistry';
 import type { SchemaBlock } from '../../schema/types';
 import { BlockContextMenu } from './BlockContextMenu';
 import { TransformHandles, useTransformDrag } from '../transform-controls/TransformHandles';
@@ -86,7 +87,7 @@ export function BlockSelectionOverlay({
   children,
 }: BlockSelectionOverlayProps) {
   // Look up block definition from registry for capabilities and metadata
-  const definition = getBlockDefinition(blockType);
+  const definition = getBlockMeta(blockType);
   const capabilities: BlockCapabilities = definition?.capabilities ?? {
     editable: true, resizable: false, movable: false,
     backgroundCustom: false, interactive: false, autoGeneratable: true,

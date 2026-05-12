@@ -3,8 +3,16 @@
 import React from 'react';
 import type { FtabBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
-import { SchemaBlockRenderer } from '../SchemaRenderer';
+// NOTE: Use React.lazy() to break the circular dependency:
+//   SceneRegistry → FtabRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
+// Direct import of SchemaBlockRenderer creates the cycle.
+// Lazy loading defers the reference until render time, breaking the cycle.
+import type { SchemaBlockRenderer as SchemaBlockRendererType } from '../SchemaRenderer';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+
+const SchemaBlockRenderer = React.lazy(() =>
+  import('../SchemaRenderer').then(m => ({ default: m.SchemaBlockRenderer }))
+);
 
 /** Inner tab button component so hooks are not called in loops */
 function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, showReadMarker, isRead }: {
@@ -86,7 +94,9 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
             animation: 'fadeIn 0.3s ease',
           }}>
           {(tab.content || []).map((b, i) => (
-            <SchemaBlockRenderer key={i} block={b} mode={mode} tokens={tokens} interactive={interactive} />
+            <React.Suspense key={i} fallback={null}>
+              <SchemaBlockRenderer block={b} mode={mode} tokens={tokens} interactive={interactive} />
+            </React.Suspense>
           ))}
         </div>
       )}

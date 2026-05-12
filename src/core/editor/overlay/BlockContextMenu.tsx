@@ -9,7 +9,9 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { getBlockDefinition } from '@/core/registry/SceneRegistry';
+// NOTE: Import from BlockDefinitionRegistry (NOT SceneRegistry) to break
+// the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
+import { getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -48,7 +50,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const deleteSchemaBlocks = useCanvaStore(s => s.deleteSchemaBlocks);
 
-  const definition = getBlockDefinition(blockType);
+  const definition = getBlockMeta(blockType);
   const isEditing = editingBlockId === blockId;
   const isMultiSelect = selectedBlockIds.length > 1;
 
