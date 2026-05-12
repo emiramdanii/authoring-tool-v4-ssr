@@ -5,7 +5,19 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { useCanvaStore } from '@/store/canva-store';
+
+// Lazy import to avoid circular dependency:
+//   canva/store.ts → sync-slice.ts → useAuthoringStore
+//   interactive-store.ts → useCanvaStore → canva/store.ts
+// Using a getter breaks the eager import cycle that causes
+// "Cannot access 'M' before initialization" at module eval time.
+let _useCanvaStore: typeof import('@/store/canva-store').useCanvaStore | null = null;
+function getCanvaStore() {
+  if (!_useCanvaStore) {
+    _useCanvaStore = require('@/store/canva-store').useCanvaStore;
+  }
+  return _useCanvaStore;
+}
 
 // ── Score Entry ────────────────────────────────────────────────
 
@@ -61,7 +73,7 @@ export const useInteractiveStore = create<InteractiveState>()(
   // ── Helper: Sync totalPages from canva store ─────────────────
   const syncTotalPages = () => {
     try {
-      const canvaPages = useCanvaStore.getState().pages;
+      const canvaPages = getCanvaStore().getState().pages;
       const count = canvaPages.length;
       if (count !== get().totalPages) {
         set({ totalPages: count });
@@ -96,10 +108,10 @@ export const useInteractiveStore = create<InteractiveState>()(
   openPlay: () => {
     syncTotalPages(); // ← ensure totalPages is correct before navigating
     // Phase 9 fix: start from current page instead of always page 0
-    const startIdx = useCanvaStore.getState().currentPageIndex || 0;
+    const startIdx = getCanvaStore().getState().currentPageIndex || 0;
     set({ mode: 'interactive', interactivePageIdx: startIdx, scores: [] });
     // Sync canva store to the start page
-    try { useCanvaStore.getState().goPage(startIdx); } catch { /* canva store may not be ready */ }
+    try { getCanvaStore().getState().goPage(startIdx); } catch { /* canva store may not be ready */ }
   },
 
   closePlay: () => {
@@ -235,7 +247,7 @@ let _lastPageCount = -1;
 export function startInteractiveCanvaSync() {
   if (_canvaUnsubscribe) return; // Already subscribed
 
-  _canvaUnsubscribe = useCanvaStore.subscribe((state) => {
+  _canvaUnsubscribe = getCanvaStore().subscribe((state) => {
     const count = state.pages.length;
     if (count !== _lastPageCount) {
       _lastPageCount = count;
