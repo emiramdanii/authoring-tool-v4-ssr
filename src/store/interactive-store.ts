@@ -5,19 +5,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-
-// Lazy import to avoid circular dependency:
-//   canva/store.ts → sync-slice.ts → useAuthoringStore
-//   interactive-store.ts → useCanvaStore → canva/store.ts
-// Using a getter breaks the eager import cycle that causes
-// "Cannot access 'M' before initialization" at module eval time.
-let _useCanvaStore: typeof import('@/store/canva-store').useCanvaStore | null = null;
-function getCanvaStore() {
-  if (!_useCanvaStore) {
-    _useCanvaStore = require('@/store/canva-store').useCanvaStore;
-  }
-  return _useCanvaStore;
-}
+import type { StoreApi } from 'zustand';
 
 // ── Score Entry ────────────────────────────────────────────────
 
@@ -62,6 +50,31 @@ interface InteractiveState {
   pageScore: (pageIndex: number) => { score: number; max: number };
   isPageComplete: (pageIndex: number) => boolean;
   allPagesComplete: () => boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Canva store reference — injected after creation to break
+// the circular dependency between interactive-store and
+// canva/store. The canva store is set via setCanvaStoreRef()
+// during app initialization (see @/store/canva/init).
+// ═══════════════════════════════════════════════════════════════
+
+let _canvaStoreRef: StoreApi<{ pages: unknown[]; currentPageIndex: number; goPage: (idx: number) => void }> | null = null;
+
+/**
+ * Inject the canva store reference after both stores are created.
+ * This breaks the circular import dependency.
+ * Called once from initCanvaStoreSubscriptions().
+ */
+export function setCanvaStoreRef(store: typeof _canvaStoreRef) {
+  _canvaStoreRef = store;
+}
+
+function getCanvaStore() {
+  if (!_canvaStoreRef) {
+    throw new Error('[interactive-store] Canva store ref not set. Call setCanvaStoreRef() first.');
+  }
+  return _canvaStoreRef;
 }
 
 // ── Store ──────────────────────────────────────────────────────
@@ -235,15 +248,16 @@ export const useInteractiveStore = create<InteractiveState>()(
 
 // ═══════════════════════════════════════════════════════════════
 // Reactive subscription: canva store pages → interactive store totalPages
-// When pages are added/removed in the canva store, automatically
-// sync totalPages so navigation and score tracking stay correct.
 // ═══════════════════════════════════════════════════════════════
+// Moved to @/store/canva/init.ts to avoid circular dependency.
+// The subscription is wired up in initCanvaStoreSubscriptions().
 
 let _canvaUnsubscribe: (() => void) | null = null;
 let _lastPageCount = -1;
 
 /** Start auto-syncing totalPages from the canva store.
- *  Call once at app init (only runs in browser). */
+ *  Called from initCanvaStoreSubscriptions() — do NOT call at
+ *  module evaluation time. */
 export function startInteractiveCanvaSync() {
   if (_canvaUnsubscribe) return; // Already subscribed
 
@@ -262,9 +276,4 @@ export function stopInteractiveCanvaSync() {
     _canvaUnsubscribe();
     _canvaUnsubscribe = null;
   }
-}
-
-// ── Auto-start in browser ──────────────────────────────────────
-if (typeof window !== 'undefined') {
-  startInteractiveCanvaSync();
 }

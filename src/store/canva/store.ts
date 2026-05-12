@@ -14,10 +14,10 @@ import { createUISlice } from './ui-slice';
 import { createBackgroundSlice } from './background-slice';
 import { createResetCanvasSlice } from './reset-canvas';
 import { createAutoGenerateSlice } from './auto-generate';
-import { createSyncSlice, startAutoSync } from './sync-slice';
+import { createSyncSlice } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
 import { createSchemaPresetSlice } from './schema-preset-slice';
-import { connectHistoryToEditBus } from '@/core/editor/patch-history';
+// connectHistoryToEditBus moved to @/store/canva/init.ts
 
 export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
   const set = a[0];
@@ -70,15 +70,7 @@ export const useCanvaStore = create<CanvaState>()(devtools((...a) => {
   };
 }, { name: 'CanvaStore', enabled: process.env.NODE_ENV === 'development' }));
 
-// ── Auto-sync: Wire authoring store changes → canva syncTemplateData ──
-// When authoring data changes (kuis, modules, meta, etc.), automatically
-// sync the canva store's templateData so canvas stays up-to-date.
-if (typeof window !== 'undefined') {
-  startAutoSync(() => useCanvaStore.getState().syncTemplateData());
-
-  // ── Patch-based undo/redo: Wire editBus → PatchHistory ──
-  // Every schema block edit emits immer patches via editBus.
-  // PatchHistory records forward + inverse patches so undo/redo
-  // can apply granular patches instead of full state snapshots.
-  connectHistoryToEditBus();
-}
+// NOTE: Auto-sync and edit-bus wiring have been moved to
+// @/store/canva/init.ts to avoid circular dependency issues.
+// The init code must be called once from the app entry point.
+// See initCanvaStoreSubscriptions() in @/store/canva/init.

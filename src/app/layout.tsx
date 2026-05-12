@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fredoka, Nunito } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { StoreInit } from "@/components/providers/StoreInit";
 import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -61,6 +62,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${nunito.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
+          <StoreInit />
           {children}
           <ShortcutHelpOverlay />
         </ThemeProvider>
