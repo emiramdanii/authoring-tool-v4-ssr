@@ -302,7 +302,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             <>
               <div className="text-[7px] font-bold text-cyan-400/60 uppercase tracking-wider mt-1">Mendatar →</div>
               {acrossClues.map((cl, i) => (
-                <button key={`a${i}`}
+                <button key={`across-${cl.num}-${i}`}
                   onClick={() => setActiveCell({ r: cl.startR, c: cl.startC })}
                   className="text-[7px] px-1 py-0.5 rounded text-app-primary/50 hover:bg-app-elevated/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
               ))}
@@ -312,7 +312,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             <>
               <div className="text-[7px] font-bold text-cyan-400/60 uppercase tracking-wider mt-1">Menurun ↓</div>
               {downClues.map((cl, i) => (
-                <button key={`d${i}`}
+                <button key={`down-${cl.num}-${i}`}
                   onClick={() => setActiveCell({ r: cl.startR, c: cl.startC })}
                   className="text-[7px] px-1 py-0.5 rounded text-app-primary/50 hover:bg-app-elevated/5 cursor-pointer text-left">{cl.num}. {cl.hint}</button>
               ))}

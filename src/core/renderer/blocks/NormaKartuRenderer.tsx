@@ -63,7 +63,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       </div>
 
       {/* Definition */}
-      <div className="leading-relaxed mb-4" style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+      <div className={`leading-relaxed mb-4 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
         <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" style={{ overflowWrap: 'break-word' }} placeholder="Ketik definisi..." />
       </div>
 
@@ -77,7 +77,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
               }}>
               <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.label}</div>
-              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.value}</div>
+              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.value}</div>
             </div>
           ))}
         </div>
@@ -94,7 +94,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           }}>
           <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ fontSize: '12px', color: tokens.color('o'), wordBreak: 'break-word' }}>{block.sanksi.title}</div>
           {block.sanksi.items.map((s, i) => (
-            <div key={`nk-sanksi-${s.text?.slice(0,8)}-${i}`} className="flex items-start gap-2 mb-1.5 leading-relaxed min-w-0" style={{ fontSize: '12px', color: tokens.color('text') }}>
+            <div key={`nk-sanksi-${s.text?.slice(0,8)}-${i}`} className={`flex items-start gap-2 mb-1.5 leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text') }}>
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: s.dot || color }} />
               <span className="min-w-0" style={{ wordBreak: 'break-word' }}>{s.text}</span>
             </div>
@@ -113,7 +113,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className="text-[10px] leading-relaxed" style={{ overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
+          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
         </div>
       )}
 

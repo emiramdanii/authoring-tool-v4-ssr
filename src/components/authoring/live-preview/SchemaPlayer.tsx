@@ -14,6 +14,53 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { RotateCcw } from 'lucide-react';
+
+// ── Transition Configurations ───────────────────────────────────
+
+type TransitionType = 'slide' | 'fade' | 'zoom' | 'flip';
+
+const TRANSITION_CONFIGS: Record<
+  TransitionType,
+  {
+    initial: Record<string, number>;
+    animate: Record<string, number>;
+    exit: Record<string, number>;
+    duration: number;
+  }
+> = {
+  slide: {
+    initial: { opacity: 0, x: 40 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -40 },
+    duration: 0.25,
+  },
+  fade: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    duration: 0.25,
+  },
+  zoom: {
+    initial: { opacity: 0, scale: 0.92 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 1.08 },
+    duration: 0.3,
+  },
+  flip: {
+    initial: { opacity: 0, rotateY: 90 },
+    animate: { opacity: 1, rotateY: 0 },
+    exit: { opacity: 0, rotateY: -90 },
+    duration: 0.35,
+  },
+};
+
+const TRANSITION_LABELS: Record<TransitionType, { icon: string; label: string }> = {
+  slide: { icon: '↔️', label: 'Slide' },
+  fade: { icon: '🌫️', label: 'Fade' },
+  zoom: { icon: '🔍', label: 'Zoom' },
+  flip: { icon: '🔄', label: 'Flip' },
+};
 import {
   SchemaEngine,
   loadPreset,
@@ -24,6 +71,7 @@ import {
   type DesignTokens,
 } from '@/core';
 import { alpha, COLORS } from '@/lib/color-palette';
+import { useInteractiveStore } from '@/store/interactive-store';
 
 // ── Props ──────────────────────────────────────────────────────
 
@@ -61,6 +109,23 @@ export default function SchemaPlayer({
   const [screenIdx, setScreenIdx] = useState(initialScreen);
   const [themeId, setThemeId] = useState<string>('default');
   const [interactive, setInteractive] = useState(true);
+  const [transitionType, setTransitionType] = useState<TransitionType>('slide');
+
+  // ── Interactive store (replay) ────────────────────────────
+  const replayAll = useInteractiveStore((s) => s.replayAll);
+  const replayGeneration = useInteractiveStore((s) => s.replayGeneration);
+
+  // Reset local screen index when replayGeneration changes
+  useEffect(() => {
+    if (replayGeneration > 0) {
+      setScreenIdx(0);
+    }
+  }, [replayGeneration]);
+
+  const handleReplay = useCallback(() => {
+    replayAll();
+    setScreenIdx(0);
+  }, [replayAll]);
 
   // ── Load preset on mount / ID change ───────────────────────
   useEffect(() => {
@@ -167,15 +232,21 @@ export default function SchemaPlayer({
       {/* Content area offset for bottom nav — use CSS variable approach
           so the nav height auto-adjusts via ResizeObserver.
           Fallback values match PageFrame defaults. */}
-      <div className="absolute inset-0" style={{ bottom: showControls ? (isCompact ? '6.67%' : '10%') : 0 }}>
+      <div
+        className="absolute inset-0"
+        style={{
+          bottom: showControls ? (isCompact ? '6.67%' : '10%') : 0,
+          perspective: transitionType === 'flip' ? 1200 : undefined,
+        }}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={screenIdx}
             className="absolute inset-0"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            initial={TRANSITION_CONFIGS[transitionType].initial}
+            animate={TRANSITION_CONFIGS[transitionType].animate}
+            exit={TRANSITION_CONFIGS[transitionType].exit}
+            transition={{ duration: TRANSITION_CONFIGS[transitionType].duration, ease: 'easeInOut' }}
           >
             <SchemaEngine
               schema={schema}
@@ -257,23 +328,70 @@ export default function SchemaPlayer({
               })}
             </div>
 
-            {/* Next button */}
+            {/* Replay button (always available) */}
             <button
-              onClick={goNext}
-              disabled={!canNext}
-              className={`font-extrabold rounded-lg transition-all ${
-                isCompact ? 'text-[7px] px-1.5 py-0.5' : 'text-xs px-3 py-1.5'
-              } ${
-                canNext
-                  ? 'hover:-translate-y-0.5 hover:shadow-lg cursor-pointer text-app-primary'
-                  : 'opacity-50 cursor-not-allowed text-app-primary'
+              onClick={handleReplay}
+              title="Mulai Ulang"
+              className={`flex items-center justify-center rounded-lg transition-all hover:bg-app-elevated/20 cursor-pointer ${
+                isCompact ? 'w-5 h-5' : 'w-7 h-7'
               }`}
-              style={{
-                background: canNext ? tokens.colors.y : alpha(tokens.colors.y, 0.3),
-              }}>
-              {canNext ? 'Lanjut →' : '🎉 Selesai'}
+            >
+              <RotateCcw
+                className={`text-app-primary/50 hover:text-app-primary ${
+                  isCompact ? 'w-3 h-3' : 'w-4 h-4'
+                }`}
+              />
             </button>
+
+            {/* Next button / Replay when finished */}
+            {canNext ? (
+              <button
+                onClick={goNext}
+                className={`font-extrabold rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer text-app-primary ${
+                  isCompact ? 'text-[7px] px-1.5 py-0.5' : 'text-xs px-3 py-1.5'
+                }`}
+                style={{ background: tokens.colors.y }}
+              >
+                Lanjut →
+              </button>
+            ) : (
+              <button
+                onClick={handleReplay}
+                className={`font-extrabold rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer flex items-center gap-1 ${
+                  isCompact ? 'text-[7px] px-1.5 py-0.5' : 'text-xs px-3 py-1.5'
+                }`}
+                style={{ background: tokens.colors.y }}
+              >
+                <RotateCcw className={isCompact ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} />
+                Mulai Ulang
+              </button>
+            )}
           </div>
+
+          {/* Transition type selector (compact, preview mode only) */}
+          {!isCompact && (
+            <div className="flex items-center justify-center gap-1 px-3 pb-1.5">
+              {(Object.keys(TRANSITION_CONFIGS) as TransitionType[]).map((t) => {
+                const cfg = TRANSITION_LABELS[t];
+                const isActive = t === transitionType;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTransitionType(t)}
+                    title={`Transisi: ${cfg.label}`}
+                    className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-app-elevated/30 text-app-primary/90 ring-1 ring-emerald-400/40'
+                        : 'text-app-primary/30 hover:bg-app-elevated/10 hover:text-app-primary/60'
+                    }`}
+                  >
+                    <span className="text-[10px]">{cfg.icon}</span>
+                    <span>{cfg.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Info row (preview mode only) */}
           {!isCompact && (

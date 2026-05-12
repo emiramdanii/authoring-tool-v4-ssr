@@ -132,7 +132,7 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
               borderLeft: '4px solid ' + (hasResponse ? tokens.color('g') : tokens.color(qColor)),
               boxShadow: tokens.raw.shadow.card,
             }}>
-            <label className="font-extrabold block mb-2"
+            <label className={`font-extrabold block mb-2 ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>
               {q.icon && <span className="mr-1">{q.icon}</span>} {q.teks}
             </label>
@@ -208,7 +208,7 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
             </div>
             <div className="font-extrabold" style={{ color: tokens.color('p'), fontSize: isCompact ? '12px' : '14px' }}>{block.penugasan.judul}</div>
           </div>
-          <div className="leading-relaxed" style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{block.penugasan.isi}</div>
+          <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{block.penugasan.isi}</div>
           {block.penugasan.contoh && (
             <div className="mt-2 italic p-2 rounded-lg"
               style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.textSubtle(0.5), background: tokens.colorAlpha('p', 0.06) }}>

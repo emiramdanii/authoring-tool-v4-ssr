@@ -60,7 +60,7 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
             const y2 = 70 + 65 * Math.sin(endRad);
             const largeArc = endAngle - startAngle > 180 ? 1 : 0;
             return (
-              <path key={i} d={`M70,70 L${x1},${y1} A65,65 0 ${largeArc},1 ${x2},${y2} Z`}
+              <path key={`roda-path-${i}`} d={`M70,70 L${x1},${y1} A65,65 0 ${largeArc},1 ${x2},${y2} Z`}
                 fill={colors[i % colors.length]} opacity={0.8} />
             );
           })}

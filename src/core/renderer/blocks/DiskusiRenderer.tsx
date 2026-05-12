@@ -120,7 +120,7 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
       </div>
       {block.intro && <InlineTextEditor
         {...introEditor}
-        className="mt-1 leading-relaxed font-bold mb-3"
+        className={`mt-1 leading-relaxed font-bold mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
         style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text') }}
         placeholder="Ketik intro..."
       />}
@@ -143,7 +143,7 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
               <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
             )}
           </div>
-          <p className="mt-1.5 leading-relaxed font-bold" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          <p className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
           {interactive ? (
             <textarea className="w-full mt-2 rounded-lg p-2.5 resize-y"
               style={{

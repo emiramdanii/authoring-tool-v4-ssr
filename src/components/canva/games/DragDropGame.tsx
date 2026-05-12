@@ -115,15 +115,15 @@ export function DragDropGame({ data, compact, interactive, onComplete }: GameCom
           const tgtItems = placed[tid] || [];
           const isActive = selectedIdx !== null;
           return (
-            <div key={i}
+            <div key={`target-${tid}`}
               onClick={() => handleDrop(tid)}
               className={`rounded-lg border-2 border-dashed p-2 min-h-[32px] transition-all ${
                 isActive ? 'border-cyan-400/30 bg-cyan-500/5 cursor-pointer hover:border-cyan-400/50' : 'border-app-border/10 bg-app-elevated/5'
               }`}>
               <div className="text-[9px] font-bold text-app-primary/50 mb-1">{String(tgt.label || tid)}</div>
               <div className="flex flex-wrap gap-1 min-h-[16px]">
-                {tgtItems.length > 0 ? tgtItems.map((it, j) => (
-                  <span key={j} onClick={e => { e.stopPropagation(); handleRemove(tid, it.idx); }}
+                {tgtItems.length > 0 ? tgtItems.map((it) => (
+                  <span key={`placed-${it.idx}`} onClick={e => { e.stopPropagation(); handleRemove(tid, it.idx); }}
                     className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-semibold cursor-pointer hover:bg-red-500/20 hover:border-red-400/30 hover:text-red-300 transition-colors">
                     {it.teks}
                   </span>

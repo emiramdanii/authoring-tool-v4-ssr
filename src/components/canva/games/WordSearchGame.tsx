@@ -212,7 +212,7 @@ export function WordSearchGame({ data, compact, interactive, onComplete }: GameC
         {/* Word list */}
         <div className="flex-1 flex flex-col gap-0.5 min-w-[60px]">
           {placements.map((p, i) => (
-            <span key={i} className={`text-[8px] px-1.5 py-0.5 rounded ${
+            <span key={`word-${p.word}-${i}`} className={`text-[8px] px-1.5 py-0.5 rounded ${
               found.has(p.word) ? 'bg-emerald-500/20 text-emerald-300 line-through' : 'bg-app-elevated/5 text-app-primary/40'
             }`}>{p.word}</span>
           ))}

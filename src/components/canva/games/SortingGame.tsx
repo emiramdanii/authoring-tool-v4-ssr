@@ -103,11 +103,14 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
       </div>
       {/* Unsorted items */}
       <div className="flex flex-wrap gap-1 mb-2">
-        {unsorted.map((item, i) => (
-          <span key={i} className={`${compact ? 'text-[8px]' : 'text-[9px]'} px-2 py-0.5 bg-app-elevated/10 border border-app-border/15 rounded text-cyan-200`}>
-            {item.teks as string}
-          </span>
-        ))}
+        {unsorted.map((item, i) => {
+          const origIdx = validItems.indexOf(item);
+          return (
+            <span key={`unsorted-${origIdx}`} className={`${compact ? 'text-[8px]' : 'text-[9px]'} px-2 py-0.5 bg-app-elevated/10 border border-app-border/15 rounded text-cyan-200`}>
+              {item.teks as string}
+            </span>
+          );
+        })}
       </div>
       {/* Category drop zones */}
       <div className="flex-1 min-h-0 space-y-1 overflow-y-auto">
@@ -120,8 +123,8 @@ export function SortingGame({ data, compact, interactive, onComplete }: GameComp
               style={{ borderLeftColor: catColor, borderLeftWidth: 3 }}>
               <div className="text-[9px] font-bold mb-0.5" style={{ color: catColor }}>{cat.label as string}</div>
               <div className="flex flex-wrap gap-0.5">
-                {sortedItems.map((s, j) => (
-                  <span key={j} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">{s.teks}</span>
+                {sortedItems.map((s) => (
+                  <span key={`sorted-${s.idx}`} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">{s.teks}</span>
                 ))}
               </div>
               {/* Buttons for unsorted items — use index-based key for accurate tracking */}

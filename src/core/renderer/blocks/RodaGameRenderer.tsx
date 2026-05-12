@@ -429,7 +429,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
             }}>
             <InlineTextEditor
               {...questionEditor}
-              className="text-[12px] font-bold leading-relaxed"
+              className={`text-[12px] font-bold leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ fontSize: 'inherit' }}
               placeholder="Ketik pertanyaan..."
             />
@@ -463,7 +463,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                       else playSound('incorrect');
                     }
                   }}
-                  className="w-full p-3 rounded-xl font-bold text-left transition-all hover:scale-[1.01] min-w-0 overflow-hidden"
+                  className={`w-full p-3 rounded-xl font-bold text-left transition-all hover:scale-[1.01] min-w-0 overflow-hidden ${isCompact ? 'canvas-truncate-1' : ''}`}
                   style={{ fontSize: '13px', background: bg, border: '2px solid ' + border, boxShadow: boxShd, wordBreak: 'break-word', color: tokens.color('text') }}>
                   {opt.text}
                 </button>

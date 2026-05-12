@@ -17,6 +17,39 @@ import { setCanvaStoreRef, startInteractiveCanvaSync } from '@/store/interactive
 
 let _initialized = false;
 
+// ── Auto-save debounce state ──────────────────────────────────
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+const AUTO_SAVE_DELAY = 1000; // 1 second debounce
+
+/**
+ * Start debounced auto-save to localStorage.
+ *
+ * Subscribes to `pages` and `ratioId` changes only (NOT `_saveStatus`)
+ * to prevent infinite loops. When a change is detected:
+ *   1. Sets `_saveStatus` to `'saving'` immediately (UI feedback)
+ *   2. Debounces for 1 second, then calls `saveToStorage()`
+ *   3. Sets `_saveStatus` to `'saved'` after successful save
+ */
+function startAutoSave() {
+  useCanvaStore.subscribe(
+    (state) => ({ pages: state.pages, ratioId: state.ratioId }),
+    () => {
+      // Set saving status immediately for UI feedback
+      useCanvaStore.setState({ _saveStatus: 'saving' });
+
+      // Debounced save — coalesces rapid changes into one write
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        useCanvaStore.getState().saveToStorage();
+        // saveToStorage() sets _saveStatus: 'saved' internally on
+        // both success and failure, so no need to set it here.
+        saveTimer = null;
+      }, AUTO_SAVE_DELAY);
+    },
+    { equalityFn: (a, b) => a.pages === b.pages && a.ratioId === b.ratioId }
+  );
+}
+
 /**
  * Initialize canva store subscriptions.
  * Must be called once after the app mounts (client-side only).
@@ -26,6 +59,7 @@ let _initialized = false;
  *   2. EditBus → PatchHistory for undo/redo
  *   3. Canva store ref → interactive store (breaks circular dep)
  *   4. Canva store pages → interactive store totalPages sync
+ *   5. Canva store pages/ratioId → debounced auto-save to localStorage
  */
 export function initCanvaStoreSubscriptions() {
   if (_initialized) return;
@@ -44,4 +78,7 @@ export function initCanvaStoreSubscriptions() {
 
   // Sync canva page count → interactive store totalPages
   startInteractiveCanvaSync();
+
+  // Auto-save: debounce pages/ratioId changes → localStorage
+  startAutoSave();
 }

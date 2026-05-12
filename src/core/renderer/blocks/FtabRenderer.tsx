@@ -15,7 +15,7 @@ const SchemaBlockRenderer = React.lazy(() =>
 );
 
 /** Inner tab button component so hooks are not called in loops */
-function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, showReadMarker, isRead }: {
+function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, showReadMarker, isRead, isCompact }: {
   tab: FtabBlock['tabs'][number];
   tabIndex: number;
   blockId: string;
@@ -24,6 +24,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
   tokens: TokenResolver;
   showReadMarker?: boolean;
   isRead: boolean;
+  isCompact?: boolean;
 }) {
   const labelEditor = useInlineEditor({
     blockId,
@@ -44,7 +45,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
         border: '1px solid ' + (isActive ? tokens.color('y') : tokens.subtleBorder(0.1)),
         boxShadow: isActive ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : 'none',
       }}>
-      {tab.icon} <InlineTextEditor {...labelEditor} style={{ color: 'inherit', fontSize: 'inherit' }} />
+      {tab.icon} <span className={isCompact ? 'canvas-truncate-1' : ''}><InlineTextEditor {...labelEditor} style={{ color: 'inherit', fontSize: 'inherit' }} /></span>
       {showReadMarker && isRead && (
         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
           style={{ background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
@@ -81,6 +82,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
             tokens={tokens}
             showReadMarker={block.showReadMarker}
             isRead={readTabs.has(i)}
+            isCompact={isCompact}
           />
         ))}
       </div>

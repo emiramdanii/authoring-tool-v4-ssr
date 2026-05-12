@@ -10,7 +10,7 @@ import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 
 /** Inner kolom component so hooks are not called in loops */
-function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomItems, onKolomClick }: {
+function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomItems, onKolomClick, isCompact }: {
   kolomDef: SortirGameBlock['kolom'][number];
   kolomIndex: number;
   blockId: string;
@@ -18,6 +18,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
   selected: string | null;
   kolomItems: string[];
   onKolomClick: () => void;
+  isCompact?: boolean;
 }) {
   const labelEditor = useInlineEditor({
     blockId,
@@ -51,7 +52,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
       </div>
       <div className="flex flex-wrap gap-1.5">
         {kolomItems.map((text, i) => (
-          <span key={`sortir-item-${text?.slice(0,8)}-${i}`} className="px-2.5 py-1 rounded-full font-bold min-w-0"
+          <span key={`sortir-item-${text?.slice(0,8)}-${i}`} className={`px-2.5 py-1 rounded-full font-bold min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               fontSize: '11px',
               background: tokens.colorAlpha(kolomDef.color, 0.2),
@@ -243,7 +244,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         </div>
         {poolState.filter(p => !p.placed).map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
-            className="px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0"
+            className={`px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               background: selected === p.id ? tokens.colorAlpha('y', 0.2) : tokens.subtleBg(0.07),
               border: '2px solid ' + (selected === p.id ? tokens.color('y') : tokens.subtleBorder(0.15)),
@@ -270,6 +271,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
             selected={selected}
             kolomItems={kolomItems[k.id] || []}
             onKolomClick={() => handleKolomClick(k.id)}
+            isCompact={isCompact}
           />
         ))}
       </div>

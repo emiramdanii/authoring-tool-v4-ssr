@@ -43,6 +43,15 @@ interface InteractiveState {
   reportScore: (entry: Omit<ScoreEntry, 'completed'> & { completed?: boolean }) => void;
   resetAllScores: () => void;
 
+  // ── Replay ─────────────────────────────────────────────────
+  /** Monotonically increasing counter. Renderers can watch this
+   *  value via useEffect — when it changes, they should reset
+   *  their internal state (answers, current question, etc.). */
+  replayGeneration: number;
+  /** Full replay: reset scores, go back to page 0, and bump
+   *  `replayGeneration` so that renderer components reinitialise. */
+  replayAll: () => void;
+
   // ── Computed (as functions) ────────────────────────────────
   totalScore: () => number;
   totalMax: () => number;
@@ -192,6 +201,15 @@ export const useInteractiveStore = create<InteractiveState>()(
 
   resetAllScores: () => set({ scores: [], interactivePageIdx: 0 }),
 
+  // ── Replay ─────────────────────────────────────────────────
+  replayGeneration: 0,
+
+  replayAll: () => set({
+    scores: [],
+    interactivePageIdx: 0,
+    replayGeneration: get().replayGeneration + 1,
+  }),
+
   // ── Computed ───────────────────────────────────────────────
   totalScore: () => {
     return get().scores.reduce((sum, s) => sum + s.score, 0);
@@ -238,6 +256,7 @@ export const useInteractiveStore = create<InteractiveState>()(
         partialize: (state) => ({
           scores: state.scores,
           interactivePageIdx: state.interactivePageIdx,
+          replayGeneration: state.replayGeneration,
         }),
         version: 1,
       }

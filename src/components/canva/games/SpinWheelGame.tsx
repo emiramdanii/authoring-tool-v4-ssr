@@ -65,7 +65,7 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
             const ty = 70 + 38 * Math.sin(midRad);
             const largeArc = endAngle - startAngle > 180 ? 1 : 0;
             return (
-              <g key={i}>
+              <g key={`spin-seg-${i}`}>
                 <path d={`M70,70 L${x1},${y1} A65,65 0 ${largeArc},1 ${x2},${y2} Z`}
                   fill={colors[i % colors.length]} opacity={0.8} />
                 <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle"

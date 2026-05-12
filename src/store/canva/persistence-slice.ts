@@ -33,8 +33,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     try {
       const { pages, ratioId } = get();
       localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({ pages, ratioId }));
-    } catch {
-      // Storage full or unavailable
+      set({ _saveStatus: 'saved' });
+    } catch (err) {
+      // Storage full or unavailable — still reset status to avoid stuck indicator
+      console.warn('[CanvaStore] Failed to save to localStorage:', err);
+      set({ _saveStatus: 'saved' });
     }
   },
 

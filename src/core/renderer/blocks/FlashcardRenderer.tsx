@@ -170,7 +170,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
             </div>
             <InlineTextEditor
               {...qEditor}
-              className="font-extrabold text-[12px] leading-relaxed"
+              className={`font-extrabold text-[12px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ fontSize: 'inherit' }}
               placeholder="Ketik pertanyaan..."
             />
@@ -205,7 +205,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
             </div>
             <InlineTextEditor
               {...aEditor}
-              className="text-[11px] leading-relaxed"
+              className={`text-[11px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ color: tokens.color('g'), fontSize: 'inherit' }}
               placeholder="Ketik jawaban..."
             />

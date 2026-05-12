@@ -9,8 +9,8 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 
-export function HasilRenderer({ block, tokens, interactive, isEditing, pageIndex }: {
-  block: HasilBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean; pageIndex?: number;
+export function HasilRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+  block: HasilBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   // ── Read actual scores from interactive store ───────────────
   const totalScore = useInteractiveStore(s => s.totalScore());
@@ -72,17 +72,17 @@ export function HasilRenderer({ block, tokens, interactive, isEditing, pageIndex
       </div>
 
       {/* Circle progress - improved with tier color */}
-      <div className="relative w-36 h-36 mb-5">
+      <div className={`relative ${isCompact ? 'w-24 h-24' : 'w-36 h-36'} mb-5`}>
         {/* Glow ring */}
         <div className="absolute inset-0 rounded-full"
           style={{
             boxShadow: '0 0 40px ' + tokens.colorAlpha(tierColor, 0.2) + ', 0 0 80px ' + tokens.colorAlpha(tierColor, 0.08),
           }} />
-        <div className="w-36 h-36 rounded-full flex items-center justify-center"
+        <div className={`${isCompact ? 'w-24 h-24' : 'w-36 h-36'} rounded-full flex items-center justify-center`}
           style={{
             background: `conic-gradient(${tokens.color(tierColor)} 0%, ${tokens.color(tierColor)} ${displayPct}%, ${tokens.colorAlpha(tierColor, 0.1)} ${displayPct}%, ${tokens.colorAlpha(tierColor, 0.1)} 100%)`,
           }}>
-          <div className="w-32 h-32 rounded-full flex items-center justify-center"
+          <div className={`${isCompact ? 'w-20 h-20' : 'w-32 h-32'} rounded-full flex items-center justify-center`}
             style={{ background: tokens.color('bg2') }}>
             <div className="text-center">
               <div className="text-3xl mb-1" style={{ animation: 'float 3s ease-in-out infinite' }}>{tierConfig.emoji}</div>
@@ -105,44 +105,44 @@ export function HasilRenderer({ block, tokens, interactive, isEditing, pageIndex
       </h2>
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-1 max-w-[320px]"
+        className={`mt-1 max-w-[320px] ${isCompact ? 'canvas-truncate-2' : ''}`}
         style={{ fontSize: '13px', color: tokens.muted(0.8) }}
         placeholder="Ketik subtitle..."
       />
 
       {/* Score breakdown badges */}
       <div className="mt-5 flex gap-3">
-        <div className="px-4 py-2.5 rounded-xl text-center min-w-[70px]"
+        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
           style={{
             background: tokens.colorAlpha('g', 0.12),
             border: '1px solid ' + tokens.colorAlpha('g', 0.3),
             boxShadow: tokens.raw.shadow.card,
           }}>
           <CheckCircle2 size={14} className="inline mb-0.5" style={{ color: tokens.color('g') }} />
-          <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: '11px' }}>Benar</div>
-          <div className="font-black text-sm" style={{ color: tokens.color('g') }}>
+          <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: isCompact ? '9px' : '11px' }}>Benar</div>
+          <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('g') }}>
             {scores.filter(s => s.completed).length}
           </div>
         </div>
-        <div className="px-4 py-2.5 rounded-xl text-center min-w-[70px]"
+        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
           style={{
             background: tokens.colorAlpha('y', 0.12),
             border: '1px solid ' + tokens.colorAlpha('y', 0.3),
             boxShadow: tokens.raw.shadow.card,
           }}>
           <Star size={14} className="inline mb-0.5" style={{ color: tokens.color('y') }} />
-          <div className="font-extrabold" style={{ color: tokens.color('y'), fontSize: '11px' }}>Skor</div>
-          <div className="font-black text-sm" style={{ color: tokens.color('y') }}>{displayScore}</div>
+          <div className="font-extrabold" style={{ color: tokens.color('y'), fontSize: isCompact ? '9px' : '11px' }}>Skor</div>
+          <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('y') }}>{displayScore}</div>
         </div>
-        <div className="px-4 py-2.5 rounded-xl text-center min-w-[70px]"
+        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
           style={{
             background: tokens.colorAlpha('c', 0.12),
             border: '1px solid ' + tokens.colorAlpha('c', 0.3),
             boxShadow: tokens.raw.shadow.card,
           }}>
           <Target size={14} className="inline mb-0.5" style={{ color: tokens.color('c') }} />
-          <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: '11px' }}>Maks</div>
-          <div className="font-black text-sm" style={{ color: tokens.color('c') }}>{displayMax}</div>
+          <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '9px' : '11px' }}>Maks</div>
+          <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('c') }}>{displayMax}</div>
         </div>
       </div>
 
@@ -155,7 +155,7 @@ export function HasilRenderer({ block, tokens, interactive, isEditing, pageIndex
         }}>
         <div className="flex items-start gap-2">
           <Sparkles size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
-          <div className="leading-relaxed text-left" style={{ fontSize: '12px', color: tokens.muted(0.8) }}>
+          <div className={`leading-relaxed text-left ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ fontSize: '12px', color: tokens.muted(0.8) }}>
             {displayPct >= 90
               ? 'Kamu menguasai materi dengan sangat baik! Pertahankan prestasimu dan terus belajar!'
               : displayPct >= 75

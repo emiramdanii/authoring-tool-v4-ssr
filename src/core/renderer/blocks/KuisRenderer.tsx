@@ -180,7 +180,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
         }}>
         <InlineTextEditor
           {...questionEditor}
-          className="text-[12px] font-bold leading-relaxed mb-3"
+          className={`text-[12px] font-bold leading-relaxed mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
           style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
           placeholder="Ketik pertanyaan..."
         />
@@ -202,7 +202,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
                     else playSound('incorrect');
                   }
                 }}
-                className="p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0"
+                className={`p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh, wordBreak: 'break-word', overflowWrap: 'break-word', color: tokens.color('text') }}>
                 {opt}
               </button>
@@ -222,7 +222,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
             }}>
             {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}<InlineTextEditor
               {...explanationEditor}
-              className="text-[10px]"
+              className={`text-[10px] ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
               placeholder="Ketik penjelasan..."
             />

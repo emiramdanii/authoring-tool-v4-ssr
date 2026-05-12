@@ -9,8 +9,8 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 
-export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIndex }: {
-  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isEditing?: boolean; pageIndex?: number;
+export function SkenarioRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
+  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -157,7 +157,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                     <span className="font-bold flex-shrink-0 mt-0.5" style={{ fontSize: '12px', color: isNarrator ? tokens.textSubtle(0.4) : tokens.color('r') }}>
                       {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
-                    <span className="leading-relaxed" style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.5) : tokens.textSecondary(0.75), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                    <span className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.5) : tokens.textSecondary(0.75), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {line.text}
                     </span>
                   </div>
@@ -173,7 +173,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                 background: tokens.colorAlpha('c', 0.08),
                 border: '1px solid ' + tokens.colorAlpha('c', 0.2),
               }}>
-              <MessageSquare size={14} className="inline" /> {ch.choicePrompt}
+              <MessageSquare size={14} className="inline" /> <span className={isCompact ? 'canvas-truncate-2' : ''}>{ch.choicePrompt}</span>
             </div>
           )}
 
@@ -190,8 +190,8 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
-                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
+                    <div className={`font-bold ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
+                    {c.detail && <div className={`mt-0.5 ${isCompact ? 'canvas-truncate-1' : 'line-clamp-2'}`} style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
                   </div>
                 </button>
               ) : (
@@ -204,8 +204,8 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold" style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
-                    {c.detail && <div className="mt-0.5 line-clamp-2" style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
+                    <div className={`font-bold ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
+                    {c.detail && <div className={`mt-0.5 ${isCompact ? 'canvas-truncate-1' : 'line-clamp-2'}`} style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
                   </div>
                 </div>
               )
@@ -237,7 +237,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                 background: tokens.subtleBg(0.05),
                 border: '1px solid ' + tokens.subtleBorder(0.1),
               }}>
-              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.textSecondary(0.75) }}>{selectedChoice.choice.resultBody}</div>
+              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.textSecondary(0.75) }}>{selectedChoice.choice.resultBody}</div>
             </div>
           )}
 
@@ -245,7 +245,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
             <div className="p-3 rounded-xl"
               style={{ background: tokens.colorAlpha('y', 0.1), border: '1px solid ' + tokens.colorAlpha('y', 0.25) }}>
               <div className="text-[10px] font-bold mb-0.5" style={{ color: yellow }}><ScrollText size={14} className="inline" /> Kaitan Norma</div>
-              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.textSecondary(0.65) }}>{selectedChoice.choice.norma}</div>
+              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.textSecondary(0.65) }}>{selectedChoice.choice.norma}</div>
             </div>
           )}
 
@@ -257,7 +257,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
               }}>
               <div className="font-bold mb-1.5" style={{ fontSize: '12px', color: tokens.textSubtle(0.5) }}><Bell size={14} className="inline" /> Dampak</div>
               {selectedChoice.choice.consequences.map((con, k) => (
-                <div key={`skenario-con-${con.text?.slice(0,6)}-${k}`} className="flex items-start gap-1.5 leading-relaxed mb-1" style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
+                <div key={`skenario-con-${con.text?.slice(0,6)}-${k}`} className={`flex items-start gap-1.5 leading-relaxed mb-1 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
                   <span className="mt-px">{con.icon}</span> {con.text}
                 </div>
               ))}

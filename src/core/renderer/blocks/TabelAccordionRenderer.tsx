@@ -7,13 +7,14 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { playSound } from '@/lib/sounds';
 
 /** Inner detail item component so hooks are not called in loops */
-function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tokens }: {
+function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tokens, isCompact }: {
   detail: { label: string; value: string };
   rowIndex: number;
   detailIndex: number;
   blockId: string;
   rowColor: string;
   tokens: TokenResolver;
+  isCompact?: boolean;
 }) {
   const labelEditor = useInlineEditor({
     blockId,
@@ -44,7 +45,7 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
       />
       <InlineTextEditor
         {...valueEditor}
-        className="text-[10px] leading-relaxed"
+        className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`}
         style={{ fontSize: 'inherit', color: tokens.color('text') }}
         placeholder="Ketik nilai..."
       />
@@ -53,7 +54,7 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
 }
 
 /** Inner row component so hooks are not called in loops */
-function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, interactive }: {
+function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, interactive, isCompact }: {
   row: TabelAccordionBlock['rows'][number];
   rowIndex: number;
   blockId: string;
@@ -61,6 +62,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
   isOpen: boolean;
   onToggle: () => void;
   interactive?: boolean;
+  isCompact?: boolean;
 }) {
   const titleEditor = useInlineEditor({
     blockId,
@@ -111,6 +113,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
                 blockId={blockId}
                 rowColor={row.color}
                 tokens={tokens}
+                isCompact={isCompact}
               />
             ))}
           </div>
@@ -137,6 +140,7 @@ export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, in
           isOpen={openIdx === i}
           onToggle={() => setOpenIdx(openIdx === i ? null : i)}
           interactive={interactive}
+          isCompact={isCompact}
         />
       ))}
     </div>
