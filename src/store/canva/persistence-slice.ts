@@ -39,9 +39,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       }));
       set({ _saveStatus: 'saved' });
     } catch (err) {
-      // Storage full or unavailable — still reset status to avoid stuck indicator
+      // Storage full or unavailable
       console.warn('[CanvaStore] Failed to save to localStorage:', err);
-      set({ _saveStatus: 'saved' });
+      set({ _saveStatus: 'error' });
     }
   },
 

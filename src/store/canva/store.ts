@@ -41,7 +41,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     // _clipboard is provided by createElementSlice — no duplicate here
     leftPanelOpen: true,
     rightPanelOpen: true,
-    _saveStatus: 'saved',
+    _saveStatus: 'unsaved',
     showGrid: false,
     gridSize: 5,
     snapEnabled: true,

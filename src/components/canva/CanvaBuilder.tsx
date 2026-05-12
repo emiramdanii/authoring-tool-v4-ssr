@@ -10,8 +10,11 @@ import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
+import CommandPalette, { useCommandPalette } from '@/components/shared/CommandPalette';
 import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
+import CanvaTour from '@/components/shared/CanvaTour';
+import { MobileGuard } from '@/components/shared/MobileGuard';
 // connectHistoryToEditBus is called once in store.ts (canonical location).
 // Removed duplicate call — was causing double-recording in PatchHistory.
 
@@ -21,6 +24,7 @@ const PlayOverlay = dynamic(() => import('./PlayOverlay'), { ssr: false });
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const leftPanelOpen = useCanvaStore((s) => s.leftPanelOpen);
+  const commandPalette = useCommandPalette();
 
   // NOTE: loadFromStorage() removed from CanvaBuilder mount.
   // It was causing a race condition: resetCanvas() creates fresh pages,
@@ -45,12 +49,21 @@ export default function CanvaBuilder() {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const unsub = useCanvaStore.subscribe(() => {
-      // Mark as "saving" immediately so UI responds
-      useCanvaStore.setState({ _saveStatus: 'saving' });
+      // Mark as "unsaved" immediately so UI responds
+      const currentStatus = useCanvaStore.getState()._saveStatus;
+      if (currentStatus !== 'saving') {
+        useCanvaStore.setState({ _saveStatus: 'unsaved' });
+      }
+      // Debounce: save after 1500ms of inactivity
       clearTimeout(timer);
+      useCanvaStore.setState({ _saveStatus: 'saving' });
       timer = setTimeout(() => {
+        // Also save authoring store if dirty
+        const authDirty = useAuthoringStore.getState().dirty;
+        if (authDirty) {
+          useAuthoringStore.getState().saveToStorage();
+        }
         useCanvaStore.getState().saveToStorage();
-        useCanvaStore.setState({ _saveStatus: 'saved' });
       }, 1500);
     });
     return () => { clearTimeout(timer); unsub(); };
@@ -187,38 +200,46 @@ export default function CanvaBuilder() {
   }, []);
 
   return (
-    <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
-      <UndoRedoToast />
-      {/* Top Toolbar */}
-      <Toolbar />
+    <MobileGuard>
+      <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
+        <UndoRedoToast />
+        {/* Top Toolbar */}
+        <Toolbar />
 
-      {/* Main builder row — always visible (design view) */}
-      <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-        <div className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-          leftPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
-        }`}>
-          {leftPanelOpen && <LeftPanel />}
+        {/* Main builder row — always visible (design view) */}
+        <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
+          <div className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+            leftPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
+          }`} data-tour="left-panel" role="complementary" aria-label="Panel halaman">
+            {leftPanelOpen && <LeftPanel />}
+          </div>
+
+          {/* Stage Canvas Area — recessed with inner shadow */}
+          <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage">
+            <Stage onMouseMove={handleMouseMove} />
+          </div>
+
+          <div className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+            rightPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
+          }`} data-tour="right-panel" role="complementary" aria-label="Panel properti">
+            <CanvasErrorBoundary name="RightPanel">
+              {rightPanelOpen && <RightPanel />}
+            </CanvasErrorBoundary>
+          </div>
         </div>
 
-        {/* Stage Canvas Area — recessed with inner shadow */}
-        <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg">
-          <Stage onMouseMove={handleMouseMove} />
-        </div>
+        {/* Status Bar */}
+        <StatusBar />
 
-        <div className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-          rightPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
-        }`}>
-          <CanvasErrorBoundary name="RightPanel">
-            {rightPanelOpen && <RightPanel />}
-          </CanvasErrorBoundary>
-        </div>
+        {/* Play Preview Overlay — renders on top of everything */}
+        <PlayOverlay />
+
+        {/* Guided Tour — auto-starts on first visit, re-trigger via ? key */}
+        <CanvaTour />
+
+        {/* Command Palette (Cmd+K / Ctrl+K) — available from anywhere */}
+        <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
       </div>
-
-      {/* Status Bar */}
-      <StatusBar />
-
-      {/* Play Preview Overlay — renders on top of everything */}
-      <PlayOverlay />
-    </div>
+    </MobileGuard>
   );
 }

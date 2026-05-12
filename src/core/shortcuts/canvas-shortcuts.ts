@@ -163,6 +163,15 @@ export const CANVAS_SHORTCUTS: ShortcutDefinition[] = [
  */
 export const GLOBAL_SHORTCUTS: ShortcutDefinition[] = [
   {
+    id: 'global.command-palette',
+    keys: 'ctrl+k',
+    scope: 'global',
+    priority: 30, // High priority — always available
+    handler: () => {}, // Bound at registration time by CommandPalette
+    description: 'Buka Command Palette',
+    category: 'App',
+  },
+  {
     id: 'global.theme-toggle',
     keys: 'ctrl+shift+t',
     scope: 'global',

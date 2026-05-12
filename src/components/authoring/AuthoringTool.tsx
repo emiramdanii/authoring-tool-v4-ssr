@@ -224,6 +224,8 @@ export default function AuthoringTool() {
     <div className="h-screen w-screen flex bg-app-surface text-app-primary overflow-hidden">
       {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside
+        role="navigation"
+        aria-label="Menu utama"
         className={`${
           sidebarOpen ? 'w-56' : 'w-14'
         } flex-shrink-0 glass-panel-strong flex flex-col transition-all duration-300 ease-in-out`}
@@ -236,7 +238,7 @@ export default function AuthoringTool() {
               <div className="text-sm font-bold text-app-accent">Authoring Tool</div>
               <div className="text-[0.65rem] text-app-muted mt-0.5">Media Pembelajaran Interaktif</div>
               <span className="inline-block mt-1.5 bg-app-accent/10 text-app-accent px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-app-accent/20">
-                v6
+                v4.0
               </span>
             </div>
           ) : (
@@ -394,6 +396,7 @@ export default function AuthoringTool() {
 
         {/* ── Content ──────────────────────────────────────── */}
         <main
+          role="main"
           className={`flex-1 ${
             isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-app-surface'
           }`}

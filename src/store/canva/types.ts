@@ -51,7 +51,7 @@ export interface CanvaState {
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   // Save status — centralized indicator for auto-save
-  _saveStatus: 'saved' | 'saving';
+  _saveStatus: 'saved' | 'saving' | 'unsaved' | 'error';
   // Nudge debounce: timestamp of last nudge to avoid history spam
   _lastNudgeTime?: number;
   // Grid & Snap
@@ -157,8 +157,8 @@ export interface CanvaState {
   moveBlockDown: (blockId: string) => void;
   /** Duplicate a schema block and insert after the original */
   duplicateBlock: (blockId: string) => void;
-  /** Add a new schema block from the registry to the current page */
-  addSchemaBlock: (blockType: string) => void;
+  /** Add a new schema block from the registry to the current page. insertAfterIndex inserts after that position. */
+  addSchemaBlock: (blockType: string, insertAfterIndex?: number) => void;
   /** Clipboard for schema block copy/paste */
   _schemaClipboard: SchemaBlock | null;
   /** Copy a schema block to the clipboard */

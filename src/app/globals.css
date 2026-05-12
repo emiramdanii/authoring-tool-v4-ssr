@@ -527,6 +527,18 @@ select {
   animation: fadeIn 150ms ease;
 }
 
+/* ── Canva Tour Animation ──────────────────────────────────── */
+@keyframes tourSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ── Pulse Dot (for dirty indicator) ─────────────────────────── */
 .pulse-dot {
   animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

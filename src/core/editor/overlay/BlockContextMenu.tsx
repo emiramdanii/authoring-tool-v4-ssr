@@ -222,7 +222,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
               <button
                 role="menuitem"
                 onClick={() => setExpandedSubmenu(isExpanded ? null : item.label)}
-                className="w-full px-3 py-2 flex items-center justify-between text-left text-app-secondary hover:bg-app-elevated transition-colors"
+                className="w-full px-3 py-2 flex items-center justify-between text-left text-app-secondary hover:bg-app-accent/10 transition-colors"
               >
                 <span className="text-[11px] font-medium">{item.label}</span>
                 <span className="text-[9px] text-app-muted">{isExpanded ? '▲' : '▼'}</span>
@@ -234,7 +234,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
                       key={j}
                       role="menuitem"
                       onClick={sub.action}
-                      className="w-full px-3 py-1.5 text-left text-app-secondary hover:bg-app-elevated transition-colors"
+                      className="w-full px-3 py-1.5 text-left text-app-secondary hover:bg-app-accent/10 transition-colors"
                     >
                       <span className="text-[10px]">{sub.label}</span>
                     </button>
@@ -255,7 +255,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
                 ? 'text-red-400 hover:bg-red-500/10'
                 : item.accent
                   ? 'text-amber-300 hover:bg-amber-500/10'
-                  : 'text-app-secondary hover:bg-app-elevated'
+                  : 'text-app-secondary hover:bg-app-accent/10'
             }`}
           >
             <span className="text-[11px] font-medium">{item.label}</span>

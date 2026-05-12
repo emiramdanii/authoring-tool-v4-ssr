@@ -6,10 +6,13 @@
 // Full-screen overlay marketplace for Indonesian SMP teachers to
 // browse, preview, and apply pre-built MPI templates with one click.
 // Uses design tokens, shadcn/ui, Framer Motion, and real Indonesian content.
+//
+// v2: Visual thumbnail previews + improved preview modal with
+//     wireframe visual + block list combined view.
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, ChevronLeft, ChevronRight, CheckCircle2, Layers, BookOpen } from 'lucide-react';
+import { X, Search, ChevronLeft, ChevronRight, CheckCircle2, Layers, BookOpen, Eye, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +26,7 @@ import {
   type PreviewScreenInfo,
 } from '@/core/templates/marketplace-templates';
 import { resolveTokens } from '@/core/themes/tokens';
+import TemplatePreviewThumbnail from '@/components/shared/TemplatePreviewThumbnail';
 
 // ── Grade filter options ──────────────────────────────────────
 
@@ -97,7 +101,7 @@ const cardVariants = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// PREVIEW MODE — Screen-by-screen walkthrough
+// PREVIEW MODE — Screen-by-screen walkthrough with visual preview
 // ═══════════════════════════════════════════════════════════════════
 
 function TemplatePreview({
@@ -110,6 +114,7 @@ function TemplatePreview({
   onApply: (t: MarketplaceTemplate) => void;
 }) {
   const [screenIdx, setScreenIdx] = useState(0);
+  const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const screens = template.previewBlocks;
   const currentScreen = screens[screenIdx];
 
@@ -140,13 +145,38 @@ function TemplatePreview({
             <h3 className="text-app-primary font-bold text-lg truncate">{template.name}</h3>
             <p className="text-app-muted text-xs">{template.subject} • Kelas {template.grade}</p>
           </div>
+          {/* View mode toggle */}
+          <div className="flex items-center gap-1 bg-app-surface/50 rounded-lg p-0.5 border border-app-border/50">
+            <button
+              onClick={() => setViewMode('visual')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors ${
+                viewMode === 'visual'
+                  ? 'bg-app-accent/20 text-app-accent'
+                  : 'text-app-muted hover:text-app-secondary'
+              }`}
+            >
+              <Eye size={11} />
+              Visual
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-app-accent/20 text-app-accent'
+                  : 'text-app-muted hover:text-app-secondary'
+              }`}
+            >
+              <List size={11} />
+              Daftar
+            </button>
+          </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-app-muted hover:text-app-primary shrink-0">
             <X size={16} />
           </Button>
         </div>
 
-        {/* Screen preview */}
-        <div className="p-6 min-h-[240px]">
+        {/* Preview content */}
+        <div className="p-6 min-h-[280px]">
           {/* Screen indicator */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -160,26 +190,62 @@ function TemplatePreview({
             </span>
           </div>
 
-          {/* Screen blocks */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={`screen-${template.id}-${screenIdx}`}
+              key={`screen-${template.id}-${screenIdx}-${viewMode}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
-              className="space-y-2"
             >
-              {currentScreen?.blocks.map((block, bIdx) => (
-                <div
-                  key={`block-${template.id}-${screenIdx}-${bIdx}`}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg bg-app-surface/50 border border-app-border/50"
-                >
-                  <span className="text-lg">{block.icon}</span>
-                  <span className="text-app-primary text-sm">{block.label}</span>
-                  <span className="text-app-muted text-[10px] ml-auto font-mono">{block.type}</span>
+              {viewMode === 'visual' ? (
+                /* ── Visual preview mode ── */
+                <div className="flex gap-4">
+                  {/* Large thumbnail */}
+                  <div className="flex-1">
+                    <TemplatePreviewThumbnail
+                      template={template}
+                      width={320}
+                      height={180}
+                      activeScreen={screenIdx}
+                      showName={true}
+                      showDots={true}
+                    />
+                  </div>
+                  {/* Block list sidebar */}
+                  <div className="w-52 space-y-1.5">
+                    <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider mb-1">
+                      Block di layar ini
+                    </div>
+                    {currentScreen?.blocks.map((block, bIdx) => (
+                      <div
+                        key={`block-${template.id}-${screenIdx}-${bIdx}`}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-app-surface/50 border border-app-border/50"
+                      >
+                        <span className="text-sm">{block.icon}</span>
+                        <span className="text-app-primary text-xs font-medium">{block.label}</span>
+                        <span className="text-app-muted text-[9px] ml-auto font-mono">{block.type}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              ) : (
+                /* ── List-only mode ── */
+                <div className="space-y-2">
+                  {currentScreen?.blocks.map((block, bIdx) => (
+                    <div
+                      key={`block-${template.id}-${screenIdx}-${bIdx}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-app-surface/50 border border-app-border/50"
+                    >
+                      <span className="text-lg">{block.icon}</span>
+                      <div className="flex-1">
+                        <span className="text-app-primary text-sm font-medium">{block.label}</span>
+                      </div>
+                      <span className="text-app-muted text-[10px] font-mono">{block.type}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -238,7 +304,7 @@ function TemplatePreview({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE CARD
+// TEMPLATE CARD — With visual thumbnail
 // ═══════════════════════════════════════════════════════════════════
 
 function TemplateCard({
@@ -252,8 +318,41 @@ function TemplateCard({
   onPreview: (t: MarketplaceTemplate) => void;
   onApply: (t: MarketplaceTemplate) => void;
 }) {
+  // Track which screen to show in thumbnail on hover
+  const [thumbScreen, setThumbScreen] = useState(0);
+
+  // Cycle through screens on hover
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const startCycling = () => {
+      if (template.previewBlocks.length <= 1) return;
+      interval = setInterval(() => {
+        setThumbScreen(prev => (prev + 1) % template.previewBlocks.length);
+      }, 1500);
+    };
+    const stopCycling = () => {
+      if (interval) clearInterval(interval);
+      setThumbScreen(0);
+    };
+
+    const card = document.getElementById(`tpl-card-${template.id}`);
+    if (card) {
+      card.addEventListener('mouseenter', startCycling);
+      card.addEventListener('mouseleave', stopCycling);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+      if (card) {
+        card.removeEventListener('mouseenter', startCycling);
+        card.removeEventListener('mouseleave', stopCycling);
+      }
+    };
+  }, [template]);
+
   return (
     <motion.div
+      id={`tpl-card-${template.id}`}
       custom={index}
       variants={cardVariants}
       initial="hidden"
@@ -265,12 +364,16 @@ function TemplateCard({
       onKeyDown={(e) => { if (e.key === 'Enter') onPreview(template); }}
       aria-label={`Preview template ${template.name}`}
     >
-      {/* Gradient cover */}
-      <div
-        className="h-28 flex items-center justify-center relative"
-        style={{ background: resolveGradient(template.coverGradient) }}
-      >
-        <span className="text-5xl drop-shadow-lg">{template.icon}</span>
+      {/* Visual thumbnail — replaces gradient cover */}
+      <div className="relative flex items-center justify-center p-3" style={{ background: 'rgba(0,0,0,0.2)' }}>
+        <TemplatePreviewThumbnail
+          template={template}
+          width={220}
+          height={124}
+          activeScreen={thumbScreen}
+          showName={true}
+          showDots={true}
+        />
         {/* BSNP badge */}
         {template.bsnpCompliant && (
           <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-500/90 text-white text-[9px] font-bold flex items-center gap-1 shadow-md">
@@ -286,6 +389,11 @@ function TemplateCard({
         <h4 className="text-app-primary font-bold text-sm leading-tight truncate">
           {template.name}
         </h4>
+
+        {/* Description */}
+        <p className="text-app-muted text-[10px] leading-relaxed line-clamp-2">
+          {template.description}
+        </p>
 
         {/* Badges row */}
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -329,7 +437,7 @@ function TemplateCard({
             onApply(template);
           }}
         >
-          🏪 Gunakan
+          Gunakan Template
         </Button>
       </div>
     </motion.div>

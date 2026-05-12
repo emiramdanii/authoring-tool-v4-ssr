@@ -414,6 +414,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // ── Schema Block CRUD ───────────────────────────────────────────
   // deleteBlock: Remove a block from the schema by ID
   // FASE 1: Now operates on page.schema directly
+  // Shows an undo toast so the user can restore the block.
   deleteBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -428,8 +429,12 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blockIdx = blocks.findIndex(b => b.id === blockId);
     if (blockIdx === -1) return;
 
+    // Save block info for the toast message
+    const deletedBlock = blocks[blockIdx];
+    const blockName = ((deletedBlock as unknown) as Record<string, unknown>).title as string || deletedBlock.type || 'Block';
+
     get()._pushHistory();
-    editBus.emit({ type: 'patch', patch: { blockId, blockType: blocks[blockIdx].type, pageIndex: currentPageIndex, patch: { _deleted: true }, timestamp: Date.now(), source: 'user' } });
+    editBus.emit({ type: 'patch', patch: { blockId, blockType: deletedBlock.type, pageIndex: currentPageIndex, patch: { _deleted: true }, timestamp: Date.now(), source: 'user' } });
 
     const newBlocks = blocks.filter((_, i) => i !== blockIdx);
     const newPages = [...pages];
@@ -438,7 +443,17 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       schema: { ...schema, blocks: newBlocks },
     };
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
-    toast.success('Block dihapus');
+
+    // Undo toast: clicking "Undo" triggers the store's undo()
+    toast.success(`Block "${blockName}" dihapus`, {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          get().undo();
+        },
+      },
+      duration: 4000,
+    });
   },
 
   // moveBlockUp: Move a block one position up in the flow order
@@ -540,7 +555,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // Adds a new block of the given type to the current page's schema.
   // FASE 1: Now operates on page.schema directly via ensurePageSchema().
   // Uses nanoid for stable block IDs (not Date.now()).
-  addSchemaBlock: (blockType) => {
+  // insertAfterIndex: If provided, insert after that index instead of appending.
+  addSchemaBlock: (blockType, insertAfterIndex) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
@@ -581,7 +597,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const defaultContent = definition.createDefault?.() ?? { title: definition.name };
     Object.assign(newBlock, defaultContent);
 
-    const newBlocks = [...blocks, newBlock as unknown as SchemaBlock];
+    // Insert at specific position or append to end
+    const newBlocks = [...blocks];
+    const insertAt = insertAfterIndex != null ? insertAfterIndex + 1 : newBlocks.length;
+    newBlocks.splice(insertAt, 0, newBlock as unknown as SchemaBlock);
 
     editBus.emit({
       type: 'patch',

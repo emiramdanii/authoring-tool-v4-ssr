@@ -5,12 +5,15 @@
 // ═══════════════════════════════════════════════════════════════
 // Shows all registered block types grouped by category.
 // Search/filter at top, click to add block to current page.
+// When a block is selected in the Layer panel, new blocks are
+// inserted after the selected block instead of appended to the end.
 
 import { useState, useMemo } from 'react';
-import { Search, Plus, Blocks } from 'lucide-react';
+import { Search, Plus, Blocks, ArrowDownToLine } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import {
   getAllBlockDefinitions,
+  getBlockDefinition,
   type BlockDefinition,
 } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
@@ -30,6 +33,7 @@ export default function AddBlockPanel() {
   const addSchemaBlock = useCanvaStore(s => s.addSchemaBlock);
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
   const [search, setSearch] = useState('');
 
   const page = pages[currentPageIndex];
@@ -43,6 +47,19 @@ export default function AddBlockPanel() {
     const schema = ensurePageSchema(page);
     return !!schema;
   }, [page]);
+
+  // ── Compute insertion index from selected block ─────────────
+  // When a block is selected, find its index in the schema blocks
+  // array so we can insert after it.
+  const { insertAfterIndex, selectedBlockName } = useMemo(() => {
+    if (!selectedBlockId || !page) return { insertAfterIndex: undefined, selectedBlockName: null };
+    const schema = ensurePageSchema(page);
+    if (!schema) return { insertAfterIndex: undefined, selectedBlockName: null };
+    const idx = schema.blocks.findIndex(b => b.id === selectedBlockId);
+    if (idx === -1) return { insertAfterIndex: undefined, selectedBlockName: null };
+    const blockDef = getBlockDefinition(schema.blocks[idx].type);
+    return { insertAfterIndex: idx, selectedBlockName: blockDef?.name || schema.blocks[idx].type };
+  }, [selectedBlockId, page]);
 
   // Get all block definitions, filter by search
   const allBlocks = useMemo(() => getAllBlockDefinitions(), []);
@@ -101,6 +118,15 @@ export default function AddBlockPanel() {
         <span className="text-app-muted">({allBlocks.length})</span>
       </div>
 
+      {/* Insertion point indicator — shows when a block is selected */}
+      {selectedBlockName && (
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-app-accent/10 border border-app-accent/20 text-[9px] text-app-accent font-semibold">
+          <ArrowDownToLine size={10} />
+          <span>Sisipkan setelah:</span>
+          <span className="font-bold truncate">{selectedBlockName}</span>
+        </div>
+      )}
+
       {/* Search input */}
       <div className="relative">
         <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" />
@@ -136,7 +162,7 @@ export default function AddBlockPanel() {
                 {blocks.map((block) => (
                   <button
                     key={block.type}
-                    onClick={() => addSchemaBlock(block.type)}
+                    onClick={() => addSchemaBlock(block.type, insertAfterIndex)}
                     className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
                   >
                     {/* Block icon */}
@@ -191,7 +217,9 @@ export default function AddBlockPanel() {
 
       {/* Footer hint */}
       <div className="text-[8px] text-app-muted mt-2 pt-2 border-t border-app-border/20">
-        Klik block untuk menambahkan ke halaman saat ini
+        {selectedBlockName
+          ? `Block baru akan disisipkan setelah "${selectedBlockName}"`
+          : 'Klik block untuk menambahkan ke halaman saat ini'}
       </div>
     </div>
   );
