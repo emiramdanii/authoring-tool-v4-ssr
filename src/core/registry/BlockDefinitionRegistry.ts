@@ -131,7 +131,20 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     createDefault: () => ({
       title: 'Petunjuk',
       titleHighlight: 'Penggunaan',
-      items: [{ icon: '📌', title: 'Item 1', body: 'Deskripsi item' }],
+      items: [
+        { icon: '📌', title: 'Baca Petunjuk', body: 'Baca petunjuk ini sebelum memulai.' },
+        { icon: '🖱️', title: 'Klik Navigasi', body: 'Gunakan tombol navigasi untuk berpindah halaman.' },
+        { icon: '✅', title: 'Jawab Soal', body: 'Kerjakan soal evaluasi di akhir pembelajaran.' },
+        { icon: '🔄', title: 'Ulangi Materi', body: 'Anda bisa mengulang materi kapan saja.' },
+      ],
+      navigation: [
+        { icon: '⬅️', label: 'Sebelumnya', description: 'Kembali ke halaman sebelumnya' },
+        { icon: '➡️', label: 'Selanjutnya', description: 'Lanjut ke halaman berikutnya' },
+        { icon: '🏠', label: 'Beranda', description: 'Kembali ke halaman utama' },
+      ],
+      learningObjectives: [
+        { num: 1, text: 'Peserta didik mampu memahami materi pembelajaran' },
+      ],
     }),
   },
   'tp': {

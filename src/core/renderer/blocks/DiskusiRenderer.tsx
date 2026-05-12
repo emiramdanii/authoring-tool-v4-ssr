@@ -67,7 +67,7 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
         </div>
         <div className="inline-flex gap-2 mb-4">
           {questions.map((_, i) => (
-            <div key={i} className="w-6 h-6 rounded-full flex items-center justify-center"
+            <div key={`diskusi-dot-${block.id || 'd'}-${i}`} className="w-6 h-6 rounded-full flex items-center justify-center"
               style={{ background: tokens.colorAlpha('c', 0.2), border: '1px solid ' + tokens.colorAlpha('c', 0.3) }}>
               <CheckCircle2 size={12} style={{ color: tokens.color('c') }} />
             </div>
@@ -129,7 +129,7 @@ export function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditi
         const qColor = q.color || 'c';
         const hasResponse = responses[i]?.trim().length > 0;
         return (
-        <div key={i} className="mt-4 rounded-xl p-3 min-w-0"
+        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-4 rounded-xl p-3 min-w-0"
           style={{
             background: tokens.subtleBg(0.05),
             border: '1px solid ' + tokens.colorAlpha(qColor, hasResponse ? 0.35 : 0.15),

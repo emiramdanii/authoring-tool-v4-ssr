@@ -97,6 +97,17 @@ export interface PetunjukBlock extends BaseBlock {
   }>;
   tips?: string;
   tipsColor?: string;
+  /** Navigasi yang tersedia di media ini */
+  navigation?: Array<{
+    icon: string;
+    label: string;
+    description: string;
+  }>;
+  /** Tujuan pembelajaran singkat (BSNP wajib) */
+  learningObjectives?: Array<{
+    num: number;
+    text: string;
+  }>;
 }
 
 // ── TP (Tujuan Pembelajaran) Schema ────────────────────────────

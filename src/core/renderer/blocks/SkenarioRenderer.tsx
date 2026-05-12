@@ -153,7 +153,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
               {ch.setup.map((line, i) => {
                 const isNarrator = line.speaker.toUpperCase() === 'NARRATOR' || line.speaker.toUpperCase() === 'NARATOR';
                 return (
-                  <div key={i} className={`flex gap-2 ${isNarrator ? 'italic' : ''}`}>
+                  <div key={`skenario-setup-${line.speaker?.slice(0,6)}-${i}`} className={`flex gap-2 ${isNarrator ? 'italic' : ''}`}>
                     <span className="font-bold flex-shrink-0 mt-0.5" style={{ fontSize: '12px', color: isNarrator ? tokens.textSubtle(0.4) : tokens.color('r') }}>
                       {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
@@ -181,7 +181,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
           <div className="space-y-2.5">
             {ch.choices.map((c, j) => (
               interactive ? (
-                <button key={j} onClick={() => handleChoice(j)}
+                <button key={`skenario-choice-${c.label?.slice(0,8)}-${j}`} onClick={() => handleChoice(j)}
                   className="w-full flex items-start gap-2.5 px-4 py-3 rounded-xl text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: tokens.subtleBg(0.05),
@@ -195,7 +195,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
                   </div>
                 </button>
               ) : (
-                <div key={j}
+                <div key={`skenario-choice-ro-${c.label?.slice(0,8)}-${j}`}
                   className="w-full flex items-start gap-2.5 px-4 py-3 rounded-xl text-left"
                   style={{
                     background: tokens.subtleBg(0.05),
@@ -257,7 +257,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
               }}>
               <div className="font-bold mb-1.5" style={{ fontSize: '12px', color: tokens.textSubtle(0.5) }}><Bell size={14} className="inline" /> Dampak</div>
               {selectedChoice.choice.consequences.map((con, k) => (
-                <div key={k} className="flex items-start gap-1.5 leading-relaxed mb-1" style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
+                <div key={`skenario-con-${con.text?.slice(0,6)}-${k}`} className="flex items-start gap-1.5 leading-relaxed mb-1" style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
                   <span className="mt-px">{con.icon}</span> {con.text}
                 </div>
               ))}
@@ -280,7 +280,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
         <div className="flex gap-1 p-3 border-t"
           style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.15) }}>
           {chapters.map((_, i) => (
-            <div key={i} className="flex-1 h-1.5 rounded-full transition-all"
+            <div key={`skenario-prog-${block.id || 'sk'}-${i}`} className="flex-1 h-1.5 rounded-full transition-all"
               style={{
                 background: i < chapter ? green : i === chapter ? yellow : tokens.colorAlpha('muted', 0.2),
                 boxShadow: i === chapter ? '0 0 8px ' + yellow : i < chapter ? '0 0 4px ' + tokens.colorAlpha('g', 0.3) : 'none',

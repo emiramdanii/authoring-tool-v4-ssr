@@ -193,7 +193,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
             const bdr = !isAnswered ? tokens.subtleBorder(0.1) : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : tokens.subtleBorder(0.1);
             const bxSh = !isAnswered ? 'none' : isCorrect ? ('0 0 12px ' + tokens.colorAlpha('g', 0.2)) : isPicked ? ('0 0 12px ' + tokens.colorAlpha('r', 0.2)) : 'none';
             return (
-              <button key={i} disabled={isAnswered}
+              <button key={`kuis-opt-${i}-${String(opt).slice(0,10)}`} disabled={isAnswered}
                 onClick={() => {
                   if (interactive && !isAnswered) {
                     setAnswers(prev => ({ ...prev, [current]: i }));

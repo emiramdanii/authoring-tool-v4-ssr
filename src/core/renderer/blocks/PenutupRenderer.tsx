@@ -53,7 +53,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
       {/* Decorative divider */}
       <div className="flex gap-1.5 mb-4">
         {['g', 'y', 'c'].map((color, i) => (
-          <div key={i} className="h-1 rounded-full flex-1" style={{
+          <div key={`penutup-line-${i}`} className="h-1 rounded-full flex-1" style={{
             background: tokens.color(color),
             opacity: 0.6 - i * 0.15,
           }} />
@@ -75,7 +75,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
             </div>
           </div>
           {(block.preview || []).map((item, i) => (
-            <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl mb-2 font-bold leading-relaxed transition-all hover:-translate-y-0.5 min-w-0"
+            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 p-2.5 rounded-xl mb-2 font-bold leading-relaxed transition-all hover:-translate-y-0.5 min-w-0"
               style={{
                 background: tokens.colorAlpha(item.warna, 0.08),
                 border: '1px solid ' + tokens.colorAlpha(item.warna, 0.18),
@@ -114,7 +114,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
           <div className="mb-3" style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{block.nextPertemuan.deskripsi}</div>
           <div className="grid grid-cols-2 gap-2">
             {(block.nextPertemuan.items || []).map((item, i) => (
-              <div key={i} className="rounded-xl p-2.5 font-bold text-center transition-all hover:-translate-y-0.5 min-w-0"
+              <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="rounded-xl p-2.5 font-bold text-center transition-all hover:-translate-y-0.5 min-w-0"
                 style={{
                   background: tokens.colorAlpha(item.warna, 0.1),
                   color: tokens.color(item.warna),

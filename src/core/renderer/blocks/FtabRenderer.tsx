@@ -72,7 +72,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
       <div className="flex gap-2 flex-wrap">
         {tabs.map((t, i) => (
           <FtabButton
-            key={i}
+            key={`ftab-btn-${t.label?.slice(0,8)}-${i}`}
             tab={t}
             tabIndex={i}
             blockId={block.id!}
@@ -94,7 +94,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
             animation: 'fadeIn 0.3s ease',
           }}>
           {(tab.content || []).map((b, i) => (
-            <React.Suspense key={i} fallback={null}>
+            <React.Suspense key={`ftab-content-${b.id || b.type}-${i}`} fallback={null}>
               <SchemaBlockRenderer block={b} mode={mode} tokens={tokens} interactive={interactive} />
             </React.Suspense>
           ))}

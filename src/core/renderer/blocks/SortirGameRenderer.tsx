@@ -51,7 +51,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
       </div>
       <div className="flex flex-wrap gap-1.5">
         {kolomItems.map((text, i) => (
-          <span key={i} className="px-2.5 py-1 rounded-full font-bold min-w-0"
+          <span key={`sortir-item-${text?.slice(0,8)}-${i}`} className="px-2.5 py-1 rounded-full font-bold min-w-0"
             style={{
               fontSize: '11px',
               background: tokens.colorAlpha(kolomDef.color, 0.2),

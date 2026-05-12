@@ -267,7 +267,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                     const midRad = (startRad + endRad) / 2;
 
                     return (
-                      <g key={i}>
+                      <g key={`roda-seg-${i}`}>
                         {/* Main segment */}
                         <path
                           d={`M${svgCenter},${svgCenter} L${x1},${y1} A${svgRadius},${svgRadius} 0 ${largeArc},1 ${x2},${y2} Z`}
@@ -343,7 +343,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                     const innerX = svgCenter + (svgRadius - 8) * Math.cos(tickAngle);
                     const innerY = svgCenter + (svgRadius - 8) * Math.sin(tickAngle);
                     return (
-                      <line key={`tick-${i}`} x1={outerX} y1={outerY} x2={innerX} y2={innerY}
+                      <line key={`tick-${block.id}-${i}`} x1={outerX} y1={outerY} x2={innerX} y2={innerY}
                         stroke={contrastBg} strokeWidth="2" opacity="0.5" />
                     );
                   })}
@@ -359,7 +359,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                 const dotRadius = (wheelSize / 2) + 16;
                 const isCorrect = questions[i]?.opts?.[answers[i]]?.correct;
                 return (
-                  <div key={`dot-${i}`} className="absolute w-5 h-5 rounded-full flex items-center justify-center"
+                  <div key={`dot-${block.id}-${i}`} className="absolute w-5 h-5 rounded-full flex items-center justify-center"
                     style={{
                       left: `calc(50% + ${Math.cos(rad) * dotRadius}px - 10px)`,
                       top: `calc(50% + ${Math.sin(rad) * dotRadius}px - 10px + 7px)`,
@@ -455,7 +455,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                 }
               }
               return (
-                <button key={i} disabled={isCurrentAnswered || spinning}
+                <button key={`opt-${i}-${opt.text.slice(0,10)}`} disabled={isCurrentAnswered || spinning}
                   onClick={() => {
                     if (interactive && !isCurrentAnswered && !spinning) {
                       setAnswers(prev => ({ ...prev, [current]: i }));

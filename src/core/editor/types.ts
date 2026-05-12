@@ -57,7 +57,7 @@ export interface PropertyField {
   fields?: Array<{
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
+    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean' | 'array';
     options?: Array<{ label: string; value: string }>;
     placeholder?: string;
     helpText?: string;
@@ -65,6 +65,21 @@ export interface PropertyField {
     max?: number;
     step?: number;
     defaultValue?: unknown;
+    /** For nested 'array' sub-fields: sub-field definitions */
+    fields?: Array<{
+      key: string;
+      label: string;
+      type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
+      options?: Array<{ label: string; value: string }>;
+      placeholder?: string;
+      helpText?: string;
+      min?: number;
+      max?: number;
+      step?: number;
+      defaultValue?: unknown;
+    }>;
+    /** For nested 'array' sub-fields: max number of items */
+    maxItems?: number;
   }>;
   /** For 'array' type: max number of items */
   maxItems?: number;

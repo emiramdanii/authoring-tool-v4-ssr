@@ -104,7 +104,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
           <div className="grid grid-cols-2 gap-2.5">
             {(row.details || []).map((d, j) => (
               <AccordionDetail
-                key={j}
+                key={`accord-detail-${d.label?.slice(0,6)}-${j}`}
                 detail={d}
                 rowIndex={rowIndex}
                 detailIndex={j}
@@ -129,7 +129,7 @@ export function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, in
     <div className="flex flex-col gap-2 mt-3">
       {(block.rows || []).map((row, i) => (
         <AccordionRow
-          key={i}
+          key={`accord-row-${row.title?.slice(0,8)}-${i}`}
           row={row}
           rowIndex={i}
           blockId={block.id!}

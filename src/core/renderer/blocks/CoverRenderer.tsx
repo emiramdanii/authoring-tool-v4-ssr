@@ -80,7 +80,7 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
       {block.badges && block.badges.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 max-w-full">
           {block.badges.map((b, i) => (
-            <span key={i} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold min-w-0"
+            <span key={`badge-${b.text?.slice(0,10)}-${i}`} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold min-w-0"
               style={{
                 fontSize: '12px',
                 background: tokens.colorAlpha(b.color, 0.2),
@@ -131,7 +131,7 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
       {/* Bottom decoration */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
         {[y, c, g].map((color, i) => (
-          <div key={i} className="w-10 h-1.5 rounded-full" style={{ background: color, opacity: 0.7, boxShadow: '0 0 8px ' + tokens.colorAlpha(['y','c','g'][i], 0.4) }} />
+          <div key={`cover-deco-${i}`} className="w-10 h-1.5 rounded-full" style={{ background: color, opacity: 0.7, boxShadow: '0 0 8px ' + tokens.colorAlpha(['y','c','g'][i], 0.4) }} />
         ))}
       </div>
     </div>

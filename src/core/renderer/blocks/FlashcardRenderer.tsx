@@ -84,7 +84,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
         </div>
         <div className="inline-flex items-center gap-2 mb-4">
           {cards.map((_, i) => (
-            <div key={i} className="w-5 h-5 rounded-full flex items-center justify-center"
+            <div key={`card-dot-${block.id || 'fc'}-${i}`} className="w-5 h-5 rounded-full flex items-center justify-center"
               style={{
                 background: tokens.colorAlpha('g', 0.2),
                 border: '1px solid ' + tokens.colorAlpha('g', 0.3),
@@ -230,7 +230,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
         </button>
         <div className="flex gap-1.5">
           {cards.map((_, i) => (
-            <div key={i} className="w-2 h-2 rounded-full transition-all"
+            <div key={`nav-dot-${block.id || 'fc'}-${i}`} className="w-2 h-2 rounded-full transition-all"
               style={{
                 background: i === idx ? tokens.color('y') : viewedCards.has(i) ? tokens.color('g') : tokens.subtleBg(0.12),
                 boxShadow: i === idx ? '0 0 8px ' + tokens.colorAlpha('y', 0.5) : 'none',

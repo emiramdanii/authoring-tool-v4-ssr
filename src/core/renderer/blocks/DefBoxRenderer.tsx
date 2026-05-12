@@ -55,7 +55,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
         }}>
           <InlineTextEditor
             {...contentEditor}
-            className=""
+            className={isCompact ? 'canvas-truncate-3' : ''}
             style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
           />
         </div>

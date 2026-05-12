@@ -330,7 +330,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
   fieldDefs: Array<{
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
+    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean' | 'array';
     options?: Array<{ label: string; value: string }>;
     placeholder?: string;
     helpText?: string;
@@ -338,11 +338,24 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
     max?: number;
     step?: number;
     defaultValue?: unknown;
+    fields?: Array<{
+      key: string;
+      label: string;
+      type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
+      options?: Array<{ label: string; value: string }>;
+      placeholder?: string;
+      helpText?: string;
+      min?: number;
+      max?: number;
+      step?: number;
+      defaultValue?: unknown;
+    }>;
+    maxItems?: number;
   }>;
   maxItems?: number;
   onUpdate: (items: Array<Record<string, unknown>>) => void;
 }) {
-  const updateItem = (idx: number, field: string, value: string) => {
+  const updateItem = (idx: number, field: string, value: unknown) => {
     const newItems = [...items];
     newItems[idx] = { ...newItems[idx], [field]: value };
     onUpdate(newItems);
@@ -351,7 +364,12 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
   const addItem = () => {
     if (maxItems && items.length >= maxItems) return;
     const newItem: Record<string, unknown> = {};
-    fieldDefs.forEach(f => { newItem[f.key] = ''; });
+    fieldDefs.forEach(f => {
+      if (f.type === 'array') newItem[f.key] = [];
+      else if (f.type === 'boolean') newItem[f.key] = false;
+      else if (f.type === 'number') newItem[f.key] = f.defaultValue ?? 0;
+      else newItem[f.key] = f.defaultValue ?? '';
+    });
     onUpdate([...items, newItem]);
   };
 
@@ -403,38 +421,60 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
               </button>
             </div>
             {fieldDefs.map((fieldDef) => (
-              <div key={fieldDef.key} className="flex items-center gap-1">
-                <span className="text-[8px] text-app-muted w-16 shrink-0">{fieldDef.label}</span>
-                {fieldDef.type === 'color' ? (
-                  <InlineColorTokenField
-                    value={String(item[fieldDef.key] || 'y')}
-                    onChange={v => updateItem(idx, fieldDef.key, v)}
+              <div key={fieldDef.key}>
+                {fieldDef.type === 'boolean' ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[8px] text-app-muted">{fieldDef.label}</span>
+                    <button
+                      onClick={() => updateItem(idx, fieldDef.key, !item[fieldDef.key])}
+                      className={`w-7 h-3.5 rounded-full transition-all relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+                    >
+                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all ${item[fieldDef.key] ? 'left-3.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+                    </button>
+                  </div>
+                ) : fieldDef.type === 'array' && fieldDef.fields ? (
+                  <InlineNestedArrayField
+                    label={fieldDef.label}
+                    items={(item[fieldDef.key] as Array<Record<string, unknown>>) || []}
+                    fieldDefs={fieldDef.fields}
+                    maxItems={fieldDef.maxItems}
+                    onUpdate={v => updateItem(idx, fieldDef.key, v)}
                   />
-                ) : fieldDef.type === 'textarea' ? (
-                  <textarea
-                    value={String(item[fieldDef.key] || '')}
-                    onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
-                    rows={2}
-                    className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0 resize-y"
-                  />
-                ) : fieldDef.type === 'select' && fieldDef.options ? (
-                  <select
-                    value={String(item[fieldDef.key] || '')}
-                    onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
-                    className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
-                  >
-                    {fieldDef.options.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
                 ) : (
-                  <input
-                    type={fieldDef.type === 'number' ? 'number' : 'text'}
-                    value={String(item[fieldDef.key] || '')}
-                    onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
-                    placeholder={fieldDef.placeholder}
-                    className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
-                  />
+                  <div className="flex items-center gap-1">
+                    <span className="text-[8px] text-app-muted w-16 shrink-0">{fieldDef.label}</span>
+                    {fieldDef.type === 'color' ? (
+                      <InlineColorTokenField
+                        value={String(item[fieldDef.key] || 'y')}
+                        onChange={v => updateItem(idx, fieldDef.key, v)}
+                      />
+                    ) : fieldDef.type === 'textarea' ? (
+                      <textarea
+                        value={String(item[fieldDef.key] || '')}
+                        onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
+                        rows={2}
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0 resize-y"
+                      />
+                    ) : fieldDef.type === 'select' && fieldDef.options ? (
+                      <select
+                        value={String(item[fieldDef.key] || '')}
+                        onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                      >
+                        {fieldDef.options.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={fieldDef.type === 'number' ? 'number' : 'text'}
+                        value={String(item[fieldDef.key] || '')}
+                        onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
+                        placeholder={fieldDef.placeholder}
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             ))}
@@ -470,6 +510,121 @@ function InlineColorTokenField({ value, onChange }: {
           title={t}
         />
       ))}
+    </div>
+  );
+}
+
+/** Inline nested array editor for array sub-fields (compact, no label) */
+function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
+  label: string;
+  items: Array<Record<string, unknown>>;
+  fieldDefs: Array<{
+    key: string;
+    label: string;
+    type: 'text' | 'textarea' | 'number' | 'color' | 'icon' | 'select' | 'json' | 'boolean';
+    options?: Array<{ label: string; value: string }>;
+    placeholder?: string;
+    helpText?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    defaultValue?: unknown;
+  }>;
+  maxItems?: number;
+  onUpdate: (items: Array<Record<string, unknown>>) => void;
+}) {
+  const updateNestedItem = (idx: number, field: string, value: unknown) => {
+    const newItems = [...items];
+    newItems[idx] = { ...newItems[idx], [field]: value };
+    onUpdate(newItems);
+  };
+
+  const addNestedItem = () => {
+    if (maxItems && items.length >= maxItems) return;
+    const newItem: Record<string, unknown> = {};
+    fieldDefs.forEach(f => {
+      if (f.type === 'boolean') newItem[f.key] = false;
+      else if (f.type === 'number') newItem[f.key] = f.defaultValue ?? 0;
+      else newItem[f.key] = f.defaultValue ?? '';
+    });
+    onUpdate([...items, newItem]);
+  };
+
+  const removeNestedItem = (idx: number) => {
+    const newItems = items.filter((_, i) => i !== idx);
+    onUpdate(newItems);
+  };
+
+  return (
+    <div className="mt-0.5">
+      <div className="flex items-center justify-between mb-0.5">
+        <span className="text-[8px] font-bold text-app-muted">{label} ({items.length})</span>
+        <button
+          onClick={addNestedItem}
+          disabled={maxItems ? items.length >= maxItems : false}
+          className="text-[7px] font-bold text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-40"
+        >
+          + Tambah
+        </button>
+      </div>
+      <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar pr-0.5">
+        {items.map((item, idx) => (
+          <div key={idx} className="bg-app-surface/30 rounded border border-app-border/15 p-1 space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[7px] font-bold text-app-muted">#{idx + 1}</span>
+              <button
+                onClick={() => removeNestedItem(idx)}
+                className="text-[7px] text-red-400/60 hover:text-red-400 transition-colors"
+              >
+                Hapus
+              </button>
+            </div>
+            {fieldDefs.map((fieldDef) => (
+              <div key={fieldDef.key}>
+                {fieldDef.type === 'boolean' ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[7px] text-app-muted">{fieldDef.label}</span>
+                    <button
+                      onClick={() => updateNestedItem(idx, fieldDef.key, !item[fieldDef.key])}
+                      className={`w-6 h-3 rounded-full transition-all relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+                    >
+                      <div className={`absolute top-0.5 w-2 h-2 rounded-full transition-all ${item[fieldDef.key] ? 'left-3 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[7px] text-app-muted w-14 shrink-0">{fieldDef.label}</span>
+                    {fieldDef.type === 'color' ? (
+                      <InlineColorTokenField
+                        value={String(item[fieldDef.key] || 'y')}
+                        onChange={v => updateNestedItem(idx, fieldDef.key, v)}
+                      />
+                    ) : fieldDef.type === 'textarea' ? (
+                      <textarea
+                        value={String(item[fieldDef.key] || '')}
+                        onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
+                        rows={1}
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0 resize-y"
+                      />
+                    ) : (
+                      <input
+                        type={fieldDef.type === 'number' ? 'number' : 'text'}
+                        value={String(item[fieldDef.key] || '')}
+                        onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
+                        placeholder={fieldDef.placeholder}
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+        {items.length === 0 && (
+          <div className="text-[7px] text-app-muted italic">Belum ada item</div>
+        )}
+      </div>
     </div>
   );
 }

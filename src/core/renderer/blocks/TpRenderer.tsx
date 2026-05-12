@@ -54,7 +54,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
       {/* Decorative line */}
       <div className="flex gap-1.5 mb-4">
         {['y', 'c', 'g'].map((color, i) => (
-          <div key={i} className="h-1 rounded-full flex-1" style={{
+          <div key={`tp-line-${i}`} className="h-1 rounded-full flex-1" style={{
             background: tokens.color(color),
             opacity: 0.6 - i * 0.15,
           }} />
@@ -66,7 +66,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
           // Animated connector line between items
           const connector = i < items.length - 1;
           return (
-            <div key={i}>
+            <div key={`tp-item-${item.num || i}-${item.verb?.slice(0,8) || ''}`}>
               <div className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5 min-w-0"
                 style={{
                   background: tokens.colorAlpha(item.color, 0.1),
@@ -86,7 +86,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
                 </div>
                 <div className="min-w-0">
                   <div className="font-extrabold" style={{ color: tokens.color(item.color), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.verb}</div>
-                  <div className="leading-relaxed mt-0.5" style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
+                  <div className={`leading-relaxed mt-0.5 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
                 </div>
               </div>
               {/* Connector dot between items */}

@@ -66,7 +66,7 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
         </div>
         <div className="inline-flex gap-2 mb-4">
           {(block.questions || []).map((_, i) => (
-            <div key={i} className="w-6 h-6 rounded-full flex items-center justify-center"
+            <div key={`refleksi-dot-${block.id || 'ref'}-${i}`} className="w-6 h-6 rounded-full flex items-center justify-center"
               style={{ background: tokens.colorAlpha('g', 0.2), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
               <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
             </div>
@@ -125,7 +125,7 @@ export function RefleksiRenderer({ block, tokens, interactive, isCompact, isEdit
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]?.trim().length > 0;
         return (
-          <div key={i} className="rounded-xl p-3.5 mb-3 transition-all hover:-translate-y-0.5 min-w-0"
+          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl p-3.5 mb-3 transition-all hover:-translate-y-0.5 min-w-0"
             style={{
               background: tokens.colorAlpha(qColor, 0.06),
               border: '1px solid ' + tokens.colorAlpha(qColor, hasResponse ? 0.35 : 0.2),

@@ -35,7 +35,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
       </div>
       <div className="flex flex-col gap-2">
         {(block.steps || []).map((step, i) => (
-          <div key={i} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5 min-w-0"
+          <div key={`alur-step-${step.judul?.slice(0,8)}-${i}`} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5 min-w-0"
             style={{
               background: tokens.colorAlpha(step.dot, 0.08),
               border: '1px solid ' + tokens.colorAlpha(step.dot, 0.15),
@@ -47,7 +47,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
               style={{ color: tokens.color(step.dot), fontSize: isCompact ? '11px' : '13px', minWidth: isCompact ? '30px' : '36px' }}>
               {step.durasi}
             </span>
-            <span className="leading-relaxed min-w-0" style={{ fontSize: isCompact ? '11px' : '13px' }}>
+            <span className={`leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: isCompact ? '11px' : '13px' }}>
               <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}>{step.deskripsi}</span>
             </span>
           </div>

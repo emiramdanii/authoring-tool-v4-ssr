@@ -63,20 +63,36 @@ export const PETUNJUK_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'petunjuk',
   groups: [
     { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'navigation', label: 'Navigasi', icon: 'Compass', collapsed: true },
+    { key: 'objectives', label: 'Tujuan Pembelajaran', icon: 'Target', collapsed: true },
   ],
   properties: [
     { key: 'variant', type: 'variant', label: 'Varian' },
-    { key: 'title', type: 'text', label: 'Judul', required: true },
-    { key: 'titleHighlight', type: 'text', label: 'Highlight' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'titleHighlight', type: 'text', label: 'Highlight', group: 'content' },
     {
-      key: 'items', type: 'array', label: 'Item',
+      key: 'items', type: 'array', label: 'Item Petunjuk', group: 'content',
       fields: [
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📌' },
         { key: 'title', label: 'Judul', type: 'text' },
         { key: 'body', label: 'Deskripsi', type: 'textarea' },
       ],
     },
-    { key: 'tips', type: 'textarea', label: 'Tips', rows: 3 },
+    { key: 'tips', type: 'textarea', label: 'Tips', group: 'content', rows: 3 },
+    {
+      key: 'navigation', type: 'array', label: 'Navigasi', group: 'navigation',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '🔄' },
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'description', label: 'Deskripsi', type: 'textarea' },
+      ],
+    },
+    {
+      key: 'learningObjectives', type: 'array', label: 'Tujuan', group: 'objectives',
+      fields: [
+        { key: 'text', label: 'Tujuan', type: 'textarea' },
+      ],
+    },
   ],
 };
 
@@ -347,7 +363,13 @@ export const RODAGAME_PROPERTY_SCHEMA: PropertySchema = {
       fields: [
         { key: 'q', label: 'Pertanyaan', type: 'textarea' },
         { key: 'diskusiHint', label: 'Hint Diskusi', type: 'text' },
-        { key: 'opts', label: 'Pilihan (JSON)', type: 'json', helpText: 'Array {text, correct}, contoh: [{"text":"A","correct":true}]' },
+        {
+          key: 'opts', label: 'Pilihan Jawaban', type: 'array',
+          fields: [
+            { key: 'text', label: 'Teks Jawaban', type: 'text' },
+            { key: 'correct', label: 'Jawaban Benar', type: 'boolean' },
+          ],
+        },
         { key: 'feedbackCorrect', label: 'Feedback Benar', type: 'text' },
         { key: 'feedbackWrong', label: 'Feedback Salah', type: 'text' },
       ],

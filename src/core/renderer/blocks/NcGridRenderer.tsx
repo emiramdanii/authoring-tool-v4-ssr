@@ -90,7 +90,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
     <div className="grid grid-cols-2 gap-3 my-3" style={{ minWidth: 0 }}>
       {(block.cards || []).map((card, i) => (
         <NcGridCard
-          key={i}
+          key={`nc-card-${card.title?.slice(0,8)}-${i}`}
           card={card}
           cardIndex={i}
           blockId={block.id!}
