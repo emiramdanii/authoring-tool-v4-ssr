@@ -53,6 +53,30 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
       nav: { next: 's-cp', nextLabel: 'CP · TP · ATP' },
     },
 
+    // ──────────────────────── PETUNJUK ────────────────────────
+    {
+      id: 's-petunjuk',
+      templateType: 'petunjuk',
+      sectionLabel: '📌 Petunjuk Penggunaan',
+      sectionColor: 'c',
+      blocks: [
+        {
+          type: 'petunjuk',
+          title: 'Cara Belajar',
+          titleHighlight: 'Hari Ini',
+          items: [
+            { icon: '📖', title: 'Baca & Pahami', body: 'Klik tab norma untuk membaca kartu detail. Tandai ✓ setelah selesai membaca setiap norma.' },
+            { icon: '🎮', title: 'Mainkan Game', body: 'Sortir perilaku ke kolom norma yang tepat, lalu putar roda untuk menjawab pertanyaan pemantik.' },
+            { icon: '💬', title: 'Diskusi Kelompok', body: 'Setiap game diikuti diskusi. Tulis jawaban kelompokmu di area yang tersedia.' },
+            { icon: '📝', title: 'Refleksi & Portofolio', body: 'Tulis refleksi jujur di akhir pembelajaran. Semua jawaban tercatat sebagai portofoliomu.' },
+          ],
+          tips: 'Klik kartu norma satu per satu, jangan skip! Setiap kartu berisi contoh pelanggaran dan sanksi yang relevan dengan kehidupanmu sehari-hari.',
+          tipsColor: 'c',
+        },
+      ],
+      nav: { prev: 's-cover', next: 's-cp', nextLabel: 'CP · TP · ATP' },
+    },
+
     // ──────────────────────── CP / TP / ATP ────────────────────────
     {
       id: 's-cp',

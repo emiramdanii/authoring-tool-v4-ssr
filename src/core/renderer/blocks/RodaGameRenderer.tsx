@@ -17,12 +17,17 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
   const [spinning, setSpinning] = React.useState(false);
   const [spinRotation, setSpinRotation] = React.useState(0);
   const [showQuestion, setShowQuestion] = React.useState(false);
+  const tickIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
   const questions = block.questions || [];
   const q = questions[current];
   const totalCorrect = Object.entries(answers).filter(([idx, ans]) => questions[Number(idx)]?.opts?.[ans]?.correct).length;
   const totalAnswered = Object.keys(answers).length;
   const isCompleted = totalAnswered >= questions.length && questions.length > 0;
+
+  // ── Theme-aware contrast colors ────────────────────────────────
+  const contrastBg = tokens.isDark() ? tokens.color('bg') : '#ffffff';
+  const contrastText = tokens.isDark() ? '#ffffff' : tokens.color('bg');
 
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -38,23 +43,48 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
         completed: true,
       });
       const pct = Math.round((totalCorrect / questions.length) * 100);
-      if (pct >= 80) { playSound('complete'); fireConfetti({ count: 50 }); }
+      if (pct >= 80) { playSound('complete'); fireConfetti({ count: 60 }); }
       else playSound('ding');
     }
   }, [isCompleted]);
 
-  // ── Spin animation handler ─────────────────────────────────
+  // Cleanup tick interval on unmount
+  React.useEffect(() => {
+    return () => {
+      if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
+    };
+  }, []);
+
+  // ── Spin animation handler with tick sound ────────────────────
   const handleSpin = () => {
     if (spinning || !interactive) return;
     setSpinning(true);
     setShowQuestion(false);
     playSound('tap');
 
-    // Calculate target rotation: 3-5 full rotations + land on current question
-    const extraRotations = 3 + Math.floor(Math.random() * 3); // 3-5 full spins
+    // Start tick sound while spinning
+    let tickCount = 0;
+    tickIntervalRef.current = setInterval(() => {
+      tickCount++;
+      playSound('tap');
+      // Slow down tick frequency as wheel decelerates
+      if (tickCount > 12 && tickIntervalRef.current) {
+        clearInterval(tickIntervalRef.current);
+        tickIntervalRef.current = null;
+        // A few slower ticks
+        setTimeout(() => playSound('tap'), 200);
+        setTimeout(() => playSound('tap'), 500);
+        setTimeout(() => playSound('tap'), 900);
+      }
+    }, 180);
+
+    // Calculate target rotation: 4-6 full rotations for dramatic effect
+    const extraRotations = 4 + Math.floor(Math.random() * 3); // 4-6 full spins
     const segmentAngle = 360 / questions.length;
     const targetSegment = current;
-    const targetAngle = extraRotations * 360 + (360 - targetSegment * segmentAngle - segmentAngle / 2);
+    // Add slight random offset within segment for natural feel
+    const randomOffset = (Math.random() - 0.5) * (segmentAngle * 0.4);
+    const targetAngle = extraRotations * 360 + (360 - targetSegment * segmentAngle - segmentAngle / 2) + randomOffset;
     const newRotation = spinRotation + targetAngle;
     setSpinRotation(newRotation);
 
@@ -63,7 +93,11 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
       setSpinning(false);
       setShowQuestion(true);
       playSound('ding');
-    }, 2800);
+      if (tickIntervalRef.current) {
+        clearInterval(tickIntervalRef.current);
+        tickIntervalRef.current = null;
+      }
+    }, 3200);
   };
 
   // ── Inline editing hooks ─────────────────────────────────────
@@ -122,15 +156,19 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
 
   if (!q) return null;
 
-  // ── Wheel segment colors ──────────────────────────────────────
-  const wheelColors = ['#f9c12e', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
+  // ── Wheel segment colors (token-aware) ────────────────────────
+  const wheelColors = [
+    tokens.color('y'), tokens.color('c'), tokens.color('g'),
+    tokens.color('p'), tokens.color('r'), tokens.color('o'),
+  ];
 
   // ── Determine if current question is answered ────────────────
   const isCurrentAnswered = answers[current] !== undefined;
 
   // ── Wheel size (responsive) ──────────────────────────────────
-  const wheelSize = isCompact ? 120 : 160;
-  const wheelRadius = wheelSize / 2;
+  const wheelSize = isCompact ? 130 : 180;
+  const svgCenter = 100;
+  const svgRadius = 94;
 
   return (
     <div className="rounded-2xl overflow-hidden"
@@ -167,28 +205,28 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
       </div>
 
       <div className="p-4">
-        {/* ═══ BIG SPINNING WHEEL ══════════════════════════════════ */}
+        {/* ═══ ENHANCED SPINNING WHEEL ══════════════════════════════ */}
         {!isCurrentAnswered && (
           <div className="flex justify-center mb-4">
-            <div className="relative" style={{ width: wheelSize + 24, height: wheelSize + 24 }}>
+            <div className="relative" style={{ width: wheelSize + 30, height: wheelSize + 30 }}>
               {/* Outer glow ring */}
               <div className="absolute inset-0 rounded-full"
                 style={{
                   boxShadow: spinning
-                    ? `0 0 40px ${tokens.colorAlpha('c', 0.4)}, 0 0 80px ${tokens.colorAlpha('c', 0.15)}`
-                    : `0 0 20px ${tokens.colorAlpha('c', 0.15)}`,
-                  transition: 'box-shadow 0.3s ease',
+                    ? `0 0 50px ${tokens.colorAlpha('c', 0.5)}, 0 0 100px ${tokens.colorAlpha('c', 0.2)}`
+                    : `0 0 24px ${tokens.colorAlpha('c', 0.15)}`,
+                  transition: 'box-shadow 0.5s ease',
                 }} />
 
-              {/* Pointer arrow at top */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20"
+              {/* Pointer arrow at top — enhanced triangle */}
+              <div className="absolute top-0 left-1/2 z-20"
                 style={{
-                  fontSize: '18px',
-                  color: tokens.color('y'),
-                  filter: `drop-shadow(0 2px 6px ${tokens.colorAlpha('y', 0.6)})`,
                   transform: 'translateX(-50%)',
+                  filter: `drop-shadow(0 3px 8px ${tokens.colorAlpha('y', 0.7)})`,
                 }}>
-                ▼
+                <svg width="24" height="20" viewBox="0 0 24 20">
+                  <polygon points="12,18 2,2 22,2" fill={tokens.color('y')} stroke={contrastText} strokeWidth="1.5" />
+                </svg>
               </div>
 
               {/* Wheel container with spin */}
@@ -196,58 +234,85 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                 style={{
                   width: wheelSize,
                   height: wheelSize,
-                  margin: '12px auto 0',
-                  border: `4px solid ${tokens.color('c')}`,
+                  margin: '15px auto 0',
+                  border: `5px solid ${tokens.color('c')}`,
                   transform: `rotate(${spinRotation}deg)`,
                   transition: spinning
-                    ? 'transform 2.8s cubic-bezier(0.17, 0.67, 0.05, 0.99)'
+                    ? 'transform 3.2s cubic-bezier(0.15, 0.60, 0.05, 1.00)'
                     : 'none',
-                  boxShadow: `inset 0 0 20px rgba(0,0,0,0.3)`,
+                  boxShadow: `inset 0 0 30px ${tokens.colorAlpha('bg', 0.4)}`,
                 }}>
                 <svg viewBox="0 0 200 200" width={wheelSize} height={wheelSize}>
+                  <defs>
+                    {/* Gradient for each segment for glossy effect */}
+                    <radialGradient id="wheelSheen" cx="50%" cy="30%" r="60%">
+                      <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
+                      <stop offset="100%" stopColor="rgba(0,0,0,0.1)" />
+                    </radialGradient>
+                  </defs>
+
                   {questions.map((_, i) => {
                     const angle = (360 / questions.length) * i;
                     const nextAngle = (360 / questions.length) * (i + 1);
                     const startRad = (angle - 90) * Math.PI / 180;
                     const endRad = (nextAngle - 90) * Math.PI / 180;
-                    const x1 = 100 + 96 * Math.cos(startRad);
-                    const y1 = 100 + 96 * Math.sin(startRad);
-                    const x2 = 100 + 96 * Math.cos(endRad);
-                    const y2 = 100 + 96 * Math.sin(endRad);
+                    const x1 = svgCenter + svgRadius * Math.cos(startRad);
+                    const y1 = svgCenter + svgRadius * Math.sin(startRad);
+                    const x2 = svgCenter + svgRadius * Math.cos(endRad);
+                    const y2 = svgCenter + svgRadius * Math.sin(endRad);
                     const largeArc = (nextAngle - angle) > 180 ? 1 : 0;
                     const color = wheelColors[i % wheelColors.length];
                     const isAnswered = answers[i] !== undefined;
-                    const isCurrent = i === current;
+                    const isCurrentQ = i === current;
+                    const midRad = (startRad + endRad) / 2;
 
                     return (
                       <g key={i}>
+                        {/* Main segment */}
                         <path
-                          d={`M100,100 L${x1},${y1} A96,96 0 ${largeArc},1 ${x2},${y2} Z`}
+                          d={`M${svgCenter},${svgCenter} L${x1},${y1} A${svgRadius},${svgRadius} 0 ${largeArc},1 ${x2},${y2} Z`}
                           fill={color}
-                          opacity={isCurrent ? 1 : isAnswered ? 0.5 : 0.7}
-                          stroke={tokens.isDark() ? '#0e1c2f' : '#ffffff'}
-                          strokeWidth="2"
+                          opacity={isCurrentQ ? 1 : isAnswered ? 0.45 : 0.75}
+                          stroke={contrastBg}
+                          strokeWidth="2.5"
                         />
-                        {/* Question number */}
+                        {/* Glossy sheen overlay */}
+                        <path
+                          d={`M${svgCenter},${svgCenter} L${x1},${y1} A${svgRadius},${svgRadius} 0 ${largeArc},1 ${x2},${y2} Z`}
+                          fill="url(#wheelSheen)"
+                          opacity={isCurrentQ ? 0.8 : 0.5}
+                        />
+                        {/* Segment inner border for depth */}
+                        <path
+                          d={`M${svgCenter},${svgCenter} L${x1},${y1} A${svgRadius},${svgRadius} 0 ${largeArc},1 ${x2},${y2} Z`}
+                          fill="none"
+                          stroke={tokens.isDark() ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'}
+                          strokeWidth="1"
+                          transform={`translate(${Math.cos(midRad) * 1.5}, ${Math.sin(midRad) * 1.5})`}
+                        />
+                        {/* Question number — larger for better readability */}
                         <text
-                          x={100 + 60 * Math.cos((startRad + endRad) / 2)}
-                          y={100 + 60 * Math.sin((startRad + endRad) / 2)}
+                          x={svgCenter + 58 * Math.cos(midRad)}
+                          y={svgCenter + 58 * Math.sin(midRad)}
                           textAnchor="middle"
                           dominantBaseline="central"
-                          fill={tokens.isDark() ? '#0e1c2f' : '#ffffff'}
-                          fontSize="16"
+                          fill={contrastText}
+                          fontSize={questions.length > 6 ? "13" : "16"}
                           fontWeight="900"
+                          style={{ textShadow: `0 1px 3px ${tokens.isDark() ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)'}` }}
                         >
                           {i + 1}
                         </text>
-                        {/* Answered indicator (checkmark or X) */}
+                        {/* Answered indicator */}
                         {isAnswered && (
                           <text
-                            x={100 + 60 * Math.cos((startRad + endRad) / 2)}
-                            y={100 + 60 * Math.sin((startRad + endRad) / 2) + 14}
+                            x={svgCenter + 58 * Math.cos(midRad)}
+                            y={svgCenter + 58 * Math.sin(midRad) + 15}
                             textAnchor="middle"
                             dominantBaseline="central"
-                            fontSize="10"
+                            fontSize="11"
+                            fill={contrastText}
+                            fontWeight="900"
                           >
                             {questions[i]?.opts?.[answers[i]]?.correct ? '✓' : '✗'}
                           </text>
@@ -255,12 +320,33 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                       </g>
                     );
                   })}
-                  {/* Center circle */}
-                  <circle cx="100" cy="100" r="22" fill={tokens.isDark() ? '#0e1c2f' : '#ffffff'} />
-                  <circle cx="100" cy="100" r="18" fill={tokens.color('c')} opacity="0.9" />
-                  <text x="100" y="100" textAnchor="middle" dominantBaseline="central" fill={tokens.isDark() ? '#0e1c2f' : '#ffffff'} fontSize="14" fontWeight="900">
+
+                  {/* Outer decorative ring */}
+                  <circle cx={svgCenter} cy={svgCenter} r={svgRadius + 1} fill="none"
+                    stroke={tokens.color('c')} strokeWidth="3" opacity="0.6" />
+
+                  {/* Center hub — layered circles for depth */}
+                  <circle cx={svgCenter} cy={svgCenter} r="26" fill={contrastBg}
+                    stroke={tokens.color('c')} strokeWidth="2" />
+                  <circle cx={svgCenter} cy={svgCenter} r="20" fill={tokens.color('c')} opacity="0.9" />
+                  <circle cx={svgCenter} cy={svgCenter} r="14" fill={tokens.colorAlpha('y', 0.3)} />
+                  <text x={svgCenter} y={svgCenter} textAnchor="middle" dominantBaseline="central"
+                    fill={contrastText} fontSize="14" fontWeight="900">
                     🎡
                   </text>
+
+                  {/* Decorative tick marks around wheel edge */}
+                  {questions.map((_, i) => {
+                    const tickAngle = ((360 / questions.length) * i - 90) * Math.PI / 180;
+                    const outerX = svgCenter + (svgRadius - 2) * Math.cos(tickAngle);
+                    const outerY = svgCenter + (svgRadius - 2) * Math.sin(tickAngle);
+                    const innerX = svgCenter + (svgRadius - 8) * Math.cos(tickAngle);
+                    const innerY = svgCenter + (svgRadius - 8) * Math.sin(tickAngle);
+                    return (
+                      <line key={`tick-${i}`} x1={outerX} y1={outerY} x2={innerX} y2={innerY}
+                        stroke={contrastBg} strokeWidth="2" opacity="0.5" />
+                    );
+                  })}
                 </svg>
               </div>
 
@@ -270,21 +356,23 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                 if (!answered) return null;
                 const angle = (360 / questions.length) * i - 90;
                 const rad = angle * Math.PI / 180;
-                const dotRadius = (wheelSize / 2) + 14;
+                const dotRadius = (wheelSize / 2) + 16;
+                const isCorrect = questions[i]?.opts?.[answers[i]]?.correct;
                 return (
-                  <div key={i} className="absolute w-4 h-4 rounded-full flex items-center justify-center"
+                  <div key={`dot-${i}`} className="absolute w-5 h-5 rounded-full flex items-center justify-center"
                     style={{
-                      left: `calc(50% + ${Math.cos(rad) * dotRadius}px - 8px)`,
-                      top: `calc(50% + ${Math.sin(rad) * dotRadius}px - 8px + 6px)`,
-                      background: questions[i]?.opts?.[answers[i]]?.correct ? tokens.color('g') : tokens.color('r'),
-                      boxShadow: `0 0 8px ${questions[i]?.opts?.[answers[i]]?.correct ? tokens.colorAlpha('g', 0.5) : tokens.colorAlpha('r', 0.5)}`,
+                      left: `calc(50% + ${Math.cos(rad) * dotRadius}px - 10px)`,
+                      top: `calc(50% + ${Math.sin(rad) * dotRadius}px - 10px + 7px)`,
+                      background: isCorrect ? tokens.color('g') : tokens.color('r'),
+                      boxShadow: `0 0 10px ${isCorrect ? tokens.colorAlpha('g', 0.5) : tokens.colorAlpha('r', 0.5)}`,
                       zIndex: 15,
-                      border: `2px solid ${tokens.isDark() ? '#0e1c2f' : '#ffffff'}`,
-                      fontSize: '8px',
-                      color: '#ffffff',
+                      border: `2px solid ${contrastBg}`,
+                      fontSize: '9px',
+                      color: contrastText,
                       fontWeight: 900,
+                      animation: 'popSuccess 0.3s ease-out',
                     }}>
-                    {questions[i]?.opts?.[answers[i]]?.correct ? '✓' : '✗'}
+                    {isCorrect ? '✓' : '✗'}
                   </div>
                 );
               })}
@@ -376,7 +464,7 @@ export function RodaGameRenderer({ block, tokens, interactive, isCompact, isEdit
                     }
                   }}
                   className="w-full p-3 rounded-xl font-bold text-left transition-all hover:scale-[1.01] min-w-0 overflow-hidden"
-                  style={{ fontSize: '13px', background: bg, border: '2px solid ' + border, boxShadow: boxShd, wordBreak: 'break-word' }}>
+                  style={{ fontSize: '13px', background: bg, border: '2px solid ' + border, boxShadow: boxShd, wordBreak: 'break-word', color: tokens.color('text') }}>
                   {opt.text}
                 </button>
               );

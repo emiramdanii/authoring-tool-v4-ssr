@@ -110,7 +110,7 @@ export function SchemaScreenRenderer({ screen, mode, tokens, interactive = false
             className="absolute inset-0 pointer-events-none"
             style={{
               zIndex: 0,
-              background: `rgba(0,0,0,${(bg.overlay ?? 40) / 100})`,
+              background: `rgba(0,0,0,${(bg.overlay ?? 30) / 100})`,
             }}
           />
         </>

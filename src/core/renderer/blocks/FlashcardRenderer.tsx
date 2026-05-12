@@ -44,7 +44,7 @@ export function FlashcardRenderer({ block, tokens, isCompact, interactive, isEdi
         completed: true,
       });
       playSound('complete');
-      fireConfetti({ count: 30 });
+      fireConfetti({ count: 40 });
     }
   }, [isCompleted]);
 

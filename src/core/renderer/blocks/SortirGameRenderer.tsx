@@ -110,7 +110,7 @@ export function SortirGameRenderer({ block, tokens, interactive, isCompact, isEd
         completed: true,
       });
       playSound('complete');
-      fireConfetti({ count: 40 });
+      fireConfetti({ count: 50 });
     }
   }, [isCompleted]);
 

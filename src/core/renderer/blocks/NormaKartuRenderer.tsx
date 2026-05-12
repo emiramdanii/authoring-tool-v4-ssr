@@ -62,7 +62,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       </div>
 
       {/* Definition */}
-      <div className="leading-relaxed mb-4" style={{ fontSize: '13px' }}>
+      <div className="leading-relaxed mb-4" style={{ fontSize: '13px', color: tokens.color('text') }}>
         <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" placeholder="Ketik definisi..." />
       </div>
 
@@ -70,13 +70,13 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       {(block.characteristics || []).length > 0 && (
         <div className="grid grid-cols-2 gap-2.5">
           {(block.characteristics || []).map((c, i) => (
-            <div key={i} className="rounded-xl p-3 min-w-0"
+            <div key={i} className="rounded-xl p-3 min-w-0 overflow-hidden"
               style={{
                 background: tokens.colorAlpha(colorKey, 0.08),
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
               }}>
               <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color }}>{c.label}</div>
-              <div className="leading-relaxed" style={{ fontSize: '12px' }}>{c.value}</div>
+              <div className="leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text') }}>{c.value}</div>
             </div>
           ))}
         </div>
@@ -92,7 +92,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           }}>
           <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ fontSize: '12px', color: tokens.color('o') }}>{block.sanksi.title}</div>
           {block.sanksi.items.map((s, i) => (
-            <div key={i} className="flex items-start gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px' }}>
+            <div key={i} className="flex items-start gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text') }}>
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: s.dot || color }} />
               {s.text}
             </div>
@@ -124,7 +124,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           <div className="font-extrabold uppercase tracking-wider mb-1.5"
             style={{ fontSize: '12px', color: tokens.color('r') }}>{block.pelanggaran.title}</div>
           {block.pelanggaran.items.map((p, i) => (
-            <div key={i} className="flex gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px' }}>
+            <div key={i} className="flex gap-2 mb-1.5 leading-relaxed" style={{ fontSize: '12px', color: tokens.color('text') }}>
               <span>{p.icon}</span> {p.text}
             </div>
           ))}

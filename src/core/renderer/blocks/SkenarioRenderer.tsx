@@ -51,7 +51,7 @@ export function SkenarioRenderer({ block, tokens, interactive, isEditing, pageIn
         completed: true,
       });
       playSound('complete');
-      fireConfetti({ count: 45 });
+      fireConfetti({ count: 60 });
     }
   }, [isCompleted]);
 

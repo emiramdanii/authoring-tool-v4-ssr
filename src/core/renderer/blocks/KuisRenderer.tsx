@@ -50,6 +50,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
       // Play tier-appropriate sound
       const pct = Math.round((totalCorrect / questions.length) * 100);
       if (pct >= 80) { playSound('complete'); fireConfetti({ count: 60 }); }
+      else if (pct >= 50) { playSound('complete'); fireConfetti({ count: 30 }); }
       else playSound('ding');
     }
   }, [isCompleted]);
@@ -201,7 +202,7 @@ export function KuisRenderer({ block, tokens, interactive, isCompact, isEditing,
                   }
                 }}
                 className="p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0"
-                style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                style={{ fontSize: '13px', background: bg, border: '2px solid ' + bdr, boxShadow: bxSh, wordBreak: 'break-word', overflowWrap: 'break-word', color: tokens.color('text') }}>
                 {opt}
               </button>
             );

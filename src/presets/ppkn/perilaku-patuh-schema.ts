@@ -53,6 +53,30 @@ export const PERILAKU_PATUH_LESSON: LessonSchema = {
       nav: { next: 's-review', nextLabel: 'Review' },
     },
 
+    // ──────────────────────── PETUNJUK ────────────────────────
+    {
+      id: 's-petunjuk',
+      templateType: 'petunjuk',
+      sectionLabel: '📌 Petunjuk Penggunaan',
+      sectionColor: 'g',
+      blocks: [
+        {
+          type: 'petunjuk',
+          title: 'Cara Belajar',
+          titleHighlight: 'Hari Ini',
+          items: [
+            { icon: '🏠', title: '3 Lingkungan', body: 'Pelajari penerapan norma di keluarga, sekolah, dan masyarakat melalui kartu kilat.' },
+            { icon: '🎭', title: 'Skenario Interaktif', body: 'Hadapi dilema nyata dan pilih tindakanmu. Lihat konsekuensi dari setiap pilihan.' },
+            { icon: '❓', title: 'Kuis Bab 3', body: '10 soal campuran dari 3 pertemuan. Jawab dengan benar untuk skor tertinggi!' },
+            { icon: '📝', title: 'Refleksi & Kometmen', body: 'Tulis komitmen nyata yang akan kamu lakukan mulai minggu ini.' },
+          ],
+          tips: 'Skenario interaktif tidak ada jawaban mutlak — yang penting kamu berpikir kritis tentang konsekuensi setiap pilihan. Diskusikan dengan kelompokmu!',
+          tipsColor: 'g',
+        },
+      ],
+      nav: { prev: 's-cover', next: 's-review', nextLabel: 'Review' },
+    },
+
     // ──────────────────────── REVIEW P1+P2 ────────────────────────
     {
       id: 's-review',

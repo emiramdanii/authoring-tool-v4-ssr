@@ -43,7 +43,7 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
         <div className="w-20 h-20 rounded-2xl flex items-center justify-center"
           style={{
             background: tokens.colorAlpha(accentKey, 0.18),
-            boxShadow: '0 0 40px ' + tokens.colorAlpha(accentKey, 0.25) + ', 0 8px 24px rgba(0,0,0,.3)',
+            boxShadow: '0 0 40px ' + tokens.colorAlpha(accentKey, 0.25) + ', 0 8px 24px ' + tokens.colorAlpha('bg', 0.3),
             backdropFilter: 'blur(8px)',
           }}>
           <div className="text-4xl" style={{ animation: 'float 3s ease-in-out infinite' }}>
@@ -59,7 +59,7 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
 
       {/* Title — inline editable when in editing mode */}
       <h1 className="font-black leading-tight mt-3"
-        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px rgba(0,0,0,.5)' }}>
+        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5) }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
@@ -118,7 +118,7 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
             background: 'linear-gradient(135deg, ' + y + ', ' + tokens.color('o') + ')',
             color: tokens.color('bg'),
             padding: '12px 28px',
-            boxShadow: '0 6px 24px ' + tokens.colorAlpha('y', 0.4) + ', 0 2px 8px rgba(0,0,0,.2)',
+            boxShadow: '0 6px 24px ' + tokens.colorAlpha('y', 0.4) + ', 0 2px 8px ' + tokens.colorAlpha('bg', 0.2),
           }}>
           {block.cta.label}
         </button>
