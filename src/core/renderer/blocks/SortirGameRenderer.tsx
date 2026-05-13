@@ -42,8 +42,8 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
           style={{ background: tokens.colorAlpha(kolomDef.color, 0.2) }}>
           <FolderOpen size={12} className="inline" />
         </div>
-        <div className="font-extrabold uppercase tracking-wider"
-          style={{ fontSize: '12px', color: tokens.color(kolomDef.color) }}>
+        <div className="font-extrabold uppercase tracking-wider min-w-0"
+          style={{ fontSize: '12px', color: tokens.color(kolomDef.color), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...labelEditor}
             className="text-[10px] font-extrabold uppercase tracking-wider"

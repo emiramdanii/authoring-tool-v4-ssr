@@ -33,7 +33,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
         boxShadow: tokens.raw.shadow.card,
       }}>
       <div className="font-extrabold uppercase tracking-wider mb-3"
-        style={{ color: tokens.color('c'), fontSize: isCompact ? '10px' : '12px' }}>
+        style={{ color: tokens.color('c'), fontSize: isCompact ? '10px' : '12px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
         ⏱️ <InlineTextEditor {...titleEditor} /> — <InlineTextEditor {...durasiEditor} placeholder="Durasi..." />
       </div>
       <div className="flex flex-col gap-2">
@@ -47,7 +47,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
             <div className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
               style={{ background: tokens.color(step.dot), boxShadow: '0 0 8px ' + tokens.colorAlpha(step.dot, 0.4) }} />
             <PremiumBadge tokens={tokens} accent={step.dot} variant="glass" isCompact={isCompact}>{step.durasi}</PremiumBadge>
-            <span className={`leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: isCompact ? '11px' : '13px' }}>
+            <span className={`leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
               <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}>{step.deskripsi}</span>
             </span>
           </div>

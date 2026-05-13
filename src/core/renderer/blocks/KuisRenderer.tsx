@@ -288,8 +288,8 @@ function KuisVariantRingkas({
                   background: bg,
                   border: `1.5px solid ${bdr}`,
                   boxShadow: bxSh,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                   color: tokens.color('text'),
                   cursor: isAnswered ? 'default' : 'pointer',
                   position: 'relative',
@@ -325,7 +325,7 @@ function KuisVariantRingkas({
           {answers[current] === q.ans ? <CheckCircle2 size={10} className="inline mr-0.5" /> : <XCircle size={10} className="inline mr-0.5" />}
           <InlineTextEditor
             {...explanationEditor}
-            className="text-[9px]"
+            className="text-[10px]"
             style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
             placeholder="Ketik penjelasan..."
           />
@@ -551,7 +551,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
       {/* ── Variant selector (only in editing mode) ──────────────── */}
       {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
           <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}

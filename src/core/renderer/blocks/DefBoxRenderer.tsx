@@ -103,6 +103,8 @@ function DefBoxStepMode({
               fontSize: isCompact ? '12px' : '14.5px',
               lineHeight: 1.7,
               color: tokens.color('text'),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}
           >
             {step.content}
@@ -157,7 +159,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
         <div style={{ position: 'relative' }}>
           {isEditing && (
-            <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+            <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
               <VariantSelector active={variant} onChange={setCurrentVariant} />
             </div>
           )}
@@ -224,7 +226,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
         <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
         <div style={{ position: 'relative' }}>
           {isEditing && (
-            <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+            <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
               <VariantSelector active={variant} onChange={setCurrentVariant} />
             </div>
           )}
@@ -330,7 +332,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
       <div style={{ position: 'relative' }}>
         {isEditing && (
-        <div style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 15 }}>
+        <div style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 45 }}>
           <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}

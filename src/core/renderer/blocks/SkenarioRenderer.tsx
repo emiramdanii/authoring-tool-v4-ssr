@@ -174,7 +174,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                     <span className="font-bold flex-shrink-0 mt-0.5" style={{ fontSize: '12px', color: isNarrator ? tokens.textSubtle(0.4) : tokens.color('r') }}>
                       {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
-                    <span className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.5) : tokens.textSecondary(0.75), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                    <span className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '13px', color: isNarrator ? tokens.textSubtle(0.6) : tokens.textSecondary(0.75), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {line.text}
                     </span>
                   </div>
@@ -189,6 +189,8 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                 fontSize: '12px', color: tokens.muted(0.7),
                 background: tokens.colorAlpha('c', 0.08),
                 border: '1px solid ' + tokens.colorAlpha('c', 0.2),
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
               }}>
               <MessageSquare size={14} className="inline" /> <span className={isCompact ? 'canvas-truncate-2' : ''}>{ch.choicePrompt}</span>
             </div>
@@ -208,7 +210,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className={`font-bold ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
-                    {c.detail && <div className={`mt-0.5 ${isCompact ? 'canvas-truncate-1' : 'line-clamp-2'}`} style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
+                    {c.detail && <div className={`mt-0.5 ${isCompact ? 'canvas-truncate-1' : 'line-clamp-2'}`} style={{ fontSize: '12px', color: tokens.textSubtle(0.6), wordBreak: 'break-word' }}>{c.detail}</div>}
                   </div>
                 </button>
               ) : (
@@ -222,7 +224,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className={`font-bold ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word' }}>{c.label}</div>
-                    {c.detail && <div className={`mt-0.5 ${isCompact ? 'canvas-truncate-1' : 'line-clamp-2'}`} style={{ fontSize: '12px', color: tokens.textSubtle(0.4), wordBreak: 'break-word' }}>{c.detail}</div>}
+                    {c.detail && <div className={`mt-0.5 ${isCompact ? 'canvas-truncate-1' : 'line-clamp-2'}`} style={{ fontSize: '12px', color: tokens.textSubtle(0.6), wordBreak: 'break-word' }}>{c.detail}</div>}
                   </div>
                 </div>
               )

@@ -245,6 +245,7 @@ function MotivasiVariantKlasik({
                       color: tokens.color(conn.color),
                       fontSize: isCompact ? '10px' : '12px',
                       wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
                     }}
                   >
                     {conn.label}
@@ -417,8 +418,8 @@ function MotivasiVariantKartuHook({
           <div
             className="font-extrabold uppercase tracking-wider mb-2"
             style={{
-              color: tokens.muted(0.5),
-              fontSize: isCompact ? '8px' : '9px',
+              color: tokens.muted(0.7),
+              fontSize: isCompact ? '10px' : '9px',
               letterSpacing: '0.08em',
             }}
           >
@@ -436,7 +437,7 @@ function MotivasiVariantKartuHook({
                 title={conn.description}
               >
                 <span style={{ fontSize: isCompact ? '11px' : '13px' }}>{conn.icon}</span>
-                <span style={{ fontWeight: 700 }}>{conn.label}</span>
+                <span style={{ fontWeight: 700, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{conn.label}</span>
               </div>
               </MicroInteraction>
             ))}
@@ -623,7 +624,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
     <PremiumBlockWrapper tokens={tokens} accent={gradientFrom} staggerIndex={0} gradientBorder>
       <div style={{ position: 'relative' }}>
         {isEditing && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
             <VariantSelector active={variant} onChange={setCurrentVariant} />
           </div>
         )}

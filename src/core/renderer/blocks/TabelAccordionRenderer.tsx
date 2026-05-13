@@ -47,7 +47,7 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
       <InlineTextEditor
         {...valueEditor}
         className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ fontSize: 'inherit', color: tokens.color('text') }}
+        style={{ fontSize: 'inherit', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik nilai..."
       />
     </div>
@@ -98,7 +98,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
         <InlineTextEditor
           {...titleEditor}
           className="font-extrabold text-[11px] text-left min-w-0"
-          style={{ color: tokens.color(row.color), fontSize: 'inherit' }}
+          style={{ color: tokens.color(row.color), fontSize: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}
           placeholder="Ketik judul baris..."
         />
         <span className="ml-auto transition-transform duration-300 flex-shrink-0"

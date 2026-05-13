@@ -172,6 +172,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
               WebkitBackfaceVisibility: 'hidden',
               position: 'absolute',
               inset: 0,
+              overflowY: 'auto',
               boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('y', 0.1),
             }}>
             <div className="flex items-center gap-2 mb-2">
@@ -184,7 +185,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
             <InlineTextEditor
               {...qEditor}
               className={`font-extrabold text-[12px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ fontSize: 'inherit' }}
+              style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
               placeholder="Ketik pertanyaan..."
             />
             {interactive && (
@@ -207,6 +208,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
               transform: 'rotateY(180deg)',
               position: 'absolute',
               inset: 0,
+              overflowY: 'auto',
               boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('g', 0.1),
             }}>
             <div className="flex items-center gap-2 mb-2">
@@ -219,7 +221,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
             <InlineTextEditor
               {...aEditor}
               className={`text-[11px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ color: tokens.color('g'), fontSize: 'inherit' }}
+              style={{ color: tokens.color('g'), fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
               placeholder="Ketik jawaban..."
             />
           </div>

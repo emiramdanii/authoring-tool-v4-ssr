@@ -46,10 +46,11 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
         color: isActive ? tokens.color('bg') : tokens.muted(0.6),
         border: '1px solid ' + (isActive ? tokens.color('y') : tokens.subtleBorder(0.1)),
         boxShadow: isActive ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : 'none',
+        overflow: 'hidden',
       }}>
       {tab.icon} <span className={isCompact ? 'canvas-truncate-1' : ''}><InlineTextEditor {...labelEditor} style={{ color: 'inherit', fontSize: 'inherit' }} /></span>
       {showReadMarker && isRead && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black"
           style={{ background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
       )}
     </button>

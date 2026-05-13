@@ -126,7 +126,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         <span
           className="font-bold"
           style={{
-            fontSize: isCompact ? '8px' : '9px',
+            fontSize: isCompact ? '10px' : '9px',
             color: tokens.colorAlpha(concept.color, 0.5),
             letterSpacing: '0.05em',
           }}
@@ -533,7 +533,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
     >
       {/* Variant selector (editing mode only) */}
       {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
           <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}

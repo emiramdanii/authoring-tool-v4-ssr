@@ -390,6 +390,8 @@ function MateriVariantMajalah({
               fontFamily: tokens.fontFamily('display'),
               fontSize: isCompact ? '14px' : '1.2rem',
               color: tokens.color('text'),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}
           >
             {block.title}
@@ -500,7 +502,7 @@ function MateriVariantMajalah({
                 className="font-extrabold"
                 style={{
                   color: tokens.color('y'),
-                  fontSize: isCompact ? '9px' : '10px',
+                  fontSize: isCompact ? '10px' : '10px',
                   marginRight: '8px',
                 }}
               >
@@ -757,7 +759,7 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
       <div style={{ position: 'relative' }}>
         {isEditing && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
             <VariantSelector active={variant} onChange={handleVariantChange} />
           </div>
         )}

@@ -130,7 +130,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {block.intro && <InlineTextEditor
         {...introEditor}
         className="mb-4 leading-relaxed"
-        style={{ fontSize: isCompact ? '11px' : '13px', color: tokens.muted(0.8) }}
+        style={{ fontSize: isCompact ? '11px' : '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -176,7 +176,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
               <div className="w-full mt-1 rounded-lg p-2.5 min-h-[40px]"
                 style={{
                   fontSize: isCompact ? '10px' : '12px',
-                  color: tokens.textSubtle(0.4),
+                  color: tokens.textSubtle(0.6),
                   background: tokens.subtleBg(0.03),
                   border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
                 }}>

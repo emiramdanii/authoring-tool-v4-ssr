@@ -457,16 +457,16 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
               }}
             >
               {/* Target label header */}
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 min-w-0">
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center"
+                  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ background: tokens.colorAlpha(targetColor, 0.2) }}
                 >
                   <GripVertical size={12} style={{ color: tokens.color(targetColor) }} />
                 </div>
                 <div
-                  className="font-extrabold uppercase tracking-wider"
-                  style={{ fontSize: '12px', color: tokens.color(targetColor) }}
+                  className="font-extrabold uppercase tracking-wider min-w-0"
+                  style={{ fontSize: '12px', color: tokens.color(targetColor), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 >
                   {target.label}
                 </div>

@@ -446,7 +446,7 @@ function TujuanVariantB({
             <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g') }} />
             <span
               style={{
-                fontSize: isCompact ? '9px' : '10px',
+                fontSize: isCompact ? '10px' : '10px',
                 fontWeight: 700,
                 color: tokens.color(block.profilColor || 'g'),
               }}
@@ -455,7 +455,7 @@ function TujuanVariantB({
             </span>
             <span
               style={{
-                fontSize: isCompact ? '9px' : '11px',
+                fontSize: isCompact ? '10px' : '11px',
                 color: tokens.color('text'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
@@ -691,7 +691,7 @@ function TujuanVariantC({
           <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g'), flexShrink: 0 }} />
           <span
             style={{
-              fontSize: isCompact ? '9px' : '10px',
+              fontSize: isCompact ? '10px' : '10px',
               fontWeight: 700,
               color: tokens.color(block.profilColor || 'g'),
             }}
@@ -700,7 +700,7 @@ function TujuanVariantC({
           </span>
           <span
             style={{
-              fontSize: isCompact ? '9px' : '11px',
+              fontSize: isCompact ? '10px' : '11px',
               color: tokens.color('text'),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',

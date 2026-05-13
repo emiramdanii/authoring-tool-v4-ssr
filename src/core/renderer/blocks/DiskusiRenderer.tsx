@@ -221,7 +221,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`mt-1 leading-relaxed font-bold mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text') }}
+        style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -299,7 +299,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <div className="w-full mt-2 rounded-lg p-2.5 min-h-[40px]"
               style={{
                 fontSize: isCompact ? '10px' : '12px',
-                color: tokens.textSubtle(0.5),
+                color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.03),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
               }}>
@@ -378,7 +378,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`mt-1 leading-relaxed font-bold mb-4 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text') }}
+        style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -465,7 +465,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <div className="w-full rounded-xl p-3.5 min-h-[50px]"
               style={{
                 fontSize: isCompact ? '11px' : '13px',
-                color: tokens.textSubtle(0.5),
+                color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.03),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
               }}>
@@ -534,7 +534,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`leading-relaxed font-bold mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.color('text') }}
+        style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -577,7 +577,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               </div>
             )}
             {/* Question number */}
-            <span className="ml-auto text-[8px] font-bold px-1 py-0.5 rounded-full"
+            <span className="ml-auto text-[10px] font-bold px-1 py-0.5 rounded-full"
               style={{
                 background: tokens.colorAlpha(qColor, 0.1),
                 color: tokens.color(qColor),
@@ -609,7 +609,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <div className="w-full mt-1.5 rounded-md p-1.5 min-h-[24px]"
               style={{
                 fontSize: isCompact ? '9px' : '10px',
-                color: tokens.textSubtle(0.5),
+                color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.02),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.2),
               }}>
@@ -661,7 +661,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       }}>
       {/* Variant selector overlay — only visible when editing */}
       {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
           <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}

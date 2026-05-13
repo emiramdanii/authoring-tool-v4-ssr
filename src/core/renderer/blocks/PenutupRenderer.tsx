@@ -89,7 +89,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
                 style={{ background: tokens.colorAlpha(item.warna, 0.2) }}>
                 <span style={{ fontSize: isCompact ? '10px' : '12px' }}>{item.icon}</span>
               </div>
-              <div><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}>{item.isi}</span></div>
+              <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}>{item.isi}</span></div>
             </div>
           ))}
         </div>
@@ -111,10 +111,10 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
             </div>
             <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: isCompact ? '12px' : '14px' }}>Pertemuan Berikutnya</div>
           </div>
-          <div className="mb-3 font-bold" style={{ color: tokens.color('text'), fontSize: isCompact ? '12px' : '14px' }}>
+          <div className="mb-3 font-bold" style={{ color: tokens.color('text'), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
             {block.nextPertemuan.judul}
           </div>
-          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{block.nextPertemuan.deskripsi}</div>
+          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{block.nextPertemuan.deskripsi}</div>
           <div className="grid grid-cols-2 gap-2">
             {(block.nextPertemuan.items || []).map((item, i) => (
               <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="rounded-xl p-2.5 font-bold text-center transition-all hover:-translate-y-0.5 min-w-0"
@@ -124,6 +124,8 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
                   border: '1px solid ' + tokens.colorAlpha(item.warna, 0.25),
                   boxShadow: tokens.raw.shadow.card,
                   fontSize: isCompact ? '11px' : '13px',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 }}>
                 {item.icon} {item.judul}
               </div>

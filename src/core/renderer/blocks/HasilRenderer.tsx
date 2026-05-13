@@ -133,7 +133,7 @@ function VariantAKlasik({
                 style={{ color: tokens.color(tierColor) }}>
                 {displayPct}%
               </div>
-              <div className="text-[9px] font-bold" style={{ color: tokens.muted(0.6) }}>
+              <div className="text-[10px] font-bold" style={{ color: tokens.muted(0.7) }}>
                 {displayScore}/{displayMax} poin
               </div>
             </div>
@@ -172,7 +172,7 @@ function VariantAKlasik({
       <InlineTextEditor
         {...subtitleEditor}
         className={`mt-1 max-w-[320px] ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: '13px', color: tokens.muted(0.8) }}
+        style={{ fontSize: '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik subtitle..."
       />
 
@@ -324,7 +324,7 @@ function VariantBMajalah({
       <InlineTextEditor
         {...subtitleEditor}
         className={`mb-4 max-w-full ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: '13px', color: tokens.muted(0.8) }}
+        style={{ fontSize: '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik subtitle..."
       />
 
@@ -506,7 +506,7 @@ function VariantCRingkas({
       <InlineTextEditor
         {...subtitleEditor}
         className="canvas-truncate-2 max-w-full"
-        style={{ fontSize: '11px', color: tokens.muted(0.7) }}
+        style={{ fontSize: '11px', color: tokens.muted(0.7), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik subtitle..."
       />
 
@@ -643,7 +643,7 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
 
       {/* Variant selector overlay — only when editing */}
       {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
           <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}

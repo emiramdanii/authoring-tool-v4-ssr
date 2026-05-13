@@ -122,7 +122,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
+          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
         </div>
         </MicroInteraction>
       )}

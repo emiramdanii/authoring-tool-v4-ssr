@@ -443,7 +443,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
           </PremiumBadge>
         </div>
         {isEditing && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
             <VariantSelector active={variant} onChange={setCurrentVariant} />
           </div>
         )}
@@ -479,7 +479,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
           </PremiumBadge>
         </div>
         {isEditing && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
             <VariantSelector active={variant} onChange={setCurrentVariant} />
           </div>
         )}

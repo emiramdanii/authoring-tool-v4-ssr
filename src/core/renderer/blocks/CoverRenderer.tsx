@@ -260,7 +260,7 @@ function CoverVariantB({
                   backdropFilter: 'blur(12px)',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  wordBreak: 'break-word',
+                  whiteSpace: 'nowrap',
                   maxWidth: '100%',
                   animation: `blockStaggerIn 0.4s ease ${i * 0.1}s both`,
                 }}>
