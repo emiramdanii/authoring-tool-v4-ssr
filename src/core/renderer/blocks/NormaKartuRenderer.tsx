@@ -5,6 +5,7 @@ import type { NormaKartuBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { fireConfettiMini } from '@/lib/confetti';
 
 export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -39,7 +40,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   });
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div className="rounded-2xl premium-card-glow p-4" style={{
       background: tokens.colorAlpha(colorKey, 0.12),
@@ -74,7 +75,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
       {(block.characteristics || []).length > 0 && (
         <div className="grid grid-cols-2 gap-2.5">
           {(block.characteristics || []).map((c, i) => (
-            <div key={`nk-char-${c.label?.slice(0,8)}-${i}`} className="rounded-xl p-3 min-w-0 overflow-hidden"
+            <MicroInteraction key={`nk-char-mi-${c.label?.slice(0,8)}-${i}`} tokens={tokens} accent={colorKey} effect="squish">
+            <div className="rounded-xl p-3 min-w-0 overflow-hidden"
               style={{
                 background: tokens.colorAlpha(colorKey, 0.08),
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
@@ -82,12 +84,14 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
               <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.label}</div>
               <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.value}</div>
             </div>
+            </MicroInteraction>
           ))}
         </div>
       )}
 
       {/* Sanksi */}
       {block.sanksi && (
+        <MicroInteraction tokens={tokens} accent="o" effect="squish">
         <div className="rounded-xl p-3 mt-3"
           style={{
             background: tokens.colorAlpha('o', 0.08),
@@ -103,10 +107,12 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             </div>
           ))}
         </div>
+        </MicroInteraction>
       )}
 
       {/* Contoh */}
       {block.contoh && (
+        <MicroInteraction tokens={tokens} accent={colorKey} effect="bounce">
         <div className="mt-3 p-3 rounded-xl leading-relaxed"
           style={{
             fontSize: '12px',
@@ -118,10 +124,12 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           }}>
           <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
         </div>
+        </MicroInteraction>
       )}
 
       {/* Pelanggaran */}
       {block.pelanggaran && (
+        <MicroInteraction tokens={tokens} accent="r" effect="squish">
         <div className="mt-3 p-3 rounded-xl"
           style={{
             background: tokens.colorAlpha('r', 0.08),
@@ -137,6 +145,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             </div>
           ))}
         </div>
+        </MicroInteraction>
       )}
     </div>
     </PremiumBlockWrapper>

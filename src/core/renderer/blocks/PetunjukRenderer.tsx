@@ -5,7 +5,8 @@ import { Lightbulb, Info, Compass, Target, BookOpen, Shield, GraduationCap } fro
 import type { PetunjukBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { fireConfettiMini } from '@/lib/confetti';
 
 export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: PetunjukBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -36,9 +37,9 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
   });
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0} gradientBorder>
     <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentKey} height={2} position="top" />
-    <div className={isCompact ? 'p-1' : 'p-2'}
+    <div className={`${isCompact ? 'p-1' : 'p-2'} premium-card-glow`}
       style={{
         background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.06)}, ${tokens.colorAlpha('y', 0.04)})`,
         borderRadius: tokens.radius('xl') + 'px',
@@ -150,6 +151,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
             const colorCycle = ['y', 'c', 'g', 'p'];
             const itemColor = colorCycle[i % colorCycle.length];
             return (
+              <MicroInteraction key={`petunjuk-item-mi-${block.id || 'pet'}-${i}`} tokens={tokens} accent={itemColor} effect="squish">
               <div key={`petunjuk-item-${block.id || 'pet'}-${i}`} className="rounded-xl text-center transition-all hover:-translate-y-0.5 min-w-0"
                 style={{
                   background: tokens.colorAlpha(itemColor, 0.1),
@@ -182,6 +184,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
                 <div className="font-extrabold mb-1.5" style={{ color: tokens.color(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
                 <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.body}</div>
               </div>
+              </MicroInteraction>
             );
           })}
         </div>
@@ -227,6 +230,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
          *  Tips provide additional guidance for students.
          *  Displayed with a lightbulb icon and accent color. */}
         {block.tips && (
+          <MicroInteraction tokens={tokens} accent={accentKey} effect="bounce">
           <div className="mt-4 p-3.5 rounded-xl leading-relaxed"
             style={{
               background: tokens.colorAlpha(accentKey, 0.12),
@@ -250,6 +254,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
               </div>
             </div>
           </div>
+          </MicroInteraction>
         )}
 
         {/* ══ BSNP COMPLIANCE FOOTER ═══════════════════════════════

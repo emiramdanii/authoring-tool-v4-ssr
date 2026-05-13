@@ -5,7 +5,8 @@ import { Shield, BookOpen, CheckCircle2, Sparkles, ChevronDown, ChevronUp } from
 import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { fireConfettiMini } from '@/lib/confetti';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -506,7 +507,7 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
   const concepts = block.concepts || [];
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
     <div
       className="rounded-2xl overflow-hidden premium-card-glow"
@@ -584,19 +585,9 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
           </div>
 
           {block.bsnpRequired && (
-            <div
-              className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full font-extrabold uppercase"
-              style={{
-                background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
-                color: tokens.color('bg'),
-                fontSize: isCompact ? '7px' : '8px',
-                letterSpacing: '0.1em',
-                boxShadow: `0 2px 8px ${tokens.colorAlpha('y', 0.35)}`,
-              }}
-            >
-              <Shield size={isCompact ? 8 : 10} />
-              <span>WAJIB</span>
-            </div>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+              <Shield size={isCompact ? 8 : 10} /> WAJIB
+            </PremiumBadge>
           )}
         </div>
 
@@ -657,6 +648,7 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
 
       {/* ═══ CLOSING STATEMENT ═══════════════════════════════════ */}
       {block.closingStatement && (
+        <MicroInteraction tokens={tokens} accent={accentColor} effect="bounce">
         <div
           style={{
             margin: isCompact ? '0 12px 12px' : '0 18px 16px',
@@ -699,6 +691,7 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
             </p>
           </div>
         </div>
+        </MicroInteraction>
       )}
     </div>
     </PremiumBlockWrapper>

@@ -6,7 +6,8 @@ import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { fireConfettiMini } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
 // DEF BOX RENDERER — BSNP Definition Box with Variants & Step Mode
@@ -152,7 +153,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
   // ── Variant A "Klasik" ──────────────────────────────────────
   if (variant === 'A') {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0}>
+      <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
@@ -174,14 +175,15 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
           {/* Icon row */}
           <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
             <div className="flex items-center gap-2 mb-2">
+              <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: tokens.colorAlpha(colorKey, 0.2) }}>
                 <BookOpen size={10} className="inline" style={{ color: borderColor }} />
               </div>
-              <span className="font-extrabold uppercase tracking-wider"
-                style={{ color: borderColor, fontSize: isCompact ? '10px' : '11px' }}>
+              </MicroInteraction>
+              <PremiumBadge tokens={tokens} accent={colorKey} variant="glass">
                 Definisi
-              </span>
+              </PremiumBadge>
             </div>
 
             {/* Content — step mode or inline */}
@@ -273,6 +275,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
           {/* Content */}
           <div style={{ position: 'relative', zIndex: 1 }}>
             <div className="flex items-center gap-2 mb-3">
+              <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{
@@ -282,16 +285,10 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
               >
                 <BookOpen size={12} style={{ color: tokens.color('bg') }} />
               </div>
-              <span
-                className="font-extrabold uppercase tracking-wider"
-                style={{
-                  color: borderColor,
-                  fontSize: isCompact ? '10px' : '12px',
-                  letterSpacing: '0.08em',
-                }}
-              >
+              </MicroInteraction>
+              <PremiumBadge tokens={tokens} accent={colorKey} variant="gradient">
                 Definisi
-              </span>
+              </PremiumBadge>
             </div>
 
             {shouldUseStepMode ? (
@@ -327,7 +324,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
 
   // ── Variant C "Ringkas" — Ultra-compact pill/badge ──────────
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
       <div style={{ position: 'relative' }}>
         {isEditing && (
         <div style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 15 }}>
@@ -343,25 +340,18 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
           border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`,
         }}
       >
+        <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
         <div
           className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: tokens.colorAlpha(colorKey, 0.2) }}
         >
           <BookOpen size={9} style={{ color: borderColor }} />
         </div>
+        </MicroInteraction>
         <div className="min-w-0 flex-1">
-          <span
-            className="variant-compact-pill"
-            style={{
-              marginBottom: '4px',
-              display: 'inline-flex',
-              borderColor: tokens.colorAlpha(colorKey, 0.3),
-              color: borderColor,
-              background: tokens.colorAlpha(colorKey, 0.1),
-            }}
-          >
+          <PremiumBadge tokens={tokens} accent={colorKey} variant="outline" isCompact={isCompact}>
             Definisi
-          </span>
+          </PremiumBadge>
           <div
             style={{
               fontSize: isCompact ? '11px' : '13px',

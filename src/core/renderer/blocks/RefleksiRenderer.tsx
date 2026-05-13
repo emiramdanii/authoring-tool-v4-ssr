@@ -7,7 +7,8 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction, StepCompletionOverlay } from './PremiumBlockEffects';
+import { fireConfettiCelebration } from '@/lib/confetti';
 
 export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -37,6 +38,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       });
     }
     playSound('complete');
+    fireConfettiCelebration();
   };
 
   const titleEditor = useInlineEditor({
@@ -55,13 +57,15 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
   // ══ SUBMITTED SCREEN ═══════════════════════════════════════
   if (submitted && interactive) {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+      <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0} gradientBorder>
       <div className="text-center p-5 rounded-2xl premium-card-glow"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('g', 0.3),
           boxShadow: tokens.raw.shadow.elevated,
+          position: 'relative',
         }}>
+      <StepCompletionOverlay show={true} tokens={tokens} accent="g" completionText="Refleksi Selesai!" isCompact={isCompact} />
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🪞</div>
         <div className="font-black text-lg mb-2" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('g') }}>
           Refleksi Selesai!
@@ -78,6 +82,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           ))}
         </div>
         <div>
+          <MicroInteraction tokens={tokens} accent="p" effect="bounce">
           <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
@@ -88,6 +93,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             }}>
             <RotateCcw size={14} className="inline" /> Tulis Ulang
           </button>
+          </MicroInteraction>
         </div>
       </div>
       </PremiumBlockWrapper>
@@ -95,7 +101,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
   }
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0} gradientBorder>
     <ReadingProgressIndicator progress={progress} tokens={tokens} accent="p" height={2} position="top" />
     <div>
       {/* Header with icon */}
@@ -183,6 +189,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
 
       {/* Submit button */}
       {interactive && !submitted && (
+        <MicroInteraction tokens={tokens} accent="p" effect="bounce">
         <button
           className="w-full py-2.5 rounded-xl font-extrabold transition-all hover:scale-[1.02]"
           onClick={handleSubmit}
@@ -199,6 +206,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           }}>
           <Send size={14} className="inline mr-1" /> Kirim Refleksi
         </button>
+        </MicroInteraction>
       )}
 
       {block.penugasan && (

@@ -6,7 +6,8 @@ import type { TujuanDisplayBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { fireConfettiMini } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
 // TUJUAN DISPLAY RENDERER — Premium with 3 Creative Variants
@@ -146,6 +147,7 @@ function TujuanVariantA({
         style={{ padding: isCompact ? '10px 12px' : '14px 18px' }}
       >
         {objectives.map((obj, i) => (
+          <MicroInteraction key={`td-a-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="squish">
           <div
             key={`td-a-obj-${block.id || 'td'}-${i}`}
             className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5"
@@ -191,10 +193,9 @@ function TujuanVariantA({
               </span>
             </div>
           </div>
+          </MicroInteraction>
         ))}
       </div>
-
-      {/* ═══ PROFIL PELAJAR PANCASILA ════════════════════════════ */}
       {block.profil && (
         <div
           style={{
@@ -250,7 +251,14 @@ function TujuanVariantB({
   const [checked, setChecked] = useState<Record<number, boolean>>({});
 
   const toggleCheck = (idx: number) => {
-    setChecked(prev => ({ ...prev, [idx]: !prev[idx] }));
+    setChecked(prev => {
+      const next = { ...prev, [idx]: !prev[idx] };
+      // Fire confetti when all objectives are checked
+      if (objectives.length > 0 && Object.values(next).filter(Boolean).length === objectives.length) {
+        fireConfettiMini();
+      }
+      return next;
+    });
   };
 
   return (
@@ -323,6 +331,7 @@ function TujuanVariantB({
           {objectives.map((obj, i) => {
             const isChecked = !!checked[i];
             return (
+              <MicroInteraction key={`td-b-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="ripple">
               <div
                 key={`td-b-obj-${block.id || 'td'}-${i}`}
                 className="flex items-start gap-3 rounded-lg transition-all"
@@ -385,6 +394,7 @@ function TujuanVariantB({
                   </span>
                 </div>
               </div>
+              </MicroInteraction>
             );
           })}
         </div>
@@ -567,6 +577,7 @@ function TujuanVariantC({
         {objectives.map((obj, i) => {
           const pos = getSatellitePosition(i, count);
           return (
+            <MicroInteraction key={`td-c-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="bounce">
             <div
               key={`td-c-obj-${block.id || 'td'}-${i}`}
               className="premium-card-glow"
@@ -610,6 +621,7 @@ function TujuanVariantC({
                 {obj.text}
               </span>
             </div>
+            </MicroInteraction>
           );
         })}
 
@@ -731,7 +743,7 @@ export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing }: {
   };
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={2} position="top" />
       <div style={{ position: 'relative' }}>
         <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />

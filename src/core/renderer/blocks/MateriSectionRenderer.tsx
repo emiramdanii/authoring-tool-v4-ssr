@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { Shield, Star, CheckCircle2, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import type { MateriSectionBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { fireConfettiMini } from '@/lib/confetti';
 
 // NOTE: Use React.lazy() to break the circular dependency:
 //   SceneRegistry → MateriSectionRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
@@ -115,6 +116,7 @@ function MateriVariantKlasik({
       >
         <div className="flex items-start gap-3">
           {/* Section number badge */}
+          <MicroInteraction tokens={tokens} accent={accentColor} effect="glow">
           <div
             className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-black"
             style={{
@@ -126,6 +128,7 @@ function MateriVariantKlasik({
           >
             {sectionNumber}
           </div>
+          </MicroInteraction>
 
           {/* Title + subtitle */}
           <div className="flex-1 min-w-0">
@@ -237,8 +240,8 @@ function MateriVariantKlasik({
 
           <div className="flex flex-col gap-2">
             {takeaways.map((item, i) => (
+              <MicroInteraction key={`materi-takeaway-mi-${block.id || 'ms'}-${i}`} tokens={tokens} accent="g" effect="squish">
               <div
-                key={`materi-takeaway-${block.id || 'ms'}-${i}`}
                 className="flex items-start gap-2.5 rounded-lg p-2"
                 style={{
                   background: tokens.colorAlpha('g', 0.06),
@@ -262,6 +265,7 @@ function MateriVariantKlasik({
                   {item}
                 </span>
               </div>
+              </MicroInteraction>
             ))}
           </div>
         </div>
@@ -269,6 +273,7 @@ function MateriVariantKlasik({
 
       {/* ═══ SELF-CHECK PROMPT ════════════════════════════════════ */}
       {selfCheck && (
+        <MicroInteraction tokens={tokens} accent="y" effect="bounce">
         <div
           style={{
             margin: isCompact ? '0 14px 14px' : '0 20px 20px',
@@ -314,6 +319,7 @@ function MateriVariantKlasik({
             </div>
           </div>
         </div>
+        </MicroInteraction>
       )}
     </div>
   );
@@ -672,8 +678,9 @@ function MateriVariantPill({
             padding: isCompact ? '4px 12px 8px' : '6px 16px 12px',
           }}
         >
+          <MicroInteraction tokens={tokens} accent="y" effect="bounce">
           <button
-            onClick={() => setShowSelfCheck(!showSelfCheck)}
+            onClick={() => { setShowSelfCheck(!showSelfCheck); if (!showSelfCheck) fireConfettiMini(); }}
             type="button"
             className="flex items-center gap-1.5 w-full text-left"
             style={{
@@ -694,6 +701,7 @@ function MateriVariantPill({
             <span>Cek Pemahaman</span>
             {showSelfCheck ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
           </button>
+          </MicroInteraction>
 
           {showSelfCheck && (
             <div
@@ -745,7 +753,7 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
 
   const accentColor = block.accentColor || 'c';
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
       <div style={{ position: 'relative' }}>
         {isEditing && (
