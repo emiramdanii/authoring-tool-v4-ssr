@@ -5,6 +5,7 @@ import { Shield, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 import type { MotivasiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // MOTIVASI RENDERER — BSNP Apersepsi / Motivation Hook
@@ -74,7 +75,7 @@ function MotivasiVariantKlasik({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -82,6 +83,14 @@ function MotivasiVariantKlasik({
         animation: 'fadeIn 0.4s ease',
       }}
     >
+      {/* Reading progress indicator */}
+      <ReadingProgressIndicator
+        progress={1}
+        tokens={tokens}
+        accent={gradientFrom}
+        height={2}
+        position="top"
+      />
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
@@ -318,7 +327,7 @@ function MotivasiVariantKartuHook({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -326,6 +335,14 @@ function MotivasiVariantKartuHook({
         animation: 'fadeIn 0.4s ease',
       }}
     >
+      {/* Reading progress indicator */}
+      <ReadingProgressIndicator
+        progress={1}
+        tokens={tokens}
+        accent={gradientFrom}
+        height={2}
+        position="top"
+      />
       {/* ═══ HOOK HERO CARD ═════════════════════════════════════ */}
       <div
         style={{
@@ -487,7 +504,7 @@ function MotivasiVariantKutipan({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -496,6 +513,14 @@ function MotivasiVariantKutipan({
         padding: isCompact ? '14px 16px' : '20px 24px',
       }}
     >
+      {/* Reading progress indicator */}
+      <ReadingProgressIndicator
+        progress={1}
+        tokens={tokens}
+        accent={gradientFrom}
+        height={2}
+        position="top"
+      />
       {/* Minimal header */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
@@ -607,17 +632,21 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
     hookEditor,
   };
 
-  return (
-    <div style={{ position: 'relative' }}>
-      {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-          <VariantSelector active={variant} onChange={() => {}} />
-        </div>
-      )}
+  const gradientFrom = block.visual?.bgGradient?.[0] || 'y';
 
-      {variant === 'A' && <MotivasiVariantKlasik {...sharedProps} />}
-      {variant === 'B' && <MotivasiVariantKartuHook {...sharedProps} />}
-      {variant === 'C' && <MotivasiVariantKutipan {...sharedProps} />}
-    </div>
+  return (
+    <PremiumBlockWrapper tokens={tokens} accent={gradientFrom} staggerIndex={0}>
+      <div style={{ position: 'relative' }}>
+        {isEditing && (
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+            <VariantSelector active={variant} onChange={() => {}} />
+          </div>
+        )}
+
+        {variant === 'A' && <MotivasiVariantKlasik {...sharedProps} />}
+        {variant === 'B' && <MotivasiVariantKartuHook {...sharedProps} />}
+        {variant === 'C' && <MotivasiVariantKutipan {...sharedProps} />}
+      </div>
+    </PremiumBlockWrapper>
   );
 }
