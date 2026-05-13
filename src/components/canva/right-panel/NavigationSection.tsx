@@ -3,7 +3,30 @@
 import { useState } from 'react';
 import { Compass } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import type { NavConfig } from '../types';
 import Section from './Section';
+
+// ── Navbar style preview data ──
+const NAVBAR_STYLES: { value: NavConfig['navbarStyle']; label: string; desc: string; preview: string }[] = [
+  {
+    value: 'colorful',
+    label: 'Colorful',
+    desc: 'Gradien cerah, emoji skor, tombol kuning',
+    preview: 'linear-gradient(135deg, #fbbf24, #06b6d4)',
+  },
+  {
+    value: 'minimal',
+    label: 'Minimal',
+    desc: 'Garis tipis, warna muted, tombol ghost',
+    preview: 'linear-gradient(135deg, #64748b, #475569)',
+  },
+  {
+    value: 'glass',
+    label: 'Glass',
+    desc: 'Glassmorphism, glow effect, border gradien',
+    preview: 'linear-gradient(135deg, #a78bfa, #22d3ee, #fbbf24)',
+  },
+];
 
 export default function NavigationSection() {
   // ── Store selectors ──────────────────────────────────────────
@@ -15,6 +38,8 @@ export default function NavigationSection() {
   // ── Local UI state ───────────────────────────────────────────
   const [collapsed, setCollapsed] = useState(true);
 
+  const currentStyle = navConfig?.navbarStyle || 'colorful';
+
   return (
     <Section
       icon={<Compass size={12} />}
@@ -22,58 +47,86 @@ export default function NavigationSection() {
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}
     >
-      <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
+      <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
         <input
           type="checkbox"
           checked={navConfig?.showNavbar ?? true}
           onChange={e => updateNavConfig({ showNavbar: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary">Navbar</span>
+        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Navbar</span>
       </label>
 
-      <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
+      <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
         <input
           type="checkbox"
           checked={navConfig?.showPrevNext ?? true}
           onChange={e => updateNavConfig({ showPrevNext: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary">Tombol Prev/Next</span>
+        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Tombol Prev/Next</span>
       </label>
 
-      <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
+      <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
         <input
           type="checkbox"
           checked={navConfig?.showScore ?? true}
           onChange={e => updateNavConfig({ showScore: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary">Tampilkan Skor</span>
+        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Tampilkan Skor</span>
       </label>
 
-      <label className="flex items-center gap-1.5 mb-1 cursor-pointer">
+      <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
         <input
           type="checkbox"
           checked={navConfig?.showProgress ?? true}
           onChange={e => updateNavConfig({ showProgress: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary">Progress Bar</span>
+        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Progress Bar</span>
       </label>
 
-      {/* Navbar style */}
-      <div className="mt-1.5">
-        <label className="text-[9px] text-app-muted block mb-1">Style Navbar</label>
-        <select
-          value={navConfig?.navbarStyle || 'colorful'}
-          onChange={e => updateNavConfig({ navbarStyle: e.target.value as 'colorful' | 'minimal' | 'glass' })}
-          className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
-        >
-          <option value="colorful">Colorful</option>
-          <option value="minimal">Minimal</option>
-          <option value="glass">Glass</option>
-        </select>
+      {/* Navbar style — visual selector */}
+      <div className="mt-2">
+        <label className="text-[9px] text-app-muted block mb-1.5">Style Navbar</label>
+        <div className="flex flex-col gap-1.5">
+          {NAVBAR_STYLES.map(style => {
+            const isActive = currentStyle === style.value;
+            return (
+              <button
+                key={style.value}
+                onClick={() => updateNavConfig({ navbarStyle: style.value })}
+                className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all text-left ${
+                  isActive
+                    ? 'bg-amber-500/10 border border-amber-500/30'
+                    : 'bg-app-elevated/50 border border-transparent hover:border-app-border/30'
+                }`}
+              >
+                {/* Gradient preview swatch */}
+                <div
+                  className="w-5 h-5 rounded-md flex-shrink-0"
+                  style={{
+                    background: style.preview,
+                    opacity: isActive ? 1 : 0.5,
+                    boxShadow: isActive ? `0 0 6px ${style.preview}` : 'none',
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className={`text-[9px] font-bold ${isActive ? 'text-amber-400' : 'text-app-primary'}`}>
+                    {style.label}
+                  </div>
+                  <div className="text-[7px] text-app-muted truncate">
+                    {style.desc}
+                  </div>
+                </div>
+                {isActive && (
+                  <span className="text-[8px] text-amber-400 flex-shrink-0">✓</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </Section>
   );

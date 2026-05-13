@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { CanvaPage, NavConfig } from '../types';
 import { DEFAULT_NAV_CONFIG } from '../types';
 import { useInteractiveStore } from '@/store/interactive-store';
@@ -9,19 +9,21 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { TokenResolver } from '@/core/renderer/SchemaRenderer';
 import { alpha } from '@/lib/color-palette';
-import type { SchemaBlock } from '@/core/schema/types';
+import { useNavSync } from '@/hooks/use-nav-sync';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE FRAME — Unified page shell shared by Canvas, Preview, Export
 //
 // Renders:
 //   1. Background (color + image + overlay)
-//   2. Top Navbar (title, progress, score)
+//   2. Top Navbar (title, progress, score) — 3 styles: colorful, minimal, glass
 //   3. Content area (offset for navbars)
-//   4. Bottom Navbar (progress, navigation, score)
+//   4. Bottom Navbar (progress, navigation, score) — 3 styles
 //
-// Each render context (canvas/preview/export) uses this frame
-// and only adds its own features on top.
+// navbarStyle per-page config:
+//   - 'colorful': Gradient progress, vibrant buttons, emoji score, icon dots
+//   - 'minimal': Thin lines, muted palette, ghost buttons, simple dots
+//   - 'glass': Glassmorphism, gradient borders, glowing accents
 // ═══════════════════════════════════════════════════════════════
 
 export type PageFrameMode = 'canvas' | 'preview' | 'export';
@@ -35,8 +37,6 @@ export interface PageFrameProps {
   currentPageIndex: number;
   /** Total pages */
   totalPages: number;
-  /** @deprecated v4: Removed — schema is always owned by the user */
-  // isLocked removed — no longer used
   /** Whether this is a schema-driven page (content from SchemaScreenRenderer) */
   isSchemaDriven?: boolean;
   /** Content children (PageRenderer or template content) */
@@ -54,25 +54,31 @@ export interface PageFrameProps {
   onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }
 
-// TEMPLATE_ICON_MAP imported from canva-icon-maps.ts (single source of truth)
-
-// ── Get next button label based on current/next template type ──
+// ── Smart next button label based on current/next template type ──
 function getNextLabel(currentType: string, nextType: string): string {
   switch (currentType) {
-    case 'cover': return 'Mulai Belajar →';
-    case 'petunjuk': return 'Tujuan Pembelajaran →';
-    case 'dokumen': return 'Mulai Pembelajaran →';
+    case 'cover': return 'Mulai Belajar';
+    case 'petunjuk': return 'Tujuan Pembelajaran';
+    case 'dokumen': return 'Mulai Pembelajaran';
     case 'skenario':
-      if (nextType === 'materi') return 'Lanjut ke Materi →';
-      if (nextType === 'kuis') return 'Lanjut ke Kuis →';
-      return 'Lanjut →';
+      if (nextType === 'materi') return 'Lanjut ke Materi';
+      if (nextType === 'kuis') return 'Lanjut ke Kuis';
+      return 'Lanjut';
     case 'materi':
-      if (nextType === 'kuis') return 'Mulai Kuis ❓';
-      return 'Lanjut →';
-    case 'refleksi': return 'Lihat Hasil →';
-    case 'penutup': return 'Lihat Hasil →';
-    default: return 'Lanjut →';
+      if (nextType === 'kuis') return 'Mulai Kuis';
+      return 'Lanjut';
+    case 'refleksi': return 'Lihat Hasil';
+    case 'penutup': return 'Lihat Hasil';
+    default: return 'Lanjut';
   }
+}
+
+// ── Score tier label + color ──
+export function getScoreTier(pct: number): { label: string; color: string; glow: string } {
+  if (pct >= 90) return { label: 'Luar Biasa', color: '#fbbf24', glow: 'rgba(251,191,36,0.4)' };
+  if (pct >= 75) return { label: 'Hebat', color: '#34d399', glow: 'rgba(52,211,153,0.3)' };
+  if (pct >= 50) return { label: 'Cukup Baik', color: '#22d3ee', glow: 'rgba(34,211,238,0.25)' };
+  return { label: 'Terus Berlatih', color: '#fb923c', glow: 'rgba(251,146,60,0.25)' };
 }
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -80,6 +86,237 @@ function getNextLabel(currentType: string, nextType: string): string {
 function getNavConfig(page: CanvaPage): NavConfig {
   return page.navConfig || DEFAULT_NAV_CONFIG;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// NAVBAR STYLE THEMES
+// ═══════════════════════════════════════════════════════════════
+
+interface NavStyleTheme {
+  topBg: (tokens: TokenResolver) => React.CSSProperties;
+  bottomBg: (tokens: TokenResolver) => React.CSSProperties;
+  progressBar: (tokens: TokenResolver, pct: number, isCompact: boolean) => React.CSSProperties;
+  progressTrack: (tokens: TokenResolver, isCompact: boolean) => React.CSSProperties;
+  scorePill: (tokens: TokenResolver, pct: number, isCompact: boolean) => React.CSSProperties;
+  scoreText: (tokens: TokenResolver, pct: number) => React.CSSProperties;
+  nextBtn: (tokens: TokenResolver, isLast: boolean, isCompact: boolean) => React.CSSProperties;
+  prevBtn: (tokens: TokenResolver, disabled: boolean) => React.CSSProperties;
+  dotStyle: (tokens: TokenResolver, isActive: boolean, isComplete: boolean) => React.CSSProperties;
+  resetBtn: (tokens: TokenResolver) => React.CSSProperties;
+}
+
+const NAV_THEMES: Record<string, NavStyleTheme> = {
+  // ═══════════════════════════════════════════════════════════
+  // COLORFUL — Vibrant gradients, emoji score, icon dots, glow
+  // ═══════════════════════════════════════════════════════════
+  colorful: {
+    topBg: (t) => ({
+      background: `${alpha(t.color('bg'), 0.88)}`,
+      backdropFilter: 'blur(12px)',
+      borderBottom: `1px solid ${t.colorAlpha('border', 1)}`,
+    }),
+    bottomBg: (t) => ({
+      background: `${alpha(t.color('bg'), 0.92)}`,
+      backdropFilter: 'blur(12px)',
+      borderTop: `1px solid ${t.colorAlpha('border', 1)}`,
+    }),
+    progressBar: (t, pct) => ({
+      width: `${pct}%`,
+      background: `linear-gradient(90deg, ${t.color('g')}, ${t.color('c')})`,
+      borderRadius: 9999,
+    }),
+    progressTrack: (t, isCompact) => ({
+      height: isCompact ? 4 : 6,
+      background: t.colorAlpha('border', 0.5),
+      borderRadius: 9999,
+      overflow: 'hidden',
+    }),
+    scorePill: (t, pct, isCompact) => {
+      const tier = getScoreTier(pct);
+      return {
+        background: `${tier.color}18`,
+        border: `1px solid ${tier.color}33`,
+        borderRadius: 9999,
+        padding: isCompact ? '2px 8px' : '4px 10px',
+        boxShadow: `0 0 12px ${tier.glow}`,
+      };
+    },
+    scoreText: (t, pct) => {
+      const tier = getScoreTier(pct);
+      return { color: tier.color, fontWeight: 800, fontFamily: 'monospace' };
+    },
+    nextBtn: (t, isLast, isCompact) => ({
+      background: isLast ? t.colorAlpha('y', 0.3) : `linear-gradient(135deg, ${t.color('y')}, ${t.color('c')})`,
+      color: t.color('bg'),
+      borderRadius: 8,
+      fontWeight: 800,
+      padding: isCompact ? '2px 8px' : '6px 14px',
+      boxShadow: isLast ? 'none' : `0 2px 8px ${t.colorAlpha('y', 0.3)}`,
+    }),
+    prevBtn: (t, disabled) => ({
+      color: disabled ? t.colorAlpha('muted', 0.3) : t.color('muted'),
+      borderRadius: 8,
+      fontWeight: 700,
+    }),
+    dotStyle: (t, isActive, isComplete) => ({
+      background: isActive ? t.colorAlpha('c', 0.15) : 'transparent',
+      border: isActive ? `2px solid ${t.colorAlpha('c', 0.5)}` : isComplete ? `2px solid ${t.color('g')}` : '2px solid transparent',
+      boxShadow: isActive ? `0 0 8px ${t.colorAlpha('c', 0.2)}` : 'none',
+      borderRadius: '50%',
+    }),
+    resetBtn: (t) => ({
+      color: t.color('muted'),
+      borderRadius: 6,
+      padding: '2px 8px',
+    }),
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // MINIMAL — Thin lines, muted, ghost buttons, simple dots
+  // ═══════════════════════════════════════════════════════════
+  minimal: {
+    topBg: (t) => ({
+      background: `${alpha(t.color('bg'), 0.95)}`,
+      borderBottom: `1px solid ${t.colorAlpha('border', 0.4)}`,
+    }),
+    bottomBg: (t) => ({
+      background: `${alpha(t.color('bg'), 0.95)}`,
+      borderTop: `1px solid ${t.colorAlpha('border', 0.4)}`,
+    }),
+    progressBar: (t, pct) => ({
+      width: `${pct}%`,
+      background: t.colorAlpha('muted', 0.5),
+      borderRadius: 0,
+    }),
+    progressTrack: (t, isCompact) => ({
+      height: isCompact ? 1 : 2,
+      background: t.colorAlpha('border', 0.2),
+    }),
+    scorePill: (t, pct, isCompact) => ({
+      background: 'transparent',
+      border: 'none',
+      borderRadius: 0,
+      padding: isCompact ? '1px 4px' : '2px 6px',
+    }),
+    scoreText: (t, pct) => {
+      const tier = getScoreTier(pct);
+      return { color: tier.color, fontWeight: 700, fontFamily: 'monospace' };
+    },
+    nextBtn: (t, isLast, isCompact) => ({
+      background: 'transparent',
+      color: isLast ? t.colorAlpha('muted', 0.3) : t.color('y'),
+      borderRadius: 4,
+      fontWeight: 700,
+      padding: isCompact ? '2px 8px' : '6px 14px',
+      border: isLast ? 'none' : `1px solid ${t.colorAlpha('y', 0.3)}`,
+    }),
+    prevBtn: (t, disabled) => ({
+      color: disabled ? t.colorAlpha('muted', 0.2) : t.colorAlpha('muted', 0.6),
+      borderRadius: 4,
+      fontWeight: 600,
+    }),
+    dotStyle: (t, isActive, isComplete) => ({
+      background: isActive ? t.colorAlpha('y', 0.15) : 'transparent',
+      border: isActive ? `1px solid ${t.colorAlpha('y', 0.3)}` : isComplete ? `1px solid ${t.colorAlpha('g', 0.3)}` : `1px solid ${t.colorAlpha('border', 0.2)}`,
+      boxShadow: 'none',
+      borderRadius: '50%',
+    }),
+    resetBtn: (t) => ({
+      color: t.colorAlpha('muted', 0.5),
+      borderRadius: 4,
+      padding: '2px 6px',
+    }),
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // GLASS — Glassmorphism, gradient borders, glowing accents
+  // ═══════════════════════════════════════════════════════════
+  glass: {
+    topBg: (t) => ({
+      background: `${alpha(t.color('bg'), 0.65)}`,
+      backdropFilter: 'blur(20px) saturate(1.5)',
+      borderBottom: `1px solid ${t.colorAlpha('border', 0.15)}`,
+    }),
+    bottomBg: (t) => ({
+      background: `${alpha(t.color('bg'), 0.7)}`,
+      backdropFilter: 'blur(20px) saturate(1.5)',
+      borderTop: `1px solid ${t.colorAlpha('border', 0.15)}`,
+    }),
+    progressBar: (t, pct) => ({
+      width: `${pct}%`,
+      background: `linear-gradient(90deg, ${t.color('g')}, ${t.color('c')}, ${t.color('y')})`,
+      borderRadius: 9999,
+      boxShadow: `0 0 10px ${t.colorAlpha('c', 0.3)}`,
+    }),
+    progressTrack: (t, isCompact) => ({
+      height: isCompact ? 3 : 5,
+      background: t.colorAlpha('border', 0.15),
+      borderRadius: 9999,
+      overflow: 'hidden',
+    }),
+    scorePill: (t, pct, isCompact) => {
+      const tier = getScoreTier(pct);
+      return {
+        background: `${alpha(t.color('bg'), 0.4)}`,
+        border: `1px solid ${tier.color}30`,
+        borderRadius: 9999,
+        padding: isCompact ? '2px 8px' : '4px 12px',
+        backdropFilter: 'blur(8px)',
+        boxShadow: `0 0 16px ${tier.glow}, inset 0 0 8px ${tier.color}10`,
+      };
+    },
+    scoreText: (t, pct) => {
+      const tier = getScoreTier(pct);
+      return {
+        color: tier.color,
+        fontWeight: 800,
+        fontFamily: 'monospace',
+        textShadow: `0 0 8px ${tier.glow}`,
+      };
+    },
+    nextBtn: (t, isLast, isCompact) => ({
+      background: isLast
+        ? `${alpha(t.color('bg'), 0.3)}`
+        : `linear-gradient(135deg, ${t.color('y')}, ${t.color('c')})`,
+      color: t.color('bg'),
+      borderRadius: 10,
+      fontWeight: 800,
+      padding: isCompact ? '3px 10px' : '6px 16px',
+      boxShadow: isLast
+        ? `inset 0 0 12px ${t.colorAlpha('y', 0.15)}`
+        : `0 0 16px ${t.colorAlpha('y', 0.25)}, 0 2px 8px ${t.colorAlpha('y', 0.15)}`,
+      border: isLast ? `1px solid ${t.colorAlpha('y', 0.2)}` : 'none',
+    }),
+    prevBtn: (t, disabled) => ({
+      color: disabled ? t.colorAlpha('muted', 0.2) : t.colorAlpha('muted', 0.8),
+      borderRadius: 10,
+      fontWeight: 700,
+      background: disabled ? 'transparent' : `${alpha(t.color('bg'), 0.3)}`,
+      backdropFilter: disabled ? 'none' : 'blur(8px)',
+      border: disabled ? 'none' : `1px solid ${t.colorAlpha('border', 0.15)}`,
+    }),
+    dotStyle: (t, isActive, isComplete) => ({
+      background: isActive ? `${alpha(t.color('c'), 0.12)}` : 'transparent',
+      border: isActive
+        ? `1.5px solid ${t.colorAlpha('c', 0.5)}`
+        : isComplete
+          ? `1.5px solid ${t.colorAlpha('g', 0.4)}`
+          : `1.5px solid ${t.colorAlpha('border', 0.15)}`,
+      boxShadow: isActive
+        ? `0 0 12px ${t.colorAlpha('c', 0.25)}, inset 0 0 6px ${t.colorAlpha('c', 0.1)}`
+        : 'none',
+      borderRadius: '50%',
+      backdropFilter: isActive ? 'blur(4px)' : 'none',
+    }),
+    resetBtn: (t) => ({
+      color: t.colorAlpha('muted', 0.6),
+      borderRadius: 8,
+      padding: '3px 10px',
+      background: `${alpha(t.color('bg'), 0.3)}`,
+      backdropFilter: 'blur(6px)',
+      border: `1px solid ${t.colorAlpha('border', 0.12)}`,
+    }),
+  },
+};
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -100,6 +337,8 @@ export function PageFrame({
   onBlockSelect,
 }: PageFrameProps) {
   const navConfig = getNavConfig(page);
+  const navbarStyle = navConfig.navbarStyle || 'colorful';
+  const theme = NAV_THEMES[navbarStyle] || NAV_THEMES.colorful;
   const showNavbar = navConfig.showNavbar !== false;
   const showScore = navConfig.showScore !== false;
   const showProgress = navConfig.showProgress !== false;
@@ -111,28 +350,21 @@ export function PageFrame({
   const showBottomNav = showNavbar && !isCoverPage;
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
-  // Fall back to creating one if not provided (backward compat)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
   const computedTokens = React.useMemo(() => new TokenResolver(themeId), [themeId]);
   const tokens = externalTokens || computedTokens;
 
-  // Score data
-  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
-  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
-  const totalPctVal = useInteractiveStore((s) => {
-    const max = s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0);
-    return max === 0 ? 0 : Math.round((s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0) / max) * 100);
-  });
+  // ── Score data (use store computed functions — reactive + DRY) ──
+  const totalScoreVal = useInteractiveStore((s) => s.totalScore());
+  const totalMaxVal = useInteractiveStore((s) => s.totalMax());
+  const totalPctVal = useInteractiveStore((s) => s.totalPct());
   const hasScore = totalMaxVal > 0;
+  const scoreTier = hasScore ? getScoreTier(totalPctVal) : null;
 
-  // Navigation
+  // Navigation — use shared navSync hook for dual-store sync
+  const { goNext, goPrev, goToPage, goReset } = useNavSync();
   const meta = useAuthoringStore((s) => s.meta);
   const pages = useCanvaStore((s) => s.pages);
-  const goPage = useCanvaStore((s) => s.goPage);
-  const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
-  const nextInteractivePage = useInteractiveStore((s) => s.nextInteractivePage);
-  const prevInteractivePage = useInteractiveStore((s) => s.prevInteractivePage);
-  const resetAllScores = useInteractiveStore((s) => s.resetAllScores);
   const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
 
   const progressPct = totalPages > 0 ? Math.round(((currentPageIndex + 1) / totalPages) * 100) : 0;
@@ -140,38 +372,12 @@ export function PageFrame({
   const currentTemplate = page.templateType || 'custom';
   const nextTemplate = pages[currentPageIndex + 1]?.templateType || '';
 
-  const handleNext = useCallback(() => {
-    // Sync interactive store index to current page before advancing.
-    // In canvas mode, user navigates via LeftPanel which updates
-    // canvaStore.currentPageIndex but NOT interactiveStore.interactivePageIdx.
-    // Without syncing, nextInteractivePage() advances from the stale
-    // interactivePageIdx and goPage() jumps to the wrong page.
-    goInteractivePage(currentPageIndex);
-    nextInteractivePage();
-    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
-    goPage(afterIdx);
-  }, [currentPageIndex, nextInteractivePage, goPage, goInteractivePage]);
-
-  const handlePrev = useCallback(() => {
-    goInteractivePage(currentPageIndex);
-    prevInteractivePage();
-    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
-    goPage(afterIdx);
-  }, [currentPageIndex, prevInteractivePage, goPage, goInteractivePage]);
-
-  const handleNav = useCallback((idx: number) => {
-    goInteractivePage(idx);
-    goPage(idx);
-  }, [goInteractivePage, goPage]);
-
-  const handleReset = useCallback(() => {
-    resetAllScores();
-    goInteractivePage(0);
-    goPage(0);
-  }, [resetAllScores, goInteractivePage, goPage]);
+  const handleNext = () => goNext(currentPageIndex);
+  const handlePrev = () => goPrev(currentPageIndex);
+  const handleNav = (idx: number) => goToPage(idx);
+  const handleReset = () => goReset();
 
   // ── Mode-specific sizing ──────────────────────────────────
-  // Canvas mode: slightly smaller but NOT crushed; Preview/Export: full-size
   const isCompact = mode === 'canvas';
   const topNavRef = useRef<HTMLDivElement>(null);
   const bottomNavRef = useRef<HTMLDivElement>(null);
@@ -212,7 +418,6 @@ export function PageFrame({
   return (
     <>
       {/* ══ Background ════════════════════════════════════════ */}
-      {/* Non-schema pages: legacy bgColor + bgDataUrl + dark overlay */}
       {!isSchemaDriven && (
         <>
           <div className="absolute inset-0" style={{ background: page.bgColor || tokens.color('bg') }} />
@@ -225,10 +430,8 @@ export function PageFrame({
           />
         </>
       )}
-      {/* Schema-driven: render background from screen schema (color + image + overlay) */}
       {isSchemaDriven && (() => {
         const schemaBg = page.schema?.background;
-        // Base color layer — either from schema or fallback
         let baseBg = tokens.color('bg');
         if (schemaBg?.type === 'solid') baseBg = tokens.color(schemaBg.color1 || 'bg');
         else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
@@ -259,47 +462,52 @@ export function PageFrame({
       {showTopNav && (
         <div
           ref={topNavRef}
-          className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2 border-b"
+          className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2"
           style={{
-            background: `${alpha(tokens.color('bg'), 0.88)}`,
-            backdropFilter: 'blur(12px)',
-            borderColor: tokens.colorAlpha('border', 1),
-            padding: isCompact ? '3px 8px' : '8px 16px',
+            ...theme.topBg(tokens),
+            padding: isCompact ? '4px 10px' : '8px 16px',
           }}
         >
+          {/* Title */}
           <span className={`font-bold whitespace-nowrap truncate ${
             isCompact ? 'text-[10px] max-w-[140px]' : 'text-sm max-w-[200px]'
           }`} style={{ color: tokens.color('y'), fontFamily: tokens.fontFamily('body') }}>
             {meta.namaBab || meta.judulPertemuan || 'Media'}
           </span>
 
+          {/* Progress bar */}
           {showProgress && (
-            <div className="flex-1 rounded-full overflow-hidden" style={{ height: isCompact ? 4 : 6, background: tokens.colorAlpha('border', 0.5) }}>
-              <div className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${progressPct}%`,
-                  background: `linear-gradient(90deg, ${tokens.color('g')}, ${tokens.color('c')})`,
-                }} />
+            <div className="flex-1 rounded-full overflow-hidden" style={theme.progressTrack(tokens, isCompact)}>
+              <div className="h-full transition-all duration-500" style={theme.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
 
+          {/* Score pill */}
           {hasScore && showScore && (
-            <div className={`flex items-center gap-1.5 rounded-full ${
-              isCompact
-                ? 'px-2 py-0.5 text-[9px]'
-                : 'px-2.5 py-1 text-[11px]'
-            }`} style={{
-              background: tokens.colorAlpha('g', 0.1),
-              border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
-            }}>
-              <span>🏆</span>
-              <span className="font-mono font-bold" style={{ color: tokens.color('g') }}>{totalPctVal}%</span>
-              {!isCompact && (
-                <span className="text-[9px]" style={{ color: tokens.colorAlpha('g', 0.5) }}>{totalScoreVal}/{totalMaxVal}</span>
+            <div
+              className={`flex items-center gap-1.5 ${
+                isCompact ? 'text-[9px]' : 'text-[11px]'
+              }`}
+              style={theme.scorePill(tokens, totalPctVal, isCompact)}
+            >
+              {navbarStyle === 'minimal' ? (
+                // Minimal: just text, no emoji
+                <span style={theme.scoreText(tokens, totalPctVal)}>{totalPctVal}%</span>
+              ) : (
+                <>
+                  <span>{navbarStyle === 'glass' ? '✦' : '🏆'}</span>
+                  <span style={theme.scoreText(tokens, totalPctVal)}>{totalPctVal}%</span>
+                  {!isCompact && (
+                    <span className="text-[9px]" style={{ color: tokens.colorAlpha('muted', 0.5) }}>
+                      {totalScoreVal}/{totalMaxVal}
+                    </span>
+                  )}
+                </>
               )}
             </div>
           )}
 
+          {/* Page counter */}
           <span className={`font-mono ${isCompact ? 'text-[8px]' : 'text-[10px]'}`} style={{ color: tokens.color('muted') }}>
             {currentPageIndex + 1}/{totalPages}
           </span>
@@ -311,29 +519,18 @@ export function PageFrame({
         top: showTopNav ? topNavH : 0,
         bottom: showBottomNav ? bottomNavH : 0,
       }}>
-        {/* Main content (template or custom elements) */}
         {children}
-
-        {/* Extra elements on top of content (user-placed in preview/export) */}
         {extraElements}
       </div>
 
       {/* ══ Bottom Navbar ═════════════════════════════════════ */}
       {showBottomNav && (
-        <div ref={bottomNavRef} className="absolute bottom-0 left-0 right-0 z-50 border-t"
-          style={{
-            background: `${alpha(tokens.color('bg'), 0.92)}`,
-            backdropFilter: 'blur(12px)',
-            borderColor: tokens.colorAlpha('border', 1),
-          }}>
+        <div ref={bottomNavRef} className="absolute bottom-0 left-0 right-0 z-50"
+          style={theme.bottomBg(tokens)}>
           {/* Progress bar */}
           {showProgress && (
-            <div style={{ height: isCompact ? 2 : 4, background: tokens.colorAlpha('border', 0.3) }}>
-              <div className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${progressPct}%`,
-                  background: `linear-gradient(90deg, ${tokens.color('g')}, ${tokens.color('c')})`,
-                }} />
+            <div style={theme.progressTrack(tokens, isCompact)}>
+              <div className="h-full transition-all duration-500" style={theme.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
 
@@ -346,20 +543,16 @@ export function PageFrame({
               <button
                 onClick={handlePrev}
                 disabled={currentPageIndex <= 0}
-                className={`font-bold rounded-lg transition-all ${
-                  isCompact
-                    ? 'text-[9px] px-1.5 py-0.5'
-                    : 'text-xs px-3 py-1.5'
+                className={`font-bold transition-all active:scale-95 ${
+                  isCompact ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-1'
                 } ${
                   currentPageIndex > 0
                     ? 'cursor-pointer hover:opacity-80'
                     : 'opacity-30 cursor-not-allowed'
                 }`}
-                style={{
-                  color: currentPageIndex > 0 ? tokens.color('muted') : tokens.colorAlpha('muted', 0.3),
-                }}
+                style={theme.prevBtn(tokens, currentPageIndex <= 0)}
               >
-                ← Prev
+                {navbarStyle === 'minimal' ? '‹ Prev' : '← Prev'}
               </button>
             )}
 
@@ -370,27 +563,30 @@ export function PageFrame({
               {pages.slice(0, isCompact ? 12 : pages.length).map((p, i) => {
                 const isActive = i === currentPageIndex;
                 const isComplete = isPageComplete(i);
+                const dotSize = isActive
+                  ? isCompact ? 20 : 32
+                  : isCompact ? 14 : 24;
                 return (
                   <button
                     key={p.id}
                     onClick={() => handleNav(i)}
                     title={`${p.label || `Halaman ${i + 1}`} (${i + 1}/${totalPages})${isComplete ? ' ✓' : ''}`}
-                    className={`relative flex-shrink-0 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
-                      isActive
-                        ? isCompact
-                          ? 'w-5 h-5 text-[8px]'
-                          : 'w-8 h-8 text-base shadow-lg'
-                        : ` ${
-                            isCompact ? 'w-3.5 h-3.5 text-[6px]' : 'w-6 h-6 text-xs'
-                          }`
-                    }`}
+                    className="relative flex-shrink-0 flex items-center justify-center cursor-pointer transition-all duration-200"
                     style={{
-                      background: isActive ? tokens.colorAlpha('c', 0.15) : 'transparent',
-                      border: isActive ? `2px solid ${tokens.colorAlpha('c', 0.5)}` : isComplete ? `2px solid ${tokens.color('g')}` : '2px solid transparent',
-                      boxShadow: isActive ? `0 0 8px ${tokens.colorAlpha('c', 0.2)}` : 'none',
+                      width: dotSize,
+                      height: dotSize,
+                      fontSize: isCompact ? 7 : (isActive ? 14 : 10),
+                      ...theme.dotStyle(tokens, isActive, isComplete),
                     }}
                   >
-                    <span>{TEMPLATE_ICON_MAP[p.templateType] || '📄'}</span>
+                    {navbarStyle === 'minimal' ? (
+                      // Minimal: numbered dots, no icons
+                      <span style={{ color: isActive ? tokens.color('y') : tokens.colorAlpha('muted', 0.5) }}>
+                        {i + 1}
+                      </span>
+                    ) : (
+                      <span>{TEMPLATE_ICON_MAP[p.templateType] || '📄'}</span>
+                    )}
                   </button>
                 );
               })}
@@ -401,49 +597,63 @@ export function PageFrame({
 
             {/* Score + Next */}
             <div className="flex items-center gap-1.5">
-              {hasScore && showScore && !isCompact && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                  style={{
-                    background: tokens.colorAlpha('g', 0.1),
-                    border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
-                  }}>
-                  <span className="text-[10px]">🏆</span>
-                  <span className="font-mono font-bold text-[11px]" style={{ color: tokens.color('g') }}>{totalPctVal}%</span>
-                  <span className="text-[9px]" style={{ color: tokens.colorAlpha('g', 0.5) }}>{totalScoreVal}/{totalMaxVal}</span>
+              {/* Bottom score pill (non-compact, non-minimal) */}
+              {hasScore && showScore && !isCompact && navbarStyle !== 'minimal' && (
+                <div
+                  className="flex items-center gap-1.5"
+                  style={theme.scorePill(tokens, totalPctVal, false)}
+                >
+                  <span className="text-[10px]">{navbarStyle === 'glass' ? '✦' : '🏆'}</span>
+                  <span className="font-mono font-bold text-[11px]" style={theme.scoreText(tokens, totalPctVal)}>
+                    {totalPctVal}%
+                  </span>
+                  <span className="text-[9px]" style={{ color: tokens.colorAlpha('muted', 0.5) }}>
+                    {totalScoreVal}/{totalMaxVal}
+                  </span>
                 </div>
               )}
+              {/* Minimal compact score */}
+              {hasScore && showScore && !isCompact && navbarStyle === 'minimal' && (
+                <span className="font-mono font-bold text-[10px]" style={theme.scoreText(tokens, totalPctVal)}>
+                  {totalPctVal}%
+                </span>
+              )}
 
+              {/* Next button */}
               {showPrevNext && (
                 <button
                   onClick={handleNext}
                   disabled={isLastPage}
-                  className={`font-extrabold rounded-lg transition-all ${
-                    isCompact
-                      ? 'text-[9px] px-2 py-0.5'
-                      : 'text-xs px-3 py-1.5'
+                  className={`transition-all active:scale-95 ${
+                    isLastPage ? 'cursor-not-allowed' : 'cursor-pointer hover:-translate-y-0.5'
                   } ${
-                    isLastPage
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'hover:-translate-y-0.5 hover:shadow-lg cursor-pointer'
+                    isCompact ? 'text-[9px]' : 'text-xs'
                   }`}
-                  style={{
-                    background: isLastPage ? tokens.colorAlpha('y', 0.3) : tokens.color('y'),
-                    color: tokens.color('bg'),
-                  }}
+                  style={theme.nextBtn(tokens, isLastPage, isCompact)}
                 >
-                  {isLastPage ? '🎉 Selesai' : (isCompact ? 'Lanjut →' : getNextLabel(currentTemplate, nextTemplate))}
+                  {isLastPage
+                    ? (navbarStyle === 'glass' ? '✨ Selesai' : '🎉 Selesai')
+                    : (isCompact
+                      ? 'Lanjut →'
+                      : `${getNextLabel(currentTemplate, nextTemplate)} ${navbarStyle === 'minimal' ? '→' : ''}`)
+                  }
                 </button>
               )}
             </div>
           </div>
 
-          {/* Reset button (export/preview only, not canvas) */}
+          {/* Reset + Score tier message */}
           {hasScore && showScore && mode !== 'canvas' && (
-            <div className="flex justify-center pb-1">
+            <div className="flex items-center justify-center gap-3 pb-1">
+              {scoreTier && !isCompact && navbarStyle !== 'minimal' && (
+                <span className="text-[9px] font-bold" style={{ color: scoreTier.color }}>
+                  {scoreTier.label}
+                </span>
+              )}
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1.5 text-[10px] transition-colors px-2 py-0.5 rounded"
-                style={{ color: tokens.color('muted') }}
+                className="flex items-center gap-1 text-[10px] transition-all active:scale-95"
+                style={theme.resetBtn(tokens)}
               >
                 ↩ Ulangi
               </button>

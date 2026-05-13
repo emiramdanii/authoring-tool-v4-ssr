@@ -11,14 +11,15 @@ import { COLORS } from '@/lib/color-palette';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, ChevronLeft, ChevronRight, RotateCcw, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getScoreTier } from './page-renderer/PageFrame';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
 //
-// v4 Phase 3 enhancements:
+// Premium v4 enhancements:
 // - Framer Motion page transitions (slide/fade)
-// - Bottom navigation bar with progress dots
-// - Score summary with star rating
+// - Bottom navigation bar with progress dots + score tier
+// - Score summary with star rating + tier label
 // - Smooth page transition with directional awareness
 // - Keyboard shortcuts (Esc, ← →, F, O, Space)
 // ═══════════════════════════════════════════════════════════════
@@ -80,12 +81,14 @@ function PlayOverlayHeader() {
   const closePlay = useInteractiveStore((s) => s.closePlay);
   const pages = useCanvaStore((s) => s.pages);
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
-  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
-  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
+  // Use store computed functions — reactive + DRY (same as PageFrame)
+  const totalScoreVal = useInteractiveStore((s) => s.totalScore());
+  const totalMaxVal = useInteractiveStore((s) => s.totalMax());
+  const totalPctVal = useInteractiveStore((s) => s.totalPct());
 
   const page = pages[interactivePageIdx];
   const hasScore = totalMaxVal > 0;
-  const pct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0;
+  const tier = hasScore ? getScoreTier(totalPctVal) : null;
 
   return (
     <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-app-border/50">
@@ -101,9 +104,18 @@ function PlayOverlayHeader() {
       <div className="flex items-center gap-3">
         {hasScore && (
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <Trophy size={12} className="text-emerald-300" />
-              <span className="text-xs font-black text-emerald-300">{totalScoreVal}/{totalMaxVal}</span>
+            {/* Premium score pill with tier color */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+              style={{
+                background: `${tier?.color}18`,
+                border: `1px solid ${tier?.color}33`,
+                boxShadow: `0 0 12px ${tier?.glow}`,
+              }}
+            >
+              <Trophy size={12} style={{ color: tier?.color }} />
+              <span className="text-xs font-black" style={{ color: tier?.color }}>{totalScoreVal}/{totalMaxVal}</span>
+              <span className="text-[10px] font-mono font-bold" style={{ color: tier?.color }}>{totalPctVal}%</span>
             </div>
             {/* Star rating in header */}
             <div className="flex items-center gap-0.5">
@@ -111,12 +123,18 @@ function PlayOverlayHeader() {
                 <Star
                   key={`hdr-star-${star}`}
                   size={10}
-                  fill={pct >= star * 33 ? '#fbbf24' : 'none'}
-                  stroke={pct >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
+                  fill={totalPctVal >= star * 33 ? '#fbbf24' : 'none'}
+                  stroke={totalPctVal >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
                   strokeWidth={2}
                 />
               ))}
             </div>
+            {/* Tier label */}
+            {tier && (
+              <span className="text-[9px] font-bold" style={{ color: tier.color }}>
+                {tier.label}
+              </span>
+            )}
           </div>
         )}
 
@@ -155,8 +173,10 @@ function PlayCanvas() {
   const replayAll = useInteractiveStore((s) => s.replayAll);
   const goPage = useCanvaStore((s) => s.goPage);
   const replayGeneration = useInteractiveStore((s) => s.replayGeneration);
-  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
-  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
+  // Use store computed functions
+  const totalScoreVal = useInteractiveStore((s) => s.totalScore());
+  const totalMaxVal = useInteractiveStore((s) => s.totalMax());
+  const totalPctVal = useInteractiveStore((s) => s.totalPct());
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -167,6 +187,8 @@ function PlayCanvas() {
 
   const page = pages[interactivePageIdx];
   const totalPages = pages.length;
+  const hasScore = totalMaxVal > 0;
+  const tier = hasScore ? getScoreTier(totalPctVal) : null;
 
   // Track direction for animation
   useEffect(() => {
@@ -279,9 +301,6 @@ function PlayCanvas() {
     return <OverviewGrid onClose={() => setOverviewOpen(false)} />;
   }
 
-  // Score percentage for star rating
-  const scorePct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0;
-
   return (
     <div ref={canvasRef} className="w-full h-full flex flex-col items-center justify-center relative">
       {/* ══ Animated page content ══════════════════════════════ */}
@@ -315,7 +334,7 @@ function PlayCanvas() {
         </AnimatePresence>
       </div>
 
-      {/* ══ Bottom Navigation Bar ══════════════════════════════ */}
+      {/* ══ Bottom Navigation Bar — Premium ═══════════════════ */}
       <div className="w-full px-4 pb-3 pt-2">
         <div className="max-w-2xl mx-auto">
           <div className="glass-panel-strong rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
@@ -326,14 +345,14 @@ function PlayCanvas() {
               size="sm"
               onClick={handlePrev}
               disabled={interactivePageIdx <= 0}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30 active:scale-95 transition-transform"
               title="Halaman sebelumnya (←)"
             >
               <ChevronLeft size={14} />
               <span className="hidden sm:inline">Prev</span>
             </Button>
 
-            {/* Progress dots + page counter */}
+            {/* Progress dots + score + page counter */}
             <div className="flex items-center gap-2 flex-1 justify-center">
               {/* Progress dots */}
               <div className="flex items-center gap-1 overflow-x-auto max-w-[300px] px-1">
@@ -353,12 +372,12 @@ function PlayCanvas() {
                       }`}
                       style={{
                         background: i === interactivePageIdx
-                          ? 'linear-gradient(90deg, #34d399, #06b6d4)'
+                          ? `linear-gradient(90deg, ${tier?.color || '#34d399'}, #06b6d4)`
                           : isComplete
                             ? 'rgba(52, 211, 153, 0.5)'
                             : 'rgba(255,255,255,0.15)',
                         boxShadow: i === interactivePageIdx
-                          ? '0 0 8px rgba(52, 211, 153, 0.4)'
+                          ? `0 0 8px ${tier?.glow || 'rgba(52, 211, 153, 0.4)'}`
                           : 'none',
                       }}
                       title={`Halaman ${i + 1}${isComplete ? ' (selesai)' : ''}`}
@@ -366,6 +385,19 @@ function PlayCanvas() {
                   );
                 })}
               </div>
+
+              {/* Score pill (when has score) */}
+              {hasScore && (
+                <div
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                  style={{
+                    background: `${tier?.color}15`,
+                    border: `1px solid ${tier?.color}30`,
+                  }}
+                >
+                  <span className="text-[9px]" style={{ color: tier?.color }}>{totalPctVal}%</span>
+                </div>
+              )}
 
               {/* Page counter */}
               <span className="text-[11px] font-bold text-emerald-300/80 whitespace-nowrap">
@@ -379,7 +411,7 @@ function PlayCanvas() {
               size="sm"
               onClick={handleNext}
               disabled={interactivePageIdx >= totalPages - 1}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30 active:scale-95 transition-transform"
               title="Halaman berikutnya (→)"
             >
               <span className="hidden sm:inline">Next</span>
@@ -453,8 +485,10 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
   const goInteractivePage = useInteractiveStore((s) => s.goInteractivePage);
   const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
-  const totalScoreVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { score: number }) => sum + e.score, 0));
-  const totalMaxVal = useInteractiveStore((s) => s.scores.reduce((sum: number, e: { maxScore: number }) => sum + e.maxScore, 0));
+  // Use store computed functions
+  const totalScoreVal = useInteractiveStore((s) => s.totalScore());
+  const totalMaxVal = useInteractiveStore((s) => s.totalMax());
+  const totalPctVal = useInteractiveStore((s) => s.totalPct());
   const ratio = useCanvaStore((s) => {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
@@ -466,7 +500,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
-  const scorePct = totalMaxVal > 0 ? Math.round((totalScoreVal / totalMaxVal) * 100) : 0;
+  const tier = totalMaxVal > 0 ? getScoreTier(totalPctVal) : null;
 
   return (
     <motion.div
@@ -480,16 +514,16 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
         <div className="text-sm font-bold text-app-primary">Overview — {pages.length} Halaman</div>
         {totalMaxVal > 0 && (
           <div className="flex items-center justify-center gap-2 mt-1.5">
-            <span className="text-[10px] text-emerald-400/80">
-              Skor: {totalScoreVal}/{totalMaxVal} ({scorePct}%)
+            <span className="text-[10px]" style={{ color: tier?.color || '#34d399' }}>
+              Skor: {totalScoreVal}/{totalMaxVal} ({totalPctVal}%) — {tier?.label}
             </span>
             <div className="flex items-center gap-0.5">
               {[1, 2, 3].map(star => (
                 <Star
                   key={`overview-star-${star}`}
                   size={10}
-                  fill={scorePct >= star * 33 ? '#fbbf24' : 'none'}
-                  stroke={scorePct >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
+                  fill={totalPctVal >= star * 33 ? '#fbbf24' : 'none'}
+                  stroke={totalPctVal >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
                   strokeWidth={2}
                 />
               ))}
