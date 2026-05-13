@@ -1,6 +1,6 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, MAX_TITLE } from './shared';
 
 export function FlashcardEditor({ mod, uf, ai, ri, ui }: EdProps) {
   const kartu = (mod.kartu as Array<Record<string, unknown>>) || [];
@@ -8,7 +8,7 @@ export function FlashcardEditor({ mod, uf, ai, ri, ui }: EdProps) {
     <div className="space-y-4">
       <div>
         <FieldLabel>Instruksi</FieldLabel>
-        <input className={INPUT_CLS} placeholder="Klik kartu untuk membalik…" value={(mod.instruksi as string) || ''} onChange={(e) => uf('instruksi', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Klik kartu untuk membalik…" value={(mod.instruksi as string) || ''} onChange={(e) => uf('instruksi', e.target.value)} />
       </div>
       <div>
         <FieldLabel>Kartu ({kartu.length})</FieldLabel>
@@ -16,16 +16,16 @@ export function FlashcardEditor({ mod, uf, ai, ri, ui }: EdProps) {
           <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 grid grid-cols-3 gap-2 items-start">
             <div>
               <span className="text-[10px] text-app-muted block mb-1">Depan</span>
-              <input className={INPUT_CLS} value={(k.depan as string) || ''} onChange={(e) => ui!('kartu', i, 'depan', e.target.value)} placeholder="Pertanyaan" />
+              <input className={INPUT_CLS} maxLength={MAX_TITLE} value={(k.depan as string) || ''} onChange={(e) => ui!('kartu', i, 'depan', e.target.value)} placeholder="Pertanyaan" />
             </div>
             <div>
               <span className="text-[10px] text-app-muted block mb-1">Belakang</span>
-              <input className={INPUT_CLS} value={(k.belakang as string) || ''} onChange={(e) => ui!('kartu', i, 'belakang', e.target.value)} placeholder="Jawaban" />
+              <input className={INPUT_CLS} maxLength={MAX_TITLE} value={(k.belakang as string) || ''} onChange={(e) => ui!('kartu', i, 'belakang', e.target.value)} placeholder="Jawaban" />
             </div>
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <span className="text-[10px] text-app-muted block mb-1">Hint</span>
-                <input className={INPUT_CLS} value={(k.hint as string) || ''} onChange={(e) => ui!('kartu', i, 'hint', e.target.value)} placeholder="💡" />
+                <input className={INPUT_CLS} maxLength={MAX_TITLE} value={(k.hint as string) || ''} onChange={(e) => ui!('kartu', i, 'hint', e.target.value)} placeholder="💡" />
               </div>
               <button onClick={() => ri!('kartu', i)} className="text-app-muted hover:text-red-400 text-sm p-1 h-[38px]">✕</button>
             </div>

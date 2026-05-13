@@ -6,6 +6,12 @@ export const INPUT_CLS =
 export const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 export const SELECT_CLS = INPUT_CLS;
 
+// ── Input length limits (security) ───────────────────────────
+export const MAX_TITLE = 200;
+export const MAX_BODY = 5000;
+export const MAX_OPTION = 500;
+export const MAX_SHORT_TEXT = 100;
+
 // ── Shared UI components ──────────────────────────────────────
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return <label className="block text-xs font-medium text-app-secondary mb-1.5">{children}</label>;

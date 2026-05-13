@@ -1,6 +1,6 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS, ColorPicker } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS, ColorPicker, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
 export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
   const items = (mod.items as Array<Record<string, unknown>>) || [];
@@ -8,7 +8,7 @@ export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
     <div className="space-y-4">
       <div>
         <FieldLabel>Intro</FieldLabel>
-        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+        <textarea className={TEXTAREA_CLS} maxLength={MAX_BODY} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
       </div>
       <div>
         <FieldLabel>Layout</FieldLabel>
@@ -25,10 +25,10 @@ export function StatistikModEditor({ mod, uf, ai, ri, ui }: EdProps) {
         {items.map((item, i) => (
           <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <div className="flex items-center gap-2">
-              <input className={`${INPUT_CLS} w-16`} placeholder="📊" value={(item.icon as string) || ''} onChange={(e) => ui!('items', i, 'icon', e.target.value)} />
-              <input className={`${INPUT_CLS} w-28`} placeholder="Angka" value={(item.angka as string) || ''} onChange={(e) => ui!('items', i, 'angka', e.target.value)} />
-              <input className={`${INPUT_CLS} w-20`} placeholder="Satuan" value={(item.satuan as string) || ''} onChange={(e) => ui!('items', i, 'satuan', e.target.value)} />
-              <input className={INPUT_CLS} placeholder="Label…" value={(item.label as string) || ''} onChange={(e) => ui!('items', i, 'label', e.target.value)} />
+              <input className={`${INPUT_CLS} w-16`} maxLength={MAX_SHORT_TEXT} placeholder="📊" value={(item.icon as string) || ''} onChange={(e) => ui!('items', i, 'icon', e.target.value)} />
+              <input className={`${INPUT_CLS} w-28`} maxLength={MAX_SHORT_TEXT} placeholder="Angka" value={(item.angka as string) || ''} onChange={(e) => ui!('items', i, 'angka', e.target.value)} />
+              <input className={`${INPUT_CLS} w-20`} maxLength={MAX_SHORT_TEXT} placeholder="Satuan" value={(item.satuan as string) || ''} onChange={(e) => ui!('items', i, 'satuan', e.target.value)} />
+              <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Label…" value={(item.label as string) || ''} onChange={(e) => ui!('items', i, 'label', e.target.value)} />
               <ColorPicker value={(item.color as string) || '#3ecfcf'} onChange={(v) => ui!('items', i, 'color', v)} />
               <button onClick={() => ri!('items', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>

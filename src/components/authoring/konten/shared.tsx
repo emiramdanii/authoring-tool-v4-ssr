@@ -21,6 +21,12 @@ export const BLOCK_TYPES = [
 ] as const;
 
 // ── Constants ──────────────────────────────────────────────────
+// ── Input length limits (security) ───────────────────────────
+export const MAX_TITLE = 200;
+export const MAX_BODY = 5000;
+export const MAX_OPTION = 500;
+export const MAX_SHORT_TEXT = 100;
+
 export const INPUT_CLS =
   'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors';
 
@@ -193,15 +199,15 @@ export function CompareSideForm({
       <div className="text-xs font-semibold text-app-secondary mb-1">{label}</div>
       <div>
         <FieldLabel>Ikon</FieldLabel>
-        <input className={INPUT_CLS} placeholder="🎯" value={data.icon || ''} onChange={(e) => onUpdate(side, 'icon', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_SHORT_TEXT} placeholder="🎯" value={data.icon || ''} onChange={(e) => onUpdate(side, 'icon', e.target.value)} />
       </div>
       <div>
         <FieldLabel>Judul</FieldLabel>
-        <input className={INPUT_CLS} placeholder={`Judul ${label.toLowerCase()}…`} value={data.judul || ''} onChange={(e) => onUpdate(side, 'judul', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder={`Judul ${label.toLowerCase()}…`} value={data.judul || ''} onChange={(e) => onUpdate(side, 'judul', e.target.value)} />
       </div>
       <div>
         <FieldLabel>Isi</FieldLabel>
-        <textarea className={TEXTAREA_CLS} rows={3} placeholder={`Isi ${label.toLowerCase()}…`} value={data.isi || ''} onChange={(e) => onUpdate(side, 'isi', e.target.value)} />
+        <textarea className={TEXTAREA_CLS} rows={3} maxLength={MAX_BODY} placeholder={`Isi ${label.toLowerCase()}…`} value={data.isi || ''} onChange={(e) => onUpdate(side, 'isi', e.target.value)} />
       </div>
     </div>
   );

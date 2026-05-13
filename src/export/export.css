@@ -38,6 +38,12 @@ body {
   color: #fff;
 }
 
+/* ── User content overflow protection ──────────────────────── */
+.user-content, [data-user-content] {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    CUSTOM BASE STYLES — @layer base so they DON'T override
    Tailwind v4's utility-layer rules. This fixes the cascade bug

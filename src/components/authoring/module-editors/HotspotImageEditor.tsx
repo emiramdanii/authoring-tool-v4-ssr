@@ -1,6 +1,6 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
 export function HotspotImageEditor({ mod, uf, ai, ri, ui }: EdProps) {
   const hotspots = (mod.hotspots as Array<Record<string, unknown>>) || [];
@@ -8,12 +8,12 @@ export function HotspotImageEditor({ mod, uf, ai, ri, ui }: EdProps) {
     <div className="space-y-4">
       <div>
         <FieldLabel>Intro</FieldLabel>
-        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+        <textarea className={TEXTAREA_CLS} maxLength={MAX_BODY} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <FieldLabel>Image URL</FieldLabel>
-          <input className={INPUT_CLS} placeholder="https://..." value={(mod.imageUrl as string) || ''} onChange={(e) => uf('imageUrl', e.target.value)} />
+          <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="https://..." value={(mod.imageUrl as string) || ''} onChange={(e) => uf('imageUrl', e.target.value)} />
         </div>
         <div>
           <FieldLabel>Tinggi (px)</FieldLabel>
@@ -39,11 +39,11 @@ export function HotspotImageEditor({ mod, uf, ai, ri, ui }: EdProps) {
               <input className={`${INPUT_CLS} w-16`} type="number" value={(h.x as number) || 50} onChange={(e) => ui!('hotspots', i, 'x', Number(e.target.value))} />
               <span className="text-xs text-app-muted">Y:</span>
               <input className={`${INPUT_CLS} w-16`} type="number" value={(h.y as number) || 50} onChange={(e) => ui!('hotspots', i, 'y', Number(e.target.value))} />
-              <input className={`${INPUT_CLS} w-16`} value={(h.icon as string) || ''} onChange={(e) => ui!('hotspots', i, 'icon', e.target.value)} placeholder="📌" />
-              <input className={INPUT_CLS} placeholder="Judul…" value={(h.judul as string) || ''} onChange={(e) => ui!('hotspots', i, 'judul', e.target.value)} />
+              <input className={`${INPUT_CLS} w-16`} maxLength={MAX_SHORT_TEXT} value={(h.icon as string) || ''} onChange={(e) => ui!('hotspots', i, 'icon', e.target.value)} placeholder="📌" />
+              <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Judul…" value={(h.judul as string) || ''} onChange={(e) => ui!('hotspots', i, 'judul', e.target.value)} />
               <button onClick={() => ri!('hotspots', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
-            <textarea className={TEXTAREA_CLS} rows={2} placeholder="Deskripsi hotspot…" value={(h.isi as string) || ''} onChange={(e) => ui!('hotspots', i, 'isi', e.target.value)} />
+            <textarea className={TEXTAREA_CLS} maxLength={MAX_BODY} rows={2} placeholder="Deskripsi hotspot…" value={(h.isi as string) || ''} onChange={(e) => ui!('hotspots', i, 'isi', e.target.value)} />
           </div>
         ))}
         <button onClick={() => ai!('hotspots', { x: 50, y: 50, icon: '📌', judul: '', warna: '#f9c82e', isi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Hotspot</button>

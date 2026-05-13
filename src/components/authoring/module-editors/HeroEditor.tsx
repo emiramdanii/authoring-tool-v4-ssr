@@ -1,6 +1,6 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, MAX_TITLE } from './shared';
 
 export function HeroEditor({ mod, uf }: EdProps) {
   const gradients = [
@@ -16,11 +16,11 @@ export function HeroEditor({ mod, uf }: EdProps) {
       <div className="flex items-end gap-3">
         <div className="flex-1">
           <FieldLabel>Subjudul</FieldLabel>
-          <input className={INPUT_CLS} placeholder="Subjudul banner…" value={(mod.subjudul as string) || ''} onChange={(e) => uf('subjudul', e.target.value)} />
+          <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Subjudul banner…" value={(mod.subjudul as string) || ''} onChange={(e) => uf('subjudul', e.target.value)} />
         </div>
         <div className="w-20">
           <FieldLabel>Ikon</FieldLabel>
-          <input className={INPUT_CLS} value={(mod.icon as string) || ''} onChange={(e) => uf('icon', e.target.value)} placeholder="🚀" />
+          <input className={INPUT_CLS} maxLength={MAX_TITLE} value={(mod.icon as string) || ''} onChange={(e) => uf('icon', e.target.value)} placeholder="🚀" />
         </div>
       </div>
       <div>
@@ -35,11 +35,11 @@ export function HeroEditor({ mod, uf }: EdProps) {
       </div>
       <div>
         <FieldLabel>CTA Button</FieldLabel>
-        <input className={INPUT_CLS} placeholder="Mulai Belajar" value={(mod.cta as string) || ''} onChange={(e) => uf('cta', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Mulai Belajar" value={(mod.cta as string) || ''} onChange={(e) => uf('cta', e.target.value)} />
       </div>
       <div>
         <FieldLabel>Chips (pisahkan koma)</FieldLabel>
-        <input className={INPUT_CLS} placeholder="PPKn, Kelas VII, Kurikulum Merdeka" value={(mod.chips as string) || ''} onChange={(e) => uf('chips', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="PPKn, Kelas VII, Kurikulum Merdeka" value={(mod.chips as string) || ''} onChange={(e) => uf('chips', e.target.value)} />
       </div>
     </div>
   );

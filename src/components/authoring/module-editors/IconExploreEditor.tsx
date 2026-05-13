@@ -1,6 +1,6 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS, SELECT_CLS, TEXTAREA_CLS, ColorPicker } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, SELECT_CLS, TEXTAREA_CLS, ColorPicker, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
 export function IconExploreEditor({ mod, uf, ai, ri, ui }: EdProps) {
   const items = (mod.items as Array<Record<string, unknown>>) || [];
@@ -8,7 +8,7 @@ export function IconExploreEditor({ mod, uf, ai, ri, ui }: EdProps) {
     <div className="space-y-4">
       <div>
         <FieldLabel>Intro</FieldLabel>
-        <textarea className={TEXTAREA_CLS} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
+        <textarea className={TEXTAREA_CLS} maxLength={MAX_BODY} rows={2} placeholder="Pengantar…" value={(mod.intro as string) || ''} onChange={(e) => uf('intro', e.target.value)} />
       </div>
       <div className="flex gap-3">
         <div>
@@ -34,13 +34,13 @@ export function IconExploreEditor({ mod, uf, ai, ri, ui }: EdProps) {
         {items.map((item, i) => (
           <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 space-y-2">
             <div className="flex items-center gap-2">
-              <input className={`${INPUT_CLS} w-16`} value={(item.icon as string) || ''} onChange={(e) => ui!('items', i, 'icon', e.target.value)} placeholder="📌" />
-              <input className={INPUT_CLS} placeholder="Judul…" value={(item.judul as string) || ''} onChange={(e) => ui!('items', i, 'judul', e.target.value)} />
+              <input className={`${INPUT_CLS} w-16`} maxLength={MAX_SHORT_TEXT} value={(item.icon as string) || ''} onChange={(e) => ui!('items', i, 'icon', e.target.value)} placeholder="📌" />
+              <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Judul…" value={(item.judul as string) || ''} onChange={(e) => ui!('items', i, 'judul', e.target.value)} />
               <ColorPicker value={(item.warna as string) || '#3ecfcf'} onChange={(v) => ui!('items', i, 'warna', v)} />
               <button onClick={() => ri!('items', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
             </div>
-            <textarea className={TEXTAREA_CLS} rows={2} placeholder="Ringkasan…" value={(item.ringkasan as string) || ''} onChange={(e) => ui!('items', i, 'ringkasan', e.target.value)} />
-            <textarea className={TEXTAREA_CLS} rows={3} placeholder="Isi lengkap…" value={(item.isi as string) || ''} onChange={(e) => ui!('items', i, 'isi', e.target.value)} />
+            <textarea className={TEXTAREA_CLS} maxLength={MAX_BODY} rows={2} placeholder="Ringkasan…" value={(item.ringkasan as string) || ''} onChange={(e) => ui!('items', i, 'ringkasan', e.target.value)} />
+            <textarea className={TEXTAREA_CLS} maxLength={MAX_BODY} rows={3} placeholder="Isi lengkap…" value={(item.isi as string) || ''} onChange={(e) => ui!('items', i, 'isi', e.target.value)} />
           </div>
         ))}
         <button onClick={() => ai!('items', { icon: '', judul: '', warna: '#3ecfcf', ringkasan: '', isi: '', contoh: [], sanksi: '' })} className="text-xs text-app-accent hover:text-app-accent/80">＋ Tambah Item</button>

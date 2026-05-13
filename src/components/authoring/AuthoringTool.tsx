@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Home,
@@ -26,26 +26,20 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
 import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager';
 
-import Dashboard from './Dashboard';
-import Dokumen from './Dokumen';
-import Konten from './Konten';
-import AutoGenerate from './auto-generate';
-import Projects from './Projects';
-import ImportExport from './import-export';
-import Riwayat from './Riwayat';
-import LivePreview from './live-preview';
+// Lazy-load panels — each panel is only loaded when first rendered
+const Dashboard = React.lazy(() => import('./Dashboard'));
+const Dokumen = React.lazy(() => import('./Dokumen'));
+const Konten = React.lazy(() => import('./Konten'));
+const AutoGenerate = React.lazy(() => import('./auto-generate'));
+const Projects = React.lazy(() => import('./Projects'));
+const ImportExport = React.lazy(() => import('./import-export'));
+const Riwayat = React.lazy(() => import('./Riwayat'));
+const LivePreview = React.lazy(() => import('./live-preview'));
 
 // Lazy-load CanvaBuilder (heavy component, SSR disabled)
 const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
   ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-app-surface">
-      <div className="text-center">
-        <Palette className="mx-auto mb-4 size-10 text-app-accent animate-pulse" />
-        <div className="text-app-secondary text-sm">Memuat Canva Editor...</div>
-      </div>
-    </div>
-  ),
+  loading: () => <PanelSkeleton />,
 });
 
 // ── Navigation items ─────────────────────────────────────────────
@@ -81,6 +75,35 @@ const PANEL_TITLES: Record<PanelId, string> = {
   preview: 'Live Preview',
   versions: 'Riwayat Versi',
 };
+
+// ── Panel loading skeleton ──────────────────────────────────────────
+function PanelSkeleton() {
+  return (
+    <div className="flex-1 flex items-center justify-center h-full">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-accent border-t-transparent" />
+        <p className="text-sm text-app-muted">Memuat...</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Preload map — triggers import on hover ─────────────────────────
+const PRELOAD_MAP: Record<string, () => Promise<unknown>> = {
+  dashboard: () => import('./Dashboard'),
+  dokumen: () => import('./Dokumen'),
+  konten: () => import('./Konten'),
+  canva: () => import('@/components/canva/CanvaBuilder'),
+  autogen: () => import('./auto-generate'),
+  projects: () => import('./Projects'),
+  import: () => import('./import-export'),
+  preview: () => import('./live-preview'),
+  versions: () => import('./Riwayat'),
+};
+
+function handleNavHover(panel: string) {
+  PRELOAD_MAP[panel]?.();
+}
 
 // ── Guided Tour Config ──────────────────────────────────────────
 const TOUR_STEPS = [
@@ -202,18 +225,25 @@ function AuthoringToolInner() {
   }, []);
 
   const renderPanel = () => {
-    switch (activePanel) {
-      case 'dashboard': return <Dashboard />;
-      case 'dokumen': return <Dokumen />;
-      case 'konten': return <Konten />;
-      case 'canva': return <CanvaBuilder />;
-      case 'autogen': return <AutoGenerate />;
-      case 'projects': return <Projects />;
-      case 'import': return <ImportExport />;
-      case 'preview': return <LivePreview />;
-      case 'versions': return <Riwayat />;
-      default: return <Dashboard />;
-    }
+    const panel = (() => {
+      switch (activePanel) {
+        case 'dashboard': return <Dashboard />;
+        case 'dokumen': return <Dokumen />;
+        case 'konten': return <Konten />;
+        case 'canva': return <CanvaBuilder />;
+        case 'autogen': return <AutoGenerate />;
+        case 'projects': return <Projects />;
+        case 'import': return <ImportExport />;
+        case 'preview': return <LivePreview />;
+        case 'versions': return <Riwayat />;
+        default: return <Dashboard />;
+      }
+    })();
+    return (
+      <Suspense fallback={<PanelSkeleton />}>
+        {panel}
+      </Suspense>
+    );
   };
 
   const isCanva = activePanel === 'canva';
@@ -265,6 +295,7 @@ function AuthoringToolInner() {
               <button
                 key={item.id}
                 onClick={() => setActivePanel(item.id)}
+                onMouseEnter={() => handleNavHover(item.id)}
                 className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
                   activePanel === item.id
                     ? 'nav-active font-semibold'
@@ -287,6 +318,7 @@ function AuthoringToolInner() {
               <button
                 key={item.id}
                 onClick={() => setActivePanel(item.id)}
+                onMouseEnter={() => handleNavHover(item.id)}
                 className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
                   activePanel === item.id
                     ? 'nav-active font-semibold'

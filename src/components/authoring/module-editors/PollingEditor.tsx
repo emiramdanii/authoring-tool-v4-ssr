@@ -1,6 +1,6 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS, SELECT_CLS, TEXTAREA_CLS, ColorPicker } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, SELECT_CLS, TEXTAREA_CLS, ColorPicker, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
 export function PollingEditor({ mod, uf, ai, ri, ui }: EdProps) {
   const opsi = (mod.opsi as Array<Record<string, unknown>>) || [];
@@ -8,7 +8,7 @@ export function PollingEditor({ mod, uf, ai, ri, ui }: EdProps) {
     <div className="space-y-4">
       <div>
         <FieldLabel>Instruksi</FieldLabel>
-        <input className={INPUT_CLS} placeholder="Pilih satu jawaban…" value={(mod.instruksi as string) || ''} onChange={(e) => uf('instruksi', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Pilih satu jawaban…" value={(mod.instruksi as string) || ''} onChange={(e) => uf('instruksi', e.target.value)} />
       </div>
       <div className="flex gap-3">
         <div>
@@ -30,8 +30,8 @@ export function PollingEditor({ mod, uf, ai, ri, ui }: EdProps) {
         <FieldLabel>Opsi ({opsi.length})</FieldLabel>
         {opsi.map((o, i) => (
           <div key={i} className="p-3 bg-app-elevated/50 rounded-lg border border-app-border/50 mb-2 flex items-center gap-2">
-            <input className={`${INPUT_CLS} w-12`} value={(o.icon as string) || ''} onChange={(e) => ui!('opsi', i, 'icon', e.target.value)} placeholder="📊" />
-            <input className={INPUT_CLS} placeholder="Teks opsi…" value={(o.teks as string) || ''} onChange={(e) => ui!('opsi', i, 'teks', e.target.value)} />
+            <input className={`${INPUT_CLS} w-16`} maxLength={MAX_SHORT_TEXT} value={(o.icon as string) || ''} onChange={(e) => ui!('opsi', i, 'icon', e.target.value)} placeholder="📊" />
+            <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="Teks opsi…" value={(o.teks as string) || ''} onChange={(e) => ui!('opsi', i, 'teks', e.target.value)} />
             <ColorPicker value={(o.warna as string) || '#3ecfcf'} onChange={(v) => ui!('opsi', i, 'warna', v)} />
             <button onClick={() => ri!('opsi', i)} className="text-app-muted hover:text-red-400 text-sm p-1 flex-shrink-0">✕</button>
           </div>

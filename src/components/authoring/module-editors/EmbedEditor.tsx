@@ -1,13 +1,13 @@
 'use client';
 
-import { EdProps, FieldLabel, INPUT_CLS } from './shared';
+import { EdProps, FieldLabel, INPUT_CLS, MAX_TITLE } from './shared';
 
 export function EmbedEditor({ mod, uf }: EdProps) {
   return (
     <div className="space-y-4">
       <div>
         <FieldLabel>URL Embed</FieldLabel>
-        <input className={INPUT_CLS} placeholder="https://..." value={(mod.url as string) || ''} onChange={(e) => uf('url', e.target.value)} />
+        <input className={INPUT_CLS} maxLength={MAX_TITLE} placeholder="https://..." value={(mod.url as string) || ''} onChange={(e) => uf('url', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -16,7 +16,7 @@ export function EmbedEditor({ mod, uf }: EdProps) {
         </div>
         <div>
           <FieldLabel>Label Link</FieldLabel>
-          <input className={INPUT_CLS} value={(mod.label as string) || ''} onChange={(e) => uf('label', e.target.value)} />
+          <input className={INPUT_CLS} maxLength={MAX_TITLE} value={(mod.label as string) || ''} onChange={(e) => uf('label', e.target.value)} />
         </div>
       </div>
     </div>
