@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { BookOpen, Sparkles, ListChecks, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { BookOpen, Sparkles } from 'lucide-react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
-import { fireConfettiMini } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
 // DEF BOX RENDERER — BSNP Definition Box with Variants & Step Mode
@@ -27,11 +26,9 @@ import { fireConfettiMini } from '@/lib/confetti';
 function VariantSelector({
   active,
   onChange,
-  tokens,
 }: {
   active: 'A' | 'B' | 'C';
   onChange: (v: 'A' | 'B' | 'C') => void;
-  tokens: TokenResolver;
 }) {
   const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
     { key: 'A', label: 'Klasik' },
@@ -157,7 +154,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-              <VariantSelector active={variant} onChange={() => {}} tokens={tokens} />
+              <VariantSelector active={variant} onChange={() => {}} />
             </div>
           )}
           <div
@@ -223,7 +220,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-              <VariantSelector active={variant} onChange={() => {}} tokens={tokens} />
+              <VariantSelector active={variant} onChange={() => {}} />
             </div>
           )}
           <div
@@ -328,7 +325,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
       <div style={{ position: 'relative' }}>
         {isEditing && (
         <div style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 15 }}>
-          <VariantSelector active={variant} onChange={() => {}} tokens={tokens} />
+          <VariantSelector active={variant} onChange={() => {}} />
         </div>
       )}
       <div

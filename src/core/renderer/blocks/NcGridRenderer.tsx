@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import type { NcGridBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
-import { fireConfettiMini } from '@/lib/confetti';
+import { PremiumBlockWrapper, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -26,11 +25,9 @@ import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavi
 function VariantSelector({
   active,
   onChange,
-  tokens,
 }: {
   active: 'A' | 'B' | 'C';
   onChange: (v: 'A' | 'B' | 'C') => void;
-  tokens: TokenResolver;
 }) {
   const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
     { key: 'A', label: 'Klasik' },
@@ -444,7 +441,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
       <div style={{ position: 'relative' }} className="premium-card-glow">
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-            <VariantSelector active={variant} onChange={setCurrentVariant} tokens={tokens} />
+            <VariantSelector active={variant} onChange={setCurrentVariant} />
           </div>
         )}
         <NcGridStepMode
@@ -468,28 +465,28 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
-    <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
-    <div
-      className={variant === 'A' ? 'grid grid-cols-2 gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
-      style={variant === 'A' ? { minWidth: 0 } : containerStyle}
-    >
-      {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} tokens={tokens} />
-        </div>
-      )}
-      {cards.map((card, i) => (
-        <CardComponent
-          key={`nc-card-${card.title?.slice(0,8)}-${i}`}
-          card={card}
-          cardIndex={i}
-          blockId={block.id!}
-          tokens={tokens}
-          isCompact={isCompact}
-          interactive={interactive}
-        />
-      ))}
-    </div>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
+      <div
+        className={variant === 'A' ? 'grid grid-cols-2 gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
+        style={{ ...(variant === 'A' ? { minWidth: 0 } : containerStyle), position: 'relative' }}
+      >
+        {isEditing && (
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+            <VariantSelector active={variant} onChange={setCurrentVariant} />
+          </div>
+        )}
+        {cards.map((card, i) => (
+          <CardComponent
+            key={`nc-card-${card.title?.slice(0,8)}-${i}`}
+            card={card}
+            cardIndex={i}
+            blockId={block.id!}
+            tokens={tokens}
+            isCompact={isCompact}
+            interactive={interactive}
+          />
+        ))}
+      </div>
     </PremiumBlockWrapper>
   );
 }

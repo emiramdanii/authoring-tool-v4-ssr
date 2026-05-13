@@ -43,6 +43,7 @@
     "node_modules",
     "src/legacy",
     "src/__tests__",
-    "skills"
+    "skills",
+    "vite.export.config.ts"
   ]
 }

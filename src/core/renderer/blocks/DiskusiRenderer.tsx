@@ -7,7 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti, fireConfettiMini } from '@/lib/confetti';
+import { fireConfetti } from '@/lib/confetti';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -145,7 +145,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
   // ══ MAIN DISCUSSION SCREEN — Premium Interactive ═════════════════
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
     <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={3} position="top" />
     <div className="mt-3 rounded-2xl p-4 premium-card-glow relative overflow-hidden"
       style={{

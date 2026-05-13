@@ -6,7 +6,6 @@ import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
-import { fireConfettiMini } from '@/lib/confetti';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -31,11 +30,9 @@ import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavi
 function VariantSelector({
   active,
   onChange,
-  tokens,
 }: {
   active: 'A' | 'B' | 'C';
   onChange: (v: 'A' | 'B' | 'C') => void;
-  tokens: TokenResolver;
 }) {
   const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
     { key: 'A', label: 'Klasik' },
@@ -522,7 +519,7 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
       {/* Variant selector (editing mode only) */}
       {isEditing && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} tokens={tokens} />
+          <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}
 

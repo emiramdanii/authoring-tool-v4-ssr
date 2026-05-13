@@ -212,7 +212,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
   if (!q) return null;
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={progress} tokens={tokens} accent="y" height={3} position="top" />
     <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Kuis: Soal ${current + 1} dari ${questions.length}, Skor: ${totalCorrect}`} aria-describedby={`kuis-instructions-${block.id || 'kuis'}`} data-interactive>
       {/* Hidden instruction for screen readers */}

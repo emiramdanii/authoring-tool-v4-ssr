@@ -6,7 +6,6 @@ import type { MotivasiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
-import { fireConfettiMini } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
 // MOTIVASI RENDERER — BSNP Apersepsi / Motivation Hook
@@ -228,7 +227,6 @@ function MotivasiVariantKlasik({
             {connections.map((conn, i) => (
               <MicroInteraction key={`mot-conn-mi-${block.id || 'mot'}-${i}`} tokens={tokens} accent={conn.color} effect="squish">
               <div
-                key={`mot-conn-${block.id || 'mot'}-${i}`}
                 className="flex items-start gap-2.5 rounded-lg p-2.5"
                 style={{
                   background: tokens.colorAlpha(conn.color, 0.08),
@@ -430,7 +428,6 @@ function MotivasiVariantKartuHook({
             {connections.map((conn, i) => (
               <MicroInteraction key={`mot-pill-mi-${block.id || 'mot'}-${i}`} tokens={tokens} accent={conn.color} effect="squish">
               <div
-                key={`mot-pill-${block.id || 'mot'}-${i}`}
                 className="variant-compact-pill"
                 style={{
                   borderColor: tokens.colorAlpha(conn.color, 0.25),
