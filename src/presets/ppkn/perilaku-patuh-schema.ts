@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const PERILAKU_PATUH_LESSON: LessonSchema = {
   id: 'perilaku-patuh',
@@ -48,7 +48,7 @@ export const PERILAKU_PATUH_LESSON: LessonSchema = {
             color1: 'g',
             color2: 'bg',
           },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-review', nextLabel: 'Review' },
     },

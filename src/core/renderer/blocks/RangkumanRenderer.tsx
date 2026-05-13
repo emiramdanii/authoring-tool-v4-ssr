@@ -5,8 +5,10 @@ import { Shield, BookOpen, CheckCircle2, Sparkles, ChevronDown, ChevronUp } from
 import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction, StepCompletionOverlay } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
+import { playSound } from '@/lib/sounds';
+import { fireConfetti } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
 // RANGKUMAN RENDERER — BSNP Summary / Reinforcement Block
@@ -481,7 +483,7 @@ function RangkumanStepMode({ concepts, tokens, isCompact, variant }: {
 // MAIN COMPONENT — RangkumanRenderer
 // ═══════════════════════════════════════════════════════════════════
 
-export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, tokens, isCompact, isEditing, interactive, mode }: {
+export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, tokens, isCompact, isEditing, interactive = true, mode }: {
   block: RangkumanBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; mode?: import('../types').SchemaRenderMode;
 }) {
   const accentColor = block.accentColor || 'c';
@@ -493,6 +495,10 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
   );
   const variant = currentVariant;
 
+  // ── Step completion tracking ──
+  const [allStepsCompleted, setAllStepsCompleted] = useState(false);
+  const totalConcepts = block.concepts?.length ?? 0;
+
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',
@@ -501,6 +507,15 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
   });
 
   const concepts = block.concepts || [];
+
+  // ── Fire celebration when all concepts reviewed ──
+  const handleStepComplete = React.useCallback(() => {
+    setAllStepsCompleted(true);
+    if (interactive) {
+      playSound('complete');
+      fireConfetti({ count: 40, duration: 3000 });
+    }
+  }, [interactive]);
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0} gradientBorder>
@@ -689,6 +704,15 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
         </MicroInteraction>
       )}
     </div>
+
+      {/* ═══ STEP COMPLETION OVERLAY ═══════════════════════════ */}
+      <StepCompletionOverlay
+        show={allStepsCompleted || (concepts.length <= 2 && !!block.closingStatement)}
+        tokens={tokens}
+        accent={accentColor}
+        completionText="Rangkuman Selesai!"
+        isCompact={isCompact}
+      />
     </PremiumBlockWrapper>
   );
-}
+});

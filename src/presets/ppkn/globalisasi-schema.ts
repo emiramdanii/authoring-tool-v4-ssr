@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const GLOBALISASI_LESSON: LessonSchema = {
   id: 'globalisasi',
@@ -33,7 +33,7 @@ export const GLOBALISASI_LESSON: LessonSchema = {
           meta: { durasi: '80 Menit', fase: 'Fase D', elemen: 'Bhinneka Tunggal Ika' },
           cta: { label: '▶ Mulai Pembelajaran', action: 's-petunjuk' },
           background: { type: 'gradient', color1: 'g', color2: 'bg' },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
     },

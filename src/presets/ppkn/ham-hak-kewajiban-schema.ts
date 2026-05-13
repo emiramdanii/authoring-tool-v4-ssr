@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const HAM_HAK_KEWAJIBAN_LESSON: LessonSchema = {
   id: 'ham-hak-kewajiban',
@@ -33,7 +33,7 @@ export const HAM_HAK_KEWAJIBAN_LESSON: LessonSchema = {
           meta: { durasi: '80 Menit', fase: 'Fase D', elemen: 'UUD NRI 1945' },
           cta: { label: '▶ Mulai Pembelajaran', action: 's-petunjuk' },
           background: { type: 'gradient', color1: 'p', color2: 'bg' },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
     },

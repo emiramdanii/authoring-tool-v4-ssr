@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const NILAI_PANCASILA_LESSON: LessonSchema = {
   id: 'nilai-pancasila',
@@ -48,7 +48,7 @@ export const NILAI_PANCASILA_LESSON: LessonSchema = {
             color1: 'r',
             color2: 'bg',
           },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
     },

@@ -103,6 +103,8 @@ export interface BlockDefinitionMeta {
   usedInTemplates: string[];
   propertySchema: PropertySchema;
   createDefault: () => Record<string, unknown>;
+  /** Estimated rendered height in px (used by overflow detection system) */
+  estimatedHeight: Record<'A' | 'B' | 'C', number>;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -120,6 +122,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
     usedInTemplates: ['cover'],
     propertySchema: COVER_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 600, B: 550, C: 500 },
     createDefault: () => ({
       icon: '📄',
       title: 'Judul Baru',
@@ -128,6 +131,27 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: 'VII', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'y',
+    }),
+  },
+  'hero': {
+    type: 'hero',
+    name: 'Hero Banner',
+    icon: '🖼️',
+    category: 'layout',
+    description: 'Banner hero dengan gradient, title, dan CTA — mirip Cover tapi untuk konten',
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
+    defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
+    usedInTemplates: ['hero'],
+    propertySchema: COVER_PROPERTY_SCHEMA, // Hero uses same schema as Cover
+    estimatedHeight: { A: 550, B: 500, C: 450 },
+    createDefault: () => ({
+      icon: '🚀',
+      title: 'Hero Banner',
+      subtitle: 'Subtitle hero',
+      badges: [],
+      meta: { durasi: '', fase: '', elemen: '' },
+      cta: { label: 'Mulai →', action: 'next' },
+      accentColor: 'c',
     }),
   },
   'petunjuk': {
@@ -140,6 +164,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['petunjuk'],
     propertySchema: PETUNJUK_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 450, B: 450, C: 450 },
     createDefault: () => ({
       title: 'Petunjuk',
       titleHighlight: 'Penggunaan',
@@ -169,6 +194,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
     propertySchema: TP_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 350, C: 350 },
     createDefault: () => ({
       title: 'Tujuan Pembelajaran',
       titleHighlight: '',
@@ -186,6 +212,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
     propertySchema: ALUR_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 300, B: 300, C: 300 },
     createDefault: () => ({
       title: 'Alur Kegiatan',
       steps: [{ dot: 'y', durasi: '5 menit', judul: 'Langkah 1', deskripsi: 'Deskripsi langkah' }],
@@ -201,6 +228,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['skenario'],
     propertySchema: SKENARIO_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 500, B: 500, C: 500 },
     createDefault: () => ({
       title: 'Skenario',
       chapters: [{
@@ -224,6 +252,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: DEFBOX_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 120, B: 120, C: 120 },
     createDefault: () => ({
       content: 'Definisi baru',
       borderColor: 'y',
@@ -239,6 +268,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi', 'diskusi'],
     propertySchema: NCGRID_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 250, B: 250, C: 250 },
     createDefault: () => ({
       cards: [{ icon: '📋', title: 'Kartu 1', body: 'Deskripsi kartu', color: 'y' }],
     }),
@@ -253,6 +283,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: FLASHCARD_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 300, B: 300, C: 300 },
     createDefault: () => ({
       cards: [{ q: 'Pertanyaan?', a: 'Jawaban' }],
     }),
@@ -267,6 +298,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: FTAB_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       tabs: [{ icon: '📑', label: 'Tab 1', content: [] }],
       showReadMarker: false,
@@ -283,6 +315,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: NKCARD_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 350, C: 350 },
     createDefault: () => ({
       normaType: '',
       icon: '📜',
@@ -304,6 +337,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['diskusi'],
     propertySchema: DISKUSI_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 300, B: 280, C: 280 },
     createDefault: () => ({
       title: 'Diskusi',
       questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban', color: 'c' }],
@@ -319,6 +353,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['kuis'],
     propertySchema: KUIS_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 380, C: 360 },
     createDefault: () => ({
       title: 'Kuis',
       questions: [{ q: 'Pertanyaan?', opts: ['A', 'B', 'C'], ans: 0, ex: 'Penjelasan' }],
@@ -335,6 +370,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game'],
     propertySchema: SORTIRGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Game Sortir',
       pool: [{ id: 's1', text: 'Item 1', category: 'kolom-1' }],
@@ -352,6 +388,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game'],
     propertySchema: RODAGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 450, B: 450, C: 450 },
     createDefault: () => ({
       title: 'Game Roda',
       questions: [{
@@ -373,6 +410,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['hasil'],
     propertySchema: HASIL_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 330, C: 320 },
     createDefault: () => ({
       title: 'Hasil',
       subtitle: 'Subtitle hasil',
@@ -389,6 +427,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['refleksi'],
     propertySchema: REFLEKSI_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 350, C: 350 },
     createDefault: () => ({
       title: 'Refleksi',
       questions: [{ teks: 'Pertanyaan refleksi?', petunjuk: 'Petunjuk refleksi' }],
@@ -405,6 +444,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['penutup'],
     propertySchema: PENUTUP_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 300, B: 300, C: 300 },
     createDefault: () => ({
       title: 'Penutup',
       subtitle: 'Terima kasih',
@@ -421,6 +461,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: TABELACCORD_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 300, B: 300, C: 300 },
     createDefault: () => ({
       rows: [{ icon: '📊', title: 'Baris 1', color: 'y', details: [{ label: 'Label', value: 'Nilai' }] }],
       interactive: true,
@@ -436,6 +477,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: MATERISECTION_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 500, B: 500, C: 500 },
     createDefault: () => ({
       title: 'Bagian Materi',
       subtitle: '',
@@ -457,6 +499,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['tp', 'dokumen', 'materi'],
     propertySchema: TUJUANDISPLAY_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 300, B: 300, C: 300 },
     createDefault: () => ({
       title: 'Tujuan Pembelajaran',
       subtitle: 'Setelah mempelajari materi ini, kamu diharapkan mampu:',
@@ -478,6 +521,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi', 'dokumen'],
     propertySchema: MOTIVASI_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 280, B: 280, C: 280 },
     createDefault: () => ({
       title: 'Apersepsi',
       bsnpRequired: false,
@@ -495,10 +539,11 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📝',
     category: 'content',
     description: 'Rangkuman konsep kunci di akhir materi — BSNP penguatan',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'] },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi', 'hasil'],
     propertySchema: RANGKUMAN_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 350, C: 350 },
     createDefault: () => ({
       title: 'Rangkuman',
       bsnpRequired: false,
@@ -519,6 +564,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: MEMORYGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Game Memory',
       pairs: [
@@ -539,6 +585,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: MATCHINGGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Game Pasangkan',
       pairs: [
@@ -559,6 +606,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: FILLBLANKGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 350, C: 350 },
     createDefault: () => ({
       title: 'Game Isian',
       questions: [
@@ -578,6 +626,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: WORDSEARCHGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Teka-Teki Kata',
       words: ['NORMA', 'AGAMA', 'HUKUM', 'SOPAN', 'SUSILA'],
@@ -595,6 +644,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: TRUEFALSEGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 350, B: 350, C: 350 },
     createDefault: () => ({
       title: 'Benar atau Salah?',
       questions: [
@@ -614,6 +664,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: DRAGDROPGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Seret & Letakkan',
       items: [
@@ -639,6 +690,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: CROSSWORDGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 450, B: 450, C: 450 },
     createDefault: () => ({
       title: 'Teka Silang',
       words: [
@@ -660,6 +712,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['game', 'evaluasi'],
     propertySchema: TEAMBUZZERGAME_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Kuis Tim',
       teamA: 'Tim Merah',

@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const MACAM_NORMA_LESSON: LessonSchema = {
   id: 'macam-norma',
@@ -48,7 +48,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             color1: 'c',
             color2: 'bg',
           },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-cp', nextLabel: 'CP · TP · ATP' },
     },
@@ -413,7 +413,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
                       { icon: '😤', text: 'Tidak menghormati orang tua (durhaka) — Sanksi: Dosa dan sanksi sosial keluarga' },
                     ],
                   },
-                } as any,
+                } as SchemaBlock,
               ],
             },
             // ── Tab: Norma Kesusilaan ──
@@ -459,7 +459,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
                       { icon: '📱', text: 'Menyebarkan foto teman tanpa izin di grup chat — Sanksi: Dikucilkan, reputasi rusak di lingkungan teman' },
                     ],
                   },
-                } as any,
+                } as SchemaBlock,
               ],
             },
             // ── Tab: Norma Kesopanan ──
@@ -505,7 +505,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
                       { icon: '🎵', text: 'Memutar musik keras di perumahan tengah malam — Sanksi: Ditegur warga, diadukan ke ketua RT' },
                     ],
                   },
-                } as any,
+                } as SchemaBlock,
               ],
             },
             // ── Tab: Norma Hukum ──
@@ -551,7 +551,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
                       { icon: '🚫', text: 'Buang sampah di sungai (ada perda larangan) — Sanksi: Denda sesuai peraturan daerah' },
                     ],
                   },
-                } as any,
+                } as SchemaBlock,
               ],
             },
           ],

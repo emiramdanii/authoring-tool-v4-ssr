@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const BHINNEKA_TUNGAL_IKA_LESSON: LessonSchema = {
   id: 'bhinneka-tunggal-ika',
@@ -48,7 +48,7 @@ export const BHINNEKA_TUNGAL_IKA_LESSON: LessonSchema = {
             color1: 'c',
             color2: 'bg',
           },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
     },

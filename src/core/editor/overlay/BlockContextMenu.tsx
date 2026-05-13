@@ -145,16 +145,17 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     { type: 'item', label: 'Pindah Bawah', shortcut: 'Alt+↓', action: () => handleAction(() => moveBlockDown(blockId)) },
     { type: 'item', label: 'Duplikat', shortcut: 'Ctrl+D', action: () => handleAction(() => duplicateBlock(blockId)) },
     { type: 'divider' },
-    // Variant submenu
-    {
-      type: 'submenu',
-      label: 'Ganti Varian',
-      items: [
-        { label: '🟢 Varian A — Default', action: () => handleAction(() => updateSchemaBlock(blockId, { variant: 'A' })) },
-        { label: '🔵 Varian B — Compact', action: () => handleAction(() => updateSchemaBlock(blockId, { variant: 'B' })) },
-        { label: '🟣 Varian C — Expanded', action: () => handleAction(() => updateSchemaBlock(blockId, { variant: 'C' })) },
-      ],
-    },
+    // Variant submenu — only show variants the block supports
+    ...(definition && definition.capabilities.variants.length > 0
+      ? [{
+          type: 'submenu' as const,
+          label: 'Ganti Varian',
+          items: definition.capabilities.variants.map((v) => ({
+            label: v === 'A' ? '🟢 Varian A — Default' : v === 'B' ? '🔵 Varian B — Compact' : '🟣 Varian C — Expanded',
+            action: () => handleAction(() => updateSchemaBlock(blockId, { variant: v })),
+          })),
+        }]
+      : []),
     // Move to page submenu
     ...(otherPages.length > 0
       ? [{

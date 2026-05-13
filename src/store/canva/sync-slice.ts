@@ -51,7 +51,6 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       // No more auto-sync overwrites. Schema edits persist until the user
       // explicitly refreshes via "Refresh Data dari Authoring" button.
       // The old locked/unlocked model is removed — schema is always canonical.
-      let schemaChanged = false;
 
       // ── Layer 2: Orphan cleanup ───────────────────────────
       // Remove elements that reference deleted modules or kuis
@@ -91,7 +90,7 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       const syncedElements = syncElementIds(cleanedElements);
       const idsSynced = syncedElements.changed;
 
-      if (!schemaChanged && !elementsChanged && !idsSynced) return page;
+      if (!elementsChanged && !idsSynced) return page;
 
       changed = true;
       const result: CanvaPage = {

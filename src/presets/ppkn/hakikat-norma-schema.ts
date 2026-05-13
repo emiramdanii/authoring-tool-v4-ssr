@@ -1,4 +1,4 @@
-import type { LessonSchema } from '@/core/schema/types';
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
 
 export const HAKIKAT_NORMA_LESSON: LessonSchema = {
   id: 'hakikat-norma',
@@ -48,7 +48,7 @@ export const HAKIKAT_NORMA_LESSON: LessonSchema = {
             color1: 'y',
             color2: 'bg',
           },
-        } as any,
+        } as SchemaBlock,
       ],
       nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
     },
