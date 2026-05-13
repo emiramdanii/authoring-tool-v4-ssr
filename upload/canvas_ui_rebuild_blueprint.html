@@ -1,0 +1,411 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem}
+.tab{padding:7px 14px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary);transition:all .15s;white-space:nowrap}
+.tab.active{border-bottom-color:var(--color-text-primary);color:var(--color-text-primary);font-weight:500}
+.pane{display:none}.pane.active{display:block}
+
+/* mockup canvas */
+.canvas-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);overflow:hidden;margin-bottom:1rem}
+.mock-toolbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:5px 8px;display:flex;align-items:center;gap:4px;height:36px}
+.mock-body{display:flex;height:340px}
+.mock-left{width:52px;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;align-items:center;padding:6px 4px;gap:2px;flex-shrink:0}
+.mock-stage{flex:1;background:var(--color-background-tertiary);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.mock-right{width:200px;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);overflow:hidden;flex-shrink:0}
+.mock-status{height:22px;background:var(--color-background-primary);border-top:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 8px;gap:8px}
+
+/* toolbar elements */
+.tb-group{display:flex;align-items:center;gap:2px}
+.tb-sep{width:0.5px;height:16px;background:var(--color-border-tertiary);margin:0 3px;flex-shrink:0}
+.tb-btn{height:24px;border-radius:5px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);display:flex;align-items:center;gap:3px;padding:0 7px;font-size:10px;cursor:pointer;white-space:nowrap;color:var(--color-text-primary)}
+.tb-btn.primary{background:#1a7a5e;border-color:#1a7a5e;color:#fff}
+.tb-btn.accent{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
+.tb-btn.ghost{background:transparent;border-color:transparent}
+.tb-pill{height:20px;border-radius:10px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);display:flex;align-items:center;padding:0 8px;font-size:10px;color:var(--color-text-secondary)}
+.flex1{flex:1}
+
+/* left sidebar icon buttons */
+.side-btn{width:40px;height:36px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--color-text-secondary);font-size:9px}
+.side-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.side-btn i{font-size:16px}
+.side-sep{width:32px;height:0.5px;background:var(--color-border-tertiary);margin:2px 0}
+
+/* canvas page frame */
+.page-frame{background:#fff;border-radius:6px;box-shadow:0 2px 16px rgba(0,0,0,.12);position:relative}
+.page-ratio{width:220px;height:124px}
+
+/* overflow indicator */
+.overflow-bar{position:absolute;bottom:0;left:0;right:0;height:22px;background:rgba(230,60,50,.85);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border-radius:0 0 6px 6px}
+
+/* right panel */
+.rpanel-tab{display:flex;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rpanel-tab-btn{flex:1;padding:5px 4px;font-size:9px;text-align:center;cursor:pointer;color:var(--color-text-secondary);border-bottom:1.5px solid transparent}
+.rpanel-tab-btn.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+.rpanel-body{padding:8px}
+.prop-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.prop-label{font-size:9px;color:var(--color-text-secondary)}
+.prop-val{font-size:9px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:2px 6px}
+.variant-btns{display:flex;gap:3px;margin-top:6px}
+.var-btn{flex:1;padding:4px 3px;border-radius:4px;border:0.5px solid var(--color-border-tertiary);font-size:8px;text-align:center;cursor:pointer;background:var(--color-background-secondary)}
+.var-btn.active{background:#eef2ff;border-color:#818cf8;color:#4338ca;font-weight:500}
+
+/* status bar */
+.status-chip{font-size:9px;color:var(--color-text-secondary);display:flex;align-items:center;gap:3px}
+.dot-green{width:5px;height:5px;border-radius:50%;background:#22c55e}
+.dot-amber{width:5px;height:5px;border-radius:50%;background:#f59e0b}
+
+/* overflow detect toast */
+.of-toast{background:#FEF3C7;border:0.5px solid #D97706;border-radius:6px;padding:6px 8px;font-size:9px;margin:4px 6px;color:#92400E}
+
+/* annotations */
+.annot{position:absolute;background:#1a7a5e;color:#fff;font-size:9px;border-radius:3px;padding:1px 5px;pointer-events:none;white-space:nowrap}
+.annot-line{position:absolute;width:0.5px;background:#1a7a5e;pointer-events:none}
+
+/* comparison cards */
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.comp-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.85rem}
+.comp-card.now{border-left:3px solid var(--color-border-secondary)}
+.comp-card.new{border-left:3px solid #4338ca}
+.comp-title{font-size:11px;font-weight:500;margin-bottom:.5rem}
+.comp-item{font-size:11px;color:var(--color-text-secondary);padding:2px 0;display:flex;gap:5px}
+.comp-item i{flex-shrink:0;margin-top:1px}
+
+.section-label{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.85rem 1rem;margin-bottom:.6rem}
+.badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:99px;font-size:10px;font-weight:500}
+.b-purple{background:#eef2ff;color:#4338ca}
+.b-green{background:var(--color-background-success);color:var(--color-text-success)}
+.b-amber{background:var(--color-background-warning);color:var(--color-text-warning)}
+.b-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+.code{font-family:var(--font-mono);font-size:10px;background:var(--color-background-secondary);padding:1px 4px;border-radius:3px}
+.row{display:flex;align-items:flex-start;gap:6px;margin:.3rem 0}
+.step{width:18px;height:18px;border-radius:50%;background:var(--color-background-secondary);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
+</style>
+
+<h2 class="sr-only">Blueprint rebuild canvas UI authoring tool MPI — dari toolbar hingga export</h2>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('mockup')">Mockup Baru</div>
+  <div class="tab" onclick="show('before-after')">Before vs After</div>
+  <div class="tab" onclick="show('sidebar')">Sidebar Ikonik</div>
+  <div class="tab" onclick="show('overflow')">Overflow & Variant</div>
+  <div class="tab" onclick="show('impl')">Implementasi</div>
+</div>
+
+<!-- ═══ MOCKUP ═══ -->
+<div id="pane-mockup" class="pane active">
+  <div class="section-label">Usulan layout baru — sidebar ikonik + toolbar ramping</div>
+  <div class="canvas-wrap">
+    <!-- TOOLBAR BARU: ramping, grouped, context-aware -->
+    <div class="mock-toolbar">
+      <!-- Grup 1: Nav -->
+      <div class="tb-group">
+        <div class="tb-btn ghost" title="Kembali"><i class="ti ti-arrow-left" aria-hidden="true" style="font-size:13px"></i></div>
+        <div class="tb-pill">MPI Materi Kimia <span style="color:var(--color-text-secondary);margin-left:3px">· Tersimpan</span></div>
+      </div>
+      <div class="tb-sep"></div>
+      <!-- Grup 2: Core actions -->
+      <div class="tb-group">
+        <div class="tb-btn ghost" title="Undo"><i class="ti ti-arrow-back-up" aria-hidden="true" style="font-size:13px"></i></div>
+        <div class="tb-btn ghost" title="Redo"><i class="ti ti-arrow-forward-up" aria-hidden="true" style="font-size:13px"></i></div>
+      </div>
+      <div class="tb-sep"></div>
+      <!-- Grup 3: View -->
+      <div class="tb-group">
+        <div class="tb-pill">16:9</div>
+        <div class="tb-btn ghost" title="Zoom out"><i class="ti ti-minus" aria-hidden="true" style="font-size:11px"></i></div>
+        <div class="tb-pill">78%</div>
+        <div class="tb-btn ghost" title="Zoom in"><i class="ti ti-plus" aria-hidden="true" style="font-size:11px"></i></div>
+        <div class="tb-btn ghost" title="Fit"><i class="ti ti-maximize" aria-hidden="true" style="font-size:12px"></i></div>
+      </div>
+      <div class="flex1"></div>
+      <!-- Grup 4: Play + Export (kanan) -->
+      <div class="tb-group">
+        <div class="tb-btn primary"><i class="ti ti-player-play" aria-hidden="true" style="font-size:11px"></i> Play</div>
+        <div class="tb-btn accent"><i class="ti ti-download" aria-hidden="true" style="font-size:11px"></i> Export</div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="mock-body">
+      <!-- SIDEBAR IKONIK (bukan panel lebar) -->
+      <div class="mock-left">
+        <div class="side-btn active" title="Halaman"><i class="ti ti-layout-list" aria-hidden="true"></i><span>Hal</span></div>
+        <div class="side-btn" title="Layer"><i class="ti ti-stack-2" aria-hidden="true"></i><span>Layer</span></div>
+        <div class="side-sep"></div>
+        <div class="side-btn" title="Sisipkan block"><i class="ti ti-circle-plus" aria-hidden="true"></i><span>Sisip</span></div>
+        <div class="side-btn" title="Media & aset"><i class="ti ti-photo" aria-hidden="true"></i><span>Aset</span></div>
+        <div class="side-sep"></div>
+        <div class="side-btn" title="AI Assistant"><i class="ti ti-sparkles" aria-hidden="true"></i><span>AI</span></div>
+        <div class="flex1"></div>
+        <div class="side-btn" title="Shortcut"><i class="ti ti-keyboard" aria-hidden="true"></i></div>
+      </div>
+
+      <!-- STAGE: canvas dengan lebih banyak ruang -->
+      <div class="mock-stage">
+        <!-- Canvas frame -->
+        <div class="page-frame page-ratio" style="display:flex;flex-direction:column">
+          <div style="height:10px;background:#eef2ff;border-radius:6px 6px 0 0;display:flex;align-items:center;padding:0 6px;gap:4px">
+            <span style="font-size:7px;color:#6366f1;font-weight:500">Materi Kimia — Ikatan Kovalen</span>
+          </div>
+          <div style="flex:1;padding:6px;display:flex;flex-direction:column;gap:4px">
+            <div style="height:28px;background:#f0fdf4;border-radius:4px;border:0.5px solid #bbf7d0;display:flex;align-items:center;padding:0 6px"><span style="font-size:7px;color:#166534">Materi Section — Variant B</span></div>
+            <div style="height:22px;background:#f0fdf4;border-radius:4px;border:0.5px solid #bbf7d0;display:flex;align-items:center;padding:0 6px"><span style="font-size:7px;color:#166534">Def Box — Variant B</span></div>
+            <div style="height:28px;background:#fefce8;border-radius:4px;border:0.5px dashed #fde047;display:flex;align-items:center;justify-content:center"><span style="font-size:7px;color:#854d0e">+ Sisipkan block</span></div>
+          </div>
+          <div style="height:9px;background:#f8fafc;border-radius:0 0 6px 6px;border-top:0.5px solid #e2e8f0"></div>
+        </div>
+        <!-- Minimap di sudut -->
+        <div style="position:absolute;bottom:8px;right:8px;width:48px;height:30px;background:var(--color-background-primary);border-radius:4px;border:0.5px solid var(--color-border-tertiary);opacity:.8;font-size:7px;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary)">minimap</div>
+        <!-- Page counter -->
+        <div style="position:absolute;bottom:8px;left:8px;background:var(--color-background-primary);border-radius:4px;border:0.5px solid var(--color-border-tertiary);padding:2px 6px;font-size:8px;color:var(--color-text-secondary)">Hal 2 / 8</div>
+      </div>
+
+      <!-- RIGHT PANEL: Properti kontekstual -->
+      <div class="mock-right">
+        <div class="rpanel-tab">
+          <div class="rpanel-tab-btn active">Properti</div>
+          <div class="rpanel-tab-btn">Halaman</div>
+          <div class="rpanel-tab-btn">Tema</div>
+        </div>
+        <div class="rpanel-body">
+          <div style="font-size:9px;font-weight:500;margin-bottom:5px">Materi Section</div>
+          <div class="prop-row"><span class="prop-label">Varian</span></div>
+          <div class="variant-btns">
+            <div class="var-btn">A<br><span style="opacity:.6">Normal</span></div>
+            <div class="var-btn active">B<br><span>Compact</span></div>
+            <div class="var-btn">C<br><span style="opacity:.6">Minimal</span></div>
+          </div>
+          <div style="margin-top:5px;font-size:8px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:4px;padding:3px 5px">
+            <i class="ti ti-info-circle" aria-hidden="true" style="font-size:10px"></i> Compact menghemat 60px ↑
+          </div>
+          <div style="margin-top:8px" class="prop-row"><span class="prop-label">Warna aksen</span><div style="display:flex;gap:3px"><div style="width:12px;height:12px;border-radius:50%;background:#4338ca;border:1.5px solid #4338ca"></div><div style="width:12px;height:12px;border-radius:50%;background:#059669"></div><div style="width:12px;height:12px;border-radius:50%;background:#dc2626"></div></div></div>
+          <div style="margin-top:8px;border-top:0.5px solid var(--color-border-tertiary);padding-top:8px">
+            <div class="section-label" style="margin-bottom:4px">Kapasitas halaman</div>
+            <div style="background:var(--color-background-secondary);border-radius:4px;height:6px;overflow:hidden"><div style="width:72%;height:100%;background:#4338ca;border-radius:4px"></div></div>
+            <div style="font-size:8px;color:var(--color-text-secondary);margin-top:3px">458 / 636px terpakai</div>
+          </div>
+          <div class="of-toast" style="margin:6px 0 0">
+            <i class="ti ti-alert-triangle" aria-hidden="true" style="font-size:10px"></i> Ruang hampir penuh — pakai varian compact atau buat halaman baru
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="mock-status">
+      <div class="status-chip"><div class="dot-green"></div> Tersimpan</div>
+      <div class="tb-sep" style="margin:0 2px"></div>
+      <div class="status-chip">1280×720</div>
+      <div class="tb-sep" style="margin:0 2px"></div>
+      <div class="status-chip">3 block</div>
+      <div class="flex1"></div>
+      <div class="status-chip" style="font-size:8px;color:var(--color-text-secondary)">F focus · [ ] panel · Ctrl+K perintah</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.7">
+    Perubahan utama: sidebar ikonik 52px (hemat 228px ruang canvas), toolbar ramping hanya 36px, right panel contextual dengan meter kapasitas, dan minimap navigasi halaman.
+  </div>
+</div>
+
+<!-- ═══ BEFORE vs AFTER ═══ -->
+<div id="pane-before-after" class="pane">
+  <div class="comp-grid">
+    <div class="comp-card now">
+      <div class="comp-title">Sekarang <span class="badge b-amber">bermasalah</span></div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Panel kiri 280px — selalu tampil penuh</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Toolbar padat: 6 grup, banyak teks</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Tidak ada indikator kapasitas halaman</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Variant A/B/C tanpa label & estimasi tinggi</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Zoom di 2 tempat (StatusBar + Toolbar) tidak sinkron</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Tidak ada minimap navigasi halaman</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Export tanpa pre-check — bisa export halaman kosong</div>
+      <div class="comp-item"><i class="ti ti-x" style="color:var(--color-text-danger);font-size:13px" aria-hidden="true"></i> Stage tersisa ~720px saat 2 panel terbuka</div>
+    </div>
+    <div class="comp-card new">
+      <div class="comp-title">Usulan baru <span class="badge b-purple">improved</span></div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Sidebar ikonik 52px — stage dapat +456px</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Toolbar 36px: hanya ikon+label penting</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Meter kapasitas real-time di right panel</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Variant dengan label + estimasi tinggi px</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Satu ZoomWidget tunggal di toolbar</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Minimap + page counter di pojok canvas</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Export wizard 3 langkah dengan checklist</div>
+      <div class="comp-item"><i class="ti ti-check" style="color:var(--color-text-success);font-size:13px" aria-hidden="true"></i> Focus mode (F) — sembunyikan semua panel</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:12px;font-weight:500;margin-bottom:.5rem">Perbandingan luas area kerja (layar 1440px)</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div>
+        <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:2px">Sekarang: 2 panel buka (280+280) → <strong>880px stage</strong></div>
+        <div style="display:flex;height:14px;border-radius:4px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
+          <div style="width:19%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#64748b">Kiri</div>
+          <div style="width:62%;background:#4338ca;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff">880px canvas</div>
+          <div style="width:19%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#64748b">Kanan</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:2px">Usulan baru: sidebar 52px + panel kanan 220px → <strong>1168px stage</strong></div>
+        <div style="display:flex;height:14px;border-radius:4px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
+          <div style="width:3.6%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#64748b"></div>
+          <div style="width:81%;background:#059669;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff">1168px canvas (+33%)</div>
+          <div style="width:15%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#64748b">Kanan</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div id="pane-sidebar" class="pane">
+  <div class="section-label">Desain sidebar ikonik — 52px, 7 fungsi</div>
+  <div style="display:flex;gap:1rem;margin-bottom:1rem">
+    <div style="width:52px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+      <div class="side-btn active"><i class="ti ti-layout-list" aria-hidden="true" style="font-size:18px"></i><span style="font-size:8px">Halaman</span></div>
+      <div class="side-btn"><i class="ti ti-stack-2" aria-hidden="true" style="font-size:18px"></i><span style="font-size:8px">Layer</span></div>
+      <div class="side-sep"></div>
+      <div class="side-btn"><i class="ti ti-circle-plus" aria-hidden="true" style="font-size:18px"></i><span style="font-size:8px">Sisipkan</span></div>
+      <div class="side-btn"><i class="ti ti-photo" aria-hidden="true" style="font-size:18px"></i><span style="font-size:8px">Aset</span></div>
+      <div class="side-sep"></div>
+      <div class="side-btn"><i class="ti ti-sparkles" aria-hidden="true" style="font-size:18px"></i><span style="font-size:8px">AI</span></div>
+      <div style="flex:1"></div>
+      <div class="side-btn"><i class="ti ti-keyboard" aria-hidden="true" style="font-size:18px"></i></div>
+      <div class="side-btn"><i class="ti ti-help-circle" aria-hidden="true" style="font-size:18px"></i></div>
+    </div>
+    <div style="flex:1">
+      <div class="card" style="margin-bottom:.5rem">
+        <div style="font-size:12px;font-weight:500;margin-bottom:.4rem">Klik ikon → Drawer Panel Melayang</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.7">
+          Sidebar tidak membuka panel statis yang memakan ruang. Klik ikon memunculkan <strong>drawer melayang</strong> (floating panel) di atas canvas — tidak menggeser layout. User bisa tutup drawer kapan saja tanpa kehilangan posisi canvas.<br><br>
+          Ini pendekatan yang dipakai Figma, Canva, dan Framer — terbukti efektif untuk tool kreatif.
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:12px;font-weight:500;margin-bottom:.4rem">Shortcut keyboard per ikon</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>Halaman</span><span class="code">1</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>Layer</span><span class="code">2</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>Sisipkan block</span><span class="code">3</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>Aset / media</span><span class="code">4</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>AI assistant</span><span class="code">Ctrl+I</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>Focus mode</span><span class="code">F</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px"><span>Command palette</span><span class="code">Ctrl+K</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid #4338ca">
+    <div style="font-size:12px;font-weight:500;margin-bottom:.3rem">Kenapa sidebar ikonik lebih baik dari panel lebar</div>
+    <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.7">
+      Panel lebar 280px memaksa user memilih antara canvas yang cukup besar atau panel yang terbuka. Sidebar ikonik menghilangkan tradeoff itu — sidebar selalu ada sebagai navigasi, tapi tidak mengambil ruang kerja. Konten panel baru muncul saat dibutuhkan saja via drawer yang bisa ditutup kapan saja.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OVERFLOW & VARIANT ═══ -->
+<div id="pane-overflow" class="pane">
+  <div class="section-label">Sistem deteksi overflow + variant adaptif</div>
+
+  <div class="card" style="margin-bottom:.6rem">
+    <div style="font-size:12px;font-weight:500;margin-bottom:.5rem">Meter kapasitas halaman — real-time di right panel</div>
+    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.6rem;margin-bottom:.5rem">
+      <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:4px">Kapasitas halaman (636px efektif)</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="width:6px;height:6px;border-radius:1px;background:#4338ca;flex-shrink:0"></div>
+          <div style="flex:1;background:var(--color-background-primary);border-radius:3px;height:10px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
+            <div style="width:30%;height:100%;background:#4338ca"></div>
+          </div>
+          <span style="font-size:9px;color:var(--color-text-secondary);min-width:60px">Materi Sec · 180px</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="width:6px;height:6px;border-radius:1px;background:#059669;flex-shrink:0"></div>
+          <div style="flex:1;background:var(--color-background-primary);border-radius:3px;height:10px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
+            <div style="width:16%;height:100%;background:#059669"></div>
+          </div>
+          <span style="font-size:9px;color:var(--color-text-secondary);min-width:60px">Def Box · 100px</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="width:6px;height:6px;border-radius:1px;background:#e2e8f0;flex-shrink:0"></div>
+          <div style="flex:1;background:var(--color-background-primary);border-radius:3px;height:10px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
+            <div style="width:54%;height:100%;background:#f1f5f9"></div>
+          </div>
+          <span style="font-size:9px;color:var(--color-text-secondary);min-width:60px">Sisa · 356px</span>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--color-text-secondary)">Saat sisa &lt; 80px → warning kuning. Saat sisa &lt; 0px → dialog pilihan muncul otomatis.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:.6rem">
+    <div style="font-size:12px;font-weight:500;margin-bottom:.5rem">Dialog saat block tidak muat — urutan saran</div>
+    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.7rem">
+      <div style="font-size:11px;font-weight:500;margin-bottom:.25rem">Halaman hampir penuh</div>
+      <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:.6rem">Menambah <em>Kuis block</em> (320px) melebihi sisa ruang (280px). Pilih tindakan:</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="background:var(--color-background-primary);border:0.5px solid #818cf8;border-radius:6px;padding:7px 10px;cursor:pointer">
+          <div style="font-size:10px;font-weight:500;color:#4338ca;margin-bottom:1px"><i class="ti ti-stack-push" aria-hidden="true" style="font-size:11px"></i> Pakai Variant Compact (220px)</div>
+          <div style="font-size:9px;color:var(--color-text-secondary)">Hemat 100px — muat di halaman ini. Konten tetap lengkap.</div>
+        </div>
+        <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:7px 10px;cursor:pointer">
+          <div style="font-size:10px;font-weight:500;margin-bottom:1px"><i class="ti ti-file-plus" aria-hidden="true" style="font-size:11px"></i> Buat halaman baru & pindah block ke sana</div>
+          <div style="font-size:9px;color:var(--color-text-secondary)">Halaman baru dibuat otomatis setelah halaman ini.</div>
+        </div>
+        <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:7px 10px;cursor:pointer">
+          <div style="font-size:10px;color:var(--color-text-secondary)">Tetap tambah (konten mungkin terpotong)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ IMPLEMENTASI ═══ -->
+<div id="pane-impl" class="pane">
+  <div class="section-label">Urutan implementasi — 4 fase</div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:.5rem"><div class="badge b-red">Fase 1 — 3 hari</div><span style="font-size:11px;font-weight:500">Sidebar ikonik + drawer panel</span></div>
+    <div class="row"><div class="step">1</div><div style="font-size:11px">Buat komponen <span class="code">IconSidebar.tsx</span> — 52px, 7 ikon, shortcut keyboard 1-4</div></div>
+    <div class="row"><div class="step">2</div><div style="font-size:11px">Buat <span class="code">FloatingDrawer.tsx</span> — panel melayang yang bisa tutup sendiri, tidak menggeser layout</div></div>
+    <div class="row"><div class="step">3</div><div style="font-size:11px">Migrasikan konten <span class="code">LeftPanel.tsx</span> (4 tab) ke dalam drawer yang dipanggil dari sidebar</div></div>
+    <div class="row"><div class="step">4</div><div style="font-size:11px">Update <span class="code">CanvaBuilder.tsx</span>: ganti <span class="code">leftPanelOpen</span> logic ke <span class="code">activeDrawer: string | null</span></div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:.5rem"><div class="badge b-amber">Fase 2 — 2 hari</div><span style="font-size:11px;font-weight:500">Toolbar ramping + ZoomWidget unified</span></div>
+    <div class="row"><div class="step">1</div><div style="font-size:11px">Hapus teks dari tombol yang jarang dipakai di toolbar — ikon saja cukup (Undo, Redo, panel toggles)</div></div>
+    <div class="row"><div class="step">2</div><div style="font-size:11px">Buat <span class="code">ZoomWidget.tsx</span> tunggal — gabungkan logika dari <span class="code">StatusBar</span> dan <span class="code">ToolbarViewControls</span></div></div>
+    <div class="row"><div class="step">3</div><div style="font-size:11px">Pindahkan AI, Help, Tour ke sidebar ikonik — bersihkan toolbar dari tombol sekunder</div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:.5rem"><div class="badge b-purple">Fase 3 — 3 hari</div><span style="font-size:11px;font-weight:500">Sistem variant + meter kapasitas</span></div>
+    <div class="row"><div class="step">1</div><div style="font-size:11px">Update <span class="code">BlockDefinitionRegistry.ts</span>: tambah <span class="code">estimatedHeight</span> dan ubah <span class="code">variants</span> ke objek dengan label + tinggi</div></div>
+    <div class="row"><div class="step">2</div><div style="font-size:11px">Tambah <span class="code">PageCapacityMeter</span> di right panel — bar stacked per block + warning saat &lt;80px sisa</div></div>
+    <div class="row"><div class="step">3</div><div style="font-size:11px">Update <span class="code">addSchemaBlock()</span>: cek kapasitas sebelum tambah, munculkan <span class="code">OverflowDialog</span></div></div>
+    <div class="row"><div class="step">4</div><div style="font-size:11px">Update renderer (MateriSection, Kuis, dll): implementasi tampilan berbeda per variant A/B/C</div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:.5rem"><div class="badge b-green">Fase 4 — 2 hari</div><span style="font-size:11px;font-weight:500">Export wizard + minimap</span></div>
+    <div class="row"><div class="step">1</div><div style="font-size:11px">Buat <span class="code">ExportWizard.tsx</span>: 3 langkah — checklist → preview iframe → download</div></div>
+    <div class="row"><div class="step">2</div><div style="font-size:11px">Tambah <span class="code">PageMinimap.tsx</span> di pojok kanan bawah canvas — thumbnail semua halaman, klik untuk navigasi</div></div>
+  </div>
+
+  <div style="font-size:11px;color:var(--color-text-secondary);margin-top:.5rem;line-height:1.7;background:var(--color-background-secondary);padding:.6rem;border-radius:var(--border-radius-md)">
+    Total estimasi: <strong>10 hari kerja</strong>. Fase 1 paling berdampak untuk UX (ruang canvas +33%) dan bisa di-ship sendiri tanpa menunggu fase lain. Semua fase bersifat backward-compatible — tidak ada breaking change pada data/schema.
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('pane-'+id).classList.add('active');
+}
+</script>
