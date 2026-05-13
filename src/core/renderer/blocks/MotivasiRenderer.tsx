@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 import type { MotivasiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
@@ -589,7 +589,10 @@ function MotivasiVariantKutipan({
 export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
   block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
-  const variant: 'A' | 'B' | 'C' = block.variant || 'A';
+  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
+    (block.variant as 'A' | 'B' | 'C') || 'A'
+  );
+  const variant = currentVariant;
 
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -621,7 +624,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
       <div style={{ position: 'relative' }}>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-            <VariantSelector active={variant} onChange={() => {}} />
+            <VariantSelector active={variant} onChange={setCurrentVariant} />
           </div>
         )}
 

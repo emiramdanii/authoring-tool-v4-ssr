@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BookOpen, Sparkles } from 'lucide-react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
@@ -119,7 +119,10 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
 }) {
   const colorKey = block.borderColor || 'y';
   const borderColor = tokens.color(colorKey);
-  const variant: 'A' | 'B' | 'C' = block.variant || 'A';
+  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
+    (block.variant as 'A' | 'B' | 'C') || 'A'
+  );
+  const variant = currentVariant;
 
   // ── Inline editing hooks ─────────────────────────────────────
   const contentEditor = useInlineEditor({
@@ -151,14 +154,15 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
   if (variant === 'A') {
     return (
       <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-              <VariantSelector active={variant} onChange={() => {}} />
+              <VariantSelector active={variant} onChange={setCurrentVariant} />
             </div>
           )}
-          <div
-            className="rounded-xl overflow-hidden premium-card-glow"
+        <div
+          className="rounded-xl overflow-hidden premium-card-glow"
             style={{
               background: tokens.colorAlpha(colorKey, 0.08),
               border: '1px solid ' + tokens.colorAlpha(colorKey, 0.25),
@@ -217,13 +221,14 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
   if (variant === 'B') {
     return (
       <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} glass gradientBorder>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-              <VariantSelector active={variant} onChange={() => {}} />
+              <VariantSelector active={variant} onChange={setCurrentVariant} />
             </div>
           )}
-          <div
+        <div
           className="variant-glass-card"
           style={{
             padding: isCompact ? '16px' : '24px',
@@ -322,10 +327,11 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
   // ── Variant C "Ringkas" — Ultra-compact pill/badge ──────────
   return (
     <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
       <div style={{ position: 'relative' }}>
         {isEditing && (
         <div style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 15 }}>
-          <VariantSelector active={variant} onChange={() => {}} />
+          <VariantSelector active={variant} onChange={setCurrentVariant} />
         </div>
       )}
       <div

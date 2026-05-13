@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import type { NcGridBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -82,7 +82,6 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
   const cardBorder = tokens.colorAlpha(card.color, 0.25);
   const bodyText = card.body || '';
   const isLong = bodyText.length > 80;
-  const displayBody = isLong && !expanded && isCompact ? bodyText.slice(0, 80) + '...' : bodyText;
 
   return (
     <div className="rounded-xl border transition-all hover:-translate-y-0.5 min-w-0 group"
@@ -162,7 +161,6 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
   const cardBorder = tokens.colorAlpha(card.color, 0.2);
   const bodyText = card.body || '';
   const isLong = bodyText.length > 120;
-  const displayBody = isLong && !expanded ? bodyText.slice(0, 120) + '...' : bodyText;
 
   return (
     <div
@@ -439,6 +437,11 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
       <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
       <div style={{ position: 'relative' }} className="premium-card-glow">
+        <div className="flex items-center gap-2 mb-2">
+          <PremiumBadge tokens={tokens} accent="c" variant="glass" isCompact={isCompact}>
+            Norma
+          </PremiumBadge>
+        </div>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
             <VariantSelector active={variant} onChange={setCurrentVariant} />
@@ -470,6 +473,11 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
         className={variant === 'A' ? 'grid grid-cols-2 gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
         style={{ ...(variant === 'A' ? { minWidth: 0 } : containerStyle), position: 'relative' }}
       >
+        <div className="flex items-center gap-2 mb-2">
+          <PremiumBadge tokens={tokens} accent="c" variant="glass" isCompact={isCompact}>
+            Norma
+          </PremiumBadge>
+        </div>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
             <VariantSelector active={variant} onChange={setCurrentVariant} />

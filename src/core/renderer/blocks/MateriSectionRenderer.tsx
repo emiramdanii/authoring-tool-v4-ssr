@@ -595,16 +595,9 @@ function MateriVariantPill({
           {block.title}
         </h2>
         {block.bsnpRequired && (
-          <span
-            className="variant-compact-pill flex-shrink-0"
-            style={{
-              borderColor: tokens.colorAlpha('y', 0.3),
-              color: tokens.color('y'),
-              background: tokens.colorAlpha('y', 0.1),
-            }}
-          >
+          <PremiumBadge tokens={tokens} accent="y" variant="outline" isCompact={isCompact}>
             WAJIB
-          </span>
+          </PremiumBadge>
         )}
       </div>
 
@@ -741,7 +734,14 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
   isCompact?: boolean;
   isEditing?: boolean;
 }) {
-  const variant: 'A' | 'B' | 'C' = block.variant || 'A';
+  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
+    (block.variant as 'A' | 'B' | 'C') || 'A'
+  );
+  const variant = currentVariant;
+
+  const handleVariantChange = (v: 'A' | 'B' | 'C') => {
+    setCurrentVariant(v);
+  };
 
   const sharedProps = {
     block,
@@ -758,7 +758,7 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
       <div style={{ position: 'relative' }}>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-            <VariantSelector active={variant} onChange={() => {}} />
+            <VariantSelector active={variant} onChange={handleVariantChange} />
           </div>
         )}
 

@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { MessageCircle, Send, RotateCcw, CheckCircle2, Sparkles, Heart, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { MessageCircle, Send, RotateCcw, CheckCircle2, Sparkles, Heart } from 'lucide-react';
 import type { DiskusiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -22,13 +22,52 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepComple
 //   - Glow pulse on answered questions
 //   - Sparkle decorations
 //   - Premium card glow hover effect
+//   - Variant A/B/C support (Klasik / Kartu / Ringkas)
 // ═══════════════════════════════════════════════════════════════════
+
+// ── Variant Selector Component ──────────────────────────────────
+function VariantSelector({
+  active,
+  onChange,
+}: {
+  active: 'A' | 'B' | 'C';
+  onChange: (v: 'A' | 'B' | 'C') => void;
+}) {
+  const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
+    { key: 'A', label: 'Klasik' },
+    { key: 'B', label: 'Kartu' },
+    { key: 'C', label: 'Ringkas' },
+  ];
+
+  return (
+    <div className="variant-selector">
+      {variants.map((v) => (
+        <button
+          key={v.key}
+          className={`variant-pill ${active === v.key ? 'active' : ''}`}
+          onClick={() => onChange(v.key)}
+          aria-label={`Varian ${v.label}`}
+          title={`Varian ${v.label}`}
+          type="button"
+        >
+          {v.key}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
   const [responses, setResponses] = React.useState<Record<number, string>>({});
   const [submitted, setSubmitted] = React.useState(false);
+
+  // ── Variant state ────────────────────────────────────────────
+  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
+    (block.variant as 'A' | 'B' | 'C') || 'A'
+  );
+  const variant = currentVariant;
 
   // ── Interactive store ───────────────────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -143,16 +182,9 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
     );
   }
 
-  // ══ MAIN DISCUSSION SCREEN — Premium Interactive ═════════════════
-  return (
-    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
-    <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={3} position="top" />
-    <div className="mt-3 rounded-2xl p-4 premium-card-glow relative overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.1)}, ${tokens.colorAlpha('c', 0.04)})`,
-        border: `2px solid ${tokens.colorAlpha('c', 0.3)}`,
-        boxShadow: tokens.raw.shadow.card + ', 0 0 24px ' + tokens.colorAlpha('c', 0.08),
-      }}>
+  // ══ VARIANT A — KLASIK (Default, original layout) ═══════════════
+  const renderVariantA = () => (
+    <>
       {/* Decorative sparkle */}
       <div className="absolute top-3 right-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
         <Sparkles size={18} style={{ color: tokens.color('c') }} />
@@ -304,6 +336,340 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           </button>
         </MicroInteraction>
       )}
+    </>
+  );
+
+  // ══ VARIANT B — KARTU (Card-style layout with more visual space) ═
+  const renderVariantB = () => (
+    <>
+      {/* Decorative sparkle */}
+      <div className="absolute top-3 right-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
+        <Sparkles size={18} style={{ color: tokens.color('c') }} />
+      </div>
+
+      {/* ── Header with premium icon — larger ─────────────────────── */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.3)}, ${tokens.colorAlpha('c', 0.12)})`,
+            border: `1px solid ${tokens.colorAlpha('c', 0.4)}`,
+            boxShadow: `0 6px 16px ${tokens.colorAlpha('c', 0.3)}`,
+          }}>
+          <MessageCircle size={22} style={{ color: tokens.color('c') }} />
+        </div>
+        <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '15px' : '18px' }}>
+          <InlineTextEditor
+            {...titleEditor}
+            className="font-extrabold"
+            style={{ color: tokens.color('c'), fontSize: 'inherit' }}
+          />
+        </div>
+        {/* Progress indicator — PremiumBadge */}
+        {interactive && questions.length > 0 && (
+          <div className="ml-auto">
+            <PremiumBadge tokens={tokens} accent={allAnswered ? 'g' : 'c'} variant={allAnswered ? 'gradient' : 'glass'} isCompact={isCompact}>
+              {answeredCount}/{questions.length}
+            </PremiumBadge>
+          </div>
+        )}
+      </div>
+
+      {/* ── Intro text ───────────────────────────────────────────── */}
+      {block.intro && <InlineTextEditor
+        {...introEditor}
+        className={`mt-1 leading-relaxed font-bold mb-4 ${isCompact ? 'canvas-truncate-2' : ''}`}
+        style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text') }}
+        placeholder="Ketik intro..."
+      />}
+
+      {/* ── Holographic Aurora Progress Bar ───────────────────────── */}
+      {interactive && questions.length > 0 && (
+        <div className="h-2 rounded-full overflow-hidden mb-5"
+          style={{ background: tokens.subtleBg(0.08) }}>
+          <div className="h-full rounded-full transition-all"
+            style={{
+              width: progress * 100 + '%',
+              background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')}, ${tokens.color('c')})`,
+              backgroundSize: '200% 100%',
+              boxShadow: `0 0 8px ${tokens.colorAlpha('c', 0.4)}`,
+              animation: 'shimmer 2s linear infinite',
+            }} />
+        </div>
+      )}
+
+      {/* ── Discussion Questions — Card Style ──────────────────────── */}
+      {questions.map((q, i) => {
+        const qColor = q.color || 'c';
+        const hasResponse = responses[i]?.trim().length > 0;
+        return (
+        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-5 rounded-2xl p-5 min-w-0"
+          style={{
+            background: hasResponse
+              ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.08)}, ${tokens.colorAlpha(qColor, 0.05)})`
+              : `linear-gradient(135deg, ${tokens.colorAlpha(qColor, 0.06)}, ${tokens.subtleBg(0.04)})`,
+            border: `2px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.4 : 0.2)}`,
+            borderLeft: `4px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
+            boxShadow: hasResponse
+              ? `0 4px 16px ${tokens.colorAlpha('g', 0.15)}`
+              : `0 2px 8px ${tokens.colorAlpha(qColor, 0.08)}`,
+            transition: 'all 0.3s ease',
+          }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: `linear-gradient(135deg, ${tokens.colorAlpha(qColor, 0.2)}, ${tokens.colorAlpha(qColor, 0.08)})`,
+                border: `1px solid ${tokens.colorAlpha(qColor, 0.3)}`,
+                fontSize: isCompact ? '16px' : '20px',
+              }}>
+              {q.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="font-extrabold block" style={{ color: tokens.color(qColor), fontSize: isCompact ? '13px' : '15px' }}>{q.label}</span>
+              {/* Question number badge */}
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 inline-block"
+                style={{
+                  background: tokens.colorAlpha(qColor, 0.12),
+                  color: tokens.color(qColor),
+                  border: `1px solid ${tokens.colorAlpha(qColor, 0.25)}`,
+                }}>
+                Pertanyaan {i + 1}
+              </span>
+            </div>
+            {hasResponse && interactive && (
+              <div style={{ animation: 'popIn 0.3s ease-out' }}>
+                <CheckCircle2 size={16} style={{ color: tokens.color('g') }} />
+              </div>
+            )}
+          </div>
+          <p className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          {interactive ? (
+            <textarea className="w-full rounded-xl p-3.5 resize-y transition-all"
+              style={{
+                fontSize: isCompact ? '12px' : '14px',
+                color: tokens.color('text'),
+                background: hasResponse
+                  ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.05)}, ${tokens.subtleBg(0.06)})`
+                  : tokens.subtleBg(0.06),
+                border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.35 : 0.2)}`,
+                minHeight: isCompact ? '50px' : '80px',
+                transition: 'all 0.2s ease',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                boxShadow: hasResponse ? `0 0 8px ${tokens.colorAlpha('g', 0.1)}` : 'none',
+              }}
+              placeholder={q.petunjuk}
+              value={responses[i] || ''}
+              onChange={(e) => setResponses(prev => ({ ...prev, [i]: e.target.value }))}
+            />
+          ) : (
+            <div className="w-full rounded-xl p-3.5 min-h-[50px]"
+              style={{
+                fontSize: isCompact ? '11px' : '13px',
+                color: tokens.textSubtle(0.5),
+                background: tokens.subtleBg(0.03),
+                border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
+              }}>
+              {q.petunjuk}
+            </div>
+          )}
+        </div>
+        );
+      })}
+
+      {/* ── Submit button — premium spring bounce ──────────────────── */}
+      {interactive && !submitted && questions.length > 0 && (
+        <MicroInteraction tokens={tokens} accent="c" effect={allAnswered ? 'bounce' : 'squish'}>
+          <button
+            className="w-full mt-5 py-3 rounded-2xl font-extrabold transition-all hover:scale-[1.02]"
+            onClick={handleSubmit}
+            disabled={!allAnswered}
+            style={{
+              fontSize: '14px',
+              background: allAnswered
+                ? 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')'
+                : tokens.subtleBg(0.08),
+              color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
+              border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
+              boxShadow: allAnswered
+                ? `0 4px 20px ${tokens.colorAlpha('c', 0.4)}, 0 0 30px ${tokens.colorAlpha('c', 0.15)}`
+                : 'none',
+              cursor: allAnswered ? 'pointer' : 'not-allowed',
+              animation: allAnswered ? 'glowPulse 2s ease-in-out infinite' : 'none',
+              '--glow-color': tokens.colorAlpha('c', 0.3),
+              '--glow-color-strong': tokens.colorAlpha('c', 0.6),
+            } as React.CSSProperties}>
+            <Send size={15} className="inline mr-1" /> Kirim Diskusi
+          </button>
+        </MicroInteraction>
+      )}
+    </>
+  );
+
+  // ══ VARIANT C — RINGKAS (Ultra-compact layout) ══════════════════
+  const renderVariantC = () => (
+    <>
+      {/* No decorative sparkle for Ringkas variant */}
+
+      {/* ── Compact header ─────────────────────────────────────────── */}
+      <div className="flex items-center gap-1.5 mb-2">
+        <MessageCircle size={13} style={{ color: tokens.color('c') }} />
+        <span className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '11px' : '13px' }}>
+          <InlineTextEditor
+            {...titleEditor}
+            className="font-extrabold"
+            style={{ color: tokens.color('c'), fontSize: 'inherit' }}
+          />
+        </span>
+        {/* Progress indicator — PremiumBadge */}
+        {interactive && questions.length > 0 && (
+          <div className="ml-auto">
+            <PremiumBadge tokens={tokens} accent={allAnswered ? 'g' : 'c'} variant={allAnswered ? 'gradient' : 'glass'} isCompact={true}>
+              {answeredCount}/{questions.length}
+            </PremiumBadge>
+          </div>
+        )}
+      </div>
+
+      {/* ── Intro text ───────────────────────────────────────────── */}
+      {block.intro && <InlineTextEditor
+        {...introEditor}
+        className={`leading-relaxed font-bold mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
+        style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.color('text') }}
+        placeholder="Ketik intro..."
+      />}
+
+      {/* ── Compact progress bar ───────────────────────────────────── */}
+      {interactive && questions.length > 0 && (
+        <div className="h-1 rounded-full overflow-hidden mb-2"
+          style={{ background: tokens.subtleBg(0.08) }}>
+          <div className="h-full rounded-full transition-all"
+            style={{
+              width: progress * 100 + '%',
+              background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')}, ${tokens.color('c')})`,
+              backgroundSize: '200% 100%',
+              boxShadow: `0 0 6px ${tokens.colorAlpha('c', 0.4)}`,
+              animation: 'shimmer 2s linear infinite',
+            }} />
+        </div>
+      )}
+
+      {/* ── Discussion Questions — Compact rows ────────────────────── */}
+      {questions.map((q, i) => {
+        const qColor = q.color || 'c';
+        const hasResponse = responses[i]?.trim().length > 0;
+        return (
+        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-2 rounded-lg p-2 min-w-0"
+          style={{
+            background: hasResponse
+              ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.04)}, ${tokens.colorAlpha(qColor, 0.02)})`
+              : tokens.subtleBg(0.03),
+            border: `1px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.25 : 0.1)}`,
+            borderLeft: `2px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
+            boxShadow: hasResponse ? `0 1px 6px ${tokens.colorAlpha('g', 0.08)}` : 'none',
+            transition: 'all 0.3s ease',
+          }}>
+          <div className="flex items-center gap-1.5">
+            <span style={{ fontSize: isCompact ? '11px' : '13px' }}>{q.icon}</span>
+            <span className="font-bold" style={{ color: tokens.color(qColor), fontSize: isCompact ? '10px' : '11px' }}>{q.label}</span>
+            {hasResponse && interactive && (
+              <div style={{ animation: 'popIn 0.3s ease-out' }}>
+                <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+              </div>
+            )}
+            {/* Question number */}
+            <span className="ml-auto text-[8px] font-bold px-1 py-0.5 rounded-full"
+              style={{
+                background: tokens.colorAlpha(qColor, 0.1),
+                color: tokens.color(qColor),
+              }}>
+              {i + 1}
+            </span>
+          </div>
+          <p className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          {interactive ? (
+            <textarea className="w-full mt-1.5 rounded-md p-1.5 resize-y transition-all"
+              style={{
+                fontSize: isCompact ? '10px' : '11px',
+                color: tokens.color('text'),
+                background: hasResponse
+                  ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.03)}, ${tokens.subtleBg(0.04)})`
+                  : tokens.subtleBg(0.04),
+                border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.25 : 0.15)}`,
+                minHeight: isCompact ? '28px' : '36px',
+                transition: 'all 0.2s ease',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                boxShadow: hasResponse ? `0 0 4px ${tokens.colorAlpha('g', 0.08)}` : 'none',
+              }}
+              placeholder={q.petunjuk ? q.petunjuk.slice(0, 40) + (q.petunjuk.length > 40 ? '...' : '') : undefined}
+              value={responses[i] || ''}
+              onChange={(e) => setResponses(prev => ({ ...prev, [i]: e.target.value }))}
+            />
+          ) : (
+            <div className="w-full mt-1.5 rounded-md p-1.5 min-h-[24px]"
+              style={{
+                fontSize: isCompact ? '9px' : '10px',
+                color: tokens.textSubtle(0.5),
+                background: tokens.subtleBg(0.02),
+                border: '1px dashed ' + tokens.colorAlpha(qColor, 0.2),
+              }}>
+              {q.petunjuk}
+            </div>
+          )}
+        </div>
+        );
+      })}
+
+      {/* ── Submit button — compact ─────────────────────────────────── */}
+      {interactive && !submitted && questions.length > 0 && (
+        <MicroInteraction tokens={tokens} accent="c" effect={allAnswered ? 'bounce' : 'squish'}>
+          <button
+            className="w-full mt-3 py-1.5 rounded-lg font-extrabold transition-all hover:scale-[1.01]"
+            onClick={handleSubmit}
+            disabled={!allAnswered}
+            style={{
+              fontSize: '11px',
+              background: allAnswered
+                ? 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')'
+                : tokens.subtleBg(0.08),
+              color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
+              border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
+              boxShadow: allAnswered
+                ? `0 4px 20px ${tokens.colorAlpha('c', 0.4)}, 0 0 30px ${tokens.colorAlpha('c', 0.15)}`
+                : 'none',
+              cursor: allAnswered ? 'pointer' : 'not-allowed',
+              animation: allAnswered ? 'glowPulse 2s ease-in-out infinite' : 'none',
+              '--glow-color': tokens.colorAlpha('c', 0.3),
+              '--glow-color-strong': tokens.colorAlpha('c', 0.6),
+            } as React.CSSProperties}>
+            <Send size={11} className="inline mr-1" /> Kirim
+          </button>
+        </MicroInteraction>
+      )}
+    </>
+  );
+
+  // ══ MAIN DISCUSSION SCREEN — Render based on variant ═════════════
+  return (
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
+    <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={3} position="top" />
+    <div className="mt-3 rounded-2xl p-4 premium-card-glow relative overflow-hidden"
+      style={{
+        background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.1)}, ${tokens.colorAlpha('c', 0.04)})`,
+        border: `2px solid ${tokens.colorAlpha('c', 0.3)}`,
+        boxShadow: tokens.raw.shadow.card + ', 0 0 24px ' + tokens.colorAlpha('c', 0.08),
+      }}>
+      {/* Variant selector overlay — only visible when editing */}
+      {isEditing && (
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <VariantSelector active={variant} onChange={setCurrentVariant} />
+        </div>
+      )}
+
+      {/* Conditional variant rendering */}
+      {variant === 'A' && renderVariantA()}
+      {variant === 'B' && renderVariantB()}
+      {variant === 'C' && renderVariantC()}
     </div>
     </PremiumBlockWrapper>
   );
