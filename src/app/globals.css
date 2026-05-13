@@ -1090,3 +1090,245 @@ input[type="number"]::-webkit-outer-spin-button {
 .skip-nav:focus {
   top: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PREMIUM DESIGN SYSTEM — Advanced Visual Effects
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Premium Card Glow ───────────────────────────────────────── */
+.premium-card-glow {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+.premium-card-glow:hover {
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.15), 0 8px 32px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+/* ── Premium Focus Glow ──────────────────────────────────────── */
+.premium-focus-glow:focus-within {
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+/* ── Premium Skeleton (Aurora Shimmer) ───────────────────────── */
+.premium-skeleton {
+  background: linear-gradient(90deg,
+    var(--semantic-bg-elevated) 25%,
+    var(--semantic-bg-surface) 37%,
+    var(--semantic-bg-elevated) 63%
+  );
+  background-size: 200% 100%;
+  animation: auroraShimmer 1.5s ease-in-out infinite;
+}
+@keyframes auroraShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Premium Chip ────────────────────────────────────────────── */
+.premium-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--semantic-glass-bg);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--semantic-glass-border);
+  color: var(--semantic-text-secondary);
+  transition: all 0.2s ease;
+}
+.premium-chip:hover {
+  background: var(--semantic-bg-elevated);
+  border-color: var(--semantic-accent);
+  color: var(--semantic-accent);
+}
+
+/* ── Premium Divider ─────────────────────────────────────────── */
+.premium-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--semantic-accent), transparent);
+  opacity: 0.3;
+}
+
+/* ── Premium Reveal (Scroll Reveal) ──────────────────────────── */
+.premium-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.premium-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Premium Tooltip (Glassmorphism) ─────────────────────────── */
+.premium-tooltip {
+  position: relative;
+}
+.premium-tooltip::after {
+  content: attr(data-premium-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--semantic-glass-bg-strong);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--semantic-glass-border);
+  color: var(--semantic-text-primary);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.premium-tooltip:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* ── Premium Gradient Background ─────────────────────────────── */
+.premium-gradient-bg {
+  background: linear-gradient(135deg,
+    var(--semantic-bg-surface),
+    var(--semantic-bg-elevated)
+  );
+}
+
+/* ── Premium Text Gradient ───────────────────────────────────── */
+.premium-text-gradient {
+  background: linear-gradient(135deg, var(--semantic-accent), var(--semantic-accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Premium Border Gradient (Rotating Conic) ────────────────── */
+.premium-border-gradient {
+  position: relative;
+  border: none !important;
+}
+.premium-border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    var(--semantic-accent),
+    var(--semantic-accent-secondary),
+    var(--semantic-accent),
+    var(--semantic-accent-secondary),
+    var(--semantic-accent)
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rotateBorder 4s linear infinite;
+}
+@keyframes rotateBorder {
+  to { --border-angle: 360deg; }
+}
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ── Premium Animations ──────────────────────────────────────── */
+@keyframes blockStaggerIn {
+  0% { opacity: 0; transform: translateY(24px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pageSlideInRight {
+  0% { opacity: 0; transform: translateX(40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pageSlideInLeft {
+  0% { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes coverReveal {
+  0% { opacity: 0; transform: scale(1.05); filter: blur(4px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes hoverLift {
+  0% { transform: translateY(0) scale(1); box-shadow: 0 0 0 transparent; }
+  100% { transform: translateY(-2px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+}
+
+@keyframes selectionGlow {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.6), 0 0 12px rgba(59, 130, 246, 0.15); }
+  50% { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.25); }
+}
+
+@keyframes pressDown {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sparkle {
+  0% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1) rotate(180deg); opacity: 1; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+
+@keyframes trophyBounce {
+  0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+  40% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  60% { transform: scale(0.9) rotate(-3deg); opacity: 1; }
+  80% { transform: scale(1.05) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes confettiBurst {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.4; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes stepChipFlip {
+  0% { transform: perspective(600px) rotateY(0deg); }
+  100% { transform: perspective(600px) rotateY(360deg); }
+}
+
+@keyframes springBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(251,191,36,0.3)); }
+  50% { box-shadow: 0 0 24px var(--glow-color-strong, rgba(251,191,36,0.6)), 0 0 48px var(--glow-color, rgba(251,191,36,0.2)); }
+}

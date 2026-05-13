@@ -4,6 +4,7 @@ import React from 'react';
 import type { NcGridBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 /** Inner card component so hooks are not called in loops */
 function NcGridCard({ card, cardIndex, blockId, tokens, isCompact, interactive }: {
@@ -83,12 +84,71 @@ function NcGridCard({ card, cardIndex, blockId, tokens, isCompact, interactive }
   );
 }
 
+/** Step mode sub-component for NcGridRenderer when cards > 2 */
+function NcGridStepMode({ block, tokens, isCompact, interactive }: {
+  block: NcGridBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean;
+}) {
+  const cards = block.cards || [];
+  const STEP_SIZE = 2;
+  const totalSteps = Math.ceil(cards.length / STEP_SIZE);
+  const { activeStep, ...nav } = usePremiumStepNavigator(totalSteps);
+
+  // Build step labels: "Norma 1-2", "Norma 3-4", etc.
+  const labels = Array.from({ length: totalSteps }, (_, i) => {
+    const start = i * STEP_SIZE + 1;
+    const end = Math.min((i + 1) * STEP_SIZE, cards.length);
+    return end > start ? `Norma ${start}-${end}` : `Norma ${start}`;
+  });
+
+  // Get cards for current step
+  const stepCards = cards.slice(activeStep * STEP_SIZE, (activeStep + 1) * STEP_SIZE);
+
+  return (
+    <PremiumStepNavigator
+      labels={labels}
+      activeStep={activeStep}
+      onStepChange={nav.goTo}
+      tokens={tokens}
+      accent="c"
+      isCompact={isCompact}
+    >
+      <div className="grid grid-cols-2 gap-3 my-3" style={{ minWidth: 0 }}>
+        {stepCards.map((card, i) => (
+          <NcGridCard
+            key={`nc-card-step-${card.title?.slice(0,8)}-${activeStep}-${i}`}
+            card={card}
+            cardIndex={activeStep * STEP_SIZE + i}
+            blockId={block.id!}
+            tokens={tokens}
+            isCompact={isCompact}
+            interactive={interactive}
+          />
+        ))}
+      </div>
+    </PremiumStepNavigator>
+  );
+}
+
 export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactive }: {
   block: NcGridBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
 }) {
+  const cards = block.cards || [];
+
+  // Use step mode when there are more than 2 cards
+  if (cards.length > 2) {
+    return (
+      <NcGridStepMode
+        block={block}
+        tokens={tokens}
+        isCompact={isCompact}
+        interactive={interactive}
+      />
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-3 my-3" style={{ minWidth: 0 }}>
-      {(block.cards || []).map((card, i) => (
+      {cards.map((card, i) => (
         <NcGridCard
           key={`nc-card-${card.title?.slice(0,8)}-${i}`}
           card={card}

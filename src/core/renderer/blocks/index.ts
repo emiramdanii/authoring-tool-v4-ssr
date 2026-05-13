@@ -34,3 +34,12 @@ export { TrueFalseGameRenderer } from './TrueFalseGameRenderer';
 export { DragDropGameRenderer } from './DragDropGameRenderer';
 export { CrosswordGameRenderer } from './CrosswordGameRenderer';
 export { TeamBuzzerGameRenderer } from './TeamBuzzerGameRenderer';
+export { StepNavigator, useStepNavigator } from './StepNavigator';
+export { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
+export {
+  PremiumBlockWrapper,
+  ReadingProgressIndicator,
+  StepCompletionOverlay,
+  PremiumBadge,
+  MicroInteraction,
+} from './PremiumBlockEffects';

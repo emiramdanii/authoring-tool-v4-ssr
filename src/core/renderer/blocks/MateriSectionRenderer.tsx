@@ -52,7 +52,7 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
