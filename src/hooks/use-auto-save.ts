@@ -3,59 +3,25 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { canvaPagesToSavePages } from '@/lib/save-utils';
 
 /**
  * Unified auto-save hook — single source of truth for saving both stores.
  *
  * Supports two persistence modes:
  *   1. **Database mode** (preferred): When a `projectId` is available
- *      (either from the argument or from ProjectContext),
- *      saves both stores to the database via `/api/projects/[id]/save`.
+ *      and a `saveProject` callback is provided, saves via the
+ *      ProjectManager's unified save path (no more direct fetch).
  *   2. **localStorage fallback**: When no `projectId`, saves to localStorage
  *      (for offline/new users or before first project creation).
  *
- * Called ONCE from CanvaBuilder (the primary editing context).
+ * Called ONCE from CanvaAutoSaveSync (the primary editing context).
  */
 
 const DEBOUNCE_MS = 2000;
 const HIDE_SAVED_MS = 3000;
 
-// ── Helper: convert canva pages → save API format ─────────────
-function canvaPagesToSavePages(pages: import('@/components/canva/types').CanvaPage[]) {
-  return pages.map((page) => ({
-    id: page.id,
-    label: page.label,
-    templateType: page.templateType,
-    templateVariant: page.templateVariant,
-    bgColor: page.bgColor,
-    bgDataUrl: page.bgDataUrl,
-    overlay: page.overlay,
-    schema: page.schema || null,
-    navConfig: page.navConfig,
-    templateData: page.templateData,
-    colorPalette: page.colorPalette,
-    blocks: (page.schema?.blocks || []).map((block) => ({
-      type: block.type,
-      id: block.id,
-      content: Object.fromEntries(
-        Object.entries(block).filter(([k]) => !['type', 'id', 'layout', 'children'].includes(k))
-      ),
-      layout: block.layout,
-      variant: block.variant,
-      style: block.style,
-      children: block.children,
-    })),
-    elements: page.elements.map((el) => ({
-      type: el.type,
-      id: el.id,
-      content: Object.fromEntries(
-        Object.entries(el).filter(([k]) => !['type', 'id'].includes(k))
-      ),
-    })),
-  }));
-}
-
-export function useAutoSave(projectId?: string | null) {
+export function useAutoSave(projectId?: string | null, saveProject?: () => Promise<void>) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastDBSaveRef = useRef<number>(0);
 
@@ -68,56 +34,12 @@ export function useAutoSave(projectId?: string | null) {
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
 
-      // If projectId is set, also save to database
-      const effectiveProjectId = projectId;
-      if (effectiveProjectId) {
-        // Throttle DB saves (min 2s between)
+      // If projectId and saveProject are available, save to DB via the unified path
+      if (projectId && saveProject) {
         const now = Date.now();
         if (now - lastDBSaveRef.current >= 2000) {
           lastDBSaveRef.current = now;
-
-          const canvaState = useCanvaStore.getState();
-          const authoringState = useAuthoringStore.getState();
-          const savePages = canvaPagesToSavePages(canvaState.pages);
-
-          try {
-            const res = await fetch(`/api/projects/${effectiveProjectId}/save`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                pages: savePages,
-                ratioId: canvaState.ratioId,
-                meta: {
-                  title: authoringState.meta.judulPertemuan || 'Proyek Baru',
-                  subject: authoringState.meta.mapel,
-                  grade: authoringState.meta.kelas,
-                },
-                authoringData: {
-                  meta: authoringState.meta,
-                  cp: authoringState.cp,
-                  tp: authoringState.tp,
-                  atp: authoringState.atp,
-                  alur: authoringState.alur,
-                  skenario: authoringState.skenario,
-                  kuis: authoringState.kuis,
-                  modules: authoringState.modules,
-                  games: authoringState.games,
-                  materi: authoringState.materi,
-                  petunjuk: authoringState.petunjuk,
-                  diskusi: authoringState.diskusi,
-                  refleksi: authoringState.refleksi,
-                  penutup: authoringState.penutup,
-                  suara: authoringState.suara,
-                },
-              }),
-            });
-
-            if (!res.ok) {
-              console.warn('[useAutoSave] DB save failed:', res.status);
-            }
-          } catch (dbError) {
-            console.warn('[useAutoSave] DB save error (localStorage still OK):', dbError);
-          }
+          await saveProject();
         }
       }
 
@@ -135,7 +57,7 @@ export function useAutoSave(projectId?: string | null) {
       console.error('[useAutoSave] Auto-save failed:', error);
       useCanvaStore.setState({ _saveStatus: 'error' });
     }
-  }, [projectId]);
+  }, [projectId, saveProject]);
 
   // ── Subscribe to both stores for change detection ────────────────
   useEffect(() => {

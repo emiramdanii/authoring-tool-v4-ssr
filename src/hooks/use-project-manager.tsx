@@ -7,6 +7,7 @@ import type { DBProjectData } from '@/store/canva-store';
 import type { KuisItem, Module } from '@/store/authoring-store';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
+import { canvaPagesToSavePages } from '@/lib/save-utils';
 import { toast } from 'sonner';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -43,41 +44,6 @@ interface ProjectContextValue {
 }
 
 const ProjectContext = createContext<ProjectContextValue | null>(null);
-
-// ── Helper: convert canva pages → save API format ─────────────
-function canvaPagesToSavePages(pages: import('@/components/canva/types').CanvaPage[]) {
-  return pages.map((page) => ({
-    id: page.id,
-    label: page.label,
-    templateType: page.templateType,
-    templateVariant: page.templateVariant,
-    bgColor: page.bgColor,
-    bgDataUrl: page.bgDataUrl,
-    overlay: page.overlay,
-    schema: page.schema || null,
-    navConfig: page.navConfig,
-    templateData: page.templateData,
-    colorPalette: page.colorPalette,
-    blocks: (page.schema?.blocks || []).map((block) => ({
-      type: block.type,
-      id: block.id,
-      content: Object.fromEntries(
-        Object.entries(block).filter(([k]) => !['type', 'id', 'layout', 'children'].includes(k))
-      ),
-      layout: block.layout,
-      variant: block.variant,
-      style: block.style,
-      children: block.children,
-    })),
-    elements: page.elements.map((el) => ({
-      type: el.type,
-      id: el.id,
-      content: Object.fromEntries(
-        Object.entries(el).filter(([k]) => !['type', 'id'].includes(k))
-      ),
-    })),
-  }));
-}
 
 // ── Provider Component ─────────────────────────────────────────
 export function ProjectProvider({ children }: { children: ReactNode }) {

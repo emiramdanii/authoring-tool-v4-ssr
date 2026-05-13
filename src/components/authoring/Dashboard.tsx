@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring/types';
+import { useProjectManager } from '@/hooks/use-project-manager';
 import {
   ChevronDown, Target, Calendar, ClipboardList, HelpCircle, Puzzle, Gamepad2, FileEdit, Zap,
   Rocket, FileText, Sparkles, Pencil, Play, Layers, ArrowRight,
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const newProject = useAuthoringStore((s) => s.newProject);
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
+  const { saveProject, currentProjectId } = useProjectManager();
 
   // Get canva pages length for adaptive guidance
   const pagesLength = useCanvaStore((s) => s.pages.length);
@@ -165,7 +167,7 @@ export default function Dashboard() {
         {isPresetMode && (
           <button
             onClick={() => {
-              saveToStorage();
+              if (currentProjectId) { saveProject(); } else { saveToStorage(); }
               useAuthoringStore.setState({ activePreset: null });
             }}
             className="px-3 py-1.5 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-lg hover:bg-emerald-600/30 transition-colors"
@@ -509,7 +511,7 @@ export default function Dashboard() {
         </button>
         <div className="flex-1" />
         <button
-          onClick={saveToStorage}
+          onClick={() => currentProjectId ? saveProject() : saveToStorage()}
           className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary transition-colors"
         >
           Simpan
