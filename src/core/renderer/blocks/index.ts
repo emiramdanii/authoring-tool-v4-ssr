@@ -43,3 +43,4 @@ export {
   PremiumBadge,
   MicroInteraction,
 } from './PremiumBlockEffects';
+export { OverflowIndicator } from './OverflowIndicator';

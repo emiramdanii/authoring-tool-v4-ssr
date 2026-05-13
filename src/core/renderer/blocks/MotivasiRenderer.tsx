@@ -13,31 +13,60 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 // prior knowledge. BSNP requires apersepsi as an opening element
 // to activate students' background knowledge before new material.
 //
-// Features:
-//   - Central hook question with animated visual
-//   - Prior knowledge connection cards
-//   - Smooth transition to main content
-//   - BSNP badge when required
+// Creative Variants:
+//   A "Klasik" — Full card with header, hook question, connections, transition
+//   B "Kartu Hook" — Hook question as standalone hero card, connections as icon pills
+//   C "Kutipan" — Quote-style: large italic hook question in quotation marks, minimal
+//
+// All text/labels in Indonesian (Bahasa Indonesia).
 // ═══════════════════════════════════════════════════════════════════
 
-export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
-  block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+// ── Variant Selector ─────────────────────────────────────────────
+function VariantSelector({
+  active,
+  onChange,
+}: {
+  active: 'A' | 'B' | 'C';
+  onChange: (v: 'A' | 'B' | 'C') => void;
 }) {
-  const titleEditor = useInlineEditor({
-    blockId: block.id,
-    fieldKey: 'title',
-    value: block.title ?? '',
-    tag: 'span',
-  });
+  const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
+    { key: 'A', label: 'Klasik' },
+    { key: 'B', label: 'Kartu Hook' },
+    { key: 'C', label: 'Kutipan' },
+  ];
 
-  const hookEditor = useInlineEditor({
-    blockId: block.id,
-    fieldKey: 'hookQuestion',
-    value: block.hookQuestion ?? '',
-    tag: 'div',
-    multiline: true,
-  });
+  return (
+    <div className="variant-selector">
+      {variants.map((v) => (
+        <button
+          key={v.key}
+          className={`variant-pill ${active === v.key ? 'active' : ''}`}
+          onClick={() => onChange(v.key)}
+          aria-label={`Varian ${v.label}`}
+          title={`Varian ${v.label}`}
+          type="button"
+        >
+          {v.key}
+        </button>
+      ))}
+    </div>
+  );
+}
 
+// ── Variant A "Klasik" — Original full-card style ───────────────
+function MotivasiVariantKlasik({
+  block,
+  tokens,
+  isCompact,
+  titleEditor,
+  hookEditor,
+}: {
+  block: MotivasiBlock;
+  tokens: TokenResolver;
+  isCompact: boolean;
+  titleEditor: ReturnType<typeof useInlineEditor>;
+  hookEditor: ReturnType<typeof useInlineEditor>;
+}) {
   const connections = block.connections || [];
   const visual = block.visual;
   const gradientFrom = visual?.bgGradient?.[0] || 'y';
@@ -116,7 +145,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
         />
       </div>
 
-      {/* ═══ HOOK QUESTION — central visual element ══════════════ */}
+      {/* ═══ HOOK QUESTION ═══════════════════════════════════════ */}
       <div
         style={{
           margin: isCompact ? '10px 12px' : '14px 18px',
@@ -128,7 +157,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
           overflow: 'hidden',
         }}
       >
-        {/* Decorative sparkle in background */}
+        {/* Decorative sparkle */}
         <div
           className="absolute top-2 right-3"
           style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.3 }}
@@ -137,7 +166,6 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
 
         <div className="flex items-start gap-4 relative">
-          {/* Visual emoji */}
           {visual?.emoji && (
             <div
               className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
@@ -152,7 +180,6 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
             </div>
           )}
 
-          {/* Hook question text */}
           <div className="flex-1 min-w-0">
             <div
               className="font-extrabold uppercase tracking-wider mb-2"
@@ -180,11 +207,9 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
       </div>
 
-      {/* ═══ CONNECTIONS — prior knowledge cards ══════════════════ */}
+      {/* ═══ CONNECTIONS ═════════════════════════════════════════ */}
       {connections.length > 0 && (
-        <div
-          style={{ padding: isCompact ? '0 12px 10px' : '0 18px 14px' }}
-        >
+        <div style={{ padding: isCompact ? '0 12px 10px' : '0 18px 14px' }}>
           <div
             className="font-extrabold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
             style={{
@@ -241,7 +266,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
       )}
 
-      {/* ═══ TRANSITION STATEMENT ═════════════════════════════════ */}
+      {/* ═══ TRANSITION ══════════════════════════════════════════ */}
       {block.transition && (
         <div
           style={{
@@ -268,6 +293,331 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Variant B "Kartu Hook" — Hero hook card + icon pills ────────
+function MotivasiVariantKartuHook({
+  block,
+  tokens,
+  isCompact,
+  titleEditor,
+  hookEditor,
+}: {
+  block: MotivasiBlock;
+  tokens: TokenResolver;
+  isCompact: boolean;
+  titleEditor: ReturnType<typeof useInlineEditor>;
+  hookEditor: ReturnType<typeof useInlineEditor>;
+}) {
+  const connections = block.connections || [];
+  const visual = block.visual;
+  const gradientFrom = visual?.bgGradient?.[0] || 'y';
+  const gradientTo = visual?.bgGradient?.[1] || 'c';
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: tokens.color('card'),
+        boxShadow: tokens.raw.shadow.elevated,
+        border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.15)}`,
+        animation: 'fadeIn 0.4s ease',
+      }}
+    >
+      {/* ═══ HOOK HERO CARD ═════════════════════════════════════ */}
+      <div
+        style={{
+          padding: isCompact ? '20px 16px' : '32px 24px',
+          background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.1)}, ${tokens.colorAlpha(gradientTo, 0.05)})`,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Minimal header with title + BSNP badge */}
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <Lightbulb size={14} style={{ color: tokens.color(gradientFrom) }} />
+            <h2
+              className="font-bold leading-tight min-w-0"
+              style={{
+                fontFamily: tokens.fontFamily('display'),
+                fontSize: isCompact ? '12px' : '14px',
+                color: tokens.muted(0.7),
+                wordBreak: 'break-word',
+              }}
+            >
+              <InlineTextEditor
+                {...titleEditor}
+                className="font-bold leading-tight"
+                style={{ fontSize: 'inherit', fontFamily: 'inherit', color: 'inherit' }}
+              />
+            </h2>
+          </div>
+          {block.bsnpRequired && (
+            <div
+              className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full font-extrabold uppercase"
+              style={{
+                background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
+                color: tokens.color('bg'),
+                fontSize: isCompact ? '7px' : '8px',
+                letterSpacing: '0.1em',
+              }}
+            >
+              <Shield size={isCompact ? 8 : 10} />
+              <span>WAJIB</span>
+            </div>
+          )}
+        </div>
+
+        {/* Centered emoji */}
+        {visual?.emoji && (
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: isCompact ? '12px' : '16px',
+              fontSize: isCompact ? '36px' : '48px',
+              animation: 'float 3s ease-in-out infinite',
+            }}
+          >
+            {visual.emoji}
+          </div>
+        )}
+
+        {/* Hook question — hero text */}
+        <div style={{ textAlign: 'center' }}>
+          <InlineTextEditor
+            {...hookEditor}
+            className="font-bold leading-relaxed"
+            style={{
+              fontSize: isCompact ? '15px' : '18px',
+              color: tokens.color('text'),
+              fontFamily: tokens.fontFamily('display'),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              textAlign: 'center',
+            }}
+            placeholder="Ketik pertanyaan pemicu..."
+          />
+        </div>
+      </div>
+
+      {/* ═══ CONNECTIONS — icon pills ════════════════════════════ */}
+      {connections.length > 0 && (
+        <div
+          style={{
+            padding: isCompact ? '10px 12px' : '14px 18px',
+            borderTop: `1px solid ${tokens.subtleBorder(0.08)}`,
+          }}
+        >
+          <div
+            className="font-extrabold uppercase tracking-wider mb-2"
+            style={{
+              color: tokens.muted(0.5),
+              fontSize: isCompact ? '8px' : '9px',
+              letterSpacing: '0.08em',
+            }}
+          >
+            Koneksi Pengetahuan
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {connections.map((conn, i) => (
+              <div
+                key={`mot-pill-${block.id || 'mot'}-${i}`}
+                className="variant-compact-pill"
+                style={{
+                  borderColor: tokens.colorAlpha(conn.color, 0.25),
+                  color: tokens.color(conn.color),
+                }}
+                title={conn.description}
+              >
+                <span style={{ fontSize: isCompact ? '11px' : '13px' }}>{conn.icon}</span>
+                <span style={{ fontWeight: 700 }}>{conn.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ TRANSITION ══════════════════════════════════════════ */}
+      {block.transition && (
+        <div
+          style={{
+            margin: isCompact ? '0 12px 10px' : '0 18px 14px',
+            padding: isCompact ? '6px 12px' : '8px 16px',
+            background: tokens.colorAlpha(gradientTo, 0.06),
+            borderRadius: '8px',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <ArrowRight size={10} style={{ color: tokens.color(gradientTo) }} />
+            <span
+              className="italic"
+              style={{
+                fontSize: isCompact ? '10px' : '11px',
+                color: tokens.muted(0.7),
+              }}
+            >
+              {block.transition}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Variant C "Kutipan" — Quote style ──────────────────────────
+function MotivasiVariantKutipan({
+  block,
+  tokens,
+  isCompact,
+  titleEditor,
+  hookEditor,
+}: {
+  block: MotivasiBlock;
+  tokens: TokenResolver;
+  isCompact: boolean;
+  titleEditor: ReturnType<typeof useInlineEditor>;
+  hookEditor: ReturnType<typeof useInlineEditor>;
+}) {
+  const visual = block.visual;
+  const gradientFrom = visual?.bgGradient?.[0] || 'y';
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: tokens.color('card'),
+        boxShadow: tokens.raw.shadow.elevated,
+        border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.12)}`,
+        animation: 'fadeIn 0.4s ease',
+        padding: isCompact ? '14px 16px' : '20px 24px',
+      }}
+    >
+      {/* Minimal header */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Lightbulb size={12} style={{ color: tokens.color(gradientFrom) }} />
+          <h2
+            className="font-semibold min-w-0"
+            style={{
+              fontFamily: tokens.fontFamily('display'),
+              fontSize: isCompact ? '11px' : '13px',
+              color: tokens.muted(0.6),
+              wordBreak: 'break-word',
+            }}
+          >
+            <InlineTextEditor
+              {...titleEditor}
+              className="font-semibold"
+              style={{ fontSize: 'inherit', fontFamily: 'inherit', color: 'inherit' }}
+            />
+          </h2>
+        </div>
+        {block.bsnpRequired && (
+          <div
+            className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full font-extrabold uppercase"
+            style={{
+              background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
+              color: tokens.color('bg'),
+              fontSize: '7px',
+              letterSpacing: '0.1em',
+            }}
+          >
+            <Shield size={7} />
+            <span>WAJIB</span>
+          </div>
+        )}
+      </div>
+
+      {/* Hook question — large italic quote */}
+      <div className="variant-quote">
+        <InlineTextEditor
+          {...hookEditor}
+          className="italic leading-relaxed"
+          style={{
+            fontSize: isCompact ? '15px' : '18px',
+            color: tokens.color('text'),
+            fontFamily: tokens.fontFamily('display'),
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            lineHeight: 1.7,
+          }}
+          placeholder="Ketik pertanyaan pemicu..."
+        />
+      </div>
+
+      {/* Transition only — connections hidden */}
+      {block.transition && (
+        <div
+          style={{
+            marginTop: isCompact ? '10px' : '14px',
+            padding: isCompact ? '6px 12px' : '8px 16px',
+            background: tokens.colorAlpha(gradientFrom, 0.05),
+            borderRadius: '8px',
+            borderLeft: `3px solid ${tokens.colorAlpha(gradientFrom, 0.3)}`,
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <ArrowRight size={10} style={{ color: tokens.color(gradientFrom) }} />
+            <span
+              className="italic"
+              style={{
+                fontSize: isCompact ? '10px' : '11px',
+                color: tokens.muted(0.7),
+              }}
+            >
+              {block.transition}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Component ───────────────────────────────────────────────
+export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
+  block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+}) {
+  const variant: 'A' | 'B' | 'C' = block.variant || 'A';
+
+  const titleEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'title',
+    value: block.title ?? '',
+    tag: 'span',
+  });
+
+  const hookEditor = useInlineEditor({
+    blockId: block.id,
+    fieldKey: 'hookQuestion',
+    value: block.hookQuestion ?? '',
+    tag: 'div',
+    multiline: true,
+  });
+
+  const sharedProps = {
+    block,
+    tokens,
+    isCompact,
+    titleEditor,
+    hookEditor,
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {isEditing && (
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <VariantSelector active={variant} onChange={() => {}} />
+        </div>
+      )}
+
+      {variant === 'A' && <MotivasiVariantKlasik {...sharedProps} />}
+      {variant === 'B' && <MotivasiVariantKartuHook {...sharedProps} />}
+      {variant === 'C' && <MotivasiVariantKutipan {...sharedProps} />}
     </div>
   );
 }

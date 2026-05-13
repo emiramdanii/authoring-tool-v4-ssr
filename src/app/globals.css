@@ -1332,3 +1332,134 @@ input[type="number"]::-webkit-outer-spin-button {
   0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(251,191,36,0.3)); }
   50% { box-shadow: 0 0 24px var(--glow-color-strong, rgba(251,191,36,0.6)), 0 0 48px var(--glow-color, rgba(251,191,36,0.2)); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PREMIUM VARIANTS — Creative Layout Styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Variant Selector Pills ──────────────────────────────────── */
+.variant-selector {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--semantic-bg-elevated);
+  border: 1px solid var(--semantic-border-subtle);
+}
+.variant-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--semantic-text-muted);
+  background: transparent;
+  border: none;
+}
+.variant-pill:hover {
+  color: var(--semantic-accent);
+  background: var(--semantic-nav-active-bg);
+}
+.variant-pill.active {
+  color: var(--semantic-bg-app);
+  background: linear-gradient(135deg, var(--semantic-accent), var(--semantic-accent-hover));
+  box-shadow: 0 1px 4px rgba(251, 191, 36, 0.3);
+}
+
+/* ── Variant B: Glassmorphism Card ───────────────────────────── */
+.variant-glass-card {
+  background: var(--semantic-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--semantic-glass-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Variant C: Compact Pill ─────────────────────────────────── */
+.variant-compact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--semantic-bg-elevated);
+  border: 1px solid var(--semantic-border-subtle);
+  color: var(--semantic-text-secondary);
+  transition: all 0.2s ease;
+}
+.variant-compact-pill:hover {
+  border-color: var(--semantic-accent);
+  color: var(--semantic-accent);
+}
+
+/* ── Quote Style (Variant C) ─────────────────────────────────── */
+.variant-quote {
+  position: relative;
+  padding-left: 24px;
+}
+.variant-quote::before {
+  content: '\201C';
+  position: absolute;
+  left: 0;
+  top: -8px;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--semantic-accent);
+  opacity: 0.3;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* ── Magazine 2-Column Layout ────────────────────────────────── */
+.variant-magazine-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+}
+
+/* ── Overflow Indicator ──────────────────────────────────────── */
+.overflow-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--semantic-glass-bg-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--semantic-border-default);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  animation: slideUp 0.3s ease;
+}
+.overflow-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--semantic-border-default);
+  background: var(--semantic-bg-surface);
+  color: var(--semantic-text-secondary);
+  white-space: nowrap;
+}
+.overflow-action-btn:hover {
+  border-color: var(--semantic-accent);
+  color: var(--semantic-accent);
+  background: var(--semantic-nav-active-bg);
+}
