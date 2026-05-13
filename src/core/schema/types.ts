@@ -554,10 +554,17 @@ export interface RangkumanBlock extends BaseBlock {
   accentColor?: string;
 }
 
+// ── Hero Schema ───────────────────────────────────────────────
+// Hero uses the same data model as Cover but with type: 'hero'.
+// This enables separate BlockDefinitionRegistry entry + variant support.
+
+export type HeroBlock = Omit<CoverBlock, 'type'> & { type: 'hero' };
+
 // ── Union Type ─────────────────────────────────────────────────
 
 export type SchemaBlock =
   | CoverBlock
+  | HeroBlock
   | PetunjukBlock
   | TpBlock
   | AlurBlock

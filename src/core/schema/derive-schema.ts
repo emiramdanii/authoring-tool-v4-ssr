@@ -115,7 +115,7 @@ export function deriveSchema(
       blocks.push(derivePenutup(ctx, idMap));
       break;
     case 'hero':
-      blocks.push(deriveCover(ctx, idMap)); // Hero ≈ Cover layout
+      blocks.push({ ...deriveCover(ctx, idMap), type: 'hero', id: getBlockId(idMap, 'hero', 0) });
       break;
     default:
       blocks.push(deriveGenericFallback(ctx, templateType, idMap));

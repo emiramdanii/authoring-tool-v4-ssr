@@ -132,6 +132,7 @@ import { BLOCK_DEFINITIONS, DEFAULT_CAPABILITIES } from './BlockDefinitionRegist
 
 const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'cover': CoverRenderer,
+  'hero': CoverRenderer, // Hero shares Cover's data model & renderer
   'petunjuk': PetunjukRenderer,
   'tp': TpRenderer,
   'alur': AlurRenderer,

@@ -145,8 +145,8 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     { type: 'item', label: 'Pindah Bawah', shortcut: 'Alt+↓', action: () => handleAction(() => moveBlockDown(blockId)) },
     { type: 'item', label: 'Duplikat', shortcut: 'Ctrl+D', action: () => handleAction(() => duplicateBlock(blockId)) },
     { type: 'divider' },
-    // Variant submenu — only show variants the block supports
-    ...(definition && definition.capabilities.variants.length > 0
+    // Variant submenu — only show when block has > 1 variant (no point switching if only A)
+    ...(definition && definition.capabilities.variants.length > 1
       ? [{
           type: 'submenu' as const,
           label: 'Ganti Varian',
