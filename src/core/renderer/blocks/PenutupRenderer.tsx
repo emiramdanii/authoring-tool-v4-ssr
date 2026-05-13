@@ -115,7 +115,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
             {block.nextPertemuan.judul}
           </div>
           <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{block.nextPertemuan.deskripsi}</div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid gap-2 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}>
             {(block.nextPertemuan.items || []).map((item, i) => (
               <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="rounded-xl p-2.5 font-bold text-center transition-all hover:-translate-y-0.5 min-w-0"
                 style={{

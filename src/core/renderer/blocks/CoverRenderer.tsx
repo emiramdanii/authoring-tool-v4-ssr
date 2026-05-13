@@ -96,14 +96,13 @@ function CoverVariantA({
       </div>
 
       {/* Title — inline editable */}
-      <h1 className="font-black leading-tight mt-3 min-w-0 line-clamp-3"
+      <h1 className="font-black leading-tight mt-3 min-w-0 line-clamp-4"
         style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
           style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit', wordBreak: 'break-word' }}
         />
-        {block.title.includes(' — ') && <><br /><span>{block.title.split(' — ')[1]}</span></>}
       </h1>
 
       {/* Subtitle */}
@@ -224,7 +223,7 @@ function CoverVariantB({
         </div>
 
         {/* Title — left-aligned, bold */}
-        <h1 className="font-black leading-tight min-w-0 line-clamp-3"
+        <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
             fontSize: 'clamp(22px, 5vw, 42px)',
             fontFamily: tokens.fontFamily('display'),
@@ -344,7 +343,7 @@ function CoverVariantC({
         </div>
 
         {/* Title */}
-        <h1 className="font-black leading-tight min-w-0 line-clamp-3"
+        <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
             fontSize: 'clamp(20px, 4vw, 36px)',
             fontFamily: tokens.fontFamily('display'),

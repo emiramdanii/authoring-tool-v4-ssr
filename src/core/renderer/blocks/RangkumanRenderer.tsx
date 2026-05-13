@@ -126,7 +126,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         <span
           className="font-bold"
           style={{
-            fontSize: isCompact ? '10px' : '9px',
+            fontSize: isCompact ? '9px' : '11px',
             color: tokens.colorAlpha(concept.color, 0.5),
             letterSpacing: '0.05em',
           }}
@@ -311,7 +311,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: isCompact ? '9px' : '10px',
+                  fontSize: isCompact ? '9px' : '11px',
                   fontWeight: 900,
                   color: isOpen ? tokens.color('bg') : conceptColor,
                   transition: 'all 0.2s ease',
@@ -399,7 +399,7 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
         className="grid gap-2.5"
         style={{
           padding: isCompact ? '10px 12px' : '14px 18px',
-          gridTemplateColumns: concepts.length <= 2 ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: isCompact ? '1fr' : (concepts.length <= 2 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))'),
         }}
       >
         {concepts.map((concept, i) => (
@@ -616,7 +616,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           <div
             className="mt-2 font-bold"
             style={{
-              fontSize: isCompact ? '9px' : '10px',
+              fontSize: isCompact ? '9px' : '11px',
               color: accentAlpha(0.5),
               letterSpacing: '0.05em',
             }}
@@ -630,7 +630,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           <div
             className="mt-2 font-bold"
             style={{
-              fontSize: isCompact ? '9px' : '10px',
+              fontSize: isCompact ? '9px' : '11px',
               color: accentAlpha(0.5),
               letterSpacing: '0.05em',
             }}

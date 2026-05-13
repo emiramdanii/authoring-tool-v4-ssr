@@ -94,6 +94,8 @@ function DefBoxStepMode({
         <div
           style={{
             padding: isCompact ? '10px 12px' : '13px 15px',
+            maxHeight: isCompact ? '180px' : '300px',
+            overflowY: 'auto',
           }}
         >
           <div

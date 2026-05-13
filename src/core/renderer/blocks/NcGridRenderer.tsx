@@ -283,11 +283,12 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
     <div
       className="min-w-0 group"
       style={{
-        borderRadius: '9999px',
+        borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
         background: cardBg,
         border: `1px solid ${cardBorder}`,
         padding: isCompact ? '5px 12px 5px 8px' : '7px 16px 7px 10px',
-        display: 'inline-flex',
+        display: expanded ? 'flex' : 'inline-flex',
+        flexDirection: expanded ? 'column' : 'row',
         alignItems: expanded ? 'flex-start' : 'center',
         gap: isCompact ? '5px' : '7px',
         cursor: 'pointer',
@@ -399,8 +400,8 @@ function NcGridStepMode({ block, tokens, isCompact, interactive, variant }: {
       isCompact={isCompact}
     >
       <div
-        className={variant === 'A' ? 'grid grid-cols-2 gap-3 my-3' : ''}
-        style={variant === 'A' ? { minWidth: 0 } : contentStyle}
+        className={variant === 'A' ? 'grid gap-3 my-3' : ''}
+        style={variant === 'A' ? { minWidth: 0, gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, 1fr)' } : contentStyle}
       >
         {stepCards.map((card, i) => (
           <CardComponent
@@ -470,8 +471,8 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
       <div
-        className={variant === 'A' ? 'grid grid-cols-2 gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
-        style={{ ...(variant === 'A' ? { minWidth: 0 } : containerStyle), position: 'relative' }}
+        className={variant === 'A' ? 'grid gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
+        style={{ ...(variant === 'A' ? { minWidth: 0, gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, 1fr)' } : containerStyle), position: 'relative' }}
       >
         <div className="flex items-center gap-2 mb-2">
           <PremiumBadge tokens={tokens} accent="c" variant="glass" isCompact={isCompact}>

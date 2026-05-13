@@ -616,3 +616,27 @@ Stage Summary:
 - Key premium features applied: PremiumStepNavigator, PremiumBlockWrapper, ReadingProgressIndicator, premium-card-glow
 - 2 files changed: DefBoxRenderer.tsx (106 insertions, 195 deletions — net code reduction thanks to PremiumStepNavigator), MotivasiRenderer.tsx
 - Push successful: 942cb64..c762fec main -> main
+---
+Task ID: template-readability-fix
+Agent: Main Agent
+Task: Fix all template renderers for text readability/overlap — MPI standard compliance
+
+Work Log:
+- Audited all 9+ renderer files (Cover, Petunjuk, Tp, Alur, DefBox, NcGrid, Diskusi, Rangkuman, Refleksi, Penutup, Skenario, Hasil) + SchemaRenderer + export CSS
+- Identified 7 critical issues causing text overlap/unreadable text
+- Fixed SchemaRenderer: maxWidth 85% → 92%, px-4 → px-5 for better content area
+- Fixed PetunjukRenderer: grid-cols-2 → responsive (single col in compact mode)
+- Fixed NcGridRenderer: grid-cols-2 → responsive + Variant C pill badge proper expand layout (flex column when expanded, rounded rect instead of pill)
+- Fixed CoverRenderer Variant A: removed manual `<br />` title split that caused overlap, increased line-clamp from 3 → 4
+- Fixed PenutupRenderer: grid-cols-2 → responsive (single col in compact mode)
+- Fixed DefBoxRenderer step mode: added maxHeight + overflowY auto to prevent page overflow
+- Fixed RangkumanRenderer: grid auto-fit minmax 180px → 200px, compact → single col; fixed font sizes 10px→11px for non-compact hints
+- Fixed export CSS: padding 5%→4%, added min-width:0 and word-break to .block, .nc-card, .penutup-item, grids
+- TypeScript check: zero errors
+
+Stage Summary:
+- All 7 template readability/overlap issues fixed
+- Key principle: text must be clear and readable (MPI standard)
+- Grid layouts now responsive (single column in compact/narrow view)
+- Minimum font sizes enforced (11px non-compact for hint text)
+- Export HTML also improved with better padding and overflow protection

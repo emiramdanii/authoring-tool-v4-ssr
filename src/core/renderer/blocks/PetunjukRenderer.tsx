@@ -146,7 +146,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
          *  should follow. The color cycle provides visual variety.
          *  Step numbers are shown inside the icon circle for
          *  clear sequential ordering. */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
+        <div className={`grid gap-3 mt-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {items.map((item, i) => {
             const colorCycle = ['y', 'c', 'g', 'p'];
             const itemColor = colorCycle[i % colorCycle.length];
@@ -261,8 +261,8 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
          *  A subtle footer that indicates this Petunjuk block
          *  meets BSNP requirements for SMP interactive media.
          *  Shows the required components checkmark. */}
-        <div className="mt-3 flex items-center justify-center gap-3"
-          style={{ fontSize: '9px', color: tokens.muted(0.4) }}>
+        <div className="mt-3 flex items-center justify-center gap-3 flex-wrap"
+          style={{ fontSize: isCompact ? '9px' : '10px', color: tokens.muted(0.4) }}>
           {['Petunjuk', 'KD/TP', 'Materi', 'Evaluasi', 'Profil'].map(comp => (
             <span key={`bsnp-${comp}`} className="flex items-center gap-0.5">
               <BookOpen size={8} /> {comp}

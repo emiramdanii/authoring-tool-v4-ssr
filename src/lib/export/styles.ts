@@ -50,7 +50,7 @@ export function getCss(ratioW: number, ratioH: number): string {
       overflow-y: auto;
       overflow-x: hidden;
       transition: opacity 0.35s ease, transform 0.35s ease;
-      padding: 5%;
+      padding: 4%;
     }
     .page.active { opacity: 1; transform: translateX(0); }
     .page.exit-left { opacity: 0; transform: translateX(-30px); pointer-events: none; }
@@ -95,6 +95,9 @@ export function getCss(ratioW: number, ratioH: number): string {
       margin-bottom: 12px;
       border: 1px solid rgba(255,255,255,0.06);
       animation: fadeIn 0.4s ease;
+      min-width: 0;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .block-header {
@@ -148,7 +151,7 @@ export function getCss(ratioW: number, ratioH: number): string {
     }
 
     /* ── Step grid ── */
-    .step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
     @media (max-width: 480px) { .step-grid { grid-template-columns: 1fr; } }
     .step-card {
       display: flex;
@@ -257,12 +260,15 @@ export function getCss(ratioW: number, ratioH: number): string {
     .def-box p { font-size: 0.82rem; line-height: 1.5; }
 
     /* ── NC Grid ── */
-    .nc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .nc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
     @media (max-width: 480px) { .nc-grid { grid-template-columns: 1fr; } }
     .nc-card {
       padding: 12px;
       background: rgba(255,255,255,0.03);
       border-radius: 10px;
+      min-width: 0;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .nc-icon { font-size: 1.4rem; margin-bottom: 4px; }
     .nc-card h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
@@ -427,12 +433,15 @@ export function getCss(ratioW: number, ratioH: number): string {
     .refleksi-petunjuk { font-size: 0.72rem; color: #6e90b5; }
 
     /* ── Penutup ── */
-    .penutup-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .penutup-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
     @media (max-width: 480px) { .penutup-preview { grid-template-columns: 1fr; } }
     .penutup-item {
       padding: 12px;
       background: rgba(255,255,255,0.03);
       border-radius: 10px;
+      min-width: 0;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .penutup-item span { font-size: 1.4rem; display: block; margin-bottom: 4px; }
     .penutup-item strong { font-size: 0.82rem; display: block; margin-bottom: 2px; }
