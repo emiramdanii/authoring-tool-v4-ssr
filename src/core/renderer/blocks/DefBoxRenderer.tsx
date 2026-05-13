@@ -371,6 +371,8 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
               fontSize: isCompact ? '12px' : '13px',
               lineHeight: 1.6,
               color: tokens.color('text'),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}
           >
             <InlineTextEditor

@@ -148,7 +148,22 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     if (!page) return;
     get()._pushHistory();
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, templateVariant: variant };
+
+    // ═══ Update page.templateVariant AND all schema blocks' variant ═══
+    // The schema renderer reads block.variant, not page.templateVariant.
+    // Without syncing both, the visual variant switcher appears broken.
+    let updatedSchema = page.schema;
+    if (updatedSchema?.blocks) {
+      updatedSchema = {
+        ...updatedSchema,
+        blocks: updatedSchema.blocks.map(block => ({
+          ...block,
+          variant,
+        })),
+      };
+    }
+
+    newPages[currentPageIndex] = { ...page, templateVariant: variant, schema: updatedSchema };
     set({ pages: newPages });
   },
 

@@ -135,13 +135,12 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ s
       )}
 
       {/* ══ FLOW BLOCKS: vertical stack, scrollable ══════════════ */}
-      {/* Flow blocks container — maxWidth:67% scales proportionally for any ratio.
-          Original 860px on 1280px canvas ≈ 67%. Using percentage ensures:
-          - 16:9 (1280px): 67% = 858px ≈ original
-          - 9:16 (720px):  67% = 482px — fits without overflow
-          - 1:1 (800px):   67% = 536px — comfortable reading width */}
-      <div className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${hasCoverBlock ? '' : 'px-5 py-5'}`}
-        style={{ ...(hasCoverBlock ? {} : { maxWidth: '92%', margin: '0 auto', width: '100%' }), position: 'relative', zIndex: 1, overflowX: 'hidden', wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
+      {/* Flow blocks container — maxWidth scales proportionally for any ratio.
+          Using percentage ensures responsive fit across all canvas sizes.
+          overflow-y-auto allows scrolling when content exceeds viewport height,
+          while overflow-x:hidden prevents horizontal bleed. */}
+      <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar ${hasCoverBlock ? '' : 'px-4 py-4'}`}
+        style={{ ...(hasCoverBlock ? {} : { maxWidth: '95%', margin: '0 auto', width: '100%' }), position: 'relative', zIndex: 1, wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
         {flowBlocks.map((block, i) => {
           const blockKey = block.id || `flow-${block.type}-${i}`;
           return (

@@ -337,7 +337,12 @@ export function PageFrame({
   selectedBlockId,
   onBlockSelect,
 }: PageFrameProps) {
-  const navConfig = getNavConfig(page);
+  // ═══ Read navConfig reactively from both page prop AND store ═══
+  // The page prop may be stale if the store updated after the prop was passed.
+  // Reading directly from canva store ensures instant visual feedback when
+  // the user toggles checkboxes or switches navbar style in the right panel.
+  const storeNavConfig = useCanvaStore(s => s.pages[currentPageIndex]?.navConfig);
+  const navConfig = storeNavConfig || getNavConfig(page);
   const navbarStyle = navConfig.navbarStyle || 'colorful';
   const theme = NAV_THEMES[navbarStyle] || NAV_THEMES.colorful;
   const showNavbar = navConfig.showNavbar !== false;
@@ -463,22 +468,22 @@ export function PageFrame({
       {showTopNav && (
         <div
           ref={topNavRef}
-          className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2"
+          className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2 overflow-hidden"
           style={{
             ...theme.topBg(tokens),
             padding: isCompact ? '4px 10px' : '8px 16px',
           }}
         >
-          {/* Title */}
-          <span className={`font-bold whitespace-nowrap truncate ${
-            isCompact ? 'text-[10px] max-w-[140px]' : 'text-sm max-w-[200px]'
+          {/* Title — truncated to prevent overflow */}
+          <span className={`font-bold whitespace-nowrap truncate flex-shrink-0 ${
+            isCompact ? 'text-[10px] max-w-[100px]' : 'text-sm max-w-[160px]'
           }`} style={{ color: tokens.color('y'), fontFamily: tokens.fontFamily('body') }}>
             {meta.namaBab || meta.judulPertemuan || 'Media'}
           </span>
 
-          {/* Progress bar */}
+          {/* Progress bar — takes remaining space */}
           {showProgress && (
-            <div className="flex-1 rounded-full overflow-hidden" style={theme.progressTrack(tokens, isCompact)}>
+            <div className="flex-1 min-w-[40px] rounded-full overflow-hidden" style={theme.progressTrack(tokens, isCompact)}>
               <div className="h-full transition-all duration-500" style={theme.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
@@ -494,8 +499,8 @@ export function PageFrame({
             />
           )}
 
-          {/* Page counter */}
-          <span className={`font-mono ${isCompact ? 'text-[8px]' : 'text-[10px]'}`} style={{ color: tokens.color('muted') }}>
+          {/* Page counter — compact, no overflow */}
+          <span className={`font-mono flex-shrink-0 ${isCompact ? 'text-[8px]' : 'text-[10px]'}`} style={{ color: tokens.color('muted') }}>
             {currentPageIndex + 1}/{totalPages}
           </span>
         </div>
@@ -522,7 +527,7 @@ export function PageFrame({
           )}
 
           {/* Nav bar */}
-          <div className={`flex items-center justify-between gap-1 ${
+          <div className={`flex items-center justify-between gap-1 overflow-hidden ${
             isCompact ? 'px-2 py-1' : 'px-3 py-2'
           }`}>
             {/* Prev button */}
@@ -530,7 +535,7 @@ export function PageFrame({
               <button
                 onClick={handlePrev}
                 disabled={currentPageIndex <= 0}
-                className={`font-bold transition-all active:scale-95 ${
+                className={`font-bold transition-all active:scale-95 flex-shrink-0 ${
                   isCompact ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-1'
                 } ${
                   currentPageIndex > 0
@@ -539,20 +544,21 @@ export function PageFrame({
                 }`}
                 style={theme.prevBtn(tokens, currentPageIndex <= 0)}
               >
-                {navbarStyle === 'minimal' ? '‹ Prev' : '← Prev'}
+                {navbarStyle === 'minimal' ? '‹' : '←'}
               </button>
             )}
 
-            {/* Page dots */}
-            <div className={`flex items-center gap-0.5 overflow-hidden ${
-              isCompact ? 'max-w-[50%]' : 'max-w-[50vw]'
+            {/* Page dots — constrained width, scrollable overflow */}
+            <div className={`flex items-center gap-0.5 overflow-hidden flex-1 min-w-0 ${
+              isCompact ? 'max-w-[45%]' : 'max-w-[50%]'
             }`}>
-              {pages.slice(0, isCompact ? 12 : pages.length).map((p, i) => {
+              {pages.slice(0, isCompact ? 8 : 20).map((p, i) => {
                 const isActive = i === currentPageIndex;
                 const isComplete = isPageComplete(i);
+                // Smaller dots to prevent overflow — especially in compact mode
                 const dotSize = isActive
-                  ? isCompact ? 20 : 32
-                  : isCompact ? 14 : 24;
+                  ? isCompact ? 18 : 28
+                  : isCompact ? 12 : 20;
                 return (
                   <button
                     key={p.id}
@@ -562,7 +568,7 @@ export function PageFrame({
                     style={{
                       width: dotSize,
                       height: dotSize,
-                      fontSize: isCompact ? 7 : (isActive ? 14 : 10),
+                      fontSize: isCompact ? 7 : (isActive ? 12 : 9),
                       ...theme.dotStyle(tokens, isActive, isComplete),
                     }}
                   >
@@ -577,13 +583,13 @@ export function PageFrame({
                   </button>
                 );
               })}
-              {isCompact && pages.length > 12 && (
-                <span className="text-[7px]" style={{ color: tokens.colorAlpha('muted', 0.4) }}>+{pages.length - 12}</span>
+              {pages.length > (isCompact ? 8 : 20) && (
+                <span className="text-[7px] flex-shrink-0" style={{ color: tokens.colorAlpha('muted', 0.4) }}>+{pages.length - (isCompact ? 8 : 20)}</span>
               )}
             </div>
 
             {/* Score + Next */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               {/* Bottom score pill — animated with +N popup */}
               {hasScore && showScore && !isCompact && (
                 <ScoreDisplay
@@ -595,12 +601,12 @@ export function PageFrame({
                 />
               )}
 
-              {/* Next button */}
+              {/* Next button — shorter labels to prevent overflow */}
               {showPrevNext && (
                 <button
                   onClick={handleNext}
                   disabled={isLastPage}
-                  className={`transition-all active:scale-95 ${
+                  className={`transition-all active:scale-95 whitespace-nowrap ${
                     isLastPage ? 'cursor-not-allowed' : 'cursor-pointer hover:-translate-y-0.5'
                   } ${
                     isCompact ? 'text-[9px]' : 'text-xs'
@@ -611,24 +617,24 @@ export function PageFrame({
                     ? (navbarStyle === 'glass' ? '✨ Selesai' : '🎉 Selesai')
                     : (isCompact
                       ? 'Lanjut →'
-                      : `${getNextLabel(currentTemplate, nextTemplate)} ${navbarStyle === 'minimal' ? '→' : ''}`)
+                      : `${navbarStyle === 'minimal' ? 'Next →' : 'Lanjut →'}`)
                   }
                 </button>
               )}
             </div>
           </div>
 
-          {/* Reset + Score tier message */}
-          {hasScore && showScore && mode !== 'canvas' && (
-            <div className="flex items-center justify-center gap-3 pb-1">
-              {scoreTier && !isCompact && navbarStyle !== 'minimal' && (
-                <span className="text-[9px] font-bold" style={{ color: scoreTier.color }}>
+          {/* Reset + Score tier message — only in preview/export, compact */}
+          {hasScore && showScore && mode !== 'canvas' && !isCompact && (
+            <div className="flex items-center justify-center gap-3 py-0.5 overflow-hidden">
+              {scoreTier && navbarStyle !== 'minimal' && (
+                <span className="text-[9px] font-bold truncate" style={{ color: scoreTier.color }}>
                   {scoreTier.label}
                 </span>
               )}
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1 text-[10px] transition-all active:scale-95"
+                className="flex items-center gap-1 text-[10px] transition-all active:scale-95 whitespace-nowrap"
                 style={theme.resetBtn(tokens)}
               >
                 ↩ Ulangi

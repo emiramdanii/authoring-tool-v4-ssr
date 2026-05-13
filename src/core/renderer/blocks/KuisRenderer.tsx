@@ -290,6 +290,7 @@ function KuisVariantRingkas({
                   boxShadow: bxSh,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
+                  maxWidth: '100%',
                   color: tokens.color('text'),
                   cursor: isAnswered ? 'default' : 'pointer',
                   position: 'relative',
@@ -496,7 +497,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           </div>
 
           {/* Score breakdown with premium badges */}
-          <div className="flex justify-center gap-3 mb-4">
+          <div className="flex justify-center gap-3 mb-4 flex-wrap">
             <PremiumBadge tokens={tokens} accent="g" variant="solid" isCompact={isCompact}>
               <CheckCircle2 size={12} /> Benar: {totalCorrect}
             </PremiumBadge>
@@ -567,7 +568,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
             }}>
             <Gamepad2 size={14} style={{ color: tokens.color('y') }} />
           </div>
-          <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
+          <div className="font-extrabold min-w-0" style={{ fontSize: '13px', color: tokens.color('y') }}>
             <InlineTextEditor
               {...titleEditor}
               className="text-[11px] font-extrabold"
@@ -577,7 +578,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           </div>
           {/* Streak indicator — premium glow pulse */}
           {currentStreak >= 2 && (
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full"
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full flex-shrink-0"
               style={{
                 background: `linear-gradient(135deg, ${tokens.colorAlpha('o', 0.2)}, ${tokens.colorAlpha('y', 0.1)})`,
                 border: `1px solid ${tokens.colorAlpha('o', 0.5)}`,
@@ -593,7 +594,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
             </div>
           )}
         </div>
-        <PremiumBadge tokens={tokens} accent="y" variant="glass" isCompact={isCompact}>
+        <PremiumBadge className="flex-shrink-0" tokens={tokens} accent="y" variant="glass" isCompact={isCompact}>
           {current + 1}/{questions.length}
         </PremiumBadge>
       </div>

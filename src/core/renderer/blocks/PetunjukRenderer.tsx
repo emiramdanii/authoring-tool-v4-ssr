@@ -75,7 +75,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
       <div style={{ paddingTop: isCompact ? '24px' : '32px' }}>
         {/* ══ TITLE ════════════════════════════════════════════════ */}
         <h2 className="font-black leading-tight"
-          style={{ fontSize: isCompact ? '16px' : '1.6rem', fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
+          style={{ fontSize: isCompact ? '16px' : '1.6rem', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
@@ -105,10 +105,10 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
                 style={{ background: tokens.colorAlpha('g', 0.2), boxShadow: '0 2px 8px ' + tokens.colorAlpha('g', 0.2) }}>
                 <GraduationCap size={14} style={{ color: tokens.color('g') }} />
               </div>
-              <span className="font-extrabold" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('g') }}>
+              <span className="font-extrabold min-w-0" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('g') }}>
                 Tujuan Pembelajaran
               </span>
-              <span className="px-2 py-0.5 rounded-full font-extrabold"
+              <span className="px-2 py-0.5 rounded-full font-extrabold flex-shrink-0"
                 style={{
                   fontSize: '11px',
                   background: tokens.colorAlpha('g', 0.15),
@@ -216,9 +216,9 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
                     fontSize: isCompact ? '10px' : '12px',
                   }}>
                   <span>{nav.icon}</span>
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-bold" style={{ color: tokens.color('p') }}>{nav.label}</div>
-                    {!isCompact && <div style={{ color: tokens.muted(0.6), fontSize: '10px' }}>{nav.description}</div>}
+                    {!isCompact && <div style={{ color: tokens.muted(0.6), fontSize: '10px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{nav.description}</div>}
                   </div>
                 </div>
               ))}
@@ -245,7 +245,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
                 style={{ background: tokens.colorAlpha(accentKey, 0.25), boxShadow: '0 2px 8px ' + tokens.colorAlpha(accentKey, 0.2) }}>
                 <Lightbulb size={12} className="inline" />
               </div>
-              <div>
+              <div className="min-w-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                 <strong style={{ color: tokens.color(accentKey) }}>Tips:</strong> <InlineTextEditor
                   {...tipsEditor}
                   className="leading-relaxed"

@@ -251,6 +251,7 @@ export interface PremiumBadgeProps {
   accent?: string;
   variant?: PremiumBadgeVariant;
   isCompact?: boolean;
+  className?: string;
 }
 
 export function PremiumBadge({
@@ -259,6 +260,7 @@ export function PremiumBadge({
   accent = 'y',
   variant = 'glass',
   isCompact = false,
+  className,
 }: PremiumBadgeProps) {
   const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
   const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
@@ -292,6 +294,7 @@ export function PremiumBadge({
 
   return (
     <span
+      className={className}
       style={{
         display: 'inline-flex',
         alignItems: 'center',

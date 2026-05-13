@@ -203,7 +203,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           }}>
           <MessageCircle size={16} style={{ color: tokens.color('c') }} />
         </div>
-        <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '13px' : '15px' }}>
+        <div className="font-extrabold min-w-0" style={{ color: tokens.color('c'), fontSize: isCompact ? '13px' : '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
@@ -260,7 +260,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           }}>
           <div className="flex items-center gap-2">
             <span style={{ fontSize: isCompact ? '14px' : '16px' }}>{q.icon}</span>
-            <span className="font-extrabold" style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>{q.label}</span>
+            <span className="font-extrabold min-w-0 truncate" style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
                 <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
@@ -360,7 +360,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           }}>
           <MessageCircle size={22} style={{ color: tokens.color('c') }} />
         </div>
-        <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '15px' : '18px' }}>
+        <div className="font-extrabold min-w-0" style={{ color: tokens.color('c'), fontSize: isCompact ? '15px' : '18px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
@@ -427,7 +427,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               {q.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="font-extrabold block" style={{ color: tokens.color(qColor), fontSize: isCompact ? '13px' : '15px' }}>{q.label}</span>
+              <span className="font-extrabold block min-w-0 truncate" style={{ color: tokens.color(qColor), fontSize: isCompact ? '13px' : '15px' }}>{q.label}</span>
               {/* Question number badge */}
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 inline-block"
                 style={{
@@ -516,7 +516,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Compact header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 mb-2">
         <MessageCircle size={13} style={{ color: tokens.color('c') }} />
-        <span className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '12px' : '13px' }}>
+        <span className="font-extrabold min-w-0" style={{ color: tokens.color('c'), fontSize: isCompact ? '12px' : '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
@@ -573,7 +573,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           }}>
           <div className="flex items-center gap-1.5">
             <span style={{ fontSize: isCompact ? '12px' : '13px' }}>{q.icon}</span>
-            <span className="font-bold" style={{ color: tokens.color(qColor), fontSize: '12px' }}>{q.label}</span>
+            <span className="font-bold min-w-0 truncate" style={{ color: tokens.color(qColor), fontSize: '12px' }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
                 <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />

@@ -90,7 +90,7 @@ function CoverVariantA({
         </div>
       </div>
 
-      <div className="font-extrabold tracking-widest uppercase"
+      <div className="font-extrabold tracking-widest uppercase truncate"
         style={{ fontSize: '13px', color: c }}>
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
@@ -108,7 +108,7 @@ function CoverVariantA({
       {/* Subtitle */}
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-3 max-w-[380px]"
+        className="mt-3 max-w-[380px] overflow-hidden"
         style={{ fontSize: 'clamp(11px, 1.8vw, 16px)', color: tokens.textSecondary(0.7) }}
         placeholder="Ketik subtitle..."
       />
@@ -127,7 +127,7 @@ function CoverVariantA({
 
       {/* Meta — glass card */}
       {block.meta && (
-        <div className="mt-5 px-4 py-2.5 rounded-xl"
+        <div className="mt-5 px-4 py-2.5 rounded-xl flex-wrap min-w-0"
           style={{
             fontSize: '12px',
             color: tokens.muted(0.8),
@@ -217,7 +217,7 @@ function CoverVariantB({
       {/* Content — left-aligned */}
       <div className="relative z-1 max-w-[90%]">
         {/* Meta label */}
-        <div className="font-extrabold tracking-widest uppercase mb-2"
+        <div className="font-extrabold tracking-widest uppercase mb-2 truncate"
           style={{ fontSize: '11px', color: tokens.colorAlpha(accentKey, 0.7), letterSpacing: '0.15em' }}>
           {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
         </div>
@@ -240,7 +240,7 @@ function CoverVariantB({
         {/* Subtitle */}
         <InlineTextEditor
           {...subtitleEditor}
-          className="mt-3 max-w-[480px]"
+          className="mt-3 max-w-[480px] overflow-hidden"
           style={{ fontSize: 'clamp(12px, 2vw, 17px)', color: tokens.textSecondary(0.7), lineHeight: 1.6 }}
           placeholder="Ketik subtitle..."
         />
@@ -271,7 +271,7 @@ function CoverVariantB({
 
         {/* Meta — compact row */}
         {block.meta && (
-          <div className="mt-4 flex items-center gap-3 flex-wrap"
+          <div className="mt-4 flex items-center gap-3 flex-wrap min-w-0"
             style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span style={{ color: tokens.colorAlpha('c', 0.3) }}>|</span>
@@ -319,7 +319,7 @@ function CoverVariantC({
   const accentKey = block.accentColor || 'y';
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-center p-10"
+    <div className="absolute inset-0 flex flex-col justify-center p-6"
       style={{
         background: tokens.color('bg'),
         animation: 'coverReveal 0.6s ease-out',
@@ -330,13 +330,13 @@ function CoverVariantC({
         style={{ background: y }} />
 
       {/* Content — left-aligned with generous whitespace */}
-      <div className="max-w-[85%]">
+      <div className="max-w-full">
         {/* Small icon inline before title */}
         <div className="flex items-center gap-3 mb-3">
           <span className="text-2xl" style={{ animation: 'breathe 5s ease-in-out infinite' }}>
             {block.icon}
           </span>
-          <div className="font-extrabold tracking-widest uppercase"
+          <div className="font-extrabold tracking-widest uppercase truncate"
             style={{ fontSize: '11px', color: tokens.muted(0.6), letterSpacing: '0.2em' }}>
             {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
           </div>
@@ -360,7 +360,7 @@ function CoverVariantC({
         {/* Subtitle */}
         <InlineTextEditor
           {...subtitleEditor}
-          className="mt-3 max-w-[440px]"
+          className="mt-3 max-w-[440px] overflow-hidden"
           style={{ fontSize: 'clamp(12px, 1.8vw, 16px)', color: tokens.textSecondary(0.6), lineHeight: 1.6 }}
           placeholder="Ketik subtitle..."
         />
@@ -390,7 +390,7 @@ function CoverVariantC({
 
         {/* Meta — minimal inline */}
         {block.meta && (
-          <div className="mt-5 flex items-center gap-4 flex-wrap"
+          <div className="mt-5 flex items-center gap-4 flex-wrap min-w-0"
             style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span>🎯 Fase {block.meta.fase}</span>
