@@ -438,9 +438,8 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
 // STEP MODE SUB-COMPONENT — PremiumStepNavigator wrapper
 // ═══════════════════════════════════════════════════════════════════
 
-function RangkumanStepMode({ concepts, blockId, tokens, isCompact, variant }: {
+function RangkumanStepMode({ concepts, tokens, isCompact, variant }: {
   concepts: RangkumanBlock['concepts'];
-  blockId: string | undefined;
   tokens: TokenResolver;
   isCompact: boolean;
   variant: 'A' | 'B' | 'C';
@@ -482,15 +481,15 @@ function RangkumanStepMode({ concepts, blockId, tokens, isCompact, variant }: {
 // MAIN COMPONENT — RangkumanRenderer
 // ═══════════════════════════════════════════════════════════════════
 
-export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
-  block: RangkumanBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, tokens, isCompact, isEditing, interactive, mode }: {
+  block: RangkumanBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; mode?: import('../types').SchemaRenderMode;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
 
   const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    (block.variant as 'A' | 'B' | 'C') || 'A'
+    block.variant || 'A'
   );
   const variant = currentVariant;
 
@@ -629,7 +628,6 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
       {concepts.length > 2 ? (
         <RangkumanStepMode
           concepts={concepts}
-          blockId={block.id}
           tokens={tokens}
           isCompact={isCompact}
           variant={variant}
