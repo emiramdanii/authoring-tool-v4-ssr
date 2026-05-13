@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { BookOpen, Sparkles } from 'lucide-react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { useCanvaStore } from '../../../store/canva/store';
 
 // ═══════════════════════════════════════════════════════════════════
 // DEF BOX RENDERER — BSNP Definition Box with Variants & Step Mode
@@ -123,10 +124,12 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
 }) {
   const colorKey = block.borderColor || 'y';
   const borderColor = tokens.color(colorKey);
-  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    (block.variant as 'A' | 'B' | 'C') || 'A'
-  );
-  const variant = currentVariant;
+  const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
+
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   // ── Inline editing hooks ─────────────────────────────────────
   const contentEditor = useInlineEditor({
@@ -162,7 +165,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-              <VariantSelector active={variant} onChange={setCurrentVariant} />
+              <VariantSelector active={variant} onChange={handleVariantChange} />
             </div>
           )}
         <div
@@ -206,6 +209,8 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                 fontSize: isCompact ? '12px' : '14.5px',
                 lineHeight: 1.7,
                 color: tokens.color('text'),
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
               }}>
                 <InlineTextEditor
                   {...contentEditor}
@@ -229,7 +234,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
         <div style={{ position: 'relative' }}>
           {isEditing && (
             <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-              <VariantSelector active={variant} onChange={setCurrentVariant} />
+              <VariantSelector active={variant} onChange={handleVariantChange} />
             </div>
           )}
         <div
@@ -312,6 +317,8 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                   color: tokens.color('text'),
                   paddingLeft: isCompact ? '8px' : '12px',
                   borderLeft: `3px solid ${tokens.colorAlpha(colorKey, 0.3)}`,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 }}
               >
                 <InlineTextEditor
@@ -335,7 +342,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
       <div style={{ position: 'relative' }}>
         {isEditing && (
         <div style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 45 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} />
+          <VariantSelector active={variant} onChange={handleVariantChange} />
         </div>
       )}
       <div
@@ -361,14 +368,14 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
           </PremiumBadge>
           <div
             style={{
-              fontSize: isCompact ? '11px' : '13px',
+              fontSize: isCompact ? '12px' : '13px',
               lineHeight: 1.6,
               color: tokens.color('text'),
             }}
           >
             <InlineTextEditor
               {...contentEditor}
-              className="canvas-truncate-2"
+              className={isCompact ? 'canvas-truncate-3' : ''}
               style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
             />
           </div>

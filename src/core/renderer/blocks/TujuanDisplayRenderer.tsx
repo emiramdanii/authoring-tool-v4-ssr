@@ -149,7 +149,6 @@ function TujuanVariantA({
         {objectives.map((obj, i) => (
           <MicroInteraction key={`td-a-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="squish">
           <div
-            key={`td-a-obj-${block.id || 'td'}-${i}`}
             className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5"
             style={{
               background: tokens.colorAlpha(obj.color, 0.08),
@@ -333,7 +332,6 @@ function TujuanVariantB({
             return (
               <MicroInteraction key={`td-b-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="ripple">
               <div
-                key={`td-b-obj-${block.id || 'td'}-${i}`}
                 className="flex items-start gap-3 rounded-lg transition-all"
                 style={{
                   padding: isCompact ? '8px 10px' : '10px 14px',
@@ -446,7 +444,7 @@ function TujuanVariantB({
             <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g') }} />
             <span
               style={{
-                fontSize: isCompact ? '10px' : '10px',
+                fontSize: '11px',
                 fontWeight: 700,
                 color: tokens.color(block.profilColor || 'g'),
               }}
@@ -607,7 +605,7 @@ function TujuanVariantC({
               )}
               <span
                 style={{
-                  fontSize: isCompact ? '9px' : '11px',
+                  fontSize: '11px',
                   fontWeight: 600,
                   color: tokens.color('text'),
                   lineHeight: 1.4,
@@ -691,7 +689,7 @@ function TujuanVariantC({
           <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g'), flexShrink: 0 }} />
           <span
             style={{
-              fontSize: isCompact ? '10px' : '10px',
+              fontSize: '11px',
               fontWeight: 700,
               color: tokens.color(block.profilColor || 'g'),
             }}

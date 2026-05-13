@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Shield, BookOpen, CheckCircle2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
@@ -9,6 +9,7 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
+import { useCanvaStore } from '../../../store/canva/store';
 
 // ═══════════════════════════════════════════════════════════════════
 // RANGKUMAN RENDERER — BSNP Summary / Reinforcement Block
@@ -106,7 +107,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
       <div
         className="leading-relaxed"
         style={{
-          fontSize: isCompact ? '10px' : '12px',
+          fontSize: isCompact ? '12px' : '12px',
           color: tokens.muted(0.85),
           wordBreak: 'break-word',
           overflowWrap: 'break-word',
@@ -122,12 +123,12 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
           borderTop: `1px solid ${tokens.colorAlpha(concept.color, 0.12)}`,
         }}
       >
-        <CheckCircle2 size={9} style={{ color: tokens.colorAlpha(concept.color, 0.5) }} />
+        <CheckCircle2 size={9} style={{ color: tokens.colorAlpha(concept.color, 0.65) }} />
         <span
           className="font-bold"
           style={{
-            fontSize: isCompact ? '9px' : '11px',
-            color: tokens.colorAlpha(concept.color, 0.5),
+            fontSize: isCompact ? '11px' : '11px',
+            color: tokens.colorAlpha(concept.color, 0.65),
             letterSpacing: '0.05em',
           }}
         >
@@ -235,7 +236,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
         <div
           className="leading-relaxed"
           style={{
-            fontSize: isCompact ? '10px' : '12px',
+            fontSize: isCompact ? '12px' : '12px',
             color: tokens.muted(0.85),
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
@@ -311,7 +312,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: isCompact ? '9px' : '11px',
+                  fontSize: isCompact ? '11px' : '11px',
                   fontWeight: 900,
                   color: isOpen ? tokens.color('bg') : conceptColor,
                   transition: 'all 0.2s ease',
@@ -332,7 +333,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 className="font-bold min-w-0 flex-1"
                 style={{
                   color: isOpen ? conceptColor : tokens.color('text'),
-                  fontSize: isCompact ? '11px' : '13px',
+                  fontSize: isCompact ? '12px' : '13px',
                   wordBreak: 'break-word',
                 }}
               >
@@ -359,7 +360,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 <div
                   className="leading-relaxed"
                   style={{
-                    fontSize: isCompact ? '10px' : '12px',
+                    fontSize: isCompact ? '12px' : '12px',
                     color: tokens.muted(0.85),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
@@ -492,10 +493,12 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
 
-  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    block.variant || 'A'
-  );
-  const variant = currentVariant;
+  const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
+
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   // ── Step completion tracking ──
   const [allStepsCompleted, setAllStepsCompleted] = useState(false);
@@ -534,7 +537,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
       {/* Variant selector (editing mode only) */}
       {isEditing && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} />
+          <VariantSelector active={variant} onChange={handleVariantChange} />
         </div>
       )}
 
@@ -616,7 +619,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           <div
             className="mt-2 font-bold"
             style={{
-              fontSize: isCompact ? '9px' : '11px',
+              fontSize: isCompact ? '11px' : '11px',
               color: accentAlpha(0.5),
               letterSpacing: '0.05em',
             }}
@@ -630,7 +633,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           <div
             className="mt-2 font-bold"
             style={{
-              fontSize: isCompact ? '9px' : '11px',
+              fontSize: isCompact ? '11px' : '11px',
               color: accentAlpha(0.5),
               letterSpacing: '0.05em',
             }}
@@ -693,7 +696,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             <p
               className="leading-relaxed italic"
               style={{
-                fontSize: isCompact ? '11px' : '13px',
+                fontSize: isCompact ? '12px' : '13px',
                 color: tokens.color('text'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',

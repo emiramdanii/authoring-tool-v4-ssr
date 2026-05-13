@@ -263,7 +263,7 @@ function CoverVariantB({
                   maxWidth: '100%',
                   animation: `blockStaggerIn 0.4s ease ${i * 0.1}s both`,
                 }}>
-                {b.icon && <span className="flex-shrink-0">{b.icon}</span>} <span className="min-w-0">{b.text}</span>
+                {b.icon && <span className="flex-shrink-0">{b.icon}</span>} <span className="min-w-0" style={{ overflow: 'hidden' }}>{b.text}</span>
               </span>
             ))}
           </div>
@@ -337,7 +337,7 @@ function CoverVariantC({
             {block.icon}
           </span>
           <div className="font-extrabold tracking-widest uppercase"
-            style={{ fontSize: '10px', color: tokens.muted(0.5), letterSpacing: '0.2em' }}>
+            style={{ fontSize: '11px', color: tokens.muted(0.6), letterSpacing: '0.2em' }}>
             {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
           </div>
         </div>
@@ -391,7 +391,7 @@ function CoverVariantC({
         {/* Meta — minimal inline */}
         {block.meta && (
           <div className="mt-5 flex items-center gap-4 flex-wrap"
-            style={{ fontSize: '11px', color: tokens.muted(0.5) }}>
+            style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span>🎯 Fase {block.meta.fase}</span>
             <span>📚 {block.meta.elemen}</span>

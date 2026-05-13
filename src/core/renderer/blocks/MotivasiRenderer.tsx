@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { Shield, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 import type { MotivasiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -186,7 +187,7 @@ function MotivasiVariantKlasik({
               className="font-extrabold uppercase tracking-wider mb-2"
               style={{
                 color: tokens.color(gradientFrom),
-                fontSize: isCompact ? '9px' : '10px',
+                fontSize: '11px',
                 letterSpacing: '0.08em',
               }}
             >
@@ -243,7 +244,7 @@ function MotivasiVariantKlasik({
                     className="font-extrabold"
                     style={{
                       color: tokens.color(conn.color),
-                      fontSize: isCompact ? '10px' : '12px',
+                      fontSize: '12px',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                     }}
@@ -253,7 +254,7 @@ function MotivasiVariantKlasik({
                   <div
                     className="leading-relaxed mt-0.5"
                     style={{
-                      fontSize: isCompact ? '10px' : '12px',
+                      fontSize: '12px',
                       color: tokens.muted(0.8),
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
@@ -419,7 +420,7 @@ function MotivasiVariantKartuHook({
             className="font-extrabold uppercase tracking-wider mb-2"
             style={{
               color: tokens.muted(0.7),
-              fontSize: isCompact ? '10px' : '9px',
+              fontSize: '11px',
               letterSpacing: '0.08em',
             }}
           >
@@ -590,10 +591,12 @@ function MotivasiVariantKutipan({
 export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
   block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
 }) {
-  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    (block.variant as 'A' | 'B' | 'C') || 'A'
-  );
-  const variant = currentVariant;
+  const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
+
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -625,7 +628,7 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
       <div style={{ position: 'relative' }}>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-            <VariantSelector active={variant} onChange={setCurrentVariant} />
+            <VariantSelector active={variant} onChange={handleVariantChange} />
           </div>
         )}
 

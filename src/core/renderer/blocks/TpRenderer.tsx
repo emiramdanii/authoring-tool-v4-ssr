@@ -89,7 +89,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
                 </div>
                 <div className="min-w-0">
                   <div className="font-extrabold" style={{ color: tokens.color(item.color), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.verb}</div>
-                  <div className={`leading-relaxed mt-0.5 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
+                  <div className={`leading-relaxed mt-0.5 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.85), fontSize: isCompact ? '12px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
                 </div>
               </div>
               {/* Connector dot between items */}

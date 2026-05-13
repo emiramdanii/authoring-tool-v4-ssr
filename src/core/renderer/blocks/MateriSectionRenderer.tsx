@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Shield, Star, CheckCircle2, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import type { MateriSectionBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { fireConfettiMini } from '@/lib/confetti';
+import { useCanvaStore } from '../../../store/canva/store';
 
 // NOTE: Use React.lazy() to break the circular dependency:
 //   SceneRegistry → MateriSectionRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
@@ -256,7 +257,7 @@ function MateriVariantKlasik({
                 <span
                   className="leading-relaxed"
                   style={{
-                    fontSize: isCompact ? '11px' : '13px',
+                    fontSize: isCompact ? '12px' : '13px',
                     color: tokens.color('text'),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
@@ -469,7 +470,7 @@ function MateriVariantMajalah({
                   <span
                     className="leading-relaxed"
                     style={{
-                      fontSize: isCompact ? '10px' : '11px',
+                      fontSize: '12px',
                       color: tokens.color('text'),
                       wordBreak: 'break-word',
                     }}
@@ -502,7 +503,7 @@ function MateriVariantMajalah({
                 className="font-extrabold"
                 style={{
                   color: tokens.color('y'),
-                  fontSize: isCompact ? '10px' : '10px',
+                  fontSize: '11px',
                   marginRight: '8px',
                 }}
               >
@@ -511,7 +512,7 @@ function MateriVariantMajalah({
               <span
                 className="leading-relaxed"
                 style={{
-                  fontSize: isCompact ? '10px' : '12px',
+                  fontSize: '12px',
                   color: tokens.color('text'),
                   wordBreak: 'break-word',
                 }}
@@ -654,7 +655,7 @@ function MateriVariantPill({
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  maxWidth: isCompact ? '100px' : '160px',
+                  maxWidth: isCompact ? '140px' : '220px',
                   display: 'inline-block',
                   verticalAlign: 'bottom',
                 }}>
@@ -684,7 +685,7 @@ function MateriVariantPill({
               background: tokens.colorAlpha('y', 0.06),
               border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
               color: tokens.color('y'),
-              fontSize: isCompact ? '9px' : '10px',
+              fontSize: '11px',
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -712,7 +713,7 @@ function MateriVariantPill({
               <p
                 className="leading-relaxed"
                 style={{
-                  fontSize: isCompact ? '10px' : '12px',
+                  fontSize: '12px',
                   color: tokens.color('text'),
                   wordBreak: 'break-word',
                 }}
@@ -736,14 +737,12 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
   isCompact?: boolean;
   isEditing?: boolean;
 }) {
-  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    (block.variant as 'A' | 'B' | 'C') || 'A'
-  );
-  const variant = currentVariant;
+  const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
-  const handleVariantChange = (v: 'A' | 'B' | 'C') => {
-    setCurrentVariant(v);
-  };
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   const sharedProps = {
     block,

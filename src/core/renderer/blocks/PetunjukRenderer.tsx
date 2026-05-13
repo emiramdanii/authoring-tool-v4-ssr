@@ -110,7 +110,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
               </span>
               <span className="px-2 py-0.5 rounded-full font-extrabold"
                 style={{
-                  fontSize: '9px',
+                  fontSize: '11px',
                   background: tokens.colorAlpha('g', 0.15),
                   color: tokens.color('g'),
                   border: '1px solid ' + tokens.colorAlpha('g', 0.25),
@@ -262,7 +262,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
          *  meets BSNP requirements for SMP interactive media.
          *  Shows the required components checkmark. */}
         <div className="mt-3 flex items-center justify-center gap-3 flex-wrap"
-          style={{ fontSize: isCompact ? '9px' : '10px', color: tokens.muted(0.4) }}>
+          style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
           {['Petunjuk', 'KD/TP', 'Materi', 'Evaluasi', 'Profil'].map(comp => (
             <span key={`bsnp-${comp}`} className="flex items-center gap-0.5">
               <BookOpen size={8} /> {comp}

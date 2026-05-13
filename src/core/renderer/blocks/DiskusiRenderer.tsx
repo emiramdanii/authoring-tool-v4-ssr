@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { MessageCircle, Send, RotateCcw, CheckCircle2, Sparkles, Heart } from 'lucide-react';
 import type { DiskusiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
@@ -8,6 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
+import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -63,11 +64,13 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   const [responses, setResponses] = React.useState<Record<number, string>>({});
   const [submitted, setSubmitted] = React.useState(false);
 
-  // ── Variant state ────────────────────────────────────────────
-  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    (block.variant as 'A' | 'B' | 'C') || 'A'
-  );
-  const variant = currentVariant;
+  // ── Variant state (persisted to store) ──────────────────────
+  const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
+
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   // ── Interactive store ───────────────────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
@@ -186,7 +189,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   const renderVariantA = () => (
     <>
       {/* Decorative sparkle */}
-      <div className="absolute top-3 right-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
+      <div className="absolute top-3 left-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
         <Sparkles size={18} style={{ color: tokens.color('c') }} />
       </div>
 
@@ -343,7 +346,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   const renderVariantB = () => (
     <>
       {/* Decorative sparkle */}
-      <div className="absolute top-3 right-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
+      <div className="absolute top-3 left-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
         <Sparkles size={18} style={{ color: tokens.color('c') }} />
       </div>
 
@@ -513,7 +516,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Compact header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 mb-2">
         <MessageCircle size={13} style={{ color: tokens.color('c') }} />
-        <span className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '11px' : '13px' }}>
+        <span className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '12px' : '13px' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
@@ -534,7 +537,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`leading-relaxed font-bold mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -569,8 +572,8 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             transition: 'all 0.3s ease',
           }}>
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: isCompact ? '11px' : '13px' }}>{q.icon}</span>
-            <span className="font-bold" style={{ color: tokens.color(qColor), fontSize: isCompact ? '10px' : '11px' }}>{q.label}</span>
+            <span style={{ fontSize: isCompact ? '12px' : '13px' }}>{q.icon}</span>
+            <span className="font-bold" style={{ color: tokens.color(qColor), fontSize: '12px' }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
                 <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
@@ -585,11 +588,11 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               {i + 1}
             </span>
           </div>
-          <p className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          <p className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
           {interactive ? (
             <textarea className="w-full mt-1.5 rounded-md p-1.5 resize-y transition-all"
               style={{
-                fontSize: isCompact ? '10px' : '11px',
+                fontSize: '12px',
                 color: tokens.color('text'),
                 background: hasResponse
                   ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.03)}, ${tokens.subtleBg(0.04)})`
@@ -608,7 +611,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           ) : (
             <div className="w-full mt-1.5 rounded-md p-1.5 min-h-[24px]"
               style={{
-                fontSize: isCompact ? '9px' : '10px',
+                fontSize: '11px',
                 color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.02),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.2),
@@ -662,7 +665,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* Variant selector overlay — only visible when editing */}
       {isEditing && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} />
+          <VariantSelector active={variant} onChange={handleVariantChange} />
         </div>
       )}
 
