@@ -20,6 +20,7 @@ import {
   Settings2,
   Volume2,
   VolumeX,
+  Package,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +48,7 @@ export function ToolbarExport() {
   const {
     exportHtml,
     exportPdf,
+    exportScorm,
     exportJson,
     previewTab,
     print,
@@ -138,6 +140,22 @@ export function ToolbarExport() {
                 {isExporting ? 'Membuat PDF...' : 'Download PDF'}
               </div>
               <div className="text-[8px] text-app-muted">File PDF A4 dengan kunci jawaban</div>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={exportScorm}
+            disabled={isExporting}
+            className="px-3 py-2.5 gap-2.5 focus:bg-orange-500/10 cursor-pointer"
+          >
+            {isExporting
+              ? <Loader2 size={14} className="animate-spin text-orange-400 flex-shrink-0" />
+              : <Package size={14} className="text-orange-400 flex-shrink-0" />
+            }
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-semibold text-orange-300">
+                {isExporting ? 'Membuat SCORM...' : 'Download SCORM (Moodle)'}
+              </div>
+              <div className="text-[8px] text-app-muted">Paket ZIP untuk upload ke LMS Moodle</div>
             </div>
           </DropdownMenuItem>
 

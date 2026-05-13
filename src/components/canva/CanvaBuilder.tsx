@@ -6,6 +6,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { CanvaAutoSaveSync } from './CanvaAutoSaveSync';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
@@ -36,11 +37,11 @@ export default function CanvaBuilder() {
   // 2. AuthoringTool initial load via loadFromStorage on first app mount
 
   // ── Unified auto-save ──────────────────────────────────────
-  // useAutoSave() is the SINGLE source of truth for auto-saving.
-  // It subscribes to both canva and authoring stores, debounces at
-  // 2 000 ms, then saves both atomically. No other component should
-  // implement its own auto-save subscription.
-  useAutoSave();
+  // Auto-save is now handled by CanvaAutoSaveSync component,
+  // which connects the project context to the auto-save hook.
+  // When a project is loaded, it saves to DB; otherwise localStorage.
+  // No other component should implement its own auto-save subscription.
+  // NOTE: The CanvaAutoSaveSync component renders below.
 
   // ── Sync interactive page total with canva pages ─────────────
   useEffect(() => {
@@ -368,6 +369,7 @@ export default function CanvaBuilder() {
     <MobileGuard>
       <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
         <UndoRedoToast />
+        <CanvaAutoSaveSync />
 
         {/* Visually hidden live region for screen reader announcements */}
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />

@@ -4,6 +4,7 @@
 
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
+import type { DBProjectData } from './types';
 import type { CanvaPage, CanvaElement, LeftTab } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
@@ -25,7 +26,7 @@ const TAB_MIGRATION: Record<string, LeftTab> = {
 
 export type PersistenceSlice = Pick<
   CanvaState,
-  | 'saveToStorage' | 'loadFromStorage'
+  | 'saveToStorage' | 'loadFromStorage' | 'loadFromDB'
 >;
 
 export const createPersistenceSlice: StateCreator<CanvaState, [], [], PersistenceSlice> = (set, get) => ({
@@ -122,6 +123,68 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // If data is corrupt, clear it
       try { localStorage.removeItem(CANVA_STORAGE_KEY); } catch {}
       return false;
+    }
+  },
+
+  // ── Load from Database ──────────────────────────────────────────
+  loadFromDB: (data: DBProjectData) => {
+    try {
+      if (data.pages && Array.isArray(data.pages)) {
+        const pages: CanvaPage[] = data.pages.map((p) => {
+          // Map DB Page → CanvaPage
+          const schema = p.schemaData ? JSON.parse(p.schemaData) : undefined;
+          const navConfig = p.navConfig ? JSON.parse(p.navConfig) : { ...DEFAULT_NAV_CONFIG };
+          const templateData = p.templateData ? JSON.parse(p.templateData) : {};
+          const colorPalette = p.colorPalette ? JSON.parse(p.colorPalette) : null;
+
+          // Map DB blocks → schema blocks
+          const schemaBlocks = (p.blocks || []).map((b) => {
+            const content = b.content ? JSON.parse(b.content) : {};
+            const layout = b.layout ? JSON.parse(b.layout) : undefined;
+            return {
+              type: b.blockType,
+              ...content,
+              ...(layout ? { layout } : {}),
+            };
+          });
+
+          const migrated: CanvaPage = {
+            id: p.id,
+            label: p.label || `Halaman ${p.pageIndex + 1}`,
+            bgDataUrl: p.bgImage || null,
+            bgColor: p.bgColor || '#0f172a',
+            overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
+            elements: [],
+            templateType: (p.templateType as CanvaPage['templateType']) || 'custom',
+            colorPalette,
+            navConfig,
+            templateData,
+            templateVariant: (p.variant as 'A' | 'B' | 'C') || undefined,
+            schema: schema || (schemaBlocks.length > 0 ? { id: p.id, templateType: p.templateType || 'custom', blocks: schemaBlocks } : undefined),
+          };
+
+          // Proactively migrate to native schema if needed
+          if (!migrated.schema && migrated.templateType && migrated.templateType !== 'custom') {
+            ensurePageSchema(migrated);
+          }
+
+          return migrated;
+        });
+
+        set({
+          pages,
+          ratioId: data.ratioId || '16:9',
+          currentPageIndex: 0,
+          selectedElId: null,
+          selectedElIds: [],
+          selectedBlockIds: [],
+          leftPanelOpen: true,
+          rightPanelOpen: true,
+          leftTab: 'halaman',
+        });
+      }
+    } catch (err) {
+      console.warn('[CanvaStore] Failed to load from DB:', err);
     }
   },
 

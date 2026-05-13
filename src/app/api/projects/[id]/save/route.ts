@@ -59,6 +59,7 @@ interface SavePayload {
     themeId?: string;
     schemaPreset?: string;
   };
+  authoringData?: Record<string, unknown>;
 }
 
 // ── Flatten nested blocks (children) for DB storage ───────────────
@@ -151,6 +152,11 @@ export async function PUT(
       if (body.meta?.templateId !== undefined) projectUpdateData.templateId = body.meta.templateId;
       if (body.meta?.themeId !== undefined) projectUpdateData.themeId = body.meta.themeId;
       if (body.meta?.schemaPreset !== undefined) projectUpdateData.schemaPreset = body.meta.schemaPreset;
+
+      // 2b. Store authoring data if provided
+      if (body.authoringData) {
+        projectUpdateData.authoringData = JSON.stringify(body.authoringData);
+      }
 
       await tx.project.update({
         where: { id },

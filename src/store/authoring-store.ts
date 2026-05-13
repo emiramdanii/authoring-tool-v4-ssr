@@ -27,6 +27,7 @@ export type {
   AtpPreset,
   AlurPreset,
   KuisPreset,
+  Module,
   AuthoringState,
 } from './authoring/types';
 

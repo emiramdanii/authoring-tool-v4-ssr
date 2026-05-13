@@ -30,11 +30,12 @@ model Project {
   themeId      String?  // theme preset
   schemaPreset String?  // JSON string for schema preset
   ratioId      String?  // aspect ratio, e.g., "16:9", "9:16"
-  pages        Page[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  publishedAt  DateTime?
-  isPublished  Boolean  @default(false)
+  authoringData String?  // JSON string of full authoring store state
+  pages         Page[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  publishedAt   DateTime?
+  isPublished   Boolean  @default(false)
 }
 
 // ── Page ─────────────────────────────────────────────────────────

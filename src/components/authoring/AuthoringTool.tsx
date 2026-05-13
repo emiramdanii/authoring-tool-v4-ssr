@@ -24,6 +24,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { Button } from '@/components/ui/button';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
+import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager';
 
 import Dashboard from './Dashboard';
 import Dokumen from './Dokumen';
@@ -91,8 +92,8 @@ const TOUR_STEPS = [
   { title: 'Preview', desc: 'Preview media pembelajaran sebelum export.' },
 ];
 
-// ── Main Component ──────────────────────────────────────────────
-export default function AuthoringTool() {
+// ── Inner Component (needs ProjectProvider context) ─────────────
+function AuthoringToolInner() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showTour, setShowTour] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -104,6 +105,7 @@ export default function AuthoringTool() {
   const dirty = useAuthoringStore((s) => s.dirty);
   const meta = useAuthoringStore((s) => s.meta);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
+  const { saveProject, currentProjectId, saving } = useProjectManager();
 
   // Load from storage on mount (authoring + canva)
   useEffect(() => {
@@ -113,7 +115,6 @@ export default function AuthoringTool() {
   }, [loadFromStorage]);
 
   // ── Tour: dismiss / advance ────────────────────────────────
-  // dismissTour must be declared before the useEffect that references it
   const dismissTour = useCallback(() => {
     setShowTour(false);
     localStorage.setItem('at_tour_done', '1');
@@ -126,25 +127,18 @@ export default function AuthoringTool() {
     }
   }, [activePanel, showTour, dismissTour]);
 
-  // NOTE: Auto-save has been unified into useAutoSave() hook, called from
-  // CanvaBuilder. There is no longer a competing auto-save here.
-  // Both stores are saved atomically with a single 2 000 ms debounce.
-
-  // ── Reactive sync: authoring data → canvas templateData ─────
-  // NOTE: Auto-sync is now handled by sync-slice.ts startAutoSync() (100ms debounce).
-  // Previously there was a duplicate 300ms subscription here causing double-renders.
-  // That has been removed to avoid redundant sync calls.
-
-  // Unified save helper — saves both stores atomically (same as useAutoSave)
+  // Unified save helper — saves to DB if project is loaded, else localStorage
   const saveAll = useCallback(() => {
-    useCanvaStore.getState().saveToStorage();
-    useAuthoringStore.getState().saveToStorage();
-  }, []);
+    if (currentProjectId) {
+      saveProject();
+    } else {
+      // Fallback: save to localStorage only
+      useCanvaStore.getState().saveToStorage();
+      useAuthoringStore.getState().saveToStorage();
+    }
+  }, [currentProjectId, saveProject]);
 
   // ── Unified keyboard shortcuts via registry ───────────────────
-  // Replaces the separate useEffect with window.addEventListener('keydown', ...)
-  // The keyboardManager handles context switching and the registry
-  // handles scope matching and priority.
   useKeyboardShortcuts([
     {
       id: 'global.save',
@@ -175,13 +169,11 @@ export default function AuthoringTool() {
   ], [saveAll]);
 
   // ── Context switching for keyboard shortcuts ───────────────────
-  // When the active panel changes, update the keyboard manager context
-  // so only relevant shortcuts fire.
   useEffect(() => {
     if (activePanel === 'canva') {
       keyboardManager.setContext('canvas');
     } else if (activePanel === 'preview') {
-      keyboardManager.setContext('canvas'); // Preview uses canvas shortcuts
+      keyboardManager.setContext('canvas');
     } else {
       keyboardManager.setContext('authoring');
     }
@@ -194,7 +186,6 @@ export default function AuthoringTool() {
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
       skenario: s.skenario, kuis: s.kuis, modules: s.modules,
       games: s.games, materi: s.materi,
-      // Canva state: pages, elements, layouts
       canva: {
         pages: c.pages,
         ratioId: c.ratioId,
@@ -225,9 +216,7 @@ export default function AuthoringTool() {
     }
   };
 
-  // For Canva panel, render full-bleed (no padding)
   const isCanva = activePanel === 'canva';
-  // For Preview panel, render full-bleed (no header)
   const isPreview = activePanel === 'preview';
 
   const nextTourStep = useCallback(() => {
@@ -318,10 +307,11 @@ export default function AuthoringTool() {
             <div className="section-divider mb-2" />
             <button
               onClick={saveAll}
-              className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all"
+              disabled={saving}
+              className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all disabled:opacity-60"
             >
-              <Save size={14} />
-              Simpan Semua
+              <Save size={14} className={saving ? 'animate-spin' : ''} />
+              {saving ? 'Menyimpan...' : 'Simpan Semua'}
             </button>
             <button
               onClick={exportJSON}
@@ -336,10 +326,11 @@ export default function AuthoringTool() {
             <div className="section-divider w-full mb-2" />
             <button
               onClick={saveAll}
+              disabled={saving}
               className="tooltip-trigger focus-ring"
               data-tip="Simpan"
             >
-              <Save size={16} className="text-app-accent" />
+              <Save size={16} className={`text-app-accent ${saving ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={exportJSON}
@@ -403,10 +394,11 @@ export default function AuthoringTool() {
               </Button>
               <Button
                 onClick={saveAll}
-                className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
+                disabled={saving}
+                className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-60"
               >
-                <Save size={14} />
-                Simpan
+                <Save size={14} className={saving ? 'animate-spin' : ''} />
+                {saving ? '...' : 'Simpan'}
               </Button>
             </div>
           </header>
@@ -492,4 +484,13 @@ export default function AuthoringTool() {
       )}
     </div>
   );
-};
+}
+
+// ── Main Component (wraps with ProjectProvider) ────────────────
+export default function AuthoringTool() {
+  return (
+    <ProjectProvider>
+      <AuthoringToolInner />
+    </ProjectProvider>
+  );
+}

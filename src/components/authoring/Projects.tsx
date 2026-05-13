@@ -2,141 +2,295 @@
 
 import { useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useProjectManager } from '@/hooks/use-project-manager';
 import { toast } from 'sonner';
-import { Sparkles, Trash2 } from 'lucide-react';
-
-interface Project {
-  id: string;
-  name: string;
-  timestamp: number;
-  data: string;
-}
+import {
+  Sparkles,
+  Trash2,
+  FolderOpen,
+  Plus,
+  Upload,
+  Database,
+  Loader2,
+  Clock,
+  FileText,
+  Check,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>(() => {
-    try {
-      const raw = localStorage.getItem('at_projects_v1');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const {
+    projects,
+    loading,
+    saving,
+    currentProjectId,
+    createProject,
+    loadProject,
+    saveProject,
+    deleteProject,
+    renameProject,
+    importFromLocalStorage,
+    hasLocalData,
+  } = useProjectManager();
+
   const newProject = useAuthoringStore((s) => s.newProject);
-  const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const meta = useAuthoringStore((s) => s.meta);
 
-  const handleSave = () => {
-    const s = useAuthoringStore.getState();
-    const name = s.meta.judulPertemuan || 'Proyek Tanpa Judul';
-    const project: Project = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      name,
-      timestamp: Date.now(),
-      data: JSON.stringify({
-        meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-        skenario: s.skenario, kuis: s.kuis, modules: s.modules,
-        games: s.games, materi: s.materi,
-      }),
-    };
-    const newProjects = [project, ...projects];
-    setProjects(newProjects);
-    try { localStorage.setItem('at_projects_v1', JSON.stringify(newProjects)); } catch { toast.error('Gagal menyimpan proyek ke browser'); }
-  };
+  const [showMigrateDialog, setShowMigrateDialog] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
 
-  const handleLoad = (project: Project) => {
-    try {
-      const data = JSON.parse(project.data);
-      const store = useAuthoringStore.getState();
-      useAuthoringStore.setState({
-        meta: data.meta || store.meta,
-        cp: data.cp || store.cp,
-        tp: data.tp || [],
-        atp: data.atp || store.atp,
-        alur: data.alur || [],
-        skenario: data.skenario || [],
-        kuis: data.kuis || [],
-        modules: data.modules || [],
-        games: data.games || [],
-        materi: data.materi || { blok: [] },
-        dirty: false,
+  const handleSaveCurrent = async () => {
+    if (currentProjectId) {
+      await saveProject();
+      toast.success('Proyek tersimpan ke database');
+    } else {
+      // No project yet — create one first
+      const project = await createProject({
+        title: meta.judulPertemuan || 'Proyek Baru',
       });
-      store.setActivePanel('dashboard');
-      toast.success(`Proyek "${project.name}" berhasil dimuat`);
-    } catch { toast.error('Gagal memuat proyek — data rusak'); }
+      if (project) {
+        toast.success('Proyek dibuat dan disimpan ke database');
+      }
+    }
   };
 
-  const handleDelete = (id: string) => {
-    const newProjects = projects.filter((p) => p.id !== id);
-    setProjects(newProjects);
-    try { localStorage.setItem('at_projects_v1', JSON.stringify(newProjects)); } catch { toast.error('Gagal menghapus proyek dari browser'); }
+  const handleNewProject = () => {
+    newProject();
+    toast.success('Proyek baru dibuat');
   };
 
-  const formatDate = (ts: number) => {
-    const d = new Date(ts);
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const handleDelete = async (id: string) => {
+    if (confirm('Yakin ingin menghapus proyek ini? Tindakan tidak dapat dibatalkan.')) {
+      await deleteProject(id);
+    }
+  };
+
+  const handleLoad = async (id: string) => {
+    await loadProject(id);
+  };
+
+  const handleRename = async (id: string) => {
+    if (!editTitle.trim()) {
+      setEditingId(null);
+      return;
+    }
+    await renameProject(id, editTitle.trim());
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  const handleImport = async () => {
+    await importFromLocalStorage();
+    setShowMigrateDialog(false);
+  };
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-          <span>📁</span> Kelola Proyek
+          <Database size={22} /> Kelola Proyek
         </h2>
         <p className="text-sm text-app-secondary mt-1">
-          Simpan dan muat kembali proyek yang tersimpan di browser ini.
+          Simpan dan muat proyek dari database. Data tersimpan di server, aman dari kehilangan.
         </p>
       </div>
 
-      <div className="flex gap-3">
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+      {/* Actions */}
+      <div className="flex flex-wrap gap-3">
+        <Button
+          onClick={handleSaveCurrent}
+          disabled={saving}
+          className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-60"
         >
-          💾 Simpan Proyek Aktif
-        </button>
-        <button
-          onClick={() => { newProject(); }}
-          className="px-4 py-2 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors"
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Database size={14} />}
+          {currentProjectId ? (saving ? 'Menyimpan...' : 'Simpan ke Database') : 'Buat Proyek Baru'}
+        </Button>
+        <Button
+          onClick={handleNewProject}
+          variant="outline"
         >
-          <Sparkles size={14} className="inline" /> Proyek Baru
-        </button>
+          <Sparkles size={14} /> Proyek Baru
+        </Button>
+        {hasLocalData() && (
+          <Button
+            onClick={() => setShowMigrateDialog(true)}
+            variant="outline"
+            className="text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35"
+          >
+            <Upload size={14} /> Import dari Browser
+          </Button>
+        )}
       </div>
 
-      {!projects.length ? (
+      {/* Migration Dialog */}
+      {showMigrateDialog && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Upload size={18} className="text-amber-400" />
+            <h3 className="text-sm font-semibold text-amber-300">Import Data Lokal</h3>
+          </div>
+          <p className="text-xs text-app-secondary">
+            Ditemukan data proyek yang tersimpan di browser. Import ke database agar data lebih aman dan bisa diakses dari perangkat lain.
+          </p>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleImport}
+              size="sm"
+              className="bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30"
+            >
+              <Upload size={12} /> Import Sekarang
+            </Button>
+            <Button
+              onClick={() => setShowMigrateDialog(false)}
+              size="sm"
+              variant="ghost"
+              className="text-app-secondary"
+            >
+              Batal
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="bg-app-surface border border-app-border rounded-xl p-8 text-center">
+          <Loader2 size={24} className="mx-auto mb-3 text-app-accent animate-spin" />
+          <p className="text-app-secondary text-sm">Memuat daftar proyek...</p>
+        </div>
+      ) : !projects.length ? (
+        /* Empty State */
         <div className="bg-app-surface border border-app-border rounded-xl p-8 text-center">
           <div className="text-4xl mb-3">📂</div>
-          <p className="text-app-secondary text-sm">Belum ada proyek tersimpan.</p>
+          <p className="text-app-secondary text-sm">Belum ada proyek tersimpan di database.</p>
+          <p className="text-app-muted text-xs mt-1">
+            Klik &quot;Simpan ke Database&quot; untuk menyimpan proyek aktif.
+          </p>
         </div>
       ) : (
+        /* Project List */
         <div className="space-y-3">
           {projects.map((p) => (
             <div
               key={p.id}
-              className="bg-app-surface border border-app-border rounded-lg p-4 flex items-center gap-4 hover:border-app-border transition-colors"
+              className={`bg-app-surface border rounded-lg p-4 flex items-center gap-4 transition-colors ${
+                currentProjectId === p.id
+                  ? 'border-app-accent/40 bg-app-accent/5'
+                  : 'border-app-border hover:border-app-accent/20'
+              }`}
             >
-              <div className="text-2xl">📁</div>
+              <div className="text-2xl">
+                {currentProjectId === p.id ? '✅' : '📁'}
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-app-primary truncate">{p.name}</div>
-                <div className="text-xs text-app-muted">{formatDate(p.timestamp)}</div>
+                {editingId === p.id ? (
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRename(p.id);
+                        if (e.key === 'Escape') setEditingId(null);
+                      }}
+                      className="bg-app-elevated border border-app-border rounded px-2 py-1 text-sm text-app-primary w-full"
+                      autoFocus
+                    />
+                    <Button
+                      onClick={() => handleRename(p.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="text-app-accent"
+                    >
+                      <Check size={14} />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className="text-sm font-semibold text-app-primary truncate cursor-pointer hover:text-app-accent transition-colors"
+                      onDoubleClick={() => {
+                        setEditingId(p.id);
+                        setEditTitle(p.title);
+                      }}
+                      title="Klik ganda untuk mengubah nama"
+                    >
+                      {p.title}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-app-muted mt-0.5">
+                      <span className="flex items-center gap-1">
+                        <Clock size={10} />
+                        {formatDate(p.updatedAt)}
+                      </span>
+                      {p._count?.pages !== undefined && (
+                        <span className="flex items-center gap-1">
+                          <FileText size={10} />
+                          {p._count.pages} halaman
+                        </span>
+                      )}
+                      {p.subject && (
+                        <span className="bg-app-elevated px-1.5 py-0.5 rounded text-[0.6rem]">
+                          {p.subject}
+                        </span>
+                      )}
+                      {p.grade && (
+                        <span className="bg-app-elevated px-1.5 py-0.5 rounded text-[0.6rem]">
+                          Kelas {p.grade}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => handleLoad(p)}
-                  className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated text-app-primary text-xs rounded-md transition-colors"
+                <Button
+                  onClick={() => handleLoad(p.id)}
+                  size="sm"
+                  variant={currentProjectId === p.id ? 'default' : 'outline'}
+                  disabled={currentProjectId === p.id}
+                  className={currentProjectId === p.id ? 'text-xs' : 'text-xs'}
                 >
-                  Muat
-                </button>
-                <button
+                  <FolderOpen size={12} />
+                  {currentProjectId === p.id ? 'Aktif' : 'Muat'}
+                </Button>
+                <Button
                   onClick={() => handleDelete(p.id)}
-                  className="px-3 py-1.5 bg-app-elevated hover:bg-red-900/50 text-app-secondary hover:text-red-400 text-xs rounded-md transition-colors"
+                  size="sm"
+                  variant="ghost"
+                  className="text-app-secondary hover:text-red-400 hover:bg-red-900/30 text-xs"
                 >
-                  <Trash2 size={14} className="inline" />
-                </button>
+                  <Trash2 size={12} />
+                </Button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Auto-save info */}
+      <div className="bg-app-elevated/50 rounded-lg p-3 text-xs text-app-muted space-y-1">
+        <p className="flex items-center gap-1.5">
+          <Database size={10} />
+          <strong>Database:</strong> Proyek tersimpan otomatis setiap 2 detik saat proyek aktif.
+        </p>
+        <p className="flex items-center gap-1.5">
+          <span>💾</span>
+          <strong>Backup:</strong> Data juga tersimpan di browser sebagai cadangan.
+        </p>
+      </div>
     </div>
   );
 }

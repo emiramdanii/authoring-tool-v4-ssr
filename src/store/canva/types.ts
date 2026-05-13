@@ -16,6 +16,38 @@ import type {
 import type { PageTypeDefinition } from '@/store/page-types';
 import type { SchemaBlock } from '@/core/schema/types';
 
+// ── DB project data type for loadFromDB ────────────────────────
+export interface DBPageData {
+  id: string;
+  pageIndex: number;
+  label: string | null;
+  templateType: string | null;
+  variant: string | null;
+  bgColor: string | null;
+  bgImage: string | null;
+  bgOverlay: number | null;
+  schemaData: string | null;
+  navConfig: string | null;
+  templateData: string | null;
+  colorPalette: string | null;
+  blocks: Array<{
+    id: string;
+    blockType: string;
+    blockIndex: number;
+    content: string;
+    layout: string | null;
+  }>;
+}
+
+export interface DBProjectData {
+  id: string;
+  title: string;
+  description?: string | null;
+  ratioId?: string | null;
+  authoringData?: string | null;
+  pages: DBPageData[];
+}
+
 // ── Snapshot type for undo/redo ────────────────────────────────
 export type Snapshot = {
   pages: CanvaPage[];
@@ -203,6 +235,7 @@ export interface CanvaState {
   // ── Actions: Persistence ─────────────────────────────────────
   saveToStorage: () => void;
   loadFromStorage: () => boolean;
+  loadFromDB: (data: DBProjectData) => void;
 
   // ── Export ────────────────────────────────────────────────────
   // Legacy export methods removed — all exports now use Vite SSR pipeline
