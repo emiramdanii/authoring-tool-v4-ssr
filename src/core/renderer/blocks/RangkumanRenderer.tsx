@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Shield, BookOpen, CheckCircle2, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, BookOpen, CheckCircle2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -14,20 +14,437 @@ import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavi
 // section. BSNP recommends reinforcement/penguatan to consolidate
 // learning before moving to evaluation.
 //
-// Features:
-//   - Section header with accent color and BSNP badge
-//   - Concept cards with icons, titles, and descriptions
-//   - Step mode when concepts > 2 (PremiumStepNavigator)
-//   - Closing statement for lesson wrap-up
-//   - Visual emphasis on key takeaways
+// Variants:
+//   A "Klasik" — Current card grid style with colored concept cards
+//   B "Kreatif" — Timeline/stepper style: vertical line on left,
+//                 concept cards as timeline nodes with numbered circles.
+//   C "Ringkas" — Accordion style: concept titles as clickable headers,
+//                 bodies expand on click. Only one open at a time.
+//
+// Step Mode: When concepts > 2, uses PremiumStepNavigator.
+// All text/labels in Indonesian (Bahasa Indonesia).
 // ═══════════════════════════════════════════════════════════════════
 
-/** Step mode sub-component for RangkumanRenderer when concepts > 2 */
-function RangkumanStepMode({ concepts, blockId, tokens, isCompact }: {
+// ── Variant Selector ─────────────────────────────────────────────
+function VariantSelector({
+  active,
+  onChange,
+  tokens,
+}: {
+  active: 'A' | 'B' | 'C';
+  onChange: (v: 'A' | 'B' | 'C') => void;
+  tokens: TokenResolver;
+}) {
+  const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
+    { key: 'A', label: 'Klasik' },
+    { key: 'B', label: 'Kreatif' },
+    { key: 'C', label: 'Ringkas' },
+  ];
+
+  return (
+    <div className="variant-selector">
+      {variants.map((v) => (
+        <button
+          key={v.key}
+          className={`variant-pill ${active === v.key ? 'active' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onChange(v.key); }}
+          aria-label={`Varian ${v.label}`}
+          title={`Varian ${v.label}`}
+          type="button"
+        >
+          {v.key}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VARIANT A "Klasik" — Original concept cards
+// ═══════════════════════════════════════════════════════════════════
+
+function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
+  concept: RangkumanBlock['concepts'][number];
+  index: number;
+  tokens: TokenResolver;
+  isCompact: boolean;
+}) {
+  return (
+    <div
+      className="rounded-xl p-3 transition-all hover:-translate-y-0.5"
+      style={{
+        background: tokens.colorAlpha(concept.color, 0.08),
+        border: `1px solid ${tokens.colorAlpha(concept.color, 0.2)}`,
+        borderLeft: `4px solid ${tokens.color(concept.color)}`,
+        borderRadius: tokens.radius('xl') + 'px',
+        boxShadow: tokens.raw.shadow.card,
+        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.08}s both`,
+        transition: 'all 0.2s ease',
+      }}
+    >
+      {/* Icon + Title row */}
+      <div className="flex items-center gap-2 mb-2">
+        {concept.icon && (
+          <span className="flex-shrink-0" style={{ fontSize: isCompact ? '14px' : '18px' }}>
+            {concept.icon}
+          </span>
+        )}
+        <div
+          className="font-extrabold min-w-0"
+          style={{
+            color: tokens.color(concept.color),
+            fontSize: isCompact ? '11px' : '13px',
+            wordBreak: 'break-word',
+          }}
+        >
+          {concept.title}
+        </div>
+      </div>
+
+      {/* Body text */}
+      <div
+        className="leading-relaxed"
+        style={{
+          fontSize: isCompact ? '10px' : '12px',
+          color: tokens.muted(0.85),
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+        }}
+      >
+        {concept.body}
+      </div>
+
+      {/* Subtle check indicator */}
+      <div
+        className="flex items-center gap-1 mt-2 pt-2"
+        style={{
+          borderTop: `1px solid ${tokens.colorAlpha(concept.color, 0.12)}`,
+        }}
+      >
+        <CheckCircle2 size={9} style={{ color: tokens.colorAlpha(concept.color, 0.5) }} />
+        <span
+          className="font-bold"
+          style={{
+            fontSize: isCompact ? '8px' : '9px',
+            color: tokens.colorAlpha(concept.color, 0.5),
+            letterSpacing: '0.05em',
+          }}
+        >
+          Konsep {index + 1}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VARIANT B "Kreatif" — Timeline/stepper style
+// ═══════════════════════════════════════════════════════════════════
+
+function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
+  concept: RangkumanBlock['concepts'][number];
+  index: number;
+  isLast: boolean;
+  tokens: TokenResolver;
+  isCompact: boolean;
+}) {
+  const conceptColor = tokens.color(concept.color);
+
+  return (
+    <div
+      className="flex gap-3"
+      style={{
+        position: 'relative',
+        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.08}s both`,
+      }}
+    >
+      {/* Timeline column: vertical line + numbered circle */}
+      <div
+        className="flex flex-col items-center flex-shrink-0"
+        style={{ width: isCompact ? '28px' : '36px' }}
+      >
+        {/* Numbered circle node */}
+        <div
+          style={{
+            width: isCompact ? '24px' : '32px',
+            height: isCompact ? '24px' : '32px',
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${conceptColor}, ${tokens.colorAlpha(concept.color, 0.7)})`,
+            boxShadow: `0 2px 10px ${tokens.colorAlpha(concept.color, 0.3)}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: isCompact ? '10px' : '12px',
+            fontWeight: 900,
+            color: tokens.color('bg'),
+            zIndex: 1,
+            flexShrink: 0,
+          }}
+        >
+          {index + 1}
+        </div>
+
+        {/* Vertical connecting line */}
+        {!isLast && (
+          <div
+            style={{
+              width: '2px',
+              flex: 1,
+              minHeight: isCompact ? '16px' : '24px',
+              background: `linear-gradient(180deg, ${conceptColor}, ${tokens.colorAlpha(concept.color, 0.2)})`,
+              borderRadius: '1px',
+            }}
+          />
+        )}
+      </div>
+
+      {/* Content card */}
+      <div
+        style={{
+          flex: 1,
+          background: tokens.colorAlpha(concept.color, 0.06),
+          border: `1px solid ${tokens.colorAlpha(concept.color, 0.15)}`,
+          borderRadius: tokens.radius('xl') + 'px',
+          padding: isCompact ? '10px 12px' : '14px 16px',
+          boxShadow: tokens.raw.shadow.card,
+          transition: 'all 0.2s ease',
+          marginBottom: isLast ? 0 : (isCompact ? '6px' : '10px'),
+        }}
+      >
+        {/* Title row */}
+        <div className="flex items-center gap-2 mb-1.5">
+          {concept.icon && (
+            <span className="flex-shrink-0" style={{ fontSize: isCompact ? '13px' : '16px' }}>
+              {concept.icon}
+            </span>
+          )}
+          <div
+            className="font-extrabold min-w-0"
+            style={{
+              color: conceptColor,
+              fontSize: isCompact ? '11px' : '13px',
+              wordBreak: 'break-word',
+            }}
+          >
+            {concept.title}
+          </div>
+        </div>
+
+        {/* Body text */}
+        <div
+          className="leading-relaxed"
+          style={{
+            fontSize: isCompact ? '10px' : '12px',
+            color: tokens.muted(0.85),
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            lineHeight: 1.6,
+          }}
+        >
+          {concept.body}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VARIANT C "Ringkas" — Accordion style (one open at a time)
+// ═══════════════════════════════════════════════════════════════════
+
+function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
+  concepts: RangkumanBlock['concepts'];
+  tokens: TokenResolver;
+  isCompact: boolean;
+}) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      {concepts.map((concept, i) => {
+        const isOpen = openIndex === i;
+        const conceptColor = tokens.color(concept.color);
+
+        return (
+          <div
+            key={`rang-accordion-${i}`}
+            style={{
+              borderRadius: tokens.radius('xl') + 'px',
+              border: `1px solid ${isOpen ? tokens.colorAlpha(concept.color, 0.3) : tokens.colorAlpha(concept.color, 0.12)}`,
+              background: isOpen ? tokens.colorAlpha(concept.color, 0.08) : tokens.colorAlpha(concept.color, 0.03),
+              overflow: 'hidden',
+              animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${i * 0.08}s both`,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {/* Accordion header */}
+            <button
+              onClick={() => setOpenIndex(isOpen ? null : i)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: isCompact ? '8px' : '10px',
+                padding: isCompact ? '8px 12px' : '10px 14px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                color: 'inherit',
+                fontSize: 'inherit',
+                fontFamily: 'inherit',
+              }}
+              aria-expanded={isOpen}
+              aria-controls={`rangkuman-panel-${i}`}
+            >
+              {/* Numbered badge */}
+              <div
+                className="flex-shrink-0"
+                style={{
+                  width: isCompact ? '20px' : '24px',
+                  height: isCompact ? '20px' : '24px',
+                  borderRadius: '50%',
+                  background: isOpen
+                    ? `linear-gradient(135deg, ${conceptColor}, ${tokens.colorAlpha(concept.color, 0.7)})`
+                    : tokens.colorAlpha(concept.color, 0.15),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: isCompact ? '9px' : '10px',
+                  fontWeight: 900,
+                  color: isOpen ? tokens.color('bg') : conceptColor,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {i + 1}
+              </div>
+
+              {/* Icon */}
+              {concept.icon && (
+                <span className="flex-shrink-0" style={{ fontSize: isCompact ? '12px' : '15px' }}>
+                  {concept.icon}
+                </span>
+              )}
+
+              {/* Title */}
+              <span
+                className="font-bold min-w-0 flex-1"
+                style={{
+                  color: isOpen ? conceptColor : tokens.color('text'),
+                  fontSize: isCompact ? '11px' : '13px',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {concept.title}
+              </span>
+
+              {/* Expand/collapse icon */}
+              <div className="flex-shrink-0" style={{ color: conceptColor, opacity: 0.6 }}>
+                {isOpen ? <ChevronUp size={isCompact ? 12 : 14} /> : <ChevronDown size={isCompact ? 12 : 14} />}
+              </div>
+            </button>
+
+            {/* Accordion body */}
+            {isOpen && (
+              <div
+                id={`rangkuman-panel-${i}`}
+                role="region"
+                style={{
+                  padding: isCompact ? '0 12px 10px' : '0 14px 14px',
+                  paddingLeft: isCompact ? '42px' : '52px',
+                  animation: 'fadeIn 0.25s ease',
+                }}
+              >
+                <div
+                  className="leading-relaxed"
+                  style={{
+                    fontSize: isCompact ? '10px' : '12px',
+                    color: tokens.muted(0.85),
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {concept.body}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONCEPT RENDERER FACTORY — dispatches to correct variant
+// ═══════════════════════════════════════════════════════════════════
+
+function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
+  concepts: RangkumanBlock['concepts'];
+  variant: 'A' | 'B' | 'C';
+  tokens: TokenResolver;
+  isCompact: boolean;
+}) {
+  // Variant C — Accordion (has its own internal state)
+  if (variant === 'C') {
+    return <RangkumanAccordionGroup concepts={concepts} tokens={tokens} isCompact={isCompact} />;
+  }
+
+  // Variant A — Grid of concept cards
+  if (variant === 'A') {
+    return (
+      <div
+        className="grid gap-2.5"
+        style={{
+          padding: isCompact ? '10px 12px' : '14px 18px',
+          gridTemplateColumns: concepts.length <= 2 ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
+        }}
+      >
+        {concepts.map((concept, i) => (
+          <RangkumanConceptCardA
+            key={`rang-a-${i}`}
+            concept={concept}
+            index={i}
+            tokens={tokens}
+            isCompact={isCompact}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Variant B — Timeline
+  return (
+    <div
+      style={{
+        padding: isCompact ? '10px 12px' : '14px 18px',
+      }}
+    >
+      {concepts.map((concept, i) => (
+        <RangkumanConceptCardB
+          key={`rang-b-${i}`}
+          concept={concept}
+          index={i}
+          isLast={i === concepts.length - 1}
+          tokens={tokens}
+          isCompact={isCompact}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STEP MODE SUB-COMPONENT — PremiumStepNavigator wrapper
+// ═══════════════════════════════════════════════════════════════════
+
+function RangkumanStepMode({ concepts, blockId, tokens, isCompact, variant }: {
   concepts: RangkumanBlock['concepts'];
   blockId: string | undefined;
   tokens: TokenResolver;
   isCompact: boolean;
+  variant: 'A' | 'B' | 'C';
 }) {
   const STEP_SIZE = 2;
   const totalSteps = Math.ceil(concepts.length / STEP_SIZE);
@@ -52,85 +469,19 @@ function RangkumanStepMode({ concepts, blockId, tokens, isCompact }: {
       accent="c"
       isCompact={isCompact}
     >
-      <div
-        className="grid gap-2.5"
-        style={{
-          padding: isCompact ? '10px 12px' : '14px 18px',
-          gridTemplateColumns: stepConcepts.length <= 1 ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
-        }}
-      >
-        {stepConcepts.map((concept, i) => {
-          const globalIndex = activeStep * STEP_SIZE + i;
-          return (
-            <div
-              key={`rang-concept-${blockId || 'rk'}-step-${activeStep}-${i}`}
-              className="rounded-xl p-3 transition-all hover:-translate-y-0.5"
-              style={{
-                background: tokens.colorAlpha(concept.color, 0.08),
-                border: `1px solid ${tokens.colorAlpha(concept.color, 0.2)}`,
-                borderLeft: `4px solid ${tokens.color(concept.color)}`,
-                borderRadius: tokens.radius('xl') + 'px',
-                boxShadow: tokens.raw.shadow.card,
-              }}
-            >
-              {/* Icon + Title row */}
-              <div className="flex items-center gap-2 mb-2">
-                {concept.icon && (
-                  <span className="flex-shrink-0" style={{ fontSize: isCompact ? '14px' : '18px' }}>
-                    {concept.icon}
-                  </span>
-                )}
-                <div
-                  className="font-extrabold min-w-0"
-                  style={{
-                    color: tokens.color(concept.color),
-                    fontSize: isCompact ? '11px' : '13px',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {concept.title}
-                </div>
-              </div>
-
-              {/* Body text */}
-              <div
-                className="leading-relaxed"
-                style={{
-                  fontSize: isCompact ? '10px' : '12px',
-                  color: tokens.muted(0.85),
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                }}
-              >
-                {concept.body}
-              </div>
-
-              {/* Subtle check indicator */}
-              <div
-                className="flex items-center gap-1 mt-2 pt-2"
-                style={{
-                  borderTop: `1px solid ${tokens.colorAlpha(concept.color, 0.12)}`,
-                }}
-              >
-                <CheckCircle2 size={9} style={{ color: tokens.colorAlpha(concept.color, 0.5) }} />
-                <span
-                  className="font-bold"
-                  style={{
-                    fontSize: isCompact ? '8px' : '9px',
-                    color: tokens.colorAlpha(concept.color, 0.5),
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  Konsep {globalIndex + 1}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <RangkumanConceptList
+        concepts={stepConcepts}
+        variant={variant}
+        tokens={tokens}
+        isCompact={isCompact}
+      />
     </PremiumStepNavigator>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// MAIN COMPONENT — RangkumanRenderer
+// ═══════════════════════════════════════════════════════════════════
 
 export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
   block: RangkumanBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -138,6 +489,11 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
+
+  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
+    (block.variant as 'A' | 'B' | 'C') || 'A'
+  );
+  const variant = currentVariant;
 
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -150,33 +506,62 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${accentAlpha(0.15)}`,
         animation: 'fadeIn 0.4s ease',
+        position: 'relative',
       }}
     >
+      {/* Variant selector (editing mode only) */}
+      {isEditing && (
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+          <VariantSelector active={variant} onChange={setCurrentVariant} tokens={tokens} />
+        </div>
+      )}
+
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `4px solid ${accent}`,
+          borderLeft: variant === 'B' ? 'none' : `4px solid ${accent}`,
           background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.03)})`,
           padding: isCompact ? '10px 12px' : '14px 18px',
+          position: 'relative',
         }}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{
-                background: accentAlpha(0.15),
-                border: `1px solid ${accentAlpha(0.3)}`,
-              }}
-            >
-              <BookOpen size={16} style={{ color: accent }} />
-            </div>
+            {variant === 'B' ? (
+              /* Timeline variant: numbered journey badge */
+              <div
+                className="flex-shrink-0"
+                style={{
+                  width: isCompact ? '30px' : '36px',
+                  height: isCompact ? '30px' : '36px',
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${accent}, ${accentAlpha(0.7)})`,
+                  boxShadow: `0 3px 12px ${accentAlpha(0.3)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <BookOpen size={isCompact ? 13 : 16} style={{ color: tokens.color('bg') }} />
+              </div>
+            ) : (
+              /* Default: rounded icon box */
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: accentAlpha(0.15),
+                  border: `1px solid ${accentAlpha(0.3)}`,
+                }}
+              >
+                <BookOpen size={16} style={{ color: accent }} />
+              </div>
+            )}
             <h2
               className="font-black leading-tight min-w-0"
               style={{
@@ -219,6 +604,34 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
             background: `linear-gradient(90deg, ${accent}, ${accentAlpha(0.3)}, transparent)`,
           }}
         />
+
+        {/* Variant B: subtle journey hint */}
+        {variant === 'B' && (
+          <div
+            className="mt-2 font-bold"
+            style={{
+              fontSize: isCompact ? '9px' : '10px',
+              color: accentAlpha(0.5),
+              letterSpacing: '0.05em',
+            }}
+          >
+            Perjalanan Belajar — {concepts.length} Konsep
+          </div>
+        )}
+
+        {/* Variant C: accordion hint */}
+        {variant === 'C' && (
+          <div
+            className="mt-2 font-bold"
+            style={{
+              fontSize: isCompact ? '9px' : '10px',
+              color: accentAlpha(0.5),
+              letterSpacing: '0.05em',
+            }}
+          >
+            Ketuk untuk membuka konsep
+          </div>
+        )}
       </div>
 
       {/* ═══ CONCEPT CARDS ═══════════════════════════════════════ */}
@@ -228,81 +641,15 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
           blockId={block.id}
           tokens={tokens}
           isCompact={isCompact}
+          variant={variant}
         />
       ) : (
-        <div
-          className="grid gap-2.5"
-          style={{
-            padding: isCompact ? '10px 12px' : '14px 18px',
-            gridTemplateColumns: concepts.length <= 2 ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
-          }}
-        >
-          {concepts.map((concept, i) => (
-            <div
-              key={`rang-concept-${block.id || 'rk'}-${i}`}
-              className="rounded-xl p-3 transition-all hover:-translate-y-0.5"
-              style={{
-                background: tokens.colorAlpha(concept.color, 0.08),
-                border: `1px solid ${tokens.colorAlpha(concept.color, 0.2)}`,
-                borderLeft: `4px solid ${tokens.color(concept.color)}`,
-                borderRadius: tokens.radius('xl') + 'px',
-                boxShadow: tokens.raw.shadow.card,
-              }}
-            >
-              {/* Icon + Title row */}
-              <div className="flex items-center gap-2 mb-2">
-                {concept.icon && (
-                  <span className="flex-shrink-0" style={{ fontSize: isCompact ? '14px' : '18px' }}>
-                    {concept.icon}
-                  </span>
-                )}
-                <div
-                  className="font-extrabold min-w-0"
-                  style={{
-                    color: tokens.color(concept.color),
-                    fontSize: isCompact ? '11px' : '13px',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {concept.title}
-                </div>
-              </div>
-
-              {/* Body text */}
-              <div
-                className="leading-relaxed"
-                style={{
-                  fontSize: isCompact ? '10px' : '12px',
-                  color: tokens.muted(0.85),
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                }}
-              >
-                {concept.body}
-              </div>
-
-              {/* Subtle check indicator */}
-              <div
-                className="flex items-center gap-1 mt-2 pt-2"
-                style={{
-                  borderTop: `1px solid ${tokens.colorAlpha(concept.color, 0.12)}`,
-                }}
-              >
-                <CheckCircle2 size={9} style={{ color: tokens.colorAlpha(concept.color, 0.5) }} />
-                <span
-                  className="font-bold"
-                  style={{
-                    fontSize: isCompact ? '8px' : '9px',
-                    color: tokens.colorAlpha(concept.color, 0.5),
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  Konsep {i + 1}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <RangkumanConceptList
+          concepts={concepts}
+          variant={variant}
+          tokens={tokens}
+          isCompact={isCompact}
+        />
       )}
 
       {/* ═══ CLOSING STATEMENT ═══════════════════════════════════ */}
