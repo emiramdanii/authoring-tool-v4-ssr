@@ -1,13 +1,49 @@
 'use client';
 
+import React from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { ChevronDown, Target, Calendar, ClipboardList, HelpCircle, Puzzle, Gamepad2, FileEdit, Zap } from 'lucide-react';
+import type { PanelId } from '@/store/authoring/types';
+import {
+  ChevronDown, Target, Calendar, ClipboardList, HelpCircle, Puzzle, Gamepad2, FileEdit, Zap,
+  Rocket, FileText, Sparkles, Pencil, Play, Layers, ArrowRight,
+} from 'lucide-react';
 import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
 
 // Schema-driven presets use this path for beautiful rendering
 const SCHEMA_DRIVEN_PRESETS = new Set(['hakikat-norma', 'macam-norma']);
+
+// ── Adaptive "Langkah Selanjutnya" logic ─────────────────────────
+interface NextStep {
+  step: string;
+  action: () => void;
+  icon: React.ReactNode;
+}
+
+function getNextStep(
+  meta: { judulPertemuan: string },
+  tp: unknown[],
+  kuis: unknown[],
+  modules: unknown[],
+  games: unknown[],
+  pagesLength: number,
+  setActivePanel: (panel: PanelId) => void,
+): NextStep {
+  if (!meta.judulPertemuan) {
+    return { step: 'Isi judul pertemuan di panel Dokumen', action: () => setActivePanel('dokumen'), icon: <FileText size={16} /> };
+  }
+  if (tp.length === 0) {
+    return { step: 'Tambahkan Tujuan Pembelajaran (TP)', action: () => setActivePanel('konten'), icon: <Target size={16} /> };
+  }
+  if (kuis.length === 0 && modules.length === 0 && games.length === 0) {
+    return { step: 'Buat konten interaktif — kuis, game, atau modul', action: () => setActivePanel('konten'), icon: <Gamepad2 size={16} /> };
+  }
+  if (pagesLength <= 1) {
+    return { step: 'Tambahkan lebih banyak halaman di Canva', action: () => setActivePanel('canva'), icon: <Layers size={16} /> };
+  }
+  return { step: 'Preview media pembelajaran Anda!', action: () => setActivePanel('preview'), icon: <Play size={16} /> };
+}
 
 export default function Dashboard() {
   const meta = useAuthoringStore((s) => s.meta);
@@ -26,9 +62,18 @@ export default function Dashboard() {
   const newProject = useAuthoringStore((s) => s.newProject);
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
 
+  // Get canva pages length for adaptive guidance
+  const pagesLength = useCanvaStore((s) => s.pages.length);
+
   const completeness = calcCompleteness();
   const isPresetMode = activePreset !== null;
   const hasData = meta.judulPertemuan || tp.length > 0 || kuis.length > 0;
+
+  // Compute next step for adaptive guidance
+  const nextStep = React.useMemo(
+    () => getNextStep(meta, tp, kuis, modules, games, pagesLength, setActivePanel),
+    [meta, tp, kuis, modules, games, pagesLength, setActivePanel],
+  );
 
   const presetLabels: Record<string, string> = {
     'hakikat-norma': 'Bab 3 P1: Hakikat Norma',
@@ -50,6 +95,52 @@ export default function Dashboard() {
     a.download = `media-pembelajaran-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // ── Template click handler ─────────────────────────────────────
+  const handleTemplateClick = (pKey: string) => {
+    if (hasData && !confirm('Template akan menimpa data saat ini. Lanjutkan?')) return;
+
+    if (SCHEMA_DRIVEN_PRESETS.has(pKey)) {
+      applyFullPreset(pKey);
+      setTimeout(async () => {
+        await useCanvaStore.getState().loadSchemaPreset(pKey);
+        useAuthoringStore.getState().setActivePanel('canva');
+      }, 100);
+    } else if (pKey === 'blank') {
+      useAuthoringStore.getState().newProject();
+      setTimeout(() => {
+        useCanvaStore.getState().resetCanvas();
+        useAuthoringStore.getState().setActivePanel('canva');
+      }, 100);
+    } else {
+      applyFullPreset(pKey);
+      setTimeout(() => {
+        useCanvaStore.getState().resetCanvas();
+        useAuthoringStore.getState().setActivePanel('canva');
+      }, 300);
+    }
+  };
+
+  // ── Template data ──────────────────────────────────────────────
+  const templates = [
+    { key: 'hakikat-norma', icon: '🧑‍🤝‍🧑', label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'amber' },
+    { key: 'macam-norma', icon: '📜', label: 'Macam Norma', sub: 'PPKn VII · Bab 3 P2', color: 'cyan' },
+    { key: 'perilaku-patuhan', icon: '⚖️', label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
+    { key: 'blank', icon: '📋', label: 'Proyek Kosong', sub: 'Isi semua manual', color: 'slate' },
+  ];
+
+  const colorMap: Record<string, string> = {
+    amber: 'hover:border-app-accent/40 hover:bg-app-accent/5',
+    cyan: 'hover:border-cyan-500/40 hover:bg-cyan-500/5',
+    emerald: 'hover:border-emerald-500/40 hover:bg-emerald-500/5',
+    slate: 'hover:border-app-border/40 hover:bg-app-elevated/5',
+  };
+  const activeColorMap: Record<string, string> = {
+    amber: 'border-app-accent/50 bg-app-accent/10 ring-1 ring-app-accent/20',
+    cyan: 'border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/20',
+    emerald: 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/20',
+    slate: 'border-app-border/50 bg-app-elevated/10 ring-1 ring-app-border/20',
   };
 
   // ── Flow Steps ─────────────────────────────────────────────────
@@ -115,6 +206,122 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* ══ EMPTY STATE HERO (for first-time users) ══════════════ */}
+      {!hasData && (
+        <div className="text-center py-8 bg-app-surface/40 border border-app-border/40 rounded-xl">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-950/50 mb-6">
+            <Rocket className="h-10 w-10 text-blue-500" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-app-primary">Mulai dari mana?</h2>
+          <p className="text-app-secondary mb-8 max-w-md mx-auto">
+            Buat media pembelajaran interaktif dalam 3 langkah mudah
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto px-4">
+            {/* Dari Template */}
+            <button
+              onClick={() => {
+                // Scroll to template section (below)
+                document.getElementById('template-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-app-accent/40 hover:bg-app-accent/5 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-full bg-app-accent/10 flex items-center justify-center group-hover:bg-app-accent/20 transition-colors">
+                <FileText className="h-6 w-6 text-app-accent" />
+              </div>
+              <span className="text-sm font-semibold text-app-primary">Dari Template</span>
+              <span className="text-xs text-app-muted">Pilih template siap pakai</span>
+            </button>
+
+            {/* Auto-Generate */}
+            <button
+              onClick={() => setActivePanel('autogen')}
+              className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                <Sparkles className="h-6 w-6 text-purple-400" />
+              </div>
+              <span className="text-sm font-semibold text-app-primary">Auto-Generate</span>
+              <span className="text-xs text-app-muted">AI buatkan untuk Anda</span>
+            </button>
+
+            {/* Manual */}
+            <button
+              onClick={() => {
+                useCanvaStore.getState().resetCanvas();
+                setActivePanel('canva');
+              }}
+              className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+                <Pencil className="h-6 w-6 text-cyan-400" />
+              </div>
+              <span className="text-sm font-semibold text-app-primary">Manual</span>
+              <span className="text-xs text-app-muted">Buat dari nol</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ ADAPTIVE "LANGKAH SELANJUTNYA" CARD ═════════════════ */}
+      {hasData && (
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300">
+            {nextStep.icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-blue-900 dark:text-blue-100 text-sm">Langkah Selanjutnya</p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 truncate">{nextStep.step}</p>
+          </div>
+          <button
+            onClick={nextStep.action}
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            Mulai <ArrowRight size={12} />
+          </button>
+        </div>
+      )}
+
+      {/* ══ TEMPLATE SELECTION (prominently placed) ══════════════ */}
+      <div id="template-section">
+        <h2 className="text-sm font-semibold text-app-secondary mb-1">Mulai dengan Template</h2>
+        <p className="text-xs text-app-muted mb-3">Pilih preset data PPKn atau mulai dari proyek kosong.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {templates.map((p) => {
+            const isCurrentPreset = isPresetMode && activePreset === p.key;
+            return (
+              <button
+                key={p.key}
+                onClick={() => handleTemplateClick(p.key)}
+                className={`rounded-xl p-4 text-center transition-all cursor-pointer border ${
+                  isCurrentPreset
+                    ? activeColorMap[p.color]
+                    : `border-app-border/40 bg-app-elevated/30 ${colorMap[p.color]}`
+                }`}
+              >
+                <div className="text-2xl mb-2">{p.icon}</div>
+                <div className="text-xs font-semibold text-app-primary">{p.label}</div>
+                <div className="text-[0.6rem] text-app-muted mt-0.5">{p.sub}</div>
+                {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
+                  <div className="text-[0.55rem] text-app-accent/80 font-bold mt-1 flex items-center justify-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
+                )}
+                {isCurrentPreset && (
+                  <div className="text-[0.6rem] text-app-accent font-bold mt-1.5">AKTIF</div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {/* "atau mulai dari kosong" link */}
+        <div className="text-center mt-3">
+          <button
+            onClick={() => handleTemplateClick('blank')}
+            className="text-xs text-app-muted hover:text-app-accent transition-colors underline underline-offset-2 decoration-app-border hover:decoration-app-accent"
+          >
+            atau mulai dari kosong
+          </button>
+        </div>
+      </div>
+
       {/* ══ FLOW PROGRESS ════════════════════════════════════════ */}
       <div className="bg-app-surface/60 border border-app-border/60 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-app-secondary mb-4">Alur Kerja</h2>
@@ -153,81 +360,6 @@ export default function Dashboard() {
 
       {/* ══ BSNP COMPLIANCE ═══════════════════════════════════════ */}
       <BsnpCompliancePanel />
-
-      {/* ══ TEMPLATE SELECTION ════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-semibold text-app-secondary mb-1">Mulai dengan Template</h2>
-        <p className="text-xs text-app-muted mb-3">Pilih preset data PPKn atau mulai dari proyek kosong.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { key: 'hakikat-norma', icon: '🧑‍🤝‍🧑', label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'amber' },
-            { key: 'macam-norma', icon: '📜', label: 'Macam Norma', sub: 'PPKn VII · Bab 3 P2', color: 'cyan' },
-            { key: 'perilaku-patuhan', icon: '⚖️', label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
-            { key: 'blank', icon: '📋', label: 'Proyek Kosong', sub: 'Isi semua manual', color: 'slate' },
-          ].map((p) => {
-            const isCurrentPreset = isPresetMode && activePreset === p.key;
-            const colorMap: Record<string, string> = {
-              amber: 'hover:border-app-accent/40 hover:bg-app-accent/5',
-              cyan: 'hover:border-cyan-500/40 hover:bg-cyan-500/5',
-              emerald: 'hover:border-emerald-500/40 hover:bg-emerald-500/5',
-              slate: 'hover:border-app-border/40 hover:bg-app-elevated/5',
-            };
-            const activeColorMap: Record<string, string> = {
-              amber: 'border-app-accent/50 bg-app-accent/10 ring-1 ring-app-accent/20',
-              cyan: 'border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/20',
-              emerald: 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/20',
-              slate: 'border-app-border/50 bg-app-elevated/10 ring-1 ring-app-border/20',
-            };
-            return (
-              <button
-                key={p.key}
-                onClick={async () => {
-                  if (hasData && !confirm('Template akan menimpa data saat ini. Lanjutkan?')) return;
-
-                  // Schema-driven presets get beautiful token-based rendering
-                  if (SCHEMA_DRIVEN_PRESETS.has(p.key)) {
-                    // Load authoring data first (for meta, CP, TP, ATP, etc.)
-                    applyFullPreset(p.key);
-                    // Then load schema-driven canvas pages (replaces legacy templates)
-                    setTimeout(async () => {
-                      await useCanvaStore.getState().loadSchemaPreset(p.key);
-                      useAuthoringStore.getState().setActivePanel('canva');
-                    }, 100);
-                  } else if (p.key === 'blank') {
-                    useAuthoringStore.getState().newProject();
-                    setTimeout(() => {
-                      useCanvaStore.getState().resetCanvas();
-                      useAuthoringStore.getState().setActivePanel('canva');
-                    }, 100);
-                  } else {
-                    // Other presets use legacy template path
-                    applyFullPreset(p.key);
-                    setTimeout(() => {
-                      useCanvaStore.getState().resetCanvas();
-                      useAuthoringStore.getState().setActivePanel('canva');
-                    }, 300);
-                  }
-                }}
-                className={`rounded-xl p-4 text-center transition-all cursor-pointer border ${
-                  isCurrentPreset
-                    ? activeColorMap[p.color]
-                    : `border-app-border/40 bg-app-elevated/30 ${colorMap[p.color]}`
-                }`}
-              >
-                <div className="text-2xl mb-2">{p.icon}</div>
-                <div className="text-xs font-semibold text-app-primary">{p.label}</div>
-                <div className="text-[0.6rem] text-app-muted mt-0.5">{p.sub}</div>
-                {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
-                  <div className="text-[0.55rem] text-app-accent/80 font-bold mt-1 flex items-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
-                )}
-                {isCurrentPreset && (
-                  <div className="text-[0.6rem] text-app-accent font-bold mt-1.5">AKTIF</div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ══ QUICK ACTIONS ════════════════════════════════════════ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -293,8 +425,8 @@ export default function Dashboard() {
         <button
           onClick={() => {
             // If we have a schema-driven preset, just go to canva (no reset needed)
-            const activePreset = useAuthoringStore.getState().activePreset;
-            if (SCHEMA_DRIVEN_PRESETS.has(activePreset || '')) {
+            const currentPreset = useAuthoringStore.getState().activePreset;
+            if (SCHEMA_DRIVEN_PRESETS.has(currentPreset || '')) {
               setActivePanel('canva');
             } else {
               useCanvaStore.getState().resetCanvas();

@@ -13,6 +13,7 @@ import {
   Type,
   PlusCircle,
   Store,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,7 +60,7 @@ export function ToolbarActions() {
     if (!state.leftPanelOpen) {
       useCanvaStore.setState({ leftPanelOpen: true });
     }
-    state.setLeftTab('tambah');
+    state.setLeftTab('sisipkan');
   };
 
   return (
@@ -74,6 +75,31 @@ export function ToolbarActions() {
         <Play size={14} fill="currentColor" />
         <span className="text-[11px]">Play</span>
       </Button>
+
+      {/* ✨ AI — Open AI Content Assistant */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            onClick={() => {
+              // Open right panel if closed, then expand AI section
+              const state = useCanvaStore.getState();
+              if (!state.rightPanelOpen) {
+                useCanvaStore.setState({ rightPanelOpen: true });
+              }
+              window.dispatchEvent(new CustomEvent('open-ai-assistant'));
+            }}
+            className="focus-ring gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800 h-7 px-2.5"
+            title="AI Content Assistant (Ctrl+I)"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline text-[10px] font-semibold">AI</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-[10px]">
+          AI Content Assistant (Ctrl+I)
+        </TooltipContent>
+      </Tooltip>
 
       {/* + Tambah — opens Add Block panel */}
       <Tooltip>

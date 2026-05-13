@@ -656,8 +656,8 @@ describe('UI Slice', () => {
   it('should set left tab', () => {
     const { getState } = store;
     expect(getState().leftTab).toBe('halaman');
-    getState().setLeftTab('tambah');
-    expect(getState().leftTab).toBe('tambah');
+    getState().setLeftTab('sisipkan');
+    expect(getState().leftTab).toBe('sisipkan');
   });
 
   it('should toggle left panel', () => {

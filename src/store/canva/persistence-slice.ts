@@ -13,13 +13,14 @@ import { ensurePageSchema } from '@/core/schema/ensure-schema';
 
 // ── Legacy tab name migration map ──────────────────────────────
 const TAB_MIGRATION: Record<string, LeftTab> = {
-  templates: 'tambah',
-  elems: 'tambah',
+  templates: 'sisipkan',
+  elems: 'sisipkan',
   ratio: 'halaman',
   pages: 'halaman',
   layers: 'halaman',
-  rakit: 'tambah',
+  rakit: 'sisipkan',
   layer: 'halaman',
+  tambah: 'sisipkan', // 8.3: Old 'tambah' tab split into 'sisipkan' + 'halamanBaru'
 };
 
 export type PersistenceSlice = Pick<

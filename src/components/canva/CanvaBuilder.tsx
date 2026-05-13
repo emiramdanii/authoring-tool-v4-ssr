@@ -344,25 +344,49 @@ export default function CanvaBuilder() {
       description: 'Fit to screen',
       category: 'View',
     },
+
+    // ── AI Assistant ──────────────────────────────────────────────
+    {
+      id: 'canvas.ai-assistant',
+      keys: 'ctrl+i',
+      scope: 'canvas',
+      priority: 10,
+      handler: (e) => {
+        e.preventDefault();
+        const store = useCanvaStore.getState();
+        if (!store.rightPanelOpen) {
+          useCanvaStore.setState({ rightPanelOpen: true });
+        }
+        window.dispatchEvent(new CustomEvent('open-ai-assistant'));
+      },
+      description: 'Buka AI Assistant',
+      category: 'Tools',
+    },
   ], []);
 
   return (
     <MobileGuard>
       <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
         <UndoRedoToast />
+
+        {/* Visually hidden live region for screen reader announcements */}
+        <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+
         {/* Top Toolbar */}
-        <Toolbar />
+        <div data-tour="toolbar" role="toolbar" aria-label="Toolbar editor">
+          <Toolbar />
+        </div>
 
         {/* Main builder row — always visible (design view) */}
         <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
           <div className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
             leftPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
-          }`} data-tour="left-panel" role="complementary" aria-label="Panel halaman">
+          }`} data-tour="left-panel" role="complementary" aria-label="Panel halaman dan block">
             {leftPanelOpen && <LeftPanel />}
           </div>
 
           {/* Stage Canvas Area — recessed with inner shadow */}
-          <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage">
+          <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
             <Stage onMouseMove={handleMouseMove} />
           </div>
 

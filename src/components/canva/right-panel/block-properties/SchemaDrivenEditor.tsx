@@ -41,7 +41,7 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
   // If this block type should redirect to authoring panel, show note
   if (schema.redirectToAuthoring) {
     return (
-      <div className="mt-2 space-y-2">
+      <div className="mt-2 space-y-2" role="region" aria-label={`Properti ${schema.blockType}`}>
         {schema.properties
           .filter(p => p.type === 'variant')
           .map(field => renderField(field, b, onUpdate))}
@@ -53,7 +53,7 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
   }
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-2 space-y-2" role="region" aria-label={`Properti ${schema.blockType}`}>
       {/* Ungrouped fields first */}
       {groupedFields.ungrouped.map(field => renderField(field, b, onUpdate))}
 

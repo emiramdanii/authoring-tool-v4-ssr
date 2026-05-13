@@ -416,12 +416,54 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         action: () => useAuthoringStore.getState().setActivePanel('canva'),
       },
       {
+        id: 'nav-sisipkan-tab',
+        label: 'Buka Tab Sisipkan',
+        description: 'Tambah block, modul, game ke halaman ini',
+        icon: <Layout size={16} className="text-teal-400" />,
+        category: 'navigation',
+        action: () => {
+          useAuthoringStore.getState().setActivePanel('canva');
+          const canvaState = useCanvaStore.getState();
+          if (!canvaState.leftPanelOpen) useCanvaStore.setState({ leftPanelOpen: true });
+          canvaState.setLeftTab('sisipkan');
+        },
+      },
+      {
+        id: 'nav-halaman-baru-tab',
+        label: 'Buka Tab + Halaman',
+        description: 'Tambah halaman baru, preset, auto-generate',
+        icon: <Layout size={16} className="text-sky-400" />,
+        category: 'navigation',
+        action: () => {
+          useAuthoringStore.getState().setActivePanel('canva');
+          const canvaState = useCanvaStore.getState();
+          if (!canvaState.leftPanelOpen) useCanvaStore.setState({ leftPanelOpen: true });
+          canvaState.setLeftTab('halamanBaru');
+        },
+      },
+      {
         id: 'nav-autogen',
         label: 'Buka Auto-Generate',
         description: 'Generate konten otomatis dengan AI',
         icon: <AutoGenIcon size={16} className="text-purple-400" />,
         category: 'navigation',
         action: () => useAuthoringStore.getState().setActivePanel('autogen'),
+      },
+      {
+        id: 'nav.ai-assistant',
+        label: 'Buka AI Assistant',
+        description: 'Buat konten dengan bantuan AI di panel kanan',
+        icon: <AutoGenIcon size={16} className="text-purple-400" />,
+        category: 'navigation',
+        shortcut: 'Ctrl+I',
+        action: () => {
+          // Open right panel if closed, then expand AI section
+          const canvaState = useCanvaStore.getState();
+          if (!canvaState.rightPanelOpen) {
+            useCanvaStore.setState({ rightPanelOpen: true });
+          }
+          window.dispatchEvent(new CustomEvent('open-ai-assistant'));
+        },
       },
       {
         id: 'nav-preview',

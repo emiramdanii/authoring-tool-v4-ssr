@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   FileText,
   Plus,
@@ -17,6 +17,8 @@ import {
   Square,
   Image as ImageIcon,
   RefreshCw,
+  ArrowDownToLine,
+  FilePlus2,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -35,18 +37,21 @@ import { Button } from '@/components/ui/button';
 import LayerPanel from './left-panel/LayerPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
+import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 
 // Lazy-loaded: PageTypeCreator is a modal/overlay not always visible
 const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), { ssr: false });
 
 // ═══════════════════════════════════════════════════════════════
-// Left Panel — 3 tabs: Halaman (view & arrange) + Layer (schema blocks) + Tambah (add)
+// Left Panel — 4 tabs: Halaman + Layer + Sisipkan + Halaman Baru
 // ═══════════════════════════════════════════════════════════════
 
-const TABS: { id: LeftTab; label: string; icon: React.ReactNode }[] = [
+const TABS: { id: LeftTab; label: string; icon: React.ReactNode; accent?: string }[] = [
   { id: 'halaman', label: 'Halaman', icon: <FileText size={16} /> },
   { id: 'layer', label: 'Layer', icon: <Layers size={16} /> },
-  { id: 'tambah', label: 'Tambah', icon: <Plus size={16} /> },
+  { id: 'sisipkan', label: 'Sisipkan', icon: <Plus size={16} />, accent: 'teal' },
+  { id: 'halamanBaru', label: '+ Halaman', icon: <FilePlus2 size={16} />, accent: 'sky' },
 ];
 
 export default function LeftPanel() {
@@ -57,24 +62,33 @@ export default function LeftPanel() {
 
   return (
     <div className="w-full flex flex-col glass-panel overflow-hidden">
-      {/* Tab bar — 2 tabs */}
+      {/* Tab bar — 4 tabs */}
       <div className="glass-panel border-b border-app-border">
         <div className="flex">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setLeftTab(tab.id)}
-              className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-semibold transition-colors ${
-                leftTab === tab.id
-                  ? 'text-app-accent border-b-2 border-app-accent bg-app-accent/5'
-                  : 'text-app-muted hover:text-app-secondary border-b-2 border-transparent'
-              }`}
-              title={tab.label}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-            </button>
-          ))}
+          {TABS.map(tab => {
+            const isActive = leftTab === tab.id;
+            let activeClass: string;
+            if (tab.accent === 'teal' && isActive) {
+              activeClass = 'text-teal-400 border-b-2 border-teal-400 bg-teal-500/5';
+            } else if (tab.accent === 'sky' && isActive) {
+              activeClass = 'text-sky-400 border-b-2 border-sky-400 bg-sky-500/5';
+            } else if (isActive) {
+              activeClass = 'text-app-accent border-b-2 border-app-accent bg-app-accent/5';
+            } else {
+              activeClass = 'text-app-muted hover:text-app-secondary border-b-2 border-transparent';
+            }
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setLeftTab(tab.id)}
+                className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-semibold transition-colors ${activeClass}`}
+                title={tab.label}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -82,7 +96,8 @@ export default function LeftPanel() {
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar page-transition">
         {leftTab === 'halaman' && <HalamanContent />}
         {leftTab === 'layer' && <LayerPanel />}
-        {leftTab === 'tambah' && <TambahContent />}
+        {leftTab === 'sisipkan' && <SisipkanContent />}
+        {leftTab === 'halamanBaru' && <HalamanBaruContent />}
       </div>
 
       {/* Bottom: Right Panel toggle */}
@@ -272,17 +287,13 @@ function HalamanContent() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   Tab 2: TAMBAH — Add pages + elements + modules + Reset Canvas
+   Tab 3: SISIPKAN — Insert content into current page
    ══════════════════════════════════════════════════════════════════ */
 
-function TambahContent() {
-  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
+function SisipkanContent() {
   const addElement = useCanvaStore(s => s.addElement);
-  const addKuisElement = useCanvaStore(s => s.addKuisElement);
-  const addGameElement = useCanvaStore(s => s.addGameElement);
   const addModuleElement = useCanvaStore(s => s.addModuleElement);
-  const resetCanvas = useCanvaStore(s => s.resetCanvas);
-  const loadSchemaPreset = useCanvaStore(s => s.loadSchemaPreset);
+  const addGameElement = useCanvaStore(s => s.addGameElement);
   const authStore = useAuthoringStore();
   const kuis = authStore.kuis.filter(k => k.q.trim());
   const games = authStore.modules.filter((m: Record<string, unknown>) =>
@@ -294,106 +305,25 @@ function TambahContent() {
 
   const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const isTemplatePage = page?.templateType && page.templateType !== 'custom';
-  // Schema preset info
-  const availablePresets = getAvailablePresets();
-  const presetInfo: Record<string, { label: string; icon: string; desc: string }> = {
-    'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII' },
-    'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII' },
-    'perilaku-patuh': { label: 'Perilaku Patuh Norma', icon: '🛡️', desc: 'Pertemuan 3 — PPKn Kelas VII' },
-  };
-  const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
 
-  // FASE 2: Metadata-driven categories from PresetRegistry
-  const presetCategories = getPresetsGroupedByCategory();
-  const categoryLabels: Record<string, string> = {
-    utama: 'Halaman Utama',
-    konten: 'Konten',
-    interaktif: 'Interaktif',
-    penutup: 'Penutup',
-  };
+  // Show insertion point indicator from selected block
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
 
   return (
     <div className="space-y-3">
-      {/* ── 📦 Preset Schema (NEW — schema-driven!) ── */}
-      <div>
-        <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-          <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[7px] font-black">SCHEMA</span>
-          Preset PPKn
-        </div>
-        <div className="space-y-1.5">
-          {availablePresets.map(presetId => {
-            const info = presetInfo[presetId] || { label: presetId, icon: '📦', desc: 'Preset' };
-            const isLoading = loadingPreset === presetId;
-            return (
-              <button
-                key={presetId}
-                onClick={async () => {
-                  setLoadingPreset(presetId);
-                  await loadSchemaPreset(presetId);
-                  setLoadingPreset(null);
-                }}
-                disabled={isLoading}
-                className="card-hover w-full flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 active:scale-95 transition-transform disabled:opacity-50"
-              >
-                <span className="text-xl">{info.icon}</span>
-                <div className="flex-1 text-left min-w-0">
-                  <div className="text-[11px] font-bold text-emerald-300 truncate">{info.label}</div>
-                  <div className="text-[8px] text-emerald-400/60">{info.desc}</div>
-                </div>
-                {isLoading ? (
-                  <span className="text-[10px] text-emerald-400 animate-pulse">⏳</span>
-                ) : (
-                  <Plus size={12} className="text-emerald-400" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-        <div className="text-[8px] text-white/30 mt-1.5 px-1">
-          Preset dimuat via schema renderer — tampilan sesuai preset asli
-        </div>
-      </div>
-
-      <div className="section-divider" />
+      {/* ── Insertion point indicator ── */}
+      <InsertionPointIndicator selectedBlockId={selectedBlockId} page={page} />
 
       {/* ── Schema Block Palette ── */}
       <AddBlockPanel />
 
       <div className="section-divider" />
 
-      {/* ── Jenis Halaman ── */}
-      <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">Jenis Halaman</div>
-        <select
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val) addTemplatePage(val as PageTemplateType);
-            e.target.value = '';
-          }}
-          defaultValue=""
-          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-app-accent/50 focus:outline-none"
-        >
-          <option value="" disabled>+ Tambah dari Template...</option>
-          {presetCategories.map(cat => (
-              <optgroup key={cat.category} label={categoryLabels[cat.category] || cat.category}>
-                {cat.presets.map(p => (
-                  <option key={p.id} value={p.id}>{p.icon} {p.label} — {p.description}</option>
-                ))}
-              </optgroup>
-            ))}
-        </select>
-      </div>
-
-      {/* Auto-Generate via Page Type Creator */}
-      <PageTypeCreator />
-
-      <div className="section-divider" />
-
       {/* ── Tambah Modul ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><Puzzle size={12} className="inline" /> Tambah Modul</div>
+        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><Puzzle size={12} className="inline" /> Tambah Modul</div>
         {isTemplatePage && (
-          <div className="text-[8px] text-emerald-400/70 mb-2 px-2 py-1 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+          <div className="text-[8px] text-teal-400/70 mb-2 px-2 py-1 rounded-lg bg-teal-500/5 border border-teal-500/10">
             Modul ditambahkan sebagai elemen di atas konten template
           </div>
         )}
@@ -405,21 +335,21 @@ function TambahContent() {
                 <button
                   key={i}
                   onClick={() => addModuleElement(mIdx, (m._id as string) || undefined, (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A')}
-                  className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 active:scale-95 transition-transform"
+                  className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-teal-500/10 border border-teal-500/20 active:scale-95 transition-transform"
                 >
                   <span className="text-lg">{getModuleIcon(m.type as string)}</span>
                   <div className="flex-1 text-left min-w-0">
-                    <div className="text-[11px] font-bold text-emerald-300 truncate">{(m.title as string) || (m.type as string)}</div>
-                    <div className="text-[9px] text-emerald-400/60">{m.type as string}</div>
+                    <div className="text-[11px] font-bold text-teal-300 truncate">{(m.title as string) || (m.type as string)}</div>
+                    <div className="text-[9px] text-teal-400/60">{m.type as string}</div>
                   </div>
-                  <Plus size={12} className="text-emerald-400" />
+                  <Plus size={12} className="text-teal-400" />
                 </button>
               );
             })}
           </div>
         ) : (
           <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
-            Belum ada modul. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-emerald-400 underline">Tambah di panel Konten → Modul</button>
+            Belum ada modul. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
           </div>
         )}
       </div>
@@ -428,7 +358,7 @@ function TambahContent() {
 
       {/* ── Tambah Game ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><Gamepad2 size={12} className="inline" /> Tambah Game</div>
+        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><Gamepad2 size={12} className="inline" /> Tambah Game</div>
         {games.length > 0 ? (
           <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
             {games.map((g, i) => {
@@ -460,7 +390,7 @@ function TambahContent() {
 
       {/* ── Kuis Interaktif ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2"><HelpCircle size={12} className="inline" /> Kuis ({kuis.length} soal)</div>
+        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><HelpCircle size={12} className="inline" /> Kuis ({kuis.length} soal)</div>
         {kuis.length > 0 ? (
           <button
             onClick={() => addElement('kuis')}
@@ -485,7 +415,7 @@ function TambahContent() {
 
       {/* ── Elemen Dasar ── */}
       <div>
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2">Elemen Dasar</div>
+        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2">Elemen Dasar</div>
         <div className="grid grid-cols-3 gap-2">
           {[
             { id: 'teks', icon: <Type size={20} />, name: 'Teks', note: 'Teks bebas', color: COLORS.textDefault },
@@ -505,6 +435,139 @@ function TambahContent() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Insertion Point Indicator — shows where blocks will be inserted
+   ══════════════════════════════════════════════════════════════════ */
+
+function InsertionPointIndicator({ selectedBlockId, page }: { selectedBlockId: string | null; page: import('@/components/canva/types').CanvaPage | undefined }) {
+  const selectedBlockName = useMemo(() => {
+    if (!selectedBlockId || !page) return null;
+    const schema = ensurePageSchema(page);
+    if (!schema) return null;
+    const idx = schema.blocks.findIndex(b => b.id === selectedBlockId);
+    if (idx === -1) return null;
+    const blockDef = getBlockDefinition(schema.blocks[idx].type);
+    return blockDef?.name || schema.blocks[idx].type;
+  }, [selectedBlockId, page]);
+
+  if (selectedBlockName) {
+    return (
+      <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-teal-500/10 border border-teal-500/20 text-[10px] text-teal-400 font-semibold">
+        <ArrowDownToLine size={12} />
+        <span>Sisipkan setelah:</span>
+        <span className="font-bold truncate">{selectedBlockName}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-teal-500/5 border border-teal-500/10 text-[9px] text-teal-400/60 font-medium">
+      <ArrowDownToLine size={10} />
+      <span>Tambahkan di akhir halaman</span>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Tab 4: HALAMAN BARU — Add new pages / presets / auto-generate
+   ══════════════════════════════════════════════════════════════════ */
+
+function HalamanBaruContent() {
+  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
+  const resetCanvas = useCanvaStore(s => s.resetCanvas);
+  const loadSchemaPreset = useCanvaStore(s => s.loadSchemaPreset);
+
+  // Schema preset info
+  const availablePresets = getAvailablePresets();
+  const presetInfo: Record<string, { label: string; icon: string; desc: string }> = {
+    'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII' },
+    'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII' },
+    'perilaku-patuh': { label: 'Perilaku Patuh Norma', icon: '🛡️', desc: 'Pertemuan 3 — PPKn Kelas VII' },
+  };
+  const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
+
+  // FASE 2: Metadata-driven categories from PresetRegistry
+  const presetCategories = getPresetsGroupedByCategory();
+  const categoryLabels: Record<string, string> = {
+    utama: 'Halaman Utama',
+    konten: 'Konten',
+    interaktif: 'Interaktif',
+    penutup: 'Penutup',
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* ── 📦 Preset Schema (schema-driven!) ── */}
+      <div>
+        <div className="text-[9px] font-bold text-sky-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+          <span className="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 text-[7px] font-black">SCHEMA</span>
+          Preset PPKn
+        </div>
+        <div className="space-y-1.5">
+          {availablePresets.map(presetId => {
+            const info = presetInfo[presetId] || { label: presetId, icon: '📦', desc: 'Preset' };
+            const isLoading = loadingPreset === presetId;
+            return (
+              <button
+                key={presetId}
+                onClick={async () => {
+                  setLoadingPreset(presetId);
+                  await loadSchemaPreset(presetId);
+                  setLoadingPreset(null);
+                }}
+                disabled={isLoading}
+                className="card-hover w-full flex items-center gap-2.5 p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 active:scale-95 transition-transform disabled:opacity-50"
+              >
+                <span className="text-xl">{info.icon}</span>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="text-[11px] font-bold text-sky-300 truncate">{info.label}</div>
+                  <div className="text-[8px] text-sky-400/60">{info.desc}</div>
+                </div>
+                {isLoading ? (
+                  <span className="text-[10px] text-sky-400 animate-pulse">⏳</span>
+                ) : (
+                  <Plus size={12} className="text-sky-400" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="text-[8px] text-white/30 mt-1.5 px-1">
+          Preset dimuat via schema renderer — tampilan sesuai preset asli
+        </div>
+      </div>
+
+      <div className="section-divider" />
+
+      {/* ── Jenis Halaman ── */}
+      <div>
+        <div className="text-[9px] font-bold text-sky-400/80 uppercase tracking-wider mb-2">Jenis Halaman</div>
+        <select
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val) addTemplatePage(val as PageTemplateType);
+            e.target.value = '';
+          }}
+          defaultValue=""
+          className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated border border-app-border rounded-lg focus:border-sky-400/50 focus:outline-none"
+        >
+          <option value="" disabled>+ Tambah dari Template...</option>
+          {presetCategories.map(cat => (
+              <optgroup key={cat.category} label={categoryLabels[cat.category] || cat.category}>
+                {cat.presets.map(p => (
+                  <option key={p.id} value={p.id}>{p.icon} {p.label} — {p.description}</option>
+                ))}
+              </optgroup>
+            ))}
+        </select>
+      </div>
+
+      {/* Auto-Generate via Page Type Creator */}
+      <PageTypeCreator />
 
       <div className="section-divider" />
 

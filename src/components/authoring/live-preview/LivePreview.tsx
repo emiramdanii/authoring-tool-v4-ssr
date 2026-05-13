@@ -9,12 +9,15 @@ import {
   ChevronDown,
   Eye,
   ExternalLink,
-  ArrowLeft,
   Download,
   Home,
   FileText,
   BookOpen,
   Palette,
+  ArrowLeft,
+  ArrowRight,
+  ChevronRight,
+  Settings2,
 } from 'lucide-react';
 import type { PreviewMode, DeviceMode, LayoutTheme } from './types';
 import { DEVICE_MODES, LAYOUT_THEMES, SCREEN_OPTIONS, MODE_META } from './constants';
@@ -22,6 +25,8 @@ import { usePreviewBuilder } from './use-preview-builder';
 import { usePreviewNavigation } from './use-preview-navigation';
 import dynamic from 'next/dynamic';
 import { getAvailablePresets } from '@/core';
+import { COLORS } from '@/lib/color-palette';
+import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 
 // Lazy-loaded: SchemaPlayer is only used in live preview (schema mode)
 const SchemaPlayer = dynamic(() => import('./SchemaPlayer'), { ssr: false });
@@ -29,9 +34,10 @@ const SchemaPlayer = dynamic(() => import('./SchemaPlayer'), { ssr: false });
 export default function LivePreview() {
   // ── Local state ────────────────────────────────────────────
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
-  const [previewMode, setPreviewModeLocal] = useState<PreviewMode>('template');
+  const [previewMode, setPreviewModeLocal] = useState<PreviewMode>('unified');
   const [layoutTheme, setLayoutTheme] = useState<LayoutTheme>('default');
   const [modeOpen, setModeOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
 
   const cachedHashRef = useRef<string>('');
@@ -47,6 +53,7 @@ export default function LivePreview() {
 
   // ── Canva store subscriptions ──────────────────────────────
   const canvaPages = useCanvaStore((s) => s.pages);
+  const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
 
   // ── Navigation hook ────────────────────────────────────────
   const {
@@ -67,15 +74,17 @@ export default function LivePreview() {
     lastBuildTime,
   } = usePreviewBuilder(previewMode, layoutTheme, activeScreen, activeSlide);
 
-  // ── Auto-detect mode (only on first load, not overriding user) ─
+  // ── Auto-detect best mode (8.4) ──────────────────────────────
   const hasCanvasContent = canvaPages.some(
     (p) => p.elements && p.elements.length > 0
   );
 
   const detectedMode = useMemo<PreviewMode>(() => {
-    if (hasCanvasContent) return 'unified'; // Default to unified when canvas has content
-    return 'template';
-  }, [hasCanvasContent]);
+    // If a schema preset is active, prefer schema mode
+    if (activePreset) return 'schema';
+    if (hasCanvasContent) return 'unified';
+    return 'unified'; // Default to unified — always works
+  }, [hasCanvasContent, activePreset]);
 
   // Only auto-detect on initial mount — don't override user's manual selection
   useEffect(() => {
@@ -95,23 +104,60 @@ export default function LivePreview() {
   // ── Close dropdowns on outside click ───────────────────────
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (modeRef.current && !modeRef.current.contains(e.target as Node)) setModeOpen(false);
+      if (modeRef.current && !modeRef.current.contains(e.target as Node)) {
+        setModeOpen(false);
+        setAdvancedOpen(false);
+      }
       if (themeRef.current && !themeRef.current.contains(e.target as Node)) setThemeOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // ── Keyboard shortcut: Escape to go back ──────────────────
+  // ── Keyboard shortcuts (8.4) ────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setActivePanel('canva');
+        return;
+      }
+      // Arrow keys for page navigation in preview
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigatePrevPage();
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateNextPage();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActivePanel]);
+  }, [setActivePanel, previewMode, activeSlide, canvaPages]);
+
+  // ── Page navigation helpers ────────────────────────────────
+  const navigatePrevPage = useCallback(() => {
+    if (previewMode === 'canvas') {
+      if (activeSlide > 0) handleSlideSelect(activeSlide - 1);
+    } else {
+      // For schema/unified — navigate iframe or screens
+      const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
+      if (currentIdx > 0) handleScreenSelect(SCREEN_OPTIONS[currentIdx - 1].id);
+    }
+  }, [previewMode, activeSlide, activeScreen, handleSlideSelect, handleScreenSelect]);
+
+  const navigateNextPage = useCallback(() => {
+    if (previewMode === 'canvas') {
+      if (activeSlide < canvaPages.length - 1) handleSlideSelect(activeSlide + 1);
+    } else {
+      const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
+      if (currentIdx < SCREEN_OPTIONS.length - 1) handleScreenSelect(SCREEN_OPTIONS[currentIdx + 1].id);
+    }
+  }, [previewMode, activeSlide, activeScreen, canvaPages.length, handleSlideSelect, handleScreenSelect]);
+
+  // ── Determine if we should show the mode selector at all ──
+  // If no schema preset, and user hasn't manually selected, just show "Preview"
+  const showModeSelector = activePreset || userModeRef.current;
 
   // ── Device info ────────────────────────────────────────────
   const currentDevice = DEVICE_MODES.find((d) => d.id === deviceMode) || DEVICE_MODES[2];
@@ -136,14 +182,14 @@ export default function LivePreview() {
       {/* ══ TOOLBAR ══════════════════════════════════════════════ */}
       <div className="flex-shrink-0 bg-app-surface/95 backdrop-blur-md border-b border-app-border px-3 py-2 flex items-center gap-2 flex-wrap">
 
-        {/* ── Back button (default to Canva) ──────────────────── */}
+        {/* ── Kembali ke Editor button (8.4 — prominent) ──────── */}
         <button
           onClick={() => setActivePanel('canva')}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-accent hover:text-app-accent/80 hover:bg-app-accent/10 transition-colors"
-          title="Kembali ke Canva (Esc)"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-colors"
+          title="Kembali ke Editor (Esc)"
         >
           <Palette size={14} />
-          <span className="hidden sm:inline">Canva</span>
+          <span>Kembali ke Editor</span>
         </button>
 
         <div className="w-px h-5 bg-app-elevated/50" />
@@ -173,24 +219,22 @@ export default function LivePreview() {
 
         <div className="w-px h-5 bg-app-elevated/50" />
 
-        {/* ── Mode selector dropdown ──────────────────────────── */}
+        {/* ── Simplified Mode Selector (8.4) ─────────────────────── */}
         <div className="relative" ref={modeRef}>
           <button
             onClick={() => setModeOpen(!modeOpen)}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${currentModeMeta.color}`}
           >
             <span>{currentModeMeta.icon}</span>
-            <span>{currentModeMeta.label}</span>
+            <span>{currentModeMeta.simplifiedLabel}</span>
             <ChevronDown size={10} className={`transition-transform ${modeOpen ? 'rotate-180' : ''}`} />
           </button>
           {modeOpen && (
-            <div className="absolute top-full left-0 mt-1 w-48 rounded-xl bg-app-surface border border-app-border/50 shadow-xl z-50 overflow-hidden">
+            <div className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-app-surface border border-app-border/50 shadow-xl z-50 overflow-hidden">
+              {/* Primary modes */}
               {([
-                { id: 'unified' as PreviewMode, icon: '🚀', label: 'Unified', desc: 'Navigasi pintar + game + layout', disabled: false },
-                { id: 'schema' as PreviewMode, icon: '⚡', label: 'Schema', desc: 'Schema-driven JSON → React (baru!)', disabled: !activePreset },
-                { id: 'canvas' as PreviewMode, icon: '🎨', label: 'Canvas', desc: 'Slideshow dari halaman Canva', disabled: !hasCanvasContent },
-                { id: 'template' as PreviewMode, icon: '🧩', label: 'Template', desc: 'Template system + tema', disabled: false },
-                { id: 'legacy' as PreviewMode, icon: '📝', label: 'Legacy', desc: 'HTML lama (tanpa tema)', disabled: false },
+                { id: 'unified' as PreviewMode, icon: '🚀', label: 'Preview', desc: 'Tampilan lengkap untuk siswa', disabled: false },
+                { id: 'schema' as PreviewMode, icon: '⚡', label: 'Dengan Skema', desc: 'Schema-driven (preset aktif)', disabled: !activePreset },
               ]).map((m) => (
                 <button
                   key={m.id}
@@ -198,6 +242,7 @@ export default function LivePreview() {
                     if (!m.disabled) {
                       setPreviewMode(m.id);
                       setModeOpen(false);
+                      setAdvancedOpen(false);
                     }
                   }}
                   disabled={m.disabled}
@@ -219,6 +264,70 @@ export default function LivePreview() {
                   )}
                 </button>
               ))}
+
+              {/* Advanced modes submenu */}
+              <div className="border-t border-app-border/30">
+                <button
+                  onClick={() => setAdvancedOpen(!advancedOpen)}
+                  className="w-full px-3 py-2 flex items-center gap-2 text-left hover:bg-app-elevated/30 transition-colors"
+                >
+                  <Settings2 size={12} className="text-app-muted" />
+                  <span className="text-[10px] text-app-muted font-medium">Advanced</span>
+                  <ChevronRight size={10} className={`text-app-muted ml-auto transition-transform ${advancedOpen ? 'rotate-90' : ''}`} />
+                </button>
+                {advancedOpen && (
+                  <div className="pb-1">
+                    {([
+                      { id: 'canvas' as PreviewMode, icon: '🎨', label: 'Canvas', desc: 'Slideshow dari halaman Canva', disabled: !hasCanvasContent },
+                      { id: 'template' as PreviewMode, icon: '🧩', label: 'Template', desc: 'Template system + tema', disabled: false },
+                    ]).map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => {
+                          if (!m.disabled) {
+                            setPreviewMode(m.id);
+                            setModeOpen(false);
+                          }
+                        }}
+                        disabled={m.disabled}
+                        className={`w-full px-3 py-2 pl-8 flex items-center gap-2.5 transition-colors text-left ${
+                          m.disabled
+                            ? 'opacity-40 cursor-not-allowed'
+                            : previewMode === m.id
+                              ? 'bg-app-elevated/60'
+                              : 'hover:bg-app-elevated/40'
+                        }`}
+                      >
+                        <span className="text-sm">{m.icon}</span>
+                        <div>
+                          <div className="text-[10px] text-app-primary font-semibold">{m.label}</div>
+                          <div className="text-[8px] text-app-muted">{m.desc}</div>
+                        </div>
+                        {previewMode === m.id && (
+                          <span className="ml-auto text-emerald-400 text-[9px]">✓</span>
+                        )}
+                      </button>
+                    ))}
+                    {/* Legacy mode — deeply hidden, marked as deprecated */}
+                    {/* @deprecated Legacy mode — old HTML without theme support */}
+                    <button
+                      onClick={() => {
+                        setPreviewMode('legacy');
+                        setModeOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 pl-8 flex items-center gap-2.5 transition-colors text-left opacity-50 hover:opacity-80 ${
+                        previewMode === 'legacy' ? 'bg-app-elevated/60' : 'hover:bg-app-elevated/40'
+                      }`}
+                    >
+                      <span className="text-sm">📝</span>
+                      <div>
+                        <div className="text-[10px] text-app-muted font-semibold">Legacy <span className="text-[8px] text-red-400/60">(deprecated)</span></div>
+                        <div className="text-[8px] text-app-muted">HTML lama tanpa tema</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -406,10 +515,6 @@ export default function LivePreview() {
               {buildTimeStr}
             </span>
           )}
-
-          <span className="text-[0.6rem] text-app-muted hidden xl:inline">
-            Auto-refresh 500ms
-          </span>
         </div>
       </div>
 
@@ -428,7 +533,7 @@ export default function LivePreview() {
           </span>
           <span className="ml-auto flex items-center gap-2">
             <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
-              {currentModeMeta.icon} {currentModeMeta.label}
+              {currentModeMeta.icon} {currentModeMeta.simplifiedLabel}
               {previewMode === 'template' && layoutTheme !== 'default' && ` · ${LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.icon} ${layoutTheme}`}
             </span>
             {deviceMode !== 'desktop' && (
@@ -436,6 +541,9 @@ export default function LivePreview() {
                 {currentDevice.icon && <currentDevice.icon size={10} className="inline -mt-0.5" />} {currentDevice.width}px
               </span>
             )}
+            <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
+              ← → navigasi halaman
+            </span>
           </span>
         </div>
 
@@ -451,8 +559,8 @@ export default function LivePreview() {
               width: currentDevice.width > 0 ? `${currentDevice.width}px` : '100%',
               maxWidth: currentDevice.width > 0 ? `${currentDevice.width}px` : '100%',
               height: currentDevice.width > 0
-                ? `min(720px, calc(100vh - 140px))`
-                : 'calc(100vh - 140px)',
+                ? `min(720px, calc(100vh - 200px))`
+                : 'calc(100vh - 200px)',
             }}
           >
             {/* Mobile notch indicator */}
@@ -491,7 +599,7 @@ export default function LivePreview() {
                   <div className="text-3xl mb-3 animate-pulse">⏳</div>
                   <div className="text-app-secondary text-sm">Membuat preview...</div>
                   <div className="text-app-muted text-xs mt-1">
-                    {currentModeMeta.icon} {currentModeMeta.label} mode
+                    {currentModeMeta.icon} {currentModeMeta.simplifiedLabel}
                   </div>
                 </div>
               </div>
@@ -507,6 +615,79 @@ export default function LivePreview() {
             )}
           </div>
         </div>
+
+        {/* ══ Page Thumbnails Navigation Bar (8.4) ══════════════════ */}
+        {previewMode === 'canvas' && slideCount > 1 && (
+          <div className="flex-shrink-0 border-t border-app-border bg-app-surface/90 backdrop-blur-md px-3 py-2">
+            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+              {/* Prev button */}
+              <button
+                onClick={navigatePrevPage}
+                disabled={activeSlide <= 0}
+                className={`flex-shrink-0 p-1.5 rounded-lg transition-colors ${
+                  activeSlide > 0
+                    ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated'
+                    : 'text-app-muted/30 cursor-not-allowed'
+                }`}
+                title="Halaman sebelumnya (←)"
+              >
+                <ArrowLeft size={14} />
+              </button>
+
+              {/* Thumbnail strip */}
+              {canvaPages.map((p, i) => {
+                const isActive = i === activeSlide;
+                const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;
+                const bgStyle = p.bgDataUrl
+                  ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                  : p.bgColor?.includes('gradient')
+                    ? { background: p.bgColor }
+                    : { background: p.bgColor || COLORS.bgDark };
+
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleSlideSelect(i)}
+                    className={`flex-shrink-0 relative rounded-lg overflow-hidden transition-all ${
+                      isActive
+                        ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-app-surface scale-105'
+                        : 'opacity-60 hover:opacity-90 hover:ring-1 hover:ring-app-border'
+                    }`}
+                    style={{ width: '64px', height: '40px', ...bgStyle }}
+                    title={`Slide ${i + 1}: ${p.label}`}
+                  >
+                    <div className="absolute inset-0 bg-black/20" />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-[6px] text-white text-center truncate px-1 py-0.5">
+                      {i + 1}
+                    </div>
+                    {isActive && (
+                      <div className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-400" />
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Next button */}
+              <button
+                onClick={navigateNextPage}
+                disabled={activeSlide >= slideCount - 1}
+                className={`flex-shrink-0 p-1.5 rounded-lg transition-colors ${
+                  activeSlide < slideCount - 1
+                    ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated'
+                    : 'text-app-muted/30 cursor-not-allowed'
+                }`}
+                title="Halaman berikutnya (→)"
+              >
+                <ArrowRight size={14} />
+              </button>
+
+              {/* Page counter */}
+              <span className="flex-shrink-0 text-[0.65rem] text-app-muted ml-1">
+                {activeSlide + 1} / {slideCount}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

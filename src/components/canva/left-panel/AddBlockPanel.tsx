@@ -8,7 +8,7 @@
 // When a block is selected in the Layer panel, new blocks are
 // inserted after the selected block instead of appended to the end.
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, Blocks, ArrowDownToLine } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import {
@@ -17,6 +17,7 @@ import {
   type BlockDefinition,
 } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
+import { announceToScreenReader } from '@/lib/a11y';
 
 // ── Category display config ──────────────────────────────────────
 
@@ -63,6 +64,12 @@ export default function AddBlockPanel() {
 
   // Get all block definitions, filter by search
   const allBlocks = useMemo(() => getAllBlockDefinitions(), []);
+
+  // ── Add block handler with screen reader announcement ──────────
+  const handleAddBlock = useCallback((block: BlockDefinition) => {
+    addSchemaBlock(block.type, insertAfterIndex);
+    announceToScreenReader(`Block ${block.name} ditambahkan`);
+  }, [addSchemaBlock, insertAfterIndex]);
 
   const filteredBlocks = useMemo(() => {
     if (!search.trim()) return allBlocks;
@@ -129,14 +136,20 @@ export default function AddBlockPanel() {
 
       {/* Search input */}
       <div className="relative">
-        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" />
+        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" aria-hidden="true" />
         <input
+          id="add-block-search"
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari block..."
+          aria-label="Cari block"
+          aria-describedby="add-block-search-help"
           className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none placeholder:text-app-muted"
         />
+        <span id="add-block-search-help" className="sr-only">
+          Ketik untuk mencari block berdasarkan nama, tipe, atau deskripsi
+        </span>
       </div>
 
       {/* Category groups */}
@@ -158,15 +171,16 @@ export default function AddBlockPanel() {
               </div>
 
               {/* Block cards */}
-              <div className="space-y-1">
+              <div className="space-y-1" role="list" aria-label={`Daftar block ${config.label}`}>
                 {blocks.map((block) => (
                   <button
                     key={block.type}
-                    onClick={() => addSchemaBlock(block.type, insertAfterIndex)}
+                    onClick={() => handleAddBlock(block)}
+                    aria-label={`Tambah ${block.name} — ${block.description}`}
                     className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
                   >
                     {/* Block icon */}
-                    <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform" aria-hidden="true">
                       {block.icon}
                     </span>
 
@@ -197,6 +211,7 @@ export default function AddBlockPanel() {
                     <Plus
                       size={14}
                       className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
+                      aria-hidden="true"
                     />
                   </button>
                 ))}

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Zap, ChevronDown, ChevronUp, X, Sparkles } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { Button } from '@/components/ui/button';
 import { ALL_PAGE_TYPES, PAGE_TYPE_CATEGORIES, type PageTypeDefinition, type PageTypeOption } from '@/store/page-types';
+import { createFocusTrap } from '@/lib/a11y';
 
 // ── Inline config panel for a selected page type ──────────────
 function ConfigPanel({
@@ -39,11 +40,15 @@ function ConfigPanel({
   }, [config, onGenerate]);
 
   return (
-    <div className="mt-2 p-3 rounded-xl bg-app-elevated/60 border border-app-accent/20 space-y-3 animate-in slide-in-from-top-2 duration-200">
+    <div
+      className="mt-2 p-3 rounded-xl bg-app-elevated/60 border border-app-accent/20 space-y-3 animate-in slide-in-from-top-2 duration-200"
+      role="dialog"
+      aria-label={`Konfigurasi ${pageType.name}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-lg">{pageType.icon}</span>
+          <span className="text-lg" aria-hidden="true">{pageType.icon}</span>
           <div>
             <div className="text-[11px] font-bold text-app-accent">{pageType.name}</div>
             <div className="text-[9px] text-app-secondary">{pageType.description}</div>
@@ -54,6 +59,7 @@ function ConfigPanel({
           size="icon"
           onClick={onCancel}
           className="h-6 w-6 rounded-md text-app-muted hover:text-app-secondary"
+          aria-label="Tutup konfigurasi"
         >
           <X size={12} />
         </Button>
@@ -106,6 +112,9 @@ function OptionControl({
         <span className="text-[10px] text-app-secondary">{opt.label}</span>
         <button
           onClick={() => onChange(!value)}
+          role="switch"
+          aria-checked={Boolean(value)}
+          aria-label={opt.label}
           className={`relative w-9 h-5 rounded-full transition-colors ${
             value ? 'bg-app-accent' : 'bg-app-elevated'
           }`}
@@ -123,10 +132,10 @@ function OptionControl({
   if (opt.type === 'number') {
     return (
       <div className="space-y-1">
-        <div className="flex items-center justify-between">
+        <label className="flex items-center justify-between">
           <span className="text-[10px] text-app-secondary">{opt.label}</span>
           <span className="text-[10px] font-bold text-app-accent">{value as number}</span>
-        </div>
+        </label>
         <input
           type="range"
           min={opt.min ?? 0}
@@ -134,6 +143,7 @@ function OptionControl({
           step={opt.step ?? 1}
           value={value as number}
           onChange={(e) => onChange(Number(e.target.value))}
+          aria-label={opt.label}
           className="w-full h-1.5 bg-app-elevated rounded-lg appearance-none cursor-pointer accent-app-accent"
         />
       </div>
@@ -143,10 +153,11 @@ function OptionControl({
   if (opt.type === 'select' && opt.options) {
     return (
       <div className="space-y-1">
-        <span className="text-[10px] text-app-secondary">{opt.label}</span>
+        <label className="text-[10px] text-app-secondary">{opt.label}</label>
         <select
           value={String(value)}
           onChange={(e) => onChange(e.target.value)}
+          aria-label={opt.label}
           className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/80 border border-app-border/40 rounded-lg focus:border-app-accent/50 focus:outline-none"
         >
           {opt.options.map((o) => (
@@ -166,6 +177,9 @@ export default function PageTypeCreator() {
   const [selectedType, setSelectedType] = useState<PageTypeDefinition | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const generateFromPageType = useCanvaStore((s) => s.generateFromPageType);
+
+  // Focus trap for the config panel dialog
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = useCallback(
     (config: Record<string, number | string | boolean>) => {
@@ -196,6 +210,14 @@ export default function PageTypeCreator() {
     }
   };
 
+  // ── Focus trap when config panel is open ────────────────────
+  useEffect(() => {
+    if (!selectedType || !panelRef.current) return;
+    const trap = createFocusTrap(panelRef.current);
+    trap.activate();
+    return () => trap.deactivate();
+  }, [selectedType]);
+
   // Filtered page types
   const filteredTypes = activeCategory
     ? ALL_PAGE_TYPES.filter((pt) => pt.category === activeCategory)
@@ -206,6 +228,8 @@ export default function PageTypeCreator() {
     return (
       <Button
         onClick={handleToggle}
+        aria-expanded="false"
+        aria-label="Auto-Generate Halaman"
         className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
       >
         <Zap size={14} />
@@ -216,10 +240,12 @@ export default function PageTypeCreator() {
 
   // Expanded: full panel
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={panelRef}>
       {/* Header button — click to collapse */}
       <Button
         onClick={handleToggle}
+        aria-expanded="true"
+        aria-label="Tutup Auto-Generate Halaman"
         className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
       >
         <Zap size={14} />
@@ -228,9 +254,11 @@ export default function PageTypeCreator() {
       </Button>
 
       {/* Category filter chips */}
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1" role="group" aria-label="Filter kategori halaman">
         <button
           onClick={() => setActiveCategory(null)}
+          aria-pressed={!activeCategory}
+          aria-label="Tampilkan semua kategori"
           className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
             !activeCategory
               ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
@@ -243,6 +271,8 @@ export default function PageTypeCreator() {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
+            aria-pressed={activeCategory === cat.id}
+            aria-label={`Filter kategori ${cat.label}`}
             className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
               activeCategory === cat.id
                 ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
@@ -255,13 +285,15 @@ export default function PageTypeCreator() {
       </div>
 
       {/* Page type cards */}
-      <div className="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar">
+      <div className="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar" role="listbox" aria-label="Daftar tipe halaman">
         {filteredTypes.map((pt) => {
           const isSelected = selectedType?.id === pt.id;
           return (
             <div key={pt.id}>
               <button
                 onClick={() => handleSelectType(pt)}
+                aria-expanded={isSelected}
+                aria-label={`${pt.name} — ${pt.description}`}
                 className={`card-hover w-full flex items-center gap-2 p-2 rounded-xl transition-all active:scale-95 ${
                   isSelected
                     ? 'bg-app-accent/10 border border-app-accent/30 ring-1 ring-app-accent/20'

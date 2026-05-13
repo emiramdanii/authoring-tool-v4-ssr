@@ -6,6 +6,7 @@
 // Shows all blocks in the current screen's schema.
 // Click to select → opens property panel.
 // Drag grip handle to reorder → intuitive block ordering.
+// Alt+↑/Alt+↓ keyboard reorder for accessibility.
 // Hover highlights on canvas. Selection syncs both ways.
 
 import { useMemo, useCallback, useRef, useState } from 'react';
@@ -14,6 +15,7 @@ import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { ScreenSchema } from '@/core/schema/types';
 import { MousePointer2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { announceToScreenReader } from '@/lib/a11y';
 
 export default function LayerPanel() {
   const pages = useCanvaStore(s => s.pages);
@@ -88,7 +90,7 @@ export default function LayerPanel() {
           )}
         </div>
         <div className="text-[8px] text-app-muted mt-0.5">
-          Klik = select · Double-klik = edit · Drag = reorder
+          Klik = select · Double-klik = edit · Drag = reorder · Alt+↑↓ = pindah
         </div>
       </div>
     </div>
@@ -133,6 +135,36 @@ function LayerList({
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const itemRefs = useRef<Map<number, HTMLElement>>(new Map());
   const dragIndexRef = useRef<number | null>(null);
+
+  // ── Keyboard reorder: Alt+ArrowUp / Alt+ArrowDown ──────────────
+  const handleLayerKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!selectedBlockId) return;
+
+    if (e.altKey && e.key === 'ArrowUp') {
+      e.preventDefault();
+      moveBlockUp(selectedBlockId);
+      // Find the block name for announcement
+      const blockIdx = schema.blocks.findIndex(
+        (b, i) => (b.id || `${b.type}-${i}`) === selectedBlockId
+      );
+      if (blockIdx > 0) {
+        const definition = getBlockDefinition(schema.blocks[blockIdx].type);
+        const blockName = definition?.name || schema.blocks[blockIdx].type;
+        announceToScreenReader(`Block ${blockName} dipindahkan ke posisi ${blockIdx}`);
+      }
+    } else if (e.altKey && e.key === 'ArrowDown') {
+      e.preventDefault();
+      moveBlockDown(selectedBlockId);
+      const blockIdx = schema.blocks.findIndex(
+        (b, i) => (b.id || `${b.type}-${i}`) === selectedBlockId
+      );
+      if (blockIdx >= 0 && blockIdx < schema.blocks.length - 1) {
+        const definition = getBlockDefinition(schema.blocks[blockIdx].type);
+        const blockName = definition?.name || schema.blocks[blockIdx].type;
+        announceToScreenReader(`Block ${blockName} dipindahkan ke posisi ${blockIdx + 2}`);
+      }
+    }
+  }, [selectedBlockId, moveBlockUp, moveBlockDown, schema.blocks]);
 
   // Register item ref for drag position calculation
   const registerRef = useCallback((idx: number, el: HTMLElement | null) => {
@@ -188,6 +220,11 @@ function LayerList({
 
       if (fromIdx !== null && toIdx !== null && fromIdx !== toIdx) {
         reorderSchemaBlocks(fromIdx, toIdx);
+        // Announce drag reorder
+        const block = schema.blocks[fromIdx];
+        const definition = getBlockDefinition(block.type);
+        const blockName = definition?.name || block.type;
+        announceToScreenReader(`Block ${blockName} dipindahkan ke posisi ${toIdx + 1}`);
       }
 
       dragIndexRef.current = null;
@@ -200,10 +237,15 @@ function LayerList({
 
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-  }, [getOverIndex, reorderSchemaBlocks]);
+  }, [getOverIndex, reorderSchemaBlocks, schema.blocks]);
 
   return (
-    <div className="space-y-0.5">
+    <div
+      className="space-y-0.5"
+      role="listbox"
+      aria-label="Daftar block layer"
+      onKeyDown={handleLayerKeyDown}
+    >
       {schema.blocks.map((block, idx) => {
         const blockId = block.id || `${block.type}-${idx}`;
         const definition = getBlockDefinition(block.type);
@@ -213,11 +255,16 @@ function LayerList({
         const layout = block.layout?.position === 'absolute' ? 'absolute' : 'flow';
         const isDragging = dragIndex === idx;
         const isDragOver = overIndex === idx && dragIndex !== null && dragIndex !== idx;
+        const blockName = definition?.name || block.type;
 
         return (
           <div
             key={blockId}
             ref={(el) => registerRef(idx, el)}
+            role="option"
+            aria-selected={isSelected}
+            aria-label={`Block ${blockName}, posisi ${idx + 1} dari ${schema.blocks.length}`}
+            tabIndex={isSelected ? 0 : -1}
             className={`w-full flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-left transition-all ${
               isDragging
                 ? 'opacity-40 bg-blue-500/10 border border-blue-500/20'
@@ -235,6 +282,7 @@ function LayerList({
               onPointerDown={(e) => handleDragStart(e, idx)}
               className="flex-shrink-0 cursor-grab active:cursor-grabbing text-app-muted hover:text-app-secondary transition-colors p-0.5"
               title="Drag untuk reorder"
+              aria-label="Pegang untuk menggeser urutan block"
             >
               <GripVertical size={12} />
             </button>
@@ -252,14 +300,15 @@ function LayerList({
               }}
               onMouseEnter={() => hoverBlock(blockId)}
               onMouseLeave={() => hoverBlock(null)}
+              aria-label={`${blockName}${isEditing ? ' (sedang diedit)' : ''}`}
             >
               {/* Block icon */}
-              <span className="text-sm flex-shrink-0">{definition?.icon || '📦'}</span>
+              <span className="text-sm flex-shrink-0" aria-hidden="true">{definition?.icon || '📦'}</span>
 
               {/* Block info */}
               <div className="flex-1 min-w-0">
                 <div className="text-[10px] font-semibold truncate flex items-center gap-1">
-                  {definition?.name || block.type}
+                  {blockName}
                   {isEditing && (
                     <span className="text-[7px] font-black px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
                       EDIT
@@ -281,25 +330,27 @@ function LayerList({
               </div>
 
               {/* Block type badge */}
-              <span className="text-[7px] text-app-muted font-mono truncate max-w-[60px]">
+              <span className="text-[7px] text-app-muted font-mono truncate max-w-[60px]" aria-hidden="true">
                 {block.type}
               </span>
             </button>
 
             {/* Quick actions (visible on selected, hidden during drag) */}
             {isSelected && dragIndex === null && (
-              <div className="flex items-center gap-0.5 flex-shrink-0">
+              <div className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label="Aksi block">
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockUp(blockId); }}
                   className="p-0.5 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
-                  title="Pindah atas"
+                  title="Pindah atas (Alt+↑)"
+                  aria-label="Pindah block ke atas"
                 >
                   <ChevronUp size={12} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockDown(blockId); }}
                   className="p-0.5 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
-                  title="Pindah bawah"
+                  title="Pindah bawah (Alt+↓)"
+                  aria-label="Pindah block ke bawah"
                 >
                   <ChevronDown size={12} />
                 </button>
@@ -307,13 +358,19 @@ function LayerList({
                   onClick={(e) => { e.stopPropagation(); duplicateBlock(blockId); }}
                   className="p-0.5 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
                   title="Duplikat"
+                  aria-label="Duplikat block"
                 >
                   ⧉
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); deleteBlock(blockId); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    announceToScreenReader(`Block ${blockName} dihapus`);
+                    deleteBlock(blockId);
+                  }}
                   className="p-0.5 rounded hover:bg-red-500/30 text-app-muted hover:text-red-400 transition-colors"
                   title="Hapus"
+                  aria-label="Hapus block"
                 >
                   ✕
                 </button>

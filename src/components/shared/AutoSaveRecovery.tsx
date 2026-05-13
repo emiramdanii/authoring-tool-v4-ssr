@@ -3,8 +3,11 @@
 // ═══════════════════════════════════════════════════════════════════════
 // AUTO-SAVE RECOVERY — Detects unsaved changes and offers recovery
 // ═══════════════════════════════════════════════════════════════════════
-// On app mount, checks if localStorage has saved canvas data.
-// If so, offers the user a choice to:
+// On app mount, checks if localStorage has saved data for BOTH:
+//   1. Canva store (pages, layout)
+//   2. Authoring store (CP, TP, ATP, Alur, Kuis, Modules, Games, Materi)
+//
+// If recoverable data is found, offers the user a choice to:
 //   1. Recover the saved session (continue editing)
 //   2. Start fresh (discard saved data)
 //
@@ -14,75 +17,166 @@
 //   - User navigates away without saving
 // ═══════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
+import { CANVA_STORAGE_KEY } from '@/store/canva/constants';
+import { STORAGE_KEY as AUTHORING_STORAGE_KEY } from '@/store/authoring/types';
 import {
   AlertTriangle,
   RotateCcw,
   Trash2,
-  X,
+  FileText,
+  BookOpen,
+  Gamepad2,
+  Target,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const STORAGE_KEY = 'canva_state_v2';
-
-interface RecoveryData {
+interface CanvaRecoveryData {
   timestamp: number;
   pageCount: number;
   currentPageLabel: string;
 }
 
-export default function AutoSaveRecovery() {
-  const [showDialog, setShowDialog] = useState(false);
-  const [recoveryData, setRecoveryData] = useState<RecoveryData | null>(null);
-  const loadFromStorage = useCanvaStore((s) => s.loadFromStorage);
+interface AuthoringRecoveryData {
+  timestamp: number;
+  tpCount: number;
+  kuisCount: number;
+  moduleCount: number;
+  gameCount: number;
+  alurCount: number;
+  materiCount: number;
+  hasCp: boolean;
+  hasAtp: boolean;
+}
 
-  // Check for saved data on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
+interface RecoveryStats {
+  canva: CanvaRecoveryData | null;
+  authoring: AuthoringRecoveryData | null;
+}
 
-      const parsed = JSON.parse(saved);
-      if (!parsed?.pages || !Array.isArray(parsed.pages)) return;
+// ── Check localStorage for recoverable data (runs at module load time) ──
+function checkForRecoverableData(): RecoveryStats | null {
+  try {
+    const stats: RecoveryStats = { canva: null, authoring: null };
 
-      const pages = parsed.pages;
-      if (pages.length === 0) return;
-
-      // Only show recovery dialog if there's meaningful data
-      // (not just the default empty state)
-      const currentPageIdx = 0;
-      const currentPage = pages[currentPageIdx];
-
-      setRecoveryData({
-        timestamp: parsed._lastSavedAt || Date.now(),
-        pageCount: pages.length,
-        currentPageLabel: currentPage?.label || 'Untitled',
-      });
-      setShowDialog(true);
-    } catch {
-      // Corrupted data — ignore
+    // ── Check canva store ────────────────────────────────────
+    const canvaSaved = localStorage.getItem(CANVA_STORAGE_KEY);
+    if (canvaSaved) {
+      const parsed = JSON.parse(canvaSaved);
+      if (parsed?.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
+        const currentPage = parsed.pages[0];
+        stats.canva = {
+          timestamp: parsed._lastSavedAt || Date.now(),
+          pageCount: parsed.pages.length,
+          currentPageLabel: currentPage?.label || 'Untitled',
+        };
+      }
     }
-  }, []);
+
+    // ── Check authoring store ────────────────────────────────
+    const authoringSaved = localStorage.getItem(AUTHORING_STORAGE_KEY);
+    if (authoringSaved) {
+      const parsed = JSON.parse(authoringSaved);
+      // Check if there's meaningful data (not just empty defaults)
+      const hasData =
+        (parsed.tp && Array.isArray(parsed.tp) && parsed.tp.length > 0) ||
+        (parsed.kuis && Array.isArray(parsed.kuis) && parsed.kuis.length > 0) ||
+        (parsed.modules && Array.isArray(parsed.modules) && parsed.modules.length > 0) ||
+        (parsed.alur && Array.isArray(parsed.alur) && parsed.alur.length > 0) ||
+        (parsed.materi?.blok && Array.isArray(parsed.materi.blok) && parsed.materi.blok.length > 0) ||
+        (parsed.cp?.capaianFase) ||
+        (parsed.atp?.pertemuan && Array.isArray(parsed.atp.pertemuan) && parsed.atp.pertemuan.length > 0);
+
+      if (hasData) {
+        // Count games from modules
+        const gameTypes = [
+          'sortir-game', 'roda-game', 'memory-game', 'matching-game',
+          'fill-blank-game', 'word-search-game', 'true-false-game',
+          'drag-drop-game', 'crossword-game', 'team-buzzer-game',
+        ];
+        const modules = parsed.modules || [];
+        const gameCount = modules.filter(
+          (m: Record<string, unknown>) => gameTypes.includes(m.type as string)
+        ).length;
+        const moduleCount = modules.length - gameCount;
+
+        stats.authoring = {
+          timestamp: Date.now(), // Authoring store doesn't save timestamp
+          tpCount: parsed.tp?.length || 0,
+          kuisCount: parsed.kuis?.length || 0,
+          moduleCount,
+          gameCount,
+          alurCount: parsed.alur?.length || 0,
+          materiCount: parsed.materi?.blok?.length || 0,
+          hasCp: !!parsed.cp?.capaianFase,
+          hasAtp: !!(parsed.atp?.pertemuan && parsed.atp.pertemuan.length > 0),
+        };
+      }
+    }
+
+    // Return stats if either store has meaningful data
+    return (stats.canva || stats.authoring) ? stats : null;
+  } catch {
+    // Corrupted data — ignore
+    return null;
+  }
+}
+
+export default function AutoSaveRecovery() {
+  // Use lazy initializer to check localStorage once on mount
+  // (avoids calling setState in an effect)
+  const [recoveryStats, setRecoveryStats] = useState<RecoveryStats | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return checkForRecoverableData();
+  });
+
+  const loadCanvaFromStorage = useCanvaStore((s) => s.loadFromStorage);
+  const loadAuthoringFromStorage = useAuthoringStore((s) => s.loadFromStorage);
 
   const handleRecover = useCallback(() => {
-    loadFromStorage();
-    setShowDialog(false);
-  }, [loadFromStorage]);
+    loadCanvaFromStorage();
+    loadAuthoringFromStorage();
+    setRecoveryStats(null);
+  }, [loadCanvaFromStorage, loadAuthoringFromStorage]);
 
   const handleDiscard = useCallback(() => {
-    // Clear the saved data so it won't show again
+    // Clear both stores' saved data so it won't show again
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CANVA_STORAGE_KEY);
+      localStorage.removeItem(AUTHORING_STORAGE_KEY);
     } catch {
       // Ignore
     }
-    setShowDialog(false);
+    setRecoveryStats(null);
   }, []);
 
-  if (!showDialog || !recoveryData) return null;
+  if (!recoveryStats) return null;
 
-  const timeAgo = getTimeAgo(recoveryData.timestamp);
+  const canva = recoveryStats.canva;
+  const authoring = recoveryStats.authoring;
+
+  // Determine the latest timestamp for "last saved" display
+  const timestamp = canva?.timestamp || authoring?.timestamp || Date.now();
+  const timeAgo = getTimeAgo(timestamp);
+
+  // Build summary line
+  const summaryParts: string[] = [];
+  if (canva) {
+    summaryParts.push(`${canva.pageCount} halaman`);
+  }
+  if (authoring) {
+    if (authoring.tpCount > 0) summaryParts.push(`${authoring.tpCount} tujuan pembelajaran`);
+    if (authoring.moduleCount > 0) summaryParts.push(`${authoring.moduleCount} modul`);
+    if (authoring.gameCount > 0) summaryParts.push(`${authoring.gameCount} game`);
+    if (authoring.kuisCount > 0) summaryParts.push(`${authoring.kuisCount} kuis`);
+    if (authoring.alurCount > 0) summaryParts.push(`${authoring.alurCount} alur`);
+    if (authoring.materiCount > 0) summaryParts.push(`${authoring.materiCount} materi`);
+    if (authoring.hasCp) summaryParts.push('capaian pembelajaran');
+    if (authoring.hasAtp) summaryParts.push('ATP');
+  }
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -104,25 +198,104 @@ export default function AutoSaveRecovery() {
 
         {/* Body */}
         <div className="px-5 py-4 space-y-3">
+          {/* Summary line */}
+          {summaryParts.length > 0 && (
+            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
+              <div className="text-[10px] text-amber-300 font-semibold mb-1">
+                Ditemukan data tersimpan:
+              </div>
+              <div className="text-[10px] text-app-secondary leading-relaxed">
+                {summaryParts.join(', ')}
+              </div>
+            </div>
+          )}
+
+          {/* Detail rows */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-app-muted">Terakhir disimpan</span>
               <span className="text-[10px] text-app-secondary font-semibold">{timeAgo}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-app-muted">Jumlah halaman</span>
-              <span className="text-[10px] text-app-secondary font-semibold">{recoveryData.pageCount} halaman</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-app-muted">Halaman aktif</span>
-              <span className="text-[10px] text-app-secondary font-semibold">{recoveryData.currentPageLabel}</span>
-            </div>
+
+            {/* Canva store details */}
+            {canva && (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-app-muted flex items-center gap-1">
+                    <FileText size={10} /> Halaman canva
+                  </span>
+                  <span className="text-[10px] text-app-secondary font-semibold">{canva.pageCount} halaman</span>
+                </div>
+              </>
+            )}
+
+            {/* Authoring store details */}
+            {authoring && (
+              <>
+                {authoring.hasCp && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <BookOpen size={10} /> Capaian Pembelajaran
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-semibold">✓</span>
+                  </div>
+                )}
+                {authoring.tpCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <Target size={10} /> Tujuan Pembelajaran
+                    </span>
+                    <span className="text-[10px] text-app-secondary font-semibold">{authoring.tpCount} TP</span>
+                  </div>
+                )}
+                {authoring.hasAtp && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <Layers size={10} /> ATP
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-semibold">✓</span>
+                  </div>
+                )}
+                {authoring.alurCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <Layers size={10} /> Alur Pembelajaran
+                    </span>
+                    <span className="text-[10px] text-app-secondary font-semibold">{authoring.alurCount} alur</span>
+                  </div>
+                )}
+                {authoring.kuisCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <FileText size={10} /> Kuis
+                    </span>
+                    <span className="text-[10px] text-app-secondary font-semibold">{authoring.kuisCount} kuis</span>
+                  </div>
+                )}
+                {authoring.moduleCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <BookOpen size={10} /> Modul Konten
+                    </span>
+                    <span className="text-[10px] text-app-secondary font-semibold">{authoring.moduleCount} modul</span>
+                  </div>
+                )}
+                {authoring.gameCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-app-muted flex items-center gap-1">
+                      <Gamepad2 size={10} /> Game Interaktif
+                    </span>
+                    <span className="text-[10px] text-app-secondary font-semibold">{authoring.gameCount} game</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <div className="p-3 rounded-lg bg-app-elevated/40 border border-app-border/20">
             <p className="text-[10px] text-app-muted leading-relaxed">
               Apakah Anda ingin melanjutkan sesi sebelumnya atau memulai baru?
-              Jika memulai baru, data yang tersimpan akan dihapus permanen.
+              Jika memulai baru, semua data yang tersimpan akan dihapus permanen.
             </p>
           </div>
         </div>

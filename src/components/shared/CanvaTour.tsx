@@ -382,6 +382,57 @@ export default function CanvaTour() {
             <p className="text-[13px] text-app-secondary leading-relaxed">
               {step.description}
             </p>
+
+            {/* Keyboard shortcuts — shown on the last step */}
+            {isLast && (
+              <div className="mt-4 pt-3 border-t border-app-border/20">
+                <div className="text-[10px] font-bold text-app-muted uppercase tracking-wider mb-2">
+                  ⌨️ Keyboard Shortcuts
+                </div>
+                <div className="space-y-1.5 text-[10px] text-app-secondary">
+                  <div className="flex justify-between">
+                    <span>Undo</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+Z</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Redo</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+Y</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Hapus block</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Delete</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Duplikat block</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+D</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Pindah block atas/bawah</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Alt+↑↓</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Zoom in/out</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+/−</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Fit ke layar</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+0</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>AI Assistant</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+I</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Command Palette</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+K</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Bantuan / Tur</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">?</kbd>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Step dots */}
