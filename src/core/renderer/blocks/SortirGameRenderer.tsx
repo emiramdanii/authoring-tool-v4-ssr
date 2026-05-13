@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { announceToScreenReader } from '@/lib/a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 /** Inner kolom component so hooks are not called in loops */
 function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomItems, onKolomClick, isCompact }: {
@@ -199,12 +200,14 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
     const perfectScore = totalAttempts <= totalItems;
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="text-center p-5 rounded-2xl"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('y', 0.3),
           boxShadow: tokens.raw.shadow.elevated,
         }}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {perfectScore ? '🌟' : '🎮'}
         </div>
@@ -215,15 +218,12 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
           {totalItems} item berhasil dikelompokkan dengan tepat!
         </div>
         {totalAttempts > totalItems && (
-          <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
-            style={{ background: tokens.colorAlpha('c', 0.1), border: '1px solid ' + tokens.colorAlpha('c', 0.25) }}>
-            <Info size={12} className="inline" style={{ color: tokens.color('c') }} />
-            <span style={{ fontSize: '11px', color: tokens.color('c') }}>
-              {totalAttempts} percobaan — akurasi {Math.round((totalItems / totalAttempts) * 100)}%
-            </span>
-          </div>
+          <PremiumBadge tokens={tokens} accent="c" variant="glass">
+            {totalAttempts} percobaan — akurasi {Math.round((totalItems / totalAttempts) * 100)}%
+          </PremiumBadge>
         )}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button className="mt-3 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => {
               setPoolState(pool.map(p => ({ ...p, placed: false })));
@@ -244,13 +244,17 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
             }}>
             <RotateCcw size={14} className="inline" /> Ulangi Game
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Sortir: ${totalPlaced} dari ${totalItems} item ditempatkan`} aria-describedby={`sortir-instructions-${block.id || 'sortir'}`} data-interactive>
+      <ReadingProgressIndicator progress={totalItems > 0 ? totalPlaced / totalItems : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* Hidden instruction for screen readers */}
       <span id={`sortir-instructions-${block.id || 'sortir'}`} className="sr-only">Pilih item dari kolam, lalu klik kolom yang tepat untuk mengelompokkannya</span>
       {/* Screen reader live region for sort feedback */}
@@ -274,13 +278,13 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
       )}
 
       {/* Pool */}
-      <div className="flex flex-wrap gap-2.5 min-h-[50px] p-4 border-2 border-dashed rounded-xl mb-4"
+      <div className="flex flex-wrap gap-2.5 min-h-[50px] p-4 border-2 border-dashed rounded-xl mb-4 premium-card-glow"
         style={{
           borderColor: tokens.colorAlpha('y', 0.25),
           background: tokens.colorAlpha('y', 0.04),
         }}>
         <div className="w-full font-extrabold uppercase tracking-wider mb-2" style={{ fontSize: '11px', color: tokens.color('y') }}>
-          <Package size={14} className="inline" /> Pilih Item ({totalPlaced}/{totalItems})
+          <Package size={14} className="inline" /> Pilih Item <PremiumBadge tokens={tokens} accent="y" variant="glass">{totalPlaced}/{totalItems}</PremiumBadge>
         </div>
         {unplacedPoolItems.map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
@@ -317,5 +321,6 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
         ))}
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

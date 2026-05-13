@@ -9,7 +9,7 @@ import type { TokenResolver, SchemaRenderMode } from '../types';
 // Lazy loading defers the reference until render time, breaking the cycle.
 import type { SchemaBlockRenderer as SchemaBlockRendererType } from '../SchemaRenderer';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 const SchemaBlockRenderer = React.lazy(() =>
   import('../SchemaRenderer').then(m => ({ default: m.SchemaBlockRenderer }))
@@ -35,6 +35,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
   });
 
   return (
+    <MicroInteraction tokens={tokens} accent="y" effect="squish">
     <button onClick={onActivate}
       className={`relative px-3.5 py-1.5 rounded-full font-extrabold transition-all ${
         isActive ? 'scale-105' : 'opacity-60 hover:opacity-90'
@@ -52,6 +53,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
           style={{ background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
       )}
     </button>
+    </MicroInteraction>
   );
 }
 
@@ -92,7 +94,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
 
       {/* Tab content */}
       {tab && (
-        <div className="mt-3 rounded-xl p-3"
+        <div className="mt-3 rounded-xl premium-card-glow p-3"
           style={{
             background: tokens.subtleBg(0.04),
             border: '1px solid ' + tokens.colorAlpha('y', 0.15),
@@ -118,9 +120,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
                 boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.4),
               }} />
           </div>
-          <span className="font-bold" style={{ fontSize: '12px', color: tokens.color('g') }}>
-            {readTabs.size}/{tabs.length}
-          </span>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">{readTabs.size}/{tabs.length}</PremiumBadge>
         </div>
       )}
     </div>

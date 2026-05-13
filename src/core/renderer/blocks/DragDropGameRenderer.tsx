@@ -25,6 +25,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 // ── Placed item entry (stored per target) ─────────────────────
 
@@ -204,12 +205,14 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
     const pct = Math.round((score / totalItems) * 100);
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="text-center p-5 rounded-2xl"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('y', 0.3),
           boxShadow: tokens.raw.shadow.elevated,
         }}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         {/* Animated icon */}
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {pct >= 80
@@ -232,34 +235,13 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
 
         {/* Stats cards */}
         <div className="flex justify-center gap-3 mb-4">
-          <div className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('g', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>
-              Benar
-            </div>
-            <div className="font-black" style={{ color: tokens.color('g') }}>
-              {totalItems}
-            </div>
-          </div>
-          <div className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('r', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('r', 0.3),
-            }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>
-              Salah
-            </div>
-            <div className="font-black" style={{ color: tokens.color('r') }}>
-              {wrongAttempts}
-            </div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">Benar: {totalItems}</PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="r" variant="glass">Salah: {wrongAttempts}</PremiumBadge>
         </div>
 
         {/* Replay button */}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
             className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => {
@@ -279,8 +261,10 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
           >
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -334,9 +318,11 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
 
   // ══ PLAY SCREEN ══════════════════════════════════════════════════
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Pilih item dari kolam, lalu klik target yang tepat untuk menempatkannya</div>
+      <ReadingProgressIndicator progress={totalItems > 0 ? totalPlaced / totalItems : 0} tokens={tokens} accent="y" height={3} position="top" />
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
@@ -349,17 +335,9 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
             />
           </div>
         </div>
-        <span
-          className="px-2.5 py-1 rounded-full font-extrabold"
-          style={{
-            fontSize: '11px',
-            background: tokens.colorAlpha('y', 0.15),
-            color: tokens.color('y'),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
-          }}
-        >
+        <PremiumBadge tokens={tokens} accent="y" variant="glass">
           {totalPlaced}/{totalItems}
-        </span>
+        </PremiumBadge>
       </div>
 
       {/* ── Progress bar ───────────────────────────────────────────── */}
@@ -373,6 +351,8 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
           style={{
             width: `${totalItems > 0 ? (totalPlaced / totalItems) * 100 : 0}%`,
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s linear infinite',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
           }}
         />
@@ -380,7 +360,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
 
       {/* ── Item Pool ──────────────────────────────────────────────── */}
       <div
-        className="flex flex-wrap gap-2.5 min-h-[50px] p-4 border-2 border-dashed rounded-xl"
+        className="flex flex-wrap gap-2.5 min-h-[50px] p-4 border-2 border-dashed rounded-xl premium-card-glow"
         style={{
           borderColor: tokens.colorAlpha('y', 0.25),
           background: tokens.colorAlpha('y', 0.04),
@@ -561,5 +541,6 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
         </ul>
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

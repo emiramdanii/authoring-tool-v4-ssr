@@ -5,7 +5,7 @@ import type { CoverBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // COVER RENDERER — Premium Cover Page with 3 Creative Variants
@@ -118,23 +118,10 @@ function CoverVariantA({
       {block.badges && block.badges.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 max-w-full">
           {block.badges.map((b, i) => (
-            <span key={`badge-a-${b.text?.slice(0,10)}-${i}`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold min-w-0 premium-card-glow"
-              style={{
-                fontSize: '12px',
-                background: tokens.colorAlpha(b.color, 0.2),
-                color: tokens.color(b.color),
-                border: '1px solid ' + tokens.colorAlpha(b.color, 0.35),
-                backdropFilter: 'blur(12px)',
-                boxShadow: '0 2px 8px ' + tokens.colorAlpha(b.color, 0.15),
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                wordBreak: 'break-word',
-                maxWidth: '100%',
-                animation: `blockStaggerIn 0.4s ease ${i * 0.1}s both`,
-              }}>
-              {b.icon && <span className="flex-shrink-0">{b.icon}</span>} <span className="min-w-0">{b.text}</span>
-            </span>
+            <PremiumBadge key={`badge-a-${b.text?.slice(0,10)}-${i}`}
+              tokens={tokens} accent={b.color} variant="glass">
+              {b.icon && <span className="flex-shrink-0">{b.icon}</span>} {b.text}
+            </PremiumBadge>
           ))}
         </div>
       )}
@@ -155,6 +142,7 @@ function CoverVariantA({
 
       {/* CTA */}
       {block.cta && (
+        <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`mt-6 rounded-[99px] text-[0.9rem] font-extrabold transition-all ${
           interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
         }`}
@@ -166,6 +154,7 @@ function CoverVariantA({
           }}>
           {block.cta.label}
         </button>
+        </MicroInteraction>
       )}
 
       {/* Bottom decoration */}

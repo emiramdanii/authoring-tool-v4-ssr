@@ -5,7 +5,7 @@ import { Star, PartyPopper, RotateCcw, BookOpen, MessageSquare, CheckCircle2, XC
 import type { SkenarioBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
@@ -101,7 +101,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
   return (
     <PremiumBlockWrapper tokens={tokens} accent="o" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="o" height={2} position="top" />
-    <div className="mt-3 rounded-2xl overflow-hidden border-2"
+    <div className="mt-3 rounded-2xl overflow-hidden border-2 premium-card-glow"
       style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.3), boxShadow: tokens.raw.shadow.elevated }}>
       {/* HUD with gradient accent line */}
       <div className="relative">
@@ -113,10 +113,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
             🎭 <InlineTextEditor {...titleEditor} style={{ color: yellow, fontFamily: tokens.fontFamily('display') }} />
           </span>
           <div className="flex gap-2">
-            <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
-              style={{ background: tokens.colorAlpha('y', 0.15), color: yellow, border: '1px solid ' + tokens.colorAlpha('y', 0.3), boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.15) }}>
-              <Star size={14} className="inline" /> {totalPts}
-            </span>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid"><Star size={14} className="inline" /> {totalPts}</PremiumBadge>
             <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold"
               style={{ background: tokens.colorAlpha('c', 0.15), color: tokens.color('c'), border: '1px solid ' + tokens.colorAlpha('c', 0.3) }}>
               Babak {Math.min(chapter + 1, chapters.length)}/{chapters.length}
@@ -149,6 +146,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
             </div>
           </div>
           {interactive && (
+            <MicroInteraction tokens={tokens} accent="y" effect="squish">
             <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
               onClick={() => { setChapter(0); setHistory([]); hasReportedRef.current = false; playSound('click'); }}
               style={{
@@ -158,6 +156,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
               }}>
               <RotateCcw size={14} className="inline" /> Ulangi Skenario
             </button>
+            </MicroInteraction>
           )}
         </div>
       )}

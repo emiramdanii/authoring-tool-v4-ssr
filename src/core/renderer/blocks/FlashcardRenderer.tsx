@@ -5,7 +5,7 @@ import { CheckCircle2, RotateCcw, Sparkles, Eye, EyeOff } from 'lucide-react';
 import type { FlashcardSetBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
@@ -80,7 +80,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
   // ══ COMPLETION SCREEN ═══════════════════════════════════════
   if (isCompleted) {
     return (
-      <div className="text-center p-5 rounded-2xl"
+      <div className="text-center p-5 rounded-2xl premium-card-glow"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('g', 0.3),
@@ -107,6 +107,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
           ))}
         </div>
         <div>
+          <MicroInteraction tokens={tokens} accent="g" effect="squish">
           <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => {
               setIdx(0);
@@ -122,6 +123,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
             }}>
             <RotateCcw size={14} className="inline" /> Ulangi Kartu
           </button>
+          </MicroInteraction>
         </div>
       </div>
     );
@@ -140,10 +142,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="p" height={2} position="top" />
     <div className={isCompact ? 'mt-2' : 'mt-4'}>
       <div className="flex items-center justify-between mb-3">
-        <div className="font-extrabold uppercase tracking-wider"
-          style={{ fontSize: '12px', color: tokens.color('y') }}>
-          🃏 Kartu Kilat — Uji Ingatanmu
-        </div>
+        <PremiumBadge tokens={tokens} accent="y" variant="glass">🃏 Kartu Kilat</PremiumBadge>
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-bold" style={{ color: tokens.muted(0.6) }}>
             {viewedCards.size}/{cards.length}

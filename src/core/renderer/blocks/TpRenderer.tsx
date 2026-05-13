@@ -5,7 +5,7 @@ import { Target, Link2 } from 'lucide-react';
 import type { TpBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 export function TpRenderer({ block, tokens, isCompact, isEditing }: {
   block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -105,7 +105,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
       </div>
 
       {block.profil && (
-        <div className="mt-4 p-3.5 rounded-xl leading-relaxed"
+        <div className="mt-4 p-3.5 rounded-xl premium-card-glow leading-relaxed"
           style={{
             background: tokens.colorAlpha('g', 0.12),
             border: '1px solid ' + tokens.colorAlpha('g', 0.3),
@@ -120,7 +120,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
           <div className="flex items-start gap-2">
             <Link2 size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color('g') }} />
             <div>
-              <strong style={{ color: tokens.color('g') }}>Profil Pelajar Pancasila:</strong> <span style={{ wordBreak: 'break-word' }}>{block.profil}</span>
+              <PremiumBadge tokens={tokens} accent="g" variant="outline">Profil Pelajar Pancasila</PremiumBadge> <span style={{ wordBreak: 'break-word' }}>{block.profil}</span>
             </div>
           </div>
         </div>

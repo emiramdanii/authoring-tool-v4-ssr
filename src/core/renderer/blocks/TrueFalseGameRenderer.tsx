@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TRUE/FALSE GAME RENDERER (Benar/Salah)
@@ -205,6 +206,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
     const tierMessage = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!';
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="text-center p-5 rounded-2xl"
         style={{
           background: tokens.color('bg'),
@@ -212,6 +214,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
           boxShadow: tokens.raw.shadow.elevated,
           animation: 'popSuccess 0.5s ease-out',
         }}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {tierIcon}
         </div>
@@ -223,18 +226,15 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
           Skor kamu: {score}/{validQuestions.length} ({pct}%)
         </div>
         <div className="flex justify-center gap-3 mb-2">
-          <div className="px-4 py-2 rounded-xl"
-            style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>Benar</div>
-            <div className="font-black" style={{ color: tokens.color('g') }}>{score}</div>
-          </div>
-          <div className="px-4 py-2 rounded-xl"
-            style={{ background: tokens.colorAlpha('r', 0.12), border: '1px solid ' + tokens.colorAlpha('r', 0.3) }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>Salah</div>
-            <div className="font-black" style={{ color: tokens.color('r') }}>{validQuestions.length - score}</div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">
+            Benar {score}
+          </PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="r" variant="glass">
+            Salah {validQuestions.length - score}
+          </PremiumBadge>
         </div>
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={handleRestart}
             style={{
@@ -245,8 +245,10 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             }}>
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -258,7 +260,9 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
   const progress = ((currentQ + (answered ? 1 : 0)) / validQuestions.length) * 100;
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
+      <ReadingProgressIndicator progress={validQuestions.length > 0 ? (currentQ + (answered ? 1 : 0)) / validQuestions.length : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Tentukan apakah pernyataan benar atau salah</div>
       {/* ── Header with title and question counter ──────────────── */}
@@ -274,27 +278,38 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             />
           </div>
         </div>
-        <span className="px-2.5 py-1 rounded-full font-extrabold flex-shrink-0"
-          style={{
-            fontSize: '11px',
-            background: tokens.colorAlpha('y', 0.15),
-            color: tokens.color('y'),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
-          }}>
+        <PremiumBadge tokens={tokens} accent="y" variant="glass">
           {currentQ + 1}/{validQuestions.length}
-        </span>
+        </PremiumBadge>
       </div>
 
       {/* ── Progress bar ────────────────────────────────────────── */}
-      <div className="h-1.5 rounded-full overflow-hidden"
+      <div className="h-1.5 rounded-full overflow-hidden relative"
         {...a11y.progressAria('Kemajuan Benar/Salah', currentQ + (answered ? 1 : 0), validQuestions.length)}
         style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${progress}%`,
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s linear infinite',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
           }} />
+        {/* Aurora shimmer overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(90deg, transparent, ' + tokens.colorAlpha('y', 0.2) + ', transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 3s ease-in-out infinite',
+            pointerEvents: 'none',
+            borderRadius: 'inherit',
+          }}
+        />
       </div>
 
       {/* ── Score indicator ─────────────────────────────────────── */}
@@ -308,7 +323,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
       </div>
 
       {/* ── Question card ───────────────────────────────────────── */}
-      <div className="p-4 rounded-xl"
+      <div className="p-4 rounded-xl premium-card-glow"
         style={{
           background: tokens.colorAlpha('y', 0.06),
           border: '1px solid ' + tokens.colorAlpha('y', 0.2),
@@ -463,5 +478,6 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
         </ul>
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

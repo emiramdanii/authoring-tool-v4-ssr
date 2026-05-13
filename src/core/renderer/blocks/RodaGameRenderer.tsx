@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { announceToScreenReader } from '@/lib/a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: RodaGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -160,18 +161,22 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
     const gradeEmoji = pct >= 80 ? '🌟' : pct >= 60 ? '👏' : pct >= 40 ? '💪' : '🔄';
     const gradeColor = pct >= 80 ? 'g' : pct >= 60 ? 'c' : pct >= 40 ? 'y' : 'r';
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="rounded-2xl overflow-hidden p-6 text-center"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha(gradeColor, 0.3),
           boxShadow: tokens.raw.shadow.elevated,
         }}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>{gradeEmoji}</div>
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color(gradeColor) }}>
           {grade}!
         </div>
-        <div className="mb-3" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
-          Skor: {totalCorrect}/{questions.length} ({pct}%)
+        <div className="mb-3">
+          <PremiumBadge tokens={tokens} accent={gradeColor} variant="glass">
+            Skor: {totalCorrect}/{questions.length} ({pct}%)
+          </PremiumBadge>
         </div>
         {/* Stars based on score */}
         <div className="flex justify-center gap-1 mb-4">
@@ -186,6 +191,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
           ))}
         </div>
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => { setAnswers({}); setCurrent(0); setSpinRotation(0); setShowQuestion(false); hasReportedRef.current = false; playSound('click'); }}
             style={{
@@ -196,8 +202,10 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
             }}>
             <RotateCcw size={14} className="inline" /> Ulangi Roda
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -212,6 +220,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
   const svgRadius = 94;
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="rounded-2xl overflow-hidden game-block"
       {...(interactive ? { role: 'application' } : {})}
       aria-label={`Roda Kuis: Soal ${current + 1} dari ${questions.length}, Skor: ${totalCorrect}${isCurrentAnswered ? ', sudah dijawab' : ''}`}
@@ -222,6 +231,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
         border: '2px solid ' + tokens.colorAlpha('c', 0.3),
         boxShadow: tokens.raw.shadow.elevated,
       }}>
+      <ReadingProgressIndicator progress={questions.length > 0 ? totalAnswered / questions.length : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* Header */}
       <div className="p-3 border-b"
         style={{
@@ -237,16 +247,9 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
               placeholder="Ketik judul..."
             />
           </span>
-          <span className="px-2.5 py-1 rounded-full font-extrabold"
-            aria-label={`Soal ${current + 1} dari ${questions.length}`}
-            style={{
-              fontSize: '11px',
-              background: tokens.colorAlpha('c', 0.15),
-              color: tokens.color('c'),
-              border: '1px solid ' + tokens.colorAlpha('c', 0.3),
-            }}>
+          <PremiumBadge tokens={tokens} accent="c" variant="glass">
             {current + 1}/{questions.length}
-          </span>
+          </PremiumBadge>
         </div>
       </div>
 
@@ -474,7 +477,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
 
         {/* Question — show after spinning or when answered */}
         {(showQuestion || isCurrentAnswered) && !spinning && (
-          <div className="p-3 rounded-xl mb-3"
+          <div className="p-3 rounded-xl mb-3 premium-card-glow"
             style={{
               background: tokens.colorAlpha('y', 0.08),
               border: '1px solid ' + tokens.colorAlpha('y', 0.2),
@@ -575,6 +578,8 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
                 style={{
                   width: `${questions.length > 0 ? (totalAnswered / questions.length) * 100 : 0}%`,
                   background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')})`,
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 2s linear infinite',
                   boxShadow: `0 0 8px ${tokens.colorAlpha('c', 0.3)}`,
                 }} />
             </div>
@@ -582,5 +587,6 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
         )}
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

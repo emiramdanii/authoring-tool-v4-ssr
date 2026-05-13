@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TEAM BUZZER GAME RENDERER (Kuis Tim)
@@ -256,6 +257,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
     const winner = scoreA > scoreB ? teamA : scoreB > scoreA ? teamB : 'Seri';
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div
         className="text-center p-5 rounded-2xl"
         style={{
@@ -265,6 +267,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
           animation: 'popSuccess 0.5s ease-out',
         }}
       >
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         {/* Tiered icon */}
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {pct >= 80 ? (
@@ -294,38 +297,13 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
 
         {/* Team scores */}
         <div className="flex justify-center gap-3">
-          <div
-            className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('r', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('r', 0.3),
-            }}
-          >
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>
-              {teamA}
-            </div>
-            <div className="font-black" style={{ color: tokens.color('r') }}>
-              {scoreA}
-            </div>
-          </div>
-          <div
-            className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('c', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('c', 0.3),
-            }}
-          >
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('c') }}>
-              {teamB}
-            </div>
-            <div className="font-black" style={{ color: tokens.color('c') }}>
-              {scoreB}
-            </div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="r" variant="glass">{teamA}: {scoreA}</PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="c" variant="glass">{teamB}: {scoreB}</PremiumBadge>
         </div>
 
         {/* Replay button */}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
             className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={handleRestart}
@@ -338,8 +316,10 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
           >
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -350,9 +330,11 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
   const progress = ((currentQ + (buzzed ? 1 : 0)) / validQuestions.length) * 100;
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Tekan buzzer tim lalu tentukan jawaban benar atau salah</div>
+      <ReadingProgressIndicator progress={validQuestions.length > 0 ? (currentQ + (buzzed ? 1 : 0)) / validQuestions.length : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* ── Header with title and question counter ────────────────── */}
       <div className="flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -366,17 +348,9 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
             />
           </div>
         </div>
-        <span
-          className="px-2.5 py-1 rounded-full font-extrabold flex-shrink-0"
-          style={{
-            fontSize: '11px',
-            background: tokens.colorAlpha('y', 0.15),
-            color: tokens.color('y'),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
-          }}
-        >
+        <PremiumBadge tokens={tokens} accent="y" variant="glass">
           {currentQ + 1}/{validQuestions.length}
-        </span>
+        </PremiumBadge>
       </div>
 
       {/* ── Progress bar ──────────────────────────────────────────── */}
@@ -390,6 +364,8 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
           style={{
             width: `${progress}%`,
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s linear infinite',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
           }}
         />
@@ -407,7 +383,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
 
       {/* ── Question card ─────────────────────────────────────────── */}
       <div
-        className="p-4 rounded-xl"
+        className="p-4 rounded-xl premium-card-glow"
         style={{
           background: tokens.colorAlpha('y', 0.06),
           border: '1px solid ' + tokens.colorAlpha('y', 0.2),
@@ -586,5 +562,6 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
         </ul>
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

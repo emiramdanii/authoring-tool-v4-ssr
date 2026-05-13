@@ -4,7 +4,7 @@ import React from 'react';
 import type { NormaKartuBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -41,7 +41,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   return (
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
-    <div className="rounded-2xl p-4" style={{
+    <div className="rounded-2xl premium-card-glow p-4" style={{
       background: tokens.colorAlpha(colorKey, 0.12),
       border: '1px solid ' + tokens.colorAlpha(colorKey, 0.3),
       boxShadow: tokens.raw.shadow.card,
@@ -58,7 +58,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           {block.icon}
         </div>
         <div className="min-w-0">
-          <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color }}>{block.label}</div>
+          <PremiumBadge tokens={tokens} accent={colorKey} variant="solid">{block.label}</PremiumBadge>
           <div className="font-black text-[16px] mt-0.5" style={{ fontFamily: tokens.fontFamily('display'), color }}>
             <InlineTextEditor {...titleEditor} className="font-black text-[16px]" style={{ color }} />
           </div>

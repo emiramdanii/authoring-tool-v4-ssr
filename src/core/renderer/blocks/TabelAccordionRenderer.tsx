@@ -4,7 +4,7 @@ import React from 'react';
 import type { TabelAccordionBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { playSound } from '@/lib/sounds';
 
 /** Inner detail item component so hooks are not called in loops */
@@ -73,12 +73,13 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
   });
 
   return (
-    <div className="rounded-xl overflow-hidden transition-all"
+    <div className="rounded-xl overflow-hidden premium-card-glow transition-all"
       style={{
         border: '1px solid ' + (isOpen ? tokens.colorAlpha(row.color, 0.35) : tokens.colorAlpha(row.color, 0.12)),
         background: isOpen ? tokens.colorAlpha(row.color, 0.08) : tokens.colorAlpha(row.color, 0.04),
         boxShadow: tokens.raw.shadow.card,
       }}>
+      <MicroInteraction tokens={tokens} accent={row.color} effect="squish">
       <button className="w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer transition-all"
         style={{
           fontSize: '13px',
@@ -103,6 +104,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
         <span className="ml-auto transition-transform duration-300 flex-shrink-0"
           style={{ fontSize: '12px', transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
       </button>
+      </MicroInteraction>
       {isOpen && (
         <div className="px-3.5 pb-3.5" id={`accord-panel-${blockId}-${rowIndex}`}
           style={{ animation: 'fadeIn 0.3s ease' }}>

@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // MEMORY GAME RENDERER — Card-matching game for PPKn education
@@ -320,7 +321,9 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
     const pct = validPairsLen > 0 ? Math.round((score / validPairsLen) * 100) : 0;
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="text-center p-5">
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         {/* Tiered icon */}
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {pct >= 80
@@ -343,20 +346,17 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
 
         {/* Stats row */}
         <div className="flex justify-center gap-3">
-          <div className="px-4 py-2 rounded-xl"
-            style={{ background: tokens.colorAlpha('g', 0.12), border: '1px solid ' + tokens.colorAlpha('g', 0.3) }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>Langkah</div>
-            <div className="font-black" style={{ color: tokens.color('g') }}>{moves}</div>
-          </div>
-          <div className="px-4 py-2 rounded-xl"
-            style={{ background: tokens.colorAlpha('r', 0.12), border: '1px solid ' + tokens.colorAlpha('r', 0.3) }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>Salah</div>
-            <div className="font-black" style={{ color: tokens.color('r') }}>{wrongAttempts}</div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">
+            Langkah {moves}
+          </PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="r" variant="glass">
+            Salah {wrongAttempts}
+          </PremiumBadge>
         </div>
 
         {/* Replay button */}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={handleRestart}
             style={{
@@ -367,8 +367,10 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
             }}>
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -376,7 +378,9 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
   const gridCols = getGridCols(cards.length);
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
+      <ReadingProgressIndicator progress={validPairsLen > 0 ? (matched.size / 2) / validPairsLen : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Balik kartu untuk menemukan pasangan yang cocok</div>
       {/* Header with title and move counter */}
@@ -394,15 +398,9 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
         </div>
         <div className="flex items-center gap-2">
           {/* Match progress badge */}
-          <span className="px-2.5 py-1 rounded-full font-extrabold"
-            style={{
-              fontSize: '11px',
-              background: tokens.colorAlpha('g', 0.15),
-              color: tokens.color('g'),
-              border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            }}>
+          <PremiumBadge tokens={tokens} accent="y" variant="glass">
             {matched.size / 2}/{validPairsLen}
-          </span>
+          </PremiumBadge>
           {/* Move counter badge */}
           <span className="px-2.5 py-1 rounded-full font-extrabold"
             style={{
@@ -417,21 +415,38 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 rounded-full overflow-hidden"
+      <div className="h-1.5 rounded-full overflow-hidden relative"
         {...a11y.progressAria('Kemajuan Memory Match', matched.size / 2, validPairsLen)}
         style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all"
           style={{
             width: validPairsLen > 0 ? (matched.size / cards.length) * 100 + '%' : '0%',
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s linear infinite',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
+          }}
+        />
+        {/* Aurora shimmer overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(90deg, transparent, ' + tokens.colorAlpha('y', 0.2) + ', transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 3s ease-in-out infinite',
+            pointerEvents: 'none',
+            borderRadius: 'inherit',
           }}
         />
       </div>
 
       {/* Card grid */}
       <div
-        className="grid gap-2.5"
+        className="grid gap-2.5 premium-card-glow"
         style={{
           gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
           perspective: '1000px',
@@ -533,5 +548,6 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
         })}
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // WORD SEARCH GAME RENDERER — Teka-Teki Kata for PPKn education
@@ -400,7 +401,9 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
       placements.length > 0 ? Math.round((score / placements.length) * 100) : 0;
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="text-center p-5">
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         {/* Tiered icon */}
         <div
           className="text-3xl mb-3"
@@ -433,38 +436,17 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
 
         {/* Stats row */}
         <div className="flex justify-center gap-3">
-          <div
-            className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('g', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            }}
-          >
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>
-              Ditemukan
-            </div>
-            <div className="font-black" style={{ color: tokens.color('g') }}>
-              {placements.length}
-            </div>
-          </div>
-          <div
-            className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('r', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('r', 0.3),
-            }}
-          >
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>
-              Salah
-            </div>
-            <div className="font-black" style={{ color: tokens.color('r') }}>
-              {wrongAttempts}
-            </div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">
+            Ditemukan {placements.length}
+          </PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="r" variant="glass">
+            Salah {wrongAttempts}
+          </PremiumBadge>
         </div>
 
         {/* Replay button */}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
             className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={handleRestart}
@@ -482,8 +464,10 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
           >
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -492,7 +476,9 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
   const cellSize = gridSize <= 8 ? 36 : gridSize <= 10 ? 32 : gridSize <= 12 ? 28 : 24;
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
+      <ReadingProgressIndicator progress={placements.length > 0 ? found.size / placements.length : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Temukan kata tersembunyi di grid huruf dengan memilih huruf awal dan akhir</div>
       <div className="flex items-center justify-between min-w-0">
@@ -509,17 +495,9 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         </div>
         <div className="flex items-center gap-2">
           {/* Found progress badge */}
-          <span
-            className="px-2.5 py-1 rounded-full font-extrabold"
-            style={{
-              fontSize: '11px',
-              background: tokens.colorAlpha('g', 0.15),
-              color: tokens.color('g'),
-              border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            }}
-          >
+          <PremiumBadge tokens={tokens} accent="y" variant="glass">
             {found.size}/{placements.length}
-          </span>
+          </PremiumBadge>
         </div>
       </div>
 
@@ -542,7 +520,24 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
               ', ' +
               tokens.color('g') +
               ')',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s linear infinite',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
+          }}
+        />
+        {/* Aurora shimmer overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(90deg, transparent, ' + tokens.colorAlpha('y', 0.2) + ', transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 3s ease-in-out infinite',
+            pointerEvents: 'none',
+            borderRadius: 'inherit',
           }}
         />
       </div>
@@ -636,7 +631,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         {/* ── Word List ── */}
         <div className="flex-1 min-w-0">
           <div
-            className="rounded-xl p-3"
+            className="rounded-xl p-3 premium-card-glow"
             style={{
               background: tokens.colorAlpha('card', 0.4),
               border: '1px solid ' + tokens.subtleBorder(0.1),
@@ -741,5 +736,6 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         </ul>
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

@@ -4,7 +4,7 @@ import React from 'react';
 import type { AlurBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
   block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -25,7 +25,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
   return (
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
-    <div className="mt-3 rounded-xl"
+    <div className="mt-3 rounded-xl premium-card-glow"
       style={{
         padding: isCompact ? '8px' : '14px',
         background: tokens.colorAlpha('c', 0.08),
@@ -46,10 +46,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
             }}>
             <div className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
               style={{ background: tokens.color(step.dot), boxShadow: '0 0 8px ' + tokens.colorAlpha(step.dot, 0.4) }} />
-            <span className="font-black flex-shrink-0 mt-0.5"
-              style={{ color: tokens.color(step.dot), fontSize: isCompact ? '11px' : '13px', minWidth: isCompact ? '30px' : '36px' }}>
-              {step.durasi}
-            </span>
+            <PremiumBadge tokens={tokens} accent={step.dot} variant="glass" isCompact={isCompact}>{step.durasi}</PremiumBadge>
             <span className={`leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: isCompact ? '11px' : '13px' }}>
               <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}>{step.deskripsi}</span>
             </span>

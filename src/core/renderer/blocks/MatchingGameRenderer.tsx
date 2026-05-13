@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // MATCHING GAME RENDERER — Pasangkan Game for PPKn education
@@ -257,12 +258,14 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
     const pct = Math.round((score / totalPairs) * 100);
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div className="text-center p-5 rounded-2xl"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('y', 0.3),
           boxShadow: tokens.raw.shadow.elevated,
         }}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         {/* Animated icon */}
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {pct >= 80
@@ -285,34 +288,17 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
 
         {/* Stats cards */}
         <div className="flex justify-center gap-3 mb-4">
-          <div className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('g', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>
-              Cocok
-            </div>
-            <div className="font-black" style={{ color: tokens.color('g') }}>
-              {matchedCount}
-            </div>
-          </div>
-          <div className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('r', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('r', 0.3),
-            }}>
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('r') }}>
-              Salah
-            </div>
-            <div className="font-black" style={{ color: tokens.color('r') }}>
-              {wrongAttempts}
-            </div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">
+            Cocok {matchedCount}
+          </PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="r" variant="glass">
+            Salah {wrongAttempts}
+          </PremiumBadge>
         </div>
 
         {/* Replay button */}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
             className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => {
@@ -335,8 +321,10 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
           >
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -383,7 +371,9 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
 
   // ══ PLAY SCREEN ══════════════════════════════════════════════════
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
+      <ReadingProgressIndicator progress={totalPairs > 0 ? matchedCount / totalPairs : 0} tokens={tokens} accent="y" height={3} position="top" />
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Pilih item di kolom kiri, lalu cocokkan dengan jawaban di kolom kanan</div>
       <div className="flex items-center justify-between min-w-0">
@@ -398,22 +388,14 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
             />
           </div>
         </div>
-        <span
-          className="px-2.5 py-1 rounded-full font-extrabold"
-          style={{
-            fontSize: '11px',
-            background: tokens.colorAlpha('y', 0.15),
-            color: tokens.color('y'),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
-          }}
-        >
+        <PremiumBadge tokens={tokens} accent="y" variant="glass">
           {matchedCount}/{totalPairs}
-        </span>
+        </PremiumBadge>
       </div>
 
       {/* ── Progress bar ───────────────────────────────────────────── */}
       <div
-        className="h-1.5 rounded-full overflow-hidden"
+        className="h-1.5 rounded-full overflow-hidden relative"
         {...a11y.progressAria('Kemajuan Pasangkan', matchedCount, totalPairs)}
         style={{ background: tokens.subtleBg(0.08) }}
       >
@@ -422,14 +404,31 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
           style={{
             width: `${totalPairs > 0 ? (matchedCount / totalPairs) * 100 : 0}%`,
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s linear infinite',
             boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
+          }}
+        />
+        {/* Aurora shimmer overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(90deg, transparent, ' + tokens.colorAlpha('y', 0.2) + ', transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 3s ease-in-out infinite',
+            pointerEvents: 'none',
+            borderRadius: 'inherit',
           }}
         />
       </div>
 
       {/* ── Two-column matching grid ───────────────────────────────── */}
       <div
-        className="relative rounded-xl p-4"
+        className="relative rounded-xl p-4 premium-card-glow"
         style={{
           background: tokens.colorAlpha('y', 0.04),
           border: '1px solid ' + tokens.colorAlpha('y', 0.15),
@@ -616,5 +615,6 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
         )}
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });

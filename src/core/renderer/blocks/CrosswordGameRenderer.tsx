@@ -9,6 +9,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 import { useGameA11y } from '@/lib/use-game-a11y';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 /* ═══════════════════════════════════════════════════════════════════════
    CROSSWORD GAME RENDERER (Teka Silang) — SSR renderer system
@@ -214,6 +215,20 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
     }
     return wordIds.size;
   }, [revealed, grid]);
+
+  // ── Crossword progress (0-1) for ReadingProgressIndicator ────
+  const crosswordProgress = React.useMemo(() => {
+    let filled = 0, total = 0;
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (grid[r][c].letter) {
+          total++;
+          if (userGrid[`${r},${c}`]) filled++;
+        }
+      }
+    }
+    return total > 0 ? filled / total : 0;
+  }, [grid, SIZE, userGrid]);
 
   // ── Score guard (MANDATORY) ─────────────────────────────────────
   const hasReportedRef = React.useRef(false);
@@ -466,6 +481,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
     const pct = validCount > 0 ? Math.round((finalScore / validCount) * 100) : 0;
 
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
       <div
         className="text-center p-5 rounded-2xl"
         style={{
@@ -475,6 +491,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
           animation: 'popSuccess 0.5s ease-out',
         }}
       >
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
         {/* Tiered icon */}
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
           {pct >= 80 ? (
@@ -504,38 +521,13 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
 
         {/* Stats row */}
         <div className="flex justify-center gap-3">
-          <div
-            className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('g', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            }}
-          >
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('g') }}>
-              Kata
-            </div>
-            <div className="font-black" style={{ color: tokens.color('g') }}>
-              {validCount}
-            </div>
-          </div>
-          <div
-            className="px-4 py-2 rounded-xl"
-            style={{
-              background: tokens.colorAlpha('o', 0.12),
-              border: '1px solid ' + tokens.colorAlpha('o', 0.3),
-            }}
-          >
-            <div className="font-extrabold" style={{ fontSize: '12px', color: tokens.color('o') }}>
-              Dibantu
-            </div>
-            <div className="font-black" style={{ color: tokens.color('o') }}>
-              {wordsWithReveals}
-            </div>
-          </div>
+          <PremiumBadge tokens={tokens} accent="g" variant="glass">Kata: {validCount}</PremiumBadge>
+          <PremiumBadge tokens={tokens} accent="o" variant="glass">Dibantu: {wordsWithReveals}</PremiumBadge>
         </div>
 
         {/* Replay button */}
         {interactive && (
+          <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
             className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={handleRestart}
@@ -548,8 +540,10 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
           >
             <RotateCcw size={14} className="inline" /> Ulangi
           </button>
+          </MicroInteraction>
         )}
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -557,6 +551,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
   const cellSize = isCompact ? 16 : SIZE <= 10 ? 22 : 16;
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
     <div
       className="space-y-3 game-block"
       onKeyDown={handleKeyDown}
@@ -564,6 +559,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
       {...a11y.rootAria}
       data-interactive
     >
+      <ReadingProgressIndicator progress={crosswordProgress} tokens={tokens} accent="y" height={3} position="top" />
       {/* Hidden instruction for screen readers */}
       <div id={a11y.instructionId} className="sr-only">Isi huruf pada sel kosong untuk menyelesaikan teka silang</div>
       {/* ── Header with title and progress ────────────────────────── */}
@@ -579,17 +575,9 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
             />
           </div>
         </div>
-        <span
-          className="px-2.5 py-1 rounded-full font-extrabold flex-shrink-0"
-          style={{
-            fontSize: '11px',
-            background: tokens.colorAlpha('c', 0.15),
-            color: tokens.color('c'),
-            border: '1px solid ' + tokens.colorAlpha('c', 0.3),
-          }}
-        >
+        <PremiumBadge tokens={tokens} accent="c" variant="glass">
           {validCount} kata{revealed.size > 0 ? ` · ${revealed.size} dibantu` : ''}
-        </span>
+        </PremiumBadge>
       </div>
 
       {/* ── Main layout: Grid + Clues ─────────────────────────────── */}
@@ -695,7 +683,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
         {/* ── Clues panel ── */}
         <div className="flex-1 min-w-0">
           <div
-            className="rounded-xl p-3 max-h-64 overflow-y-auto"
+            className="rounded-xl p-3 max-h-64 overflow-y-auto premium-card-glow"
             style={{
               background: tokens.colorAlpha('card', 0.4),
               border: '1px solid ' + tokens.subtleBorder(0.1),
@@ -820,5 +808,6 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
         tabIndex={-1}
       />
     </div>
+    </PremiumBlockWrapper>
   );
 });
