@@ -31,6 +31,8 @@ export interface PremiumStepNavigatorProps {
   accent?: string;
   /** Compact mode */
   isCompact?: boolean;
+  /** Fired once when user reaches the last step (all steps completed) */
+  onComplete?: () => void;
 }
 
 /** Hook for managing premium step navigation state with additional features */
@@ -162,11 +164,26 @@ export function PremiumStepNavigator({
   tokens,
   accent = 'y',
   isCompact = false,
+  onComplete,
 }: PremiumStepNavigatorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBtn, setHoveredBtn] = useState<'prev' | 'next' | null>(null);
   const [springKey, setSpringKey] = useState(0);
   const totalSteps = labels.length;
+  const hasCompletedRef = useRef(false);
+
+  // Fire onComplete once when user reaches the last step
+  useEffect(() => {
+    const isAllComplete = activeStep === totalSteps - 1 && totalSteps > 1;
+    if (isAllComplete && !hasCompletedRef.current && onComplete) {
+      hasCompletedRef.current = true;
+      onComplete();
+    }
+    // Reset completion flag if user goes back
+    if (activeStep < totalSteps - 1) {
+      hasCompletedRef.current = false;
+    }
+  }, [activeStep, totalSteps, onComplete]);
 
   // Keyboard navigation
   useEffect(() => {

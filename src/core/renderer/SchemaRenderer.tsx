@@ -63,7 +63,7 @@ export interface ScreenRendererProps {
 }
 
 export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, selectedBlockIds, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
-  const hasCoverBlock = screen.blocks.length === 1 && screen.blocks[0].type === 'cover';
+  const hasCoverBlock = screen.blocks.length === 1 && (screen.blocks[0].type === 'cover' || screen.blocks[0].type === 'hero');
 
   // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
   // Memoize the block split to avoid re-computing on every render

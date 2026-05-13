@@ -440,11 +440,12 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
 // STEP MODE SUB-COMPONENT — PremiumStepNavigator wrapper
 // ═══════════════════════════════════════════════════════════════════
 
-function RangkumanStepMode({ concepts, tokens, isCompact, variant }: {
+function RangkumanStepMode({ concepts, tokens, isCompact, variant, onComplete }: {
   concepts: RangkumanBlock['concepts'];
   tokens: TokenResolver;
   isCompact: boolean;
   variant: 'A' | 'B' | 'C';
+  onComplete?: () => void;
 }) {
   const STEP_SIZE = 2;
   const totalSteps = Math.ceil(concepts.length / STEP_SIZE);
@@ -468,6 +469,7 @@ function RangkumanStepMode({ concepts, tokens, isCompact, variant }: {
       tokens={tokens}
       accent="c"
       isCompact={isCompact}
+      onComplete={onComplete}
     >
       <RangkumanConceptList
         concepts={stepConcepts}
@@ -497,7 +499,6 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
 
   // ── Step completion tracking ──
   const [allStepsCompleted, setAllStepsCompleted] = useState(false);
-  const totalConcepts = block.concepts?.length ?? 0;
 
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -646,6 +647,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           tokens={tokens}
           isCompact={isCompact}
           variant={variant}
+          onComplete={handleStepComplete}
         />
       ) : (
         <RangkumanConceptList

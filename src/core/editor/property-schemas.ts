@@ -59,6 +59,12 @@ export const COVER_PROPERTY_SCHEMA: PropertySchema = {
   ],
 };
 
+/** Hero uses the same data model as Cover but with its own blockType discriminator */
+export const HERO_PROPERTY_SCHEMA: PropertySchema = {
+  ...COVER_PROPERTY_SCHEMA,
+  blockType: 'hero',
+};
+
 export const PETUNJUK_PROPERTY_SCHEMA: PropertySchema = {
   blockType: 'petunjuk',
   groups: [

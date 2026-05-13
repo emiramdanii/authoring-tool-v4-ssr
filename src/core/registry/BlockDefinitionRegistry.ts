@@ -22,6 +22,7 @@ import type { PropertySchema } from '../editor/types';
 
 import {
   COVER_PROPERTY_SCHEMA,
+  HERO_PROPERTY_SCHEMA,
   PETUNJUK_PROPERTY_SCHEMA,
   TP_PROPERTY_SCHEMA,
   ALUR_PROPERTY_SCHEMA,
@@ -142,7 +143,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
     defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
     usedInTemplates: ['hero'],
-    propertySchema: COVER_PROPERTY_SCHEMA, // Hero uses same schema as Cover
+    propertySchema: HERO_PROPERTY_SCHEMA,
     estimatedHeight: { A: 550, B: 500, C: 450 },
     createDefault: () => ({
       icon: '🚀',

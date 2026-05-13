@@ -45,8 +45,6 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
     let changed = false;
 
     const newPages = pages.map(page => {
-      const isTemplate = page.templateType && page.templateType !== 'custom';
-
       // ── Layer 1: Schema is now "owned" by the user ──
       // No more auto-sync overwrites. Schema edits persist until the user
       // explicitly refreshes via "Refresh Data dari Authoring" button.
