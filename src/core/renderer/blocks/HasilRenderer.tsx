@@ -5,6 +5,7 @@ import { Trophy, Star, Target, RotateCcw, Sparkles, CheckCircle2, Zap } from 'lu
 import type { HasilBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
@@ -58,6 +59,8 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
   });
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="g" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="g" height={2} position="top" />
     <div className="flex flex-col items-center justify-center text-center p-6">
       {/* Performance tier badge */}
       <div className="mb-4 px-4 py-1.5 rounded-full"
@@ -185,5 +188,6 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
         </button>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 });

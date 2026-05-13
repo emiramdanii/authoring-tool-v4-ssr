@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 
 export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -19,6 +20,8 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
   const questions = block.questions || [];
   const allAnswered = questions.length > 0 && questions.every((_, i) => responses[i]?.trim().length > 0);
+  const answeredCount = Object.values(responses).filter(r => r.trim().length > 0).length;
+  const progress = questions.length > 0 ? answeredCount / questions.length : 0;
 
   const handleSubmit = () => {
     if (!interactive || !allAnswered) return;
@@ -51,6 +54,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   // ══ SUBMITTED SCREEN ═══════════════════════════════════════
   if (submitted && interactive) {
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
       <div className="rounded-2xl p-5 text-center"
         style={{
           background: tokens.colorAlpha('c', 0.1),
@@ -86,11 +90,14 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           </button>
         </div>
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
   return (
-    <div className="mt-3 rounded-2xl p-4"
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+    <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={2} position="top" />
+    <div className="mt-3 rounded-2xl p-4 premium-card-glow"
       style={{
         background: tokens.colorAlpha('c', 0.1),
         border: '2px solid ' + tokens.colorAlpha('c', 0.3),
@@ -195,5 +202,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         </button>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 });

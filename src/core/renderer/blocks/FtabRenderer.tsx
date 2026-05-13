@@ -9,6 +9,7 @@ import type { TokenResolver, SchemaRenderMode } from '../types';
 // Lazy loading defers the reference until render time, breaking the cycle.
 import type { SchemaBlockRenderer as SchemaBlockRendererType } from '../SchemaRenderer';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 
 const SchemaBlockRenderer = React.lazy(() =>
   import('../SchemaRenderer').then(m => ({ default: m.SchemaBlockRenderer }))
@@ -69,6 +70,8 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
   const tab = tabs[activeTab];
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div>
       <div className="flex gap-2 flex-wrap">
         {tabs.map((t, i) => (
@@ -121,5 +124,6 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
         </div>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 }

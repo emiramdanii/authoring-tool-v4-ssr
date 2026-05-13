@@ -5,6 +5,7 @@ import { Star, PartyPopper, RotateCcw, BookOpen, MessageSquare, CheckCircle2, XC
 import type { SkenarioBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
@@ -98,6 +99,8 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
   const yellow = tokens.color('y');
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="o" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="o" height={2} position="top" />
     <div className="mt-3 rounded-2xl overflow-hidden border-2"
       style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.3), boxShadow: tokens.raw.shadow.elevated }}>
       {/* HUD with gradient accent line */}
@@ -304,5 +307,6 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
         </div>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 });

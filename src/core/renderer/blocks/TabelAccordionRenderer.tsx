@@ -4,6 +4,7 @@ import React from 'react';
 import type { TabelAccordionBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { playSound } from '@/lib/sounds';
 
 /** Inner detail item component so hooks are not called in loops */
@@ -131,6 +132,8 @@ export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer
   const [openIdx, setOpenIdx] = React.useState<number | null>(null);
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div className="flex flex-col gap-2 mt-3">
       {(block.rows || []).map((row, i) => (
         <AccordionRow
@@ -146,5 +149,6 @@ export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer
         />
       ))}
     </div>
+    </PremiumBlockWrapper>
   );
 });

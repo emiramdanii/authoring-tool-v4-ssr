@@ -5,6 +5,7 @@ import { Lightbulb, Info, Compass, Target, BookOpen, Shield, GraduationCap } fro
 import type { PetunjukBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 
 export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: PetunjukBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -35,6 +36,8 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
   });
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}>
+    <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentKey} height={2} position="top" />
     <div className={isCompact ? 'p-1' : 'p-2'}
       style={{
         background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.06)}, ${tokens.colorAlpha('y', 0.04)})`,
@@ -64,17 +67,8 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
       </div>
 
       {/* BSNP "Wajib" badge — top right */}
-      <div className="absolute top-0 right-0"
-        style={{
-          background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('o', 0.9)})`,
-          borderRadius: '0 0 0 10px',
-          padding: '4px 10px',
-          zIndex: 2,
-          boxShadow: `-2px 2px 8px ${tokens.colorAlpha('y', 0.25)}`,
-        }}>
-        <span style={{ fontSize: '10px', fontWeight: 900, color: tokens.color('bg'), display: 'flex', alignItems: 'center', gap: 3 }}>
-          <Shield size={10} /> BSNP Wajib
-        </span>
+      <div className="absolute top-0 right-0" style={{ zIndex: 2, borderRadius: '0 0 0 10px', overflow: 'hidden' }}>
+        <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}><Shield size={10} /> BSNP Wajib</PremiumBadge>
       </div>
 
       <div style={{ paddingTop: isCompact ? '24px' : '32px' }}>
@@ -272,5 +266,6 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
         </div>
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 }

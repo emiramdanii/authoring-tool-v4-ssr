@@ -5,6 +5,7 @@ import { Trophy, Star, Dumbbell, RotateCcw, Gamepad2, CheckCircle2, XCircle, Fla
 import type { KuisBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration, fireConfettiMini } from '@/lib/confetti';
@@ -139,6 +140,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
   if (!q) return null;
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="r" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="r" height={2} position="top" />
     <div className="space-y-3 game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Kuis: Soal ${current + 1} dari ${questions.length}, Skor: ${totalCorrect}`} aria-describedby={`kuis-instructions-${block.id || 'kuis'}`} data-interactive>
       {/* Hidden instruction for screen readers */}
       <span id={`kuis-instructions-${block.id || 'kuis'}`} className="sr-only">Pilih jawaban yang benar untuk setiap soal kuis</span>
@@ -271,5 +274,6 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
         </button>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 });

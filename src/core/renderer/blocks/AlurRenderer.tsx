@@ -4,6 +4,7 @@ import React from 'react';
 import type { AlurBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 
 export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
   block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -22,6 +23,8 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
   });
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div className="mt-3 rounded-xl"
       style={{
         padding: isCompact ? '8px' : '14px',
@@ -54,5 +57,6 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
         ))}
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 }

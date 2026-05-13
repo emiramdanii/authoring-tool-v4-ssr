@@ -5,6 +5,7 @@ import type { CoverBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // COVER RENDERER — Premium Cover Page with 3 Creative Variants
@@ -468,12 +469,15 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
     subtitleEditor,
   };
 
+  const accentKey = block.accentColor || 'y';
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />
-      {variant === 'A' && <CoverVariantA {...sharedProps} />}
-      {variant === 'B' && <CoverVariantB {...sharedProps} />}
-      {variant === 'C' && <CoverVariantC {...sharedProps} />}
-    </div>
+    <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />
+        {variant === 'A' && <CoverVariantA {...sharedProps} />}
+        {variant === 'B' && <CoverVariantB {...sharedProps} />}
+        {variant === 'C' && <CoverVariantC {...sharedProps} />}
+      </div>
+    </PremiumBlockWrapper>
   );
 }

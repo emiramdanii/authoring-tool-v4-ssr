@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Shield, Star, CheckCircle2, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import type { MateriSectionBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 
 // NOTE: Use React.lazy() to break the circular dependency:
 //   SceneRegistry → MateriSectionRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
@@ -164,19 +165,9 @@ function MateriVariantKlasik({
 
           {/* BSNP badge */}
           {block.bsnpRequired && (
-            <div
-              className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full font-extrabold uppercase"
-              style={{
-                background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
-                color: tokens.color('bg'),
-                fontSize: isCompact ? '8px' : '9px',
-                letterSpacing: '0.1em',
-                boxShadow: `0 2px 10px ${tokens.colorAlpha('y', 0.4)}`,
-              }}
-            >
-              <Shield size={isCompact ? 9 : 11} />
-              <span>WAJIB BSNP</span>
-            </div>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+              <Shield size={isCompact ? 9 : 11} /> WAJIB BSNP
+            </PremiumBadge>
           )}
         </div>
 
@@ -398,18 +389,9 @@ function MateriVariantMajalah({
             {block.title}
           </h2>
           {block.bsnpRequired && (
-            <div
-              className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full font-extrabold uppercase"
-              style={{
-                background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
-                color: tokens.color('bg'),
-                fontSize: '7px',
-                letterSpacing: '0.1em',
-              }}
-            >
-              <Shield size={7} />
-              <span>WAJIB</span>
-            </div>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+              <Shield size={isCompact ? 9 : 11} /> WAJIB BSNP
+            </PremiumBadge>
           )}
         </div>
       </div>
@@ -761,17 +743,21 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
     isCompact,
   };
 
+  const accentColor = block.accentColor || 'c';
   return (
-    <div style={{ position: 'relative' }}>
-      {isEditing && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
-          <VariantSelector active={variant} onChange={() => {}} />
-        </div>
-      )}
+    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
+      <div style={{ position: 'relative' }}>
+        {isEditing && (
+          <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
+            <VariantSelector active={variant} onChange={() => {}} />
+          </div>
+        )}
 
-      {variant === 'A' && <MateriVariantKlasik {...sharedProps} />}
-      {variant === 'B' && <MateriVariantMajalah {...sharedProps} />}
-      {variant === 'C' && <MateriVariantPill {...sharedProps} />}
-    </div>
+        {variant === 'A' && <MateriVariantKlasik {...sharedProps} />}
+        {variant === 'B' && <MateriVariantMajalah {...sharedProps} />}
+        {variant === 'C' && <MateriVariantPill {...sharedProps} />}
+      </div>
+    </PremiumBlockWrapper>
   );
 }

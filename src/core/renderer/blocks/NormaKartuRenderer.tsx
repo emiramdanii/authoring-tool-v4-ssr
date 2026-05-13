@@ -4,6 +4,7 @@ import React from 'react';
 import type { NormaKartuBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 
 export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -38,6 +39,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   });
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div className="rounded-2xl p-4" style={{
       background: tokens.colorAlpha(colorKey, 0.12),
       border: '1px solid ' + tokens.colorAlpha(colorKey, 0.3),
@@ -136,5 +139,6 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 }

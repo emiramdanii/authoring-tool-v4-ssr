@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 
 export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
   block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
@@ -19,6 +20,9 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
 
   const allAnswered = (block.questions || []).length > 0 &&
     (block.questions || []).every((_, i) => responses[i]?.trim().length > 0);
+  const answeredCount = Object.values(responses).filter(r => r.trim().length > 0).length;
+  const totalQuestions = (block.questions || []).length;
+  const progress = totalQuestions > 0 ? answeredCount / totalQuestions : 0;
 
   const handleSubmit = () => {
     if (!interactive || !allAnswered) return;
@@ -51,7 +55,8 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
   // ══ SUBMITTED SCREEN ═══════════════════════════════════════
   if (submitted && interactive) {
     return (
-      <div className="text-center p-5 rounded-2xl"
+      <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+      <div className="text-center p-5 rounded-2xl premium-card-glow"
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('g', 0.3),
@@ -85,10 +90,13 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           </button>
         </div>
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+    <ReadingProgressIndicator progress={progress} tokens={tokens} accent="p" height={2} position="top" />
     <div>
       {/* Header with icon */}
       <div className="flex items-center gap-2.5 mb-3">
@@ -218,5 +226,6 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         </div>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 });

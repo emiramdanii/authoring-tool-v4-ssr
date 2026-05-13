@@ -6,6 +6,7 @@ import type { PenutupBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { playSound } from '@/lib/sounds';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay } from './PremiumBlockEffects';
 
 export function PenutupRenderer({ block, tokens, isCompact, isEditing, interactive }: {
   block: PenutupBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
@@ -24,7 +25,9 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
   });
 
   return (
-    <div>
+    <PremiumBlockWrapper tokens={tokens} accent="g" staggerIndex={0}>
+    <ReadingProgressIndicator progress={1} tokens={tokens} accent="g" height={2} position="top" />
+    <div className="premium-card-glow" style={{ position: 'relative' }}>
       {/* Header with completion icon */}
       <div className="flex items-center gap-2.5 mb-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -143,5 +146,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
         </div>
       )}
     </div>
+    <StepCompletionOverlay show tokens={tokens} accent="g" completionText="PEMBELAJARAN SELESAI!" isCompact={isCompact} />
+    </PremiumBlockWrapper>
   );
 }

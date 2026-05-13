@@ -6,6 +6,7 @@ import type { TujuanDisplayBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // TUJUAN DISPLAY RENDERER — Premium with 3 Creative Variants
@@ -108,19 +109,9 @@ function TujuanVariantA({
 
           {/* BSNP Badge */}
           {block.bsnpRequired && (
-            <div
-              className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full font-extrabold uppercase"
-              style={{
-                background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
-                color: tokens.color('bg'),
-                fontSize: isCompact ? '7px' : '8px',
-                letterSpacing: '0.1em',
-                boxShadow: `0 2px 8px ${tokens.colorAlpha('y', 0.35)}`,
-              }}
-            >
-              <Shield size={isCompact ? 8 : 10} />
-              <span>WAJIB</span>
-            </div>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+              <Shield size={isCompact ? 8 : 10} /> WAJIB
+            </PremiumBadge>
           )}
         </div>
 
@@ -301,19 +292,9 @@ function TujuanVariantB({
           </div>
 
           {block.bsnpRequired && (
-            <div
-              className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full font-extrabold uppercase"
-              style={{
-                background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
-                color: tokens.color('bg'),
-                fontSize: isCompact ? '7px' : '8px',
-                letterSpacing: '0.1em',
-                boxShadow: `0 2px 8px ${tokens.colorAlpha('y', 0.35)}`,
-              }}
-            >
-              <Shield size={isCompact ? 8 : 10} />
-              <span>WAJIB</span>
-            </div>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+              <Shield size={isCompact ? 8 : 10} /> WAJIB
+            </PremiumBadge>
           )}
         </div>
 
@@ -558,27 +539,10 @@ function TujuanVariantC({
     >
       {/* BSNP Badge */}
       {block.bsnpRequired && isEditing && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            zIndex: 5,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '2px 8px',
-            borderRadius: '99px',
-            fontSize: '7px',
-            fontWeight: 800,
-            letterSpacing: '0.1em',
-            background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
-            color: tokens.color('bg'),
-            boxShadow: `0 2px 8px ${tokens.colorAlpha('y', 0.35)}`,
-          }}
-        >
-          <Shield size={8} />
-          WAJIB
+        <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 5 }}>
+          <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+            <Shield size={8} /> WAJIB
+          </PremiumBadge>
         </div>
       )}
 
@@ -767,11 +731,14 @@ export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing }: {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
-      <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />
-      {variant === 'A' && <TujuanVariantA {...sharedProps} />}
-      {variant === 'B' && <TujuanVariantB {...sharedProps} />}
-      {variant === 'C' && <TujuanVariantC {...sharedProps} />}
-    </div>
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={2} position="top" />
+      <div style={{ position: 'relative' }}>
+        <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />
+        {variant === 'A' && <TujuanVariantA {...sharedProps} />}
+        {variant === 'B' && <TujuanVariantB {...sharedProps} />}
+        {variant === 'C' && <TujuanVariantC {...sharedProps} />}
+      </div>
+    </PremiumBlockWrapper>
   );
 }

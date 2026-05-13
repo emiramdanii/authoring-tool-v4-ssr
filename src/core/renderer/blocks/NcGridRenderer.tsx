@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { NcGridBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -437,6 +438,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
   // Step mode for all variants when cards > 2
   if (cards.length > 2) {
     return (
+      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
       <div style={{ position: 'relative' }} className="premium-card-glow">
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 15 }}>
@@ -451,6 +453,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
           variant={variant}
         />
       </div>
+      </PremiumBlockWrapper>
     );
   }
 
@@ -462,6 +465,7 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
       : { minWidth: 0 };
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
     <div
       className={variant === 'A' ? 'grid grid-cols-2 gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
       style={variant === 'A' ? { minWidth: 0 } : containerStyle}
@@ -483,5 +487,6 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
         />
       ))}
     </div>
+    </PremiumBlockWrapper>
   );
 }

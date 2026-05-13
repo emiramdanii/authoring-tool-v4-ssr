@@ -5,6 +5,7 @@ import { Target, Link2 } from 'lucide-react';
 import type { TpBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 
 export function TpRenderer({ block, tokens, isCompact, isEditing }: {
   block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
@@ -26,6 +27,8 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
   const items = block.items || [];
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={2} position="top" />
     <div className={isCompact ? 'p-1' : 'p-2'}>
       {/* Header with icon */}
       <div className="flex items-center gap-2.5 mb-3">
@@ -123,5 +126,6 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 }

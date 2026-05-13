@@ -5,6 +5,7 @@ import { Shield, BookOpen, CheckCircle2, Sparkles, ChevronDown, ChevronUp } from
 import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -505,6 +506,8 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
   const concepts = block.concepts || [];
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
     <div
       className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
@@ -698,5 +701,6 @@ export function RangkumanRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
       )}
     </div>
+    </PremiumBlockWrapper>
   );
 }

@@ -5,6 +5,7 @@ import { CheckCircle2, RotateCcw, Sparkles, Eye, EyeOff } from 'lucide-react';
 import type { FlashcardSetBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
@@ -135,6 +136,8 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
   };
 
   return (
+    <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent="p" height={2} position="top" />
     <div className={isCompact ? 'mt-2' : 'mt-4'}>
       <div className="flex items-center justify-between mb-3">
         <div className="font-extrabold uppercase tracking-wider"
@@ -261,5 +264,6 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
         </button>
       </div>
     </div>
+    </PremiumBlockWrapper>
   );
 });
