@@ -12,6 +12,7 @@ import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, ChevronLeft, ChevronRight, RotateCcw, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getScoreTier } from './page-renderer/PageFrame';
+import { ScoreDisplay } from './page-renderer/ScoreDisplay';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
@@ -81,14 +82,18 @@ function PlayOverlayHeader() {
   const closePlay = useInteractiveStore((s) => s.closePlay);
   const pages = useCanvaStore((s) => s.pages);
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
-  // Use store computed functions — reactive + DRY (same as PageFrame)
-  const totalScoreVal = useInteractiveStore((s) => s.totalScore());
-  const totalMaxVal = useInteractiveStore((s) => s.totalMax());
   const totalPctVal = useInteractiveStore((s) => s.totalPct());
+  const totalMaxVal = useInteractiveStore((s) => s.totalMax());
 
   const page = pages[interactivePageIdx];
   const hasScore = totalMaxVal > 0;
   const tier = hasScore ? getScoreTier(totalPctVal) : null;
+
+  // TokenResolver-like interface for ScoreDisplay
+  const headerTokens = {
+    color: (token: string) => token === 'muted' ? '#94a3b8' : '#ffffff',
+    colorAlpha: (token: string, a: number) => token === 'muted' ? `rgba(148,163,184,${a})` : `rgba(255,255,255,${a})`,
+  };
 
   return (
     <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-app-border/50">
@@ -104,19 +109,14 @@ function PlayOverlayHeader() {
       <div className="flex items-center gap-3">
         {hasScore && (
           <div className="flex items-center gap-2">
-            {/* Premium score pill with tier color */}
-            <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
-              style={{
-                background: `${tier?.color}18`,
-                border: `1px solid ${tier?.color}33`,
-                boxShadow: `0 0 12px ${tier?.glow}`,
-              }}
-            >
-              <Trophy size={12} style={{ color: tier?.color }} />
-              <span className="text-xs font-black" style={{ color: tier?.color }}>{totalScoreVal}/{totalMaxVal}</span>
-              <span className="text-[10px] font-mono font-bold" style={{ color: tier?.color }}>{totalPctVal}%</span>
-            </div>
+            {/* Premium animated score pill */}
+            <ScoreDisplay
+              navbarStyle="glass"
+              isCompact={false}
+              showDetail={true}
+              tokens={headerTokens}
+              variant="header"
+            />
             {/* Star rating in header */}
             <div className="flex items-center gap-0.5">
               {[1, 2, 3].map(star => (
@@ -386,17 +386,18 @@ function PlayCanvas() {
                 })}
               </div>
 
-              {/* Score pill (when has score) */}
+              {/* Score pill — animated with +N popup */}
               {hasScore && (
-                <div
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-                  style={{
-                    background: `${tier?.color}15`,
-                    border: `1px solid ${tier?.color}30`,
+                <ScoreDisplay
+                  navbarStyle="glass"
+                  isCompact={true}
+                  showDetail={false}
+                  tokens={{
+                    color: (token: string) => token === 'muted' ? '#94a3b8' : '#ffffff',
+                    colorAlpha: (token: string, a: number) => token === 'muted' ? `rgba(148,163,184,${a})` : `rgba(255,255,255,${a})`,
                   }}
-                >
-                  <span className="text-[9px]" style={{ color: tier?.color }}>{totalPctVal}%</span>
-                </div>
+                  variant="bottom"
+                />
               )}
 
               {/* Page counter */}

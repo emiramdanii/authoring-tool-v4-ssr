@@ -10,6 +10,7 @@ import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { TokenResolver } from '@/core/renderer/SchemaRenderer';
 import { alpha } from '@/lib/color-palette';
 import { useNavSync } from '@/hooks/use-nav-sync';
+import { ScoreDisplay } from './ScoreDisplay';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE FRAME — Unified page shell shared by Canvas, Preview, Export
@@ -482,29 +483,15 @@ export function PageFrame({
             </div>
           )}
 
-          {/* Score pill */}
+          {/* Score pill — animated with +N popup */}
           {hasScore && showScore && (
-            <div
-              className={`flex items-center gap-1.5 ${
-                isCompact ? 'text-[9px]' : 'text-[11px]'
-              }`}
-              style={theme.scorePill(tokens, totalPctVal, isCompact)}
-            >
-              {navbarStyle === 'minimal' ? (
-                // Minimal: just text, no emoji
-                <span style={theme.scoreText(tokens, totalPctVal)}>{totalPctVal}%</span>
-              ) : (
-                <>
-                  <span>{navbarStyle === 'glass' ? '✦' : '🏆'}</span>
-                  <span style={theme.scoreText(tokens, totalPctVal)}>{totalPctVal}%</span>
-                  {!isCompact && (
-                    <span className="text-[9px]" style={{ color: tokens.colorAlpha('muted', 0.5) }}>
-                      {totalScoreVal}/{totalMaxVal}
-                    </span>
-                  )}
-                </>
-              )}
-            </div>
+            <ScoreDisplay
+              navbarStyle={navbarStyle}
+              isCompact={isCompact}
+              showDetail={!isCompact}
+              tokens={tokens}
+              variant="top"
+            />
           )}
 
           {/* Page counter */}
@@ -597,26 +584,15 @@ export function PageFrame({
 
             {/* Score + Next */}
             <div className="flex items-center gap-1.5">
-              {/* Bottom score pill (non-compact, non-minimal) */}
-              {hasScore && showScore && !isCompact && navbarStyle !== 'minimal' && (
-                <div
-                  className="flex items-center gap-1.5"
-                  style={theme.scorePill(tokens, totalPctVal, false)}
-                >
-                  <span className="text-[10px]">{navbarStyle === 'glass' ? '✦' : '🏆'}</span>
-                  <span className="font-mono font-bold text-[11px]" style={theme.scoreText(tokens, totalPctVal)}>
-                    {totalPctVal}%
-                  </span>
-                  <span className="text-[9px]" style={{ color: tokens.colorAlpha('muted', 0.5) }}>
-                    {totalScoreVal}/{totalMaxVal}
-                  </span>
-                </div>
-              )}
-              {/* Minimal compact score */}
-              {hasScore && showScore && !isCompact && navbarStyle === 'minimal' && (
-                <span className="font-mono font-bold text-[10px]" style={theme.scoreText(tokens, totalPctVal)}>
-                  {totalPctVal}%
-                </span>
+              {/* Bottom score pill — animated with +N popup */}
+              {hasScore && showScore && !isCompact && (
+                <ScoreDisplay
+                  navbarStyle={navbarStyle}
+                  isCompact={false}
+                  showDetail={navbarStyle !== 'minimal'}
+                  tokens={tokens}
+                  variant="bottom"
+                />
               )}
 
               {/* Next button */}
