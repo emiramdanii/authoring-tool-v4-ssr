@@ -331,6 +331,63 @@ Stage Summary:
 - Total bugs fixed across all phases: 74+
 
 ---
+Task ID: 2
+Agent: Senior Dev Pro
+Task: Phase 2 — Premium Overflow Handling & Creative Variant System for Block Renderers
+
+Work Log:
+- Created OverflowIndicator.tsx — Floating action panel for overflow handling:
+  - Glassmorphism floating badge at bottom-right of block
+  - Shows "⚠ Konten Meluap" warning with overflow amount in Indonesian
+  - 3 action buttons: Mode Langkah (Step Mode), Tata Letak Ringkas (Compact), Halaman Baru (New Page)
+  - Uses PremiumBadge for warning indicator
+  - Smooth slideUp animation on appear
+  - Auto-hides when content fits (estimatedHeight <= availableHeight)
+- Enhanced DefBoxRenderer.tsx with Step Mode + Creative Variants:
+  - Variant A "Klasik" — Original style (accent bar top, left border, clean)
+  - Variant B "Kreatif" — Glassmorphism card with gradient border, floating Sparkles icon, larger padding
+  - Variant C "Ringkas" — Ultra-compact pill/badge style, minimal vertical space
+  - Step Mode: Auto-activates when content > 200 chars, splits into "Definisi" + "Penjelasan" navigable steps
+  - VariantSelector component with A/B/C pills at top-right corner (editing mode only)
+  - All inline styles with TokenResolver
+- Enhanced MotivasiRenderer.tsx with Creative Variants:
+  - Variant A "Klasik" — Original full card with header, hook question, connections, transition
+  - Variant B "Kartu Hook" — Hook question as standalone hero card, connections as icon+label pills, minimal header
+  - Variant C "Kutipan" — Quote-style: large italic hook question in quotation marks, minimal header, connections hidden
+  - VariantSelector with A/B/C pills (editing mode only)
+  - Uses .variant-quote and .variant-compact-pill CSS classes
+- Enhanced MateriSectionRenderer.tsx with Creative Variants:
+  - Variant A "Klasik" — Original full section with header, child blocks, takeaways, self-check
+  - Variant B "Majalah" — Magazine-style 2-column layout (.variant-magazine-layout grid): content left, takeaways sidebar right (sticky), self-check as bottom banner
+  - Variant C "Pill" — Ultra-compact: header only with title+number badge, takeaways as horizontal pill badges, self-check hidden behind expand toggle ("Cek Pemahaman" with ChevronDown/Up)
+  - VariantSelector with A/B/C pills (editing mode only)
+- Appended premium CSS to globals.css (after existing content, no modifications):
+  - .variant-selector + .variant-pill — Variant A/B/C selector pills with active gradient
+  - .variant-glass-card — Glassmorphism card for Variant B
+  - .variant-compact-pill — Compact pill badge for Variant C
+  - .variant-quote — Quote style with ::before "\201C" for Variant C
+  - .variant-magazine-layout — Magazine 2-column grid for Materi Variant B
+  - .overflow-indicator + .overflow-action-btn — Floating overflow indicator with glassmorphism
+- Updated blocks/index.ts: Added OverflowIndicator export
+- TypeScript compilation: 0 errors in src/core/renderer/ (only pre-existing .next and vite.export.config.ts errors)
+- ESLint: 0 new errors in modified files
+- All text/labels in Indonesian (Bahasa Indonesia)
+- All components use 'use client' directive
+- All styles use inline styles with TokenResolver (tokens.color(), tokens.colorAlpha(), etc.)
+- Block variant read from block.variant field (fallback to 'A' for all renderers)
+- BaseBlock type already has variant?: 'A' | 'B' | 'C' field
+
+Stage Summary:
+- 1 new component file created (OverflowIndicator.tsx)
+- 3 existing files enhanced (DefBoxRenderer, MotivasiRenderer, MateriSectionRenderer)
+- 1 CSS file updated (globals.css with premium variant styles)
+- 1 barrel export updated (index.ts)
+- 0 TypeScript errors in renderer code
+- Creative variant system supports A/B/C across DefBox, Motivasi, and MateriSection
+- Overflow indicator provides 3-tier action handling
+- Step mode auto-activates for long DefBox content
+
+---
 Task ID: 12
 Agent: Main Agent
 Task: PRIORITAS 1-3 — Kill Dual Rendering, Activate Registry, Layout Transform
@@ -414,3 +471,130 @@ Stage Summary:
 - Enhanced context menu with submenus, variant, move-to-page, AI shortcut
 - Auto-Save Recovery dialog on app mount
 - 12 files changed, +1424 lines
+
+---
+Task ID: 7
+Agent: Senior Dev Pro
+Task: Creative Variants A/B/C for NcGridRenderer & RangkumanRenderer + Premium Polish
+
+Work Log:
+- Enhanced NcGridRenderer.tsx with Creative Variants:
+  - Variant A "Klasik" — Original card grid style (colored cards with icon, title, body, top accent bar)
+  - Variant B "Kreatif" — Magazine-style horizontal cards (full-width rows, icon on left, text on right, gradient accent bar on left side instead of top). More spacious, like a news feed.
+  - Variant C "Ringkas" — Minimal pill badges: each card becomes a small horizontal pill with icon + title only. Body text hidden behind click/expand. Very compact.
+  - NcGridCardA (Variant A) — kept original NcGridCard logic, added stagger animation + hover lift
+  - NcGridCardB (Variant B) — horizontal layout with left gradient accent bar, larger icon container, spacious padding
+  - NcGridCardC (Variant C) — inline-flex pill shape with icon circle + title, body revealed on hover/click expand
+  - NcGridCardByVariant factory function dispatches to correct card component
+  - Variant B layout: flex column (vertical stack of full-width rows)
+  - Variant C layout: flex wrap (pills flow naturally)
+  - Step mode (PremiumStepNavigator) works for all 3 variants when cards > 2
+  - VariantSelector component with A/B/C pills at top-right corner (editing mode only)
+  - Reads block.variant field (fallback to 'A')
+  - premium-card-glow class added to main container
+  - Stagger entrance animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.08}s both`
+  - Hover lift effect: `transition: all 0.2s ease` + hover translate
+- Enhanced RangkumanRenderer.tsx with Creative Variants:
+  - Variant A "Klasik" — Original card grid style with colored concept cards (left border, icon, title, body, check indicator)
+  - Variant B "Kreatif" — Timeline/stepper style: vertical line on left, concept cards as timeline nodes with numbered circles. Each concept shows as a step in a learning journey.
+  - Variant C "Ringkas" — Accordion style: concept titles as clickable headers, bodies expand on click. Only one open at a time. Numbered badges, ChevronDown/Up icons.
+  - RangkumanConceptCardA — existing concept card logic extracted, added stagger animation
+  - RangkumanConceptCardB — timeline node with numbered circle, vertical connecting line, content card beside it
+  - RangkumanAccordionGroup — manages openIndex state, renders accordion headers + collapsible bodies
+  - RangkumanConceptList — factory component that dispatches to correct variant renderer
+  - Header adapts per variant: Variant B shows journey badge icon + "Perjalanan Belajar" subtitle, Variant C shows "Ketik untuk membuka konsep" hint
+  - Step mode (PremiumStepNavigator) works for all 3 variants when concepts > 2
+  - VariantSelector with A/B/C pills at top-right (editing mode only)
+  - Reads block.variant field (fallback to 'A')
+  - premium-card-glow class added to main container
+  - Stagger entrance animation on all concept cards
+- Both files: 0 TypeScript errors, 0 new lint errors
+- All text/labels in Indonesian (Bahasa Indonesia)
+- All components use 'use client' directive
+- All styles use inline styles with TokenResolver (tokens.color(), tokens.colorAlpha(), etc.)
+- Dev server compiles and runs without issues
+
+Stage Summary:
+- 2 existing files enhanced (NcGridRenderer.tsx, RangkumanRenderer.tsx)
+- 6 new sub-components created (NcGridCardA/B/C, RangkumanConceptCardA/B, RangkumanAccordionGroup)
+- 3 utility components (VariantSelector shared pattern, NcGridCardByVariant factory, RangkumanConceptList factory)
+- 0 TypeScript errors in renderer code
+- Creative variant system now covers: DefBox, Motivasi, MateriSection, NcGrid, Rangkuman (5 renderers)
+- Step mode works across all 3 variants for both NcGrid and Rangkuman
+- Premium polish: stagger animations, hover lift, premium-card-glow
+
+---
+Task ID: 8
+Agent: Senior Dev Pro
+Task: Premium Visual Polish & Creative Variants for CoverRenderer and TujuanDisplayRenderer
+
+Work Log:
+- Enhanced CoverRenderer.tsx with 3 Creative Variants + Premium Polish:
+  - Variant A "Klasik" — Original centered layout preserved, added:
+    - coverReveal animation on main container
+    - breathe animation on icon (combined with float)
+    - Stagger entrance on badges: blockStaggerIn 0.4s ease ${i * 0.1}s both
+    - premium-card-glow class on badge pills
+  - Variant B "Sinematik" — Cinematic full-bleed movie poster layout:
+    - Icon becomes large watermark behind title (huge size, 0.08 opacity, blur)
+    - Title is left-aligned, not centered
+    - Badges flow horizontally with stagger entrance
+    - Meta displayed as compact inline row
+    - Animated gradient border on outer edge (background-clip trick)
+    - Bottom accent line instead of top bar
+    - CTA button uses rounded-lg (not pill shape)
+  - Variant C "Minimalis" — Ultra-clean minimal layout:
+    - Solid bg color (no gradient background)
+    - No icon container, just small icon inline before title
+    - Thin 3px accent line at top
+    - Everything left-aligned with generous whitespace
+    - Badges as subtle pills (reduced opacity)
+    - Meta as minimal inline labels
+    - CTA as outline button (border only, no fill)
+    - Minimal bottom line decoration
+  - VariantSelector with A/B/C pills at top-right (editing mode only)
+  - Variant changes persist via useCanvaStore.updateSchemaBlock
+  - Reads block.variant field (fallback to 'A')
+- Enhanced TujuanDisplayRenderer.tsx with 3 Creative Variants + Premium Polish:
+  - Variant A "Klasik" — Original style preserved, added:
+    - premium-card-glow class on main container
+    - coverReveal animation on container
+    - Stagger entrance on objectives: blockStaggerIn 0.5s ease ${i * 0.08}s both
+    - Hover lift on objective cards (-translate-y-0.5)
+  - Variant B "Checklist" — Checkbox style:
+    - Each objective becomes a checkbox item with custom hollow circle
+    - Circles fill with CheckCircle2 icon when clicked (interactive mode)
+    - Checked items get strikethrough text + muted color
+    - Progress bar at bottom showing "X/Y tercapai"
+    - Compact header with CheckCircle2 icon
+    - Profil section as compact strip
+  - Variant C "Peta Konsep" — Mind map style:
+    - Central title node at bottom with Target icon + breathe animation
+    - Objectives as satellite nodes positioned in circle/semicircle
+    - Connecting lines from center to each satellite (CSS-only, using absolute positioning + rotation)
+    - Satellite nodes are small rounded cards with icon + text
+    - Stagger entrance animation on satellite nodes
+    - premium-card-glow on satellite nodes
+    - Profil section as compact bottom strip
+  - VariantSelector with A/B/C pills at top-right (editing mode only)
+  - Variant changes persist via useCanvaStore.updateSchemaBlock
+  - Reads block.variant field (fallback to 'A')
+- Both files: 0 TypeScript errors after fixes
+- Fixed import path: useCanvaStore imported from '../../../store/canva/store' (not '../../store/canva/store')
+- Fixed block.id type: guarded with `if (block.id)` since id is optional (string | undefined)
+- All text/labels in Indonesian (Bahasa Indonesia)
+- All components use 'use client' directive
+- All styles use inline styles with TokenResolver
+- Dev server compiles without issues
+
+Stage Summary:
+- 2 existing files enhanced (CoverRenderer.tsx, TujuanDisplayRenderer.tsx)
+- 6 new sub-components created (CoverVariantA/B/C, TujuanVariantA/B/C)
+- 2 VariantSelector components (inline per file, matching existing project pattern)
+- 0 TypeScript errors in modified files
+- Creative variant system now covers: DefBox, Motivasi, MateriSection, NcGrid, Rangkuman, Cover, TujuanDisplay (7 renderers)
+- Premium polish: coverReveal animation, stagger entrance, premium-card-glow, breathe effect, hover lift
+- Cover Variant B "Sinematik": cinematic movie poster layout with watermark icon + gradient border
+- Cover Variant C "Minimalis": ultra-clean minimal with outline CTA
+- TujuanDisplay Variant B "Checklist": interactive checkbox with progress tracking
+- TujuanDisplay Variant C "Peta Konsep": CSS-only mind map with satellite nodes + connecting lines
