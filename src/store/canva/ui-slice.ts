@@ -581,44 +581,52 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
+    // ═══ PATCH-BASED DELETE via produceWithPatches ══════════════
+    // Convert to produceWithPatches so PatchHistory gets fine-grained
+    // inverse patches (re-insert the block) for precise undo.
     let deletedBlock: SchemaBlock;
-    let newBlocks: SchemaBlock[];
-
-    if (owner.kind === 'top-level') {
-      deletedBlock = blocks[owner.index];
-      newBlocks = blocks.filter((_, i) => i !== owner.index);
-    } else if (owner.kind === 'ftab-tab') {
-      const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
-      const tab = ft.tabs?.[owner.tabIndex];
-      deletedBlock = tab?.content?.[owner.childIndex] as SchemaBlock;
-      // Remove from tab content
-      newBlocks = produce(blocks, draft => {
-        const dFt = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
-        dFt.tabs?.[owner.tabIndex]?.content?.splice(owner.childIndex, 1);
-      });
-    } else if (owner.kind === 'materi-section') {
-      const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
-      deletedBlock = ms.content?.[owner.childIndex] as SchemaBlock;
-      newBlocks = produce(blocks, draft => {
-        const dMs = draft[owner.blockIndex] as { content?: SchemaBlock[] };
-        dMs.content?.splice(owner.childIndex, 1);
-      });
-    } else {
-      // children
-      deletedBlock = blocks[owner.blockIndex].children?.[owner.childIndex] as SchemaBlock;
-      newBlocks = produce(blocks, draft => {
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      if (owner.kind === 'top-level') {
+        deletedBlock = draft[owner.index] as SchemaBlock;
+        draft.splice(owner.index, 1);
+      } else if (owner.kind === 'ftab-tab') {
+        const ft = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+        deletedBlock = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex] as SchemaBlock;
+        ft.tabs?.[owner.tabIndex]?.content?.splice(owner.childIndex, 1);
+      } else if (owner.kind === 'materi-section') {
+        const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
+        deletedBlock = ms.content?.[owner.childIndex] as SchemaBlock;
+        ms.content?.splice(owner.childIndex, 1);
+      } else {
+        // children
+        deletedBlock = draft[owner.blockIndex].children?.[owner.childIndex] as SchemaBlock;
         draft[owner.blockIndex].children?.splice(owner.childIndex, 1);
-      });
-    }
+      }
+    });
 
-    const blockName = ((deletedBlock as unknown) as Record<string, unknown>).title as string || deletedBlock.type || 'Block';
+    const blockName = ((deletedBlock! as unknown) as Record<string, unknown>).title as string || deletedBlock!.type || 'Block';
 
-    editBus.emit({ type: 'patch', patch: { blockId, blockType: deletedBlock.type, pageIndex: currentPageIndex, patch: { _deleted: true }, timestamp: Date.now(), source: 'user' } });
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId,
+        blockType: deletedBlock!.type,
+        pageIndex: currentPageIndex,
+        patch: { _deleted: true },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
+      },
+    });
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
     };
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
@@ -655,45 +663,49 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    if (owner.kind === 'top-level') {
-      if (owner.index <= 0) { return; } // already at top
-      const newBlocks = [...blocks];
-      [newBlocks[owner.index - 1], newBlocks[owner.index]] = [newBlocks[owner.index], newBlocks[owner.index - 1]];
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    } else if (owner.kind === 'ftab-tab') {
-      // Reorder within tab content
-      const newBlocks = produce(blocks, draft => {
+    // ═══ PATCH-BASED REORDER via produceWithPatches ════════════
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      if (owner.kind === 'top-level') {
+        if (owner.index <= 0) return; // already at top
+        [draft[owner.index - 1], draft[owner.index]] = [draft[owner.index], draft[owner.index - 1]];
+      } else if (owner.kind === 'ftab-tab') {
         const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
         if (content && owner.childIndex > 0) {
           [content[owner.childIndex - 1], content[owner.childIndex]] = [content[owner.childIndex], content[owner.childIndex - 1]];
         }
-      });
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    } else if (owner.kind === 'materi-section') {
-      const newBlocks = produce(blocks, draft => {
+      } else if (owner.kind === 'materi-section') {
         const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
         if (content && owner.childIndex > 0) {
           [content[owner.childIndex - 1], content[owner.childIndex]] = [content[owner.childIndex], content[owner.childIndex - 1]];
         }
-      });
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    } else if (owner.kind === 'children') {
-      const newBlocks = produce(blocks, draft => {
+      } else if (owner.kind === 'children') {
         const children = draft[owner.blockIndex].children;
         if (children && owner.childIndex > 0) {
           [children[owner.childIndex - 1], children[owner.childIndex]] = [children[owner.childIndex], children[owner.childIndex - 1]];
         }
-      });
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    }
+      }
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId,
+        blockType: owner.kind === 'top-level' ? blocks[owner.index].type : 'unknown',
+        pageIndex: currentPageIndex,
+        patch: { _movedUp: true },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks as SchemaBlock[] } };
+    set({ pages: newPages });
   },
 
   // moveBlockDown: Move a block one position down in the flow order
@@ -715,44 +727,49 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    if (owner.kind === 'top-level') {
-      if (owner.index >= blocks.length - 1) { return; } // already at bottom
-      const newBlocks = [...blocks];
-      [newBlocks[owner.index], newBlocks[owner.index + 1]] = [newBlocks[owner.index + 1], newBlocks[owner.index]];
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    } else if (owner.kind === 'ftab-tab') {
-      const newBlocks = produce(blocks, draft => {
+    // ═══ PATCH-BASED REORDER via produceWithPatches ════════════
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      if (owner.kind === 'top-level') {
+        if (owner.index >= blocks.length - 1) return; // already at bottom
+        [draft[owner.index], draft[owner.index + 1]] = [draft[owner.index + 1], draft[owner.index]];
+      } else if (owner.kind === 'ftab-tab') {
         const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
         if (content && owner.childIndex < content.length - 1) {
           [content[owner.childIndex], content[owner.childIndex + 1]] = [content[owner.childIndex + 1], content[owner.childIndex]];
         }
-      });
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    } else if (owner.kind === 'materi-section') {
-      const newBlocks = produce(blocks, draft => {
+      } else if (owner.kind === 'materi-section') {
         const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
         if (content && owner.childIndex < content.length - 1) {
           [content[owner.childIndex], content[owner.childIndex + 1]] = [content[owner.childIndex + 1], content[owner.childIndex]];
         }
-      });
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    } else if (owner.kind === 'children') {
-      const newBlocks = produce(blocks, draft => {
+      } else if (owner.kind === 'children') {
         const children = draft[owner.blockIndex].children;
         if (children && owner.childIndex < children.length - 1) {
           [children[owner.childIndex], children[owner.childIndex + 1]] = [children[owner.childIndex + 1], children[owner.childIndex]];
         }
-      });
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
-      set({ pages: newPages });
-    }
+      }
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId,
+        blockType: owner.kind === 'top-level' ? blocks[owner.index].type : 'unknown',
+        pageIndex: currentPageIndex,
+        patch: { _movedDown: true },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks as SchemaBlock[] } };
+    set({ pages: newPages });
   },
 
   // duplicateBlock: Clone a block and insert it after the original
@@ -792,34 +809,53 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       draft.id = generateBlockId(); // ← Stable nanoid, not Date.now()
     });
 
-    // Insert clone after original in the correct container
-    let newBlocks: SchemaBlock[];
-    if (owner.kind === 'top-level') {
-      newBlocks = [...blocks];
-      newBlocks.splice(owner.index + 1, 0, clone);
-    } else {
-      newBlocks = produce(blocks, draft => {
-        if (owner.kind === 'ftab-tab') {
-          const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
-          content?.splice(owner.childIndex + 1, 0, clone);
-        } else if (owner.kind === 'materi-section') {
-          const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
-          content?.splice(owner.childIndex + 1, 0, clone);
-        } else {
-          draft[owner.blockIndex].children?.splice(owner.childIndex + 1, 0, clone);
-        }
-      });
-    }
+    // ═══ PATCH-BASED DUPLICATE via produceWithPatches ══════════════
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      if (owner.kind === 'top-level') {
+        draft.splice(owner.index + 1, 0, clone as SchemaBlock);
+      } else if (owner.kind === 'ftab-tab') {
+        const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
+        content?.splice(owner.childIndex + 1, 0, clone as SchemaBlock);
+      } else if (owner.kind === 'materi-section') {
+        const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
+        content?.splice(owner.childIndex + 1, 0, clone as SchemaBlock);
+      } else {
+        draft[owner.blockIndex].children?.splice(owner.childIndex + 1, 0, clone as SchemaBlock);
+      }
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: clone.id ?? blockId,
+        blockType: original.type,
+        pageIndex: currentPageIndex,
+        patch: { _duplicated: true },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
+      },
+    });
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
     };
     set({ pages: newPages });
     // Select the cloned block
     get().selectBlock(clone.id ?? null, clone.type);
-    toast.success('Block diduplikat');
+    toast.success('Block diduplikat', {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
   },
 
   // ── Add Schema Block from Registry ────────────────────────────
@@ -868,10 +904,11 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const defaultContent = definition.createDefault?.() ?? { title: definition.name };
     Object.assign(newBlock, defaultContent);
 
-    // Insert at specific position or append to end
-    const newBlocks = [...blocks];
-    const insertAt = insertAfterIndex != null ? insertAfterIndex + 1 : newBlocks.length;
-    newBlocks.splice(insertAt, 0, newBlock as unknown as SchemaBlock);
+    // ═══ PATCH-BASED ADD via produceWithPatches ══════════════
+    const insertAt = insertAfterIndex != null ? insertAfterIndex + 1 : blocks.length;
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      draft.splice(insertAt, 0, newBlock as unknown as SchemaBlock);
+    });
 
     editBus.emit({
       type: 'patch',
@@ -882,6 +919,11 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         patch: { _added: true },
         timestamp: Date.now(),
         source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
       },
     });
 
@@ -889,13 +931,19 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
     };
     set({ pages: newPages });
 
     // Select the new block
     get().selectBlock(newBlock.id as string, blockType);
-    toast.success(`${definition.name} ditambahkan`);
+    toast.success(`${definition.name} ditambahkan`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
   },
 
   // ── Schema Block Nudge (arrow keys) ────────────────────────────
@@ -1005,22 +1053,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     get()._pushHistory();
 
-    // Separate top-level vs nested block IDs
-    const topLevelIds = new Set<string>();
-    const nestedOwners: BlockOwner[] = [];
-
-    for (const blockId of blockIds) {
-      const owner = findBlockOwner(blocks, blockId);
-      if (!owner) continue;
-      if (owner.kind === 'top-level') {
-        topLevelIds.add(blockId);
-      } else {
-        nestedOwners.push(owner);
-      }
-    }
-
-    // Remove top-level blocks + nested blocks via Immer produce
-    const newBlocks = produce(blocks, draft => {
+    // ═══ PATCH-BASED BULK DELETE via produceWithPatches ══════════════
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       // Remove top-level blocks (collect indices first, splice in reverse)
       const topLevelIndices = blockIds
         .map(id => draft.findIndex(b => b.id === id))
@@ -1031,13 +1065,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         draft.splice(idx, 1);
       }
 
-      // Remove nested blocks (after top-level removals, re-find owners)
-      // Note: we re-find because top-level removal shifted indices.
-      // We use the original nestedOwners but need to be careful about
-      // indices that may have shifted. So we do a second pass using
-      // block IDs directly inside the Immer draft.
+      // Remove nested blocks (after top-level removals)
       for (const blockId of blockIds) {
-        if (topLevelIds.has(blockId)) continue; // already removed
+        // Check if it was a top-level block (already removed)
+        const wasTopLevel = topLevelIndices.length > 0;
         // Search in ftab tabs
         for (const block of draft) {
           if (block.type === 'ftab') {
@@ -1062,10 +1093,27 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       }
     });
 
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: blockIds[0],
+        blockType: 'bulk-delete',
+        pageIndex: currentPageIndex,
+        patch: { _bulkDeleted: true, count: blockIds.length },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
+      },
+    });
+
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
     };
     set({
       pages: newPages,
@@ -1074,7 +1122,13 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       editingBlockId: null,
       selectedBlockIds: [],
     });
-    toast.success(`${blockIds.length} block dihapus`);
+    toast.success(`${blockIds.length} block dihapus`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
   },
 
   // ── Schema Block Reorder (drag-sort) ────────────────────────────
@@ -1097,27 +1151,33 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    // Remove block at fromIndex, insert at toIndex
-    const newBlocks = [...blocks];
-    const [moved] = newBlocks.splice(fromIndex, 1);
-    newBlocks.splice(toIndex, 0, moved);
+    // ═══ PATCH-BASED REORDER via produceWithPatches ══════════════
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      const [moved] = draft.splice(fromIndex, 1);
+      draft.splice(toIndex, 0, moved);
+    });
 
     editBus.emit({
       type: 'patch',
       patch: {
-        blockId: moved.id || '',
-        blockType: moved.type,
+        blockId: newBlocks[toIndex]?.id || '',
+        blockType: newBlocks[toIndex]?.type || 'unknown',
         pageIndex: currentPageIndex,
         patch: { _reordered: true, fromIndex, toIndex },
         timestamp: Date.now(),
         source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
       },
     });
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
     };
     set({ pages: newPages });
   },
@@ -1191,7 +1251,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       draft.id = generateBlockId(); // ← Stable nanoid, not Date.now()
     });
 
-    const newBlocks = [...blocks, newBlock];
+    // ═══ PATCH-BASED PASTE via produceWithPatches ══════════════
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      draft.push(newBlock as SchemaBlock);
+    });
 
     editBus.emit({
       type: 'patch',
@@ -1202,17 +1265,28 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         patch: { _pasted: true },
         timestamp: Date.now(),
         source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
       },
     });
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
     };
     set({ pages: newPages });
     get().selectBlock(newBlock.id!, clipboard.type);
-    toast.success('Block ditempel');
+    toast.success('Block ditempel', {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
   },
 
   // ── Move Block to Another Page ──────────────────────────────────
@@ -1267,6 +1341,12 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       selectedBlockIds: [],
     });
 
-    toast.success(`Block dipindahkan ke ${targetPage.label}`);
+    toast.success(`Block dipindahkan ke ${targetPage.label}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
   },
 });

@@ -546,3 +546,41 @@ Stage Summary:
 - KuisRenderer + DefBoxRenderer already working correctly (no changes needed)
 - 335 lines added, 49 lines removed across 3 files
 - Build clean, pushed to git
+
+---
+Task ID: phase-c-plus
+Agent: Super Z (main)
+Task: Phase C+ — Cross-page undo fix, undo coalescing, consolidated keyboard shortcuts
+
+Work Log:
+- Verified Phase B is complete: 11/12 native renderers use useBlockCompression, KuisRenderer uses intentional non-standard approach
+- Verified SceneLayoutEngine and SceneOverflowEngine both compute compression decisions correctly
+- Verified SchemaRenderer passes compression prop through to block renderers
+- Scanned authoring infrastructure: undo/redo (dual-layer), selection (dual model), preview (3 modes), keyboard shortcuts (dual system)
+- Identified 3 critical bugs: cross-page undo, no undo coalescing, dual keyboard system double-firing
+- Fixed cross-page undo: PatchHistoryEntry now stores pageIndex + blockId metadata
+- Fixed history-slice: uses patch's pageIndex instead of currentPageIndex, navigates to correct page
+- Added undo coalescing: 400ms window merges consecutive edits to same block into single undo entry
+- Added PatchHistory.replaceEntry() for coalescing, peekUndoPageIndex/peekRedoPageIndex for cross-page
+- Consolidated keyboard shortcuts: eliminated dual keydown listener system
+- Added priority-based routing in ShortcutRegistry: schema blocks (15) > elements (8) > nudge (5)
+- Added ShortcutRegistry fall-through: if top handler doesn't call preventDefault(), next handler tried
+- Added Ctrl+X (Cut) for both schema blocks and legacy elements
+- Added Ctrl+A (Select All) for schema blocks (falls through to elements on non-schema pages)
+- Reduced use-stage-keyboard.ts to contentEditable escape handler only
+- Updated Stage to call useStageKeyboard() without parameters
+- Build verified: tsc --noEmit clean, next build clean
+- Git pushed to origin/main (0fdf37e)
+
+Stage Summary:
+- **6 files modified:**
+  - `src/core/editor/patch-history.ts` — pageIndex/blockId metadata, replaceEntry(), peek methods, undo coalescing
+  - `src/store/canva/history-slice.ts` — Cross-page undo/redo using patch pageIndex
+  - `src/core/shortcuts/ShortcutRegistry.ts` — Priority fall-through for processEvent()
+  - `src/components/canva/CanvaBuilder.tsx` — Consolidated 37 shortcuts with priority routing
+  - `src/components/canva/stage/use-stage-keyboard.ts` — Reduced to contentEditable escape only
+  - `src/components/canva/stage/index.tsx` — useStageKeyboard() no-params call
+- **New shortcuts:** Ctrl+X (Cut), Ctrl+A (Select All Blocks)
+- **Bug fixes:** Cross-page undo, undo coalescing, keyboard double-firing
+- 494 lines added, 242 lines removed
+- Build clean, pushed to git
