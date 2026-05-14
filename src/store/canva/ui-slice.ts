@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { toast } from 'sonner';
-import { produce } from 'immer';
+import { produce, produceWithPatches } from 'immer';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { CanvaElement } from '@/components/canva/types';
@@ -245,8 +245,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       newPages[currentPageIndex] = { ...page, schema: newSchema };
       set({ pages: newPages });
     } else {
-      // Nested block (ftab tab content, materi-section content, or generic children) — use Immer produce
-      const newBlocks = produce(blocks, draft => {
+      // Nested block (ftab tab content, materi-section content, or generic children) — use Immer produce with patches
+      const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
         let target: SchemaBlock | undefined;
         if (owner.kind === 'ftab-tab') {
           const ft = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
@@ -263,21 +263,38 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         }
       });
 
+      // Determine blockType for the editBus event
+      let nestedBlockType = 'unknown';
+      if (owner.kind === 'ftab-tab') {
+        const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+        nestedBlockType = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex]?.type || 'unknown';
+      } else if (owner.kind === 'materi-section') {
+        const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
+        nestedBlockType = ms.content?.[owner.childIndex]?.type || 'unknown';
+      } else if (owner.kind === 'children') {
+        nestedBlockType = blocks[owner.blockIndex].children?.[owner.childIndex]?.type || 'unknown';
+      }
+
       editBus.emit({
         type: 'patch',
         patch: {
           blockId,
-          blockType: owner.kind === 'ftab-tab'
-            ? (blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content?.[owner.childIndex]?.type || 'unknown'
-            : (blocks[owner.blockIndex] as { content?: SchemaBlock[] }).content?.[owner.childIndex]?.type || 'unknown',
+          blockType: nestedBlockType,
           pageIndex: currentPageIndex,
           patch: updates,
           timestamp: Date.now(),
           source: 'user',
+          // FIX: Include Immer patches for nested block edits so PatchHistory
+          // can perform fine-grained undo/redo instead of full snapshot fallback.
+          _immerPatches: {
+            forward: forwardPatches,
+            inverse: inversePatches,
+            pageIndex: currentPageIndex,
+          },
         },
       });
 
-      const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+      const newSchema: ScreenSchema = { ...schema, blocks: newBlocks as SchemaBlock[] };
       const newPages = [...pages];
       newPages[currentPageIndex] = { ...page, schema: newSchema };
       set({ pages: newPages });
@@ -851,6 +868,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
   // ── Schema Block Nudge (arrow keys) ────────────────────────────
   // FASE 1: Now operates on page.schema directly
+  // FIX: Uses findBlockOwner so nested absolute-positioned blocks
+  // can also be nudged. Previously only top-level blocks were checked.
   nudgeSchemaBlocks: (dxPct, dyPct) => {
     const { pages, currentPageIndex, selectedBlockIds, selectedBlockId } = get();
     const page = pages[currentPageIndex];
@@ -871,9 +890,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     }
     set({ _lastNudgeTime: now });
 
-    const newBlocks = blocks.map(block => {
-      if (!idsToNudge.includes(block.id || '')) return block;
-
+    const nudgeBlock = (block: SchemaBlock): SchemaBlock => {
       const layout = block.layout || { position: 'flow' as const };
       if (layout.position !== 'absolute') return block; // Can't nudge flow blocks
 
@@ -888,6 +905,48 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
           y: Math.max(0, Math.min(90, toNum(layout.y, 0) + dyPct)),
         },
       };
+    };
+
+    // Use Immer produce to handle both top-level and nested blocks
+    const newBlocks = produce(blocks, draft => {
+      for (const blockId of idsToNudge) {
+        const owner = findBlockOwner(blocks as SchemaBlock[], blockId);
+        if (!owner) continue;
+
+        if (owner.kind === 'top-level') {
+          const block = draft[owner.index];
+          const nudged = nudgeBlock(block as SchemaBlock);
+          if (nudged !== block) {
+            Object.assign(draft[owner.index], nudged);
+          }
+        } else if (owner.kind === 'ftab-tab') {
+          const ft = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+          const block = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex];
+          if (block) {
+            const nudged = nudgeBlock(block as SchemaBlock);
+            if (nudged !== block) {
+              Object.assign(ft.tabs![owner.tabIndex].content![owner.childIndex], nudged);
+            }
+          }
+        } else if (owner.kind === 'materi-section') {
+          const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
+          const block = ms.content?.[owner.childIndex];
+          if (block) {
+            const nudged = nudgeBlock(block as SchemaBlock);
+            if (nudged !== block) {
+              Object.assign(ms.content![owner.childIndex], nudged);
+            }
+          }
+        } else if (owner.kind === 'children') {
+          const block = draft[owner.blockIndex].children?.[owner.childIndex];
+          if (block) {
+            const nudged = nudgeBlock(block as SchemaBlock);
+            if (nudged !== block) {
+              Object.assign(draft[owner.blockIndex].children![owner.childIndex], nudged);
+            }
+          }
+        }
+      }
     });
 
     const newPages = [...pages];
@@ -900,6 +959,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
   // ── Schema Block Bulk Delete ────────────────────────────────────
   // FASE 1: Now operates on page.schema directly
+  // FIX: Uses findBlockOwner so nested blocks (ftab, materi-section, children)
+  // are also deleted. Previously only top-level blocks were removed —
+  // nested blocks were silently skipped, leaving orphaned data.
   deleteSchemaBlocks: (blockIds) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -911,7 +973,62 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     get()._pushHistory();
 
-    const newBlocks = blocks.filter(b => !blockIds.includes(b.id || ''));
+    // Separate top-level vs nested block IDs
+    const topLevelIds = new Set<string>();
+    const nestedOwners: BlockOwner[] = [];
+
+    for (const blockId of blockIds) {
+      const owner = findBlockOwner(blocks, blockId);
+      if (!owner) continue;
+      if (owner.kind === 'top-level') {
+        topLevelIds.add(blockId);
+      } else {
+        nestedOwners.push(owner);
+      }
+    }
+
+    // Remove top-level blocks + nested blocks via Immer produce
+    const newBlocks = produce(blocks, draft => {
+      // Remove top-level blocks (collect indices first, splice in reverse)
+      const topLevelIndices = blockIds
+        .map(id => draft.findIndex(b => b.id === id))
+        .filter(i => i !== -1)
+        .sort((a, b) => b - a); // reverse order for safe splice
+
+      for (const idx of topLevelIndices) {
+        draft.splice(idx, 1);
+      }
+
+      // Remove nested blocks (after top-level removals, re-find owners)
+      // Note: we re-find because top-level removal shifted indices.
+      // We use the original nestedOwners but need to be careful about
+      // indices that may have shifted. So we do a second pass using
+      // block IDs directly inside the Immer draft.
+      for (const blockId of blockIds) {
+        if (topLevelIds.has(blockId)) continue; // already removed
+        // Search in ftab tabs
+        for (const block of draft) {
+          if (block.type === 'ftab') {
+            const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
+            for (const tab of (ft.tabs || [])) {
+              const ci = (tab.content || []).findIndex(b => b.id === blockId);
+              if (ci !== -1) { tab.content?.splice(ci, 1); break; }
+            }
+          }
+          // Search in materi-section
+          if (block.type === 'materi-section') {
+            const ms = block as { content?: SchemaBlock[] };
+            const ci = (ms.content || []).findIndex(b => b.id === blockId);
+            if (ci !== -1) { ms.content?.splice(ci, 1); break; }
+          }
+          // Search in generic children
+          if (block.children && Array.isArray(block.children)) {
+            const ci = block.children.findIndex(b => b.id === blockId);
+            if (ci !== -1) { block.children.splice(ci, 1); break; }
+          }
+        }
+      }
+    });
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {

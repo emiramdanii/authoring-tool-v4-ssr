@@ -228,6 +228,12 @@ export default function SchemaPlayer({
   // ── Render ──────────────────────────────────────────────────
   const isCompact = mode === 'canvas';
 
+  // Cover/hero pages don't show bottom nav — they fill the entire scene.
+  // This matches PageFrame behavior where isCoverPage hides navbars.
+  const isCoverScreen = currentScreen?.blocks.length === 1 &&
+    (currentScreen.blocks[0].type === 'cover' || currentScreen.blocks[0].type === 'hero');
+  const showBottomNav = showControls && !isCoverScreen;
+
   return (
     <div className={`relative overflow-hidden ${className || ''}`}
       style={{ fontFamily: tokens.typography.fontFamily.body, background: COLORS.bgPlayer }}>
@@ -239,7 +245,7 @@ export default function SchemaPlayer({
       <div
         className="absolute inset-0"
         style={{
-          bottom: showControls ? (isCompact ? '6.67%' : '10%') : 0,
+          bottom: showBottomNav ? (isCompact ? '6.67%' : '10%') : 0,
           perspective: transitionType === 'flip' ? 1200 : undefined,
         }}
       >
@@ -260,14 +266,14 @@ export default function SchemaPlayer({
               interactive={interactive}
               ratioId={ratioId}
               showTopNav={false}
-              showBottomNav={showControls}
+              showBottomNav={showBottomNav}
             />
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* ══ BOTTOM NAVIGATION BAR ══════════════════════════════ */}
-      {showControls && (
+      {showBottomNav && (
         <div className="absolute bottom-0 left-0 right-0 z-50 border-t border-app-border/10"
           style={{
             background: 'rgba(15,23,42,0.92)',

@@ -83,10 +83,40 @@ export function getPageBlocks(page: CanvaPage): SchemaBlock[] {
 
 /**
  * Find a specific block by ID in a page's schema.
+ * Searches both top-level and nested blocks (ftab.tabs[].content[],
+ * materi-section.content[], BaseBlock.children[]).
  */
 export function findBlockInPage(page: CanvaPage, blockId: string): SchemaBlock | null {
   const blocks = getPageBlocks(page);
-  return blocks.find(b => b.id === blockId) ?? null;
+
+  // 1. Search top-level
+  const top = blocks.find(b => b.id === blockId);
+  if (top) return top;
+
+  // 2. Search nested blocks
+  for (const block of blocks) {
+    // ftab.tabs[].content[]
+    if (block.type === 'ftab') {
+      const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
+      for (const tab of (ft.tabs || [])) {
+        const found = (tab.content || []).find(b => b.id === blockId);
+        if (found) return found;
+      }
+    }
+    // materi-section.content[]
+    if (block.type === 'materi-section') {
+      const ms = block as { content?: SchemaBlock[] };
+      const found = (ms.content || []).find(b => b.id === blockId);
+      if (found) return found;
+    }
+    // Generic BaseBlock.children[]
+    if (block.children && Array.isArray(block.children)) {
+      const found = block.children.find(b => b.id === blockId);
+      if (found) return found;
+    }
+  }
+
+  return null;
 }
 
 /**

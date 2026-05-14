@@ -436,3 +436,26 @@ Stage Summary:
 - No more double-firing undo/redo/escape
 - SchemaEngine safeArea now matches PageRenderer (pagePadding: 16 for non-cover)
 - Preview rebuilds correctly when suara (sound) config changes
+---
+Task ID: deep-audit-and-fix
+Agent: main
+Task: Comprehensive pipeline audit + fix remaining chain breaks and bugs
+
+Work Log:
+- Read and audited 10+ core pipeline files: AuthoringTool.tsx, CanvaBuilder.tsx, SceneLayoutEngine.ts, PageFrame.tsx, SchemaEngine.tsx, SchemaEngine.utils.ts, SchemaPlayer.tsx, SchemaRenderer.tsx, PageRenderer.tsx, Stage/index.tsx, ui-slice.ts, ensure-schema.ts
+- Verified all 7 previously fixed connectors (K1-K8) are correctly implemented
+- Deep scan found 5 NEW bugs in the edit pipeline and preview components
+- Fixed BUG A: deleteSchemaBlocks — now uses findBlockOwner + Immer produce for nested blocks
+- Fixed BUG B: nudgeSchemaBlocks — now uses findBlockOwner to nudge nested absolute-positioned blocks
+- Fixed BUG C: findBlockInPage — now searches ftab, materi-section, and children arrays
+- Fixed BUG D: SchemaPlayer — cover pages no longer show bottom nav (matches PageFrame behavior)
+- Fixed BUG E: updateSchemaBlock nested — now uses produceWithPatches for Immer patch-based undo
+- Added produceWithPatches import from immer
+- Verified TypeScript build: zero errors
+
+Stage Summary:
+- All 7 previous connector fixes verified ✅
+- 5 new bugs discovered and fixed ✅
+- Build passes with zero errors ✅
+- Pipeline is now solid: schema → SchemaEngine → SceneLayoutEngine → SchemaScreenRenderer → Canvas/Stage → Preview
+- Edit pipeline fully supports nested blocks: update, delete, nudge, duplicate, reorder all use findBlockOwner
