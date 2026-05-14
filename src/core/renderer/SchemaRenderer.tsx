@@ -49,6 +49,9 @@ import { BlockSelectionOverlay } from '../editor/overlay/BlockSelectionOverlay';
 // Import BlockErrorBoundary — per-block crash isolation
 import { BlockErrorBoundary } from './BlockErrorBoundary';
 
+// Import CompressionBoundary — universal compression fallback
+import { CompressionBoundary } from '../layout/CompressionBoundary';
+
 // ═══════════════════════════════════════════════════════════════════
 // SCREEN RENDERER — Renders a single ScreenSchema
 // ═══════════════════════════════════════════════════════════════════
@@ -408,10 +411,19 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   const isCompact = mode === 'canvas';
   const blockId = block.id || block.type;
 
-  const BlockComponent = useMemo(() => {
+  const { BlockComponent, handlesCompression } = useMemo(() => {
     const definition = SCENE_REGISTRY[block.type];
-    return definition?.renderer ?? null;
+    return {
+      BlockComponent: definition?.renderer ?? null,
+      handlesCompression: definition?.capabilities?.handlesCompression ?? false,
+    };
   }, [block.type]);
+
+  // Derive block title for compression wrapper header
+  const blockTitle = useMemo(() => {
+    const b = block as Record<string, unknown>;
+    return (b.title as string) || (b.label as string) || block.type;
+  }, [block]);
 
   if (!BlockComponent) {
     return (
@@ -423,14 +435,32 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     );
   }
 
+  // The block renderer output — always wrapped in error boundary + suspense
+  const blockContent = (
+    <BlockErrorBoundary blockType={block.type} blockId={blockId}>
+      <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} />
+      </React.Suspense>
+    </BlockErrorBoundary>
+  );
+
+  // Wrap in CompressionBoundary for blocks that don't handle compression natively.
+  // Blocks with handlesCompression:true manage their own compression via useBlockCompression.
+  // Blocks with handlesCompression:false get automatic compression UI via CompressedBlockWrapper.
+  const compressedContent = (
+    <CompressionBoundary
+      handlesCompression={handlesCompression}
+      compression={compression}
+      title={blockTitle}
+      isCompact={isCompact}
+    >
+      {blockContent}
+    </CompressionBoundary>
+  );
+
   if (!isCompact) {
-    return (
-      <BlockErrorBoundary blockType={block.type} blockId={blockId}>
-        <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} compression={compression} />
-        </React.Suspense>
-      </BlockErrorBoundary>
-    );
+    // Preview/export mode — no selection overlay, but compression still applies
+    return compressedContent;
   }
 
   return (
@@ -450,11 +480,7 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
       onMoveDown={onMoveDown}
       onDuplicate={onDuplicate}
     >
-        <BlockErrorBoundary blockType={block.type} blockId={blockId}>
-          <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-            <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} />
-          </React.Suspense>
-        </BlockErrorBoundary>
+      {compressedContent}
     </BlockSelectionOverlay>
   );
 });

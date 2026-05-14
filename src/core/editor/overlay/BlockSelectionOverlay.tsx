@@ -91,7 +91,7 @@ export function BlockSelectionOverlay({
   const capabilities: BlockCapabilities = definition?.capabilities ?? {
     editable: true, resizable: false, movable: false,
     backgroundCustom: false, interactive: false, autoGeneratable: true,
-    composite: false, variants: ['A'],
+    composite: false, variants: ['A'], handlesCompression: false,
   };
   const blockName = definition?.name ?? blockType;
   const blockIcon = definition?.icon ?? '?';

@@ -67,6 +67,9 @@ export interface BlockCapabilities {
   autoGeneratable: boolean;
   composite: boolean;
   variants: ('A' | 'B' | 'C')[];
+  /** Whether the renderer handles compression natively via useBlockCompression.
+   *  If false, CompressionBoundary will wrap the block in CompressedBlockWrapper. */
+  handlesCompression: boolean;
 }
 
 export const DEFAULT_CAPABILITIES: BlockCapabilities = {
@@ -78,6 +81,7 @@ export const DEFAULT_CAPABILITIES: BlockCapabilities = {
   autoGeneratable: true,
   composite: false,
   variants: ['A'],
+  handlesCompression: false,
 };
 
 export interface SceneBlockLayout {
@@ -161,7 +165,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📌',
     category: 'content',
     description: 'Petunjuk penggunaan dengan grid item dan tips',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['petunjuk'],
     propertySchema: PETUNJUK_PROPERTY_SCHEMA,
@@ -191,7 +195,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '🎯',
     category: 'content',
     description: 'Daftar tujuan pembelajaran dengan nomor dan profil',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
     propertySchema: TP_PROPERTY_SCHEMA,
@@ -209,7 +213,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '⏱️',
     category: 'navigation',
     description: 'Timeline vertikal kegiatan pembelajaran',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['dokumen'],
     propertySchema: ALUR_PROPERTY_SCHEMA,
@@ -249,7 +253,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📖',
     category: 'content',
     description: 'Kotak definisi dengan border accent',
-    capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, resizable: true, movable: true, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, resizable: true, movable: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: DEFBOX_PROPERTY_SCHEMA,
@@ -334,7 +338,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '💬',
     category: 'interactive',
     description: 'Pertanyaan diskusi dengan area jawaban',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['diskusi'],
     propertySchema: DISKUSI_PROPERTY_SCHEMA,
@@ -350,7 +354,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '❓',
     category: 'interactive',
     description: 'Kuis pilihan ganda dengan feedback',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['kuis'],
     propertySchema: KUIS_PROPERTY_SCHEMA,
@@ -424,7 +428,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📝',
     category: 'interactive',
     description: 'Refleksi diri dengan pertanyaan dan penugasan',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['refleksi'],
     propertySchema: REFLEKSI_PROPERTY_SCHEMA,
@@ -441,7 +445,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '🎊',
     category: 'feedback',
     description: 'Penutup dengan preview pertemuan berikutnya',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['penutup'],
     propertySchema: PENUTUP_PROPERTY_SCHEMA,
@@ -458,7 +462,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📊',
     category: 'content',
     description: 'Tabel accordion dengan expandable rows',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: TABELACCORD_PROPERTY_SCHEMA,
@@ -474,7 +478,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📚',
     category: 'content',
     description: 'Bagian materi BSNP dengan header, konten, poin penting, dan evaluasi diri',
-    capabilities: { ...DEFAULT_CAPABILITIES, composite: true, backgroundCustom: true, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, composite: true, backgroundCustom: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi'],
     propertySchema: MATERISECTION_PROPERTY_SCHEMA,
@@ -496,7 +500,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '🎯',
     category: 'content',
     description: 'Tampilan tujuan pembelajaran untuk siswa — BSNP wajib',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['tp', 'dokumen', 'materi'],
     propertySchema: TUJUANDISPLAY_PROPERTY_SCHEMA,
@@ -540,7 +544,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     icon: '📝',
     category: 'content',
     description: 'Rangkuman konsep kunci di akhir materi — BSNP penguatan',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'] },
+    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['materi', 'hasil'],
     propertySchema: RANGKUMAN_PROPERTY_SCHEMA,
