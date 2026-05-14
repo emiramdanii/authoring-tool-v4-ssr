@@ -11,6 +11,9 @@ import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════
 // DISKUSI RENDERER — Premium Discussion with Full Visual FX
@@ -59,8 +62,8 @@ function VariantSelector({
   );
 }
 
-export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
-  block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
+export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
+  block: DiskusiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
 }) {
   const [responses, setResponses] = React.useState<Record<number, string>>({});
   const [submitted, setSubmitted] = React.useState(false);
@@ -76,10 +79,17 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   // ── Interactive store ───────────────────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
-  const questions = block.questions || [];
-  const allAnswered = questions.length > 0 && questions.every((_, i) => responses[i]?.trim().length > 0);
+  const allQuestions = block.questions || [];
+
+  // ── Compression-aware question visibility (reveal-set) ──────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allQuestions.length,
+  });
+  const questions = isCompressed ? allQuestions.slice(0, visibleCount) : allQuestions;
+  const allAnswered = allQuestions.length > 0 && allQuestions.every((_, i) => responses[i]?.trim().length > 0);
   const answeredCount = Object.values(responses).filter(r => r.trim().length > 0).length;
-  const progress = questions.length > 0 ? answeredCount / questions.length : 0;
+  const progress = allQuestions.length > 0 ? answeredCount / allQuestions.length : 0;
 
   const handleSubmit = () => {
     if (!interactive || !allAnswered) return;
@@ -674,6 +684,16 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {variant === 'A' && renderVariantA()}
       {variant === 'B' && renderVariantB()}
       {variant === 'C' && renderVariantC()}
+
+      {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
+      {hasMore && (
+        <ShowMoreButton
+          hiddenCount={hiddenCount}
+          onShowMore={showMore}
+          itemLabel="pertanyaan lagi"
+          isCompact={isCompact}
+        />
+      )}
     </div>
     </PremiumBlockWrapper>
   );

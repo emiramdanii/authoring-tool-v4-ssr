@@ -7,9 +7,10 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { fireConfettiMini } from '@/lib/confetti';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
-  block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function NormaKartuRenderer({ block, tokens, isCompact, isEditing, compression }: {
+  block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const colorMap: Record<string, string> = {
     agama: 'y',
@@ -19,6 +20,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
   };
   const colorKey = colorMap[block.normaType] || 'y';
   const color = tokens.color(colorKey);
+  const isCompressed = compression?.isCompressed ?? false;
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -72,8 +74,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
         <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" style={{ overflowWrap: 'break-word' }} placeholder="Ketik definisi..." />
       </div>
 
-      {/* Characteristics 2-col */}
-      {(block.characteristics || []).length > 0 && (
+      {/* Characteristics 2-col — hidden when compressed */}
+      {!isCompressed && (block.characteristics || []).length > 0 && (
         <div className="grid grid-cols-2 gap-2.5">
           {(block.characteristics || []).map((c, i) => (
             <MicroInteraction key={`nk-char-mi-${c.label?.slice(0,8)}-${i}`} tokens={tokens} accent={colorKey} effect="squish">
@@ -90,8 +92,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
         </div>
       )}
 
-      {/* Sanksi */}
-      {block.sanksi && (
+      {/* Sanksi — hidden when compressed */}
+      {!isCompressed && block.sanksi && (
         <MicroInteraction tokens={tokens} accent="o" effect="squish">
         <div className="rounded-xl p-3 mt-3"
           style={{
@@ -111,8 +113,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
         </MicroInteraction>
       )}
 
-      {/* Contoh */}
-      {block.contoh && (
+      {/* Contoh — hidden when compressed */}
+      {!isCompressed && block.contoh && (
         <MicroInteraction tokens={tokens} accent={colorKey} effect="bounce">
         <div className="mt-3 p-3 rounded-xl leading-relaxed"
           style={{
@@ -128,8 +130,8 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
         </MicroInteraction>
       )}
 
-      {/* Pelanggaran */}
-      {block.pelanggaran && (
+      {/* Pelanggaran — hidden when compressed */}
+      {!isCompressed && block.pelanggaran && (
         <MicroInteraction tokens={tokens} accent="r" effect="squish">
         <div className="mt-3 p-3 rounded-xl"
           style={{

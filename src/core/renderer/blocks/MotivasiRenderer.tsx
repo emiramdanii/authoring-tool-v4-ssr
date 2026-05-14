@@ -8,6 +8,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { RichText } from './RichText';
 import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════
 // MOTIVASI RENDERER — BSNP Apersepsi / Motivation Hook
@@ -63,12 +64,14 @@ function MotivasiVariantKlasik({
   isCompact,
   titleEditor,
   hookEditor,
+  isCompressed,
 }: {
   block: MotivasiBlock;
   tokens: TokenResolver;
   isCompact: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   hookEditor: ReturnType<typeof useInlineEditor>;
+  isCompressed?: boolean;
 }) {
   const connections = block.connections || [];
   const visual = block.visual;
@@ -210,8 +213,8 @@ function MotivasiVariantKlasik({
         </div>
       </div>
 
-      {/* ═══ CONNECTIONS ═════════════════════════════════════════ */}
-      {connections.length > 0 && (
+      {/* ═══ CONNECTIONS — hidden when compressed ══════════════════ */}
+      {!isCompressed && connections.length > 0 && (
         <div style={{ padding: isCompact ? '0 12px 10px' : '0 18px 14px' }}>
           <div
             className="font-extrabold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
@@ -269,8 +272,8 @@ function MotivasiVariantKlasik({
         </div>
       )}
 
-      {/* ═══ TRANSITION ══════════════════════════════════════════ */}
-      {block.transition && (
+      {/* ═══ TRANSITION — hidden when compressed ════════════════ */}
+      {!isCompressed && block.transition && (
         <div
           style={{
             margin: isCompact ? '0 12px 12px' : '0 18px 16px',
@@ -305,12 +308,14 @@ function MotivasiVariantKartuHook({
   isCompact,
   titleEditor,
   hookEditor,
+  isCompressed,
 }: {
   block: MotivasiBlock;
   tokens: TokenResolver;
   isCompact: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   hookEditor: ReturnType<typeof useInlineEditor>;
+  isCompressed?: boolean;
 }) {
   const connections = block.connections || [];
   const visual = block.visual;
@@ -405,8 +410,8 @@ function MotivasiVariantKartuHook({
         </div>
       </div>
 
-      {/* ═══ CONNECTIONS — icon pills ════════════════════════════ */}
-      {connections.length > 0 && (
+      {/* ═══ CONNECTIONS — hidden when compressed ══════════════════ */}
+      {!isCompressed && connections.length > 0 && (
         <div
           style={{
             padding: isCompact ? '10px 12px' : '14px 18px',
@@ -443,8 +448,8 @@ function MotivasiVariantKartuHook({
         </div>
       )}
 
-      {/* ═══ TRANSITION ══════════════════════════════════════════ */}
-      {block.transition && (
+      {/* ═══ TRANSITION — hidden when compressed ════════════════ */}
+      {!isCompressed && block.transition && (
         <MicroInteraction tokens={tokens} accent={gradientTo} effect="bounce">
         <div
           style={{
@@ -480,12 +485,14 @@ function MotivasiVariantKutipan({
   isCompact,
   titleEditor,
   hookEditor,
+  isCompressed,
 }: {
   block: MotivasiBlock;
   tokens: TokenResolver;
   isCompact: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   hookEditor: ReturnType<typeof useInlineEditor>;
+  isCompressed?: boolean;
 }) {
   const visual = block.visual;
   const gradientFrom = visual?.bgGradient?.[0] || 'y';
@@ -553,8 +560,8 @@ function MotivasiVariantKutipan({
         />
       </div>
 
-      {/* Transition only — connections hidden */}
-      {block.transition && (
+      {/* Transition only — connections hidden; also hidden when compressed */}
+      {!isCompressed && block.transition && (
         <MicroInteraction tokens={tokens} accent={gradientFrom} effect="bounce">
         <div
           style={{
@@ -585,8 +592,8 @@ function MotivasiVariantKutipan({
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
-  block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function MotivasiRenderer({ block, tokens, isCompact, isEditing, compression }: {
+  block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
@@ -610,15 +617,18 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing }: {
     multiline: true,
   });
 
+  const isCompressed = compression?.isCompressed ?? false;
+
+  const gradientFrom = block.visual?.bgGradient?.[0] || 'y';
+
   const sharedProps = {
     block,
     tokens,
     isCompact,
     titleEditor,
     hookEditor,
+    isCompressed,
   };
-
-  const gradientFrom = block.visual?.bgGradient?.[0] || 'y';
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent={gradientFrom} staggerIndex={0} gradientBorder>

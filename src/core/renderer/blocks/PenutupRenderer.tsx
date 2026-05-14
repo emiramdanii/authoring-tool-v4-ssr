@@ -8,9 +8,12 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay } from './PremiumBlockEffects';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
 
-export function PenutupRenderer({ block, tokens, isCompact, isEditing, interactive }: {
-  block: PenutupBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
+export function PenutupRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
+  block: PenutupBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -24,6 +27,16 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
     value: block.subtitle ?? '',
     tag: 'span',
   });
+
+  const isCompressed = compression?.isCompressed ?? false;
+
+  // ── Compression-aware preview item visibility (reveal-set) ─
+  const allPreviewItems = block.preview || [];
+  const { visibleCount, hasMore, hiddenCount, showMore } = useBlockCompression({
+    compression,
+    totalItems: allPreviewItems.length,
+  });
+  const previewItems = isCompressed ? allPreviewItems.slice(0, visibleCount) : allPreviewItems;
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent="g" staggerIndex={0}>
@@ -65,7 +78,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
       </div>
 
       {/* Preview items - improved with card styling */}
-      {(block.preview || []).length > 0 && (
+      {previewItems.length > 0 && (
         <div className="p-4 rounded-2xl"
           style={{
             background: 'linear-gradient(135deg, ' + tokens.colorAlpha('c', 0.08) + ', ' + tokens.colorAlpha('p', 0.08) + ')',
@@ -78,7 +91,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
               Ringkasan Pembelajaran
             </div>
           </div>
-          {(block.preview || []).map((item, i) => (
+          {previewItems.map((item, i) => (
             <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 p-2.5 rounded-xl mb-2 font-bold leading-relaxed transition-all hover:-translate-y-0.5 min-w-0"
               style={{
                 background: tokens.colorAlpha(item.warna, 0.08),
@@ -96,8 +109,8 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
         </div>
       )}
 
-      {/* Next pertemuan preview - enhanced with call-to-action */}
-      {block.nextPertemuan && (
+      {/* Next pertemuan preview — hidden when compressed */}
+      {!isCompressed && block.nextPertemuan && (
         <div className="mt-4 p-4 rounded-2xl"
           style={{
             background: tokens.colorAlpha('g', 0.06),
@@ -147,6 +160,15 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
             </button>
           )}
         </div>
+      )}
+      {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
+      {hasMore && (
+        <ShowMoreButton
+          hiddenCount={hiddenCount}
+          onShowMore={showMore}
+          itemLabel="ringkasan lagi"
+          isCompact={isCompact}
+        />
       )}
     </div>
     <StepCompletionOverlay show tokens={tokens} accent="g" completionText="PEMBELAJARAN SELESAI!" isCompact={isCompact} />

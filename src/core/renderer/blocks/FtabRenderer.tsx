@@ -10,6 +10,7 @@ import type { TokenResolver, SchemaRenderMode } from '../types';
 import type { SchemaBlockRenderer as SchemaBlockRendererType } from '../SchemaRenderer';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 const SchemaBlockRenderer = React.lazy(() =>
   import('../SchemaRenderer').then(m => ({ default: m.SchemaBlockRenderer }))
@@ -58,8 +59,8 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
   );
 }
 
-export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEditing }: {
-  block: FtabBlock; mode: SchemaRenderMode; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean;
+export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
+  block: FtabBlock; mode: SchemaRenderMode; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const [activeTab, setActiveTab] = React.useState(0);
   const [readTabs, setReadTabs] = React.useState<Set<number>>(new Set());
@@ -71,6 +72,7 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
 
   const tabs = block.tabs || [];
   const tab = tabs[activeTab];
+  const isCompressed = compression?.isCompressed ?? false;
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
@@ -109,8 +111,8 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
         </div>
       )}
 
-      {/* Progress */}
-      {block.showProgress && tabs.length > 0 && (
+      {/* Progress — hidden when compressed */}
+      {!isCompressed && block.showProgress && tabs.length > 0 && (
         <div className="mt-3 flex items-center gap-2">
           <div className="flex-1 h-1.5 rounded-full overflow-hidden"
             style={{ background: tokens.subtleBg(0.08) }}>

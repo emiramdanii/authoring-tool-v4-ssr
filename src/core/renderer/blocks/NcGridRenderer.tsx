@@ -6,6 +6,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════
 // NC GRID RENDERER — BSNP Norma Card Grid with Creative Variants
@@ -426,20 +427,22 @@ function NcGridStepMode({ block, tokens, isCompact, interactive, variant }: {
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactive }: {
-  block: NcGridBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
+export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
+  block: NcGridBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   const cards = block.cards || [];
   const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
     (block.variant as 'A' | 'B' | 'C') || 'A'
   );
   const variant = currentVariant;
+  const isCompressed = compression?.isCompressed ?? false;
 
   // Determine the card list container based on variant
   const CardComponent = NcGridCardByVariant(variant);
 
-  // Step mode for all variants when cards > 2
-  if (cards.length > 2) {
+  // When compressed, skip step mode and show cards directly (compact variant C)
+  // Step mode is hidden to save vertical space
+  if (cards.length > 2 && !isCompressed) {
     return (
       <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />

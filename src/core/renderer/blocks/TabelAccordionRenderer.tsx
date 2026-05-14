@@ -6,6 +6,9 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { playSound } from '@/lib/sounds';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
 
 /** Inner detail item component so hooks are not called in loops */
 function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tokens, isCompact }: {
@@ -128,16 +131,25 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
   );
 }
 
-export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, interactive }: {
-  block: TabelAccordionBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean;
+export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
+  block: TabelAccordionBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   const [openIdx, setOpenIdx] = React.useState<number | null>(null);
+
+  const allRows = block.rows || [];
+
+  // ── Compression-aware row visibility (accordion) ────────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allRows.length,
+  });
+  const rows = isCompressed ? allRows.slice(0, visibleCount) : allRows;
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div className="flex flex-col gap-2 mt-3">
-      {(block.rows || []).map((row, i) => (
+      {rows.map((row, i) => (
         <AccordionRow
           key={`accord-row-${row.title?.slice(0,8)}-${i}`}
           row={row}
@@ -150,6 +162,15 @@ export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer
           isCompact={isCompact}
         />
       ))}
+      {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
+      {hasMore && (
+        <ShowMoreButton
+          hiddenCount={hiddenCount}
+          onShowMore={showMore}
+          itemLabel="baris lagi"
+          isCompact={isCompact}
+        />
+      )}
     </div>
     </PremiumBlockWrapper>
   );

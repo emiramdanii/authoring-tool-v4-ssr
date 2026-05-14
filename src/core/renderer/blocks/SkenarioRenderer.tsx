@@ -10,9 +10,10 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
-  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
+export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
+  block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -36,6 +37,8 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
     setSelectedChoice(null);
     setShowFeedback(false);
   }, [replayGeneration]);
+
+  const isCompressed = compression?.isCompressed ?? false;
 
   const chapters = block.chapters || [];
   const ch = chapters[chapter];
@@ -165,8 +168,8 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
       {/* Body — chapter content */}
       {ch && !isCompleted && !showFeedback && (
         <div className="p-4">
-          {/* Setup */}
-          {ch.setup && ch.setup.length > 0 && (
+          {/* Setup — hidden when compressed to save vertical space */}
+          {!isCompressed && ch.setup && ch.setup.length > 0 && (
             <div className="mb-4 space-y-2">
               {ch.setup.map((line, i) => {
                 const isNarrator = line.speaker.toUpperCase() === 'NARRATOR' || line.speaker.toUpperCase() === 'NARATOR';

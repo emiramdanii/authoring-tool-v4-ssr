@@ -10,9 +10,12 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction, StepCompletionOverlay } from './PremiumBlockEffects';
 import { fireConfettiCelebration } from '@/lib/confetti';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
-  block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
+export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
+  block: RefleksiBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
 }) {
   const [responses, setResponses] = React.useState<Record<number, string>>({});
   const [submitted, setSubmitted] = React.useState(false);
@@ -20,10 +23,19 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
   // ── Interactive store: score reporting ──────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
-  const allAnswered = (block.questions || []).length > 0 &&
-    (block.questions || []).every((_, i) => responses[i]?.trim().length > 0);
+  const allQuestions = block.questions || [];
+
+  // ── Compression-aware question visibility (reveal-set) ──────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allQuestions.length,
+  });
+  const questions = isCompressed ? allQuestions.slice(0, visibleCount) : allQuestions;
+
+  const allAnswered = allQuestions.length > 0 &&
+    allQuestions.every((_, i) => responses[i]?.trim().length > 0);
   const answeredCount = Object.values(responses).filter(r => r.trim().length > 0).length;
-  const totalQuestions = (block.questions || []).length;
+  const totalQuestions = allQuestions.length;
   const progress = totalQuestions > 0 ? answeredCount / totalQuestions : 0;
 
   const handleSubmit = () => {
@@ -136,7 +148,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       />}
 
       {/* Questions */}
-      {(block.questions || []).map((q, i) => {
+      {questions.map((q, i) => {
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]?.trim().length > 0;
         return (
@@ -210,7 +222,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         </MicroInteraction>
       )}
 
-      {block.penugasan && (
+      {block.penugasan && !isCompressed && (
         <div className="mt-4 p-4 rounded-xl"
           style={{
             background: tokens.colorAlpha('p', 0.1),
@@ -233,6 +245,15 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             </div>
           )}
         </div>
+      )}
+      {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
+      {hasMore && (
+        <ShowMoreButton
+          hiddenCount={hiddenCount}
+          onShowMore={showMore}
+          itemLabel="pertanyaan lagi"
+          isCompact={isCompact}
+        />
       )}
     </div>
     </PremiumBlockWrapper>
