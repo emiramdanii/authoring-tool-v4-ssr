@@ -23,7 +23,7 @@ export type UISlice = Pick<
   | 'setTool' | 'setLeftTab' | 'toggleLeftPanel' | 'toggleRightPanel'
   | 'toggleGrid' | 'setGridSize' | 'toggleSnap' | 'snapValue'
   | 'applyLayoutPreset' | 'currentLayoutPreset'
-  | 'setZoom' | 'zoomDelta' | 'zoomToFit' | 'setRatio' | 'nudgeSelected'
+  | 'setZoom' | 'setFitZoom' | 'zoomDelta' | 'zoomToFit' | 'setRatio' | 'nudgeSelected'
   | 'alignSelected' | 'distributeSelected'
   | 'clearStage' | 'selectBlock' | 'updateSchemaBlock'
   | 'hoverBlock' | 'startEditing' | 'stopEditing'
@@ -286,9 +286,14 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   setZoom: (zoom) => set({ zoom: clampZoom(zoom) }),
+  /** Update the cached fitZoom from Stage's ResizeObserver */
+  setFitZoom: (fitZoom) => set({ fitZoom }),
   zoomDelta: (delta) => {
-    const current = get().zoom;
-    const next = current === ZOOM_FIT ? ZOOM_FIT : current + delta;
+    const { zoom, fitZoom } = get();
+    // If currently in ZOOM_FIT mode, resolve to the actual fitZoom first,
+    // then apply the delta from there.
+    const base = zoom === ZOOM_FIT ? fitZoom : zoom;
+    const next = base + delta;
     set({ zoom: clampZoom(next) });
   },
   /** Reset zoom to auto-fit mode (calculated by Stage) */

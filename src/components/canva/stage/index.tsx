@@ -111,8 +111,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const undo = useCanvaStore(s => s.undo);
   const redo = useCanvaStore(s => s.redo);
   const setZoom = useCanvaStore(s => s.setZoom);
+  const storeSetFitZoom = useCanvaStore(s => s.setFitZoom);
   const zoomDelta = useCanvaStore(s => s.zoomDelta);
   const zoomToFit = useCanvaStore(s => s.zoomToFit);
+  const storeFitZoom = useCanvaStore(s => s.fitZoom);
 
   const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
@@ -132,9 +134,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
   // ── Local state for zoom/pan ─────────────────────────────────
   const canvasAreaRef = useRef<HTMLDivElement>(null);
-  const [fitZoom, setFitZoom] = useState(0.5); // calculated by ResizeObserver
+  const [fitZoom, setFitZoom] = useState(0.5); // local mirror of store.fitZoom
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
+  const [isFitZoomReady, setIsFitZoomReady] = useState(false); // true after first ResizeObserver callback
   // Pan drag state
   const panDragRef = useRef<{ startX: number; startY: number; origPanX: number; origPanY: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -185,26 +188,47 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   });
 
   // ── ResizeObserver: calculate fitZoom ─────────────────────────
+  // This is the primary mechanism for computing the correct fitZoom.
+  // We use requestAnimationFrame to ensure the DOM has layout before reading.
+  // The fitZoom is synced to the store so zoomDelta can resolve ZOOM_FIT.
   useEffect(() => {
     const area = canvasAreaRef.current;
     if (!area) return;
+
+    const computeFit = () => {
+      const aW = area.clientWidth;
+      const aH = area.clientHeight;
+      if (aW > 0 && aH > 0) {
+        const newFitZoom = calcFitZoom(aW, aH, ratio.w, ratio.h);
+        setFitZoom(newFitZoom);
+        storeSetFitZoom(newFitZoom);
+        setIsFitZoomReady(true);
+      }
+    };
+
+    // Compute immediately (don't wait for first ResizeObserver callback)
+    // Use rAF to ensure layout is complete
+    const rafId = requestAnimationFrame(() => {
+      computeFit();
+    });
+
     const observer = new ResizeObserver(() => {
-      const aW = area.clientWidth || 800;
-      const aH = area.clientHeight || 500;
-      const newFitZoom = calcFitZoom(aW, aH, ratio.w, ratio.h);
-      setFitZoom(newFitZoom);
+      computeFit();
     });
     observer.observe(area);
-    return () => observer.disconnect();
-  }, [ratio.w, ratio.h]);
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+    };
+  }, [ratio.w, ratio.h, storeSetFitZoom]);
 
   // ── Auto-center when zoom fits viewport ───────────────────────
   useEffect(() => {
-    if (effectiveZoom <= fitZoom) {
+    if (effectiveZoom <= fitZoom || !isFitZoomReady) {
       setPanX(0);
       setPanY(0);
     }
-  }, [effectiveZoom, fitZoom]);
+  }, [effectiveZoom, fitZoom, isFitZoomReady]);
 
   // ── Space key tracking for pan mode ───────────────────────────
   useEffect(() => {
@@ -355,11 +379,13 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       onDrop={handleDrop}
     >
       {/* ══ Transform layer: translate + scale ════════════════════ */}
+      {/* Hide until fitZoom is calculated to avoid flash of tiny canvas */}
       <div
         style={{
           transform: `translate(${panX}px, ${panY}px) scale(${effectiveZoom})`,
           transformOrigin: 'center center',
           transition: panDragRef.current ? 'none' : 'transform 0.15s ease-out',
+          visibility: isFitZoomReady ? 'visible' : 'hidden',
         }}
       >
         <div

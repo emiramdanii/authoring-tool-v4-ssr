@@ -64,6 +64,8 @@ export interface CanvaState {
 
   // ── UI state ─────────────────────────────────────────────────
   zoom: number;
+  /** Last calculated fitZoom from Stage's ResizeObserver. Used by zoomDelta to resolve ZOOM_FIT. */
+  fitZoom: number;
   tool: Tool;
   leftTab: LeftTab;
   selectedElId: string | null;
@@ -167,6 +169,8 @@ export interface CanvaState {
   setLeftTab: (tab: LeftTab) => void;
   setZoom: (zoom: number) => void;
   zoomDelta: (delta: number) => void;
+  /** Update the cached fitZoom value (called by Stage's ResizeObserver) */
+  setFitZoom: (fitZoom: number) => void;
   /** Reset zoom to auto-fit mode (calculated by Stage) */
   zoomToFit: () => void;
   setRatio: (ratioId: string) => void;

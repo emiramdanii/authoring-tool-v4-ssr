@@ -23,6 +23,7 @@ export default function StatusBar() {
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const ratioId = useCanvaStore(s => s.ratioId);
   const storeZoom = useCanvaStore(s => s.zoom);
+  const storeFitZoom = useCanvaStore(s => s.fitZoom);
   const setZoom = useCanvaStore(s => s.setZoom);
   const zoomToFit = useCanvaStore(s => s.zoomToFit);
   const page = pages[currentPageIndex];
@@ -113,16 +114,16 @@ export default function StatusBar() {
           min={10}
           max={300}
           step={5}
-          value={storeZoom === -1 ? 0 : Math.round(storeZoom * 100)}
+          value={storeZoom === -1 ? Math.round(storeFitZoom * 100) : Math.round(storeZoom * 100)}
           onChange={e => setZoom(parseInt(e.target.value) / 100)}
           className="w-16 h-1 accent-app-accent"
         />
         <button
           onClick={zoomToFit}
-          className="font-mono text-[9px] text-app-muted hover:text-app-accent transition-colors w-10 text-right"
+          className="font-mono text-[9px] text-app-muted hover:text-app-accent transition-colors w-12 text-right"
           title="Fit to screen"
         >
-          {storeZoom === -1 ? 'Fit' : `${Math.round(storeZoom * 100)}%`}
+          {storeZoom === -1 ? `Fit ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}
         </button>
       </div>
     </div>

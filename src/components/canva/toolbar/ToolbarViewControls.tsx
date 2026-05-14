@@ -27,6 +27,7 @@ const RATIOS = [
 
 export function ToolbarViewControls() {
   const storeZoom = useCanvaStore((s) => s.zoom);
+  const storeFitZoom = useCanvaStore((s) => s.fitZoom);
   const zoomDelta = useCanvaStore((s) => s.zoomDelta);
   const zoomToFit = useCanvaStore((s) => s.zoomToFit);
   const ratioId = useCanvaStore((s) => s.ratioId);
@@ -95,10 +96,10 @@ export function ToolbarViewControls() {
         <Minus size={12} />
       </Button>
       <span
-        className="text-[10px] font-mono text-app-secondary w-10 text-center select-none"
-        title={storeZoom === -1 ? 'Auto-fit' : `${Math.round(storeZoom * 100)}% of native`}
+        className="text-[10px] font-mono text-app-secondary w-12 text-center select-none"
+        title={storeZoom === -1 ? `Auto-fit (${Math.round(storeFitZoom * 100)}%)` : `${Math.round(storeZoom * 100)}% of native`}
       >
-        {storeZoom === -1 ? 'Fit' : `${Math.round(storeZoom * 100)}%`}
+        {storeZoom === -1 ? `Fit ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}
       </span>
       <Button
         variant="ghost"
