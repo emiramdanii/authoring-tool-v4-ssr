@@ -336,8 +336,8 @@ function KuisVariantRingkas({
   );
 }
 
-export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
-  block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
+export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
+  block: KuisBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: import('../../layout/CompressionEngine').CompressionDecision;
 }) {
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
@@ -348,6 +348,13 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
     (block.variant as 'A' | 'B' | 'C') || 'A'
   );
   const variant = currentVariant;
+
+  // ── Compression-aware rendering (step-reveal strategy) ──────
+  // Kuis naturally shows one question at a time (step-reveal).
+  // When compressed, we switch to the most compact variant (C "Ringkas")
+  // and hide decorative elements (streak badge, progress aurora).
+  const isCompressed = compression?.isCompressed ?? false;
+  const effectiveVariant = isCompressed ? 'C' as const : variant;
 
   // ── Replay watcher: reset all state when replayGeneration bumps ──
   const replayGeneration = useInteractiveStore(s => s.replayGeneration);
@@ -576,8 +583,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               placeholder="Ketik judul kuis..."
             />
           </div>
-          {/* Streak indicator — premium glow pulse */}
-          {currentStreak >= 2 && (
+          {/* Streak indicator — premium glow pulse (hidden when compressed) */}
+          {!isCompressed && currentStreak >= 2 && (
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-full flex-shrink-0"
               style={{
                 background: `linear-gradient(135deg, ${tokens.colorAlpha('o', 0.2)}, ${tokens.colorAlpha('y', 0.1)})`,
@@ -599,7 +606,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
         </PremiumBadge>
       </div>
 
-      {/* ── Holographic Aurora Progress Bar ──────────────────────── */}
+      {/* ── Holographic Aurora Progress Bar (simplified when compressed) ──── */}
+      {!isCompressed && (
       <div className="h-2 rounded-full overflow-hidden"
         style={{ background: tokens.subtleBg(0.08) }}
         role="progressbar" aria-label={`Progres kuis ${totalAnswered} dari ${questions.length}`} aria-valuenow={totalAnswered} aria-valuemin={0} aria-valuemax={questions.length}>
@@ -625,11 +633,12 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
             pointerEvents: 'none',
           }} />
       </div>
+      )}
 
       {/* ══ VARIANT-CONDITIONAL QUESTION AREA ═══════════════════════ */}
 
       {/* ── Variant A: Klasik — the original 2-column grid layout ── */}
-      {variant === 'A' && (
+      {effectiveVariant === 'A' && (
         <div className="p-4 rounded-xl premium-card-glow"
           style={{
             background: `linear-gradient(135deg, ${tokens.colorAlpha('y', 0.08)}, ${tokens.colorAlpha('c', 0.04)})`,
@@ -726,7 +735,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       )}
 
       {/* ── Variant B: Kartu — single column larger card ─────────── */}
-      {variant === 'B' && (
+      {effectiveVariant === 'B' && (
         <KuisVariantKartu
           q={q}
           current={current}
@@ -742,7 +751,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       )}
 
       {/* ── Variant C: Ringkas — compact pill buttons ────────────── */}
-      {variant === 'C' && (
+      {effectiveVariant === 'C' && (
         <KuisVariantRingkas
           q={q}
           current={current}

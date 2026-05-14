@@ -8,14 +8,24 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { fireConfettiMini } from '@/lib/confetti';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
-  block: PetunjukBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
+export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
+  block: PetunjukBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
 }) {
   const accentKey = block.tipsColor || 'c';
   const hasNav = block.navigation && block.navigation.length > 0;
   const hasObjectives = block.learningObjectives && block.learningObjectives.length > 0;
-  const items = block.items || [];
+  const allItems = block.items || [];
+
+  // ── Compression-aware item visibility ──────────────────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allItems.length,
+  });
+  const items = isCompressed ? allItems.slice(0, visibleCount) : allItems;
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -146,7 +156,8 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
          *  Each item represents a step or instruction the student
          *  should follow. The color cycle provides visual variety.
          *  Step numbers are shown inside the icon circle for
-         *  clear sequential ordering. */}
+         *  clear sequential ordering.
+         *  When compressed, only visibleCount items are shown. */}
         <div className={`grid gap-3 mt-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {items.map((item, i) => {
             const colorCycle = ['y', 'c', 'g', 'p'];
@@ -189,6 +200,18 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
             );
           })}
         </div>
+
+        {/* ══ COMPRESSION: Show More button ════════════════════════
+         *  When compression hides items, show a "Lihat lainnya" button.
+         *  This is the key UI that makes compression user-friendly. */}
+        {hasMore && (
+          <ShowMoreButton
+            hiddenCount={hiddenCount}
+            onShowMore={showMore}
+            itemLabel="petunjuk lainnya"
+            isCompact={isCompact}
+          />
+        )}
 
         {/* ══ NAVIGATION SECTION ══════════════════════════════════
          *  Shows available navigation controls in the MPI.

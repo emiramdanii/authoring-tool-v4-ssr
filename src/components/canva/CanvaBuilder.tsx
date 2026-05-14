@@ -269,13 +269,18 @@ export default function CanvaBuilder() {
       priority: 3,
       handler: () => {
         const store = useCanvaStore.getState();
+        // If in canvas preview mode, exit preview first
+        if (store.canvasPreview) {
+          store.toggleCanvasPreview();
+          return;
+        }
         // Clear both element AND block selection for consistent Escape behavior.
         // Previously only cleared elements — blocks were cleared by useStageKeyboard,
         // causing double-firing when both systems handled Escape simultaneously.
         store.selectElement(null);
         store.selectBlock(null);
       },
-      description: 'Deselect / Exit editing',
+      description: 'Deselect / Exit editing / Exit preview',
       category: 'Selection',
     },
 
@@ -363,6 +368,40 @@ export default function CanvaBuilder() {
       },
       description: 'Buka AI Assistant',
       category: 'Tools',
+    },
+
+    // ── Scene Navigation (Ctrl+Arrow for multi-scene pages) ───────
+    {
+      id: 'canvas.scene-prev',
+      keys: 'ctrl+arrowleft',
+      scope: 'canvas',
+      priority: 6,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (store.sceneTotal <= 1) return;
+        e.preventDefault();
+        if (store.sceneIndex > 0) {
+          store.setSceneState(store.sceneIndex - 1, store.sceneTotal);
+        }
+      },
+      description: 'Scene sebelumnya (Ctrl+←)',
+      category: 'Navigation',
+    },
+    {
+      id: 'canvas.scene-next',
+      keys: 'ctrl+arrowright',
+      scope: 'canvas',
+      priority: 6,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (store.sceneTotal <= 1) return;
+        e.preventDefault();
+        if (store.sceneIndex < store.sceneTotal - 1) {
+          store.setSceneState(store.sceneIndex + 1, store.sceneTotal);
+        }
+      },
+      description: 'Scene berikutnya (Ctrl+→)',
+      category: 'Navigation',
     },
   ], []);
 

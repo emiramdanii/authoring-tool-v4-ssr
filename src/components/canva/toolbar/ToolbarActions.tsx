@@ -14,6 +14,8 @@ import {
   PlusCircle,
   Store,
   Sparkles,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,6 +54,9 @@ export function ToolbarActions() {
 
   const openPlay = useInteractiveStore((s) => s.openPlay);
 
+  const canvasPreview = useCanvaStore((s) => s.canvasPreview);
+  const toggleCanvasPreview = useCanvaStore((s) => s.toggleCanvasPreview);
+
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
 
   // Open Add Block panel
@@ -75,6 +80,30 @@ export function ToolbarActions() {
         <Play size={14} fill="currentColor" />
         <span className="text-[11px]">Play</span>
       </Button>
+
+      {/* 👁 Quick Preview — toggle canvas preview (no overlays, student view) */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            onClick={toggleCanvasPreview}
+            className={`focus-ring gap-1.5 h-7 px-2.5 transition-all ${
+              canvasPreview
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30'
+                : 'bg-app-elevated text-app-secondary border-app-border/50 hover:bg-app-elevated/60'
+            }`}
+            title={canvasPreview ? 'Kembali ke Edit (Esc)' : 'Preview — Lihat tampilan siswa'}
+          >
+            {canvasPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span className="hidden sm:inline text-[10px] font-semibold">
+              {canvasPreview ? 'Edit' : 'Preview'}
+            </span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-[10px]">
+          {canvasPreview ? 'Kembali ke mode edit' : 'Preview — tampilan siswa tanpa overlay'}
+        </TooltipContent>
+      </Tooltip>
 
       {/* ✨ AI — Open AI Content Assistant */}
       <Tooltip>

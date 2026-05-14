@@ -123,7 +123,41 @@ export interface CanvaPage {
   // When absent, legacy pages are lazily migrated via ensurePageSchema().
   // After save+load, legacy pages become native schema pages automatically.
   schema?: import('@/core/schema/types').ScreenSchema;
+
+  // ── Page Mode Discriminator (DUAL-RENDER GUARD) ──
+  // This field makes dual-render structurally detectable:
+  //
+  //   pageMode === 'schema'  →  page.schema MUST be populated, page.elements MUST be []
+  //   pageMode === 'elements' → page.elements MUST be populated, page.schema MUST be undefined
+  //
+  // Runtime invariant: validateCanvaPageInvariant() enforces this in dev mode.
+  // Factory functions (createSchemaPage, createElementsPage) enforce this at creation time.
+  // This prevents the dual-render bug where content appears twice because
+  // both page.schema and page.elements[] are populated simultaneously.
+  pageMode?: 'schema' | 'elements';
 }
+
+// ── Strict Page Types (Creation-Time Enforcement) ─────────────────
+// These types are used by factory functions to enforce the dual-render
+// guard at the POINT OF CREATION. TypeScript will reject any attempt
+// to create a page with both schema and elements populated.
+//
+// Reading code can still use the base CanvaPage type for backward compat.
+// But any NEW page creation MUST go through these strict types.
+
+/** Schema-driven page: schema is the single source of truth, elements is empty */
+export type SchemaCanvaPage = CanvaPage & {
+  pageMode: 'schema';
+  schema: import('@/core/schema/types').ScreenSchema;
+  elements: [];
+};
+
+/** Legacy element-based page: elements[] is the data model, no schema */
+export type ElementsCanvaPage = CanvaPage & {
+  pageMode: 'elements';
+  elements: import('@/components/canva/types').CanvaElement[];
+  schema?: undefined;
+};
 
 export type LeftTab = 'halaman' | 'layer' | 'sisipkan' | 'halamanBaru';
 /** @deprecated Legacy tab names — used only for localStorage migration */

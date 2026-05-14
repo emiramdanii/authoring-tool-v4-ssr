@@ -10,7 +10,7 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
-import { ensurePageSchema } from '@/core/schema/ensure-schema';
+import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 
 // ── Legacy tab name migration map ──────────────────────────────
 const TAB_MIGRATION: Record<string, LeftTab> = {
@@ -62,8 +62,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         //   - Already-native schema pages → preserved as-is
         // After this, every template page has page.schema set.
         // The TemplateAdapter is never called again for these pages.
-        const pages = data.pages.map((p: CanvaPage) => {
-          // Step 1: Basic field migration (backward compat)
+        //
+        // DUAL-RENDER FIX: migrateAllPages() also clears elements[]
+        // for any page that has schema. Schema-driven pages must NOT
+        // have elements[] populated, otherwise dual-render occurs.
+        const rawPages = data.pages.map((p: CanvaPage) => {
+          // Basic field migration (backward compat)
           const migrated: CanvaPage = {
             ...p,
             templateType: p.templateType || 'custom',
@@ -71,7 +75,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             navConfig: {
               ...DEFAULT_NAV_CONFIG,
               ...(p.navConfig || {}),
-              // Ensure navbarStyle is always present (legacy pages may lack this field)
               navbarStyle: p.navConfig?.navbarStyle || DEFAULT_NAV_CONFIG.navbarStyle,
             },
             templateData: p.templateData || {},
@@ -90,21 +93,13 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
               })),
             ],
             overlayElements: [], // Cleared — all merged into elements[]
-            // FASE 1: Preserve page.schema if already migrated
             schema: p.schema || undefined,
           };
-
-          // Step 2: Proactively migrate to native schema
-          // This populates page.schema for all template pages that
-          // don't have it yet. After load+save, legacy pages become
-          // native schema pages permanently.
-          if (!migrated.schema && migrated.templateType && migrated.templateType !== 'custom') {
-            ensurePageSchema(migrated);
-            // ensurePageSchema mutates migrated.schema in-place — intentional
-          }
-
           return migrated;
         });
+
+        // Apply schema migration + clear elements[] for schema pages
+        const pages = migrateAllPages(rawPages);
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'halaman';
         if (data.leftTab) {
@@ -135,7 +130,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   loadFromDB: (data: DBProjectData) => {
     try {
       if (data.pages && Array.isArray(data.pages)) {
-        const pages: CanvaPage[] = data.pages.map((p) => {
+        const rawPages: CanvaPage[] = data.pages.map((p) => {
           // Map DB Page → CanvaPage
           const schema = p.schemaData ? JSON.parse(p.schemaData) : undefined;
           const parsedNavConfig = p.navConfig ? JSON.parse(p.navConfig) : {};
@@ -164,7 +159,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             bgDataUrl: p.bgImage || null,
             bgColor: p.bgColor || '#0f172a',
             overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
-            elements: [],
+            elements: [], // Always empty — schema is the source of truth
             templateType: (p.templateType as CanvaPage['templateType']) || 'custom',
             colorPalette,
             navConfig,
@@ -173,13 +168,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             schema: schema || (schemaBlocks.length > 0 ? { id: p.id, templateType: p.templateType || 'custom', blocks: schemaBlocks } : undefined),
           };
 
-          // Proactively migrate to native schema if needed
-          if (!migrated.schema && migrated.templateType && migrated.templateType !== 'custom') {
-            ensurePageSchema(migrated);
-          }
-
           return migrated;
         });
+
+        // Apply schema migration + clear elements[] for schema pages
+        const pages = migrateAllPages(rawPages);
 
         set({
           pages,

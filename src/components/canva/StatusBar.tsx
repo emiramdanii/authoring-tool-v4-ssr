@@ -3,10 +3,11 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { RATIOS } from '@/components/canva/types';
-import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle } from 'lucide-react';
+import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
+import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: StatusBar redesign
@@ -31,6 +32,17 @@ export default function StatusBar() {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
   });
+
+  // ── Scene navigation state ────────────────────────────────────
+  const sceneIndex = useCanvaStore(s => s.sceneIndex);
+  const sceneTotal = useCanvaStore(s => s.sceneTotal);
+
+  // ── Block selection feedback ───────────────────────────────────
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockType = useCanvaStore(s => s.selectedBlockType);
+
+  // ── Canvas preview mode ───────────────────────────────────────
+  const canvasPreview = useCanvaStore(s => s.canvasPreview);
 
   // ── Unified save indicator ────────────────────────────────────
   const canvaStatus = useCanvaStore((s) => s._saveStatus as SaveStatus | undefined);
@@ -86,15 +98,40 @@ export default function StatusBar() {
         <span>{totalElements} elemen</span>
       </span>
 
-      {/* Page info with template type + lock status */}
+      {/* Page info with template type */}
       <span className="flex items-center gap-1.5">
         <FileText size={11} className="text-app-muted" />
         <span>{currentPageIndex + 1}/{pages.length}</span>
         <span className="text-[8px] text-app-muted">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>
-
       </span>
+
+      {/* Scene indicator — only when multi-scene */}
+      {sceneTotal > 1 && (
+        <span className="flex items-center gap-1">
+          <Layers size={11} className="text-emerald-400/60" />
+          <span className="text-emerald-400/70 font-medium">Scene {sceneIndex + 1}/{sceneTotal}</span>
+        </span>
+      )}
+
+      {/* Block selection feedback — shows block type when selected */}
+      {selectedBlockId && selectedBlockType && (
+        <span className="flex items-center gap-1">
+          <Zap size={11} className="text-amber-400/60" />
+          <span className="text-amber-400/70 font-medium">
+            {BLOCK_DEFINITIONS[selectedBlockType]?.name || selectedBlockType}
+          </span>
+        </span>
+      )}
+
+      {/* Canvas preview mode indicator */}
+      {canvasPreview && (
+        <span className="flex items-center gap-1">
+          <Eye size={11} className="text-cyan-400/60" />
+          <span className="text-cyan-400/70 font-medium">Preview</span>
+        </span>
+      )}
 
       <div className="section-divider h-3 w-px mx-1" />
 

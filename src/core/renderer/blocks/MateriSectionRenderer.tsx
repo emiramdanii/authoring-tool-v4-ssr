@@ -8,6 +8,9 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 import { RichText, hasHtmlTags, stripHtmlTags } from './RichText';
 import { fireConfettiMini } from '@/lib/confetti';
 import { useCanvaStore } from '../../../store/canva/store';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // NOTE: Use React.lazy() to break the circular dependency:
 //   SceneRegistry → MateriSectionRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
@@ -75,12 +78,14 @@ function MateriVariantKlasik({
   tokens,
   interactive,
   isCompact,
+  compression,
 }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
   isCompact?: boolean;
+  compression?: CompressionDecision;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -94,9 +99,16 @@ function MateriVariantKlasik({
     return 1;
   })();
 
-  const contentBlocks = block.content || [];
+  const allContentBlocks = block.content || [];
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
+
+  // ── Compression-aware content visibility (accordion) ────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allContentBlocks.length,
+  });
+  const contentBlocks = isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks;
 
   return (
     <div
@@ -209,8 +221,10 @@ function MateriVariantKlasik({
         </div>
       )}
 
-      {/* ═══ KEY TAKEAWAYS ════════════════════════════════════════ */}
-      {takeaways.length > 0 && (
+      {/* ═══ KEY TAKEAWAYS ════════════════════════════════════════
+       *  Hidden when compressed to save vertical space.
+       *  Takeaways are supplementary — core content is the content blocks. */}
+      {!isCompressed && takeaways.length > 0 && (
         <div
           style={{
             margin: isCompact ? '0 14px 12px' : '0 20px 16px',
@@ -273,8 +287,9 @@ function MateriVariantKlasik({
         </div>
       )}
 
-      {/* ═══ SELF-CHECK PROMPT ════════════════════════════════════ */}
-      {selfCheck && (
+      {/* ═══ SELF-CHECK PROMPT ════════════════════════════════════
+       *  Hidden when compressed to save vertical space. */}
+      {!isCompressed && selfCheck && (
         <MicroInteraction tokens={tokens} accent="y" effect="bounce">
         <div
           style={{
@@ -323,6 +338,19 @@ function MateriVariantKlasik({
         </div>
         </MicroInteraction>
       )}
+
+      {/* ═══ COMPRESSION: Show More button ════════════════════════
+       *  When compression hides content blocks, show "Lihat lainnya". */}
+      {hasMore && (
+        <div style={{ margin: isCompact ? '0 14px 8px' : '0 20px 12px' }}>
+          <ShowMoreButton
+            hiddenCount={hiddenCount}
+            onShowMore={showMore}
+            itemLabel="bagian materi lagi"
+            isCompact={isCompact}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -334,12 +362,14 @@ function MateriVariantMajalah({
   tokens,
   interactive,
   isCompact,
+  compression,
 }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
   isCompact?: boolean;
+  compression?: CompressionDecision;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -353,9 +383,16 @@ function MateriVariantMajalah({
     return 1;
   })();
 
-  const contentBlocks = block.content || [];
+  const allContentBlocks = block.content || [];
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
+
+  // ── Compression-aware content visibility (accordion) ────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allContentBlocks.length,
+  });
+  const contentBlocks = isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks;
 
   return (
     <div
@@ -535,12 +572,14 @@ function MateriVariantPill({
   tokens,
   interactive,
   isCompact,
+  compression,
 }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
   isCompact?: boolean;
+  compression?: CompressionDecision;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -554,11 +593,18 @@ function MateriVariantPill({
     return 1;
   })();
 
-  const contentBlocks = block.content || [];
+  const allContentBlocks = block.content || [];
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
 
   const [showSelfCheck, setShowSelfCheck] = useState(false);
+
+  // ── Compression-aware content visibility (accordion) ────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allContentBlocks.length,
+  });
+  const contentBlocks = isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks;
 
   return (
     <div
@@ -730,13 +776,14 @@ function MateriVariantPill({
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function MateriSectionRenderer({ block, mode, tokens, interactive, isCompact, isEditing }: {
+export function MateriSectionRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
   isCompact?: boolean;
   isEditing?: boolean;
+  compression?: CompressionDecision;
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
@@ -751,6 +798,7 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
     tokens,
     interactive,
     isCompact,
+    compression,
   };
 
   const accentColor = block.accentColor || 'c';

@@ -306,6 +306,16 @@ function SisipkanContent() {
   const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const isTemplatePage = page?.templateType && page.templateType !== 'custom';
 
+  // ═══ MIGRATION: Schema-first for template pages ══════════════════
+  // Template pages use schema as single source of truth.
+  // The AddBlockPanel (schema-based) is the ONLY way to add content
+  // to template pages. Legacy element buttons are hidden to prevent
+  // dual-render and data inconsistency.
+  //
+  // Custom pages still use the legacy element path since they have
+  // no schema — elements[] is their only data model.
+  const isSchemaDriven = !!page?.schema?.blocks && page.schema.blocks.length > 0;
+
   // Show insertion point indicator from selected block
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
 
@@ -314,127 +324,130 @@ function SisipkanContent() {
       {/* ── Insertion point indicator ── */}
       <InsertionPointIndicator selectedBlockId={selectedBlockId} page={page} />
 
-      {/* ── Schema Block Palette ── */}
+      {/* ── Schema Block Palette (always shown — primary content addition) ── */}
       <AddBlockPanel />
 
-      <div className="section-divider" />
-
-      {/* ── Tambah Modul ── */}
-      <div>
-        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><Puzzle size={12} className="inline" /> Tambah Modul</div>
-        {isTemplatePage && (
-          <div className="text-[8px] text-teal-400/70 mb-2 px-2 py-1 rounded-lg bg-teal-500/5 border border-teal-500/10">
-            Modul ditambahkan sebagai elemen di atas konten template
-          </div>
-        )}
-        {materiModules.length > 0 ? (
-          <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
-            {materiModules.map((m, i) => {
-              const mIdx = authStore.modules.indexOf(m as (typeof authStore.modules)[0]);
-              return (
-                <button
-                  key={i}
-                  onClick={() => addModuleElement(mIdx, (m._id as string) || undefined, (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A')}
-                  className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-teal-500/10 border border-teal-500/20 active:scale-95 transition-transform"
-                >
-                  <span className="text-lg">{getModuleIcon(m.type as string)}</span>
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="text-[11px] font-bold text-teal-300 truncate">{(m.title as string) || (m.type as string)}</div>
-                    <div className="text-[9px] text-teal-400/60">{m.type as string}</div>
-                  </div>
-                  <Plus size={12} className="text-teal-400" />
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
-            Belum ada modul. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
-          </div>
-        )}
-      </div>
-
-      <div className="section-divider" />
-
-      {/* ── Tambah Game ── */}
-      <div>
-        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><Gamepad2 size={12} className="inline" /> Tambah Game</div>
-        {games.length > 0 ? (
-          <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
-            {games.map((g, i) => {
-              const gIdx = authStore.modules.indexOf(g as (typeof authStore.modules)[0]);
-              return (
-                <button
-                  key={i}
-                  onClick={() => addGameElement(gIdx)}
-                  className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-teal-500/10 border border-teal-500/20 active:scale-95 transition-transform"
-                >
-                  <span className="text-lg">{getGameIcon(g.type as string)}</span>
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="text-[11px] font-bold text-teal-300 truncate">{(g.title as string) || (g.type as string)}</div>
-                    <div className="text-[9px] text-teal-400/60">{g.type as string}</div>
-                  </div>
-                  <Plus size={12} className="text-teal-400" />
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
-            Belum ada game. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
-          </div>
-        )}
-      </div>
-
-      <div className="section-divider" />
-
-      {/* ── Kuis Interaktif ── */}
-      <div>
-        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><HelpCircle size={12} className="inline" /> Kuis ({kuis.length} soal)</div>
-        {kuis.length > 0 ? (
-          <button
-            onClick={() => addElement('kuis')}
-            className="card-hover accent-top w-full flex items-center gap-2 p-2.5 rounded-xl bg-app-accent/10 border border-app-accent/20 cursor-grab active:scale-95 transition-transform"
-            style={{ '--accent-color': COLORS.kuis } as React.CSSProperties}
-          >
-            <HelpCircle size={20} />
-            <div className="flex-1 text-left">
-              <div className="text-[11px] font-bold text-app-accent">Kuis Interaktif</div>
-              <div className="text-[9px] text-app-accent/60">{kuis.length} soal pilihan ganda</div>
-            </div>
-            <Plus size={14} className="text-app-accent" />
-          </button>
-        ) : (
-          <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
-            Belum ada soal kuis. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-app-accent underline">Isi di panel Konten → Evaluasi</button>
-          </div>
-        )}
-      </div>
-
-      <div className="section-divider" />
-
-      {/* ── Elemen Dasar ── */}
-      <div>
-        <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2">Elemen Dasar</div>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { id: 'teks', icon: <Type size={20} />, name: 'Teks', note: 'Teks bebas', color: COLORS.textDefault },
-            { id: 'shape', icon: <Square size={20} />, name: 'Shape', note: 'Kotak/warna', color: COLORS.shape },
-            { id: 'image', icon: <ImageIcon size={20} />, name: 'Gambar', note: 'URL / upload', color: COLORS.image },
-          ].map(t => (
-            <button
-              key={t.id}
-              onClick={() => addElement(t.id)}
-              className="card-hover accent-top flex flex-col items-center gap-1 p-3 rounded-xl bg-app-elevated border border-app-border-subtle cursor-pointer active:scale-95"
-              style={{ '--accent-color': t.color } as React.CSSProperties}
-            >
-              <span className="text-2xl">{t.icon}</span>
-              <span className="text-[11px] font-bold text-app-primary">{t.name}</span>
-              <span className="text-[9px] text-app-muted">{t.note}</span>
-            </button>
-          ))}
+      {isSchemaDriven ? (
+        <div className="text-[9px] text-teal-400/70 px-2 py-1.5 rounded-lg bg-teal-500/5 border border-teal-500/10">
+          Gunakan panel di atas untuk menambahkan konten ke halaman template
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="section-divider" />
+
+          {/* ── Tambah Modul ── */}
+          <div>
+            <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><Puzzle size={12} className="inline" /> Tambah Modul</div>
+            {materiModules.length > 0 ? (
+              <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
+                {materiModules.map((m, i) => {
+                  const mIdx = authStore.modules.indexOf(m as (typeof authStore.modules)[0]);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => addModuleElement(mIdx, (m._id as string) || undefined, (m.layoutVariant as 'A' | 'B' | 'C' | 'D') || 'A')}
+                      className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-teal-500/10 border border-teal-500/20 active:scale-95 transition-transform"
+                    >
+                      <span className="text-lg">{getModuleIcon(m.type as string)}</span>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="text-[11px] font-bold text-teal-300 truncate">{(m.title as string) || (m.type as string)}</div>
+                        <div className="text-[9px] text-teal-400/60">{m.type as string}</div>
+                      </div>
+                      <Plus size={12} className="text-teal-400" />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
+                Belum ada modul. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
+              </div>
+            )}
+          </div>
+
+          <div className="section-divider" />
+
+          {/* ── Tambah Game ── */}
+          <div>
+            <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><Gamepad2 size={12} className="inline" /> Tambah Game</div>
+            {games.length > 0 ? (
+              <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
+                {games.map((g, i) => {
+                  const gIdx = authStore.modules.indexOf(g as (typeof authStore.modules)[0]);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => addGameElement(gIdx)}
+                      className="card-hover w-full flex items-center gap-2 p-2 rounded-xl bg-teal-500/10 border border-teal-500/20 active:scale-95 transition-transform"
+                    >
+                      <span className="text-lg">{getGameIcon(g.type as string)}</span>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="text-[11px] font-bold text-teal-300 truncate">{(g.title as string) || (g.type as string)}</div>
+                        <div className="text-[9px] text-teal-400/60">{g.type as string}</div>
+                      </div>
+                      <Plus size={12} className="text-teal-400" />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
+                Belum ada game. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-teal-400 underline">Tambah di panel Konten → Modul</button>
+              </div>
+            )}
+          </div>
+
+          <div className="section-divider" />
+
+          {/* ── Kuis Interaktif ── */}
+          <div>
+            <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2"><HelpCircle size={12} className="inline" /> Kuis ({kuis.length} soal)</div>
+            {kuis.length > 0 ? (
+              <button
+                onClick={() => addElement('kuis')}
+                className="card-hover accent-top w-full flex items-center gap-2 p-2.5 rounded-xl bg-app-accent/10 border border-app-accent/20 cursor-grab active:scale-95 transition-transform"
+                style={{ '--accent-color': COLORS.kuis } as React.CSSProperties}
+              >
+                <HelpCircle size={20} />
+                <div className="flex-1 text-left">
+                  <div className="text-[11px] font-bold text-app-accent">Kuis Interaktif</div>
+                  <div className="text-[9px] text-app-accent/60">{kuis.length} soal pilihan ganda</div>
+                </div>
+                <Plus size={14} className="text-app-accent" />
+              </button>
+            ) : (
+              <div className="text-[9px] text-app-muted p-2.5 rounded-xl bg-app-elevated border border-app-border-subtle">
+                Belum ada soal kuis. <button onClick={() => useAuthoringStore.getState().setActivePanel('konten')} className="text-app-accent underline">Isi di panel Konten → Evaluasi</button>
+              </div>
+            )}
+          </div>
+
+          <div className="section-divider" />
+
+          {/* ── Elemen Dasar ── */}
+          <div>
+            <div className="text-[9px] font-bold text-teal-400/80 uppercase tracking-wider mb-2">Elemen Dasar</div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: 'teks', icon: <Type size={20} />, name: 'Teks', note: 'Teks bebas', color: COLORS.textDefault },
+                { id: 'shape', icon: <Square size={20} />, name: 'Shape', note: 'Kotak/warna', color: COLORS.shape },
+                { id: 'image', icon: <ImageIcon size={20} />, name: 'Gambar', note: 'URL / upload', color: COLORS.image },
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => addElement(t.id)}
+                  className="card-hover accent-top flex flex-col items-center gap-1 p-3 rounded-xl bg-app-elevated border border-app-border-subtle cursor-pointer active:scale-95"
+                  style={{ '--accent-color': t.color } as React.CSSProperties}
+                >
+                  <span className="text-2xl">{t.icon}</span>
+                  <span className="text-[11px] font-bold text-app-primary">{t.name}</span>
+                  <span className="text-[9px] text-app-muted">{t.note}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

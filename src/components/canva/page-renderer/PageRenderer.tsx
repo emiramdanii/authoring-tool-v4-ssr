@@ -6,7 +6,7 @@ import { PageFrame, type PageFrameMode } from './PageFrame';
 import { BlockRenderer, type BlockRendererMode } from './BlockRenderer';
 import { SchemaScreenRenderer, TokenResolver, type SchemaRenderMode } from '@/core/renderer/SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
-import { ensurePageSchema } from '@/core/schema/ensure-schema';
+import { ensurePageSchema, validateCanvaPageInvariant } from '@/core/schema/ensure-schema';
 import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
@@ -59,6 +59,13 @@ export function PageRenderer({
   totalPages,
   isTemplateSelected = false,
 }: PageRendererProps) {
+  // ═══ DUAL-RENDER INVARIANT (dev mode) ════════════════════════
+  // Catch dual-data bug early in development.
+  // This is a no-op in production (tree-shaken).
+  React.useEffect(() => {
+    validateCanvaPageInvariant(page, 'PageRenderer');
+  }, [page]);
+
   const templateType = page.templateType || 'custom';
   const isTemplate = templateType !== 'custom';
 
@@ -223,9 +230,12 @@ export function PageRenderer({
     </>
   );
 
-  // v4: All elements render on top for preview/export mode
-  // (overlayElements was merged into elements[] on load — no separate overlay layer)
-  const extraElements = mode !== 'canvas' && page.elements.length > 0 ? (
+  // v4: Legacy elements overlay for preview/export mode.
+  // FIX: Only render elements[] if schema renderer is NOT active.
+  // When a page has schema (useSchemaRenderer=true), SchemaScreenRenderer
+  // is the single source of truth — elements[] must NOT overlay on top.
+  // This prevents the dual-render bug where content appeared twice.
+  const extraElements = mode !== 'canvas' && !useSchemaRenderer && page.elements.length > 0 ? (
     <div className="absolute inset-0" style={{ zIndex: 20 }}>
       {page.elements.filter(el => !el.hidden).map(el => (
         <BlockRenderer

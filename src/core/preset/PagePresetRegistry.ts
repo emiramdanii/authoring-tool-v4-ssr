@@ -308,12 +308,10 @@ export function createPageFromPreset(
   // @deprecated — will be removed when export pipeline uses schema directly.
   page.templateData = {}; // Empty — deriveSchema bypasses templateData
 
-  // Populate placeholder elements for export compat
-  page.elements = populateTemplateElements(page, createElId);
-
   // FASE 3: Create native schema directly via deriveSchema()
   // No TemplateAdapter bridge — pure one-way data flow.
   // This makes the page schema-native from creation.
+  let hasSchema = false;
   if (preset) {
     const schema = preset.create({
       pageId: page.id,
@@ -322,7 +320,18 @@ export function createPageFromPreset(
     });
     if (schema) {
       page.schema = schema;
+      hasSchema = true;
     }
+  }
+
+  // Schema-native page: elements[] is EMPTY.
+  // SchemaScreenRenderer is the single source of truth.
+  // Only fall back to populateTemplateElements for pages without schema
+  // (i.e., pages where deriveSchema returned null).
+  if (hasSchema) {
+    page.elements = [];
+  } else {
+    page.elements = populateTemplateElements(page, createElId);
   }
 
   return page;

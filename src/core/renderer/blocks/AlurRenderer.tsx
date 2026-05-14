@@ -6,9 +6,12 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
-  block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function AlurRenderer({ block, tokens, isCompact, isEditing, compression }: {
+  block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const titleEditor = useInlineEditor({
     blockId: block.id,
@@ -21,6 +24,14 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
     fieldKey: 'totalDurasi',
     value: block.totalDurasi ?? '',
     tag: 'span',
+  });
+
+  const allSteps = block.steps || [];
+
+  // ── Compression-aware step visibility ──────────────────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allSteps.length,
   });
 
   return (
@@ -38,7 +49,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
         ⏱️ <InlineTextEditor {...titleEditor} /> — <InlineTextEditor {...durasiEditor} placeholder="Durasi..." />
       </div>
       <div className="flex flex-col gap-2">
-        {(block.steps || []).map((step, i) => (
+        {(isCompressed ? allSteps.slice(0, visibleCount) : allSteps).map((step, i) => (
           <div key={`alur-step-${step.judul?.slice(0,8)}-${i}`} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5 min-w-0"
             style={{
               background: tokens.colorAlpha(step.dot, 0.08),
@@ -54,6 +65,14 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
           </div>
         ))}
       </div>
+        {hasMore && (
+          <ShowMoreButton
+            hiddenCount={hiddenCount}
+            onShowMore={showMore}
+            itemLabel="langkah lainnya"
+            isCompact={isCompact}
+          />
+        )}
     </div>
     </PremiumBlockWrapper>
   );

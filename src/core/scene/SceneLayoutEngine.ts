@@ -22,6 +22,8 @@
 
 import type { SchemaBlock, BlockLayout } from '../schema/types';
 import { getBlockMeta } from '../registry/BlockDefinitionRegistry';
+import { getMeasuredHeight, hasMeasurement } from '../layout/BlockMeasurer';
+import { computeCompressionDecision, type CompressionDecision } from '../layout/CompressionEngine';
 
 // ── Virtual Scene Coordinate System ───────────────────────────
 
@@ -219,6 +221,8 @@ export interface ResolvedBlockPosition {
   key: string;
   /** Whether this block overflows the content area */
   isOverflowing: boolean;
+  /** Compression decision (if block is compressed to fit) */
+  compression?: CompressionDecision;
 }
 
 // ── Block Height Estimation ───────────────────────────────────
@@ -459,21 +463,58 @@ export function resolveSceneLayout(
 
   for (let i = 0; i < flowBlocks.length; i++) {
     const block = flowBlocks[i];
-    const { height, minHeight, maxHeight } = estimateBlockHeight(block, {
+    const blockId = block.id || `flow-${block.type}-${i}`;
+
+    // ═══ MEASUREMENT-FIRST: Use real DOM height if available ═══
+    // This is the KEY change that makes layout deterministic.
+    // If the block has been measured by BlockMeasurer, use the real height.
+    // If not (first render), fall back to estimation.
+    // Pipeline: Render (estimated) → Paint → Measure → Re-render (measured)
+    const measuredH = block.id ? getMeasuredHeight(block.id) : undefined;
+    const { height: estimatedH, minHeight, maxHeight } = estimateBlockHeight(block, {
       isCompact,
       variant: block.variant || 'A',
       availableWidth: contentW,
       sceneH: scene.h,
     });
 
+    // Use measured height if available, otherwise use estimate
+    const height = measuredH != null ? measuredH : estimatedH;
+
     // Check if block overflows available space
+    const remainingSpace = contentBottom - currentY;
     const blockBottom = currentY + height;
     const isOverflowing = blockBottom > contentBottom;
 
-    // If overflowing, cap the height to remaining space (but respect minHeight)
-    const effectiveHeight = isOverflowing
-      ? Math.max(minHeight, contentBottom - currentY)
-      : height;
+    // ═══ COMPRESSION-AWARE: Try compression before capping ═══
+    // If a block overflows, check if it can be compressed
+    // (accordion, reveal-set, collapsible, step-reveal).
+    // Compression is BETTER than capping because:
+    //   - Content is accessible (expand on interaction)
+    //   - No content is lost (unlike clip)
+    //   - Block fits within scene bounds
+    let effectiveHeight = height;
+    let compressionDecision: CompressionDecision | undefined;
+
+    if (isOverflowing && measuredH != null) {
+      // Try compression — only when we have real measurements
+      const decision = computeCompressionDecision(
+        block,
+        measuredH,
+        remainingSpace,
+      );
+      if (decision) {
+        // Use compressed height instead of capping
+        effectiveHeight = decision.compressedHeight;
+        compressionDecision = decision;
+      } else {
+        // No compression available — cap to remaining space
+        effectiveHeight = Math.max(minHeight, remainingSpace);
+      }
+    } else if (isOverflowing) {
+      // No measurement yet — cap to remaining space
+      effectiveHeight = Math.max(minHeight, remainingSpace);
+    }
 
     resolved.push({
       block,
@@ -488,7 +529,8 @@ export function resolveSceneLayout(
       zIndex: 1,
       rotation: 0,
       key: block.id || `flow-${block.type}-${i}`,
-      isOverflowing,
+      isOverflowing: isOverflowing && !compressionDecision,
+      compression: compressionDecision,
     });
 
     currentY += effectiveHeight + gap;

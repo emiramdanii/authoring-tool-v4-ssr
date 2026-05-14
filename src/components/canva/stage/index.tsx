@@ -107,6 +107,7 @@ export default function Stage() {
   const pasteSchemaBlock = useCanvaStore(s => s.pasteSchemaBlock);
   const nudgeSchemaBlocks = useCanvaStore(s => s.nudgeSchemaBlocks);
   const deleteSchemaBlocks = useCanvaStore(s => s.deleteSchemaBlocks);
+  const canvasPreview = useCanvaStore(s => s.canvasPreview);
   const setZoom = useCanvaStore(s => s.setZoom);
   const storeSetFitZoom = useCanvaStore(s => s.setFitZoom);
   const zoomDelta = useCanvaStore(s => s.zoomDelta);
@@ -433,20 +434,20 @@ export default function Stage() {
                 className="absolute inset-0"
               >
                 <PageRenderer
-                  mode="canvas"
+                  mode={canvasPreview ? 'preview' : 'canvas'}
                   page={page}
                   currentPageIndex={currentPageIndex}
                   totalPages={pages.length}
-                  isTemplateSelected={true}
+                  isTemplateSelected={!canvasPreview}
                 />
               </motion.div>
             </AnimatePresence>
           </CanvasErrorBoundary>
 
-          {/* ══ Canvas-only overlays ═══════════════════════════ */}
+          {/* ══ Canvas-only overlays (hidden in preview mode) ═════ */}
 
           {/* Grid Overlay */}
-          {showGrid && (
+          {showGrid && !canvasPreview && (
             <div className="absolute inset-0 pointer-events-none" style={{
               backgroundImage: `linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)`,
               backgroundSize: `${gridSize}% ${gridSize}%`,
@@ -487,9 +488,9 @@ export default function Stage() {
             </div>
           )}
 
-          {/* Render editable elements on top of PageRenderer — ONLY for non-schema pages */}
+          {/* Render editable elements on top of PageRenderer — ONLY for non-schema pages, NOT in preview */}
           {/* Schema-driven pages use SchemaScreenRenderer exclusively; legacy elements[] must not overlap */}
-          {!isSchemaDriven && page.elements.length > 0 && (
+          {!canvasPreview && !isSchemaDriven && page.elements.length > 0 && (
             <div className="absolute inset-0" style={{ zIndex: Z.CANVAS_ELEMENT }}>
               {page.elements.map(el => (
                 <StageElement
@@ -508,8 +509,8 @@ export default function Stage() {
             </div>
           )}
 
-          {/* Template mode badge */}
-          {isTemplateMode && (
+          {/* Template mode badge (hidden in preview) */}
+          {isTemplateMode && !canvasPreview && (
             <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 ${
               isSchemaDriven
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'

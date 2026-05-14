@@ -459,3 +459,42 @@ Stage Summary:
 - Build passes with zero errors ✅
 - Pipeline is now solid: schema → SchemaEngine → SceneLayoutEngine → SchemaScreenRenderer → Canvas/Stage → Preview
 - Edit pipeline fully supports nested blocks: update, delete, nudge, duplicate, reorder all use findBlockOwner
+---
+Task ID: phase-c-authoring
+Agent: Super Z (main)
+Task: Build Phase C — Authoring Benar (keyboard fix, preview toggle, status feedback)
+
+Work Log:
+- Fixed Arrow key conflict: SceneNavigator previously used bare ArrowLeft/ArrowRight for scene navigation, conflicting with block nudge in use-stage-keyboard.ts
+- Removed SceneNavigator's local keydown listener — scene navigation is now centralized in CanvaBuilder's useKeyboardShortcuts registry
+- Changed scene navigation to Ctrl+ArrowLeft/Ctrl+ArrowRight (bare arrows = nudge blocks only)
+- Added scene state to canva store: sceneIndex, sceneTotal, setSceneState, navigateScene
+- Updated SchemaRenderer to use store's scene state instead of local useState — enables keyboard shortcut access
+- Added canvasPreview toggle to store — quick preview mode within canvas (no overlays, student view)
+- Updated Stage to pass mode='preview' to PageRenderer when canvasPreview is active
+- Hidden canvas-only overlays (grid, snap lines, template badge, editable elements) in preview mode
+- Added Preview/Edit toggle button in ToolbarActions (Eye/EyeOff icon, cyan accent when active)
+- Escape key exits preview mode first (before clearing selection)
+- Added scene indicator in StatusBar: "Scene X/Y" when multi-scene pages detected
+- Added block selection feedback in StatusBar: shows block type name when selected
+- Added canvas preview indicator in StatusBar: "Preview" badge when active
+- Selection is auto-cleared when entering preview mode (no editing state lingering)
+
+Stage Summary:
+- **8 files modified:**
+  - `src/core/layout/SceneNavigator.tsx` — Removed local keydown listener, centralized scene navigation
+  - `src/core/renderer/SchemaRenderer.tsx` — Uses store scene state, added useCanvaStore import
+  - `src/store/canva/types.ts` — Added sceneIndex, sceneTotal, setSceneState, navigateScene, canvasPreview, toggleCanvasPreview
+  - `src/store/canva/store.ts` — Removed duplicate initial values (now in UISlice)
+  - `src/store/canva/ui-slice.ts` — Added scene + preview state and actions
+  - `src/components/canva/stage/index.tsx` — canvasPreview-aware mode, hidden overlays in preview
+  - `src/components/canva/toolbar/ToolbarActions.tsx` — Preview/Edit toggle button
+  - `src/components/canva/CanvaBuilder.tsx` — Ctrl+Arrow scene shortcuts, Escape exits preview
+  - `src/components/canva/StatusBar.tsx` — Scene indicator, block type feedback, preview badge
+- **Build status:** tsc --noEmit ✅, next build ✅
+- **Keyboard shortcut map:**
+  - Arrow keys = nudge selected block (1px / Shift: 5%)
+  - Ctrl+ArrowLeft/Right = navigate scenes
+  - Ctrl+Z = undo, Ctrl+Y/Ctrl+Shift+Z = redo
+  - Escape = exit preview → clear selection
+  - All other shortcuts unchanged

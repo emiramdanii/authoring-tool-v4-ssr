@@ -118,9 +118,6 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPage = { ...page, templateType, templateVariant: 'A' as const, templateData: {} as Record<string, unknown> };
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
-    // Re-populate placeholder elements for export compat
-    newPage.elements = populateTemplateElements(newPage, createElId);
-
     // ═══ FASE 3: Derive schema directly from authoring ═════
     // When changing template type, derive schema from the current
     // authoring state. Pure one-way: Authoring → Schema → Canvas.
@@ -130,12 +127,19 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       if (schema) {
         schema.id = newPage.id;
         newPage.schema = schema;
+        // Schema-native page: elements[] is EMPTY.
+        // SchemaScreenRenderer is the single source of truth.
+        // No placeholder elements needed — prevents dual-render bug.
+        newPage.elements = [];
       } else {
         delete newPage.schema;
+        // Schema derivation failed — fall back to legacy element path
+        newPage.elements = populateTemplateElements(newPage, createElId);
       }
     } else {
       // Custom pages have no schema
       delete newPage.schema;
+      newPage.elements = [];
     }
 
     newPages[currentPageIndex] = newPage;

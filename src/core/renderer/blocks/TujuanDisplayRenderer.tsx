@@ -9,6 +9,9 @@ import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { RichText } from './RichText';
 import { fireConfettiMini } from '@/lib/confetti';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════
 // TUJUAN DISPLAY RENDERER — Premium with 3 Creative Variants
@@ -54,12 +57,20 @@ function VariantSelector({
 // VARIANT A "Klasik" — Header, numbered objective cards, profil
 // ═══════════════════════════════════════════════════════════════════
 function TujuanVariantA({
-  block, tokens, isCompact, isEditing, titleEditor,
+  block, tokens, isCompact, isEditing, titleEditor, compression,
 }: {
   block: TujuanDisplayBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
+  compression?: CompressionDecision;
 }) {
-  const objectives = block.objectives || [];
+  const allObjectives = block.objectives || [];
+
+  // ── Compression-aware objective visibility (reveal-set) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allObjectives.length,
+  });
+  const objectives = isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives;
 
   return (
     <div
@@ -196,6 +207,21 @@ function TujuanVariantA({
           </MicroInteraction>
         ))}
       </div>
+      {/* ═══ COMPRESSION: Show More button ════════════════════════
+       *  When compression hides objectives, show "Lihat lainnya".
+       *  This keeps the scene within 720px while letting the user
+       *  expand to see all objectives. */}
+      {hasMore && !block.profil && (
+        <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px' }}>
+          <ShowMoreButton
+            hiddenCount={hiddenCount}
+            onShowMore={showMore}
+            itemLabel="tujuan lainnya"
+            isCompact={isCompact}
+          />
+        </div>
+      )}
+
       {block.profil && (
         <div
           style={{
@@ -242,13 +268,21 @@ function TujuanVariantA({
 // VARIANT B "Checklist" — Checkbox style with checkmark circles
 // ═══════════════════════════════════════════════════════════════════
 function TujuanVariantB({
-  block, tokens, isCompact, isEditing, titleEditor,
+  block, tokens, isCompact, isEditing, titleEditor, compression,
 }: {
   block: TujuanDisplayBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
+  compression?: CompressionDecision;
 }) {
-  const objectives = block.objectives || [];
+  const allObjectives = block.objectives || [];
   const [checked, setChecked] = useState<Record<number, boolean>>({});
+
+  // ── Compression-aware objective visibility (reveal-set) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allObjectives.length,
+  });
+  const objectives = isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives;
 
   const toggleCheck = (idx: number) => {
     setChecked(prev => {
@@ -416,7 +450,7 @@ function TujuanVariantB({
               <div
                 style={{
                   height: '100%',
-                  width: `${(Object.values(checked).filter(Boolean).length / objectives.length) * 100}%`,
+                  width: `${(Object.values(checked).filter(Boolean).length / allObjectives.length) * 100}%`,
                   borderRadius: '99px',
                   background: `linear-gradient(90deg, ${tokens.color('y')}, ${tokens.color('g')})`,
                   transition: 'width 0.4s ease',
@@ -424,9 +458,19 @@ function TujuanVariantB({
               />
             </div>
             <span>
-              {Object.values(checked).filter(Boolean).length}/{objectives.length} tercapai
+              {Object.values(checked).filter(Boolean).length}/{allObjectives.length} tercapai
             </span>
           </div>
+        )}
+
+        {/* Compression: Show More button */}
+        {hasMore && (
+          <ShowMoreButton
+            hiddenCount={hiddenCount}
+            onShowMore={showMore}
+            itemLabel="tujuan lagi"
+            isCompact={isCompact}
+          />
         )}
       </div>
 
@@ -473,13 +517,21 @@ function TujuanVariantB({
 // VARIANT C "Peta Konsep" — Mind map style with central + satellites
 // ═══════════════════════════════════════════════════════════════════
 function TujuanVariantC({
-  block, tokens, isCompact, isEditing, titleEditor,
+  block, tokens, isCompact, isEditing, titleEditor, compression,
 }: {
   block: TujuanDisplayBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
+  compression?: CompressionDecision;
 }) {
-  const objectives = block.objectives || [];
-  const count = objectives.length;
+  const allObjectives = block.objectives || [];
+
+  // ── Compression-aware objective visibility (reveal-set) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allObjectives.length,
+  });
+  const objectives = isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives;
+  const count = allObjectives.length;
 
   // Calculate satellite positions in a circle around the center
   const getSatellitePosition = (index: number, total: number) => {
@@ -716,8 +768,8 @@ function TujuanVariantC({
 // ═══════════════════════════════════════════════════════════════════
 // MAIN COMPONENT — TujuanDisplayRenderer
 // ═══════════════════════════════════════════════════════════════════
-export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing }: {
-  block: TujuanDisplayBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing, compression }: {
+  block: TujuanDisplayBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
@@ -739,6 +791,7 @@ export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing }: {
     isCompact,
     isEditing,
     titleEditor,
+    compression,
   };
 
   return (

@@ -81,12 +81,17 @@ export type UISlice = Pick<
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage'
   | '_lastNudgeTime'
+  | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
+  | 'canvasPreview' | 'toggleCanvasPreview'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
   _schemaClipboard: null,
   selectedBlockIds: [],
   _lastNudgeTime: undefined,
+  sceneIndex: 0,
+  sceneTotal: 1,
+  canvasPreview: false,
 
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
@@ -310,6 +315,33 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!snapEnabled) return val;
     return Math.round(val / gridSize) * gridSize;
   },
+
+  // ── Scene Navigation (multi-scene overflow) ──────────────────
+  // SchemaRenderer updates these when the scene plan changes.
+  // Keyboard shortcuts (Ctrl+Arrow) and SceneNavigator call navigateScene().
+  setSceneState: (index, total) => set({ sceneIndex: index, sceneTotal: total }),
+  navigateScene: (index) => {
+    const { sceneTotal } = get();
+    const clamped = Math.max(0, Math.min(index, sceneTotal - 1));
+    set({ sceneIndex: clamped });
+  },
+
+  // ── Canvas Preview Mode ────────────────────────────────────
+  // Quick toggle to switch between editing (canvas) and preview mode.
+  // In preview mode: no selection overlays, no compression badges,
+  // no editing handles — content shown as students will see it.
+  toggleCanvasPreview: () => set(s => ({
+    canvasPreview: !s.canvasPreview,
+    // When entering preview, clear selection to avoid editing state lingering
+    ...(s.canvasPreview ? {} : {
+      selectedBlockId: null,
+      selectedBlockType: null,
+      editingBlockId: null,
+      selectedBlockIds: [],
+      selectedElId: null,
+      selectedElIds: [],
+    }),
+  })),
 
   // ── Layout Presets ────────────────────────────────────────────
   applyLayoutPreset: (presetId) => {

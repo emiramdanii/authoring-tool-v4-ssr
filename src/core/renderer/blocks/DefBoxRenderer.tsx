@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useCallback } from 'react';
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen, Sparkles, ChevronDown } from 'lucide-react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -9,6 +9,8 @@ import { RichText } from './RichText';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { useCanvaStore } from '../../../store/canva/store';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════
 // DEF BOX RENDERER — BSNP Definition Box with Variants & Step Mode
@@ -119,8 +121,8 @@ function DefBoxStepMode({
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
-  block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function DefBoxRenderer({ block, tokens, isCompact, isEditing, compression }: {
+  block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const colorKey = block.borderColor || 'y';
   const borderColor = tokens.color(colorKey);
@@ -139,6 +141,16 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
     tag: 'span',
     allowHtml: true,  // DefBox content often contains <strong>, <em>, <br/> from schema
   });
+
+  // ── Compression-aware visibility (collapsible strategy) ──────
+  // DefBox compression works differently from item-based blocks.
+  // When compressed with 'collapsible', the content is truncated
+  // and a "Selengkapnya" button is shown to expand.
+  const { isCompressed, isExpanded, showMore: expandContent } = useBlockCompression({
+    compression,
+    totalItems: 1, // DefBox is a single content unit, not a list
+  });
+  const isContentCollapsed = isCompressed && !isExpanded;
 
   // ── Step detection ───────────────────────────────────────────
   // DefBoxBlock doesn't have examples/sanctions fields in the type.
@@ -196,7 +208,8 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
             </div>
 
             {/* Content — step mode or inline */}
-            {shouldUseStepMode ? (
+            {/* When compressed with 'collapsible': truncate content and show expand button */}
+            {shouldUseStepMode && !isContentCollapsed ? (
               <DefBoxStepMode
                 steps={steps}
                 tokens={tokens}
@@ -212,6 +225,10 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                 color: tokens.color('text'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
+                maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
+                overflow: isContentCollapsed ? 'hidden' : undefined,
+                transition: 'max-height 0.3s ease-out',
+                position: 'relative',
               }}>
                 <InlineTextEditor
                   {...contentEditor}
@@ -219,7 +236,34 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                   style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
                   allowHtml={true}
                 />
+                {/* Fade-out gradient when collapsed */}
+                {isContentCollapsed && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                    style={{
+                      height: 30,
+                      background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.85))',
+                    }}
+                  />
+                )}
               </div>
+            )}
+            {/* Collapsible expand button */}
+            {isContentCollapsed && (
+              <button
+                onClick={expandContent}
+                className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors"
+                style={{
+                  background: tokens.colorAlpha(colorKey, 0.08),
+                  color: tokens.color(colorKey),
+                  fontSize: isCompact ? '9px' : '11px',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                }}
+              >
+                <ChevronDown size={isCompact ? 10 : 12} />
+                Selengkapnya
+              </button>
             )}
           </div>
         </div>
@@ -304,7 +348,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
               </PremiumBadge>
             </div>
 
-            {shouldUseStepMode ? (
+            {shouldUseStepMode && !isContentCollapsed ? (
               <DefBoxStepMode
                 steps={steps}
                 tokens={tokens}
@@ -321,6 +365,10 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                   borderLeft: `3px solid ${tokens.colorAlpha(colorKey, 0.3)}`,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
+                  maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
+                  overflow: isContentCollapsed ? 'hidden' : undefined,
+                  transition: 'max-height 0.3s ease-out',
+                  position: 'relative',
                 }}
               >
                 <InlineTextEditor
@@ -329,7 +377,18 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                   style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
                   allowHtml={true}
                 />
+                {isContentCollapsed && (
+                  <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                    style={{ height: 30, background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.85))' }} />
+                )}
               </div>
+            )}
+            {isContentCollapsed && (
+              <button onClick={expandContent}
+                className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors"
+                style={{ background: tokens.colorAlpha(colorKey, 0.08), color: tokens.color(colorKey), fontSize: isCompact ? '9px' : '11px', cursor: 'pointer', fontWeight: 700 }}>
+                <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
+              </button>
             )}
           </div>
         </div>
@@ -376,6 +435,10 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
               color: tokens.color('text'),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
+              maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,
+              overflow: isContentCollapsed ? 'hidden' : undefined,
+              transition: 'max-height 0.3s ease-out',
+              position: 'relative',
             }}
           >
             <InlineTextEditor
@@ -384,7 +447,18 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
               style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
               allowHtml={true}
             />
+            {isContentCollapsed && (
+              <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                style={{ height: 20, background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.85))' }} />
+            )}
           </div>
+          {isContentCollapsed && (
+            <button onClick={expandContent}
+              className="flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg transition-colors"
+              style={{ background: tokens.colorAlpha(colorKey, 0.06), color: tokens.color(colorKey), fontSize: isCompact ? '8px' : '9px', cursor: 'pointer', fontWeight: 700 }}>
+              <ChevronDown size={8} /> Selengkapnya
+            </button>
+          )}
         </div>
       </div>
     </div>

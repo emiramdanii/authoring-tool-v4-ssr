@@ -7,9 +7,12 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export function TpRenderer({ block, tokens, isCompact, isEditing }: {
-  block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean;
+export function TpRenderer({ block, tokens, isCompact, isEditing, compression }: {
+  block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -25,7 +28,14 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
     tag: 'span',
   });
 
-  const items = block.items || [];
+  const allItems = block.items || [];
+
+  // ── Compression-aware item visibility ──────────────────────
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allItems.length,
+  });
+  const items = isCompressed ? allItems.slice(0, visibleCount) : allItems;
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
@@ -104,6 +114,15 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
           );
         })}
       </div>
+
+      {hasMore && (
+        <ShowMoreButton
+          hiddenCount={hiddenCount}
+          onShowMore={showMore}
+          itemLabel="tujuan lainnya"
+          isCompact={isCompact}
+        />
+      )}
 
       {block.profil && (
         <div className="mt-4 p-3.5 rounded-xl premium-card-glow leading-relaxed"

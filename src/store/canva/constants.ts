@@ -10,6 +10,11 @@ export const MAX_HISTORY = 50;
 export const CANVA_STORAGE_KEY = 'canva_state_v2';
 
 export function createPage(label: string, templateType: PageTemplateType = 'custom'): CanvaPage {
+  // ═══ pageMode: Schema-driven for templates, elements for custom ═══
+  // This discriminator prevents dual-render at the type level.
+  // Template pages use schema as single source of truth.
+  // Custom pages use elements[] (legacy path, will be migrated later).
+  const isTemplate = templateType !== 'custom';
   return {
     id: generatePageId(),
     label,
@@ -21,6 +26,7 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
     colorPalette: null,
     navConfig: { ...DEFAULT_NAV_CONFIG },
     templateData: {},
+    pageMode: isTemplate ? 'schema' : 'elements',
     // v4: overlayElements removed — all elements in elements[]
   };
 }

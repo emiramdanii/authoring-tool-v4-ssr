@@ -217,6 +217,20 @@ export interface CanvaState {
   applyLayoutPreset: (presetId: string) => void;
   currentLayoutPreset: () => LayoutPreset | undefined;
 
+  // ── Scene Navigation (multi-scene overflow) ────────────────────
+  /** Current scene index for the current page (0-based, updated by SchemaRenderer) */
+  sceneIndex: number;
+  /** Total scenes for the current page (updated by SchemaRenderer) */
+  sceneTotal: number;
+  /** Update scene state (called by SchemaRenderer when scene plan changes) */
+  setSceneState: (index: number, total: number) => void;
+  /** Navigate to a specific scene (used by keyboard shortcuts and SceneNavigator) */
+  navigateScene: (index: number) => void;
+  /** Whether canvas is in quick-preview mode (hides overlays, shows content as students see it) */
+  canvasPreview: boolean;
+  /** Toggle canvas preview mode */
+  toggleCanvasPreview: () => void;
+
   // ── Actions: Stage ───────────────────────────────────────────
   clearStage: () => void;
 

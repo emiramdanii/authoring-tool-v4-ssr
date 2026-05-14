@@ -39,6 +39,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     // selectedBlockIds is provided by UISlice
     hoveredBlockId: null, // Hover context for blocks
     editingBlockId: null, // Inline editing context
+    // NOTE: sceneIndex, sceneTotal, canvasPreview are initialized in UISlice
     // _clipboard is provided by createElementSlice — no duplicate here
     leftPanelOpen: true,
     rightPanelOpen: true,

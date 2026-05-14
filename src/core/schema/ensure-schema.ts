@@ -192,6 +192,50 @@ export function isSchemaPage(page: CanvaPage): boolean {
 }
 
 /**
+ * DUAL-RENDER INVARIANT CHECK (dev mode only).
+ * Detects the #1 bug in SILSE: a page with BOTH schema AND elements[].
+ * When this happens, content renders twice in preview/export mode.
+ *
+ * Call this in dev mode from:
+ *   - PageRenderer (before render)
+ *   - Store middleware (on every state change)
+ *   - Export pipeline (before generating HTML)
+ *
+ * In production, this is a no-op (tree-shaken away).
+ */
+export function validateCanvaPageInvariant(page: CanvaPage, source?: string): void {
+  if (process.env.NODE_ENV === 'production') return;
+
+  const hasSchema = page.schema != null && page.schema.blocks?.length > 0;
+  const hasElements = page.elements != null && page.elements.length > 0;
+
+  if (hasSchema && hasElements) {
+    const src = source ? ` (${source})` : '';
+    const schemaBlocks = page.schema?.blocks?.length ?? 0;
+    console.error(
+      `[DUAL-RENDER BUG] Page "${page.label}"${src} has BOTH schema (${schemaBlocks} blocks) AND elements (${page.elements.length}). ` +
+      `This causes content to render twice in preview/export mode. ` +
+      `Schema-driven pages must have elements=[]. ` +
+      `Call migrateAllPages() to fix.`
+    );
+  }
+
+  // Also validate pageMode discriminator if set
+  if (page.pageMode === 'schema' && !hasSchema) {
+    console.warn(
+      `[INVARIANT] Page "${page.label}" has pageMode='schema' but no schema blocks. ` +
+      `This should not happen.`
+    );
+  }
+  if (page.pageMode === 'elements' && hasSchema) {
+    console.warn(
+      `[INVARIANT] Page "${page.label}" has pageMode='elements' but has schema. ` +
+      `This should not happen.`
+    );
+  }
+}
+
+/**
  * Check if a page uses the legacy templateData path.
  * These pages need TemplateAdapter conversion before rendering.
  * After ensurePageSchema() runs, this returns false even for
@@ -208,20 +252,46 @@ export function isLegacyPage(page: CanvaPage): boolean {
  * Called during persistence load to ensure all pages are
  * schema-native before first render.
  *
+ * CRITICAL: Also clears page.elements[] for schema-native pages.
+ * This is the data-level fix for the dual-render bug:
+ *   - If page.schema is populated → elements[] MUST be empty
+ *   - SchemaScreenRenderer is the single source of truth
+ *   - Legacy elements[] are no longer rendered for schema pages
+ *
  * Returns the same array reference if no migration was needed,
  * or a new array with migrated pages.
  */
 export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
   let anyMigrated = false;
   const result = pages.map(page => {
+    let updated = page;
+
+    // Step 1: Migrate legacy template pages to native schema
     if (!page.schema && page.templateType && page.templateType !== 'custom') {
       const schema = ensurePageSchema(page);
       if (schema) {
+        updated = { ...page, schema, elements: [], pageMode: 'schema' };
         anyMigrated = true;
-        return { ...page, schema }; // Immutable update
       }
     }
-    return page;
+
+    // Step 2: Clear elements[] for ANY page that has schema
+    // This fixes the dual-render bug at the data level:
+    // Schema-driven pages must NOT have elements[] populated,
+    // otherwise the legacy BlockRenderer overlay will render
+    // content on top of SchemaScreenRenderer.
+    if (updated.schema && updated.elements && updated.elements.length > 0) {
+      updated = { ...updated, elements: [], pageMode: 'schema' };
+      anyMigrated = true;
+    }
+
+    // Step 3: Ensure pageMode is set for all pages
+    if (!updated.pageMode) {
+      updated = { ...updated, pageMode: updated.schema ? 'schema' : 'elements' };
+      anyMigrated = true;
+    }
+
+    return updated;
   });
   return anyMigrated ? result : pages;
 }

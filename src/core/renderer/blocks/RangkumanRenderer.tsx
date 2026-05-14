@@ -11,6 +11,9 @@ import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavi
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 import { useCanvaStore } from '../../../store/canva/store';
+import { useBlockCompression } from '../../layout/useBlockCompression';
+import { ShowMoreButton } from '../../layout/ShowMoreButton';
+import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════
 // RANGKUMAN RENDERER — BSNP Summary / Reinforcement Block
@@ -477,8 +480,8 @@ function RangkumanStepMode({ concepts, tokens, isCompact, variant, onComplete }:
 // MAIN COMPONENT — RangkumanRenderer
 // ═══════════════════════════════════════════════════════════════════
 
-export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, tokens, isCompact, isEditing, interactive = true, mode }: {
-  block: RangkumanBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; mode?: import('../types').SchemaRenderMode;
+export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, tokens, isCompact, isEditing, interactive = true, mode, compression }: {
+  block: RangkumanBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; mode?: import('../types').SchemaRenderMode; compression?: CompressionDecision;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -501,7 +504,15 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
     tag: 'span',
   });
 
-  const concepts = block.concepts || [];
+  const allConcepts = block.concepts || [];
+
+  // ── Compression-aware concept visibility ──────────────────────
+  // When engine decides compression is needed, show fewer concepts
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+    compression,
+    totalItems: allConcepts.length,
+  });
+  const concepts = isCompressed ? allConcepts.slice(0, visibleCount) : allConcepts;
 
   // ── Fire celebration when all concepts reviewed ──
   const handleStepComplete = React.useCallback(() => {
@@ -650,6 +661,18 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           tokens={tokens}
           isCompact={isCompact}
         />
+      )}
+
+      {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
+      {hasMore && (
+        <div style={{ margin: isCompact ? '8px 12px' : '10px 18px' }}>
+          <ShowMoreButton
+            hiddenCount={hiddenCount}
+            onShowMore={showMore}
+            itemLabel="konsep lainnya"
+            isCompact={isCompact}
+          />
+        </div>
       )}
 
       {/* ═══ CLOSING STATEMENT ═══════════════════════════════════ */}

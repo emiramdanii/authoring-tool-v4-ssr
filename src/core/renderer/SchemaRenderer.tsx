@@ -16,7 +16,7 @@
 
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
 import {
   resolveSceneLayout,
@@ -28,6 +28,11 @@ import {
   type ResolvedBlockPosition,
   DEFAULT_SAFE_AREA,
 } from '../scene/SceneLayoutEngine';
+import { MeasuredBlock } from '../layout/BlockMeasurer';
+import { createMeasurementQueue, type MeasurementCommitQueue } from '../layout/MeasurementCommitQueue';
+import { computeScenePlan, createDerivedSchema, type ScenePlan } from '../layout/SceneOverflowEngine';
+import { SceneNavigator } from '../layout/SceneNavigator';
+import { useCanvaStore } from '@/store/canva-store';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -123,14 +128,44 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   const isCompact = mode === 'canvas';
   const hasCoverBlock = screen.blocks.length === 1 && (screen.blocks[0].type === 'cover' || screen.blocks[0].type === 'hero');
 
-  // ═══ SCENE RESOLUTION — Virtual canvas coordinate system ═══
-  // All positions are computed against this fixed resolution.
-  // Scale transform handles viewport adaptation — NO browser relayout.
-  const sceneRes = externalSceneRes || getSceneResolution(ratioId);
+  // ═══ MEASUREMENT COMMIT QUEUE ═════════════════════════════════
+  // Instead of re-rendering on every single measurement, we batch
+  // measurements and commit once after they settle.
+  // This eliminates layout jitter (N measurements → 1 re-render).
+  // Pipeline: Render (estimated) → Measure (batch) → Commit → Re-render (measured)
+  const [measurementVersion, setMeasurementVersion] = useState(0);
 
-  // ═══ SAFE AREA — Content must stay within these bounds ═══
-  // Computed from navConfig, not CSS guess.
-  // This replaces the ResizeObserver-based approach in PageFrame.
+  const commitQueue = useMemo<MeasurementCommitQueue>(() => {
+    return createMeasurementQueue((_measurements) => {
+      // Batch commit — single setState for all pending measurements
+      setMeasurementVersion(v => v + 1);
+    });
+  }, []);
+
+  // Dispose queue on unmount
+  useEffect(() => {
+    return () => commitQueue.dispose();
+  }, [commitQueue]);
+
+  const handleBlockMeasured = useCallback((blockId: string, height: number) => {
+    // Queue measurement — commit is deferred (batched)
+    commitQueue.add(blockId, height);
+  }, [commitQueue]);
+
+  // ═══ SCENE PLAN — Auto scene distribution ════════════════════
+  // When content overflows a single scene, SceneOverflowEngine
+  // computes a distribution plan: which blocks go in which scene.
+  // SOURCE SCHEMA IS IMMUTABLE — plan is derived, never mutates.
+  //
+  // Scene state lives in the canva store so that:
+  //   - Keyboard shortcuts (Ctrl+Arrow) can navigate scenes
+  //   - StatusBar can display "Scene X/Y"
+  //   - SceneNavigator can work without its own keydown listener
+  const sceneIndex = useCanvaStore(s => s.sceneIndex);
+  const sceneTotal = useCanvaStore(s => s.sceneTotal);
+  const setSceneState = useCanvaStore(s => s.setSceneState);
+
+  const sceneRes = externalSceneRes || getSceneResolution(ratioId);
   const safeArea = externalSafeArea || computeSafeArea({
     showTopNav,
     showBottomNav,
@@ -138,15 +173,42 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     pagePadding: hasCoverBlock ? 0 : 16,
   });
 
+  // Compute scene plan from measurements
+  const scenePlan = useMemo<ScenePlan>(() => {
+    const effectiveSafeArea = hasCoverBlock ? DEFAULT_SAFE_AREA : safeArea;
+    return computeScenePlan(screen, sceneRes, effectiveSafeArea, { isCompact });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen.blocks, screen.id, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
+
+  // Sync scene state to store whenever scene plan changes
+  useEffect(() => {
+    const totalScenes = scenePlan.totalScenes;
+    const clampedIndex = Math.min(sceneIndex, Math.max(0, totalScenes - 1));
+    setSceneState(clampedIndex, totalScenes);
+  }, [scenePlan.totalScenes, sceneIndex, setSceneState]);
+
+  // Get the derived schema for the current scene
+  const effectiveSchema = useMemo(() => {
+    if (scenePlan.isSingleScene) return screen;
+    const currentScene = Math.min(sceneIndex, scenePlan.totalScenes - 1);
+    return createDerivedSchema(screen, scenePlan.scenes[currentScene] || scenePlan.scenes[0]);
+  }, [screen, scenePlan, sceneIndex]);
+
   // ═══ SCENE LAYOUT RESOLUTION — SINGLE LAYOUT AUTHORITY ═══
   // resolveSceneLayout() is the ONLY source of block positions.
   // Browser flex/grid is NO LONGER the layout authority.
   // This eliminates the "mixed layout authority" problem.
+  //
+  // measurementVersion forces re-resolution when BlockMeasurer
+  // reports new heights. This is the "Commit" step of:
+  //   Render → Measure → Decide → Commit
   const resolvedBlocks = useMemo(() => {
     // Cover/hero pages: safe area is 0 (they fill the entire scene)
     const effectiveSafeArea = hasCoverBlock ? DEFAULT_SAFE_AREA : safeArea;
-    return resolveSceneLayout(screen.blocks, sceneRes, effectiveSafeArea, { isCompact });
-  }, [screen.blocks, sceneRes, safeArea, hasCoverBlock, isCompact]);
+    // Use effectiveSchema (derived for current scene) instead of full screen
+    return resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveSchema, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
 
   // ═══ BACKGROUND STYLE — applies to ALL screen types ═══
   const bg = screen.background;
@@ -221,10 +283,12 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {/* Browser only renders — it does NOT control layout. */}
       {/* INTERNAL block layout (flex/grid) is allowed. */}
       {/* SCENE layout (position, size) is controlled by the engine. */}
+      {/* BlockMeasurer wraps each block to report real DOM heights. */}
       {resolvedBlocks.map((resolved) => {
         const positionStyle = getBlockPositionStyle(resolved);
         // For cover/hero blocks that need pointer-events
         const pointerEvents = resolved.block.interactive ? 'auto' : undefined;
+        const blockId = resolved.block.id || resolved.key;
 
         return (
           <div
@@ -243,26 +307,61 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 overflow
               </div>
             )}
-            <SchemaBlockRenderer
-              block={resolved.block}
-              mode={mode}
-              tokens={tokens}
-              interactive={interactive}
-              isSelected={resolved.block.id ? resolved.block.id === selectedBlockId : (resolved.block.type === selectedBlockId)}
-              isMultiSelected={resolved.block.id ? (selectedBlockIds ?? []).includes(resolved.block.id) && (selectedBlockIds ?? []).length > 1 : false}
-              isHovered={resolved.block.id ? resolved.block.id === hoveredBlockId : (resolved.block.type === hoveredBlockId)}
-              isEditing={resolved.block.id ? resolved.block.id === editingBlockId : (resolved.block.type === editingBlockId)}
-              onSelect={onBlockSelect}
-              onHover={onBlockHover}
-              onEdit={onBlockEdit}
-              onDelete={onBlockDelete}
-              onMoveUp={onBlockMoveUp}
-              onMoveDown={onBlockMoveDown}
-              onDuplicate={onBlockDuplicate}
-            />
+            {/* Compression indicator (canvas mode only) */}
+            {resolved.compression && isCompact && (
+              <div
+                className="absolute -top-0.5 left-1 text-[7px] font-bold px-1.5 rounded-b flex items-center gap-0.5"
+                style={{ zIndex: 100, background: 'rgba(52, 211, 153, 0.8)', color: '#000' }}
+              >
+                {resolved.compression.strategy === 'accordion' ? '⊞' : resolved.compression.strategy === 'reveal-set' ? '⋯' : resolved.compression.strategy === 'step-reveal' ? '▸' : '▾'}
+                {' '}{resolved.compression.strategy}
+              </div>
+            )}
+            <MeasuredBlock
+              blockId={blockId}
+              onMeasured={handleBlockMeasured}
+            >
+              <SchemaBlockRenderer
+                block={resolved.block}
+                mode={mode}
+                tokens={tokens}
+                interactive={interactive}
+                compression={resolved.compression}
+                isSelected={resolved.block.id ? resolved.block.id === selectedBlockId : (resolved.block.type === selectedBlockId)}
+                isMultiSelected={resolved.block.id ? (selectedBlockIds ?? []).includes(resolved.block.id) && (selectedBlockIds ?? []).length > 1 : false}
+                isHovered={resolved.block.id ? resolved.block.id === hoveredBlockId : (resolved.block.type === hoveredBlockId)}
+                isEditing={resolved.block.id ? resolved.block.id === editingBlockId : (resolved.block.type === editingBlockId)}
+                onSelect={onBlockSelect}
+                onHover={onBlockHover}
+                onEdit={onBlockEdit}
+                onDelete={onBlockDelete}
+                onMoveUp={onBlockMoveUp}
+                onMoveDown={onBlockMoveDown}
+                onDuplicate={onBlockDuplicate}
+              />
+            </MeasuredBlock>
           </div>
         );
       })}
+
+      {/* ══ SCENE NAVIGATOR — for multi-scene pages ══════════════ */}
+      {/* Shows prev/next + dots when content overflows into multiple scenes */}
+      <SceneNavigator
+        currentScene={sceneIndex}
+        totalScenes={scenePlan.totalScenes}
+        onSceneChange={(idx) => setSceneState(idx, scenePlan.totalScenes)}
+        isCompact={isCompact}
+        position="bottom"
+      />
+
+      {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}
+      {scenePlan.totalScenes > 1 && isCompact && (
+        <div
+          className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/80 text-black z-50"
+        >
+          Scene {sceneIndex + 1}/{scenePlan.totalScenes}
+        </div>
+      )}
     </div>
   );
 });
@@ -279,6 +378,8 @@ export interface BlockRenderProps {
   mode: SchemaRenderMode;
   tokens: TokenResolver;
   interactive?: boolean;
+  /** Compression decision from the layout engine */
+  compression?: import('../layout/CompressionEngine').CompressionDecision;
   /** Whether this block is selected in the canvas editor */
   isSelected?: boolean;
   /** Whether this block is in multi-select (not the primary selection) */
@@ -303,7 +404,7 @@ export interface BlockRenderProps {
   onDuplicate?: (blockId: string) => void;
 }
 
-export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
+export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   const blockId = block.id || block.type;
 
@@ -326,7 +427,7 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     return (
       <BlockErrorBoundary blockType={block.type} blockId={blockId}>
         <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} />
+          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={false} isEditing={false} compression={compression} />
         </React.Suspense>
       </BlockErrorBoundary>
     );
@@ -349,11 +450,11 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
       onMoveDown={onMoveDown}
       onDuplicate={onDuplicate}
     >
-      <BlockErrorBoundary blockType={block.type} blockId={blockId}>
-        <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} />
-        </React.Suspense>
-      </BlockErrorBoundary>
+        <BlockErrorBoundary blockType={block.type} blockId={blockId}>
+          <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+            <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} />
+          </React.Suspense>
+        </BlockErrorBoundary>
     </BlockSelectionOverlay>
   );
 });
