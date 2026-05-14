@@ -106,6 +106,7 @@ export interface CanvaState {
   canUndo: () => boolean;
   canRedo: () => boolean;
   _pushHistory: () => void;
+  timeTravel: (targetIndex: number) => void;
 
   // ── Computed helpers ─────────────────────────────────────────
   currentPage: () => CanvaPage | undefined;

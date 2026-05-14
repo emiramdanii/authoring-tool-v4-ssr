@@ -24,7 +24,7 @@ import type { SchemaBlock } from '@/core/schema/types';
 export type HistorySlice = Pick<
   CanvaState,
   | '_history' | '_historyIdx' | '_skipHistory'
-  | 'undo' | 'redo' | 'canUndo' | 'canRedo' | '_pushHistory'
+  | 'undo' | 'redo' | 'canUndo' | 'canRedo' | '_pushHistory' | 'timeTravel'
 >;
 
 export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> = (_set, get) => ({
@@ -141,4 +141,33 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
 
   canUndo: () => get()._historyIdx > 0 || patchHistory.canUndo(),
   canRedo: () => get()._historyIdx < get()._history.length - 1 || patchHistory.canRedo(),
+
+  timeTravel: (targetIndex: number) => {
+    const result = patchHistory.jumpTo(targetIndex);
+    if (!result || result.patches.length === 0) return;
+
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page?.schema) return;
+
+    const schema = page.schema;
+    const blocks = schema.blocks as SchemaBlock[];
+    try {
+      const newBlocks = applyPatches(blocks, result.patches) as SchemaBlock[];
+      const newPages = [...pages];
+      newPages[currentPageIndex] = {
+        ...page,
+        schema: { ...schema, blocks: newBlocks },
+      };
+      _set({
+        pages: newPages,
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
+      });
+    } catch {
+      console.warn('[History] Time-travel patch application failed — state may have diverged');
+    }
+  },
 });

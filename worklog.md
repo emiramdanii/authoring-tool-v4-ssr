@@ -498,3 +498,51 @@ Stage Summary:
   - Ctrl+Z = undo, Ctrl+Y/Ctrl+Shift+Z = redo
   - Escape = exit preview → clear selection
   - All other shortcuts unchanged
+---
+Task ID: phase-b
+Agent: main
+Task: Phase B — CompressionBoundary integration for universal compression fallback
+
+Work Log:
+- Read all block renderers and analyzed compression support status
+- Added handlesCompression: boolean to BlockCapabilities interface
+- Updated DEFAULT_CAPABILITIES with handlesCompression: false
+- Marked 12 natively-compressing blocks with handlesCompression: true
+- Created CompressionBoundary component at src/core/layout/CompressionBoundary.tsx
+- Integrated CompressionBoundary into SchemaBlockRenderer
+- Fixed BlockSelectionOverlay missing handlesCompression in fallback
+- Build verified: tsc --noEmit clean, next build clean
+- Pushed to git: 54472e9
+
+Stage Summary:
+- Phase B complete: ALL block types now support compression automatically
+- Native handlers (12): petunjuk, tp, alur, kuis, def-box, tujuan-display, materi-section, diskusi, refleksi, penutup, tabel-accord, rangkuman
+- Boundary-wrapped: skenario, nc-grid, ftab, nk-card, motivasi, game blocks, cover, hero, hasil
+- Architecture: handlesCompression flag -> CompressionBoundary -> CompressedBlockWrapper (if needed)
+---
+Task ID: phase-b
+Agent: main
+Task: Phase B — Strategy-aware compression UI integration into block renderers
+
+Work Log:
+- Scanned all 30+ block renderers, identified 5 target renderers for Phase B
+- Read CompressedBlockWrapper, CompressionEngine, useBlockCompression, CompressionBoundary
+- Analyzed gap: renderers used generic "slice + ShowMoreButton" regardless of strategy
+- Upgraded PetunjukRenderer with accordion mode (collapsible item headers + expand/collapse per item)
+- Upgraded TujuanDisplayRenderer (all 3 variants A/B/C) with reveal-set fade gradient + collapsible toggle
+- Upgraded MateriSectionRenderer (all 3 variants) with accordion headers for content blocks
+- Verified KuisRenderer already has step-reveal inherent (question-by-question navigation)
+- Verified DefBoxRenderer already has collapsible compression natively
+- Fixed syntax error (missing paren in TujuanDisplayRenderer ternary)
+- Fixed duplicate import (ChevronDown/ChevronUp in TujuanDisplayRenderer)
+- Build verified: tsc --noEmit clean, next build clean
+- Git committed and pushed to origin/main (2a433a7)
+
+Stage Summary:
+- Phase B complete: 3 renderers upgraded with strategy-aware compression UI
+- PetunjukRenderer → accordion mode (icon + title headers, expand/collapse)
+- TujuanDisplayRenderer → reveal-set (fade gradient + Eye toggle) + collapsible (Chevron toggle)
+- MateriSectionRenderer → accordion headers for child blocks + collapsible toggle
+- KuisRenderer + DefBoxRenderer already working correctly (no changes needed)
+- 335 lines added, 49 lines removed across 3 files
+- Build clean, pushed to git

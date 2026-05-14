@@ -19,6 +19,7 @@ import {
   RefreshCw,
   ArrowDownToLine,
   FilePlus2,
+  History,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -36,6 +37,7 @@ import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import LayerPanel from './left-panel/LayerPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
+import HistoryPanel from './left-panel/HistoryPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
@@ -52,6 +54,7 @@ const TABS: { id: LeftTab; label: string; icon: React.ReactNode; accent?: string
   { id: 'layer', label: 'Layer', icon: <Layers size={16} /> },
   { id: 'sisipkan', label: 'Sisipkan', icon: <Plus size={16} />, accent: 'teal' },
   { id: 'halamanBaru', label: '+ Halaman', icon: <FilePlus2 size={16} />, accent: 'sky' },
+  { id: 'riwayat', label: 'Riwayat', icon: <History size={16} />, accent: 'violet' },
 ];
 
 export default function LeftPanel() {
@@ -72,6 +75,8 @@ export default function LeftPanel() {
               activeClass = 'text-teal-400 border-b-2 border-teal-400 bg-teal-500/5';
             } else if (tab.accent === 'sky' && isActive) {
               activeClass = 'text-sky-400 border-b-2 border-sky-400 bg-sky-500/5';
+            } else if (tab.accent === 'violet' && isActive) {
+              activeClass = 'text-violet-400 border-b-2 border-violet-400 bg-violet-500/5';
             } else if (isActive) {
               activeClass = 'text-app-accent border-b-2 border-app-accent bg-app-accent/5';
             } else {
@@ -98,6 +103,7 @@ export default function LeftPanel() {
         {leftTab === 'layer' && <LayerPanel />}
         {leftTab === 'sisipkan' && <SisipkanContent />}
         {leftTab === 'halamanBaru' && <HalamanBaruContent />}
+        {leftTab === 'riwayat' && <HistoryPanel />}
       </div>
 
       {/* Bottom: Right Panel toggle */}

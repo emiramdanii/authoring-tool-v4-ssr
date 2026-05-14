@@ -166,9 +166,47 @@ export class PatchHistory {
     return this.entries.slice(-limit);
   }
 
+  /** Get all history entries */
+  getAllEntries(): PatchHistoryEntry[] {
+    return this.entries;
+  }
+
   /** Get a specific entry by index */
   getEntry(index: number): PatchHistoryEntry | undefined {
     return this.entries[index];
+  }
+
+  /**
+   * Get the patches needed to jump from currentIndex to targetIndex.
+   * Returns { patches, inversePatches } or null if target is invalid.
+   *
+   * To go BACKWARD (targetIndex < currentIndex): collect inversePatches from entries [targetIndex+1 .. currentIndex]
+   * To go FORWARD  (targetIndex > currentIndex): collect forward patches from entries [currentIndex+1 .. targetIndex]
+   */
+  jumpTo(targetIndex: number): { patches: Patch[]; inversePatches: Patch[] } | null {
+    if (targetIndex < -1 || targetIndex >= this.entries.length) return null;
+    if (targetIndex === this.currentIndex) return null;
+
+    const allPatches: Patch[] = [];
+    const allInverse: Patch[] = [];
+
+    if (targetIndex < this.currentIndex) {
+      // Going backward: apply inverse patches in reverse order
+      for (let i = this.currentIndex; i > targetIndex; i--) {
+        allPatches.push(...this.entries[i].inversePatches);
+        allInverse.push(...this.entries[i].patches);
+      }
+    } else {
+      // Going forward: apply forward patches in order
+      for (let i = this.currentIndex + 1; i <= targetIndex; i++) {
+        allPatches.push(...this.entries[i].patches);
+        allInverse.push(...this.entries[i].inversePatches);
+      }
+    }
+
+    this.currentIndex = targetIndex;
+    this.notify();
+    return { patches: allPatches, inversePatches: allInverse };
   }
 
   // ── Batch Operations ─────────────────────────────────────────

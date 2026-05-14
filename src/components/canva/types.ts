@@ -159,7 +159,7 @@ export type ElementsCanvaPage = CanvaPage & {
   schema?: undefined;
 };
 
-export type LeftTab = 'halaman' | 'layer' | 'sisipkan' | 'halamanBaru';
+export type LeftTab = 'halaman' | 'layer' | 'sisipkan' | 'halamanBaru' | 'riwayat';
 /** @deprecated Legacy tab names — used only for localStorage migration */
 export type LegacyLeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers' | 'rakit' | 'layer' | 'tambah';
 export type Tool = 'select' | 'text';
