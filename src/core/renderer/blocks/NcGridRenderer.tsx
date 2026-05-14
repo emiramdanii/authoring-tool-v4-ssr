@@ -7,6 +7,7 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
 
 // ═══════════════════════════════════════════════════════════════════
 // NC GRID RENDERER — BSNP Norma Card Grid with Creative Variants
@@ -427,7 +428,7 @@ function NcGridStepMode({ block, tokens, isCompact, interactive, variant }: {
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
+export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
   block: NcGridBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   const cards = block.cards || [];
@@ -435,7 +436,12 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
     (block.variant as 'A' | 'B' | 'C') || 'A'
   );
   const variant = currentVariant;
-  const isCompressed = compression?.isCompressed ?? false;
+
+  // ── Compression-aware visibility (reveal-set strategy) ───────
+  const { isCompressed } = useBlockCompression({
+    compression,
+    totalItems: cards.length,
+  });
 
   // Determine the card list container based on variant
   const CardComponent = NcGridCardByVariant(variant);
@@ -507,4 +513,4 @@ export function NcGridRenderer({ block, tokens, isCompact, isEditing, interactiv
       </div>
     </PremiumBlockWrapper>
   );
-}
+});

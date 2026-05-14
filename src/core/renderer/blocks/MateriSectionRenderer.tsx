@@ -873,7 +873,7 @@ function MateriVariantPill({
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function MateriSectionRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
+export const MateriSectionRenderer = React.memo(function MateriSectionRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
   tokens: TokenResolver;
@@ -915,4 +915,4 @@ export function MateriSectionRenderer({ block, mode, tokens, interactive, isComp
       </div>
     </PremiumBlockWrapper>
   );
-}
+});

@@ -57,14 +57,6 @@ function resolveColor(palette: ColorPalette | null, key: string, fallback: strin
 }
 
 /**
- * @deprecated REMOVED in FASE 4 — always returned undefined.
- * Theme resolution now uses TokenResolver directly.
- */
-export function inferThemeId(_palette: ColorPalette | null): string | undefined {
-  return undefined;
-}
-
-/**
  * Create custom token overrides from a ColorPalette.
  * This allows legacy pages to get their palette colors
  * while still using the token system.

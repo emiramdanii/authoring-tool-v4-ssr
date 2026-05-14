@@ -37,6 +37,8 @@ export interface BlockSelectionOverlayProps {
   blockId: string;
   /** Block type (for registry lookup) */
   blockType: string;
+  /** Block index in schema.blocks (for drag-reorder) */
+  blockIndex?: number;
   /** Whether this block is currently selected */
   isSelected: boolean;
   /** Whether this block is in multi-select but not the primary selection */
@@ -47,6 +49,8 @@ export interface BlockSelectionOverlayProps {
   isEditing: boolean;
   /** Whether we're in canvas (compact) mode */
   isCompact: boolean;
+  /** Whether this block is currently being drag-reordered on canvas */
+  isBeingDragged?: boolean;
   /** Callback: block clicked */
   onSelect: (blockId: string, blockType: string, addToSelection?: boolean) => void;
   /** Callback: block hovered */
@@ -61,6 +65,8 @@ export interface BlockSelectionOverlayProps {
   onMoveDown?: (blockId: string) => void;
   /** Callback: duplicate this block */
   onDuplicate?: (blockId: string) => void;
+  /** Callback: drag grip handle pointerdown (initiates canvas drag-reorder) */
+  onDragHandleDown?: (e: React.PointerEvent, blockIndex: number) => void;
   /** The block content to render inside the overlay */
   children: ReactNode;
 }
@@ -69,14 +75,16 @@ export interface BlockSelectionOverlayProps {
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════
 
-export function BlockSelectionOverlay({
+export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
   blockId,
   blockType,
+  blockIndex,
   isSelected,
   isMultiSelected,
   isHovered,
   isEditing,
   isCompact,
+  isBeingDragged,
   onSelect,
   onHover,
   onEdit,
@@ -84,6 +92,7 @@ export function BlockSelectionOverlay({
   onMoveUp,
   onMoveDown,
   onDuplicate,
+  onDragHandleDown,
   children,
 }: BlockSelectionOverlayProps) {
   // Look up block definition from registry for capabilities and metadata
@@ -153,6 +162,15 @@ export function BlockSelectionOverlay({
     onDuplicate?.(blockId);
   }, [onDuplicate, blockId]);
 
+  const handleDragGripDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return; // left click only
+    e.stopPropagation();
+    e.preventDefault();
+    if (blockIndex !== undefined && onDragHandleDown) {
+      onDragHandleDown(e, blockIndex);
+    }
+  }, [blockIndex, onDragHandleDown]);
+
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     if (!isCompact || !isSelected) return;
     e.preventDefault();
@@ -170,11 +188,13 @@ export function BlockSelectionOverlay({
         : '';
 
   // ── Render ────────────────────────────────────────────────────
+  const isBeingDraggedClass = isBeingDragged ? 'opacity-40 pointer-events-none' : '';
+
   return (
     <div
       data-block-id={blockId}
       data-block-type={blockType}
-      className={`relative group ${ringClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg' : ''}`}
+      className={`relative group ${ringClass} ${isBeingDraggedClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg' : ''}`}
       onClick={handleClick}
       onMouseDown={handleDragStart}
       onMouseEnter={handleMouseEnter}
@@ -182,6 +202,7 @@ export function BlockSelectionOverlay({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
+      {/* Perf: React.memo — only re-renders when props actually change */}
       {/* ── Block content ──────────────────────────────────────── */}
       {children}
 
@@ -193,6 +214,17 @@ export function BlockSelectionOverlay({
             <span>{blockIcon}</span>
             <span>{blockName}</span>
           </div>
+          {/* Drag grip handle (canvas drag-reorder) */}
+          {onDragHandleDown && blockIndex !== undefined && (
+            <button
+              onPointerDown={handleDragGripDown}
+              className="px-1 py-0.5 bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-bold rounded-t-md cursor-grab active:cursor-grabbing transition-colors select-none"
+              title="Drag untuk reorder"
+              aria-label="Pegang untuk menggeser urutan block"
+            >
+              ⠿
+            </button>
+          )}
           {/* Reorder: Move Up */}
           {onMoveUp && (
             <button
@@ -278,4 +310,4 @@ export function BlockSelectionOverlay({
       )}
     </div>
   );
-}
+});

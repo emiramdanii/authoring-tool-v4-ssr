@@ -8,8 +8,9 @@ import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { fireConfettiMini } from '@/lib/confetti';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
 
-export function NormaKartuRenderer({ block, tokens, isCompact, isEditing, compression }: {
+export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const colorMap: Record<string, string> = {
@@ -20,7 +21,12 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing, compre
   };
   const colorKey = colorMap[block.normaType] || 'y';
   const color = tokens.color(colorKey);
-  const isCompressed = compression?.isCompressed ?? false;
+
+  // ── Compression-aware visibility (accordion strategy) ────────
+  const { isCompressed } = useBlockCompression({
+    compression,
+    totalItems: 1, // NormaKartu is a single card unit
+  });
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -153,4 +159,4 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing, compre
     </div>
     </PremiumBlockWrapper>
   );
-}
+});

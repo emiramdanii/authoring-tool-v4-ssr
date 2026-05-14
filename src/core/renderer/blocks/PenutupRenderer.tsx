@@ -12,7 +12,7 @@ import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 
-export function PenutupRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
+export const PenutupRenderer = React.memo(function PenutupRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
   block: PenutupBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   const titleEditor = useInlineEditor({
@@ -174,4 +174,4 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
     <StepCompletionOverlay show tokens={tokens} accent="g" completionText="PEMBELAJARAN SELESAI!" isCompact={isCompact} />
     </PremiumBlockWrapper>
   );
-}
+});

@@ -10,7 +10,7 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export function AlurRenderer({ block, tokens, isCompact, isEditing, compression }: {
+export const AlurRenderer = React.memo(function AlurRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: AlurBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const titleEditor = useInlineEditor({
@@ -76,4 +76,4 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing, compression 
     </div>
     </PremiumBlockWrapper>
   );
-}
+});

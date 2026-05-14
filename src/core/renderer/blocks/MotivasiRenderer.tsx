@@ -9,6 +9,7 @@ import { RichText } from './RichText';
 import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
 
 // ═══════════════════════════════════════════════════════════════════
 // MOTIVASI RENDERER — BSNP Apersepsi / Motivation Hook
@@ -592,7 +593,7 @@ function MotivasiVariantKutipan({
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function MotivasiRenderer({ block, tokens, isCompact, isEditing, compression }: {
+export const MotivasiRenderer = React.memo(function MotivasiRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: MotivasiBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
@@ -617,7 +618,11 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing, compress
     multiline: true,
   });
 
-  const isCompressed = compression?.isCompressed ?? false;
+  // ── Compression-aware visibility (collapsible strategy) ──────
+  const { isCompressed } = useBlockCompression({
+    compression,
+    totalItems: 1, // Motivasi is a single content unit
+  });
 
   const gradientFrom = block.visual?.bgGradient?.[0] || 'y';
 
@@ -645,4 +650,4 @@ export function MotivasiRenderer({ block, tokens, isCompact, isEditing, compress
       </div>
     </PremiumBlockWrapper>
   );
-}
+});

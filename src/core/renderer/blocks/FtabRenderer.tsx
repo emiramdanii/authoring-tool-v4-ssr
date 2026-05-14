@@ -11,6 +11,7 @@ import type { SchemaBlockRenderer as SchemaBlockRendererType } from '../SchemaRe
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
 
 const SchemaBlockRenderer = React.lazy(() =>
   import('../SchemaRenderer').then(m => ({ default: m.SchemaBlockRenderer }))
@@ -59,7 +60,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
   );
 }
 
-export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
+export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
   block: FtabBlock; mode: SchemaRenderMode; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const [activeTab, setActiveTab] = React.useState(0);
@@ -72,7 +73,12 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
 
   const tabs = block.tabs || [];
   const tab = tabs[activeTab];
-  const isCompressed = compression?.isCompressed ?? false;
+
+  // ── Compression-aware visibility (accordion strategy) ────────
+  const { isCompressed } = useBlockCompression({
+    compression,
+    totalItems: tabs.length,
+  });
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
@@ -129,4 +135,4 @@ export function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEd
     </div>
     </PremiumBlockWrapper>
   );
-}
+});

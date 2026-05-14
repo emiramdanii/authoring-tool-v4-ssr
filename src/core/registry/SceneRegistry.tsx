@@ -86,13 +86,13 @@ import {
   RangkumanRenderer,
 } from '../renderer/blocks';
 
-// ── Eager imports (game renderers used in most lessons) ──────────
-import {
-  SortirGameRenderer,
-  RodaGameRenderer,
-} from '../renderer/blocks';
-
-// ── Lazy imports (heavy game renderers — grid generation, etc.) ──
+// ── Lazy imports (heavy game renderers — all games are lazy-loaded) ──
+const SortirGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/SortirGameRenderer').then(m => ({ default: m.SortirGameRenderer }))
+);
+const RodaGameRenderer = React.lazy(() =>
+  import('../renderer/blocks/RodaGameRenderer').then(m => ({ default: m.RodaGameRenderer }))
+);
 const MemoryGameRenderer = React.lazy(() =>
   import('../renderer/blocks/MemoryGameRenderer').then(m => ({ default: m.MemoryGameRenderer }))
 );

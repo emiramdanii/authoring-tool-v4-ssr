@@ -39,18 +39,17 @@ export interface CanvaElement {
   moduleId?: string; // UUID-based stable reference to modules[] (preferred)
   kuisId?: string;   // UUID-based stable reference to kuis[] (preferred)
   kuisIds?: string[]; // Multiple kuis IDs — for template pages with multiple questions
-  /** @deprecated Use moduleId/kuisId instead — array indices break when items are reordered */
+  /** @deprecated Use moduleId/kuisId instead — array indices break when items are reordered.
+   *  TODO(D-2): Still needed as fallback in module-resolver.ts, sync-slice.ts,
+   *  element-slice.ts, GameWidget, QuizWidget. Cannot remove until all
+   *  saved data has been migrated to use moduleId/kuisId exclusively.
+   */
   dataIdx?: number;
   // Layout variant for module rendering
   layoutVariant?: 'A' | 'B' | 'C' | 'D';
   // ── Text styling (teks element) ──
   textAlign?: 'left' | 'center' | 'right';
   fontWeight?: number; // 100-900
-  // ── Placeholder flag (REMOVED in v4) ──
-  // Was used by the old lock/unlock model to mark template-generated elements.
-  // Now all elements are treated uniformly — no lock/unlock distinction.
-  /** @deprecated v4: No longer used. All elements render uniformly. */
-  isPlaceholder?: boolean;
   // ── Image element properties ──
   imageUrl?: string;      // URL or data URL of the image
   imageFit?: 'cover' | 'contain' | 'fill' | 'none'; // CSS object-fit behavior
@@ -103,14 +102,21 @@ export interface CanvaPage {
    *    - ensurePageSchema() Path 2: promotes templateData.schemaScreen → page.schema
    *    - populateTemplateElements(): reads module/kuis IDs (now schema-first with fallback)
    *    - background-slice updateTemplateData(): custom pages fallback
+   *    - PageSettingsSection.tsx: Quick edit for template fields (line 261)
+   *    - persistence-slice.ts: Backward compat during loadFromStorage/loadFromDB
+   *    - TemplateAdapter.ts: convertToSchema() reads page.templateData
    *  MIGRATION PATH: After all users have re-saved, this field can be removed.
    *  New code should NEVER write to templateData — use page.schema instead.
+   *  TODO(D-2): Migrate PageSettingsSection.tsx away from updateTemplateData(),
+   *  then this field can be made optional and eventually removed.
    */
   templateData: Record<string, unknown>;
   // ── Overlay elements (v3 — Phase 1) ── REMOVED in v4.
   // All elements now live in elements[]. The overlay system was part of
   // the old locked/unlocked model which has been removed.
-  // Kept as optional for backward compat during loadFromStorage migration.
+  // Kept as optional for backward compat during loadFromStorage migration
+  // (see persistence-slice.ts:89 — reads overlayElements and merges into elements[]).
+  // TODO(D-2): After migration window, remove this field and the merge logic.
   /** @deprecated v4: Always empty after load. Merged into elements[] on load. */
   overlayElements?: CanvaElement[];
   // ── Template layout variant (Phase 3) ──
@@ -160,8 +166,6 @@ export type ElementsCanvaPage = CanvaPage & {
 };
 
 export type LeftTab = 'halaman' | 'layer' | 'sisipkan' | 'halamanBaru' | 'riwayat';
-/** @deprecated Legacy tab names — used only for localStorage migration */
-export type LegacyLeftTab = 'pages' | 'templates' | 'elems' | 'ratio' | 'layers' | 'rakit' | 'layer' | 'tambah';
 export type Tool = 'select' | 'text';
 export type ResizeDir = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | 'tm' | 'bm';
 

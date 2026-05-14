@@ -173,6 +173,12 @@ export function PageRenderer({
     duplicateBlock(blockId);
   }, [duplicateBlock]);
 
+  // ── Canvas drag-reorder handler ──────────────────────────────────
+  const reorderSchemaBlocks = useCanvaStore(s => s.reorderSchemaBlocks);
+  const handleBlockReorder = React.useCallback((fromIndex: number, toIndex: number) => {
+    reorderSchemaBlocks(fromIndex, toIndex);
+  }, [reorderSchemaBlocks]);
+
   // ═══ SCENE ENGINE PROPS ════════════════════════════════════
   // FASE 1C: Pass scene resolution + safe area to SchemaScreenRenderer.
   // This establishes scene engine as the SINGLE layout authority.
@@ -211,6 +217,7 @@ export function PageRenderer({
           onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
           onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
           onBlockDuplicate={mode === 'canvas' ? handleBlockDuplicate : undefined}
+          onBlockReorder={mode === 'canvas' ? handleBlockReorder : undefined}
           sceneResolution={sceneResolution}
           safeArea={safeArea}
           ratioId={ratioId}

@@ -9,6 +9,7 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, StepCompletionOverlay, P
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration, fireConfettiMini } from '@/lib/confetti';
+import { useBlockCompression } from '../../layout/useBlockCompression';
 
 // ═══════════════════════════════════════════════════════════════════
 // KUIS RENDERER — Premium Quiz with Full Visual FX + Variant A/B/C
@@ -353,7 +354,11 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
   // Kuis naturally shows one question at a time (step-reveal).
   // When compressed, we switch to the most compact variant (C "Ringkas")
   // and hide decorative elements (streak badge, progress aurora).
-  const isCompressed = compression?.isCompressed ?? false;
+  const questions = block.questions || [];
+  const { isCompressed } = useBlockCompression({
+    compression,
+    totalItems: questions.length,
+  });
   const effectiveVariant = isCompressed ? 'C' as const : variant;
 
   // ── Replay watcher: reset all state when replayGeneration bumps ──
@@ -364,7 +369,6 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
     setShowExplanation(false);
   }, [replayGeneration]);
 
-  const questions = block.questions || [];
   const q = questions[current];
   const totalAnswered = React.useMemo(
     () => Object.keys(answers).length,

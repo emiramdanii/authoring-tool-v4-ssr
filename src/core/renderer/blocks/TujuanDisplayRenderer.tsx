@@ -877,7 +877,7 @@ function TujuanVariantC({
 // ═══════════════════════════════════════════════════════════════════
 // MAIN COMPONENT — TujuanDisplayRenderer
 // ═══════════════════════════════════════════════════════════════════
-export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing, compression }: {
+export const TujuanDisplayRenderer = React.memo(function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: TujuanDisplayBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
@@ -914,4 +914,4 @@ export function TujuanDisplayRenderer({ block, tokens, isCompact, isEditing, com
       </div>
     </PremiumBlockWrapper>
   );
-}
+});

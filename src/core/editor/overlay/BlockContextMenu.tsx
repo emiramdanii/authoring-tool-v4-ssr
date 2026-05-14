@@ -63,9 +63,10 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   const isEditing = editingBlockId === blockId;
   const isMultiSelect = selectedBlockIds.length > 1;
 
-  // Pages to move to
+  // Pages to move to (exclude current page)
+  // Fallback label: "Halaman X" if page has no label
   const otherPages = pages
-    .map((p, i) => ({ label: p.label, index: i }))
+    .map((p, i) => ({ label: p.label || `Halaman ${i + 1}`, index: i }))
     .filter(p => p.index !== currentPageIndex);
 
   // ── Viewport-aware positioning ────────────────────────────────

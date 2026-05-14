@@ -148,6 +148,9 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   // FASE 3: updateTemplateData is deprecated. New code should update
   // page.schema directly. This action remains for backward compat
   // with any UI that still writes to templateData.
+  // TODO(D-2): Still actively called in PageSettingsSection.tsx:261.
+  // Migrate that call site to use updateSchemaBlock() or direct schema
+  // mutations, then remove this action.
   // @deprecated — use updateSchemaBlock() or direct schema mutations instead
   updateTemplateData: (key, value) => {
     const { pages, currentPageIndex } = get();

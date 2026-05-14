@@ -11,7 +11,7 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export function TpRenderer({ block, tokens, isCompact, isEditing, compression }: {
+export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
@@ -148,4 +148,4 @@ export function TpRenderer({ block, tokens, isCompact, isEditing, compression }:
     </div>
     </PremiumBlockWrapper>
   );
-}
+});

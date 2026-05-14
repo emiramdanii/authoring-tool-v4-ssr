@@ -121,7 +121,7 @@ function DefBoxStepMode({
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export function DefBoxRenderer({ block, tokens, isCompact, isEditing, compression }: {
+export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const colorKey = block.borderColor || 'y';
@@ -464,4 +464,4 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing, compressio
     </div>
     </PremiumBlockWrapper>
   );
-}
+});

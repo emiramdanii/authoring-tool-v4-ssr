@@ -425,7 +425,7 @@ function CoverVariantC({
 // ═══════════════════════════════════════════════════════════════════
 // MAIN COMPONENT — CoverRenderer
 // ═══════════════════════════════════════════════════════════════════
-export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing }: {
+export const CoverRenderer = React.memo(function CoverRenderer({ block, tokens, interactive, isCompact, isEditing }: {
   block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean;
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
@@ -468,4 +468,4 @@ export function CoverRenderer({ block, tokens, interactive, isCompact, isEditing
       </div>
     </PremiumBlockWrapper>
   );
-}
+});

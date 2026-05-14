@@ -1289,9 +1289,12 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     });
   },
 
-  // ── Move Block to Another Page ──────────────────────────────────
-  // Removes the block from the current page and appends it to the
-  // target page. Used by context menu "Move to Page" action.
+  // ── Move Block to Another Page ─────────────────────────────────
+  // Removes a top-level block from the current page and appends it
+  // to the target page. Only top-level blocks can be moved (nested
+  // blocks belong to their parent composite). After the move, the
+  // editor navigates to the target page so the user can see the result.
+  // Uses snapshot-based undo via _pushHistory (modifies two pages).
   moveBlockToPage: (blockId, targetPageIndex) => {
     const { pages, currentPageIndex } = get();
     if (targetPageIndex === currentPageIndex) return;
@@ -1308,13 +1311,22 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       return;
     }
 
+    // Only allow top-level blocks (not nested inside composites)
     const blockIdx = sourceSchema.blocks.findIndex(b => b.id === blockId);
-    if (blockIdx === -1) return;
+    if (blockIdx === -1) {
+      // Block might be nested — check with findBlockOwner
+      const owner = findBlockOwner(sourceSchema.blocks, blockId);
+      if (owner && owner.kind !== 'top-level') {
+        toast.warning('Block bersarang tidak dapat dipindahkan ke halaman lain');
+      }
+      return;
+    }
 
     get()._pushHistory();
 
     // Remove from source page
     const movedBlock = sourceSchema.blocks[blockIdx];
+    const blockName = ((movedBlock as unknown) as Record<string, unknown>).title as string || movedBlock.type || 'Block';
     const newSourceBlocks = sourceSchema.blocks.filter((_, i) => i !== blockIdx);
 
     // Add to target page with fresh nanoid to prevent ID conflicts
@@ -1333,15 +1345,32 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       schema: { ...targetSchema, blocks: newTargetBlocks },
     };
 
+    // Emit editBus event for cross-page move
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: newTargetBlock.id ?? blockId,
+        blockType: movedBlock.type,
+        pageIndex: targetPageIndex,
+        patch: { _movedToPage: targetPageIndex },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    // Navigate to target page so user can see the moved block
+    // Clear selection (the block has a new ID on the target page)
     set({
       pages: newPages,
+      currentPageIndex: targetPageIndex,
       selectedBlockId: null,
       selectedBlockType: null,
       editingBlockId: null,
       selectedBlockIds: [],
     });
 
-    toast.success(`Block dipindahkan ke ${targetPage.label}`, {
+    const targetLabel = targetPage.label || `Halaman ${targetPageIndex + 1}`;
+    toast.success(`"${blockName}" dipindahkan ke ${targetLabel}`, {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },

@@ -75,7 +75,7 @@ export type { SchemaRenderMode, ScreenRendererProps, BlockRenderProps } from './
 export { SchemaEngine, loadPreset, getAvailablePresets, schemaToCanvaPages } from './engine/SchemaEngine';
 
 // Template Adapter — converts legacy pages to schema
-export { convertToSchema, inferThemeId, paletteToTokenOverrides } from './engine/TemplateAdapter';
+export { convertToSchema, paletteToTokenOverrides } from './engine/TemplateAdapter';
 
 // Editor Engine — schema-driven visual editing
 export {

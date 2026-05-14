@@ -11,6 +11,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { useBlockCompression } from '../../layout/useBlockCompression';
 
 export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
   block: SkenarioBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
@@ -38,9 +39,13 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
     setShowFeedback(false);
   }, [replayGeneration]);
 
-  const isCompressed = compression?.isCompressed ?? false;
-
   const chapters = block.chapters || [];
+
+  // ── Compression-aware visibility (step-reveal strategy) ──────
+  const { isCompressed } = useBlockCompression({
+    compression,
+    totalItems: chapters.length,
+  });
   const ch = chapters[chapter];
   const isCompleted = chapter >= chapters.length;
 

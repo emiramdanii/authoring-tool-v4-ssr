@@ -13,7 +13,7 @@ import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision, CompressionStrategy } from '../../layout/CompressionEngine';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
+export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
   block: PetunjukBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
 }) {
   const accentKey = block.tipsColor || 'c';
@@ -377,4 +377,4 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
     </div>
     </PremiumBlockWrapper>
   );
-}
+});

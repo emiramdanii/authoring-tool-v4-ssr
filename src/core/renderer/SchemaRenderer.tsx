@@ -16,7 +16,11 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+// ── Stable noop callbacks — prevent re-renders from new function refs ──
+// These are module-level constants so React.memo sees the same reference.
+const NOOP_FN = () => {};
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
 import {
   resolveSceneLayout,
@@ -33,6 +37,7 @@ import { createMeasurementQueue, type MeasurementCommitQueue } from '../layout/M
 import { computeScenePlan, createDerivedSchema, type ScenePlan } from '../layout/SceneOverflowEngine';
 import { SceneNavigator } from '../layout/SceneNavigator';
 import { useCanvaStore } from '@/store/canva-store';
+import { useCanvasBlockDrag } from '@/hooks/use-canvas-block-drag';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -94,6 +99,8 @@ export interface ScreenRendererProps {
   onBlockMoveDown?: (blockId: string) => void;
   /** Callback to duplicate a block */
   onBlockDuplicate?: (blockId: string) => void;
+  /** Callback to reorder blocks by index (canvas drag-reorder) */
+  onBlockReorder?: (fromIndex: number, toIndex: number) => void;
   /** Scene resolution — injected from PageRenderer for deterministic layout */
   sceneResolution?: SceneResolution;
   /** Safe area — injected from PageFrame for deterministic layout */
@@ -122,6 +129,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   onBlockMoveUp,
   onBlockMoveDown,
   onBlockDuplicate,
+  onBlockReorder,
   sceneResolution: externalSceneRes,
   safeArea: externalSafeArea,
   ratioId = '16:9',
@@ -213,31 +221,108 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveSchema, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
 
+  // ═══ CANVAS BLOCK DRAG REORDER ═══════════════════════════════
+  // Only enable drag-reorder in canvas mode when onBlockReorder is provided.
+  // Build a stable callback so the hook doesn't reinitialize on every render.
+  const handleBlockReorder = useCallback((fromIndex: number, toIndex: number) => {
+    onBlockReorder?.(fromIndex, toIndex);
+  }, [onBlockReorder]);
+
+  // Map each resolved block to its index in the ORIGINAL screen.blocks
+  // (effectiveSchema may be a derived subset for multi-scene pages)
+  const resolvedToSchemaIndex = useMemo(() => {
+    return resolvedBlocks.map(rb => {
+      const bid = rb.block.id;
+      if (!bid) return -1;
+      return screen.blocks.findIndex(b => b.id === bid);
+    });
+  }, [resolvedBlocks, screen.blocks]);
+
+  // Count top-level blocks for the drag hook
+  const topLevelBlockCount = screen.blocks.length;
+
+  const { dragState, dragHandlers } = useCanvasBlockDrag(
+    handleBlockReorder,
+    topLevelBlockCount,
+  );
+
+  // Scene container ref for drag coordinate calculations
+  const sceneContainerRef = useRef<HTMLDivElement>(null);
+
+  // ═══ DROP INDICATOR COMPUTATION ════════════════════════════════
+  // Compute where to show the drop indicator line during drag.
+  // The line appears between two blocks at the drop target position.
+  const dropIndicatorInfo = useMemo<{ y: number; height: number } | null>(() => {
+    if (!dragState.isDragging || dragState.dragIndex === null || dragState.dropIndex === null) {
+      return null;
+    }
+    // Find the Y position of the drop target boundary
+    // The drop line goes BEFORE the block at dropIndex
+    const targetResolvedIdx = resolvedToSchemaIndex.indexOf(dragState.dropIndex);
+    if (targetResolvedIdx === -1) {
+      // Block not in current scene — no indicator
+      return null;
+    }
+    const targetResolved = resolvedBlocks[targetResolvedIdx];
+    if (!targetResolved) return null;
+
+    // Show the line just above the target block
+    return {
+      y: targetResolved.y - 2,
+      height: 4,
+    };
+  }, [dragState, resolvedBlocks, resolvedToSchemaIndex]);
+
+  // ═══ GHOST BADGE POSITION ═════════════════════════════════════
+  // Show a small badge at the cursor during drag with the block name
+  const ghostInfo = useMemo<{ x: number; y: number; name: string } | null>(() => {
+    if (!dragState.isDragging || dragState.cursorX === null || dragState.cursorY === null || dragState.dragIndex === null) {
+      return null;
+    }
+    const block = screen.blocks[dragState.dragIndex];
+    if (!block) return null;
+    const definition = getBlockDefinition(block.type);
+    const name = definition?.name || block.type;
+    return {
+      x: dragState.cursorX,
+      y: dragState.cursorY - 16, // offset above cursor
+      name,
+    };
+  }, [dragState, screen.blocks]);
+
   // ═══ BACKGROUND STYLE — applies to ALL screen types ═══
   const bg = screen.background;
-  const bgStyle: React.CSSProperties = {};
-
-  if (bg) {
-    if (bg.type === 'radial') {
-      bgStyle.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
-    } else if (bg.type === 'gradient') {
-      bgStyle.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
-    } else if (bg.type === 'solid') {
-      bgStyle.background = tokens.color(bg.color1 || 'bg');
+  const bgStyle = useMemo<React.CSSProperties>(() => {
+    const style: React.CSSProperties = {};
+    if (bg) {
+      if (bg.type === 'radial') {
+        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+      } else if (bg.type === 'gradient') {
+        style.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
+      } else if (bg.type === 'solid') {
+        style.background = tokens.color(bg.color1 || 'bg');
+      }
     }
-  }
-
-  if (!bg && !hasCoverBlock) {
-    bgStyle.background = tokens.color('bg');
-  }
+    if (!bg && !hasCoverBlock) {
+      style.background = tokens.color('bg');
+    }
+    return style;
+  }, [bg, tokens, hasCoverBlock]);
 
   // ═══ RENDER: Scene-driven absolute positioning ═══
   // Cover/hero: absolute inset-0 (fills entire scene)
   // Flow pages: absolute positioning for ALL blocks (from resolveSceneLayout)
   // NO MORE flex-1 min-h-0 overflow-y-auto for the scene root.
   // That was the "mixed layout authority" problem.
+  // Combine scene container ref with drag handler ref
+  const setSceneRefCombined = useCallback((el: HTMLDivElement | null) => {
+    sceneContainerRef.current = el;
+    dragHandlers.setSceneRef(el);
+  }, [dragHandlers]);
+
   return (
     <div
+      ref={setSceneRefCombined}
       className={hasCoverBlock ? 'absolute inset-0' : 'relative h-full w-full'}
       style={{
         fontFamily: tokens.fontFamily('body'),
@@ -287,18 +372,30 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {/* INTERNAL block layout (flex/grid) is allowed. */}
       {/* SCENE layout (position, size) is controlled by the engine. */}
       {/* BlockMeasurer wraps each block to report real DOM heights. */}
-      {resolvedBlocks.map((resolved) => {
+      {resolvedBlocks.map((resolved, resolvedIdx) => {
         const positionStyle = getBlockPositionStyle(resolved);
         // For cover/hero blocks that need pointer-events
         const pointerEvents = resolved.block.interactive ? 'auto' : undefined;
         const blockId = resolved.block.id || resolved.key;
 
+        // Map this resolved block back to its index in screen.blocks (original schema)
+        const schemaBlockIndex = resolvedToSchemaIndex[resolvedIdx] ?? -1;
+
+        // Drag state for this block
+        const isBeingDragged = schemaBlockIndex >= 0 && dragHandlers.isBlockDragged(schemaBlockIndex);
+
         return (
           <div
             key={resolved.key}
+            ref={(el: HTMLDivElement | null) => {
+              if (schemaBlockIndex >= 0) {
+                dragHandlers.registerBlockRef(schemaBlockIndex, el);
+              }
+            }}
             style={{
               ...positionStyle,
               pointerEvents,
+              transition: isBeingDragged ? 'none' : undefined,
             }}
           >
             {/* Overflow indicator for debugging (canvas mode only) */}
@@ -330,8 +427,10 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 tokens={tokens}
                 interactive={interactive}
                 compression={resolved.compression}
+                blockIndex={schemaBlockIndex}
+                isBeingDragged={isBeingDragged}
                 isSelected={resolved.block.id ? resolved.block.id === selectedBlockId : (resolved.block.type === selectedBlockId)}
-                isMultiSelected={resolved.block.id ? (selectedBlockIds ?? []).includes(resolved.block.id) && (selectedBlockIds ?? []).length > 1 : false}
+                isMultiSelected={resolved.block.id ? Array.isArray(selectedBlockIds) && selectedBlockIds.includes(resolved.block.id) && selectedBlockIds.length > 1 : false}
                 isHovered={resolved.block.id ? resolved.block.id === hoveredBlockId : (resolved.block.type === hoveredBlockId)}
                 isEditing={resolved.block.id ? resolved.block.id === editingBlockId : (resolved.block.type === editingBlockId)}
                 onSelect={onBlockSelect}
@@ -341,11 +440,39 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 onMoveUp={onBlockMoveUp}
                 onMoveDown={onBlockMoveDown}
                 onDuplicate={onBlockDuplicate}
+                onDragHandleDown={isCompact && onBlockReorder ? dragHandlers.onDragStart : undefined}
               />
             </MeasuredBlock>
           </div>
         );
       })}
+
+      {/* ══ DROP INDICATOR LINE — shown during canvas drag ════════ */}
+      {dropIndicatorInfo && isCompact && (
+        <div
+          className="absolute left-4 right-4 pointer-events-none"
+          style={{
+            top: dropIndicatorInfo.y,
+            height: dropIndicatorInfo.height,
+            zIndex: 999,
+          }}
+        >
+          <div className="w-full h-full rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+        </div>
+      )}
+
+      {/* ══ GHOST BADGE — follows cursor during canvas drag ═════ */}
+      {ghostInfo && isCompact && (
+        <div
+          className="absolute pointer-events-none px-2 py-0.5 rounded bg-blue-500/90 text-white text-[9px] font-bold whitespace-nowrap shadow-lg z-[1000]"
+          style={{
+            left: ghostInfo.x,
+            top: ghostInfo.y,
+          }}
+        >
+          ⠿ {ghostInfo.name}
+        </div>
+      )}
 
       {/* ══ SCENE NAVIGATOR — for multi-scene pages ══════════════ */}
       {/* Shows prev/next + dots when content overflows into multiple scenes */}
@@ -383,6 +510,10 @@ export interface BlockRenderProps {
   interactive?: boolean;
   /** Compression decision from the layout engine */
   compression?: import('../layout/CompressionEngine').CompressionDecision;
+  /** Block index in screen.blocks (for canvas drag-reorder) */
+  blockIndex?: number;
+  /** Whether this block is currently being drag-reordered on canvas */
+  isBeingDragged?: boolean;
   /** Whether this block is selected in the canvas editor */
   isSelected?: boolean;
   /** Whether this block is in multi-select (not the primary selection) */
@@ -405,9 +536,11 @@ export interface BlockRenderProps {
   onMoveDown?: (blockId: string) => void;
   /** Callback to duplicate this block */
   onDuplicate?: (blockId: string) => void;
+  /** Callback: drag grip handle pointerdown (initiates canvas drag-reorder) */
+  onDragHandleDown?: (e: React.PointerEvent, blockIndex: number) => void;
 }
 
-export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
+export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, blockIndex, isBeingDragged, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate, onDragHandleDown }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   const blockId = block.id || block.type;
 
@@ -467,18 +600,21 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     <BlockSelectionOverlay
       blockId={blockId}
       blockType={block.type}
+      blockIndex={blockIndex}
       isSelected={isSelected}
       isMultiSelected={isMultiSelected}
       isHovered={isHovered}
       isEditing={isEditing}
       isCompact={isCompact}
-      onSelect={onSelect ?? (() => {})}
-      onHover={onHover ?? (() => {})}
-      onEdit={onEdit ?? (() => {})}
+      isBeingDragged={isBeingDragged}
+      onSelect={onSelect ?? NOOP_FN}
+      onHover={onHover ?? NOOP_FN}
+      onEdit={onEdit ?? NOOP_FN}
       onDelete={onDelete}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
       onDuplicate={onDuplicate}
+      onDragHandleDown={onDragHandleDown}
     >
       {compressedContent}
     </BlockSelectionOverlay>
