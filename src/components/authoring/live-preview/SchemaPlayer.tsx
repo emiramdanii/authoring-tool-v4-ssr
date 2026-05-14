@@ -239,13 +239,16 @@ export default function SchemaPlayer({
       style={{ fontFamily: tokens.typography.fontFamily.body, background: COLORS.bgPlayer }}>
 
       {/* ══ SCREEN CONTENT ══════════════════════════════════════ */}
-      {/* Content area offset for bottom nav — use CSS variable approach
-          so the nav height auto-adjusts via ResizeObserver.
-          Fallback values match PageFrame defaults. */}
+      {/* FIX K9: Removed CSS bottom offset — was causing double offset.
+          SchemaPlayer's bottom nav is an absolute overlay (z-50), same as
+          PageFrame's nav for schema-driven pages. The scene engine's safeArea
+          handles block positioning to avoid the nav. CSS offset + safeArea
+          was double-offsetting content, leaving a gap at the bottom.
+          Pattern: scene renders at full size → nav overlays at z-50 →
+          scene engine safeArea ensures blocks don't overlap nav. */}
       <div
         className="absolute inset-0"
         style={{
-          bottom: showBottomNav ? (isCompact ? '6.67%' : '10%') : 0,
           perspective: transitionType === 'flip' ? 1200 : undefined,
         }}
       >
