@@ -298,7 +298,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
   /** Reset zoom to auto-fit mode (calculated by Stage) */
   zoomToFit: () => set({ zoom: ZOOM_FIT }),
-  setRatio: (ratioId) => set({ ratioId }),
+  setRatio: (ratioId) => set({ ratioId, zoom: ZOOM_FIT }), // Reset to auto-fit when ratio changes
 
   // ── Stage ────────────────────────────────────────────────────
   clearStage: () => {

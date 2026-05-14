@@ -208,3 +208,58 @@ In `resolveSceneLayout()`, when a flow block is cover/hero, set height = scene.h
 Fix 1 + 2 + 3 dulu (3 konektor critical), lalu verifikasi.
 Fix 4 + 6 setelah verifikasi.
 Fix 7 + 8 nanti (butuh architectural change lebih besar).
+
+---
+
+## CANVAS FIX — Auto-fit Viewport (2026-05-14)
+
+Task ID: canvas-fix-1
+Agent: Main Agent
+Task: Fix canvas auto-fit to viewport — "canvas too small / fit not working"
+
+### Root Cause Found
+
+**Stage container in CanvaBuilder was NOT a flex container**
+
+```
+❌ Before:
+<div className="flex-1 min-w-0 relative overflow-hidden ...">
+  <Stage />  ← Stage root div has flex-1 but parent is NOT flex → flex-1 has no effect
+</div>
+
+✅ After:
+<div className="flex flex-col flex-1 min-w-0 relative overflow-hidden ...">
+  <Stage />  ← Now flex-1 works, Stage fills the available space
+</div>
+```
+
+Without the fix:
+- `canvasAreaRef.clientHeight` returned content height (720px from stageWrapRef)
+- NOT the available viewport height (e.g., 500px)
+- `calcFitZoom()` used wrong dimensions → computed incorrect zoom → canvas didn't fit
+
+### Changes Made
+
+1. **CanvaBuilder.tsx** — Added `flex flex-col` to stage container div
+   - Now Stage's `flex-1` works correctly
+   - `canvasAreaRef.clientWidth/Height` returns correct available space
+
+2. **Stage index.tsx** — Fixed scroll wheel zoom closure bug
+   - Changed from closure-based `panX`/`panY`/`fitZoom` to refs (`panXRef`, `panYRef`, `fitZoomRef`)
+   - Handler no longer re-registers on every pan change (was causing overhead)
+   - Prevents stale state in wheel handler
+
+3. **Stage index.tsx** — Added ResizeObserver retry mechanism
+   - If `clientWidth/Height` is 0 (component not yet laid out), retries after 100ms
+   - Handles race condition where flex layout hasn't settled on initial mount
+
+4. **Stage index.tsx** — Added `w-full` to canvas area div
+   - Belt-and-suspenders approach to ensure the canvas area fills its container
+
+5. **ui-slice.ts** — `setRatio()` now also resets zoom to `ZOOM_FIT`
+   - When user changes canvas ratio, zoom auto-resets to fit
+   - Previously, changing ratio could leave stale zoom level
+
+### Build Status
+- TypeScript: ✅ No errors
+- Next.js build: ✅ Compiled successfully

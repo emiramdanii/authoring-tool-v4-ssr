@@ -143,6 +143,15 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const [isPanning, setIsPanning] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
 
+  // ── Refs for values needed in event handlers without re-registration ──
+  // These prevent stale closures and avoid re-registering handlers on every state change
+  const panXRef = useRef(panX);
+  const panYRef = useRef(panY);
+  const fitZoomRef = useRef(fitZoom);
+  panXRef.current = panX;
+  panYRef.current = panY;
+  fitZoomRef.current = fitZoom;
+
   // Resolve effective zoom
   const effectiveZoom = resolveZoom(storeZoom, fitZoom);
 
@@ -191,9 +200,15 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   // This is the primary mechanism for computing the correct fitZoom.
   // We use requestAnimationFrame to ensure the DOM has layout before reading.
   // The fitZoom is synced to the store so zoomDelta can resolve ZOOM_FIT.
+  //
+  // FIX: Added retry mechanism — if clientWidth/Height is 0 (component not yet
+  // laid out), retry after a short delay. This handles the case where the
+  // flex layout hasn't settled yet on initial mount.
   useEffect(() => {
     const area = canvasAreaRef.current;
     if (!area) return;
+
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const computeFit = () => {
       const aW = area.clientWidth;
@@ -203,6 +218,13 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
         setFitZoom(newFitZoom);
         storeSetFitZoom(newFitZoom);
         setIsFitZoomReady(true);
+        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+      } else if (!retryTimer) {
+        // Retry once after 100ms if dimensions are still 0
+        retryTimer = setTimeout(() => {
+          retryTimer = null;
+          computeFit();
+        }, 100);
       }
     };
 
@@ -218,6 +240,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     observer.observe(area);
     return () => {
       cancelAnimationFrame(rafId);
+      if (retryTimer) clearTimeout(retryTimer);
       observer.disconnect();
     };
   }, [ratio.w, ratio.h, storeSetFitZoom]);
@@ -255,6 +278,9 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   }, []);
 
   // ── Scroll wheel zoom (Ctrl+scroll) ───────────────────────────
+  // FIX: Use refs for panX/panY/fitZoom instead of closure values.
+  // This prevents stale state bugs and avoids re-registering the handler
+  // on every pan change (which was causing unnecessary overhead).
   useEffect(() => {
     const area = canvasAreaRef.current;
     if (!area) return;
@@ -268,8 +294,9 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // Current zoom
-      const currentZoom = resolveZoom(useCanvaStore.getState().zoom, fitZoom);
+      // Current zoom — read fitZoom from ref to avoid stale closure
+      const currentFitZoom = fitZoomRef.current;
+      const currentZoom = resolveZoom(useCanvaStore.getState().zoom, currentFitZoom);
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newZoom = clampZoom(currentZoom + delta);
       if (newZoom === currentZoom) return;
@@ -278,9 +305,11 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
       // Formula: newPan = mousePos - (mousePos - oldPan) * (newZoom / oldZoom)
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
+      const currentPanX = panXRef.current;
+      const currentPanY = panYRef.current;
       const scale = newZoom / currentZoom;
-      const newPanX = mouseX - (mouseX - (centerX + panX)) * scale - centerX;
-      const newPanY = mouseY - (mouseY - (centerY + panY)) * scale - centerY;
+      const newPanX = mouseX - (mouseX - (centerX + currentPanX)) * scale - centerX;
+      const newPanY = mouseY - (mouseY - (centerY + currentPanY)) * scale - centerY;
 
       setPanX(newPanX);
       setPanY(newPanY);
@@ -289,7 +318,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
 
     area.addEventListener('wheel', handleWheel, { passive: false });
     return () => area.removeEventListener('wheel', handleWheel);
-  }, [fitZoom, panX, panY, setZoom]);
+  }, [setZoom]); // Only re-register when setZoom changes (never — it's stable)
 
   // ── Wrap handleAreaMouseMove to pass onMouseMove callback ─────
   const onAreaMouseMove = useCallback((e: React.MouseEvent) => {
@@ -367,7 +396,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     <div
       ref={canvasAreaRef}
       id="cm-canvas-area"
-      className="flex-1 bg-app-surface overflow-hidden flex items-center justify-center"
+      className="flex-1 w-full bg-app-surface overflow-hidden flex items-center justify-center"
       style={{ cursor: cursorStyle }}
       onMouseMove={(e) => {
         onAreaMouseMove(e);

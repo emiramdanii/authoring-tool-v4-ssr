@@ -388,7 +388,9 @@ export default function CanvaBuilder() {
           </div>
 
           {/* Stage Canvas Area — recessed with inner shadow */}
-          <div className="flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
+          {/* FIX: Added flex flex-col so Stage's flex-1 works and canvasAreaRef
+              returns correct clientHeight (available viewport space, not content height) */}
+          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
             <Stage onMouseMove={handleMouseMove} />
           </div>
 
