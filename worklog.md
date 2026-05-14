@@ -58,3 +58,30 @@ Stage Summary:
 - PageFrame: deterministic safe area (no more ResizeObserver)
 - PlayOverlay: scale-first rendering via scene engine
 - Git commit: 4989495
+
+---
+Task ID: 4
+Agent: Main (Senior Dev)
+Task: Fix HTML rendering — wrap all text content in RichText for proper <strong>/<em> rendering
+
+Work Log:
+- Audited all 30+ block renderers for text content rendered without RichText/allowHtml
+- Found 9 renderers with text fields still using raw {value} in JSX
+- Fixed SkenarioRenderer: c.label, c.detail, resultBody, norma, con.text → RichText
+- Fixed RangkumanRenderer: concept.title, concept.body, closingStatement → RichText
+- Fixed DiskusiRenderer: q.teks (variants A/B/C) → RichText
+- Fixed RefleksiRenderer: q.teks, penugasan.isi, penugasan.contoh → RichText
+- Fixed NormaKartuRenderer: c.value, s.text, p.text → RichText
+- Fixed PetunjukRenderer: obj.text, item.body → RichText
+- Fixed PenutupRenderer: item.isi, nextPertemuan.judul, nextPertemuan.deskripsi → RichText
+- Fixed AlurRenderer: step.deskripsi → RichText
+- Fixed MotivasiRenderer: conn.description, block.transition (3 variants) → RichText
+- TypeScript compilation: 0 errors
+- Git commit: 9f5ae89
+- Pushed to origin/main
+
+Stage Summary:
+- All text content in all block renderers now uses <RichText> component
+- RichText auto-detects HTML tags and renders via dangerouslySetInnerHTML
+- Previously confirmed working: InlineTextEditor allowHtml, DefBoxRenderer, NcGridRenderer, MateriSectionRenderer, TpRenderer, TujuanDisplayRenderer
+- Preset materi blocks already use FtabBlock (tab icons) for content switching
