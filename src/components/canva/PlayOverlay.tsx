@@ -13,6 +13,7 @@ import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, ChevronLeft, Chevro
 import { Button } from '@/components/ui/button';
 import { getScoreTier } from './page-renderer/PageFrame';
 import { ScoreDisplay } from './page-renderer/ScoreDisplay';
+import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 
 // ═══════════════════════════════════════════════════════════════
 // PLAY OVERLAY — Full-screen interactive preview overlay
@@ -197,16 +198,16 @@ function PlayCanvas() {
     prevIdxRef.current = interactivePageIdx;
   }, [interactivePageIdx]);
 
-  // ResizeObserver for responsive scaling
+  // ResizeObserver for responsive scaling — using scene engine
   useEffect(() => {
     const el = canvasRef.current;
     if (!el) return;
     const observer = new ResizeObserver(() => {
-      const aW = (el.clientWidth || 800) - 60;
-      const aH = (el.clientHeight || 500) - 60;
-      const sW = aW / ratio.w;
-      const sH = aH / ratio.h;
-      setScale(Math.min(sW, sH, 1));
+      setScale(computeSceneScale(
+        { w: ratio.w, h: ratio.h },
+        { w: el.clientWidth || 800, h: el.clientHeight || 500 },
+        30, // padding
+      ));
     });
     observer.observe(el);
     return () => observer.disconnect();

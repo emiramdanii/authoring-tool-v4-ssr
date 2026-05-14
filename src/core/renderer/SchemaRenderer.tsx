@@ -1,18 +1,33 @@
 // ═══════════════════════════════════════════════════════════════════
 // SCHEMA RENDERER ENGINE — Converts JSON Schema → React UI
 // ═══════════════════════════════════════════════════════════════════
-// This is the core orchestrator. It reads LessonSchema/ScreenSchema JSON
+// This is the core orchestrator. It reads ScreenSchema JSON
 // and produces visual output using extracted per-block renderers.
 //
-// Block renderers have been extracted to ./blocks/ for maintainability.
-// Dispatch is handled EXCLUSIVELY by SceneRegistry — no switch fallback.
+// ARCHITECTURE (FASE 1C — Hybrid Bridge):
+//   SchemaBlock → resolveSceneLayout() → ResolvedBlock → renderer
+//
+// The scene engine is the SINGLE layout authority.
+// Browser only renders — it does NOT control position/size.
+// Flex/grid is allowed INSIDE blocks, NOT for scene positioning.
 //
 // The principle: NEVER store HTML. Store schema. Renderer produces UI.
+// The layout authority: Scene engine, NOT browser CSS.
 
 'use client';
 
 import React, { useCallback, useMemo } from 'react';
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
+import {
+  resolveSceneLayout,
+  computeSafeArea,
+  getSceneResolution,
+  getBlockPositionStyle,
+  type SceneResolution,
+  type SafeArea,
+  type ResolvedBlockPosition,
+  DEFAULT_SAFE_AREA,
+} from '../scene/SceneLayoutEngine';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -32,6 +47,17 @@ import { BlockErrorBoundary } from './BlockErrorBoundary';
 // ═══════════════════════════════════════════════════════════════════
 // SCREEN RENDERER — Renders a single ScreenSchema
 // ═══════════════════════════════════════════════════════════════════
+//
+// FASE 1C: Hybrid Bridge Architecture
+//   - Scene engine provides layout authority (resolveSceneLayout)
+//   - Cover/hero pages: full absolute positioning
+//   - Flow pages: resolved positions from scene engine
+//   - Safe area computed from navConfig, not CSS guess
+//   - Overflow rules per block type
+//
+// The key change: flow blocks now get ABSOLUTE positions from
+// resolveSceneLayout(), NOT flex/browser layout.
+// This eliminates the "mixed layout authority" problem.
 
 export interface ScreenRendererProps {
   screen: ScreenSchema;
@@ -60,27 +86,73 @@ export interface ScreenRendererProps {
   onBlockMoveDown?: (blockId: string) => void;
   /** Callback to duplicate a block */
   onBlockDuplicate?: (blockId: string) => void;
+  /** Scene resolution — injected from PageRenderer for deterministic layout */
+  sceneResolution?: SceneResolution;
+  /** Safe area — injected from PageFrame for deterministic layout */
+  safeArea?: SafeArea;
+  /** Ratio ID for scene resolution lookup */
+  ratioId?: string;
+  /** Whether navbar is shown (affects safe area) */
+  showTopNav?: boolean;
+  /** Whether bottom navbar is shown (affects safe area) */
+  showBottomNav?: boolean;
 }
 
-export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ screen, mode, tokens, interactive = false, selectedBlockId, selectedBlockIds, hoveredBlockId, editingBlockId, onBlockSelect, onBlockHover, onBlockEdit, onBlockDelete, onBlockMoveUp, onBlockMoveDown, onBlockDuplicate }: ScreenRendererProps) {
+export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
+  screen,
+  mode,
+  tokens,
+  interactive = false,
+  selectedBlockId,
+  selectedBlockIds,
+  hoveredBlockId,
+  editingBlockId,
+  onBlockSelect,
+  onBlockHover,
+  onBlockEdit,
+  onBlockDelete,
+  onBlockMoveUp,
+  onBlockMoveDown,
+  onBlockDuplicate,
+  sceneResolution: externalSceneRes,
+  safeArea: externalSafeArea,
+  ratioId = '16:9',
+  showTopNav = false,
+  showBottomNav = false,
+}: ScreenRendererProps) {
+  const isCompact = mode === 'canvas';
   const hasCoverBlock = screen.blocks.length === 1 && (screen.blocks[0].type === 'cover' || screen.blocks[0].type === 'hero');
 
-  // ═══ LAYOUT-AWARE BLOCK SPLIT (PRIORITAS 3) ═══════════════════
-  // Memoize the block split to avoid re-computing on every render
-  const { flowBlocks, absoluteBlocks } = useMemo(() => {
-    const flow = screen.blocks.filter(b => !b.layout || b.layout.position === 'flow');
-    const absolute = screen.blocks.filter(b => b.layout?.position === 'absolute');
-    return { flowBlocks: flow, absoluteBlocks: absolute };
-  }, [screen.blocks]);
+  // ═══ SCENE RESOLUTION — Virtual canvas coordinate system ═══
+  // All positions are computed against this fixed resolution.
+  // Scale transform handles viewport adaptation — NO browser relayout.
+  const sceneRes = externalSceneRes || getSceneResolution(ratioId);
 
-  // ═══ BACKGROUND STYLE — applies to ALL screen types ═══════════
-  // Previously only rendered for cover pages. Now every screen can
-  // have a background: solid color, gradient, radial, or image URL.
+  // ═══ SAFE AREA — Content must stay within these bounds ═══
+  // Computed from navConfig, not CSS guess.
+  // This replaces the ResizeObserver-based approach in PageFrame.
+  const safeArea = externalSafeArea || computeSafeArea({
+    showTopNav,
+    showBottomNav,
+    isCompact,
+    pagePadding: hasCoverBlock ? 0 : 16,
+  });
+
+  // ═══ SCENE LAYOUT RESOLUTION — SINGLE LAYOUT AUTHORITY ═══
+  // resolveSceneLayout() is the ONLY source of block positions.
+  // Browser flex/grid is NO LONGER the layout authority.
+  // This eliminates the "mixed layout authority" problem.
+  const resolvedBlocks = useMemo(() => {
+    // Cover/hero pages: safe area is 0 (they fill the entire scene)
+    const effectiveSafeArea = hasCoverBlock ? DEFAULT_SAFE_AREA : safeArea;
+    return resolveSceneLayout(screen.blocks, sceneRes, effectiveSafeArea, { isCompact });
+  }, [screen.blocks, sceneRes, safeArea, hasCoverBlock, isCompact]);
+
+  // ═══ BACKGROUND STYLE — applies to ALL screen types ═══
   const bg = screen.background;
   const bgStyle: React.CSSProperties = {};
 
   if (bg) {
-    // ── Color/gradient background ───────────────────────────────
     if (bg.type === 'radial') {
       bgStyle.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
     } else if (bg.type === 'gradient') {
@@ -90,15 +162,25 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ s
     }
   }
 
-  // If no background defined, default to base bg for non-cover pages
   if (!bg && !hasCoverBlock) {
     bgStyle.background = tokens.color('bg');
   }
 
+  // ═══ RENDER: Scene-driven absolute positioning ═══
+  // Cover/hero: absolute inset-0 (fills entire scene)
+  // Flow pages: absolute positioning for ALL blocks (from resolveSceneLayout)
+  // NO MORE flex-1 min-h-0 overflow-y-auto for the scene root.
+  // That was the "mixed layout authority" problem.
   return (
-    <div className={hasCoverBlock ? 'absolute inset-0' : 'relative flex flex-col h-full'}
-      style={{ fontFamily: tokens.fontFamily('body'), color: tokens.color('text'), ...bgStyle }}>
-
+    <div
+      className={hasCoverBlock ? 'absolute inset-0' : 'relative h-full w-full'}
+      style={{
+        fontFamily: tokens.fontFamily('body'),
+        color: tokens.color('text'),
+        ...bgStyle,
+        overflow: 'hidden', // Scene clips at boundary — no content escapes
+      }}
+    >
       {/* ══ BACKGROUND IMAGE LAYER — rendered behind content ════ */}
       {bg?.imageUrl && (
         <>
@@ -108,7 +190,6 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ s
             className="absolute inset-0 w-full h-full object-cover"
             style={{ zIndex: 0 }}
           />
-          {/* Dark overlay for text readability on image backgrounds */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -119,8 +200,9 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ s
         </>
       )}
 
+      {/* ══ SECTION LABEL (if present) ═══════════════════════ */}
       {screen.sectionLabel && !hasCoverBlock && (
-        <div className="px-4 pt-3" style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ position: 'absolute', left: safeArea.left, top: safeArea.top, zIndex: 2 }}>
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-extrabold text-[10px] uppercase"
             style={{
@@ -134,26 +216,42 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ s
         </div>
       )}
 
-      {/* ══ FLOW BLOCKS: vertical stack, scrollable ══════════════ */}
-      {/* Flow blocks container — maxWidth scales proportionally for any ratio.
-          Using percentage ensures responsive fit across all canvas sizes.
-          overflow-y-auto allows scrolling when content exceeds viewport height,
-          while overflow-x:hidden prevents horizontal bleed. */}
-      <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar ${hasCoverBlock ? '' : 'px-4 py-4'}`}
-        style={{ ...(hasCoverBlock ? {} : { maxWidth: '95%', margin: '0 auto', width: '100%' }), position: 'relative', zIndex: 1, wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
-        {flowBlocks.map((block, i) => {
-          const blockKey = block.id || `flow-${block.type}-${i}`;
-          return (
+      {/* ══ RESOLVED BLOCKS — Scene-driven absolute positioning ════ */}
+      {/* Each block gets its position from resolveSceneLayout(). */}
+      {/* Browser only renders — it does NOT control layout. */}
+      {/* INTERNAL block layout (flex/grid) is allowed. */}
+      {/* SCENE layout (position, size) is controlled by the engine. */}
+      {resolvedBlocks.map((resolved) => {
+        const positionStyle = getBlockPositionStyle(resolved);
+        // For cover/hero blocks that need pointer-events
+        const pointerEvents = resolved.block.interactive ? 'auto' : undefined;
+
+        return (
+          <div
+            key={resolved.key}
+            style={{
+              ...positionStyle,
+              pointerEvents,
+            }}
+          >
+            {/* Overflow indicator for debugging (canvas mode only) */}
+            {resolved.isOverflowing && isCompact && (
+              <div
+                className="absolute -top-0.5 right-1 text-[7px] font-bold px-1 rounded-b bg-amber-500/80 text-black"
+                style={{ zIndex: 100 }}
+              >
+                overflow
+              </div>
+            )}
             <SchemaBlockRenderer
-              key={blockKey}
-              block={block}
+              block={resolved.block}
               mode={mode}
               tokens={tokens}
               interactive={interactive}
-              isSelected={block.id ? block.id === selectedBlockId : (block.type === selectedBlockId)}
-              isMultiSelected={block.id ? (selectedBlockIds ?? []).includes(block.id) && (selectedBlockIds ?? []).length > 1 : false}
-              isHovered={block.id ? block.id === hoveredBlockId : (block.type === hoveredBlockId)}
-              isEditing={block.id ? block.id === editingBlockId : (block.type === editingBlockId)}
+              isSelected={resolved.block.id ? resolved.block.id === selectedBlockId : (resolved.block.type === selectedBlockId)}
+              isMultiSelected={resolved.block.id ? (selectedBlockIds ?? []).includes(resolved.block.id) && (selectedBlockIds ?? []).length > 1 : false}
+              isHovered={resolved.block.id ? resolved.block.id === hoveredBlockId : (resolved.block.type === hoveredBlockId)}
+              isEditing={resolved.block.id ? resolved.block.id === editingBlockId : (resolved.block.type === editingBlockId)}
               onSelect={onBlockSelect}
               onHover={onBlockHover}
               onEdit={onBlockEdit}
@@ -162,50 +260,9 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({ s
               onMoveDown={onBlockMoveDown}
               onDuplicate={onBlockDuplicate}
             />
-          );
-        })}
-      </div>
-
-      {/* ══ ABSOLUTE BLOCKS: positioned overlay layer ════════════ */}
-      {absoluteBlocks.length > 0 && (
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
-          {absoluteBlocks.map((block, i) => {
-            const layout = block.layout!;
-            const absStyle: React.CSSProperties = {
-              position: 'absolute',
-              pointerEvents: block.interactive ? 'auto' : 'none',
-              left: layout.x != null ? `${layout.x}%` : undefined,
-              top: layout.y != null ? `${layout.y}%` : undefined,
-              width: layout.width != null && layout.width !== 'auto' ? `${layout.width}%` : layout.width === 'auto' ? undefined : undefined,
-              height: layout.height != null && layout.height !== 'auto' ? `${layout.height}%` : layout.height === 'auto' ? undefined : undefined,
-              zIndex: layout.zIndex,
-              transform: layout.rotation ? `rotate(${layout.rotation}deg)` : undefined,
-            };
-            const blockKey = block.id || `abs-${block.type}-${i}`;
-            return (
-              <div key={blockKey} style={absStyle}>
-                <SchemaBlockRenderer
-                  block={block}
-                  mode={mode}
-                  tokens={tokens}
-                  interactive={interactive}
-                  isSelected={block.id ? block.id === selectedBlockId : (block.type === selectedBlockId)}
-                  isMultiSelected={block.id ? (selectedBlockIds ?? []).includes(block.id) && (selectedBlockIds ?? []).length > 1 : false}
-                  isHovered={block.id ? block.id === hoveredBlockId : (block.type === hoveredBlockId)}
-                  isEditing={block.id ? block.id === editingBlockId : (block.type === editingBlockId)}
-                  onSelect={onBlockSelect}
-                  onHover={onBlockHover}
-                  onEdit={onBlockEdit}
-                  onDelete={onBlockDelete}
-                  onMoveUp={onBlockMoveUp}
-                  onMoveDown={onBlockMoveDown}
-                  onDuplicate={onBlockDuplicate}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+          </div>
+        );
+      })}
     </div>
   );
 });
@@ -248,23 +305,13 @@ export interface BlockRenderProps {
 
 export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
-  // ═══ STABLE BLOCK ID ═════════════════════════════════════════
-  // CRITICAL: The block ID must be stable across re-renders.
-  // If block.id is not set (legacy pages), use type as fallback.
-  // The edit pipeline (updateSchemaBlock) finds blocks by ID, so
-  // unstable IDs = edits lost after re-render = broken editing.
   const blockId = block.id || block.type;
 
-  // ═══ REGISTRY DISPATCH ══════════════════════════════════════
-  // SceneRegistry is the SOLE dispatch mechanism.
-  // New block types only need to be registered — no code change here.
-  // Memoize the definition lookup to avoid repeated object access.
   const BlockComponent = useMemo(() => {
     const definition = SCENE_REGISTRY[block.type];
     return definition?.renderer ?? null;
   }, [block.type]);
 
-  // Unregistered block type — show warning
   if (!BlockComponent) {
     return (
       <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
@@ -275,7 +322,6 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     );
   }
 
-  // In non-canvas mode, render without overlay (pure rendering)
   if (!isCompact) {
     return (
       <BlockErrorBoundary blockType={block.type} blockId={blockId}>
@@ -286,7 +332,6 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     );
   }
 
-  // In canvas mode, wrap with BlockSelectionOverlay for editing interaction
   return (
     <BlockSelectionOverlay
       blockId={blockId}

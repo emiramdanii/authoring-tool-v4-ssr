@@ -9,6 +9,7 @@ import type { ScreenSchema } from '@/core/schema/types';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
+import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -168,6 +169,24 @@ export function PageRenderer({
     duplicateBlock(blockId);
   }, [duplicateBlock]);
 
+  // ═══ SCENE ENGINE PROPS ════════════════════════════════════
+  // FASE 1C: Pass scene resolution + safe area to SchemaScreenRenderer.
+  // This establishes scene engine as the SINGLE layout authority.
+  const ratioId = useCanvaStore(s => s.ratioId);
+  const sceneResolution = React.useMemo(() => getSceneResolution(ratioId), [ratioId]);
+  const navConfig = page.navConfig;
+  const isCompact = mode === 'canvas';
+  const isCoverPage = page.templateType === 'cover';
+  const showNavbar = navConfig?.showNavbar !== false;
+  const showTopNav = showNavbar && !isCoverPage;
+  const showBottomNav = showNavbar && !isCoverPage;
+  const safeArea = React.useMemo(() => computeSafeArea({
+    showTopNav,
+    showBottomNav,
+    isCompact,
+    pagePadding: isCoverPage ? 0 : 16,
+  }), [showTopNav, showBottomNav, isCompact, isCoverPage]);
+
   const content = (
     <>
       {/* Schema-driven rendering for ALL template pages */}
@@ -188,6 +207,11 @@ export function PageRenderer({
           onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
           onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
           onBlockDuplicate={mode === 'canvas' ? handleBlockDuplicate : undefined}
+          sceneResolution={sceneResolution}
+          safeArea={safeArea}
+          ratioId={ratioId}
+          showTopNav={showTopNav}
+          showBottomNav={showBottomNav}
         />
       )}
 

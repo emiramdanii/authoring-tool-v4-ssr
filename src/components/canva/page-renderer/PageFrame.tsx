@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import type { CanvaPage, NavConfig } from '../types';
 import { DEFAULT_NAV_CONFIG } from '../types';
 import { useInteractiveStore } from '@/store/interactive-store';
@@ -11,6 +11,7 @@ import { TokenResolver } from '@/core/renderer/SchemaRenderer';
 import { alpha } from '@/lib/color-palette';
 import { useNavSync } from '@/hooks/use-nav-sync';
 import { ScoreDisplay } from './ScoreDisplay';
+import { computeSafeArea } from '@/core/scene/SceneLayoutEngine';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE FRAME — Unified page shell shared by Canvas, Preview, Export
@@ -387,39 +388,24 @@ export function PageFrame({
   const isCompact = mode === 'canvas';
   const topNavRef = useRef<HTMLDivElement>(null);
   const bottomNavRef = useRef<HTMLDivElement>(null);
-  const [topNavH, setTopNavH] = useState(isCompact ? 36 : 44);
-  const [bottomNavH, setBottomNavH] = useState(isCompact ? 48 : 72);
 
-  // Measure actual navbar heights via ResizeObserver
-  useEffect(() => {
-    const topEl = topNavRef.current;
-    const bottomEl = bottomNavRef.current;
-    const observers: ResizeObserver[] = [];
-
-    if (topEl) {
-      const obs = new ResizeObserver(() => {
-        setTopNavH(topEl.offsetHeight);
-      });
-      obs.observe(topEl);
-      observers.push(obs);
-      setTopNavH(topEl.offsetHeight);
-    } else {
-      setTopNavH(0);
-    }
-
-    if (bottomEl) {
-      const obs = new ResizeObserver(() => {
-        setBottomNavH(bottomEl.offsetHeight);
-      });
-      obs.observe(bottomEl);
-      observers.push(obs);
-      setBottomNavH(bottomEl.offsetHeight);
-    } else {
-      setBottomNavH(0);
-    }
-
-    return () => observers.forEach(o => o.disconnect());
-  }, [showTopNav, showBottomNav]);
+  // ═══ SAFE AREA — Deterministic, from scene engine ═══════════
+  // FASE 1C: Replace ResizeObserver-based measurement with
+  // deterministic safe area computation from the scene engine.
+  // This eliminates layout thrashing and ensures consistency
+  // between canvas, preview, and export rendering.
+  //
+  // Navbar heights are KNOWN — they're defined by the theme,
+  // not by browser measurement. The scene engine computes them
+  // deterministically, and we use the same values here.
+  const safeArea = computeSafeArea({
+    showTopNav,
+    showBottomNav,
+    isCompact,
+    pagePadding: 0, // PageFrame doesn't add padding — that's SchemaScreenRenderer's job
+  });
+  const topNavH = safeArea.top;
+  const bottomNavH = safeArea.bottom;
 
   return (
     <>
