@@ -263,3 +263,67 @@ Without the fix:
 ### Build Status
 - TypeScript: ✅ No errors
 - Next.js build: ✅ Compiled successfully
+
+---
+
+## CANVAS FIX 2 — Flex Chain Broken at `<main>` (2026-05-14)
+
+Task ID: canvas-fix-2
+Agent: Main Agent
+Task: Fix flex chain broken at `<main>` — the ROOT CAUSE of canvas not fitting viewport
+
+### Root Cause Found
+
+**`<main>` in AuthoringTool.tsx has `flex-1` but is NOT a flex container**
+
+```
+BROKEN FLEX CHAIN:
+✅ <div h-screen w-screen flex>                    ← HEIGHT ORIGIN (100vh)
+  └─ ✅ <div flex-1 flex-col min-h-0>              ← flex item + flex container
+       └─ 🔴 <main flex-1 overflow-hidden>         ← flex item, BUKAN flex container!
+            │                                         display: block (default)
+            │                                         missing min-h-0
+            └─ ⚠️ <div h-full w-full flex flex-col> ← pakai h-full (fragile!)
+                 └─ ✅ <div flex flex-1 min-h-0>    ← OK from here down
+                      └─ ✅ canvasAreaRef            ← flex-1 but chain broken above
+
+FIXED FLEX CHAIN:
+✅ <div h-screen w-screen flex>                    ← HEIGHT ORIGIN (100vh)
+  └─ ✅ <div flex-1 flex-col min-h-0>              ← flex item + flex container
+       └─ ✅ <main flex-1 flex flex-col min-h-0>   ← NOW: flex item + flex container
+            └─ ✅ <div flex-1 w-full flex flex-col> ← NOW: flex-1 (not h-full)
+                 └─ ✅ <div flex flex-1 min-h-0>    ← OK
+                      └─ ✅ canvasAreaRef            ← flex-1 works end-to-end!
+```
+
+### Why This Broke calcFitZoom()
+
+1. `<main>` is `display: block` (default) → its child can't use `flex-1`
+2. CanvaBuilder root uses `h-full` (height: 100%) → depends on parent definite height
+3. Without `min-h-0`, `<main>` can't shrink below content size (720px)
+4. `canvasAreaRef.clientHeight` returns CONTENT height (720px) NOT available viewport height (~500-600px)
+5. `calcFitZoom(960, 720, 1280, 720)` computes wrong zoom → canvas doesn't fit
+
+### Changes Made
+
+1. **AuthoringTool.tsx L440-445** — Added `flex flex-col min-h-0` to `<main>`
+   - Before: `className="flex-1 ${overflowClass}"`
+   - After: `className="flex-1 flex flex-col min-h-0 ${overflowClass}"`
+   - Effect: `<main>` is now a flex container → children can use `flex-1`
+
+2. **CanvaBuilder.tsx L370** — Changed root div from `h-full` to `flex-1`
+   - Before: `className="h-full w-full min-w-0 flex flex-col overflow-hidden ..."`
+   - After: `className="flex-1 w-full min-w-0 flex flex-col overflow-hidden ..."`
+   - Effect: CanvaBuilder fills space via flex (robust) instead of percentage (fragile)
+
+### Why `min-h-0` is Critical
+
+CSS flex items have `min-height: auto` by default, which means they can't shrink
+below their content size. Adding `min-h-0` overrides this, allowing the flex item
+to shrink to 0 if needed, which is essential for overflow-hidden to work correctly.
+Without it, `<main>` would always be at least 720px tall (content height) even if
+the available viewport space is less.
+
+### Build Status
+- TypeScript: ✅ No errors
+- Next.js build: ✅ Compiled successfully

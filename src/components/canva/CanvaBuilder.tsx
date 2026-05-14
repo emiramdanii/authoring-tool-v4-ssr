@@ -367,7 +367,7 @@ export default function CanvaBuilder() {
 
   return (
     <MobileGuard>
-      <div className="h-full w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 

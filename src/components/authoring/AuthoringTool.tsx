@@ -439,7 +439,7 @@ function AuthoringToolInner() {
         {/* ── Content ──────────────────────────────────────── */}
         <main
           role="main"
-          className={`flex-1 ${
+          className={`flex-1 flex flex-col min-h-0 ${
             isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-app-surface'
           }`}
         >
