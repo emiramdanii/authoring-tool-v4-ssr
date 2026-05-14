@@ -85,3 +85,27 @@ Stage Summary:
 - RichText auto-detects HTML tags and renders via dangerouslySetInnerHTML
 - Previously confirmed working: InlineTextEditor allowHtml, DefBoxRenderer, NcGridRenderer, MateriSectionRenderer, TpRenderer, TujuanDisplayRenderer
 - Preset materi blocks already use FtabBlock (tab icons) for content switching
+
+---
+Task ID: 5
+Agent: Main (Senior Dev)
+Task: Fix canvas auto-fit — canvas terlalu kecil, tombol Fit tidak bekerja
+
+Work Log:
+- Identified root cause: fitZoom initial=0.5, ResizeObserver delay, canvas rendered tiny before fit calculated
+- Identified bug: zoomDelta from ZOOM_FIT mode was broken (next=ZOOM_FIT, no change)
+- Added requestAnimationFrame to compute fitZoom immediately on Stage mount
+- Added visibility:hidden until fitZoom is ready (prevents flash of tiny canvas)
+- Added fitZoom + setFitZoom to canva store so zoomDelta can resolve ZOOM_FIT
+- Fixed zoomDelta to use fitZoom as base when currently in ZOOM_FIT mode
+- Updated ToolbarViewControls: shows "Fit XX%" with actual percentage
+- Fixed StatusBar zoom slider: value was 0 in ZOOM_FIT mode, now shows actual fitZoom%
+- TypeScript compilation: 0 errors
+- Git commit: 471abcd
+- Pushed to origin/main
+
+Stage Summary:
+- Canvas now auto-fits on load (no more tiny canvas flash)
+- Zoom in/out works from Fit mode (was broken before)
+- Fit button works correctly (resolves to actual viewport-fitting zoom)
+- Space+drag pan and Ctrl+scroll zoom were already implemented
