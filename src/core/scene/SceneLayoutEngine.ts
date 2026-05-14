@@ -244,6 +244,8 @@ export function estimateBlockHeight(
     isCompact: boolean;
     variant?: 'A' | 'B' | 'C';
     availableWidth?: number;
+    /** Scene height — required for cover/hero blocks to fill entire scene */
+    sceneH?: number;
   }
 ): { height: number; minHeight: number; maxHeight: number } {
   const { isCompact, variant = block.variant || 'A' } = options;
@@ -305,10 +307,17 @@ export function estimateBlockHeight(
       break;
     }
     case 'materi-section': {
-      const ms = block as { content?: unknown[]; takeaways?: unknown[] };
-      const numContent = ms.content?.length || 0;
+      // MateriSection height = header + nested content blocks + takeaways + self-check
+      const ms = block as { content?: SchemaBlock[]; takeaways?: unknown[]; selfCheck?: string };
       const numTakeaway = ms.takeaways?.length || 0;
-      contentHeight = 60 + numContent * 150 + numTakeaway * 30;
+      const selfCheckH = ms.selfCheck ? 60 : 0;
+      // Recursively estimate child block heights for accurate total
+      let childH = 0;
+      for (const child of (ms.content || [])) {
+        const childEst = estimateBlockHeight(child, { ...options, sceneH: options.sceneH });
+        childH += childEst.height + 8; // 8px gap between children
+      }
+      contentHeight = 60 + childH + numTakeaway * 30 + selfCheckH + 16; // 16px padding
       break;
     }
     case 'skenario': {
@@ -347,10 +356,33 @@ export function estimateBlockHeight(
       contentHeight = 40 + numRows * 48;
       break;
     }
+    case 'ftab': {
+      // Ftab height = tab header + progress bar + tallest tab content
+      // Only one tab is visible at a time, so we estimate the tallest.
+      const ft = block as { tabs?: Array<{ icon: string; label: string; content: SchemaBlock[] }>; showProgress?: boolean };
+      const tabs = ft.tabs || [];
+      const tabHeaderH = 44; // Tab icon + label row
+      const progressBarH = ft.showProgress ? 30 : 0;
+      // Estimate tallest tab content by recursively estimating child blocks
+      let maxTabContentH = 200; // Minimum tab content height
+      for (const tab of tabs) {
+        let tabH = 0;
+        for (const child of (tab.content || [])) {
+          const childEst = estimateBlockHeight(child, { ...options, sceneH: options.sceneH });
+          tabH += childEst.height + 8; // 8px gap between children
+        }
+        if (tabH > maxTabContentH) maxTabContentH = tabH;
+      }
+      contentHeight = tabHeaderH + progressBarH + maxTabContentH + 16; // 16px padding
+      break;
+    }
     case 'cover':
     case 'hero': {
-      // Cover/hero always fills the entire safe area
-      contentHeight = baseHeight;
+      // Cover/hero ALWAYS fills the entire scene height.
+      // Do NOT use estimatedHeight from registry (600px) — it leaves
+      // a 120px gap at the bottom of a 720px scene.
+      // Pass sceneH via options or fall back to a reasonable default.
+      contentHeight = options.sceneH ?? 720;
       break;
     }
     default: {
@@ -418,6 +450,7 @@ export function resolveSceneLayout(
       isCompact,
       variant: block.variant || 'A',
       availableWidth: contentW,
+      sceneH: scene.h,
     });
 
     // Check if block overflows available space
@@ -463,7 +496,7 @@ export function resolveSceneLayout(
       : contentW;
     const absH = layout.height != null && layout.height !== 'auto'
       ? (layout.height as number / 100) * scene.h
-      : estimateBlockHeight(block, { isCompact }).height;
+      : estimateBlockHeight(block, { isCompact, sceneH: scene.h }).height;
 
     const isOverflowing = absY + absH > contentBottom;
 

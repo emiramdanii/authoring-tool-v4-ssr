@@ -492,10 +492,16 @@ export function PageFrame({
         </div>
       )}
 
-      {/* ══ Content Area — offset for top & bottom navbars ════ */}
+      {/* ══ Content Area ══════════════════════════════════════════ */}
+      {/* Schema-driven: FULL scene canvas (inset-0) — the scene engine
+          handles safe-area positioning via resolveSceneLayout(). Navbar
+          overlays (z-50) sit on top. DO NOT offset or safeArea will be
+          applied twice (double-offset bug). */}
+      {/* Legacy (non-schema): offset content area for navbars — CSS layout
+          doesn't know about safe areas, so PageFrame must offset. */}
       <div className="absolute left-0 right-0 overflow-hidden" style={{
-        top: showTopNav ? topNavH : 0,
-        bottom: showBottomNav ? bottomNavH : 0,
+        top: isSchemaDriven ? 0 : (showTopNav ? topNavH : 0),
+        bottom: isSchemaDriven ? 0 : (showBottomNav ? bottomNavH : 0),
       }}>
         {children}
         {extraElements}

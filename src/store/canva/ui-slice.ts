@@ -18,6 +18,46 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
+// ═══════════════════════════════════════════════════════════════
+// NESTED BLOCK FINDER — Finds blocks inside composite blocks
+// (ftab.tabs[].content[], materi-section.content[])
+// Returns the path to the block so Immer can update it.
+// ═══════════════════════════════════════════════════════════════
+
+type BlockOwner =
+  | { kind: 'top-level'; index: number }
+  | { kind: 'ftab-tab'; blockIndex: number; tabIndex: number; childIndex: number }
+  | { kind: 'materi-section'; blockIndex: number; childIndex: number };
+
+function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | null {
+  // 1. Search top-level
+  const idx = blocks.findIndex(b => b.id === blockId);
+  if (idx !== -1) return { kind: 'top-level', index: idx };
+
+  // 2. Search inside ftab.tabs[].content[]
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const block = blocks[bi];
+    if (block.type === 'ftab') {
+      const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
+      const tabs = ft.tabs || [];
+      for (let ti = 0; ti < tabs.length; ti++) {
+        const content = tabs[ti].content || [];
+        const ci = content.findIndex(b => b.id === blockId);
+        if (ci !== -1) return { kind: 'ftab-tab', blockIndex: bi, tabIndex: ti, childIndex: ci };
+      }
+    }
+    // 3. Search inside materi-section.content[]
+    if (block.type === 'materi-section') {
+      const ms = block as { content?: SchemaBlock[] };
+      const content = ms.content || [];
+      const ci = content.findIndex(b => b.id === blockId);
+      if (ci !== -1) return { kind: 'materi-section', blockIndex: bi, childIndex: ci };
+    }
+  }
+
+  return null;
+}
+
 export type UISlice = Pick<
   CanvaState,
   | 'setTool' | 'setLeftTab' | 'toggleLeftPanel' | 'toggleRightPanel'
@@ -153,42 +193,75 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
-    const blockIdx = blocks.findIndex(b => b.id === blockId);
-    if (blockIdx === -1) return;
+    // ═══ Find block — supports nested blocks inside composites ═══
+    const owner = findBlockOwner(blocks, blockId);
+    if (!owner) return;
 
     // Push history BEFORE the edit (for snapshot-based undo fallback)
     get()._pushHistory();
 
     // ═══ DEEP PATCH MERGE via Immer (with patches) ═════════════
-    const { blocks: newBlocks, patches: forwardPatches, inversePatches } =
-      mergeBlockInArray(blocks, blockIdx, updates);
+    if (owner.kind === 'top-level') {
+      // Top-level block — use existing mergeBlockInArray
+      const { blocks: newBlocks, patches: forwardPatches, inversePatches } =
+        mergeBlockInArray(blocks, owner.index, updates);
 
-    // Emit patch event with immer patches for PatchHistory integration
-    editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId,
-        blockType: blocks[blockIdx].type,
-        pageIndex: currentPageIndex,
-        patch: updates,
-        timestamp: Date.now(),
-        source: 'user',
-        _immerPatches: {
-          forward: forwardPatches,
-          inverse: inversePatches,
+      editBus.emit({
+        type: 'patch',
+        patch: {
+          blockId,
+          blockType: blocks[owner.index].type,
           pageIndex: currentPageIndex,
+          patch: updates,
+          timestamp: Date.now(),
+          source: 'user',
+          _immerPatches: {
+            forward: forwardPatches,
+            inverse: inversePatches,
+            pageIndex: currentPageIndex,
+          },
         },
-      },
-    });
+      });
 
-    // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
-    const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
-    const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      schema: newSchema,
-    };
-    set({ pages: newPages });
+      const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: newSchema };
+      set({ pages: newPages });
+    } else {
+      // Nested block (ftab tab content, materi-section content) — use Immer produce
+      const newBlocks = produce(blocks, draft => {
+        let target: SchemaBlock | undefined;
+        if (owner.kind === 'ftab-tab') {
+          const ft = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+          target = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex];
+        } else if (owner.kind === 'materi-section') {
+          const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
+          target = ms.content?.[owner.childIndex];
+        }
+        if (target) {
+          Object.assign(target, deepMergeBlock(target, updates));
+        }
+      });
+
+      editBus.emit({
+        type: 'patch',
+        patch: {
+          blockId,
+          blockType: owner.kind === 'ftab-tab'
+            ? (blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content?.[owner.childIndex]?.type || 'unknown'
+            : (blocks[owner.blockIndex] as { content?: SchemaBlock[] }).content?.[owner.childIndex]?.type || 'unknown',
+          pageIndex: currentPageIndex,
+          patch: updates,
+          timestamp: Date.now(),
+          source: 'user',
+        },
+      });
+
+      const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: newSchema };
+      set({ pages: newPages });
+    }
   },
 
   // ── Grid & Snap ──────────────────────────────────────────────

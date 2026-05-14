@@ -327,3 +327,51 @@ the available viewport space is less.
 ### Build Status
 - TypeScript: ✅ No errors
 - Next.js build: ✅ Compiled successfully
+
+---
+
+## KONEKTOR 1-4 + 7-8 FIXES — Pipeline Connectors Repaired (2026-05-14)
+
+Task ID: connector-fix-batch
+Agent: Main Agent
+Task: Fix all critical connector chain breaks in the pipeline
+
+### Fixes Applied
+
+#### KONEKTOR 1: Double Offset (PageFrame + SchemaScreenRenderer)
+- **File:** PageFrame.tsx L495-508
+- **Problem:** PageFrame offsets content by topNavH (44px), SchemaScreenRenderer also starts at safeArea.top (44px) → 88px total
+- **Fix:** Schema-driven pages use inset-0 (no CSS offset). Scene engine handles safe area. Navbar = z-50 overlay.
+
+#### KONEKTOR 2: Cover Height (600px vs 720px)
+- **File:** SceneLayoutEngine.ts L350-358
+- **Problem:** estimateBlockHeight(cover) returned baseHeight=600px, leaving 120px gap at bottom
+- **Fix:** Cover/hero now uses options.sceneH ?? 720 — always fills entire scene height
+
+#### KONEKTOR 3: Ftab Height (400px vs ~800px actual)
+- **File:** SceneLayoutEngine.ts L352-370
+- **Problem:** No case 'ftab' in estimateBlockHeight → fell to default (400px) → overlap
+- **Fix:** Added ftab case with recursive child estimation (tab header + progress + tallest tab content)
+
+#### KONEKTOR 4: MateriSection nested content underestimated
+- **File:** SceneLayoutEngine.ts L309-321
+- **Fix:** Recursive estimation of child blocks + takeaway + selfCheck heights
+
+#### KONEKTOR 7: SchemaEngine drops sceneResolution/safeArea/navConfig
+- **File:** SchemaEngine.tsx + SchemaPlayer.tsx
+- **Fix:** SchemaEngine now computes and passes sceneResolution, safeArea, ratioId, showTopNav, showBottomNav
+
+#### KONEKTOR 8: updateSchemaBlock can't find nested blocks
+- **File:** ui-slice.ts L182-265
+- **Fix:** Added findBlockOwner() that searches top-level + ftab.tabs[].content[] + materi-section.content[]
+
+### Files Changed (5 files)
+1. PageFrame.tsx — schema-driven content area = inset-0
+2. SceneLayoutEngine.ts — cover=sceneH, ftab recursive, materi-section recursive
+3. SchemaEngine.tsx — passes scene layout props to SchemaScreenRenderer
+4. SchemaPlayer.tsx — passes ratioId + nav flags
+5. ui-slice.ts — findBlockOwner + nested block update support
+
+### Build Status
+- TypeScript: No errors
+- Next.js build: Compiled successfully

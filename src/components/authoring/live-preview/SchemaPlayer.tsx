@@ -15,6 +15,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
+import { useCanvaStore } from '@/store/canva-store';
 
 // ── Transition Configurations ───────────────────────────────────
 
@@ -110,6 +111,9 @@ export default function SchemaPlayer({
   const [themeId, setThemeId] = useState<string>('default');
   const [interactive, setInteractive] = useState(true);
   const [transitionType, setTransitionType] = useState<TransitionType>('slide');
+
+  // ── Canvas store (ratio) ──────────────────────────────────
+  const ratioId = useCanvaStore(s => s.ratioId);
 
   // ── Interactive store (replay) ────────────────────────────
   const replayAll = useInteractiveStore((s) => s.replayAll);
@@ -254,6 +258,9 @@ export default function SchemaPlayer({
               mode={mode === 'canvas' ? 'canvas' : 'preview'}
               themeOverride={themeId}
               interactive={interactive}
+              ratioId={ratioId}
+              showTopNav={false}
+              showBottomNav={showControls}
             />
           </motion.div>
         </AnimatePresence>

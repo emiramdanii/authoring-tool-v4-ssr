@@ -17,6 +17,7 @@ import React from 'react';
 import type { LessonSchema } from '../schema/types';
 import type { SchemaRenderMode } from '../renderer/SchemaRenderer';
 import { SchemaScreenRenderer, TokenResolver } from '../renderer/SchemaRenderer';
+import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '../scene/SceneLayoutEngine';
 
 // Re-export utility functions from the renderer-free module
 export { loadPreset, getAvailablePresets, schemaToCanvaPages } from './SchemaEngine.utils';
@@ -34,6 +35,12 @@ export interface SchemaEngineProps {
   themeOverride?: string;
   /** Whether widgets are interactive */
   interactive?: boolean;
+  /** Ratio ID for scene resolution (default: '16:9') */
+  ratioId?: string;
+  /** Whether top navbar is shown (affects safe area) */
+  showTopNav?: boolean;
+  /** Whether bottom navbar is shown (affects safe area) */
+  showBottomNav?: boolean;
 }
 
 export function SchemaEngine({
@@ -42,9 +49,24 @@ export function SchemaEngine({
   mode,
   themeOverride,
   interactive = false,
+  ratioId = '16:9',
+  showTopNav = false,
+  showBottomNav = false,
 }: SchemaEngineProps) {
   const tokens = new TokenResolver(themeOverride || schema.themeId);
   const screen = schema.screens[screenIndex];
+
+  // ═══ Scene engine props — same as PageRenderer ═══════════════
+  // SchemaEngine must pass these so SchemaScreenRenderer uses the
+  // correct scene dimensions and safe area, matching the canvas path.
+  const isCompact = mode === 'canvas';
+  const sceneResolution = getSceneResolution(ratioId);
+  const safeArea = computeSafeArea({
+    showTopNav,
+    showBottomNav,
+    isCompact,
+    pagePadding: 0,
+  });
 
   if (!screen) {
     return (
@@ -60,6 +82,11 @@ export function SchemaEngine({
       mode={mode}
       tokens={tokens}
       interactive={interactive}
+      sceneResolution={sceneResolution}
+      safeArea={safeArea}
+      ratioId={ratioId}
+      showTopNav={showTopNav}
+      showBottomNav={showBottomNav}
     />
   );
 }
