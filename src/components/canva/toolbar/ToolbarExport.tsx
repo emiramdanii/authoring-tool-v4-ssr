@@ -14,7 +14,6 @@ import {
   MonitorPlay,
   Store,
   Printer,
-  FileDown,
   Share2,
   FileJson,
   Settings2,
@@ -47,7 +46,6 @@ import TemplateMarketplace from '@/components/canva/TemplateMarketplace';
 export function ToolbarExport() {
   const {
     exportHtml,
-    exportPdf,
     exportScorm,
     exportJson,
     previewTab,
@@ -124,22 +122,6 @@ export function ToolbarExport() {
                 {isExporting ? 'Mengunduh...' : 'Download HTML'}
               </div>
               <div className="text-[8px] text-app-muted">File HTML lengkap — siap dibagikan</div>
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={exportPdf}
-            disabled={isExporting}
-            className="px-3 py-2.5 gap-2.5 focus:bg-violet-500/10 cursor-pointer"
-          >
-            {isExporting
-              ? <Loader2 size={14} className="animate-spin text-violet-400 flex-shrink-0" />
-              : <FileDown size={14} className="text-violet-400 flex-shrink-0" />
-            }
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-semibold text-violet-300">
-                {isExporting ? 'Membuat PDF...' : 'Download PDF'}
-              </div>
-              <div className="text-[8px] text-app-muted">File PDF A4 dengan kunci jawaban</div>
             </div>
           </DropdownMenuItem>
           <DropdownMenuItem

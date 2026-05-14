@@ -40,76 +40,6 @@ export function useExportActions() {
     }
   }, [previewHTML]);
 
-  /** Download PDF — server-side generation via Puppeteer */
-  const exportPdf = useCallback(async () => {
-    const canvaState = useCanvaStore.getState();
-    const authState = useAuthoringStore.getState();
-
-    setIsExporting(true);
-    toast.loading(`Membuat PDF (${canvaState.pages.length} halaman)...`, { id: 'export-pdf' });
-
-    try {
-      const payload = {
-        pages: canvaState.pages,
-        ratioId: canvaState.ratioId,
-        meta: authState.meta,
-        allKuis: authState.kuis,
-        allModules: authState.modules,
-        games: authState.games,
-        cp: authState.cp,
-        tp: authState.tp,
-        atp: authState.atp,
-        alur: authState.alur,
-        materi: authState.materi,
-        skenario: authState.skenario,
-        petunjuk: authState.petunjuk,
-        diskusi: authState.diskusi,
-        refleksi: authState.refleksi,
-        penutup: authState.penutup,
-        suara: authState.suara,
-        format: 'A4',
-        landscape: false,
-        includeAnswerKeys: true,
-      };
-
-      const response = await fetch('/api/export/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `PDF export failed with status ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = 'mpi-export.pdf';
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (match) filename = match[1];
-      }
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-      toast.success(`PDF berhasil dibuat (${canvaState.pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-pdf' });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error('[PDF Export] Error:', err);
-      toast.error(`Gagal membuat PDF: ${message}`, { id: 'export-pdf' });
-    } finally {
-      setIsExporting(false);
-    }
-  }, []);
-
   /** Download SCORM 1.2 ZIP — for Moodle LMS import */
   const exportScorm = useCallback(async () => {
     const canvaState = useCanvaStore.getState();
@@ -191,7 +121,6 @@ export function useExportActions() {
 
   return {
     exportHtml,
-    exportPdf,
     exportScorm,
     exportJson: exportJSON,
     previewTab,
