@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { canvaPagesToSavePages } from '@/lib/save-utils';
+import { logger } from '@/core/utils/logger';
 
 /**
  * Unified auto-save hook — single source of truth for saving both stores.
@@ -54,7 +55,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
         }
       }, HIDE_SAVED_MS);
     } catch (error) {
-      console.error('[useAutoSave] Auto-save failed:', error);
+      logger.error('useAutoSave', error);
       useCanvaStore.setState({ _saveStatus: 'error' });
     }
   }, [projectId, saveProject]);

@@ -9,10 +9,13 @@ import { AlertTriangle } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import ExportApp from './ExportApp';
 import './export.css';
+import { logger } from '@/core/utils/logger';
 
 // ── Import stores for pre-population ─────────────────────────────
 import { useAuthoringStore } from '@/store/authoring-store';
+import type { AuthoringState } from '@/store/authoring/types';
 import { useCanvaStore } from '@/store/canva-store';
+import type { CanvaState } from '@/store/canva/types';
 import { useInteractiveStore } from '@/store/interactive-store';
 
 // ── Error Boundary for export mode ────────────────────────────────
@@ -37,7 +40,7 @@ class ExportErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('[Export] Render error:', error, info.componentStack);
+    logger.error('Export', error, info.componentStack);
   }
 
   render() {
@@ -91,16 +94,16 @@ class ExportErrorBoundary extends React.Component<
 }
 
 // ── Get export data injected by the build/API pipeline ───────────
-const exportData = (window as any).__EXPORT_DATA__;
+const exportData = window.__EXPORT_DATA__;
 
 if (exportData) {
   // Validate essential structure
   if (!exportData.pages || !Array.isArray(exportData.pages)) {
-    console.error('[Export] __EXPORT_DATA__.pages is missing or not an array.');
+    logger.error('Export', '__EXPORT_DATA__.pages is missing or not an array.');
   }
 
   // 1. Pre-populate authoring store with quiz, modules, meta data
-  const authPartial: Record<string, unknown> = {};
+  const authPartial: Partial<AuthoringState> = {};
 
   if (exportData.allKuis) authPartial.kuis = exportData.allKuis;
   if (exportData.allModules) authPartial.modules = exportData.allModules;
@@ -120,18 +123,18 @@ if (exportData) {
   if (exportData.suara) authPartial.suara = exportData.suara;
 
   if (Object.keys(authPartial).length > 0) {
-    useAuthoringStore.setState(authPartial as any);
+    useAuthoringStore.setState(authPartial);
   }
 
   // 2. Pre-populate canva store with pages + ratio
   //    MUST be set before interactive store so the auto-sync reads correct data.
-  const canvaPartial: Record<string, unknown> = {};
+  const canvaPartial: Partial<CanvaState> = {};
   if (exportData.pages) canvaPartial.pages = exportData.pages;
   if (exportData.ratioId != null) canvaPartial.ratioId = exportData.ratioId;
   canvaPartial.currentPageIndex = 0;
 
   if (Object.keys(canvaPartial).length > 0) {
-    useCanvaStore.setState(canvaPartial as any);
+    useCanvaStore.setState(canvaPartial);
   }
 
   // 3. Set interactive store to interactive mode
@@ -142,7 +145,7 @@ if (exportData) {
     scores: [],
   });
 } else {
-  console.error('[Export] window.__EXPORT_DATA__ is missing. Export data was not injected by the API route.');
+  logger.error('Export', 'window.__EXPORT_DATA__ is missing. Export data was not injected by the API route.');
 }
 
 // ── Render the Export App with Error Boundary ────────────────────

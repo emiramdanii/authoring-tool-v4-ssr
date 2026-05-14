@@ -35,9 +35,9 @@ export default function ExportApp() {
 
   // Expose interactive store for Live Preview postMessage bridge
   useEffect(() => {
-    (window as any).__INTERACTIVE_STORE__ = useInteractiveStore;
+    window.__INTERACTIVE_STORE__ = useInteractiveStore;
     return () => {
-      delete (window as any).__INTERACTIVE_STORE__;
+      delete window.__INTERACTIVE_STORE__;
     };
   }, []);
 

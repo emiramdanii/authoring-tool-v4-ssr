@@ -14,6 +14,7 @@
 //   editBus.subscribe((event) => console.log('[EditBus]', event));
 
 import type { EditEvent } from './types';
+import { logger } from '@/core/utils/logger';
 
 type EditEventHandler = (event: EditEvent) => void;
 
@@ -44,7 +45,7 @@ class EditEventBus {
       try {
         handler(event);
       } catch (err) {
-        console.error('[EditBus] Subscriber error:', err);
+        logger.error('EditBus', err);
       }
     }
   }

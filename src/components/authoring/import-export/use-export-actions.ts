@@ -5,6 +5,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 /** Minimal interfaces for the print-export context.
  *  These capture only the properties accessed when generating
@@ -76,7 +77,7 @@ export function useExportActions() {
     try {
       await exportHTML();
     } catch (err: unknown) {
-      console.error('Export HTML failed:', err);
+      logger.error('ExportHTML', err);
       const message = err instanceof Error ? err.message : 'Unknown error';
       toast.error(`Gagal mengexport HTML: ${message}`);
     }
@@ -162,7 +163,7 @@ export function useExportActions() {
       win.print();
       toast.success('Jendela cetak dibuka');
     } catch (err) {
-      console.error('Print admin failed:', err);
+      logger.error('PrintAdmin', err);
       toast.error('Gagal membuka jendela cetak');
     }
   }, []);

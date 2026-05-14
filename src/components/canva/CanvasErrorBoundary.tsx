@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { logger } from '@/core/utils/logger';
 
 // ═══════════════════════════════════════════════════════════════
 // Canvas Error Boundary — prevents a single component crash
@@ -34,7 +35,7 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error(`[CanvasErrorBoundary${this.props.name ? `:${this.props.name}` : ''}]`, error, info.componentStack);
+    logger.error(`CanvasErrorBoundary${this.props.name ? `:${this.props.name}` : ''}`, error, info.componentStack);
   }
 
   render() {

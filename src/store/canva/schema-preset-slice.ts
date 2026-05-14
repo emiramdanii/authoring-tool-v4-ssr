@@ -21,6 +21,7 @@ import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine.utils
 // Use the renderer-free .utils file for store modules.
 import { generatePageId } from '@/core/schema/ensure-schema';
 import type { LessonSchema } from '@/core/schema/types';
+import { logger } from '@/core/utils/logger';
 
 export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset' | 'loadCustomSchema'>;
 
@@ -83,7 +84,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
 
       toast.success(`📦 Preset "${schema.title}" dimuat — ${pages.length} layar`);
     } catch (err) {
-      console.error('Failed to load schema preset:', err);
+      logger.error('SchemaPreset', err);
       toast.error(`Gagal memuat preset "${presetId}"`);
     }
   },
@@ -136,7 +137,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
 
       toast.success(`🏪 Template "${schema.title}" diterapkan — ${pages.length} layar`);
     } catch (err) {
-      console.error('Failed to load custom schema:', err);
+      logger.error('CustomSchema', err);
       toast.error('Gagal menerapkan template');
     }
   },

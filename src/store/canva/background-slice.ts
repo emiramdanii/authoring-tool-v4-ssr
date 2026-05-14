@@ -145,13 +145,20 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   },
 
   // ── Template Data actions ────────────────────────────────────
-  // FASE 3: updateTemplateData is deprecated. New code should update
-  // page.schema directly. This action remains for backward compat
-  // with any UI that still writes to templateData.
-  // TODO(D-2): Still actively called in PageSettingsSection.tsx:261.
-  // Migrate that call site to use updateSchemaBlock() or direct schema
-  // mutations, then remove this action.
-  // @deprecated — use updateSchemaBlock() or direct schema mutations instead
+  // @deprecated FASE 4: updateTemplateData is deprecated.
+  // No active UI consumers remain (migrated in E-3).
+  // Kept only for potential programmatic/legacy use cases.
+  // New code should use updateSchemaBlock() or direct schema mutations.
+  //
+  // REMOVAL PREREQUISITES:
+  //   1. ✅ PageSettingsSection.tsx — migrated away from updateTemplateData
+  //   2. ⬜ setSchemaThemeId() — still writes schemaThemeId to templateData
+  //   3. ⬜ ensure-schema.ts — still reads templateData.schemaScreen (Path 2)
+  //   4. ⬜ persistence-slice.ts — still preserves templateData during load
+  //   5. ⬜ TemplateAdapter.ts — still reads page.templateData in convertToSchema()
+  //
+  // When items 2-5 are resolved, this action and the templateData field
+  // on CanvaPage can be removed entirely.
   updateTemplateData: (key, value) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];

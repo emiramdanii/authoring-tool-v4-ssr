@@ -18,6 +18,7 @@ import {
   generateExportFilename,
   type ClientExportPayload,
 } from '@/lib/client-export';
+import { logger } from '@/core/utils/logger';
 
 /**
  * Export HTML using the Vite SSR pipeline.
@@ -112,7 +113,7 @@ export function useViteExport() {
 
       toast.success(`Export selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-ssr' });
     } catch (err: any) {
-      console.error('[Vite Export] Error:', err);
+      logger.error('Vite Export', err);
       toast.error(`Gagal export: ${err.message}`, { id: 'export-ssr' });
       throw err; // Re-throw so caller can fall back
     }
@@ -162,7 +163,7 @@ export function useViteExport() {
       }
       toast.success(`Preview dibuka (${pages.length} halaman)`);
     } catch (err: any) {
-      console.error('[Vite Export Preview] Error:', err);
+      logger.error('Vite Export Preview', err);
       toast.error(`Gagal preview: ${err.message}`);
       throw err;
     }
@@ -198,7 +199,7 @@ export function useViteExport() {
 
       toast.success(`Export client-side selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-client' });
     } catch (err: any) {
-      console.error('[Client Export] Error:', err);
+      logger.error('Client Export', err);
       toast.error(`Gagal export client-side: ${err.message}`, { id: 'export-client' });
     }
   }, [pages, ratioId, buildPayload]);
@@ -218,7 +219,7 @@ export function useViteExport() {
       }
       toast.success(`Preview client-side dibuka (${pages.length} halaman)`);
     } catch (err: any) {
-      console.error('[Client Preview] Error:', err);
+      logger.error('Client Preview', err);
       toast.error(`Gagal preview client-side: ${err.message}`);
     }
   }, [pages, ratioId, buildPayload]);
@@ -256,7 +257,7 @@ export function useViteExport() {
 
         toast.success(`Export fallback selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-fallback' });
       } catch (clientErr: any) {
-        console.error('[Export] Client-side fallback also failed:', clientErr);
+        logger.error('Export', clientErr);
         toast.error(`Export gagal total: ${clientErr.message}`, { id: 'export-fallback' });
       }
     }

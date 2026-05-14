@@ -9,6 +9,7 @@ import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import { canvaPagesToSavePages } from '@/lib/save-utils';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 // ── Types ──────────────────────────────────────────────────────
 export interface ProjectMeta {
@@ -62,7 +63,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       const json = await res.json();
       setProjects(json.data || []);
     } catch (error) {
-      console.error('[ProjectProvider] Load projects error:', error);
+      logger.error('ProjectProvider', error);
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       toast.success(`Proyek "${title}" dibuat`);
       return project;
     } catch (error) {
-      console.error('[ProjectProvider] Create project error:', error);
+      logger.error('ProjectProvider', error);
       toast.error('Gagal membuat proyek');
       return null;
     }
@@ -154,7 +155,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       if (!res.ok) throw new Error('Failed to save project');
       useCanvaStore.setState({ _saveStatus: 'saved' });
     } catch (error) {
-      console.error('[ProjectProvider] Save project error:', error);
+      logger.error('ProjectProvider', error);
       useCanvaStore.setState({ _saveStatus: 'error' });
     } finally {
       setSaving(false);
@@ -208,7 +209,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       useAuthoringStore.getState().setActivePanel('canva');
       toast.success(`Proyek "${data.title}" dimuat`);
     } catch (error) {
-      console.error('[ProjectProvider] Load project error:', error);
+      logger.error('ProjectProvider', error);
       toast.error('Gagal memuat proyek');
     }
   }, []);
@@ -233,7 +234,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       await loadProjects();
       toast.success('Proyek dihapus');
     } catch (error) {
-      console.error('[ProjectProvider] Delete project error:', error);
+      logger.error('ProjectProvider', error);
       toast.error('Gagal menghapus proyek');
     }
   }, [currentProjectId, loadProjects]);
@@ -250,7 +251,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       await loadProjects();
       toast.success('Nama proyek diubah');
     } catch (error) {
-      console.error('[ProjectProvider] Rename project error:', error);
+      logger.error('ProjectProvider', error);
       toast.error('Gagal mengubah nama proyek');
     }
   }, [loadProjects]);
@@ -310,7 +311,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         toast.info('Tidak ada proyek yang bisa diimport');
       }
     } catch (error) {
-      console.error('[ProjectProvider] Import error:', error);
+      logger.error('ProjectProvider', error);
       toast.error('Gagal mengimport data dari browser');
     }
   }, [loadProjects]);

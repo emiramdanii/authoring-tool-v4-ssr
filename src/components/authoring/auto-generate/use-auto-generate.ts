@@ -15,6 +15,7 @@ import type {
   SkenarioChapter,
 } from './types';
 import { parse } from './parser';
+import { logger } from '@/core/utils/logger';
 import {
   genCP,
   genTP,
@@ -335,7 +336,7 @@ export function useAutoGenerate() {
             toast.success(`⚡ Semua ${allPreviews.length} konten berhasil digenerate!`);
           }
         } catch (err) {
-          console.error(`Error generating ${type}:`, err);
+          logger.error(`AutoGenerate:${type}`, err);
           if (allPreviews.length === types.length - 1) {
             setPreviews(allPreviews);
             setLoading(new Set());

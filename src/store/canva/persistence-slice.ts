@@ -12,6 +12,15 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import { CANVA_STORAGE_KEY } from './constants';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 
+// ── Migration version for localStorage data ──────────────────
+// Increment when adding new one-time migration logic.
+// If the stored data's version is less than current, migrations run.
+// After migration, data is saved with the current version.
+const STORAGE_MIGRATION_VERSION = 1;
+
+// Migrations that should only run once per version:
+//   v1: overlayElements → elements[] merge (was running on every load)
+
 // ── Legacy tab name migration map ──────────────────────────────
 const TAB_MIGRATION: Record<string, LeftTab> = {
   templates: 'sisipkan',
@@ -38,6 +47,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         pages,
         ratioId,
         _lastSavedAt: Date.now(),
+        _migrationVersion: STORAGE_MIGRATION_VERSION,
       }));
       set({ _saveStatus: 'saved' });
     } catch (err) {
@@ -66,6 +76,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // DUAL-RENDER FIX: migrateAllPages() also clears elements[]
         // for any page that has schema. Schema-driven pages must NOT
         // have elements[] populated, otherwise dual-render occurs.
+        // Check if overlayElements migration has already been applied
+        const needsOverlayMigration = !data._migrationVersion || data._migrationVersion < 1;
+
         const rawPages = data.pages.map((p: CanvaPage) => {
           // Basic field migration (backward compat)
           const migrated: CanvaPage = {
@@ -78,21 +91,22 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
               navbarStyle: p.navConfig?.navbarStyle || DEFAULT_NAV_CONFIG.navbarStyle,
             },
             templateData: p.templateData || {},
-            // v4: locked field removed — schema is always owned by the user
-            // Merge any overlayElements into elements[] for backward compat
             elements: [
               ...(p.elements || []).map((el: CanvaElement) => ({
                 ...el,
                 opacity: el.opacity ?? 100,
                 hidden: el.hidden ?? false,
               })),
-              ...(p.overlayElements || []).map((el: CanvaElement) => ({
+              // v4 (migration v1): Merge overlayElements into elements[] once.
+              // After the first save with _migrationVersion >= 1,
+              // overlayElements is always [] and this is a no-op.
+              ...(needsOverlayMigration ? (p.overlayElements || []).map((el: CanvaElement) => ({
                 ...el,
                 opacity: el.opacity ?? 100,
                 hidden: el.hidden ?? false,
-              })),
+              })) : []),
             ],
-            overlayElements: [], // Cleared — all merged into elements[]
+            overlayElements: [], // Always cleared — legacy field
             schema: p.schema || undefined,
           };
           return migrated;

@@ -19,7 +19,7 @@ export interface ScoreEntry {
 
 // ── Store Interface ────────────────────────────────────────────
 
-interface InteractiveState {
+export interface InteractiveState {
   // ── Mode ───────────────────────────────────────────────────
   mode: 'design' | 'interactive';
   setMode: (mode: 'design' | 'interactive') => void;

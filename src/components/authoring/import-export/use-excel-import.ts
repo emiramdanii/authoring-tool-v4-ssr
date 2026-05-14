@@ -5,6 +5,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import type { SheetPreview } from './types';
+import { logger } from '@/core/utils/logger';
 import {
   META_HEADERS,
   CP_HEADERS,
@@ -205,7 +206,7 @@ export function useExcelImport() {
         setActivePreviewTab(sheets[0].name);
         setPreviewOpen(true);
       } catch (err) {
-        console.error('Excel parse error:', err);
+        logger.error('ExcelImport', err);
         toast.error('❌ Gagal membaca file Excel');
       }
     };

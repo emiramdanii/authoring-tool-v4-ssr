@@ -40,9 +40,28 @@ export interface CanvaElement {
   kuisId?: string;   // UUID-based stable reference to kuis[] (preferred)
   kuisIds?: string[]; // Multiple kuis IDs — for template pages with multiple questions
   /** @deprecated Use moduleId/kuisId instead — array indices break when items are reordered.
-   *  TODO(D-2): Still needed as fallback in module-resolver.ts, sync-slice.ts,
-   *  element-slice.ts, GameWidget, QuizWidget. Cannot remove until all
-   *  saved data has been migrated to use moduleId/kuisId exclusively.
+   *
+   *  REMAINING CONSUMERS (as of E-3):
+   *    - module-resolver.ts: Priority 2 fallback (moduleId > dataIdx) — reads dataIdx
+   *    - sync-slice.ts: ID re-sync — writes moduleId from dataIdx when missing
+   *    - element-slice.ts: Sets dataIdx on new kuis/game/module elements (also sets stable ID)
+   *    - GameWidget.tsx: Props dataIdx for resolveModule() pseudo-element
+   *    - QuizWidget.tsx: Props dataIdx for resolveKuis() pseudo-element
+   *    - BlockRenderer.tsx: Passes dataIdx to GameWidget/QuizWidget
+   *    - ElementProperties.tsx: DataIdxSelector UI for choosing module/kuis index
+   *    - canva-constants.ts: Default value (-1) in element factory
+   *
+   *  MIGRATION PATH (for full removal):
+   *    1. sync-slice.ts already promotes dataIdx → moduleId/kuisId on sync.
+   *       After enough time, all saved data will have stable IDs and dataIdx
+   *       will always be -1 or undefined.
+   *    2. Once dataIdx is never set in new elements (element-slice always
+   *       provides moduleId/kuisId), module-resolver can drop the fallback.
+   *    3. GameWidget/QuizWidget can stop accepting dataIdx prop.
+   *    4. Then this field can be removed from CanvaElement.
+   *
+   *  SAFE TO KEEP: The dataIdx is only a fallback — if moduleId/kuisId is present,
+   *  dataIdx is ignored at runtime. No incorrect behavior occurs if it's stale.
    */
   dataIdx?: number;
   // Layout variant for module rendering
@@ -98,26 +117,38 @@ export interface CanvaPage {
   navConfig: NavConfig;
   /** @deprecated FASE 1 → FASE 4: Legacy data binding.
    *  Schema-driven pages use page.schema instead.
-   *  STILL NEEDED FOR (as of FASE 4):
+   *
+   *  REMAINING CONSUMERS (as of E-3):
    *    - ensurePageSchema() Path 2: promotes templateData.schemaScreen → page.schema
-   *    - populateTemplateElements(): reads module/kuis IDs (now schema-first with fallback)
-   *    - background-slice updateTemplateData(): custom pages fallback
-   *    - PageSettingsSection.tsx: Quick edit for template fields (line 261)
+   *    - setSchemaThemeId(): writes schemaThemeId to templateData (should migrate to schema)
    *    - persistence-slice.ts: Backward compat during loadFromStorage/loadFromDB
    *    - TemplateAdapter.ts: convertToSchema() reads page.templateData
-   *  MIGRATION PATH: After all users have re-saved, this field can be removed.
+   *
+   *  MIGRATED AWAY (E-3):
+   *    - ✅ PageSettingsSection.tsx: Quick edit removed — schema pages edited via canvas
+   *    - ✅ updateTemplateData() UI call: No active consumers remain
+   *
+   *  MIGRATION PATH (for full removal):
+   *    1. Move schemaThemeId from templateData → ScreenSchema.background or nav
+   *    2. After all users re-save, ensure-schema Path 2 is dead code → remove
+   *    3. After TemplateAdapter is removed (all legacy pages migrated), this field
+   *       can be made optional and eventually removed from CanvaPage
+   *
    *  New code should NEVER write to templateData — use page.schema instead.
-   *  TODO(D-2): Migrate PageSettingsSection.tsx away from updateTemplateData(),
-   *  then this field can be made optional and eventually removed.
    */
   templateData: Record<string, unknown>;
   // ── Overlay elements (v3 — Phase 1) ── REMOVED in v4.
   // All elements now live in elements[]. The overlay system was part of
   // the old locked/unlocked model which has been removed.
-  // Kept as optional for backward compat during loadFromStorage migration
-  // (see persistence-slice.ts:89 — reads overlayElements and merges into elements[]).
-  // TODO(D-2): After migration window, remove this field and the merge logic.
-  /** @deprecated v4: Always empty after load. Merged into elements[] on load. */
+  //
+  // MIGRATION GUARD (persistence-slice.ts):
+  //   - On load, if _migrationVersion < 1, overlayElements are merged into elements[]
+  //   - After first save, _migrationVersion >= 1 and the merge is skipped
+  //   - overlayElements is always set to [] after load
+  //
+  // REMOVAL: After all users have loaded with _migrationVersion >= 1,
+  // this field and the migration guard in persistence-slice.ts can be removed.
+  /** @deprecated v4: Always empty after load. Merged into elements[] on first load only. */
   overlayElements?: CanvaElement[];
   // ── Template layout variant (Phase 3) ──
   // Different visual layouts for the same template type (A/B/C)

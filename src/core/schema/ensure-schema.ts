@@ -26,6 +26,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import type { ScreenSchema, SchemaBlock } from './types';
 import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { nanoid } from 'nanoid';
+import { logger } from '@/core/utils/logger';
 
 /**
  * Ensure a page has a native ScreenSchema.
@@ -212,8 +213,9 @@ export function validateCanvaPageInvariant(page: CanvaPage, source?: string): vo
   if (hasSchema && hasElements) {
     const src = source ? ` (${source})` : '';
     const schemaBlocks = page.schema?.blocks?.length ?? 0;
-    console.error(
-      `[DUAL-RENDER BUG] Page "${page.label}"${src} has BOTH schema (${schemaBlocks} blocks) AND elements (${page.elements.length}). ` +
+    logger.error(
+      'DUAL-RENDER BUG',
+      `Page "${page.label}"${src} has BOTH schema (${schemaBlocks} blocks) AND elements (${page.elements.length}). ` +
       `This causes content to render twice in preview/export mode. ` +
       `Schema-driven pages must have elements=[]. ` +
       `Call migrateAllPages() to fix.`

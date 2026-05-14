@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 export default function PageSettingsSection() {
   // ── Store selectors ──────────────────────────────────────────
   const setTemplateType = useCanvaStore(s => s.setTemplateType);
-  const updateTemplateData = useCanvaStore(s => s.updateTemplateData);
   const applyLayoutPreset = useCanvaStore(s => s.applyLayoutPreset);
   const currentLayoutPreset = useCanvaStore(s => s.currentLayoutPreset);
   const toggleGrid = useCanvaStore(s => s.toggleGrid);
@@ -226,11 +225,6 @@ export default function PageSettingsSection() {
           <div className="text-[10px] font-bold text-app-accent mb-1.5">
             {TEMPLATE_BADGE_MAP[page.templateType]?.icon || ''} {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType} Template
           </div>
-          <div className="rounded-xl bg-app-elevated/40 border border-app-border/20 p-2 mb-2">
-            <span className="text-[8px] text-app-muted">
-              Klik langsung teks di canvas untuk mengedit. Data otomatis diambil dari panel authoring.
-            </span>
-          </div>
 
           {/* Refresh Data button */}
           <Button
@@ -246,25 +240,25 @@ export default function PageSettingsSection() {
             Refresh Data dari Authoring
           </Button>
 
-          {/* Quick edit for common template fields */}
-          {page.templateData && (
-            <div className="space-y-1">
-              {Object.entries(page.templateData)
-                .filter(([_, v]) => typeof v === 'string' && v.length < 100)
-                .slice(0, 5)
-                .map(([key, value]) => (
-                  <div key={key}>
-                    <label className="text-[8px] text-app-muted block mb-0.5">{key}</label>
-                    <input
-                      type="text"
-                      value={String(value)}
-                      onChange={e => updateTemplateData(key, e.target.value)}
-                      className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none focus-ring"
-                    />
-                  </div>
-                ))}
+          {/* Schema-driven editing guide — replaces legacy templateData quick edit.
+              Schema pages should be edited by clicking blocks directly on canvas.
+              The old templateData quick-edit inputs were misleading because
+              templateData is no longer the source of truth for schema pages. */}
+          {page.schema ? (
+            <div className="rounded-xl bg-app-elevated/40 border border-app-border/20 p-2">
+              <span className="text-[8px] text-app-muted">
+                Klik langsung teks atau block di canvas untuk mengedit. Data otomatis disimpan ke schema.
+              </span>
             </div>
-          )}
+          ) : page.templateData && Object.keys(page.templateData).length > 0 ? (
+            /* Fallback for legacy non-schema pages with templateData.
+              These are rare — only custom pages that somehow have templateData. */
+            <div className="rounded-xl bg-app-elevated/40 border border-app-border/20 p-2">
+              <span className="text-[8px] text-app-muted">
+                Halaman legacy — gunakan canvas untuk mengedit.
+              </span>
+            </div>
+          ) : null}
         </div>
       )}
     </Section>

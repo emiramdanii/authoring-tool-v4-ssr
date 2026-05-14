@@ -5,6 +5,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import type { PreviewMode, LayoutTheme } from './types';
 import { simpleHash } from './constants';
+import { logger } from '@/core/utils/logger';
 
 export interface UsePreviewBuilderReturn {
   htmlContent: string;
@@ -118,7 +119,7 @@ export function usePreviewBuilder(
       cachedHashRef.current = dataHash;
       setLastBuildTime(Date.now());
     } catch (err) {
-      console.error('Failed to generate preview HTML:', err);
+      logger.error('PreviewBuilder', err);
       setHtmlContent('');
     } finally {
       setBuilding(false);

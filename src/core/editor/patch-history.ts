@@ -27,6 +27,7 @@
 //   history.redo(); // → patches
 
 import { applyPatches, type Patch, type Objectish } from 'immer';
+import { logger } from '@/core/utils/logger';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -301,7 +302,7 @@ export class PatchHistory {
       try {
         listener();
       } catch (err) {
-        console.error('[PatchHistory] Listener error:', err);
+        logger.error('PatchHistory', err);
       }
     }
   }

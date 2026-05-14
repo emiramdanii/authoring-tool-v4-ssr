@@ -6,6 +6,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useViteExport } from '@/lib/use-vite-export';
 import { useExportActions as useSharedExportActions } from '@/components/authoring/import-export/use-export-actions';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 // ═══════════════════════════════════════════════════════════════════
 // TOOLBAR EXPORT ACTIONS HOOK
@@ -100,7 +101,7 @@ export function useExportActions() {
       toast.success(`SCORM berhasil dibuat (${canvaState.pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB) — Upload ke Moodle!`, { id: 'export-scorm' });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error('[SCORM Export] Error:', err);
+      logger.error('SCORM Export', err);
       toast.error(`Gagal membuat SCORM: ${message}`, { id: 'export-scorm' });
     } finally {
       setIsExporting(false);

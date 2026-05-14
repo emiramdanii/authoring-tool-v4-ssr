@@ -158,7 +158,7 @@ export async function GET(
     }
 
     // Reconstruct pages for export
-    const pages = reconstructPages(project.pages as any);
+    const pages = reconstructPages(project.pages);
 
     // Build export data — compatible with the Vite SSR template
     const exportData = {

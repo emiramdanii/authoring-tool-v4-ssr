@@ -12,6 +12,7 @@
 'use client';
 
 import React, { Component } from 'react';
+import { logger } from '@/core/utils/logger';
 
 interface BlockErrorBoundaryProps {
   blockType: string;
@@ -37,8 +38,8 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log to console for debugging (not to user)
-    console.error(
-      `[BlockErrorBoundary] Crash in block "${this.props.blockType}" (id: ${this.props.blockId}):`,
+    logger.error(
+      `BlockErrorBoundary:${this.props.blockType}:${this.props.blockId}`,
       error,
       errorInfo
     );
