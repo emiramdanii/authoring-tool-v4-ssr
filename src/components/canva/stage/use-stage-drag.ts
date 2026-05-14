@@ -169,7 +169,7 @@ export function useStageDrag({
         setSnapLines(lines);
       }
     }
-  }, [effectiveZoom, stageW, stageH, updateElement, snapEnabled, snapValue, computeSnapLines]);
+  }, [stageW, stageH, updateElement, snapEnabled, snapValue, computeSnapLines]);
 
   const handleMouseUp = useCallback(() => {
     dragState.current = null;

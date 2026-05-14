@@ -67,10 +67,6 @@ export default function CanvaBuilder() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  const handleMouseMove = useCallback((_x: number, _y: number) => {
-    // Mouse position no longer tracked — was only used by StatusBar
-  }, []);
-
   // ── Unified keyboard shortcuts via registry ──────────────────
   // Replaces the separate useEffect with window.addEventListener('keydown', ...)
   // These shortcuts are scoped to 'canvas' and only fire when the
@@ -272,7 +268,12 @@ export default function CanvaBuilder() {
       scope: 'canvas',
       priority: 3,
       handler: () => {
-        useCanvaStore.getState().selectElement(null);
+        const store = useCanvaStore.getState();
+        // Clear both element AND block selection for consistent Escape behavior.
+        // Previously only cleared elements — blocks were cleared by useStageKeyboard,
+        // causing double-firing when both systems handled Escape simultaneously.
+        store.selectElement(null);
+        store.selectBlock(null);
       },
       description: 'Deselect / Exit editing',
       category: 'Selection',
@@ -391,7 +392,7 @@ export default function CanvaBuilder() {
           {/* FIX: Added flex flex-col so Stage's flex-1 works and canvasAreaRef
               returns correct clientHeight (available viewport space, not content height) */}
           <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
-            <Stage onMouseMove={handleMouseMove} />
+            <Stage />
           </div>
 
           <div className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${

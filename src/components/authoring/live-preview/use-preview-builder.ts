@@ -49,6 +49,7 @@ export function usePreviewBuilder(
   const diskusi = useAuthoringStore((s) => s.diskusi);
   const refleksi = useAuthoringStore((s) => s.refleksi);
   const penutup = useAuthoringStore((s) => s.penutup);
+  const suara = useAuthoringStore((s) => s.suara);
 
   // ── Canva store subscriptions ──────────────────────────────
   const canvaPages = useCanvaStore((s) => s.pages);
@@ -72,10 +73,10 @@ export function usePreviewBuilder(
         pages: pagesLite,
         ratioId: canvaRatioId,
         meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
-        petunjuk, diskusi, refleksi, penutup, layoutTheme, previewMode,
+        petunjuk, diskusi, refleksi, penutup, suara, layoutTheme, previewMode,
       })
     );
-  }, [canvaPages, canvaRatioId, meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games, petunjuk, diskusi, refleksi, penutup, layoutTheme, previewMode]);
+  }, [canvaPages, canvaRatioId, meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games, petunjuk, diskusi, refleksi, penutup, suara, layoutTheme, previewMode]);
 
   // ── Build HTML content via Vite SSR Export API ─────────────
   const rebuildHTML = useCallback(async () => {

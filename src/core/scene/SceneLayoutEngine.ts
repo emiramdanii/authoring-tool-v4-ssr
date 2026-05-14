@@ -386,8 +386,21 @@ export function estimateBlockHeight(
       break;
     }
     default: {
-      // Use registry base height
-      contentHeight = baseHeight;
+      // Check if block has generic `children` — estimate their heights too.
+      // This ensures blocks using BaseBlock.children get correct height
+      // instead of falling through to a flat registry value.
+      const blockChildren = (block as { children?: SchemaBlock[] }).children;
+      if (blockChildren && blockChildren.length > 0) {
+        let childH = 0;
+        for (const child of blockChildren) {
+          const childEst = estimateBlockHeight(child, { ...options, sceneH: options.sceneH });
+          childH += childEst.height + 8; // 8px gap between children
+        }
+        contentHeight = 40 + childH + 16; // 40px header + children + 16px padding
+      } else {
+        // Use registry base height
+        contentHeight = baseHeight;
+      }
     }
   }
 

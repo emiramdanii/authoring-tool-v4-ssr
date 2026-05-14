@@ -74,7 +74,7 @@ const designPageTransition = {
   duration: 0.22,
 };
 
-export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: number) => void }) {
+export default function Stage() {
   // ── Targeted selectors to avoid unnecessary re-renders ──────────
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
@@ -89,7 +89,6 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const deleteSelectedElements = useCanvaStore(s => s.deleteSelectedElements);
   const addElement = useCanvaStore(s => s.addElement);
   const updateElement = useCanvaStore(s => s.updateElement);
-  const updateTemplateData = useCanvaStore(s => s.updateTemplateData);
   const showGrid = useCanvaStore(s => s.showGrid);
   const gridSize = useCanvaStore(s => s.gridSize);
   const snapEnabled = useCanvaStore(s => s.snapEnabled);
@@ -108,13 +107,12 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
   const pasteSchemaBlock = useCanvaStore(s => s.pasteSchemaBlock);
   const nudgeSchemaBlocks = useCanvaStore(s => s.nudgeSchemaBlocks);
   const deleteSchemaBlocks = useCanvaStore(s => s.deleteSchemaBlocks);
-  const undo = useCanvaStore(s => s.undo);
-  const redo = useCanvaStore(s => s.redo);
   const setZoom = useCanvaStore(s => s.setZoom);
   const storeSetFitZoom = useCanvaStore(s => s.setFitZoom);
   const zoomDelta = useCanvaStore(s => s.zoomDelta);
   const zoomToFit = useCanvaStore(s => s.zoomToFit);
-  const storeFitZoom = useCanvaStore(s => s.fitZoom);
+  // NOTE: Removed unused `storeFitZoom` subscription — was causing unnecessary
+  // re-renders. The local `fitZoom` state is used instead for `effectiveZoom`.
 
   const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
@@ -174,8 +172,7 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     pasteSchemaBlock,
     nudgeSchemaBlocks,
     deleteSchemaBlocks,
-    undo,
-    redo,
+    // NOTE: undo/redo NOT passed — handled by CanvaBuilder's keyboardManager
   });
 
   // ── Drag/resize logic ─────────────────────────────────────────
@@ -320,10 +317,10 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     return () => area.removeEventListener('wheel', handleWheel);
   }, [setZoom]); // Only re-register when setZoom changes (never — it's stable)
 
-  // ── Wrap handleAreaMouseMove to pass onMouseMove callback ─────
+  // ── Wrap handleAreaMouseMove (no longer passing onMouseMove — dead chain removed) ──
   const onAreaMouseMove = useCallback((e: React.MouseEvent) => {
-    handleAreaMouseMove(e, onMouseMove);
-  }, [handleAreaMouseMove, onMouseMove]);
+    handleAreaMouseMove(e);
+  }, [handleAreaMouseMove]);
 
   // ── Pan drag handlers ─────────────────────────────────────────
   const handlePanStart = useCallback((e: React.MouseEvent) => {
@@ -376,11 +373,6 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
     selectElement(null);
     selectBlock(null);
   };
-
-  // ── Template field edit handler ───────────────────────────────
-  const handleTemplateEdit = useCallback((key: string, value: string) => {
-    updateTemplateData(key, value);
-  }, [updateTemplateData]);
 
   // ── Derived state ─────────────────────────────────────────────
   const isTemplateMode = page && page.templateType && page.templateType !== 'custom';
@@ -446,7 +438,6 @@ export default function Stage({ onMouseMove }: { onMouseMove: (x: number, y: num
                   currentPageIndex={currentPageIndex}
                   totalPages={pages.length}
                   isTemplateSelected={true}
-                  onEditField={handleTemplateEdit}
                 />
               </motion.div>
             </AnimatePresence>

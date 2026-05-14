@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { showUndoRedoToast } from '@/components/shared/StatusToast';
 
 interface UseStageKeyboardParams {
   selectedElIds: string[];
@@ -22,13 +21,29 @@ interface UseStageKeyboardParams {
   pasteSchemaBlock: () => void;
   nudgeSchemaBlocks: (dx: number, dy: number) => void;
   deleteSchemaBlocks: (ids: string[]) => void;
-  undo: () => void;
-  redo: () => void;
+  // NOTE: undo/redo removed — handled by CanvaBuilder's keyboardManager
+  // to avoid double-firing (both systems listen on keydown).
 }
 
 /**
  * Keyboard shortcut handler for the Stage component.
- * Manages multi-select shortcuts, schema block actions, and element shortcuts.
+ *
+ * ARCHITECTURE NOTE:
+ *   Undo/Redo (Ctrl+Z/Y/Shift+Z) and Escape are handled by
+ *   CanvaBuilder's useKeyboardShortcuts registry (scope: 'canvas').
+ *   They are NOT handled here to avoid double-firing, because
+ *   both systems listen on `window.addEventListener('keydown')`.
+ *
+ *   This hook handles ONLY schema-block-specific shortcuts that
+ *   aren't covered by the registry:
+ *   - Arrow key nudge (schema blocks)
+ *   - Delete/Backspace (schema blocks)
+ *   - Ctrl+D duplicate (schema blocks)
+ *   - Ctrl+C copy (schema blocks)
+ *   - Alt+Arrow reorder (schema blocks)
+ *   - Ctrl+V paste (schema clipboard)
+ *   - Ctrl+A select all elements
+ *   - Escape from contentEditable editing
  */
 export function useStageKeyboard({
   selectedElIds,
@@ -48,8 +63,6 @@ export function useStageKeyboard({
   pasteSchemaBlock,
   nudgeSchemaBlocks,
   deleteSchemaBlocks,
-  undo,
-  redo,
 }: UseStageKeyboardParams) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,28 +78,10 @@ export function useStageKeyboard({
         return;
       }
 
-      // ── Global shortcuts (always available) ─────────────────────
-      // Ctrl+Z / Cmd+Z — undo
-      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
-        e.preventDefault();
-        undo();
-        showUndoRedoToast('↩ Undo');
-        return;
-      }
-      // Ctrl+Y / Cmd+Y — redo
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-        e.preventDefault();
-        redo();
-        showUndoRedoToast('↪ Redo');
-        return;
-      }
-      // Ctrl+Shift+Z / Cmd+Shift+Z — redo (alternative)
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z') {
-        e.preventDefault();
-        redo();
-        showUndoRedoToast('↪ Redo');
-        return;
-      }
+      // ── NOTE: Undo/Redo (Ctrl+Z/Y/Shift+Z) are handled by
+      // CanvaBuilder's useKeyboardShortcuts registry (scope: 'canvas').
+      // They are NOT handled here to avoid double-firing.
+      // See: CanvaBuilder.tsx lines 78-121
 
       // ── Schema block shortcuts (when a block is selected) ─────
       if (selectedBlockId) {
@@ -145,7 +140,9 @@ export function useStageKeyboard({
           moveBlockDown(selectedBlockId);
           return;
         }
-        // Escape — exit editing mode first, then deselect
+        // Escape — exit editing mode first, then deselect block.
+        // NOTE: CanvaBuilder's escape handler clears element selection.
+        // We only handle block-specific deselection here.
         if (e.key === 'Escape') {
           if (editingBlockId) {
             stopEditing();
@@ -181,15 +178,12 @@ export function useStageKeyboard({
           return;
         }
       }
-      // Escape — clear selection
-      if (e.key === 'Escape') {
-        clearSelection();
-        selectBlock(null);
-        return;
-      }
+      // NOTE: Bare Escape (when no block selected) is handled by
+      // CanvaBuilder's keyboardManager 'canvas.escape' handler.
+      // Do NOT add another Escape handler here — it causes double-deselect.
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedElIds, selectedBlockId, selectedBlockIds, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing, copySchemaBlock, pasteSchemaBlock, nudgeSchemaBlocks, deleteSchemaBlocks, undo, redo]);
+  }, [selectedElIds, selectedBlockId, selectedBlockIds, editingBlockId, selectAllElements, deleteSelectedElements, clearSelection, selectBlock, deleteBlock, duplicateBlock, moveBlockUp, moveBlockDown, stopEditing, copySchemaBlock, pasteSchemaBlock, nudgeSchemaBlocks, deleteSchemaBlocks]);
 }

@@ -27,7 +27,8 @@ import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 type BlockOwner =
   | { kind: 'top-level'; index: number }
   | { kind: 'ftab-tab'; blockIndex: number; tabIndex: number; childIndex: number }
-  | { kind: 'materi-section'; blockIndex: number; childIndex: number };
+  | { kind: 'materi-section'; blockIndex: number; childIndex: number }
+  | { kind: 'children'; blockIndex: number; childIndex: number };
 
 function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | null {
   // 1. Search top-level
@@ -52,6 +53,13 @@ function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | nu
       const content = ms.content || [];
       const ci = content.findIndex(b => b.id === blockId);
       if (ci !== -1) return { kind: 'materi-section', blockIndex: bi, childIndex: ci };
+    }
+    // 4. Search inside generic BaseBlock.children[]
+    // This is a fallback for any block type that uses the generic `children` field.
+    // Without this, edits to blocks nested via `children` are silently dropped.
+    if (block.children && Array.isArray(block.children)) {
+      const ci = block.children.findIndex(b => b.id === blockId);
+      if (ci !== -1) return { kind: 'children', blockIndex: bi, childIndex: ci };
     }
   }
 
@@ -237,7 +245,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       newPages[currentPageIndex] = { ...page, schema: newSchema };
       set({ pages: newPages });
     } else {
-      // Nested block (ftab tab content, materi-section content) — use Immer produce
+      // Nested block (ftab tab content, materi-section content, or generic children) — use Immer produce
       const newBlocks = produce(blocks, draft => {
         let target: SchemaBlock | undefined;
         if (owner.kind === 'ftab-tab') {
@@ -246,6 +254,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         } else if (owner.kind === 'materi-section') {
           const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
           target = ms.content?.[owner.childIndex];
+        } else if (owner.kind === 'children') {
+          // Generic BaseBlock.children — fallback for any composite block type
+          target = draft[owner.blockIndex].children?.[owner.childIndex];
         }
         if (target) {
           Object.assign(target, deepMergeBlock(target, updates));
@@ -502,6 +513,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   // deleteBlock: Remove a block from the schema by ID
   // FASE 1: Now operates on page.schema directly
   // Shows an undo toast so the user can restore the block.
+  // FIX: Uses findBlockOwner so nested blocks (ftab, materi-section, children)
+  // can be deleted instead of silently failing with top-level-only search.
   deleteBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -513,17 +526,46 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
-    const blockIdx = blocks.findIndex(b => b.id === blockId);
-    if (blockIdx === -1) return;
-
-    // Save block info for the toast message
-    const deletedBlock = blocks[blockIdx];
-    const blockName = ((deletedBlock as unknown) as Record<string, unknown>).title as string || deletedBlock.type || 'Block';
+    // Use findBlockOwner for consistent nested block search
+    const owner = findBlockOwner(blocks, blockId);
+    if (!owner) return;
 
     get()._pushHistory();
+
+    let deletedBlock: SchemaBlock;
+    let newBlocks: SchemaBlock[];
+
+    if (owner.kind === 'top-level') {
+      deletedBlock = blocks[owner.index];
+      newBlocks = blocks.filter((_, i) => i !== owner.index);
+    } else if (owner.kind === 'ftab-tab') {
+      const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+      const tab = ft.tabs?.[owner.tabIndex];
+      deletedBlock = tab?.content?.[owner.childIndex] as SchemaBlock;
+      // Remove from tab content
+      newBlocks = produce(blocks, draft => {
+        const dFt = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+        dFt.tabs?.[owner.tabIndex]?.content?.splice(owner.childIndex, 1);
+      });
+    } else if (owner.kind === 'materi-section') {
+      const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
+      deletedBlock = ms.content?.[owner.childIndex] as SchemaBlock;
+      newBlocks = produce(blocks, draft => {
+        const dMs = draft[owner.blockIndex] as { content?: SchemaBlock[] };
+        dMs.content?.splice(owner.childIndex, 1);
+      });
+    } else {
+      // children
+      deletedBlock = blocks[owner.blockIndex].children?.[owner.childIndex] as SchemaBlock;
+      newBlocks = produce(blocks, draft => {
+        draft[owner.blockIndex].children?.splice(owner.childIndex, 1);
+      });
+    }
+
+    const blockName = ((deletedBlock as unknown) as Record<string, unknown>).title as string || deletedBlock.type || 'Block';
+
     editBus.emit({ type: 'patch', patch: { blockId, blockType: deletedBlock.type, pageIndex: currentPageIndex, patch: { _deleted: true }, timestamp: Date.now(), source: 'user' } });
 
-    const newBlocks = blocks.filter((_, i) => i !== blockIdx);
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
@@ -545,6 +587,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
   // moveBlockUp: Move a block one position up in the flow order
   // FASE 1: Now operates on page.schema directly
+  // FIX: Uses findBlockOwner to correctly locate nested blocks.
+  // Nested blocks (ftab, materi-section, children) can be reordered
+  // within their parent container.
   moveBlockUp: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -556,23 +601,55 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
-    const blockIdx = blocks.findIndex(b => b.id === blockId);
-    if (blockIdx <= 0) return; // already at top
+    const owner = findBlockOwner(blocks, blockId);
+    if (!owner) return;
 
     get()._pushHistory();
-    const newBlocks = [...blocks];
-    [newBlocks[blockIdx - 1], newBlocks[blockIdx]] = [newBlocks[blockIdx], newBlocks[blockIdx - 1]];
 
-    const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      schema: { ...schema, blocks: newBlocks },
-    };
-    set({ pages: newPages });
+    if (owner.kind === 'top-level') {
+      if (owner.index <= 0) { return; } // already at top
+      const newBlocks = [...blocks];
+      [newBlocks[owner.index - 1], newBlocks[owner.index]] = [newBlocks[owner.index], newBlocks[owner.index - 1]];
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    } else if (owner.kind === 'ftab-tab') {
+      // Reorder within tab content
+      const newBlocks = produce(blocks, draft => {
+        const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
+        if (content && owner.childIndex > 0) {
+          [content[owner.childIndex - 1], content[owner.childIndex]] = [content[owner.childIndex], content[owner.childIndex - 1]];
+        }
+      });
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    } else if (owner.kind === 'materi-section') {
+      const newBlocks = produce(blocks, draft => {
+        const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
+        if (content && owner.childIndex > 0) {
+          [content[owner.childIndex - 1], content[owner.childIndex]] = [content[owner.childIndex], content[owner.childIndex - 1]];
+        }
+      });
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    } else if (owner.kind === 'children') {
+      const newBlocks = produce(blocks, draft => {
+        const children = draft[owner.blockIndex].children;
+        if (children && owner.childIndex > 0) {
+          [children[owner.childIndex - 1], children[owner.childIndex]] = [children[owner.childIndex], children[owner.childIndex - 1]];
+        }
+      });
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    }
   },
 
   // moveBlockDown: Move a block one position down in the flow order
   // FASE 1: Now operates on page.schema directly
+  // FIX: Uses findBlockOwner to correctly locate nested blocks.
   moveBlockDown: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -584,23 +661,54 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
-    const blockIdx = blocks.findIndex(b => b.id === blockId);
-    if (blockIdx === -1 || blockIdx >= blocks.length - 1) return; // already at bottom
+    const owner = findBlockOwner(blocks, blockId);
+    if (!owner) return;
 
     get()._pushHistory();
-    const newBlocks = [...blocks];
-    [newBlocks[blockIdx], newBlocks[blockIdx + 1]] = [newBlocks[blockIdx + 1], newBlocks[blockIdx]];
 
-    const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      schema: { ...schema, blocks: newBlocks },
-    };
-    set({ pages: newPages });
+    if (owner.kind === 'top-level') {
+      if (owner.index >= blocks.length - 1) { return; } // already at bottom
+      const newBlocks = [...blocks];
+      [newBlocks[owner.index], newBlocks[owner.index + 1]] = [newBlocks[owner.index + 1], newBlocks[owner.index]];
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    } else if (owner.kind === 'ftab-tab') {
+      const newBlocks = produce(blocks, draft => {
+        const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
+        if (content && owner.childIndex < content.length - 1) {
+          [content[owner.childIndex], content[owner.childIndex + 1]] = [content[owner.childIndex + 1], content[owner.childIndex]];
+        }
+      });
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    } else if (owner.kind === 'materi-section') {
+      const newBlocks = produce(blocks, draft => {
+        const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
+        if (content && owner.childIndex < content.length - 1) {
+          [content[owner.childIndex], content[owner.childIndex + 1]] = [content[owner.childIndex + 1], content[owner.childIndex]];
+        }
+      });
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    } else if (owner.kind === 'children') {
+      const newBlocks = produce(blocks, draft => {
+        const children = draft[owner.blockIndex].children;
+        if (children && owner.childIndex < children.length - 1) {
+          [children[owner.childIndex], children[owner.childIndex + 1]] = [children[owner.childIndex + 1], children[owner.childIndex]];
+        }
+      });
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks } };
+      set({ pages: newPages });
+    }
   },
 
   // duplicateBlock: Clone a block and insert it after the original
   // FASE 1: Now operates on page.schema + uses nanoid for clone ID
+  // FIX: Uses findBlockOwner so nested blocks can be duplicated.
   duplicateBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -612,20 +720,47 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
-    const blockIdx = blocks.findIndex(b => b.id === blockId);
-    if (blockIdx === -1) return;
+    const owner = findBlockOwner(blocks, blockId);
+    if (!owner) return;
 
     get()._pushHistory();
 
     // Deep clone the block with a stable nanoid
-    const original = blocks[blockIdx];
+    let original: SchemaBlock;
+    if (owner.kind === 'top-level') {
+      original = blocks[owner.index];
+    } else if (owner.kind === 'ftab-tab') {
+      const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+      original = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex] as SchemaBlock;
+    } else if (owner.kind === 'materi-section') {
+      const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
+      original = ms.content?.[owner.childIndex] as SchemaBlock;
+    } else {
+      original = blocks[owner.blockIndex].children?.[owner.childIndex] as SchemaBlock;
+    }
+
     const clone = produce(original, (draft) => {
       draft.id = generateBlockId(); // ← Stable nanoid, not Date.now()
     });
 
-    // Insert clone after original
-    const newBlocks = [...blocks];
-    newBlocks.splice(blockIdx + 1, 0, clone);
+    // Insert clone after original in the correct container
+    let newBlocks: SchemaBlock[];
+    if (owner.kind === 'top-level') {
+      newBlocks = [...blocks];
+      newBlocks.splice(owner.index + 1, 0, clone);
+    } else {
+      newBlocks = produce(blocks, draft => {
+        if (owner.kind === 'ftab-tab') {
+          const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
+          content?.splice(owner.childIndex + 1, 0, clone);
+        } else if (owner.kind === 'materi-section') {
+          const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
+          content?.splice(owner.childIndex + 1, 0, clone);
+        } else {
+          draft[owner.blockIndex].children?.splice(owner.childIndex + 1, 0, clone);
+        }
+      });
+    }
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {
@@ -840,6 +975,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
   // ── Schema Block Copy/Paste ───────────────────────────────────
   // FASE 1: Now operates on page.schema directly + uses nanoid
+  // FIX: Uses findBlockOwner so nested blocks can be copied.
   copySchemaBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -849,7 +985,24 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!schema) return;
 
     const blocks = schema.blocks;
-    const block = blocks.find(b => b.id === blockId);
+
+    // Use findBlockOwner for consistent nested block search
+    const owner = findBlockOwner(blocks, blockId);
+    if (!owner) return;
+
+    let block: SchemaBlock | undefined;
+    if (owner.kind === 'top-level') {
+      block = blocks[owner.index];
+    } else if (owner.kind === 'ftab-tab') {
+      const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+      block = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex];
+    } else if (owner.kind === 'materi-section') {
+      const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
+      block = ms.content?.[owner.childIndex];
+    } else {
+      block = blocks[owner.blockIndex].children?.[owner.childIndex];
+    }
+
     if (!block) return;
 
     // Deep clone to clipboard

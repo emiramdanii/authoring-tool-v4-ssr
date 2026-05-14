@@ -37,8 +37,6 @@ export interface PageRendererProps {
   totalPages: number;
   /** Whether template is selected in canvas (for editable fields) */
   isTemplateSelected?: boolean;
-  /** Edit field callback (canvas mode only) */
-  onEditField?: (key: string, value: string) => void;
 }
 
 // Map PageRendererMode to the sub-component modes
@@ -60,7 +58,6 @@ export function PageRenderer({
   currentPageIndex,
   totalPages,
   isTemplateSelected = false,
-  onEditField,
 }: PageRendererProps) {
   const templateType = page.templateType || 'custom';
   const isTemplate = templateType !== 'custom';

@@ -60,12 +60,19 @@ export function SchemaEngine({
   // SchemaEngine must pass these so SchemaScreenRenderer uses the
   // correct scene dimensions and safe area, matching the canvas path.
   const isCompact = mode === 'canvas';
+  const hasCoverBlock = schema.screens[0]?.blocks.length === 1 &&
+    (schema.screens[0].blocks[0].type === 'cover' || schema.screens[0].blocks[0].type === 'hero');
+  const isCoverScreen = screen?.blocks.length === 1 &&
+    (screen.blocks[0].type === 'cover' || screen.blocks[0].type === 'hero');
   const sceneResolution = getSceneResolution(ratioId);
   const safeArea = computeSafeArea({
     showTopNav,
     showBottomNav,
     isCompact,
-    pagePadding: 0,
+    // FIX: Use pagePadding: 16 for non-cover pages to match PageRenderer.
+    // Previously hardcoded 0, causing blocks to start at x=0 with no
+    // horizontal padding — visual mismatch between SchemaEngine and PageRenderer.
+    pagePadding: isCoverScreen ? 0 : 16,
   });
 
   if (!screen) {

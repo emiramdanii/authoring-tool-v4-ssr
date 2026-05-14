@@ -407,3 +407,32 @@ Task: Fix findings from deep-analysis-pipeline.md audit document
 ### Build Status
 - TypeScript: No errors
 - Next.js build: Compiled successfully
+---
+Task ID: chain-break-audit-fix-round2
+Agent: main
+Task: Full pipeline audit and chain break fix — round 2
+
+Work Log:
+- Conducted comprehensive audit across 3 pipeline areas via parallel subagents
+- SchemaEngine pipeline: 9 breaks found, 5 HIGH
+- Canvas/Stage pipeline: 9 breaks found, 1 HIGH (duplicate keyboard shortcuts)
+- Preview/Export pipeline: 21 breaks found, 3 HIGH
+- Fixed H1: Duplicate keyboard shortcuts (undo/redo/escape double-firing)
+- Fixed H2: pagePadding:0 vs 16 inconsistency in SchemaEngine
+- Fixed H3: findBlockOwner now searches BaseBlock.children
+- Fixed H4: deleteBlock/moveBlockUp/moveBlockDown/duplicateBlock/copySchemaBlock now use findBlockOwner for nested block CRUD
+- Fixed H5: estimateBlockHeight now handles generic children field
+- Fixed H6: suara added to dataHash for preview rebuild
+- Fixed M1: Removed unused storeFitZoom subscription from Stage
+- Fixed M2: Removed dead onMouseMove chain (CanvaBuilder → Stage → useStageDrag)
+- Fixed M3: Removed effectiveZoom from useStageDrag dependency array
+- Fixed M4: Removed dead onEditField prop from PageRenderer and Stage
+- TypeScript compilation passes (tsc --noEmit clean)
+
+Stage Summary:
+- 6 HIGH priority chain breaks fixed
+- 4 MEDIUM priority cleanup fixes applied
+- All CRUD operations now work for nested blocks (ftab, materi-section, children)
+- No more double-firing undo/redo/escape
+- SchemaEngine safeArea now matches PageRenderer (pagePadding: 16 for non-cover)
+- Preview rebuilds correctly when suara (sound) config changes
