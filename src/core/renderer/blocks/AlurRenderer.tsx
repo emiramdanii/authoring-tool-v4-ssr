@@ -4,6 +4,7 @@ import React from 'react';
 import type { AlurBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
@@ -48,7 +49,7 @@ export function AlurRenderer({ block, tokens, isCompact, isEditing }: {
               style={{ background: tokens.color(step.dot), boxShadow: '0 0 8px ' + tokens.colorAlpha(step.dot, 0.4) }} />
             <PremiumBadge tokens={tokens} accent={step.dot} variant="glass" isCompact={isCompact}>{step.durasi}</PremiumBadge>
             <span className={`leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-              <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}>{step.deskripsi}</span>
+              <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}><RichText content={step.deskripsi ?? ''} /></span>
             </span>
           </div>
         ))}

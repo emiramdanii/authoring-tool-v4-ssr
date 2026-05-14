@@ -5,6 +5,7 @@ import { Shield, BookOpen, CheckCircle2, Sparkles, ChevronDown, ChevronUp } from
 import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction, StepCompletionOverlay } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { playSound } from '@/lib/sounds';
@@ -91,30 +92,26 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
             {concept.icon}
           </span>
         )}
-        <div
+        <RichText content={concept.title ?? ''}
           className="font-extrabold min-w-0"
           style={{
             color: tokens.color(concept.color),
             fontSize: isCompact ? '11px' : '13px',
             wordBreak: 'break-word',
           }}
-        >
-          {concept.title}
-        </div>
+        />
       </div>
 
       {/* Body text */}
-      <div
-        className="leading-relaxed"
-        style={{
-          fontSize: isCompact ? '12px' : '12px',
-          color: tokens.muted(0.85),
-          wordBreak: 'break-word',
-          overflowWrap: 'break-word',
-        }}
-      >
-        {concept.body}
-      </div>
+        <RichText content={concept.body ?? ''}
+          className="leading-relaxed"
+          style={{
+            fontSize: isCompact ? '12px' : '12px',
+            color: tokens.muted(0.85),
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+          }}
+        />
 
       {/* Subtle check indicator */}
       <div
@@ -220,20 +217,18 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
               {concept.icon}
             </span>
           )}
-          <div
+          <RichText content={concept.title ?? ''}
             className="font-extrabold min-w-0"
             style={{
               color: conceptColor,
               fontSize: isCompact ? '11px' : '13px',
               wordBreak: 'break-word',
             }}
-          >
-            {concept.title}
-          </div>
+          />
         </div>
 
         {/* Body text */}
-        <div
+        <RichText content={concept.body ?? ''}
           className="leading-relaxed"
           style={{
             fontSize: isCompact ? '12px' : '12px',
@@ -242,9 +237,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
             overflowWrap: 'break-word',
             lineHeight: 1.6,
           }}
-        >
-          {concept.body}
-        </div>
+        />
       </div>
     </div>
   );
@@ -337,7 +330,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   wordBreak: 'break-word',
                 }}
               >
-                {concept.title}
+                <RichText content={concept.title ?? ''} />
               </span>
 
               {/* Expand/collapse icon */}
@@ -357,7 +350,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   animation: 'fadeIn 0.25s ease',
                 }}
               >
-                <div
+                <RichText content={concept.body ?? ''}
                   className="leading-relaxed"
                   style={{
                     fontSize: isCompact ? '12px' : '12px',
@@ -366,9 +359,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                     overflowWrap: 'break-word',
                     lineHeight: 1.6,
                   }}
-                >
-                  {concept.body}
-                </div>
+                />
               </div>
             )}
           </div>
@@ -693,7 +684,8 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             >
               <CheckCircle2 size={12} style={{ color: accent }} />
             </div>
-            <p
+            <RichText content={block.closingStatement ?? ''}
+              tag="p"
               className="leading-relaxed italic"
               style={{
                 fontSize: isCompact ? '12px' : '13px',
@@ -701,9 +693,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
-            >
-              {block.closingStatement}
-            </p>
+            />
           </div>
         </div>
         </MicroInteraction>

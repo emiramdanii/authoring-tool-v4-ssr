@@ -5,6 +5,7 @@ import { Shield, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 import type { MotivasiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
 
@@ -251,7 +252,7 @@ function MotivasiVariantKlasik({
                   >
                     {conn.label}
                   </div>
-                  <div
+                  <RichText content={conn.description ?? ''}
                     className="leading-relaxed mt-0.5"
                     style={{
                       fontSize: '12px',
@@ -259,9 +260,7 @@ function MotivasiVariantKlasik({
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                     }}
-                  >
-                    {conn.description}
-                  </div>
+                  />
                 </div>
               </div>
               </MicroInteraction>
@@ -283,7 +282,7 @@ function MotivasiVariantKlasik({
         >
           <div className="flex items-center gap-2">
             <ArrowRight size={12} style={{ color: tokens.color(gradientTo) }} />
-            <span
+            <RichText content={block.transition ?? ''}
               className="italic leading-relaxed"
               style={{
                 fontSize: isCompact ? '10px' : '12px',
@@ -291,9 +290,7 @@ function MotivasiVariantKlasik({
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
-            >
-              {block.transition}
-            </span>
+            />
           </div>
         </div>
       )}
@@ -466,7 +463,7 @@ function MotivasiVariantKartuHook({
                 color: tokens.muted(0.7),
               }}
             >
-              {block.transition}
+              <RichText content={block.transition ?? ''} />
             </span>
           </div>
         </div>
@@ -577,7 +574,7 @@ function MotivasiVariantKutipan({
                 color: tokens.muted(0.7),
               }}
             >
-              {block.transition}
+              <RichText content={block.transition ?? ''} />
             </span>
           </div>
         </div>

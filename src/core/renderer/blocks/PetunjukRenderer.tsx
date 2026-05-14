@@ -5,6 +5,7 @@ import { Lightbulb, Info, Compass, Target, BookOpen, Shield, GraduationCap } fro
 import type { PetunjukBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { fireConfettiMini } from '@/lib/confetti';
 
@@ -133,7 +134,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
                   </div>
                   <div className={`min-w-0 leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
                     style={{ color: tokens.color('text') }}>
-                    {obj.text}
+                    <RichText content={obj.text ?? ''} />
                   </div>
                 </div>
               ))}
@@ -182,7 +183,7 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
                   </div>
                 </div>
                 <div className="font-extrabold mb-1.5" style={{ color: tokens.color(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
-                <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.body}</div>
+                <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={item.body ?? ''} /></div>
               </div>
               </MicroInteraction>
             );

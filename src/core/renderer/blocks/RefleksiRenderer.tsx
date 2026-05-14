@@ -5,6 +5,7 @@ import { PenLine, Sparkles, Send, RotateCcw, CheckCircle2 } from 'lucide-react';
 import type { RefleksiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction, StepCompletionOverlay } from './PremiumBlockEffects';
@@ -148,7 +149,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             }}>
             <label className={`font-extrabold block mb-2 ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>
-              {q.icon && <span className="mr-1">{q.icon}</span>} {q.teks}
+              {q.icon && <span className="mr-1">{q.icon}</span>} <RichText content={q.teks ?? ''} />
             </label>
             {interactive ? (
               <div className="relative">
@@ -224,11 +225,11 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             </div>
             <div className="font-extrabold" style={{ color: tokens.color('p'), fontSize: isCompact ? '12px' : '14px' }}>{block.penugasan.judul}</div>
           </div>
-          <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }}>{block.penugasan.isi}</div>
+          <RichText content={block.penugasan.isi ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }} />
           {block.penugasan.contoh && (
             <div className="mt-2 italic p-2 rounded-lg"
               style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.textSubtle(0.5), background: tokens.colorAlpha('p', 0.06) }}>
-              Contoh: {block.penugasan.contoh}
+              Contoh: <RichText content={block.penugasan.contoh ?? ''} />
             </div>
           )}
         </div>

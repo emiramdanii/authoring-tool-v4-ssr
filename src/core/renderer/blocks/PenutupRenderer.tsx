@@ -5,6 +5,7 @@ import { CheckCircle2, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 import type { PenutupBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay } from './PremiumBlockEffects';
 
@@ -89,7 +90,7 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
                 style={{ background: tokens.colorAlpha(item.warna, 0.2) }}>
                 <span style={{ fontSize: isCompact ? '10px' : '12px' }}>{item.icon}</span>
               </div>
-              <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}>{item.isi}</span></div>
+              <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}><RichText content={item.isi ?? ''} /></span></div>
             </div>
           ))}
         </div>
@@ -112,9 +113,9 @@ export function PenutupRenderer({ block, tokens, isCompact, isEditing, interacti
             <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: isCompact ? '12px' : '14px' }}>Pertemuan Berikutnya</div>
           </div>
           <div className="mb-3 font-bold" style={{ color: tokens.color('text'), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-            {block.nextPertemuan.judul}
+            <RichText content={block.nextPertemuan.judul ?? ''} />
           </div>
-          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{block.nextPertemuan.deskripsi}</div>
+          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={block.nextPertemuan.deskripsi ?? ''} /></div>
           <div className={`grid gap-2 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}>
             {(block.nextPertemuan.items || []).map((item, i) => (
               <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="rounded-xl p-2.5 font-bold text-center transition-all hover:-translate-y-0.5 min-w-0"

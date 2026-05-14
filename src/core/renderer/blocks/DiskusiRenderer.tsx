@@ -5,6 +5,7 @@ import { MessageCircle, Send, RotateCcw, CheckCircle2, Sparkles, Heart } from 'l
 import type { DiskusiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti } from '@/lib/confetti';
@@ -278,7 +279,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               </span>
             </div>
           </div>
-          <p className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          <RichText content={q.teks ?? ''} tag="p" className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
             <textarea className="w-full mt-2 rounded-lg p-2.5 resize-y transition-all"
               style={{
@@ -444,7 +445,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               </div>
             )}
           </div>
-          <p className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          <RichText content={q.teks ?? ''} tag="p" className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
             <textarea className="w-full rounded-xl p-3.5 resize-y transition-all"
               style={{
@@ -588,7 +589,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               {i + 1}
             </span>
           </div>
-          <p className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{q.teks}</p>
+          <RichText content={q.teks ?? ''} tag="p" className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
             <textarea className="w-full mt-1.5 rounded-md p-1.5 resize-y transition-all"
               style={{

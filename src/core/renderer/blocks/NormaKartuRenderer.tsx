@@ -4,6 +4,7 @@ import React from 'react';
 import type { NormaKartuBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { fireConfettiMini } from '@/lib/confetti';
 
@@ -82,7 +83,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
               }}>
               <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.label}</div>
-              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.value}</div>
+              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={c.value ?? ''} /></div>
             </div>
             </MicroInteraction>
           ))}
@@ -103,7 +104,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
           {block.sanksi.items.map((s, i) => (
             <div key={`nk-sanksi-${s.text?.slice(0,8)}-${i}`} className={`flex items-start gap-2 mb-1.5 leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text') }}>
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: s.dot || color }} />
-              <span className="min-w-0" style={{ wordBreak: 'break-word' }}>{s.text}</span>
+              <span className="min-w-0" style={{ wordBreak: 'break-word' }}><RichText content={s.text ?? ''} /></span>
             </div>
           ))}
         </div>
@@ -141,7 +142,7 @@ export function NormaKartuRenderer({ block, tokens, isCompact, isEditing }: {
             style={{ fontSize: '12px', color: tokens.color('r'), wordBreak: 'break-word' }}>{block.pelanggaran.title}</div>
           {block.pelanggaran.items.map((p, i) => (
             <div key={`nk-pelanggaran-${p.text?.slice(0,8)}-${i}`} className="flex gap-2 mb-1.5 leading-relaxed min-w-0" style={{ fontSize: '12px', color: tokens.color('text') }}>
-              <span className="flex-shrink-0">{p.icon}</span> <span className="min-w-0" style={{ wordBreak: 'break-word' }}>{p.text}</span>
+              <span className="flex-shrink-0">{p.icon}</span> <span className="min-w-0" style={{ wordBreak: 'break-word' }}><RichText content={p.text ?? ''} /></span>
             </div>
           ))}
         </div>
