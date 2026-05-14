@@ -12,6 +12,7 @@ import { fireConfettiMini } from '@/lib/confetti';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { Eye, EyeOff } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════
 // TUJUAN DISPLAY RENDERER — Premium with 3 Creative Variants
@@ -65,12 +66,21 @@ function TujuanVariantA({
 }) {
   const allObjectives = block.objectives || [];
 
-  // ── Compression-aware objective visibility (reveal-set) ──
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  // ── Compression-aware objective visibility (strategy-aware) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
     compression,
     totalItems: allObjectives.length,
   });
-  const objectives = isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives;
+
+  // Collapsible strategy: show collapsed summary, expand for detail
+  const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const isRevealSetMode = isCompressed && strategy === 'reveal-set';
+
+  // For collapsible: show all when expanded, truncate when collapsed
+  // For reveal-set: slice to visibleCount
+  const objectives = isCollapsibleMode
+    ? (isExpanded ? allObjectives : allObjectives.slice(0, Math.max(1, Math.ceil(allObjectives.length * 0.4))))
+    : (isRevealSetMode ? allObjectives.slice(0, visibleCount) : (isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives));
 
   return (
     <div
@@ -207,11 +217,63 @@ function TujuanVariantA({
           </MicroInteraction>
         ))}
       </div>
-      {/* ═══ COMPRESSION: Show More button ════════════════════════
-       *  When compression hides objectives, show "Lihat lainnya".
-       *  This keeps the scene within 720px while letting the user
-       *  expand to see all objectives. */}
-      {hasMore && !block.profil && (
+      {/* ═══ COMPRESSION: Strategy-aware reveal/collapse UI ════
+       *  REVEAL-SET: Fade gradient + "Lihat lainnya" / "Sembunyikan" toggle
+       *  COLLAPSIBLE: "Selengkapnya" / "Ringkas" toggle
+       *  Other strategies: Generic ShowMoreButton */}
+      {isCompressed && isRevealSetMode && !block.profil && (
+        <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px', position: 'relative' }}>
+          {/* Fade gradient when not fully revealed */}
+          {!isExpanded && (
+            <div
+              className="absolute bottom-8 left-0 right-0 pointer-events-none"
+              style={{
+                height: 40,
+                background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.9))',
+                zIndex: 2,
+              }}
+            />
+          )}
+          <button
+            onClick={showMore}
+            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all"
+            style={{
+              background: 'rgba(52, 211, 153, 0.08)',
+              border: '1px dashed rgba(52, 211, 153, 0.3)',
+              color: 'rgba(52, 211, 153, 0.9)',
+              fontSize: isCompact ? '9px' : '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            {isExpanded
+              ? <><EyeOff size={isCompact ? 10 : 12} /> Sembunyikan</>
+              : <><Eye size={isCompact ? 10 : 12} /> Lihat {hiddenCount} tujuan lainnya</>
+            }
+          </button>
+        </div>
+      )}
+      {isCompressed && isCollapsibleMode && (
+        <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px' }}>
+          <button
+            onClick={showMore}
+            className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors"
+            style={{
+              background: 'rgba(99, 102, 241, 0.1)',
+              color: 'rgba(99, 102, 241, 0.9)',
+              fontSize: isCompact ? '9px' : '11px',
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}
+          >
+            {isExpanded
+              ? <><ChevronUp size={isCompact ? 10 : 12} /> Ringkas</>
+              : <><ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya</>
+            }
+          </button>
+        </div>
+      )}
+      {hasMore && !isRevealSetMode && !isCollapsibleMode && !block.profil && (
         <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px' }}>
           <ShowMoreButton
             hiddenCount={hiddenCount}
@@ -277,12 +339,17 @@ function TujuanVariantB({
   const allObjectives = block.objectives || [];
   const [checked, setChecked] = useState<Record<number, boolean>>({});
 
-  // ── Compression-aware objective visibility (reveal-set) ──
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  // ── Compression-aware objective visibility (strategy-aware) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
     compression,
     totalItems: allObjectives.length,
   });
-  const objectives = isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives;
+
+  const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const isRevealSetMode = isCompressed && strategy === 'reveal-set';
+  const objectives = isCollapsibleMode
+    ? (isExpanded ? allObjectives : allObjectives.slice(0, Math.max(1, Math.ceil(allObjectives.length * 0.4))))
+    : (isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives);
 
   const toggleCheck = (idx: number) => {
     setChecked(prev => {
@@ -463,8 +530,45 @@ function TujuanVariantB({
           </div>
         )}
 
-        {/* Compression: Show More button */}
-        {hasMore && (
+        {/* Compression: Strategy-aware show/reveal UI */}
+        {isCompressed && isRevealSetMode && (
+          <button
+            onClick={showMore}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl transition-all mt-2"
+            style={{
+              background: 'rgba(52, 211, 153, 0.08)',
+              border: '1px dashed rgba(52, 211, 153, 0.3)',
+              color: 'rgba(52, 211, 153, 0.9)',
+              fontSize: isCompact ? '9px' : '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            {isExpanded
+              ? <><EyeOff size={isCompact ? 10 : 12} /> Sembunyikan</>
+              : <><Eye size={isCompact ? 10 : 12} /> Lihat {hiddenCount} tujuan lagi</>
+            }
+          </button>
+        )}
+        {isCompressed && isCollapsibleMode && (
+          <button
+            onClick={showMore}
+            className="flex items-center justify-center gap-1 w-full py-1.5 rounded-xl transition-colors mt-2"
+            style={{
+              background: 'rgba(99, 102, 241, 0.1)',
+              color: 'rgba(99, 102, 241, 0.9)',
+              fontSize: isCompact ? '9px' : '11px',
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}
+          >
+            {isExpanded
+              ? <><ChevronUp size={isCompact ? 10 : 12} /> Ringkas</>
+              : <><ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya</>
+            }
+          </button>
+        )}
+        {hasMore && !isRevealSetMode && !isCollapsibleMode && (
           <ShowMoreButton
             hiddenCount={hiddenCount}
             onShowMore={showMore}
@@ -525,12 +629,17 @@ function TujuanVariantC({
 }) {
   const allObjectives = block.objectives || [];
 
-  // ── Compression-aware objective visibility (reveal-set) ──
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  // ── Compression-aware objective visibility (strategy-aware) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
     compression,
     totalItems: allObjectives.length,
   });
-  const objectives = isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives;
+
+  const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const isRevealSetMode = isCompressed && strategy === 'reveal-set';
+  const objectives = isCollapsibleMode
+    ? (isExpanded ? allObjectives : allObjectives.slice(0, Math.max(1, Math.ceil(allObjectives.length * 0.4))))
+    : (isCompressed ? allObjectives.slice(0, visibleCount) : allObjectives);
   const count = allObjectives.length;
 
   // Calculate satellite positions in a circle around the center

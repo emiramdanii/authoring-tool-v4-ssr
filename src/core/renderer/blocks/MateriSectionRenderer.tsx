@@ -103,12 +103,31 @@ function MateriVariantKlasik({
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
 
-  // ── Compression-aware content visibility (accordion) ────────
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  // ── Compression-aware content visibility (strategy-aware) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
     compression,
     totalItems: allContentBlocks.length,
   });
-  const contentBlocks = isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks;
+
+  const isAccordionMode = isCompressed && strategy === 'accordion';
+  const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+
+  // Accordion state: first content block expanded, rest collapsed
+  const [expandedSections, setExpandedSections] = React.useState<Set<number>>(new Set([0]));
+  const toggleSection = React.useCallback((idx: number) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
+  }, []);
+
+  const contentBlocks = isAccordionMode
+    ? allContentBlocks
+    : (isCollapsibleMode
+      ? (isExpanded ? allContentBlocks : allContentBlocks.slice(0, Math.max(1, Math.ceil(allContentBlocks.length * 0.4))))
+      : (isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks)
+    );
 
   return (
     <div
@@ -197,7 +216,7 @@ function MateriVariantKlasik({
         />
       </div>
 
-      {/* ═══ CONTENT AREA ════════════════════════════════════════ */}
+      {/* ═══ CONTENT AREA — Strategy-aware compression ══════════ */}
       {contentBlocks.length > 0 && (
         <div
           className="flex flex-col gap-4"
@@ -210,12 +229,60 @@ function MateriVariantKlasik({
               key={`materi-child-${childBlock.id || childBlock.type}-${i}`}
               fallback={null}
             >
-              <SchemaBlockRenderer
-                block={childBlock}
-                mode={mode}
-                tokens={tokens}
-                interactive={interactive}
-              />
+              {isAccordionMode ? (
+                <div className="rounded-lg overflow-hidden"
+                  style={{
+                    border: `1px solid ${accentAlpha(0.15)}`,
+                    borderRadius: tokens.radius('lg') + 'px',
+                    background: expandedSections.has(i) ? accentAlpha(0.04) : 'transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleSection(i)}
+                    className="w-full flex items-center gap-2 text-left transition-colors"
+                    style={{
+                      padding: isCompact ? '5px 10px' : '7px 12px',
+                      cursor: 'pointer',
+                      background: expandedSections.has(i) ? accentAlpha(0.06) : 'transparent',
+                      fontSize: isCompact ? '10px' : '12px',
+                      fontWeight: 700,
+                      color: accent,
+                    }}
+                  >
+                    <span className="flex-shrink-0" style={{ fontSize: isCompact ? '11px' : '13px' }}>
+                      {(childBlock as Record<string, unknown>).icon as string || '📄'}
+                    </span>
+                    <span className="flex-1 min-w-0 truncate">
+                      {(childBlock as Record<string, unknown>).title as string || `Bagian ${i + 1}`}
+                    </span>
+                    {expandedSections.has(i)
+                      ? <ChevronUp size={isCompact ? 11 : 13} style={{ opacity: 0.5 }} />
+                      : <ChevronDown size={isCompact ? 11 : 13} style={{ opacity: 0.5 }} />
+                    }
+                  </button>
+                  <div style={{
+                    maxHeight: expandedSections.has(i) ? 2000 : 0,
+                    overflow: 'hidden',
+                    transition: 'max-height 0.25s ease-out',
+                  }}>
+                    <div style={{ padding: isCompact ? '2px 10px 6px' : '4px 12px 8px' }}>
+                      <SchemaBlockRenderer
+                        block={childBlock}
+                        mode={mode}
+                        tokens={tokens}
+                        interactive={interactive}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <SchemaBlockRenderer
+                  block={childBlock}
+                  mode={mode}
+                  tokens={tokens}
+                  interactive={interactive}
+                />
+              )}
             </React.Suspense>
           ))}
         </div>
@@ -339,9 +406,31 @@ function MateriVariantKlasik({
         </MicroInteraction>
       )}
 
-      {/* ═══ COMPRESSION: Show More button ════════════════════════
-       *  When compression hides content blocks, show "Lihat lainnya". */}
-      {hasMore && (
+      {/* ═══ COMPRESSION: Strategy-aware show-more UI ═══════════
+       *  Accordion mode: No ShowMore needed — all items are visible as headers.
+       *  Collapsible mode: "Selengkapnya" / "Ringkas" toggle.
+       *  Other strategies: Generic ShowMoreButton. */}
+      {isCompressed && isCollapsibleMode && (
+        <div style={{ margin: isCompact ? '0 14px 8px' : '0 20px 12px' }}>
+          <button
+            onClick={showMore}
+            className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors"
+            style={{
+              background: 'rgba(99, 102, 241, 0.1)',
+              color: 'rgba(99, 102, 241, 0.9)',
+              fontSize: isCompact ? '9px' : '11px',
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}
+          >
+            {isExpanded
+              ? <><ChevronUp size={isCompact ? 10 : 12} /> Ringkas</>
+              : <><ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya ({hiddenCount} bagian)</>
+            }
+          </button>
+        </div>
+      )}
+      {hasMore && !isAccordionMode && !isCollapsibleMode && (
         <div style={{ margin: isCompact ? '0 14px 8px' : '0 20px 12px' }}>
           <ShowMoreButton
             hiddenCount={hiddenCount}
@@ -387,12 +476,16 @@ function MateriVariantMajalah({
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
 
-  // ── Compression-aware content visibility (accordion) ────────
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  // ── Compression-aware content visibility (strategy-aware) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
     compression,
     totalItems: allContentBlocks.length,
   });
-  const contentBlocks = isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks;
+
+  const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const contentBlocks = isCollapsibleMode
+    ? (isExpanded ? allContentBlocks : allContentBlocks.slice(0, Math.max(1, Math.ceil(allContentBlocks.length * 0.4))))
+    : (isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks);
 
   return (
     <div
@@ -599,12 +692,16 @@ function MateriVariantPill({
 
   const [showSelfCheck, setShowSelfCheck] = useState(false);
 
-  // ── Compression-aware content visibility (accordion) ────────
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  // ── Compression-aware content visibility (strategy-aware) ──
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
     compression,
     totalItems: allContentBlocks.length,
   });
-  const contentBlocks = isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks;
+
+  const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const contentBlocks = isCollapsibleMode
+    ? (isExpanded ? allContentBlocks : allContentBlocks.slice(0, Math.max(1, Math.ceil(allContentBlocks.length * 0.4))))
+    : (isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks);
 
   return (
     <div

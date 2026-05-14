@@ -10,7 +10,8 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 import { fireConfettiMini } from '@/lib/confetti';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
-import type { CompressionDecision } from '../../layout/CompressionEngine';
+import type { CompressionDecision, CompressionStrategy } from '../../layout/CompressionEngine';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex, compression }: {
   block: PetunjukBlock; tokens: TokenResolver; interactive?: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number; compression?: CompressionDecision;
@@ -21,11 +22,27 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
   const allItems = block.items || [];
 
   // ── Compression-aware item visibility ──────────────────────
-  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
+  const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy } = useBlockCompression({
     compression,
     totalItems: allItems.length,
   });
-  const items = isCompressed ? allItems.slice(0, visibleCount) : allItems;
+
+  // ── Strategy-aware accordion state ────────────────────────────
+  // When strategy is 'accordion', track which items are expanded.
+  // First 2 items are expanded by default; rest are collapsed headers.
+  const [expandedAccordions, setExpandedAccordions] = React.useState<Set<number>>(new Set([0, 1]));
+  const toggleAccordion = React.useCallback((idx: number) => {
+    setExpandedAccordions(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
+  }, []);
+
+  // For accordion strategy: show ALL items (as collapsed headers)
+  // For other strategies: slice to visibleCount
+  const isAccordionMode = isCompressed && strategy === 'accordion';
+  const items = isAccordionMode ? allItems : (isCompressed ? allItems.slice(0, visibleCount) : allItems);
 
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -152,16 +169,79 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
           </div>
         )}
 
-        {/* ══ GRID ITEMS (Step-by-step instructions) ══════════════
-         *  Each item represents a step or instruction the student
-         *  should follow. The color cycle provides visual variety.
-         *  Step numbers are shown inside the icon circle for
-         *  clear sequential ordering.
-         *  When compressed, only visibleCount items are shown. */}
-        <div className={`grid gap-3 mt-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        {/* ══ GRID ITEMS — Strategy-aware compression rendering ═══
+         *  ACCORDION strategy: All items visible, but collapsed items
+         *  show only a header row. Click to expand/collapse.
+         *  REVEAL-SET / COLLAPSIBLE: Slice to visibleCount + ShowMore.
+         *  NO COMPRESSION: Full grid with all items expanded. */}
+        <div className={`mt-4 ${isAccordionMode ? 'flex flex-col gap-2' : `grid gap-3 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}`}>
           {items.map((item, i) => {
             const colorCycle = ['y', 'c', 'g', 'p'];
             const itemColor = colorCycle[i % colorCycle.length];
+
+            // ── Accordion mode: collapsible item with header ──────
+            if (isAccordionMode) {
+              const isExpanded = expandedAccordions.has(i);
+              return (
+                <div key={`petunjuk-acc-${block.id || 'pet'}-${i}`}
+                  className="rounded-xl overflow-hidden transition-all"
+                  style={{
+                    background: tokens.colorAlpha(itemColor, 0.06),
+                    border: `1px solid ${tokens.colorAlpha(itemColor, isExpanded ? 0.3 : 0.15)}`,
+                    borderLeftWidth: '3px',
+                    borderLeftColor: tokens.color(itemColor),
+                    borderRadius: tokens.radius('lg') + 'px',
+                  }}
+                >
+                  {/* Accordion header — always visible */}
+                  <button
+                    onClick={() => toggleAccordion(i)}
+                    className="w-full flex items-center gap-2.5 text-left transition-colors"
+                    style={{
+                      padding: isCompact ? '6px 10px' : '8px 12px',
+                      cursor: 'pointer',
+                      background: isExpanded ? tokens.colorAlpha(itemColor, 0.08) : 'transparent',
+                    }}
+                  >
+                    <span style={{ fontSize: isCompact ? '13px' : '16px' }}>{item.icon}</span>
+                    <span className="font-bold flex-1 min-w-0" style={{
+                      color: tokens.color(itemColor),
+                      fontSize: isCompact ? '11px' : '13px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>{item.title}</span>
+                    <span className="flex-shrink-0 font-black" style={{
+                      fontSize: isCompact ? '8px' : '10px',
+                      color: tokens.colorAlpha(itemColor, 0.5),
+                      minWidth: '16px',
+                      textAlign: 'center',
+                    }}>{i + 1}</span>
+                    {isExpanded
+                      ? <ChevronUp size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha(itemColor, 0.5) }} />
+                      : <ChevronDown size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha(itemColor, 0.5) }} />
+                    }
+                  </button>
+                  {/* Accordion content — expandable */}
+                  <div style={{
+                    maxHeight: isExpanded ? 500 : 0,
+                    overflow: 'hidden',
+                    transition: 'max-height 0.25s ease-out',
+                  }}>
+                    <div style={{ padding: isCompact ? '4px 10px 8px' : '6px 12px 10px' }}>
+                      <div className="leading-relaxed" style={{
+                        color: tokens.muted(0.8),
+                        fontSize: isCompact ? '11px' : '12px',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                      }}><RichText content={item.body ?? ''} /></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // ── Normal (non-accordion) mode: full card rendering ──
             return (
               <MicroInteraction key={`petunjuk-item-mi-${block.id || 'pet'}-${i}`} tokens={tokens} accent={itemColor} effect="squish">
               <div key={`petunjuk-item-${block.id || 'pet'}-${i}`} className="rounded-xl text-center transition-all hover:-translate-y-0.5 min-w-0"
@@ -201,10 +281,10 @@ export function PetunjukRenderer({ block, tokens, interactive, isCompact, isEdit
           })}
         </div>
 
-        {/* ══ COMPRESSION: Show More button ════════════════════════
-         *  When compression hides items, show a "Lihat lainnya" button.
-         *  This is the key UI that makes compression user-friendly. */}
-        {hasMore && (
+        {/* ══ COMPRESSION: Strategy-aware show-more UI ═════════════
+         *  Accordion mode: No ShowMore needed — all items are visible as headers.
+         *  Reveal-set / Collapsible: Show "Lihat lainnya" button. */}
+        {hasMore && !isAccordionMode && (
           <ShowMoreButton
             hiddenCount={hiddenCount}
             onShowMore={showMore}
