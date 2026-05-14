@@ -72,6 +72,24 @@ export default function CanvaBuilder() {
   // These shortcuts are scoped to 'canvas' and only fire when the
   // keyboardManager's active context is 'canvas'.
   useKeyboardShortcuts([
+    // ═══════════════════════════════════════════════════════════════
+    // CONSOLIDATED KEYBOARD SHORTCUTS
+    // ═══════════════════════════════════════════════════════════════
+    // Architecture: Single ShortcutRegistry with priority-based routing.
+    // Schema block handlers (priority 15) always win over legacy
+    // element handlers (priority 5-8). This eliminates the dual
+    // keydown listener problem where use-stage-keyboard.ts and
+    // CanvaBuilder both listened on window, causing double-firing.
+    //
+    // Priority tiers:
+    //   15  → Schema block operations (selectedBlockId is set)
+    //   10  → App-level operations (undo/redo, zoom, copy/paste)
+    //   8   → Legacy element operations (selectedElId is set)
+    //   5   → Fallback nudge (no specific selection)
+    //   3   → Escape/deselect
+    //   2   → Tool shortcuts
+    // ═══════════════════════════════════════════════════════════════
+
     // ── History ────────────────────────────────────────────────────
     {
       id: 'canvas.undo',
@@ -80,9 +98,8 @@ export default function CanvaBuilder() {
       priority: 10,
       handler: (e) => {
         e.preventDefault();
-        const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        store.undo();
+        useCanvaStore.getState().undo();
       },
       description: 'Undo',
       category: 'History',
@@ -94,9 +111,8 @@ export default function CanvaBuilder() {
       priority: 10,
       handler: (e) => {
         e.preventDefault();
-        const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        store.redo();
+        useCanvaStore.getState().redo();
       },
       description: 'Redo',
       category: 'History',
@@ -108,15 +124,250 @@ export default function CanvaBuilder() {
       priority: 10,
       handler: (e) => {
         e.preventDefault();
-        const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        store.redo();
+        useCanvaStore.getState().redo();
       },
       description: 'Redo (alternative)',
       category: 'History',
     },
 
-    // ── Block editing ──────────────────────────────────────────────
+    // ── Schema Block: Delete (priority 15 — wins over element delete) ──
+    {
+      id: 'canvas.schema-delete',
+      keys: 'delete',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return; // Fall through to element handler
+        e.preventDefault();
+        if (store.selectedBlockIds.length > 1) {
+          store.deleteSchemaBlocks(store.selectedBlockIds);
+        } else {
+          store.deleteBlock(store.selectedBlockId);
+        }
+      },
+      description: 'Delete schema block',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-backspace-delete',
+      keys: 'backspace',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return;
+        e.preventDefault();
+        if (store.selectedBlockIds.length > 1) {
+          store.deleteSchemaBlocks(store.selectedBlockIds);
+        } else {
+          store.deleteBlock(store.selectedBlockId);
+        }
+      },
+      description: 'Delete schema block (Backspace)',
+      category: 'Block',
+    },
+
+    // ── Schema Block: Copy / Cut / Paste / Duplicate (priority 15) ──
+    {
+      id: 'canvas.schema-copy',
+      keys: 'ctrl+c',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return; // Fall through to element copy
+        e.preventDefault();
+        store.copySchemaBlock(store.selectedBlockId);
+      },
+      description: 'Copy schema block',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-cut',
+      keys: 'ctrl+x',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return; // Fall through to element cut
+        e.preventDefault();
+        // Cut = Copy + Delete
+        store.copySchemaBlock(store.selectedBlockId);
+        store.deleteBlock(store.selectedBlockId);
+      },
+      description: 'Cut schema block',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-paste',
+      keys: 'ctrl+v',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        // Schema clipboard takes priority over element clipboard
+        if (store._schemaClipboard) {
+          e.preventDefault();
+          store.pasteSchemaBlock();
+        }
+        // If no schema clipboard, fall through to element paste handler
+      },
+      description: 'Paste schema block',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-duplicate',
+      keys: 'ctrl+d',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return; // Fall through to element duplicate
+        e.preventDefault();
+        store.duplicateBlock(store.selectedBlockId);
+      },
+      description: 'Duplicate schema block',
+      category: 'Block',
+    },
+
+    // ── Schema Block: Nudge (priority 15 — wins over element nudge) ──
+    {
+      id: 'canvas.schema-nudge-up',
+      keys: 'arrowup',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return; // Fall through to element nudge
+        if (e.altKey) return; // Alt+Arrow = reorder, handled separately
+        e.preventDefault();
+        store.nudgeSchemaBlocks(0, e.shiftKey ? -5 : -1);
+      },
+      description: 'Nudge schema block up (Shift: 5px)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-nudge-down',
+      keys: 'arrowdown',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return;
+        if (e.altKey) return; // Alt+Arrow = reorder
+        e.preventDefault();
+        store.nudgeSchemaBlocks(0, e.shiftKey ? 5 : 1);
+      },
+      description: 'Nudge schema block down (Shift: 5px)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-nudge-left',
+      keys: 'arrowleft',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return;
+        e.preventDefault();
+        store.nudgeSchemaBlocks(e.shiftKey ? -5 : -1, 0);
+      },
+      description: 'Nudge schema block left (Shift: 5px)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-nudge-right',
+      keys: 'arrowright',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return;
+        e.preventDefault();
+        store.nudgeSchemaBlocks(e.shiftKey ? 5 : 1, 0);
+      },
+      description: 'Nudge schema block right (Shift: 5px)',
+      category: 'Block',
+    },
+
+    // ── Schema Block: Reorder (Alt+Arrow, priority 15) ─────────────
+    {
+      id: 'canvas.schema-reorder-up',
+      keys: 'alt+arrowup',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return;
+        e.preventDefault();
+        store.moveBlockUp(store.selectedBlockId);
+      },
+      description: 'Move schema block up (reorder)',
+      category: 'Block',
+    },
+    {
+      id: 'canvas.schema-reorder-down',
+      keys: 'alt+arrowdown',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (!store.selectedBlockId) return;
+        e.preventDefault();
+        store.moveBlockDown(store.selectedBlockId);
+      },
+      description: 'Move schema block down (reorder)',
+      category: 'Block',
+    },
+
+    // ── Schema Block: Select All (Ctrl+A, priority 15) ─────────────
+    {
+      id: 'canvas.schema-select-all',
+      keys: 'ctrl+a',
+      scope: 'canvas',
+      priority: 15,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        // Check if current page has schema blocks
+        const page = store.pages[store.currentPageIndex];
+        if (page?.schema?.blocks?.length) {
+          e.preventDefault();
+          const allBlockIds = page.schema.blocks
+            .map((b: { id?: string }) => b.id)
+            .filter((id: string | undefined): id is string => id != null);
+          if (allBlockIds.length > 0) {
+            // Select the first block as primary, all as multi-select
+            const firstBlock = page.schema.blocks[0];
+            useCanvaStore.setState({
+              selectedBlockId: firstBlock.id ?? null,
+              selectedBlockType: firstBlock.type ?? null,
+              selectedBlockIds: allBlockIds,
+            });
+          }
+          return;
+        }
+        // Fall through to legacy element select-all
+      },
+      description: 'Select all schema blocks',
+      category: 'Selection',
+    },
+
+    // ── Legacy Element: Delete (priority 8) ────────────────────────
     {
       id: 'canvas.delete-block',
       keys: 'delete',
@@ -131,11 +382,11 @@ export default function CanvaBuilder() {
         }
       },
       description: 'Delete selected element',
-      category: 'Block',
+      category: 'Element',
     },
     {
       id: 'canvas.backspace-delete',
-      keys: 'backspace', // Note: 'backspace' maps to Backspace key
+      keys: 'backspace',
       scope: 'canvas',
       priority: 8,
       handler: (e) => {
@@ -147,13 +398,15 @@ export default function CanvaBuilder() {
         }
       },
       description: 'Delete selected element (Backspace)',
-      category: 'Block',
+      category: 'Element',
     },
+
+    // ── Legacy Element: Copy/Paste/Duplicate (priority 10) ─────────
     {
-      id: 'canvas.duplicate-block',
+      id: 'canvas.element-duplicate',
       keys: 'ctrl+d',
       scope: 'canvas',
-      priority: 10,
+      priority: 8,
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
@@ -163,14 +416,14 @@ export default function CanvaBuilder() {
           store.pasteElements();
         }
       },
-      description: 'Duplicate selected block',
-      category: 'Block',
+      description: 'Duplicate selected element',
+      category: 'Element',
     },
     {
-      id: 'canvas.copy-block',
+      id: 'canvas.element-copy',
       keys: 'ctrl+c',
       scope: 'canvas',
-      priority: 10,
+      priority: 8,
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
@@ -179,14 +432,31 @@ export default function CanvaBuilder() {
           store.copySelected();
         }
       },
-      description: 'Copy selected block',
-      category: 'Block',
+      description: 'Copy selected element',
+      category: 'Element',
     },
     {
-      id: 'canvas.paste-block',
+      id: 'canvas.element-cut',
+      keys: 'ctrl+x',
+      scope: 'canvas',
+      priority: 8,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        if (store.selectedElId || store.selectedElIds.length > 0) {
+          e.preventDefault();
+          store.copySelected();
+          store.deleteSelected();
+        }
+      },
+      description: 'Cut selected element',
+      category: 'Element',
+    },
+    {
+      id: 'canvas.element-paste',
       keys: 'ctrl+v',
       scope: 'canvas',
-      priority: 10,
+      priority: 8,
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
@@ -195,11 +465,25 @@ export default function CanvaBuilder() {
           store.pasteElements();
         }
       },
-      description: 'Paste block from clipboard',
-      category: 'Block',
+      description: 'Paste element from clipboard',
+      category: 'Element',
+    },
+    {
+      id: 'canvas.element-select-all',
+      keys: 'ctrl+a',
+      scope: 'canvas',
+      priority: 8,
+      handler: (e) => {
+        const store = useCanvaStore.getState();
+        if (useInteractiveStore.getState().mode === 'interactive') return;
+        e.preventDefault();
+        store.selectAllElements();
+      },
+      description: 'Select all elements',
+      category: 'Element',
     },
 
-    // ── Arrow keys: nudge selected elements ────────────────────────
+    // ── Legacy Element: Nudge (priority 5) ─────────────────────────
     {
       id: 'canvas.nudge-up',
       keys: 'arrowup',
@@ -212,8 +496,8 @@ export default function CanvaBuilder() {
         e.preventDefault();
         store.nudgeSelected(0, e.shiftKey ? -5 : -1);
       },
-      description: 'Nudge up (Shift: 5px)',
-      category: 'Block',
+      description: 'Nudge element up (Shift: 5px)',
+      category: 'Element',
     },
     {
       id: 'canvas.nudge-down',
@@ -227,8 +511,8 @@ export default function CanvaBuilder() {
         e.preventDefault();
         store.nudgeSelected(0, e.shiftKey ? 5 : 1);
       },
-      description: 'Nudge down (Shift: 5px)',
-      category: 'Block',
+      description: 'Nudge element down (Shift: 5px)',
+      category: 'Element',
     },
     {
       id: 'canvas.nudge-left',
@@ -242,8 +526,8 @@ export default function CanvaBuilder() {
         e.preventDefault();
         store.nudgeSelected(e.shiftKey ? -5 : -1, 0);
       },
-      description: 'Nudge left (Shift: 5px)',
-      category: 'Block',
+      description: 'Nudge element left (Shift: 5px)',
+      category: 'Element',
     },
     {
       id: 'canvas.nudge-right',
@@ -257,11 +541,11 @@ export default function CanvaBuilder() {
         e.preventDefault();
         store.nudgeSelected(e.shiftKey ? 5 : 1, 0);
       },
-      description: 'Nudge right (Shift: 5px)',
-      category: 'Block',
+      description: 'Nudge element right (Shift: 5px)',
+      category: 'Element',
     },
 
-    // ── Selection ──────────────────────────────────────────────────
+    // ── Selection: Escape (priority 3) ──────────────────────────────
     {
       id: 'canvas.escape',
       keys: 'escape',
@@ -274,9 +558,12 @@ export default function CanvaBuilder() {
           store.toggleCanvasPreview();
           return;
         }
-        // Clear both element AND block selection for consistent Escape behavior.
-        // Previously only cleared elements — blocks were cleared by useStageKeyboard,
-        // causing double-firing when both systems handled Escape simultaneously.
+        // If editing a block inline, stop editing first
+        if (store.editingBlockId) {
+          store.stopEditing();
+          return;
+        }
+        // Clear all selection types
         store.selectElement(null);
         store.selectBlock(null);
       },

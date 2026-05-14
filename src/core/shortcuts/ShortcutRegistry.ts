@@ -164,6 +164,16 @@ class ShortcutRegistry {
   /**
    * Process a keyboard event against registered shortcuts.
    * Returns true if a shortcut was executed (to prevent default).
+   *
+   * PRIORITY FALL-THROUGH:
+   *   Handlers are tried in priority order (highest first).
+   *   If a handler calls e.preventDefault(), it claims the event
+   *   and no lower-priority handler runs.
+   *   If a handler returns WITHOUT calling preventDefault(),
+   *   the next handler in priority order is tried.
+   *   This allows schema-block handlers (priority 15) to pass
+   *   through to element handlers (priority 8) when no block
+   *   is selected.
    */
   processEvent(e: KeyboardEvent): boolean {
     // Don't intercept when typing in inputs (unless it's Escape)
@@ -191,10 +201,15 @@ class ShortcutRegistry {
 
     if (matches.length === 0) return false;
 
-    // Sort by priority (highest first) and execute the top match
+    // Sort by priority (highest first) and try handlers in order.
+    // If a handler calls e.preventDefault(), it claims the event.
+    // Otherwise, try the next handler (fall-through).
     matches.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-    matches[0].handler(e);
-    return true;
+    for (const match of matches) {
+      match.handler(e);
+      if (e.defaultPrevented) return true;
+    }
+    return false;
   }
 
   /** Clear all registered shortcuts (useful for testing). */

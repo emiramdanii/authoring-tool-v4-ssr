@@ -44,6 +44,10 @@ export interface PatchHistoryEntry {
   description?: string;
   /** Source of the edit */
   source?: 'user' | 'ai' | 'sync' | 'auto';
+  /** Page index this patch applies to — CRITICAL for cross-page undo */
+  pageIndex?: number;
+  /** Block ID this patch targets — used for undo coalescing */
+  blockId?: string;
 }
 
 /** The current state of the patch history */
@@ -256,6 +260,42 @@ export class PatchHistory {
     this.currentIndex = -1;
   }
 
+  /**
+   * Replace a specific entry (used for undo coalescing).
+   * Replaces the entry at the given index with new content.
+   * This is ONLY safe for the last entry (current index).
+   */
+  replaceEntry(index: number, entry: Omit<PatchHistoryEntry, 'timestamp'> & { timestamp?: number }): void {
+    if (index < 0 || index >= this.entries.length) return;
+    // Only allow replacing the current (latest) entry — replacing
+    // historical entries would break undo/redo consistency
+    if (index !== this.currentIndex) return;
+
+    this.entries[index] = {
+      ...entry,
+      timestamp: entry.timestamp ?? Date.now(),
+    };
+    this.notify();
+  }
+
+  /**
+   * Get the pageIndex of the next undo entry.
+   * Used by history-slice to apply patches to the correct page.
+   */
+  peekUndoPageIndex(): number | undefined {
+    if (!this.canUndo()) return undefined;
+    return this.entries[this.currentIndex]?.pageIndex;
+  }
+
+  /**
+   * Get the pageIndex of the next redo entry.
+   * Used by history-slice to apply patches to the correct page.
+   */
+  peekRedoPageIndex(): number | undefined {
+    if (!this.canRedo()) return undefined;
+    return this.entries[this.currentIndex + 1]?.pageIndex;
+  }
+
   private notify(): void {
     for (const listener of this.listeners) {
       try {
@@ -298,16 +338,73 @@ import { editBus } from './edit-bus';
  *   const disconnect = connectHistoryToEditBus();
  *   // Later: disconnect() to stop recording
  */
+// ── Undo Coalescing State ────────────────────────────────────
+// Consecutive edits to the SAME block within COALESCE_WINDOW_MS
+// are merged into a single undo entry. This prevents each
+// keystroke from creating a separate undo step.
+const COALESCE_WINDOW_MS = 400; // 400ms — matches typical typing cadence
+let lastPushTime = 0;
+let lastPushBlockId: string | null = null;
+let coalesceTimer: ReturnType<typeof setTimeout> | null = null;
+
 export function connectHistoryToEditBus(): () => void {
   return editBus.subscribe((event) => {
     if (event.type === 'patch' && event.patch._immerPatches) {
       const { _immerPatches } = event.patch;
-      patchHistory.push({
-        patches: _immerPatches.forward,
-        inversePatches: _immerPatches.inverse,
-        source: event.patch.source ?? 'user',
-        description: `${event.patch.blockType}.${event.patch.blockId}`,
-      });
+      const blockId = event.patch.blockId;
+      const pageIndex = _immerPatches.pageIndex;
+      const now = Date.now();
+
+      // ═══ UNDO COALESCING ══════════════════════════════════════
+      // If this edit is to the SAME block as the previous edit AND
+      // within the coalesce window, replace the last entry instead
+      // of creating a new one. This means typing "hello" in a text
+      // field produces ONE undo entry, not five.
+      const timeDelta = now - lastPushTime;
+      const sameBlock = blockId === lastPushBlockId && blockId != null;
+      const shouldCoalesce = sameBlock && timeDelta < COALESCE_WINDOW_MS;
+
+      if (shouldCoalesce) {
+        // Replace the last entry with merged patches
+        // Forward patches accumulate; inverse patches keep the OLDEST
+        // (so undo reverts to the state BEFORE the coalesced group)
+        const entries = patchHistory.getAllEntries();
+        const lastIdx = entries.length - 1;
+        if (lastIdx >= 0 && patchHistory.getEntry(lastIdx)) {
+          const lastEntry = entries[lastIdx];
+          // Merge: keep the oldest inverse, accumulate forward patches
+          patchHistory.replaceEntry(lastIdx, {
+            patches: [...lastEntry.patches, ..._immerPatches.forward],
+            inversePatches: _immerPatches.inverse, // Keep the OLDEST inverse
+            source: event.patch.source ?? 'user',
+            description: lastEntry.description,
+            timestamp: lastEntry.timestamp, // Keep original timestamp
+            pageIndex,
+            blockId,
+          });
+        }
+      } else {
+        // Normal push — new undo entry
+        patchHistory.push({
+          patches: _immerPatches.forward,
+          inversePatches: _immerPatches.inverse,
+          source: event.patch.source ?? 'user',
+          description: `${event.patch.blockType}.${event.patch.blockId}`,
+          pageIndex,
+          blockId,
+        });
+      }
+
+      // Track coalescing state
+      lastPushTime = now;
+      lastPushBlockId = blockId;
+
+      // Reset coalescing after window expires (next edit starts fresh)
+      if (coalesceTimer) clearTimeout(coalesceTimer);
+      coalesceTimer = setTimeout(() => {
+        lastPushBlockId = null;
+        coalesceTimer = null;
+      }, COALESCE_WINDOW_MS);
     }
   });
 }

@@ -44,26 +44,33 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
 
   undo: () => {
     // ═══ PRIORITY 1: Patch-based undo (SchemaBlock edits) ═══
-    // If PatchHistory has entries, apply inverse patches to the current
-    // page's schema blocks. This is more granular than snapshot undo.
+    // If PatchHistory has entries, apply inverse patches to the CORRECT
+    // page's schema blocks (cross-page undo fix).
     if (patchHistory.canUndo()) {
+      // Peek at the pageIndex BEFORE consuming the entry
+      const targetPageIndex = patchHistory.peekUndoPageIndex();
       const inversePatches = patchHistory.undo();
       if (inversePatches && inversePatches.length > 0) {
         const { pages, currentPageIndex } = get();
-        const page = pages[currentPageIndex];
-        // FASE 3: Use page.schema directly (not templateData.schemaScreen)
+        // Use the patch's pageIndex if available, otherwise fall back to current page
+        // This fixes the cross-page undo bug where patches from page 0
+        // were being applied to page 2 (wrong page).
+        const pageIndex = targetPageIndex ?? currentPageIndex;
+        const page = pages[pageIndex];
         if (page?.schema) {
           const schema = page.schema;
           const blocks = schema.blocks as SchemaBlock[];
           try {
             const newBlocks = applyPatches(blocks, inversePatches) as SchemaBlock[];
             const newPages = [...pages];
-            newPages[currentPageIndex] = {
+            newPages[pageIndex] = {
               ...page,
               schema: { ...schema, blocks: newBlocks },
             };
             _set({
               pages: newPages,
+              // Navigate to the target page so the user sees the undo result
+              currentPageIndex: pageIndex,
               selectedBlockId: null,
               selectedBlockType: null,
               editingBlockId: null,
@@ -95,23 +102,28 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
   redo: () => {
     // ═══ PRIORITY 1: Patch-based redo (SchemaBlock edits) ═══
     if (patchHistory.canRedo()) {
+      // Peek at the pageIndex BEFORE consuming the entry
+      const targetPageIndex = patchHistory.peekRedoPageIndex();
       const forwardPatches = patchHistory.redo();
       if (forwardPatches && forwardPatches.length > 0) {
         const { pages, currentPageIndex } = get();
-        const page = pages[currentPageIndex];
-        // FASE 3: Use page.schema directly (not templateData.schemaScreen)
+        // Use the patch's pageIndex if available (cross-page redo fix)
+        const pageIndex = targetPageIndex ?? currentPageIndex;
+        const page = pages[pageIndex];
         if (page?.schema) {
           const schema = page.schema;
           const blocks = schema.blocks as SchemaBlock[];
           try {
             const newBlocks = applyPatches(blocks, forwardPatches) as SchemaBlock[];
             const newPages = [...pages];
-            newPages[currentPageIndex] = {
+            newPages[pageIndex] = {
               ...page,
               schema: { ...schema, blocks: newBlocks },
             };
             _set({
               pages: newPages,
+              // Navigate to the target page so the user sees the redo result
+              currentPageIndex: pageIndex,
               selectedBlockId: null,
               selectedBlockType: null,
               editingBlockId: null,

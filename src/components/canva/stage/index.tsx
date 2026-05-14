@@ -154,27 +154,12 @@ export default function Stage() {
   // Resolve effective zoom
   const effectiveZoom = resolveZoom(storeZoom, fitZoom);
 
-  // ── Keyboard shortcuts (editing) ──────────────────────────────
-  useStageKeyboard({
-    selectedElIds,
-    selectedBlockId,
-    selectedBlockIds,
-    editingBlockId,
-    selectAllElements,
-    deleteSelectedElements,
-    clearSelection,
-    selectBlock,
-    deleteBlock,
-    duplicateBlock,
-    moveBlockUp,
-    moveBlockDown,
-    stopEditing,
-    copySchemaBlock,
-    pasteSchemaBlock,
-    nudgeSchemaBlocks,
-    deleteSchemaBlocks,
-    // NOTE: undo/redo NOT passed — handled by CanvaBuilder's keyboardManager
-  });
+  // ── Keyboard shortcuts (contentEditable escape only) ──────────
+  // All other shortcuts are now consolidated in CanvaBuilder's
+  // ShortcutRegistry with priority-based routing (priority 15 for
+  // schema blocks, 5-8 for legacy elements). This hook only handles
+  // Escape from contentEditable, which the registry cannot intercept.
+  useStageKeyboard();
 
   // ── Drag/resize logic ─────────────────────────────────────────
   const {
