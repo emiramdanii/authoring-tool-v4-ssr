@@ -30,7 +30,10 @@ import { nanoid } from 'nanoid';
 /**
  * Ensure a page has a native ScreenSchema.
  * Lazily migrates legacy pages on first read.
- * Mutates page.schema in-place (intentional — this is the migration).
+ *
+ * IMPORTANT: This function does NOT mutate the page object.
+ * It returns the schema — the CALLER is responsible for
+ * immutably updating the page via Zustand set().
  *
  * Returns null only for custom/empty pages (no template type).
  */
@@ -41,10 +44,7 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   // ═══ Path 2: schemaScreen in templateData — promote it ══════
   const storedSchema = page.templateData?.schemaScreen as ScreenSchema | undefined;
   if (storedSchema) {
-    // Promote to first-class field + assign stable IDs if missing
-    const upgraded = assignStableIds(storedSchema);
-    page.schema = upgraded;
-    return upgraded;
+    return assignStableIds(storedSchema);
   }
 
   // ═══ Path 3: Legacy template page — convert via TemplateAdapter ═══
@@ -52,14 +52,24 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   if (isTemplate) {
     const converted = convertToSchema(page);
     if (converted) {
-      const upgraded = assignStableIds(converted);
-      page.schema = upgraded;
-      return upgraded;
+      return assignStableIds(converted);
     }
   }
 
   // ═══ Path 4: Custom/empty page — no schema ══════════════════
   return null;
+}
+
+/**
+ * Same as ensurePageSchema but ALSO returns whether the page
+ * needs to be updated in the store (i.e., schema was just migrated).
+ * Use this when you need to know if the page object changed.
+ */
+export function ensurePageSchemaWithMigration(page: CanvaPage): { schema: ScreenSchema | null; needsUpdate: boolean } {
+  if (page.schema) return { schema: page.schema, needsUpdate: false };
+
+  const schema = ensurePageSchema(page);
+  return { schema, needsUpdate: schema !== null };
 }
 
 /**
@@ -175,8 +185,11 @@ export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
   let anyMigrated = false;
   const result = pages.map(page => {
     if (!page.schema && page.templateType && page.templateType !== 'custom') {
-      ensurePageSchema(page); // Mutates page.schema in-place
-      if (page.schema) anyMigrated = true;
+      const schema = ensurePageSchema(page);
+      if (schema) {
+        anyMigrated = true;
+        return { ...page, schema }; // Immutable update
+      }
     }
     return page;
   });

@@ -375,3 +375,35 @@ Task: Fix all critical connector chain breaks in the pipeline
 ### Build Status
 - TypeScript: No errors
 - Next.js build: Compiled successfully
+
+---
+
+## DEEP ANALYSIS FINDINGS — Pipeline Fixes from Audit Document (2026-05-14)
+
+Task ID: deep-analysis-fixes
+Agent: Main Agent
+Task: Fix findings from deep-analysis-pipeline.md audit document
+
+### Findings Status
+
+| # | Finding | Severity | Status |
+|---|---------|----------|--------|
+| P0-1 | Export ≠ Canvas (re-derive from authoring) | P0 | ✅ VERIFIED SAFE — ExportApp uses PageRenderer which reads page.schema |
+| P0-2 | Schema tidak sync otomatis | P0 | ✅ DESIGN DECISION — Opt-in sync protects manual canvas edits |
+| P0-3 | Variant A/B/C tidak berfungsi | P0 | ⏳ Pending — needs density system architecture |
+| P1-6 | closePlay() tidak reset interactivePageIdx | P1 | ✅ FIXED |
+| P1-7 | goPage() dipanggil ganda | P1 | ✅ FIXED — cleaner math-based index |
+| P2-8 | ensurePageSchema() mutasi in-place | P2 | ✅ FIXED — immutable, caller sets via Zustand |
+
+### Changes Made
+
+1. **interactive-store.ts** — `closePlay()` now resets `interactivePageIdx: 0`
+2. **PlayOverlay.tsx** — `handleNext/handlePrev` use math instead of getState() re-read
+3. **ensure-schema.ts** — `ensurePageSchema()` no longer mutates `page.schema` in-place
+   - Added `ensurePageSchemaWithMigration()` helper for cases that need to know if migration happened
+   - `migrateAllPages()` now does immutable update: `{ ...page, schema }`
+4. **ui-slice.ts** — `updateSchemaBlock` handles migrated schema immutably
+
+### Build Status
+- TypeScript: No errors
+- Next.js build: Compiled successfully

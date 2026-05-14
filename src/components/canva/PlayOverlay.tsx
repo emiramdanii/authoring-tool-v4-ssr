@@ -270,17 +270,19 @@ function PlayCanvas() {
 
   // Navigation helpers
   const handleNext = useCallback(() => {
-    const beforeIdx = interactivePageIdx;
-    nextInteractivePage();
-    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
-    if (afterIdx !== beforeIdx) goPage(afterIdx);
-  }, [interactivePageIdx, nextInteractivePage, goPage]);
+    const nextIdx = Math.min(interactivePageIdx + 1, totalPages - 1);
+    if (nextIdx !== interactivePageIdx) {
+      nextInteractivePage();
+      goPage(nextIdx);
+    }
+  }, [interactivePageIdx, totalPages, nextInteractivePage, goPage]);
 
   const handlePrev = useCallback(() => {
-    const beforeIdx = interactivePageIdx;
-    prevInteractivePage();
-    const afterIdx = useInteractiveStore.getState().interactivePageIdx;
-    if (afterIdx !== beforeIdx) goPage(afterIdx);
+    const prevIdx = Math.max(interactivePageIdx - 1, 0);
+    if (prevIdx !== interactivePageIdx) {
+      prevInteractivePage();
+      goPage(prevIdx);
+    }
   }, [interactivePageIdx, prevInteractivePage, goPage]);
 
   const handleReplay = useCallback(() => {

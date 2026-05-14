@@ -181,14 +181,23 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   //   4. SCHEMA-FIRST: Edits go to page.schema, NOT templateData
   updateSchemaBlock: (blockId, updates) => {
     const { pages, currentPageIndex } = get();
-    const page = pages[currentPageIndex];
+    let page = pages[currentPageIndex];
     if (!page || !blockId) return;
 
     // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
     // This lazily migrates legacy pages on first edit.
-    // After migration, page.schema is the canonical source.
-    const schema = ensurePageSchema(page);
+    // ensurePageSchema no longer mutates — we must set the migrated
+    // schema immutably if it wasn't already on the page.
+    let schema = ensurePageSchema(page);
     if (!schema) return; // Custom pages can't be edited this way
+
+    // If page.schema was null (just migrated), immutably set it
+    if (!page.schema && schema) {
+      const newPages = [...pages];
+      newPages[currentPageIndex] = { ...page, schema };
+      set({ pages: newPages });
+      page = newPages[currentPageIndex];
+    }
 
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;

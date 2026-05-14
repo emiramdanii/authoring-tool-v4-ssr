@@ -137,7 +137,7 @@ export const useInteractiveStore = create<InteractiveState>()(
   },
 
   closePlay: () => {
-    set({ mode: 'design' });
+    set({ mode: 'design', interactivePageIdx: 0 });
   },
 
   // ── Navigation ─────────────────────────────────────────────
