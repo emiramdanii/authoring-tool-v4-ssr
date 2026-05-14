@@ -111,7 +111,7 @@ function PlayOverlayHeader() {
           <div className="flex items-center gap-2">
             {/* Premium animated score pill */}
             <ScoreDisplay
-              navbarStyle="glass"
+              navbarStyle={page?.navConfig?.navbarStyle || 'glass'}
               isCompact={false}
               showDetail={true}
               tokens={headerTokens}
@@ -389,7 +389,7 @@ function PlayCanvas() {
               {/* Score pill — animated with +N popup */}
               {hasScore && (
                 <ScoreDisplay
-                  navbarStyle="glass"
+                  navbarStyle={page?.navConfig?.navbarStyle || 'glass'}
                   isCompact={true}
                   showDetail={false}
                   tokens={{

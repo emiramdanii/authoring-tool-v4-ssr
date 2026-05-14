@@ -5,7 +5,7 @@
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { DBProjectData } from './types';
-import type { CanvaPage, CanvaElement, LeftTab } from '@/components/canva/types';
+import type { CanvaPage, CanvaElement, LeftTab, NavConfig } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
@@ -68,7 +68,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             ...p,
             templateType: p.templateType || 'custom',
             colorPalette: p.colorPalette || null,
-            navConfig: p.navConfig || { ...DEFAULT_NAV_CONFIG },
+            navConfig: {
+              ...DEFAULT_NAV_CONFIG,
+              ...(p.navConfig || {}),
+              // Ensure navbarStyle is always present (legacy pages may lack this field)
+              navbarStyle: p.navConfig?.navbarStyle || DEFAULT_NAV_CONFIG.navbarStyle,
+            },
             templateData: p.templateData || {},
             // v4: locked field removed — schema is always owned by the user
             // Merge any overlayElements into elements[] for backward compat
@@ -133,7 +138,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const pages: CanvaPage[] = data.pages.map((p) => {
           // Map DB Page → CanvaPage
           const schema = p.schemaData ? JSON.parse(p.schemaData) : undefined;
-          const navConfig = p.navConfig ? JSON.parse(p.navConfig) : { ...DEFAULT_NAV_CONFIG };
+          const parsedNavConfig = p.navConfig ? JSON.parse(p.navConfig) : {};
+          const navConfig: NavConfig = {
+            ...DEFAULT_NAV_CONFIG,
+            ...parsedNavConfig,
+            navbarStyle: parsedNavConfig.navbarStyle || DEFAULT_NAV_CONFIG.navbarStyle,
+          };
           const templateData = p.templateData ? JSON.parse(p.templateData) : {};
           const colorPalette = p.colorPalette ? JSON.parse(p.colorPalette) : null;
 

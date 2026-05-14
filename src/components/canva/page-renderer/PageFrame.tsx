@@ -517,7 +517,7 @@ export function PageFrame({
 
       {/* ══ Bottom Navbar ═════════════════════════════════════ */}
       {showBottomNav && (
-        <div ref={bottomNavRef} className="absolute bottom-0 left-0 right-0 z-50"
+        <div ref={bottomNavRef} className="absolute bottom-0 left-0 right-0 z-50 overflow-hidden"
           style={theme.bottomBg(tokens)}>
           {/* Progress bar */}
           {showProgress && (
