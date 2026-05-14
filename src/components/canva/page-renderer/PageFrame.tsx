@@ -492,14 +492,10 @@ export function PageFrame({
         </div>
       )}
 
-      {/* ══ Content Area ════════════════════════════════════════ */}
-      {/* ARCHITECTURE: Schema-driven pages need FULL scene canvas. */}
-      {/* SchemaScreenRenderer positions blocks via safeArea — no CSS offset needed. */}
-      {/* PageFrame navbars are rendered as OVERLAYS (z-50) on top of content. */}
-      {/* Legacy (non-schema) pages use CSS offset for content area — old behavior. */}
+      {/* ══ Content Area — offset for top & bottom navbars ════ */}
       <div className="absolute left-0 right-0 overflow-hidden" style={{
-        top: isSchemaDriven ? 0 : (showTopNav ? topNavH : 0),
-        bottom: isSchemaDriven ? 0 : (showBottomNav ? bottomNavH : 0),
+        top: showTopNav ? topNavH : 0,
+        bottom: showBottomNav ? bottomNavH : 0,
       }}>
         {children}
         {extraElements}

@@ -1,111 +1,210 @@
-# Worklog
+# AUDIT KONEKTOR — Pipeline Schema → Engine → Layout → Renderer → Canvas → Export
+
+Tanggal: 2026-05-14
+Tujuan: Temukan SEMUA titik putus/salah sambung di jalur logistik data
 
 ---
-Task ID: 1
-Agent: Main (Senior Dev)
-Task: FASE 1A — Fix critical bugs (navbarStyle, overflow, legacy migration)
 
-Work Log:
-- Fixed PlayOverlay hardcoded navbarStyle="glass" → now reads page.navConfig.navbarStyle
-- Fixed bottom navbar missing overflow-hidden → content no longer bleeds out
-- Fixed legacy migration missing navbarStyle → explicit DEFAULT_NAV_CONFIG merge in persistence-slice.ts
-- Added NavConfig import to persistence-slice.ts
+## PIPELINE MAP (Data Flow)
 
-Stage Summary:
-- PlayOverlay.tsx: navbarStyle now reactive from store
-- PageFrame.tsx: bottom nav has overflow-hidden
-- persistence-slice.ts: navbarStyle always present after migration
-
----
-Task ID: 2
-Agent: Main (Senior Dev)
-Task: FASE 1B — Build scene resolver foundation (SceneLayoutEngine.ts)
-
-Work Log:
-- Created /src/core/scene/SceneLayoutEngine.ts — the core layout engine
-- Created /src/core/scene/index.ts — public API barrel export
-- Implemented SceneResolution type + SCENE_RESOLUTIONS (1280x720, 720x1280, etc.)
-- Implemented SafeArea system — computeSafeArea() replaces ResizeObserver
-- Implemented OverflowRule per block type (clip/autoResize/internalScroll/scaleDown)
-- Implemented ResolvedBlockPosition type — single source of truth
-- Implemented resolveSceneLayout() — JS-driven layout calculator
-- Implemented estimateBlockHeight() — deterministic from schema content
-- Implemented computeSceneScale() — scale-first rendering
-- Implemented getBlockPositionStyle() — CSS from resolved positions
-- Implemented SPACING tokens + BLOCK_GAP constants
-
-Stage Summary:
-- SceneLayoutEngine.ts: 500+ lines, full scene engine foundation
-- Key principle: Browser only renders. Scene engine controls layout.
-
----
-Task ID: 3
-Agent: Main (Senior Dev)
-Task: FASE 1C — Hybrid renderer bridge architecture
-
-Work Log:
-- Refactored SchemaScreenRenderer: uses resolveSceneLayout() for ALL block positions
-  (removed flex-1 min-h-0 overflow-y-auto from scene root)
-- Added overflow indicator for canvas mode (debugging)
-- PageFrame: replaced ResizeObserver with computeSafeArea() — deterministic
-- PageRenderer: passes sceneResolution + safeArea + ratioId + navConfig to SchemaScreenRenderer
-- PlayOverlay: uses computeSceneScale() for scale computation
-- Removed unused useState/useEffect imports from PageFrame
-- TypeScript compilation: 0 errors
-
-Stage Summary:
-- SchemaScreenRenderer: scene-driven absolute positioning (hybrid bridge)
-- PageFrame: deterministic safe area (no more ResizeObserver)
-- PlayOverlay: scale-first rendering via scene engine
-- Git commit: 4989495
+```
+Preset Schema (.ts)
+    ↓ loadPreset()
+LessonSchema
+    ↓ schemaToCanvaPages()
+CanvaPage[] (with page.schema)
+    ↓ loadSchemaPreset() → CanvaStore.pages
+CanvaStore
+    ↓ Stage reads pages[currentPageIndex]
+PageRenderer
+    ↓ ensurePageSchema() → ScreenSchema
+    ↓ getSceneResolution() → SceneResolution
+    ↓ computeSafeArea() → SafeArea
+SchemaScreenRenderer
+    ↓ resolveSceneLayout(blocks, sceneRes, safeArea) → ResolvedBlockPosition[]
+    ↓ getBlockPositionStyle(resolved) → CSS absolute style
+SchemaBlockRenderer (dispatched by SceneRegistry)
+    ↓ BlockComponent(block, tokens, mode, ...)
+Individual Renderer (CoverRenderer, FtabRenderer, etc.)
+    ↓ React DOM output
+PageFrame (wraps children with navbar + content area offset)
+    ↓ CSS offset: top=topNavH, bottom=bottomNavH
+Stage (canvas viewport with zoom/pan)
+    ↓ transform: scale(zoom) + translate(panX, panY)
+PlayOverlay (preview mode)
+    ↓ computeSceneScale() → transform: scale()
+Export (wraps children with navbar + content area offset)
+    ↓ CSS offset: top=topNavH, bottom=bottomNavH
+Stage (zoom + pan + transform)
+    ↓ transform: scale(effectiveZoom)
+VIEWPORT (browser renders)
+```
 
 ---
-Task ID: 4
-Agent: Main (Senior Dev)
-Task: Fix HTML rendering — wrap all text content in RichText for proper <strong>/<em> rendering
 
-Work Log:
-- Audited all 30+ block renderers for text content rendered without RichText/allowHtml
-- Found 9 renderers with text fields still using raw {value} in JSX
-- Fixed SkenarioRenderer: c.label, c.detail, resultBody, norma, con.text → RichText
-- Fixed RangkumanRenderer: concept.title, concept.body, closingStatement → RichText
-- Fixed DiskusiRenderer: q.teks (variants A/B/C) → RichText
-- Fixed RefleksiRenderer: q.teks, penugasan.isi, penugasan.contoh → RichText
-- Fixed NormaKartuRenderer: c.value, s.text, p.text → RichText
-- Fixed PetunjukRenderer: obj.text, item.body → RichText
-- Fixed PenutupRenderer: item.isi, nextPertemuan.judul, nextPertemuan.deskripsi → RichText
-- Fixed AlurRenderer: step.deskripsi → RichText
-- Fixed MotivasiRenderer: conn.description, block.transition (3 variants) → RichText
-- TypeScript compilation: 0 errors
-- Git commit: 9f5ae89
-- Pushed to origin/main
+## MASALAH KONEKTOR YANG DITEMUKAN
 
-Stage Summary:
-- All text content in all block renderers now uses <RichText> component
-- RichText auto-detects HTML tags and renders via dangerouslySetInnerHTML
-- Previously confirmed working: InlineTextEditor allowHtml, DefBoxRenderer, NcGridRenderer, MateriSectionRenderer, TpRenderer, TujuanDisplayRenderer
-- Preset materi blocks already use FtabBlock (tab icons) for content switching
+### 🔴 KONEKTOR 1: DOUBLE OFFSET (PageFrame + SchemaScreenRenderer)
+
+**Lokasi:** PageFrame.tsx L496-499 + SchemaRenderer.tsx L147
+
+**Masalah:**
+- PageFrame offset content area: `top: showTopNav ? topNavH : 0` (44px)
+- SchemaScreenRenderer also positions first block at: `safeArea.top` (44px)
+- Result: First flow block starts at 88px from scene top (44 + 44)
+- Blocks after cover page are pushed down, causing content to overflow/overlap
+
+**Dampak:** Semua halaman non-cover (petunjuk, tp, materi, dll) punya offset ganda.
+Content terlihat "terlalu rendah" atau overflow di bawah.
+
+**Fix:** Schema-driven pages need FULL scene canvas (no CSS offset from PageFrame).
+PageFrame navbars should be overlays (z-50). SchemaScreenRenderer handles offset via safeArea.
 
 ---
-Task ID: 5
-Agent: Main (Senior Dev)
-Task: Fix canvas auto-fit — canvas terlalu kecil, tombol Fit tidak bekerja
 
-Work Log:
-- Identified root cause: fitZoom initial=0.5, ResizeObserver delay, canvas rendered tiny before fit calculated
-- Identified bug: zoomDelta from ZOOM_FIT mode was broken (next=ZOOM_FIT, no change)
-- Added requestAnimationFrame to compute fitZoom immediately on Stage mount
-- Added visibility:hidden until fitZoom is ready (prevents flash of tiny canvas)
-- Added fitZoom + setFitZoom to canva store so zoomDelta can resolve ZOOM_FIT
-- Fixed zoomDelta to use fitZoom as base when currently in ZOOM_FIT mode
-- Updated ToolbarViewControls: shows "Fit XX%" with actual percentage
-- Fixed StatusBar zoom slider: value was 0 in ZOOM_FIT mode, now shows actual fitZoom%
-- TypeScript compilation: 0 errors
-- Git commit: 471abcd
-- Pushed to origin/main
+### 🔴 KONEKTOR 2: Cover/Hero Height Mismatch (600px vs 720px)
 
-Stage Summary:
-- Canvas now auto-fits on load (no more tiny canvas flash)
-- Zoom in/out works from Fit mode (was broken before)
-- Fit button works correctly (resolves to actual viewport-fitting zoom)
-- Space+drag pan and Ctrl+scroll zoom were already implemented
+**Lokasi:** BlockDefinitionRegistry.ts L126 + SceneLayoutEngine.ts L351-354
+
+**Masalah:**
+- Scene virtual canvas = 1280×720
+- Cover estimatedHeight = { A: 600, B: 550, C: 500 }
+- In `estimateBlockHeight()`, cover/hero case: `contentHeight = baseHeight` → 600
+- CoverRenderer uses `absolute inset-0` → fills allocated 600px
+- Result: 120px gap at bottom of cover page
+- Visual: Cover appears "too high up" with empty space below
+
+**Dampak:** Cover dari preset terlihat tidak centered — terlalu ke atas, ruang kosong di bawah.
+
+**Fix:** Cover/hero blocks should ALWAYS use scene height (720) as their height.
+In `resolveSceneLayout()`, when a flow block is cover/hero, set height = scene.h.
+
+---
+
+### 🔴 KONEKTOR 3: Ftab Height Underestimated (400px vs ~800px actual)
+
+**Lokasi:** BlockDefinitionRegistry.ts L302 + SceneLayoutEngine.ts (no 'ftab' case)
+
+**Masalah:**
+- Ftab estimatedHeight = { A: 400 } (registry)
+- `estimateBlockHeight()` has NO case for 'ftab' → falls to default → uses baseHeight = 400
+- Real ftab in Materi 2 preset: 5 tabs, each with def-box + nc-grid
+- Actual rendered height: ~600-800px
+- Overflow rule: 'internalScroll' → gets fixed 400px with overflow-y: auto
+- BUT the position calculation for NEXT block uses 400px, so next block starts too early
+- Result: Materi 1 and Materi 2 blocks OVERLAP
+
+**Dampak:** Overlap antar blok di halaman materi. Ftab content terpotong atau blok berikutnya menimpa.
+
+**Fix:** Add 'ftab' case in estimateBlockHeight() that calculates height based on:
+- Number of tabs
+- Nested content per tab (sum of child block estimated heights)
+- Tab header height (~40px)
+- Progress bar height (~30px if showProgress)
+
+---
+
+### 🟡 KONEKTOR 4: MateriSection Nested Content Not Estimated
+
+**Lokasi:** SceneLayoutEngine.ts L307-312
+
+**Masalah:**
+- MateriSection estimatedHeight = { A: 500 }
+- `estimateBlockHeight()` case 'materi-section':
+  ```
+  const numContent = ms.content?.length || 0;
+  contentHeight = 60 + numContent * 150 + numTakeaway * 30;
+  ```
+- But `ms.content` is `SchemaBlock[]` — the estimation uses flat count, not recursive estimation
+- Each child block could be 120px (def-box) or 250px (nc-grid) or more
+- With 3 content blocks, estimate = 60 + 3*150 = 510, but real = 60 + 120 + 250 + 200 = 630+
+- Similar underestimation as ftab, but less severe
+
+**Dampak:** Materi-section content bisa overflow, tetapi lebih jarang karena default autoResize.
+
+---
+
+### 🟡 KONEKTOR 5: Cover + hasCoverBlock Safe Area Logic Inconsistency
+
+**Lokasi:** SchemaRenderer.tsx L124 + L147 + PageFrame.tsx L354-357
+
+**Masalah:**
+- SchemaScreenRenderer determines `hasCoverBlock` = `screen.blocks.length === 1 && type is cover/hero`
+- If true → uses DEFAULT_SAFE_AREA (all zeros) → cover fills full scene ✓
+- PageFrame also has: `isSchemaCover = isSchemaDriven && page.templateType === 'cover'`
+- PageFrame: `showTopNav = !isSchemaCover && page.templateType !== 'cover' && showNavbar`
+- This means cover pages DON'T show top nav ✓
+- BUT: PageFrame also has `isCoverPage = page.templateType === 'cover'`
+- And: `showBottomNav = showNavbar && !isCoverPage` → no bottom nav for cover ✓
+- The PROBLEM: For schema-driven NON-cover pages, both navbars show AND PageFrame offsets content
+- Combined with KONEKTOR 1 (double offset), this creates the layout break
+
+**Dampak:** Kombinasi dengan KONEKTOR 1 membuat halaman non-cover punya double offset.
+
+---
+
+### 🟡 KONEKTOR 6: PlayOverlay Scale Uses computeSceneScale but Stage Uses calcFitZoom
+
+**Lokasi:** PlayOverlay.tsx L206 vs Stage index.tsx L202
+
+**Masalah:**
+- PlayOverlay: `computeSceneScale(scene, viewport, 30)` → from SceneLayoutEngine
+- Stage: `calcFitZoom(aW, aH, ratio.w, ratio.h)` → from canva-constants
+- Two different scale calculation functions!
+- `computeSceneScale` caps at 1.0 (never upscale)
+- `calcFitZoom` may have different behavior
+- Result: Preview scale ≠ Canvas scale
+
+**Dampak:** Tampilan di preview mode bisa beda ukuran dengan canvas mode.
+
+---
+
+### 🟢 KONEKTOR 7: Export Pipeline — Schema Not Directly Used
+
+**Lokasi:** PdfExportButton.tsx L32-53
+
+**Masalah:**
+- PDF export sends raw `pages` array + `authoring` data to server
+- Server-side rendering would need to use the same SchemaScreenRenderer pipeline
+- But the API route may not use scene engine at all — it may use legacy HTML rendering
+- If so, export output ≠ preview/canvas output (the original "preview ≠ export" problem)
+
+**Dampak:** Potensi inkonsistensi antara preview dan export. Perlu verifikasi API route.
+
+---
+
+### 🟢 KONEKTOR 8: Schema Block Editing — Nested Blocks Not Addressable
+
+**Lokasi:** ui-slice.ts L142 (updateSchemaBlock)
+
+**Masalah:**
+- `updateSchemaBlock(blockId, updates)` does: `blocks.findIndex(b => b.id === blockId)`
+- This only searches TOP-LEVEL blocks
+- Ftab has nested blocks in `tabs[].content: SchemaBlock[]`
+- MateriSection has nested blocks in `content: SchemaBlock[]`
+- Editing a nested block via updateSchemaBlock would FAIL (blockId not found at top level)
+- The InlineTextEditor in FtabRenderer delegates to SchemaBlockRenderer → which uses the same store
+- BUT the block lookup is flat, so editing nested blocks won't persist
+
+**Dampak:** Inline editing di dalam ftab tab atau materi-section mungkin tidak tersimpan.
+
+---
+
+## PRIORITAS PERBAIKAN
+
+| # | Konektor | Severity | Dampak Visual | Fix Complexity |
+|---|----------|----------|---------------|----------------|
+| 1 | Double Offset | 🔴 Critical | Semua halaman non-cover salah | Low |
+| 2 | Cover Height | 🔴 Critical | Cover terlalu ke atas | Low |
+| 3 | Ftab Height | 🔴 Critical | Overlap blok materi | Medium |
+| 4 | MateriSection Height | 🟡 Medium | Bisa overflow | Medium |
+| 5 | Safe Area Logic | 🟡 Medium | Terkait #1 | Low (fixed by #1) |
+| 6 | Scale Calculation | 🟡 Medium | Preview ≠ Canvas | Low |
+| 7 | Export Pipeline | 🟢 Low | Inkonsistensi export | High |
+| 8 | Nested Block Edit | 🟢 Low | Edit tidak persist | High |
+
+## RENCANA EKSEKUSI
+
+Fix 1 + 2 + 3 dulu (3 konektor critical), lalu verifikasi.
+Fix 4 + 6 setelah verifikasi.
+Fix 7 + 8 nanti (butuh architectural change lebih besar).
