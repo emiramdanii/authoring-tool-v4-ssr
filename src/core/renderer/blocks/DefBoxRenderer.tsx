@@ -109,9 +109,8 @@ function DefBoxStepMode({
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
-          >
-            {step.content}
-          </div>
+            dangerouslySetInnerHTML={{ __html: step.content }}
+          />
         </div>
       </PremiumStepNavigator>
     </div>

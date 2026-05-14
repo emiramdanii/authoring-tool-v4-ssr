@@ -547,7 +547,8 @@ function convertPenutup(td: Record<string, unknown>): PenutupBlock {
 // It renders as a simple def-box with the page title/content.
 
 function convertGenericFallback(td: Record<string, unknown>, tt: string): DefBoxBlock {
-  const title = String(td.title || td.name || td.label || '');
+  const rawTitle = String(td.title || td.name || td.label || '');
+  const title = rawTitle.replace(/<[^>]*>/g, ''); // strip HTML to prevent double-wrapping
   const content = String(td.content || td.text || td.description || td.body || '');
 
   return {

@@ -66,8 +66,16 @@ export function InlineTextEditor({
       isInternalChange.current = false;
       return;
     }
-    if (ref.current.textContent !== value) {
-      ref.current.textContent = value;
+    // Use innerHTML for HTML content, textContent for plain text
+    const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
+    if (hasHtml) {
+      if (ref.current.innerHTML !== value) {
+        ref.current.innerHTML = value;
+      }
+    } else {
+      if (ref.current.textContent !== value) {
+        ref.current.textContent = value;
+      }
     }
   }, [value]);
 
@@ -86,7 +94,9 @@ export function InlineTextEditor({
 
   const handleBlur = useCallback(() => {
     if (!ref.current) return;
-    const newText = ref.current.textContent || '';
+    // Use innerHTML for HTML content to preserve tags, textContent for plain
+    const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
+    const newText = hasHtml ? ref.current.innerHTML : (ref.current.textContent || '');
     if (newText !== value) {
       onSave(newText);
     }
@@ -118,7 +128,18 @@ export function InlineTextEditor({
   }, [multiline, value]);
 
   if (!isEditing) {
-    // Not editing: render as plain text (no contentEditable)
+    // Not editing: render content — support basic HTML (strong, em, br)
+    // Check if value contains HTML tags; if so, use dangerouslySetInnerHTML
+    const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
+    if (hasHtml) {
+      return (
+        <Tag
+          className={className}
+          style={style}
+          dangerouslySetInnerHTML={{ __html: value || placeholder }}
+        />
+      );
+    }
     return (
       <Tag className={className} style={style}>
         {value || placeholder}

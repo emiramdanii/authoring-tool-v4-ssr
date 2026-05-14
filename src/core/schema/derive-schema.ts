@@ -309,8 +309,10 @@ function deriveDokumen(ctx: DeriveContext, idMap: BlockIdMap): SchemaBlock[] {
 function deriveMateri(ctx: DeriveContext, idMap: BlockIdMap): SchemaBlock[] {
   const blocks: SchemaBlock[] = [];
   const bloks = ctx.materi.blok || [];
+  const modules = ctx.modules || [];
   let blockIdx = 0;
 
+  // ── Phase 1: Convert materi.blok[] (legacy content blocks) ──
   for (const blok of bloks) {
     const id = getBlockId(idMap, 'def-box', blockIdx);
 
@@ -321,7 +323,7 @@ function deriveMateri(ctx: DeriveContext, idMap: BlockIdMap): SchemaBlock[] {
           id,
           borderColor: 'y',
           content: [
-            blok.judul ? `<strong>${blok.judul}</strong>` : '',
+            blok.judul ? `<strong>${stripHtml(blok.judul)}</strong>` : '',
             blok.isi || '',
           ].filter(Boolean).join('<br/><br/>') || 'Definisi belum diisi',
         });
@@ -370,7 +372,7 @@ function deriveMateri(ctx: DeriveContext, idMap: BlockIdMap): SchemaBlock[] {
           borderColor: String(blok.warna || 'y').replace('#', '').length > 2 ? 'y' : String(blok.warna || 'y'),
           content: [
             blok.icon ? `${blok.icon} ` : '',
-            blok.judul ? `<strong>${blok.judul}</strong>` : '',
+            blok.judul ? `<strong>${stripHtml(blok.judul)}</strong>` : '',
             blok.isi || '',
           ].filter(Boolean).join('<br/>') || 'Highlight belum diisi',
         });
@@ -447,7 +449,7 @@ function deriveMateri(ctx: DeriveContext, idMap: BlockIdMap): SchemaBlock[] {
           id,
           borderColor: 'y',
           content: [
-            blok.judul ? `<strong>${blok.judul}</strong>` : '',
+            blok.judul ? `<strong>${stripHtml(blok.judul)}</strong>` : '',
             blok.isi || '',
           ].filter(Boolean).join('<br/><br/>') || 'Konten belum diisi',
         });
@@ -456,14 +458,276 @@ function deriveMateri(ctx: DeriveContext, idMap: BlockIdMap): SchemaBlock[] {
     }
   }
 
-  // If no materi blocks, add a placeholder
-  if (blocks.length === 0) {
+  // If no materi.blok blocks, add a placeholder
+  if (blocks.length === 0 && modules.length === 0) {
     blocks.push({
       type: 'def-box',
       id: getBlockId(idMap, 'def-box', 0),
       borderColor: 'y',
       content: 'Materi pembelajaran belum diisi',
     });
+  }
+
+  // ── Phase 2: Convert modules[] (authoring module types → schema blocks) ──
+  // This is the bridge between authoring module types and schema block types.
+  // Authoring uses names like 'tab-icons', 'icon-explore', etc.
+  // Schema uses 'ftab', 'nk-card', etc.
+  for (const mod of modules) {
+    const modType = mod.type as string;
+
+    switch (modType) {
+      case 'tab-icons': {
+        // tab-icons → ftab (tabbed content with icon buttons)
+        const tabs = (mod.tabs as Array<Record<string, unknown>>) || [];
+        const intro = mod.intro ? String(mod.intro) : undefined;
+        blocks.push({
+          type: 'ftab',
+          id: getBlockId(idMap, 'ftab', blockIdx),
+          tabs: tabs.map((tab, ti) => ({
+            icon: String(tab.icon || '📑'),
+            label: String(tab.judul || tab.label || `Tab ${ti + 1}`),
+            content: buildFtabTabContent(tab, intro, ti === 0),
+          })),
+          showReadMarker: true,
+          showProgress: true,
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      case 'icon-explore': {
+        // icon-explore → nk-card (NormaKartu — detailed cards with definition, characteristics, sanksi)
+        const items = (mod.items as Array<Record<string, unknown>>) || [];
+        for (let ii = 0; ii < items.length; ii++) {
+          const item = items[ii];
+          const contoh = (item.contoh as string[]) || [];
+          blocks.push({
+            type: 'nk-card',
+            id: getBlockId(idMap, 'nk-card', blockIdx),
+            normaType: String(item.judul || item.label || ''),
+            icon: String(item.icon || '📜'),
+            title: String(item.judul || item.label || ''),
+            label: String(item.ringkasan || ''),
+            definition: String(item.isi || ''),
+            characteristics: (item.poin as string[] || []).map((p) => ({
+              label: '•',
+              value: p,
+            })),
+            sanksi: {
+              title: 'Sanksi',
+              items: [{
+                dot: 'r',
+                text: String(item.sanksi || 'Sesuai ketentuan yang berlaku'),
+              }],
+            },
+            contoh: contoh.length > 0 ? contoh.join('; ') : '',
+          } as SchemaBlock);
+          blockIdx++;
+        }
+        break;
+      }
+
+      case 'review': {
+        // review → nc-grid (simple card grid)
+        const kartu = (mod.kartu as Array<Record<string, unknown>>) || [];
+        if (kartu.length > 0) {
+          blocks.push({
+            type: 'nc-grid',
+            id: getBlockId(idMap, 'nc-grid', blockIdx),
+            cards: kartu.map((k, ki) => ({
+              icon: String(k.icon || '📋'),
+              title: String(k.judul || k.label || ''),
+              body: String(k.isi || k.text || ''),
+              color: ['y', 'c', 'g', 'p'][ki % 4],
+            })),
+          } as SchemaBlock);
+          blockIdx++;
+        }
+        break;
+      }
+
+      case 'comparison': {
+        // comparison → nc-grid (two-column comparison cards)
+        const kolom = (mod.kolom as Array<Record<string, unknown>>) || [];
+        const baris = (mod.baris as Array<Record<string, unknown>>) || [];
+        if (kolom.length >= 2) {
+          blocks.push({
+            type: 'nc-grid',
+            id: getBlockId(idMap, 'nc-grid', blockIdx),
+            cards: kolom.map((k, ki) => {
+              const nilaiPerKolom = baris.map((b) => {
+                const nilai = (b.nilai as string[]) || [];
+                return `${b.label || ''}: ${nilai[ki] || ''}`;
+              }).join('\n');
+              return {
+                icon: String(k.icon || '📋'),
+                title: String(k.judul || k.label || `Kolom ${ki + 1}`),
+                body: nilaiPerKolom,
+                color: ['y', 'c'][ki % 2],
+              };
+            }),
+          } as SchemaBlock);
+          blockIdx++;
+        }
+        break;
+      }
+
+      case 'debat': {
+        // debat → diskusi (discussion with two sides)
+        blocks.push({
+          type: 'diskusi',
+          id: getBlockId(idMap, 'diskusi', blockIdx),
+          title: String(mod.title || 'Debat'),
+          intro: String(mod.konteks || mod.intro || ''),
+          questions: [{
+            label: String((mod.pihakA as Record<string, unknown>)?.label || 'Pro'),
+            icon: '👍',
+            teks: String(mod.pertanyaan || ''),
+            petunjuk: String((mod.pihakB as Record<string, unknown>)?.label || 'Kontra'),
+          }],
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      case 'flashcard': {
+        // flashcard → flashcard-set
+        const kartu = (mod.kartu as Array<Record<string, unknown>>) || [];
+        if (kartu.length > 0) {
+          blocks.push({
+            type: 'flashcard-set',
+            id: getBlockId(idMap, 'flashcard-set', blockIdx),
+            cards: kartu.map((k) => ({
+              q: String(k.depan || k.question || ''),
+              a: String(k.belakang || k.answer || ''),
+            })),
+          } as SchemaBlock);
+          blockIdx++;
+        }
+        break;
+      }
+
+      case 'truefalse': {
+        // truefalse → true-false-game
+        const soal = (mod.soal as Array<Record<string, unknown>>) || [];
+        if (soal.length > 0) {
+          blocks.push({
+            type: 'true-false-game',
+            id: getBlockId(idMap, 'true-false-game', blockIdx),
+            title: String(mod.title || 'Benar atau Salah'),
+            questions: soal.map((s) => ({
+              text: String(s.teks || s.text || ''),
+              correct: Boolean(s.jawaban ?? s.correct ?? false),
+              explanation: String(s.penjelasan || s.explanation || ''),
+            })),
+          } as SchemaBlock);
+          blockIdx++;
+        }
+        break;
+      }
+
+      case 'diskusi': {
+        // diskusi module → diskusi schema block
+        const pertanyaan = (mod.pertanyaan as Array<Record<string, unknown>>) || [];
+        blocks.push({
+          type: 'diskusi',
+          id: getBlockId(idMap, 'diskusi', blockIdx),
+          title: String(mod.title || 'Diskusi'),
+          intro: String(mod.intro || ''),
+          questions: pertanyaan.map((q) => ({
+            label: String(q.label || ''),
+            icon: String(q.icon || '💬'),
+            teks: String(q.teks || q.text || ''),
+            petunjuk: String(q.petunjuk || q.hint || ''),
+          })),
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      case 'refleksi': {
+        // refleksi module → refleksi schema block
+        const pertanyaan = (mod.pertanyaan as Array<Record<string, unknown>>) || [];
+        blocks.push({
+          type: 'refleksi',
+          id: getBlockId(idMap, 'refleksi', blockIdx),
+          title: String(mod.title || 'Refleksi'),
+          intro: String(mod.intro || ''),
+          questions: pertanyaan.map((q) => ({
+            teks: String(q.teks || q.text || ''),
+            petunjuk: String(q.petunjuk || q.hint || ''),
+          })),
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      case 'petunjuk': {
+        // petunjuk module → petunjuk schema block
+        const langkah = (mod.langkah as Array<Record<string, unknown>>) || [];
+        blocks.push({
+          type: 'petunjuk',
+          id: getBlockId(idMap, 'petunjuk', blockIdx),
+          title: String(mod.title || 'Petunjuk'),
+          titleHighlight: 'Penggunaan',
+          items: langkah.map((step) => ({
+            icon: String(step.icon || '📌'),
+            title: String(step.judul || step.title || ''),
+            body: String(step.isi || step.body || ''),
+          })),
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      case 'sorting': {
+        // sorting module → sortir-game schema block
+        const items = (mod.items as Array<Record<string, unknown>>) || [];
+        const kategori = (mod.kategori as Array<Record<string, unknown>>) || [];
+        blocks.push({
+          type: 'sortir-game',
+          id: getBlockId(idMap, 'sortir-game', blockIdx),
+          title: String(mod.title || 'Game Sortir'),
+          pool: items.map((item) => ({
+            id: String(item.id || ''),
+            text: String(item.teks || item.text || item.label || ''),
+            category: String(item.kategori || item.category || ''),
+          })),
+          kolom: kategori.map((k) => ({
+            id: String(k.id || k.key || ''),
+            label: String(k.label || k.name || ''),
+            color: String(k.color || 'y'),
+          })),
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      case 'roda':
+      case 'spinwheel': {
+        // roda/spinwheel module → roda-game schema block
+        const soal = (mod.soal as Array<Record<string, unknown>>) || [];
+        const opsi = (mod.opsi as string[]) || [];
+        blocks.push({
+          type: 'roda-game',
+          id: getBlockId(idMap, 'roda-game', blockIdx),
+          title: String(mod.title || 'Game Roda'),
+          questions: soal.map((s) => ({
+            q: String(s.teks || s.text || ''),
+            opts: opsi.map((opt) => ({
+              text: opt,
+              correct: String(s.jawaban || s.answer || '') === opt,
+            })),
+          })),
+        } as SchemaBlock);
+        blockIdx++;
+        break;
+      }
+
+      default:
+        // Unknown module type — skip (it will be handled by its own templateType)
+        break;
+    }
   }
 
   return blocks;
@@ -657,12 +921,80 @@ function deriveGenericFallback(
     id: getBlockId(idMap, 'def-box', 0),
     borderColor: getSectionColor(templateType),
     content: title
-      ? `<strong>${title}</strong><br/><br/>Template "${templateType}" \u2014 konten belum tersedia`
+      ? `<strong>${stripHtml(title)}</strong><br/><br/>Template "${templateType}" \u2014 konten belum tersedia`
       : `Template "${templateType}" \u2014 konten belum tersedia`,
   };
 }
 
 // ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Strip HTML tags from a string to prevent double-wrapping.
+ * E.g. if judul = '<strong>X</strong>', stripHtml(judul) = 'X'
+ * so we don't produce '<strong><strong>X</strong></strong>'.
+ */
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '');
+}
+
+/**
+ * Build content blocks for a single ftab tab from tab-icons module data.
+ * Each tab gets a def-box with the tab's content.
+ */
+function buildFtabTabContent(
+  tab: Record<string, unknown>,
+  intro?: string,
+  isFirst?: boolean,
+): SchemaBlock[] {
+  const contentParts: string[] = [];
+
+  // Add intro only to first tab
+  if (isFirst && intro) {
+    contentParts.push(intro);
+  }
+
+  // Main content
+  const isi = String(tab.isi || '');
+  if (isi) contentParts.push(isi);
+
+  // Bullet points
+  const poin = (tab.poin as string[]) || [];
+  if (poin.length > 0) {
+    contentParts.push(poin.map(p => '• ' + p).join('<br/>'));
+  }
+
+  // Reflection prompt
+  const refleksi = String(tab.refleksi || '');
+  if (refleksi) {
+    contentParts.push('💡 <em>' + refleksi + '</em>');
+  }
+
+  return [{
+    type: 'def-box',
+    borderColor: normalizeColor(String(tab.warna || 'y')),
+    content: contentParts.join('<br/><br/>') || 'Konten belum diisi',
+  }];
+}
+
+/**
+ * Normalize a color value to a token key.
+ * Handles hex colors by mapping to nearest token key.
+ */
+function normalizeColor(color: string): string {
+  const tokenKeys = ['y', 'c', 'g', 'p', 'r', 'o'];
+  if (tokenKeys.includes(color)) return color;
+  // Hex colors - map to nearest token by hue approximation
+  if (color.startsWith('#')) {
+    const hex = color.toLowerCase();
+    if (hex.includes('f9') || hex.includes('fc') || hex.includes('ff') || hex.includes('3e')) return 'y';
+    if (hex.includes('3ecf') || hex.includes('34d3') || hex.includes('3b82')) return 'c';
+    if (hex.includes('22c5') || hex.includes('10b9')) return 'g';
+    if (hex.includes('a78b') || hex.includes('8b5c') || hex.includes('7c3a')) return 'p';
+    if (hex.includes('ff6b') || hex.includes('ef44') || hex.includes('dc26')) return 'r';
+  }
+  return 'y';
+}
+
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════
 
@@ -670,9 +1002,9 @@ function formatTabel(blok: { judul?: string; baris?: string[][] }): string {
   if (!blok.baris || blok.baris.length === 0) {
     return blok.judul || 'Tabel belum diisi';
   }
-  const header = blok.baris[0]?.map(h => `<strong>${h}</strong>`).join(' | ') || '';
+  const header = blok.baris[0]?.map(h => `<strong>${stripHtml(h)}</strong>`).join(' | ') || '';
   const rows = blok.baris.slice(1).map(r => r.join(' | ')).join('<br/>');
-  return [blok.judul ? `<strong>${blok.judul}</strong>` : '', header, rows].filter(Boolean).join('<br/><br/>');
+  return [blok.judul ? `<strong>${stripHtml(blok.judul)}</strong>` : '', header, rows].filter(Boolean).join('<br/><br/>');
 }
 
 function formatInfobox(blok: {
@@ -681,7 +1013,7 @@ function formatInfobox(blok: {
   pertanyaan?: string; pesan?: string;
 }): string {
   const parts: string[] = [];
-  if (blok.judul) parts.push(`<strong>${blok.judul}</strong>`);
+  if (blok.judul) parts.push(`<strong>${stripHtml(blok.judul)}</strong>`);
   if (blok.situasi) parts.push(`\u{1F3AD} ${blok.situasi}`);
   if (blok.isi) parts.push(blok.isi);
   if (blok.pertanyaan) parts.push(`\u2753 ${blok.pertanyaan}`);
