@@ -40,6 +40,11 @@ export interface InlineTextEditorProps {
   tag?: 'span' | 'div' | 'h1' | 'h2' | 'h3' | 'p' | 'label';
   /** Whether this is a multiline text field */
   multiline?: boolean;
+  /** Whether to allow HTML rendering in non-editing mode.
+   *  When true and value contains HTML tags, uses dangerouslySetInnerHTML.
+   *  When false (default), renders as plain text.
+   *  In editing mode, HTML is always preserved via innerHTML. */
+  allowHtml?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -55,6 +60,7 @@ export function InlineTextEditor({
   placeholder = 'Ketik teks...',
   tag: Tag = 'span',
   multiline = false,
+  allowHtml = false,
 }: InlineTextEditorProps) {
   const ref = useRef<HTMLElement>(null);
   const isInternalChange = useRef(false);
@@ -129,9 +135,9 @@ export function InlineTextEditor({
 
   if (!isEditing) {
     // Not editing: render content — support basic HTML (strong, em, br)
-    // Check if value contains HTML tags; if so, use dangerouslySetInnerHTML
+    // Auto-detect: if value contains HTML tags OR allowHtml=true, use dangerouslySetInnerHTML
     const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
-    if (hasHtml) {
+    if (allowHtml || hasHtml) {
       return (
         <Tag
           className={className}
@@ -148,6 +154,31 @@ export function InlineTextEditor({
   }
 
   // Editing mode: render with contentEditable
+  // IMPORTANT: For HTML content, we must NOT render {value} as React children
+  // because that would display HTML tags as literal text (e.g., "<strong>Norma</strong>").
+  // Instead, we use innerHTML via the ref (already synced in useEffect above).
+  // We render an empty container and let the useEffect populate innerHTML.
+  const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
+
+  if (hasHtml) {
+    // HTML content: use contentEditable with innerHTML (no React children)
+    // The useEffect at line 63-79 already syncs innerHTML from value
+    return (
+      <Tag
+        ref={ref as React.RefObject<any>}
+        className={`${className} outline-none ring-2 ring-emerald-400/40 rounded-sm px-0.5 -mx-0.5 transition-shadow`}
+        style={style}
+        contentEditable
+        suppressContentEditableWarning
+        onBlur={handleBlur}
+        onInput={handleInput}
+        onKeyDown={handleKeyDown}
+        data-inline-editor="true"
+      />
+    );
+  }
+
+  // Plain text: safe to render as React children
   return (
     <Tag
       ref={ref as React.RefObject<any>}
@@ -197,6 +228,8 @@ export interface UseInlineEditorOptions {
   tag?: 'span' | 'div' | 'h1' | 'h2' | 'h3' | 'p' | 'label';
   placeholder?: string;
   multiline?: boolean;
+  /** Whether to allow HTML rendering — passed through to InlineTextEditor */
+  allowHtml?: boolean;
 }
 
 export function useInlineEditor(options: UseInlineEditorOptions) {

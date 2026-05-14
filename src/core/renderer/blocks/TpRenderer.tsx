@@ -5,6 +5,7 @@ import { Target, Link2 } from 'lucide-react';
 import type { TpBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 
 export function TpRenderer({ block, tokens, isCompact, isEditing }: {
@@ -120,7 +121,7 @@ export function TpRenderer({ block, tokens, isCompact, isEditing }: {
           <div className="flex items-start gap-2">
             <Link2 size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color('g') }} />
             <div>
-              <PremiumBadge tokens={tokens} accent="g" variant="outline">Profil Pelajar Pancasila</PremiumBadge> <span style={{ wordBreak: 'break-word' }}>{block.profil}</span>
+              <PremiumBadge tokens={tokens} accent="g" variant="outline">Profil Pelajar Pancasila</PremiumBadge> <RichText content={block.profil ?? ''} style={{ wordBreak: 'break-word' }} />
             </div>
           </div>
         </div>

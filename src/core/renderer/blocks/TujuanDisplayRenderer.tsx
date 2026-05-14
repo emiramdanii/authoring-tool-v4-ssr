@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { RichText } from './RichText';
 import { fireConfettiMini } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -128,7 +129,7 @@ function TujuanVariantA({
               overflowWrap: 'break-word',
             }}
           >
-            {block.subtitle}
+            <RichText content={block.subtitle ?? ''} />
           </p>
         )}
 
@@ -227,7 +228,7 @@ function TujuanVariantA({
                   overflowWrap: 'break-word',
                 }}
               >
-                {block.profil}
+                <RichText content={block.profil ?? ''} />
               </span>
             </div>
           </div>
@@ -315,7 +316,7 @@ function TujuanVariantB({
               overflowWrap: 'break-word',
             }}
           >
-            {block.subtitle}
+            <RichText content={block.subtitle ?? ''} />
           </p>
         )}
       </div>
@@ -459,7 +460,7 @@ function TujuanVariantB({
                 overflowWrap: 'break-word',
               }}
             >
-              {block.profil}
+              <RichText content={block.profil ?? ''} />
             </span>
           </div>
         </div>
@@ -704,7 +705,7 @@ function TujuanVariantC({
               overflowWrap: 'break-word',
             }}
           >
-            {block.profil}
+            <RichText content={block.profil ?? ''} />
           </span>
         </div>
       )}

@@ -536,34 +536,45 @@ export function getSceneContainerStyle(
 export function getBlockPositionStyle(
   resolved: ResolvedBlockPosition,
 ): React.CSSProperties {
-  const overflowCSS: Record<OverflowRule, string> = {
-    'clip': 'hidden',
-    'autoResize': 'hidden',    // Scene clips at boundary, block can grow internally
-    'internalScroll': 'auto',  // Block has internal scroll for content
-    'scaleDown': 'hidden',     // Content scaled to fit (handled by renderer)
-  };
-
   const style: React.CSSProperties = {
     position: 'absolute',
     left: resolved.x,
     top: resolved.y,
     width: resolved.width,
-    overflowY: overflowCSS[resolved.overflow] as 'hidden' | 'auto',
     overflowX: 'hidden' as const,
     zIndex: resolved.zIndex,
     wordBreak: 'break-word' as const,
     overflowWrap: 'break-word' as const,
   };
 
-  // Height handling per overflow rule
-  if (resolved.overflow === 'autoResize') {
-    // autoResize: use minHeight, allow growth up to maxHeight
-    style.minHeight = resolved.minHeight;
-    style.maxHeight = resolved.maxHeight;
-    // No explicit height — block can grow
-  } else {
-    // clip / internalScroll / scaleDown: fixed height
-    style.height = resolved.height;
+  // Height + overflow handling per rule
+  switch (resolved.overflow) {
+    case 'clip':
+      // Hard clip — content is cut off at allocated height
+      style.height = resolved.height;
+      style.overflowY = 'hidden';
+      break;
+
+    case 'autoResize':
+      // Block grows to fit content up to maxHeight, then clips
+      style.minHeight = resolved.minHeight;
+      style.maxHeight = resolved.maxHeight;
+      style.overflowY = 'hidden';  // Clip when content exceeds maxHeight
+      break;
+
+    case 'internalScroll':
+      // Fixed size with scrollable content area inside
+      style.height = resolved.height;
+      style.overflowY = 'auto';
+      // Smooth scrolling for touch devices
+      style.WebkitOverflowScrolling = 'touch';
+      break;
+
+    case 'scaleDown':
+      // Fixed size — renderer handles font-size scaling internally
+      style.height = resolved.height;
+      style.overflowY = 'hidden';
+      break;
   }
 
   // Rotation

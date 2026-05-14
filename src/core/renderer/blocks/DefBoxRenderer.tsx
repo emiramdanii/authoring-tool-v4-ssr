@@ -5,6 +5,7 @@ import { BookOpen, Sparkles } from 'lucide-react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
+import { RichText } from './RichText';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { useCanvaStore } from '../../../store/canva/store';
@@ -136,6 +137,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
     fieldKey: 'content',
     value: block.content ?? '',
     tag: 'span',
+    allowHtml: true,  // DefBox content often contains <strong>, <em>, <br/> from schema
   });
 
   // ── Step detection ───────────────────────────────────────────
@@ -215,6 +217,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                   {...contentEditor}
                   className={isCompact ? 'canvas-truncate-3' : ''}
                   style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
+                  allowHtml={true}
                 />
               </div>
             )}
@@ -324,6 +327,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
                   {...contentEditor}
                   className={isCompact ? 'canvas-truncate-3' : ''}
                   style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
+                  allowHtml={true}
                 />
               </div>
             )}
@@ -378,6 +382,7 @@ export function DefBoxRenderer({ block, tokens, isCompact, isEditing }: {
               {...contentEditor}
               className={isCompact ? 'canvas-truncate-3' : ''}
               style={{ fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }}
+              allowHtml={true}
             />
           </div>
         </div>

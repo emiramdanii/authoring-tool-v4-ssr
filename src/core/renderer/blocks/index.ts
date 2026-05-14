@@ -44,3 +44,4 @@ export {
   MicroInteraction,
 } from './PremiumBlockEffects';
 export { OverflowIndicator } from './OverflowIndicator';
+export { RichText, hasHtmlTags, stripHtmlTags } from './RichText';

@@ -75,6 +75,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
     value: card.body ?? '',
     tag: 'div',
     multiline: true,
+    allowHtml: true,  // NcGrid body may contain <strong>, <em> from schema
   });
 
   const cardColor = tokens.color(card.color);
@@ -119,6 +120,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         className={`leading-relaxed ${isCompact ? 'line-clamp-3' : ''}`}
         style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', lineHeight: 1.55, wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik deskripsi kartu..."
+        allowHtml={true}
       />
       {/* Expand toggle for long text in compact mode */}
       {isLong && isCompact && (
@@ -154,6 +156,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
     value: card.body ?? '',
     tag: 'div',
     multiline: true,
+    allowHtml: true,  // NcGrid body may contain <strong>, <em> from schema
   });
 
   const cardColor = tokens.color(card.color);
@@ -233,6 +236,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
               overflowWrap: 'break-word',
             }}
             placeholder="Ketik deskripsi kartu..."
+            allowHtml={true}
           />
           {/* Expand toggle for long text */}
           {isLong && (
@@ -273,6 +277,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
     value: card.body ?? '',
     tag: 'div',
     multiline: true,
+    allowHtml: true,  // NcGrid body may contain <strong>, <em> from schema
   });
 
   const cardColor = tokens.color(card.color);
@@ -349,6 +354,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
               overflowWrap: 'break-word',
             }}
             placeholder="Ketik deskripsi kartu..."
+            allowHtml={true}
           />
         </div>
       )}

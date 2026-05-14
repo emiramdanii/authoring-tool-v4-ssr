@@ -5,6 +5,7 @@ import { Shield, Star, CheckCircle2, Brain, ChevronDown, ChevronUp } from 'lucid
 import type { MateriSectionBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { RichText, hasHtmlTags, stripHtmlTags } from './RichText';
 import { fireConfettiMini } from '@/lib/confetti';
 import { useCanvaStore } from '../../../store/canva/store';
 
@@ -162,7 +163,7 @@ function MateriVariantKlasik({
                   overflowWrap: 'break-word',
                 }}
               >
-                {block.subtitle}
+                <RichText content={block.subtitle ?? ''} />
               </p>
             )}
           </div>
@@ -263,7 +264,7 @@ function MateriVariantKlasik({
                     overflowWrap: 'break-word',
                   }}
                 >
-                  {item}
+                  <RichText content={item} />
                 </span>
               </div>
               </MicroInteraction>
@@ -315,7 +316,7 @@ function MateriVariantKlasik({
                   overflowWrap: 'break-word',
                 }}
               >
-                {selfCheck}
+                <RichText content={selfCheck} />
               </p>
             </div>
           </div>
@@ -475,7 +476,7 @@ function MateriVariantMajalah({
                       wordBreak: 'break-word',
                     }}
                   >
-                    {item}
+                    <RichText content={item} />
                   </span>
                 </div>
               ))}
@@ -517,7 +518,7 @@ function MateriVariantMajalah({
                   wordBreak: 'break-word',
                 }}
               >
-                {selfCheck}
+                <RichText content={selfCheck} />
               </span>
             </div>
           </div>
@@ -648,7 +649,7 @@ function MateriVariantPill({
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}
-                title={item}
+                title={stripHtmlTags(item)}
               >
                 <CheckCircle2 size={8} />
                 <span style={{
@@ -659,7 +660,7 @@ function MateriVariantPill({
                   display: 'inline-block',
                   verticalAlign: 'bottom',
                 }}>
-                  {item}
+                  <RichText content={item} />
                 </span>
               </span>
             ))}
@@ -718,7 +719,7 @@ function MateriVariantPill({
                   wordBreak: 'break-word',
                 }}
               >
-                {selfCheck}
+                <RichText content={selfCheck} />
               </p>
             </div>
           )}
