@@ -19,11 +19,11 @@ import {
 import type { BlockDefinitionMeta, BlockCapabilities } from '@/core/registry/BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
-// EXPECTED BLOCK TYPES — All 30 block types that should be registered
+// EXPECTED BLOCK TYPES — All 31 block types that should be registered
 // ═══════════════════════════════════════════════════════════════════
 
 const EXPECTED_BLOCK_TYPES = [
-  'cover', 'petunjuk', 'tp', 'alur', 'skenario',
+  'cover', 'hero', 'petunjuk', 'tp', 'alur', 'skenario',
   'def-box', 'nc-grid', 'flashcard-set', 'ftab', 'nk-card',
   'diskusi', 'kuis', 'sortir-game', 'roda-game',
   'hasil', 'refleksi', 'penutup', 'tabel-accord',
@@ -38,9 +38,9 @@ const EXPECTED_BLOCK_TYPES = [
 // ═══════════════════════════════════════════════════════════════════
 
 describe('Block Registry — Registration Completeness', () => {
-  it('should have exactly 30 block types registered', () => {
+  it('should have exactly 31 block types registered', () => {
     const registeredTypes = Object.keys(BLOCK_DEFINITIONS);
-    expect(registeredTypes.length, `Expected 30 block types, got ${registeredTypes.length}`).toBe(30);
+    expect(registeredTypes.length, `Expected 31 block types, got ${registeredTypes.length}`).toBe(31);
   });
 
   it('should register all expected block types', () => {

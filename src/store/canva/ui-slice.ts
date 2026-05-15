@@ -1728,9 +1728,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // Select the new block
     get().selectBlock(newBlock.id as string, blockType);
 
-    const containerLabel = container.type === 'root' ? 'root' :
-      container.type === 'materi-section' ? 'materi-section' :
-      container.type === 'ftab' ? 'ftab' : container.type;
+    const containerLabel = container.type;
     toast.success(`${definition.name} ditambahkan ke ${containerLabel}`, {
       action: {
         label: 'Undo',

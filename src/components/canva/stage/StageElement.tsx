@@ -7,7 +7,7 @@ import type { CanvaElement, ResizeDir } from '../types';
 import { RESIZE_HANDLES } from './constants';
 import { CanvasElementPreview } from './CanvasElementPreview';
 import { COLORS } from '@/lib/color-palette';
-import { isInteractiveElementType } from '@/core/schema/capability-registry';
+import { isInteractiveElementType, isCanvaElementPreviewable } from '@/core/schema/capability-registry';
 
 interface StageElementProps {
   element: CanvaElement;
@@ -138,8 +138,8 @@ export const StageElement = memo(function StageElement({
             }}
           />
         )}
-        {/* For kuis/game/materi/modul — show compact label in canvas mode */}
-        {(element.type === 'kuis' || element.type === 'game' || element.type === 'materi' || element.type === 'modul') && (
+        {/* Previewable elements (kuis/game/materi/modul) — show compact label in canvas mode */}
+        {isCanvaElementPreviewable(element.type) && (
           <CanvasElementPreview element={element} />
         )}
         {element.type === 'image' && (

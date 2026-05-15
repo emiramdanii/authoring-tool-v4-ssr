@@ -24,6 +24,7 @@ import type { SchemaBlock, BlockLayout } from '../schema/types';
 import { getBlockMeta } from '../registry/BlockDefinitionRegistry';
 import { getMeasuredHeight, hasMeasurement } from '../layout/BlockMeasurer';
 import { computeCompressionDecision, type CompressionDecision } from '../layout/CompressionEngine';
+import { deriveOverflowRule, type OverflowRule } from '../schema/capability-registry';
 
 // ── Virtual Scene Coordinate System ───────────────────────────
 
@@ -102,62 +103,69 @@ export function computeSafeArea(options: {
 }
 
 // ── Overflow Rules ────────────────────────────────────────────
+// Re-export OverflowRule type from capability-registry (single source of truth).
+// The type is defined in capability-registry.ts alongside deriveOverflowRule().
+export type { OverflowRule } from '../schema/capability-registry';
 
 /**
- * How a block handles content that exceeds its allocated height.
- * This replaces browser's default auto-height behavior.
+ * Explicit overflow rule overrides per block type.
+ *
+ * These entries OVERRIDE the capability-derived default from deriveOverflowRule().
+ * Only add an entry here when a block type's overflow behavior differs from
+ * what the capability registry would derive.
+ *
+ * Capability-derived defaults (from deriveOverflowRule()):
+ *   - Not measurable (cover, hero, games) → 'clip'
+ *   - Otherwise (measurable) → 'autoResize'
+ *
+ * The 'internalScroll' rule is NEVER derived — it's always an explicit override.
+ * This is because the 'interactive' capability does NOT imply 'internalScroll':
+ * many blocks are interactive (diskusi, refleksi) but should still auto-resize.
+ * Only blocks with their own scroll/navigation UI need 'internalScroll'.
+ *
+ * When adding a new block type, you typically do NOT need to add an entry here.
+ * The capability-derived default will be correct. Only add an override if
+ * the derived rule doesn't match the desired behavior.
  */
-export type OverflowRule =
-  | 'clip'           // Hard clip — content is cut off (overflow-hidden)
-  | 'autoResize'     // Expand block height to fit content (up to maxHeight)
-  | 'internalScroll' // Keep block size, add internal scroll (overflow-y: auto)
-  | 'scaleDown';     // Scale content to fit within block (font-size reduction)
-
-/** Overflow rule per block type — deterministic, not browser-driven */
 export const BLOCK_OVERFLOW_RULES: Record<string, OverflowRule> = {
-  // Layout blocks — full-bleed, never overflow
-  'cover': 'clip',
-  'hero': 'clip',
+  // ── internalScroll overrides ──
+  // These blocks have their own scroll/navigation UI.
+  // Capability-derived default would be 'autoResize' (they are measurable).
+  'kuis': 'internalScroll',            // question navigation
+  'skenario': 'internalScroll',         // step/chapter navigation
+  'flashcard-set': 'internalScroll',    // card flip navigation
+  'ftab': 'internalScroll',             // tab content scroll
+  'fill-blank-game': 'internalScroll',  // fill-in-the-blank input scroll
+  'true-false-game': 'internalScroll',  // question navigation in T/F game
 
-  // Content blocks — can expand within limits
-  'petunjuk': 'autoResize',
-  'tp': 'autoResize',
-  'alur': 'autoResize',
-  'def-box': 'autoResize',
-  'nc-grid': 'autoResize',
-  'nk-card': 'autoResize',
-  'materi-section': 'autoResize',
-  'tujuan-display': 'autoResize',
-  'motivasi': 'autoResize',
-  'rangkuman': 'autoResize',
-  'diskusi': 'autoResize',
-  'tabel-accord': 'autoResize',
-
-  // Interactive blocks — fixed size with internal scroll
-  'kuis': 'internalScroll',
-  'skenario': 'internalScroll',
-  'flashcard-set': 'internalScroll',
-  'ftab': 'internalScroll',
-  'sortir-game': 'clip',
-  'roda-game': 'clip',
-  'memory-game': 'clip',
-  'matching-game': 'clip',
-  'fill-blank-game': 'internalScroll',
-  'word-search-game': 'clip',
-  'true-false-game': 'internalScroll',
-  'drag-drop-game': 'clip',
-  'crossword-game': 'clip',
-  'team-buzzer-game': 'clip',
-
-  // Feedback blocks — can expand
-  'hasil': 'autoResize',
-  'refleksi': 'autoResize',
-  'penutup': 'autoResize',
+  // ── clip overrides ──
+  // These game types need 'clip' but their capability-derived default
+  // already gives 'clip' (not measurable). Listed here for documentation
+  // clarity — they could be removed without changing behavior.
+  // (Uncomment if you want to be explicit about game overflow rules.)
+  // 'sortir-game': 'clip',
+  // 'roda-game': 'clip',
+  // 'memory-game': 'clip',
+  // 'matching-game': 'clip',
+  // 'word-search-game': 'clip',
+  // 'drag-drop-game': 'clip',
+  // 'crossword-game': 'clip',
+  // 'team-buzzer-game': 'clip',
 };
 
-/** Get overflow rule for a block type */
+/**
+ * Get overflow rule for a block type.
+ *
+ * Resolution order:
+ *   1. BLOCK_OVERFLOW_RULES — explicit overrides (when derived default is wrong)
+ *   2. deriveOverflowRule() — capability-driven default (covers 90%+ of types)
+ *
+ * This means: new block types automatically get the right overflow rule
+ * from their capabilities. No need to add an entry to BLOCK_OVERFLOW_RULES
+ * unless the derived default is wrong.
+ */
 export function getOverflowRule(blockType: string): OverflowRule {
-  return BLOCK_OVERFLOW_RULES[blockType] || 'autoResize';
+  return BLOCK_OVERFLOW_RULES[blockType] ?? deriveOverflowRule(blockType);
 }
 
 // ── Token-Based Spacing ───────────────────────────────────────

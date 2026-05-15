@@ -166,15 +166,18 @@ export {
   isBlockTypeSplittable,
   isBlockTypeMeasurable,
   isBlockTypeRendererHandlesCompression,
+  // Overflow rule derivation (capability-driven default)
+  deriveOverflowRule,
   // Composite block detection (single source of truth)
   isCompositeBlockType,
   // Composite container descriptor (descriptor-driven access)
   getCompositeContainerDescriptor,
-  // CanvaElement interactive bridge
+  // CanvaElement bridges (legacy type space → capability registry)
   isInteractiveElementType,
+  isCanvaElementPreviewable,
 } from './capability-registry';
 
-export type { BlockCapabilityInfo, DerivedCapabilities, CompositeContainerDescriptor } from './capability-registry';
+export type { BlockCapabilityInfo, DerivedCapabilities, CompositeContainerDescriptor, OverflowRule } from './capability-registry';
 
 // ── Scene Transaction System ──────────────────────────────────────
 export {

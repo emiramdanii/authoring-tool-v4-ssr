@@ -907,3 +907,31 @@ Stage Summary:
 - processCompositeChildren() eliminates all duplicated composite mutation patterns
 - isInteractiveElementType() bridges CanvaElement type space to schema capability registry
 - Build verified clean, no regressions
+
+---
+Task ID: 1
+Agent: main
+Task: Wire BlockCapabilityRegistry into renderer/layout engine
+
+Work Log:
+- Audited all files for hardcoded capability checks vs capability-registry usage
+- Found core engine files (CompressionEngine, SceneOverflowEngine, SchemaRenderer, SchemaTraversal) already wired
+- Identified remaining gaps: SceneLayoutEngine overflow rules, ui-slice container labels, StageElement type checks
+- Added `deriveOverflowRule()` to capability-registry.ts — derives overflow rule from capabilities
+- Added `isCanvaElementPreviewable()` bridge function for CanvaElement type space
+- Updated SceneLayoutEngine.getOverflowRule() to use capability-derived fallback instead of hardcoded defaults
+- Reduced BLOCK_OVERFLOW_RULES from 30+ entries to 6 (only internalScroll overrides needed)
+- Added `measurable: false` and `compressionCapable: false` for game types in capability registry
+- Fixed 4 BlockDefinitionRegistry entries missing `handlesCompression: true` (ftab, skenario, motivasi, nk-card)
+- Simplified ui-slice.ts container label (removed redundant ternary chain)
+- Updated StageElement.tsx to use isCanvaElementPreviewable() instead of hardcoded type list
+- Updated barrel exports (schema/index.ts) for new functions and types
+- Fixed block-registry.test.ts (hero was missing from expected types, count 30→31)
+- Build clean, all 105 tests passing
+
+Stage Summary:
+- BLOCK_OVERFLOW_RULES reduced from 30+ entries to 6 explicit overrides
+- New block types now automatically get correct overflow rules from capabilities
+- Game types now correctly derive `measurable: false` → overflow 'clip'
+- `internalScroll` is always an explicit override (never derived from 'interactive')
+- CanvaElement type space properly bridged via isCanvaElementPreviewable()

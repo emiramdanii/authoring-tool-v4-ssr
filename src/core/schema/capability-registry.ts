@@ -163,15 +163,21 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
     sources.rendererHandlesCompression = 'definition';
   }
 
-  // Game blocks are always interactive and not splittable
+  // Game blocks are always interactive, not measurable, not splittable
+  // Games have fixed visual layout — they don't participate in height
+  // measurement and their content is clipped, not resized or scrolled.
   if (type.endsWith('-game')) {
     derived.interactive = true;
+    derived.measurable = false;    // Games have fixed visual layout
     derived.splittable = false;
     derived.lazyRenderable = false;
-    derived.rendererHandlesCompression = false; // Games don't compress
+    derived.compressionCapable = false; // Games don't compress
+    derived.rendererHandlesCompression = false;
     sources.interactive = 'definition';
+    sources.measurable = 'definition';
     sources.splittable = 'definition';
     sources.lazyRenderable = 'definition';
+    sources.compressionCapable = 'definition';
     sources.rendererHandlesCompression = 'definition';
   }
 
@@ -255,6 +261,66 @@ export function isBlockTypeMeasurable(type: string): boolean {
 /** Check if a block TYPE's renderer handles compression natively */
 export function isBlockTypeRendererHandlesCompression(type: string): boolean {
   return BlockCapabilityRegistry.get(type).derived.rendererHandlesCompression;
+}
+
+// ── Overflow Rule Derivation ──────────────────────────────────
+// Overflow rules determine how a block handles content that exceeds
+// its allocated height. Previously, BLOCK_OVERFLOW_RULES in
+// SceneLayoutEngine hardcoded every block type's overflow behavior.
+//
+// Now, the DEFAULT overflow rule is DERIVED from capabilities:
+//   - Not measurable → 'clip'    (full-page blocks: cover, hero, games)
+//   - Interactive    → 'internalScroll' (kuis, games with scrollable content)
+//   - Otherwise      → 'autoResize'    (content blocks that expand)
+//
+// BLOCK_OVERFLOW_RULES remains as an EXPLICIT OVERRIDE map — when a
+// block type's overflow behavior differs from the capability-derived
+// default (e.g., ftab needs internalScroll even though it's not
+// technically "interactive"), it gets an explicit entry.
+//
+// This means: when adding a new block type, you ONLY need to update
+// the capability registry. The overflow rule will be correct by default.
+// Only add an override if the derived rule is wrong for your block.
+
+export type OverflowRule =
+  | 'clip'           // Hard clip — content is cut off (overflow-hidden)
+  | 'autoResize'     // Expand block height to fit content (up to maxHeight)
+  | 'internalScroll' // Keep block size, add internal scroll (overflow-y: auto)
+  | 'scaleDown';     // Scale content to fit within block (font-size reduction)
+
+/**
+ * Derive the default overflow rule for a block type from its capabilities.
+ *
+ * This is the CAPABILITY-DRIVEN default. SceneLayoutEngine.getOverflowRule()
+ * checks BLOCK_OVERFLOW_RULES first (explicit overrides), then falls back
+ * to this derivation. New block types get the right default automatically.
+ *
+ * Derivation logic (intentionally simple):
+ *   1. Not measurable (cover, hero, games) → 'clip'
+ *      These blocks have fixed visual layout — content that doesn't fit
+ *      is clipped. No scroll, no resize.
+ *   2. Default (measurable) → 'autoResize'
+ *      Content blocks expand to fit their content. The layout engine
+ *      respects their natural height, then applies compression if needed.
+ *
+ * WHY NOT derive 'internalScroll' from capabilities?
+ *   The 'interactive' capability does NOT imply 'internalScroll'.
+ *   Many blocks are interactive (diskusi, refleksi, tabel-accord) but
+ *   should still auto-resize. The 'internalScroll' rule is needed only
+ *   when a block has its own scroll/navigation UI (kuis, ftab, skenario).
+ *   This distinction is NOT derivable from capabilities alone, so
+ *   'internalScroll' is always an explicit override in BLOCK_OVERFLOW_RULES.
+ */
+export function deriveOverflowRule(blockType: string): OverflowRule {
+  const caps = BlockCapabilityRegistry.get(blockType).derived;
+
+  // Full-page / fixed-layout blocks: cover, hero, games
+  // They don't participate in height measurement — content is clipped
+  if (!caps.measurable) return 'clip';
+
+  // All other blocks: content blocks, interactive content, composites
+  // They expand to fit content, then compression kicks in if needed
+  return 'autoResize';
 }
 
 // ── Composite Block Detection ──────────────────────────────────
@@ -401,6 +467,30 @@ export function isInteractiveElementType(type: string): boolean {
   if (type === 'game') return true;
   // For all other types, delegate to the schema capability registry
   return isBlockTypeInteractive(type);
+}
+
+/**
+ * Check if a CanvaElement type shows a preview widget on the canvas stage.
+ *
+ * In the canvas editor, some element types show a rich preview widget
+ * (QuizWidget, GameWidget, ModuleBlock/CanvasElementPreview) while
+ * others render inline (teks, shape, image). This function centralizes
+ * the decision so that adding new element types doesn't require
+ * updating scattered if/else chains in StageElement.tsx.
+ *
+ * Previewable types:
+ *   - Interactive elements (kuis, game) — show their widget
+ *   - Module elements (materi, modul) — show PresetModuleCard preview
+ *
+ * @param type - CanvaElement type string ('kuis', 'game', 'materi', 'modul', etc.)
+ * @returns true if the element should render a preview widget on canvas
+ */
+export function isCanvaElementPreviewable(type: string): boolean {
+  // Interactive elements always show a preview widget
+  if (isInteractiveElementType(type)) return true;
+  // Module/materi types show PresetModuleCard preview
+  if (type === 'materi' || type === 'modul') return true;
+  return false;
 }
 
 // ── Registry Cache (for block types, not instances) ────────────
