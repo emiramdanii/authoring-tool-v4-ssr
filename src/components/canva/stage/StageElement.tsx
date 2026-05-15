@@ -7,6 +7,7 @@ import type { CanvaElement, ResizeDir } from '../types';
 import { RESIZE_HANDLES } from './constants';
 import { CanvasElementPreview } from './CanvasElementPreview';
 import { COLORS } from '@/lib/color-palette';
+import { isInteractiveElementType } from '@/core/schema/capability-registry';
 
 interface StageElementProps {
   element: CanvaElement;
@@ -31,7 +32,7 @@ export const StageElement = memo(function StageElement({
   const { deleteElement, saveTextContent } = useCanvaStore();
   const interactiveMode = useInteractiveStore((s) => s.mode);
   const textRef = useRef<HTMLDivElement>(null);
-  const isInteractive = element.type === 'kuis' || element.type === 'game';
+  const isInteractive = isInteractiveElementType(element.type);
   const isInteractiveMode = interactiveMode === 'interactive';
 
   const handleMouseDown = (e: React.MouseEvent) => {

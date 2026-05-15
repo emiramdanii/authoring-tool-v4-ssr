@@ -2,6 +2,7 @@
 
 import { Settings2, Trash2, Copy, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { isInteractiveElementType } from '@/core/schema/capability-registry';
 import { ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
 import { LAYOUT_VARIANTS, type LayoutVariant } from '@/components/shared/preset-module-card';
 import { toast } from 'sonner';
@@ -215,7 +216,7 @@ export default function ElementProperties() {
         )}
 
         {/* Data reference — dropdown with module names */}
-        {(selectedEl.type === 'kuis' || selectedEl.type === 'game' || selectedEl.type === 'modul') && (
+        {(isInteractiveElementType(selectedEl.type) || selectedEl.type === 'modul') && (
           <DataIdxSelector
             elementType={selectedEl.type}
             currentIdx={selectedEl.dataIdx ?? -1}

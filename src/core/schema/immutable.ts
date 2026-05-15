@@ -38,6 +38,8 @@
 import type { SchemaBlock, ScreenSchema } from './types';
 import { SCHEMA_VERSION } from './validation';
 import { generateBlockId, generatePageId } from './ensure-schema';
+import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
+import { processCompositeChildren } from '../layout/SchemaTraversal';
 
 // ── Deep Freeze ─────────────────────────────────────────────────
 
@@ -119,27 +121,34 @@ export function produce<T>(base: T, recipe: (draft: T) => void): T {
 
 /**
  * Find a block by ID in a schema tree.
- * Searches top-level blocks and nested blocks (materi-section.content, ftab.tabs, children).
+ * Searches top-level blocks and nested blocks using the capability registry
+ * for composite block detection (single source of truth).
  */
 export function findBlockById(blocks: SchemaBlock[], id: string): SchemaBlock | null {
   for (const block of blocks) {
     if (block.id === id) return block;
 
-    // Search nested content
-    if (block.type === 'materi-section' && 'content' in block) {
-      const content = (block as { content: SchemaBlock[] }).content;
-      const found = content?.find(b => b.id === id);
-      if (found) return found;
-    }
-
-    if (block.type === 'ftab' && 'tabs' in block) {
-      const tabs = (block as { tabs: Array<{ content?: SchemaBlock[] }> }).tabs;
-      for (const tab of (tabs || [])) {
-        const found = tab.content?.find(b => b.id === id);
-        if (found) return found;
+    // Search nested content using container descriptor
+    if (isCompositeBlockType(block.type)) {
+      const descriptor = getCompositeContainerDescriptor(block.type);
+      if (descriptor) {
+        if (descriptor.structure === 'direct') {
+          const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+          const found = children?.find(b => b.id === id);
+          if (found) return found;
+        }
+        if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+          const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+          for (const tab of (tabs || [])) {
+            const content = tab[descriptor.tabContentKey] as SchemaBlock[] | undefined;
+            const found = content?.find(b => b.id === id);
+            if (found) return found;
+          }
+        }
       }
     }
 
+    // Generic children fallback
     if (block.children) {
       const found = block.children.find(b => b.id === id);
       if (found) return found;
@@ -159,7 +168,7 @@ export function findBlockIndex(blocks: SchemaBlock[], id: string): number {
 /**
  * Replace a block by ID in a schema tree.
  * Returns a new array — original is never mutated.
- * Handles nested blocks (materi-section.content, ftab.tabs, children).
+ * Uses processCompositeChildren() for descriptor-driven nested updates.
  */
 export function replaceBlock(
   blocks: SchemaBlock[],
@@ -172,32 +181,16 @@ export function replaceBlock(
       return updater(block);
     }
 
-    // Nested in materi-section.content
-    if (block.type === 'materi-section' && 'content' in block) {
-      const ms = block as { content: SchemaBlock[] } & SchemaBlock;
-      const found = ms.content?.find(b => b.id === blockId);
-      if (found) {
-        return { ...block, content: ms.content.map(b => b.id === blockId ? updater(b) : b) };
-      }
-    }
-
-    // Nested in ftab.tabs[].content
-    if (block.type === 'ftab' && 'tabs' in block) {
-      const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> } & SchemaBlock;
-      let found = false;
-      const newTabs = ft.tabs.map(tab => {
-        if (!tab.content) return tab;
-        const hasBlock = tab.content.some(b => b.id === blockId);
-        if (hasBlock) {
-          found = true;
-          return { ...tab, content: tab.content.map(b => b.id === blockId ? updater(b) : b) };
-        }
-        return tab;
+    // Composite blocks — use descriptor-driven mutation
+    if (isCompositeBlockType(block.type)) {
+      const updated = processCompositeChildren(block, (children) => {
+        if (!children.some(b => b.id === blockId)) return children; // No change
+        return children.map(b => b.id === blockId ? updater(b) : b);
       });
-      if (found) return { ...block, tabs: newTabs };
+      if (updated) return updated;
     }
 
-    // Nested in children
+    // Generic children fallback
     if (block.children) {
       const found = block.children.some(b => b.id === blockId);
       if (found) {
@@ -227,7 +220,7 @@ export function patchBlock(
 /**
  * Remove a block by ID from a schema tree.
  * Returns a new array — original is never mutated.
- * Handles nested blocks.
+ * Uses processCompositeChildren() for descriptor-driven nested updates.
  */
 export function removeBlock(
   blocks: SchemaBlock[],
@@ -235,30 +228,16 @@ export function removeBlock(
 ): SchemaBlock[] {
   return blocks
     .map(block => {
-      // Nested in materi-section.content
-      if (block.type === 'materi-section' && 'content' in block) {
-        const ms = block as { content: SchemaBlock[] } & SchemaBlock;
-        if (ms.content?.some(b => b.id === blockId)) {
-          return { ...block, content: ms.content.filter(b => b.id !== blockId) };
-        }
-      }
-
-      // Nested in ftab.tabs[].content
-      if (block.type === 'ftab' && 'tabs' in block) {
-        const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> } & SchemaBlock;
-        let found = false;
-        const newTabs = ft.tabs.map(tab => {
-          if (!tab.content) return tab;
-          if (tab.content.some(b => b.id === blockId)) {
-            found = true;
-            return { ...tab, content: tab.content.filter(b => b.id !== blockId) };
-          }
-          return tab;
+      // Composite blocks — use descriptor-driven mutation
+      if (isCompositeBlockType(block.type)) {
+        const updated = processCompositeChildren(block, (children) => {
+          if (!children.some(b => b.id === blockId)) return children; // No change
+          return children.filter(b => b.id !== blockId);
         });
-        if (found) return { ...block, tabs: newTabs };
+        if (updated) return updated;
       }
 
-      // Nested in children
+      // Generic children fallback
       if (block.children) {
         if (block.children.some(b => b.id === blockId)) {
           return { ...block, children: block.children.filter(b => b.id !== blockId) };
@@ -591,6 +570,7 @@ export function mergeScene(
 
 /**
  * Extract a block from nested containers, returning the modified tree.
+ * Uses container descriptor for descriptor-driven access.
  */
 function extractBlockFromNested(
   blocks: SchemaBlock[],
@@ -601,35 +581,20 @@ function extractBlockFromNested(
   const result = blocks.map(block => {
     if (extracted) return block; // Already found — pass through
 
-    // materi-section.content[]
-    if (block.type === 'materi-section' && 'content' in block) {
-      const ms = block as { content: SchemaBlock[] } & SchemaBlock;
-      const idx = ms.content?.findIndex(b => b.id === blockId);
-      if (idx != null && idx >= 0) {
-        extracted = ms.content[idx];
-        const newContent = [...ms.content.slice(0, idx), ...ms.content.slice(idx + 1)];
-        return { ...block, content: newContent };
-      }
-    }
-
-    // ftab.tabs[].content[]
-    if (block.type === 'ftab' && 'tabs' in block) {
-      const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> } & SchemaBlock;
-      const newTabs = ft.tabs.map((tab, tabIdx) => {
-        if (!tab.content || extracted) return tab;
-        const idx = tab.content.findIndex(b => b.id === blockId);
+    // Composite blocks — use descriptor-driven extraction
+    if (isCompositeBlockType(block.type)) {
+      const updated = processCompositeChildren(block, (children) => {
+        const idx = children.findIndex(b => b.id === blockId);
         if (idx >= 0) {
-          extracted = tab.content[idx];
-          return { ...tab, content: [...tab.content.slice(0, idx), ...tab.content.slice(idx + 1)] };
+          extracted = children[idx];
+          return [...children.slice(0, idx), ...children.slice(idx + 1)];
         }
-        return tab;
+        return children; // No change
       });
-      if (extracted) {
-        return { ...block, tabs: newTabs };
-      }
+      if (updated && extracted) return updated;
     }
 
-    // children[]
+    // Generic children fallback
     if (block.children) {
       const idx = block.children.findIndex(b => b.id === blockId);
       if (idx >= 0) {
@@ -646,6 +611,7 @@ function extractBlockFromNested(
 
 /**
  * Insert a block into a nested container.
+ * Uses container descriptor for descriptor-driven access.
  */
 function insertIntoContainer(
   blocks: SchemaBlock[],
@@ -657,29 +623,18 @@ function insertIntoContainer(
     // Match container by ID
     if (b.id !== container.id) return b;
 
-    // materi-section.content[]
-    if (container.type === 'materi-section' && b.type === 'materi-section' && 'content' in b) {
-      const ms = b as { content: SchemaBlock[] } & SchemaBlock;
-      const content = [...(ms.content || [])];
-      const idx = toIndex ?? content.length;
-      content.splice(idx, 0, block);
-      return { ...b, content };
-    }
-
-    // ftab.tabs[tabIndex].content[]
-    if (container.type === 'ftab' && b.type === 'ftab' && 'tabs' in b && container.tabIndex != null) {
-      const ft = b as { tabs: Array<{ content?: SchemaBlock[] }> } & SchemaBlock;
-      const newTabs = ft.tabs.map((tab, i) => {
-        if (i !== container.tabIndex || !tab.content) return tab;
-        const content = [...tab.content];
-        const idx = toIndex ?? content.length;
-        content.splice(idx, 0, block);
-        return { ...tab, content };
+    // Composite blocks — use descriptor-driven insertion
+    if (isCompositeBlockType(b.type) && container.type === b.type) {
+      const updated = processCompositeChildren(b, (children, tabIndex) => {
+        // For tabular containers, only insert into the specified tab
+        if (container.tabIndex !== undefined && tabIndex !== container.tabIndex) return children;
+        const idx = toIndex ?? children.length;
+        return [...children.slice(0, idx), block, ...children.slice(idx)];
       });
-      return { ...b, tabs: newTabs };
+      if (updated) return updated;
     }
 
-    // children[]
+    // Generic children fallback
     if (container.type === 'children' && b.children) {
       const children = [...b.children];
       const idx = toIndex ?? children.length;
@@ -693,6 +648,7 @@ function insertIntoContainer(
 
 /**
  * Insert a block after a specific block ID in nested containers.
+ * Uses processCompositeChildren() for descriptor-driven access.
  */
 function insertAfterInNested(
   blocks: SchemaBlock[],
@@ -700,36 +656,21 @@ function insertAfterInNested(
   newBlock: SchemaBlock,
 ): SchemaBlock[] {
   return blocks.map(block => {
-    // materi-section.content[]
-    if (block.type === 'materi-section' && 'content' in block) {
-      const ms = block as { content: SchemaBlock[] } & SchemaBlock;
-      const idx = ms.content?.findIndex(b => b.id === afterBlockId);
-      if (idx != null && idx >= 0) {
-        const content = [...ms.content];
-        content.splice(idx + 1, 0, newBlock);
-        return { ...block, content };
-      }
-    }
-
-    // ftab.tabs[].content[]
-    if (block.type === 'ftab' && 'tabs' in block) {
-      const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> } & SchemaBlock;
+    // Composite blocks — use descriptor-driven insertion
+    if (isCompositeBlockType(block.type)) {
       let found = false;
-      const newTabs = ft.tabs.map(tab => {
-        if (!tab.content || found) return tab;
-        const idx = tab.content.findIndex(b => b.id === afterBlockId);
+      const updated = processCompositeChildren(block, (children) => {
+        const idx = children.findIndex(b => b.id === afterBlockId);
         if (idx >= 0) {
           found = true;
-          const content = [...tab.content];
-          content.splice(idx + 1, 0, newBlock);
-          return { ...tab, content };
+          return [...children.slice(0, idx + 1), newBlock, ...children.slice(idx + 1)];
         }
-        return tab;
+        return children; // No change
       });
-      if (found) return { ...block, tabs: newTabs };
+      if (found && updated) return updated;
     }
 
-    // children[]
+    // Generic children fallback
     if (block.children) {
       const idx = block.children.findIndex(b => b.id === afterBlockId);
       if (idx >= 0) {
@@ -746,26 +687,34 @@ function insertAfterInNested(
 /**
  * Regenerate IDs for all nested children in a block to avoid duplicates.
  * Mutates the block in place (used on a deep-cloned block).
+ * Uses container descriptor for composite block detection.
  */
 function regenerateNestedIds(block: SchemaBlock): void {
-  if (block.type === 'materi-section' && 'content' in block) {
-    const ms = block as { content: SchemaBlock[] };
-    for (const child of ms.content || []) {
-      child.id = generateBlockId();
-      regenerateNestedIds(child);
-    }
-  }
-
-  if (block.type === 'ftab' && 'tabs' in block) {
-    const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> };
-    for (const tab of ft.tabs || []) {
-      for (const child of tab.content || []) {
-        child.id = generateBlockId();
-        regenerateNestedIds(child);
+  // Composite blocks — use descriptor-driven traversal
+  if (isCompositeBlockType(block.type)) {
+    const descriptor = getCompositeContainerDescriptor(block.type);
+    if (descriptor) {
+      if (descriptor.structure === 'direct') {
+        const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+        for (const child of children || []) {
+          child.id = generateBlockId();
+          regenerateNestedIds(child);
+        }
+      }
+      if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+        const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+        for (const tab of tabs || []) {
+          const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+          for (const child of content || []) {
+            child.id = generateBlockId();
+            regenerateNestedIds(child);
+          }
+        }
       }
     }
   }
 
+  // Generic children fallback
   if (block.children) {
     for (const child of block.children) {
       child.id = generateBlockId();

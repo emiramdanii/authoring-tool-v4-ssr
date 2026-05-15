@@ -168,9 +168,13 @@ export {
   isBlockTypeRendererHandlesCompression,
   // Composite block detection (single source of truth)
   isCompositeBlockType,
+  // Composite container descriptor (descriptor-driven access)
+  getCompositeContainerDescriptor,
+  // CanvaElement interactive bridge
+  isInteractiveElementType,
 } from './capability-registry';
 
-export type { BlockCapabilityInfo, DerivedCapabilities } from './capability-registry';
+export type { BlockCapabilityInfo, DerivedCapabilities, CompositeContainerDescriptor } from './capability-registry';
 
 // ── Scene Transaction System ──────────────────────────────────────
 export {

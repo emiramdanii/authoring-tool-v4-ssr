@@ -20,6 +20,7 @@ import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockIm
 import { createTransaction } from '@/core/schema/scene-transaction';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
+import { getCompositeContainerDescriptor, isCompositeBlockType } from '@/core/schema/capability-registry';
 import { rebalanceFromScenePlan, promoteSceneSplitToPage } from '@/core/schema/schema-apply';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
@@ -29,8 +30,10 @@ import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 // Returns the path to the block so Immer can update it.
 //
 // Uses isCompositeBlock() from SchemaTraversal to detect composite
-// blocks instead of hardcoded type checks. When new composite
-// block types are added, they're automatically supported here.
+// blocks and getCompositeContainerDescriptor() from the capability
+// registry as the single source of truth for container structure.
+// When new composite block types are added, they're automatically
+// supported here via their descriptor.
 // ═══════════════════════════════════════════════════════════════
 
 type BlockOwner =
@@ -44,30 +47,34 @@ function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | nu
   const idx = blocks.findIndex(b => b.id === blockId);
   if (idx !== -1) return { kind: 'top-level', index: idx };
 
-  // 2. Search inside composite blocks (ftab, materi-section, generic children)
+  // 2. Search inside composite blocks using container descriptor
   for (let bi = 0; bi < blocks.length; bi++) {
     const block = blocks[bi];
     if (!isCompositeBlock(block)) continue;
 
-    // ftab: each tab has its own content array
-    if (block.type === 'ftab') {
-      const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
-      const tabs = ft.tabs || [];
-      for (let ti = 0; ti < tabs.length; ti++) {
-        const content = tabs[ti].content || [];
-        const ci = content.findIndex(b => b.id === blockId);
-        if (ci !== -1) return { kind: 'ftab-tab', blockIndex: bi, tabIndex: ti, childIndex: ci };
+    // Use descriptor-driven access for known composite types
+    const descriptor = getCompositeContainerDescriptor(block.type);
+    if (descriptor) {
+      if (descriptor.structure === 'direct') {
+        const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+        const ci = (children || []).findIndex(b => b.id === blockId);
+        if (ci !== -1) {
+          return { kind: descriptor.containerType as 'materi-section', blockIndex: bi, childIndex: ci };
+        }
+        continue;
       }
-      continue;
-    }
 
-    // materi-section: single content array
-    if (block.type === 'materi-section') {
-      const ms = block as { content?: SchemaBlock[] };
-      const content = ms.content || [];
-      const ci = content.findIndex(b => b.id === blockId);
-      if (ci !== -1) return { kind: 'materi-section', blockIndex: bi, childIndex: ci };
-      continue;
+      if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+        const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+        for (let ti = 0; ti < (tabs?.length || 0); ti++) {
+          const content = (tabs![ti][descriptor.tabContentKey!]) as SchemaBlock[] | undefined;
+          const ci = (content || []).findIndex(b => b.id === blockId);
+          if (ci !== -1) {
+            return { kind: 'ftab-tab', blockIndex: bi, tabIndex: ti, childIndex: ci };
+          }
+        }
+        continue;
+      }
     }
 
     // Generic BaseBlock.children — fallback for any composite block type
@@ -1116,26 +1123,27 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         draft.splice(idx, 1);
       }
 
-      // Remove nested blocks using SchemaTraversal.isCompositeBlock()
+      // Remove nested blocks using descriptor-driven composite detection
       for (const blockId of blockIds) {
         for (const block of draft) {
           if (!isCompositeBlock(block)) continue;
 
-          // ftab tabs
-          if (block.type === 'ftab') {
-            const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
-            for (const tab of (ft.tabs || [])) {
-              const ci = (tab.content || []).findIndex(b => b.id === blockId);
-              if (ci !== -1) { tab.content?.splice(ci, 1); break; }
+          // Use descriptor-driven access for known composite types
+          const descriptor = getCompositeContainerDescriptor(block.type);
+          if (descriptor) {
+            if (descriptor.structure === 'direct') {
+              const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+              const ci = (children || []).findIndex(b => b.id === blockId);
+              if (ci !== -1) { (children || []).splice(ci, 1); break; }
             }
-            continue;
-          }
-
-          // materi-section
-          if (block.type === 'materi-section') {
-            const ms = block as { content?: SchemaBlock[] };
-            const ci = (ms.content || []).findIndex(b => b.id === blockId);
-            if (ci !== -1) { ms.content?.splice(ci, 1); break; }
+            if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+              const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+              for (const tab of (tabs || [])) {
+                const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+                const ci = (content || []).findIndex(b => b.id === blockId);
+                if (ci !== -1) { (content || []).splice(ci, 1); break; }
+              }
+            }
             continue;
           }
 

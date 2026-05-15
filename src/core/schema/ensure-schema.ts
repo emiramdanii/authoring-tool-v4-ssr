@@ -42,6 +42,7 @@ import { assertValidSchema, isSchemaVersionCompatible, SCHEMA_VERSION } from './
 import { deepFreeze } from './immutable';
 import { migrateSchema } from './schema-migration';
 import { assertDocumentPurity } from './session-state';
+import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
 
 /**
  * Ensure a page has a native ScreenSchema.
@@ -128,8 +129,8 @@ export function getPageBlocks(page: CanvaPage): SchemaBlock[] {
 
 /**
  * Find a specific block by ID in a page's schema.
- * Searches both top-level and nested blocks (ftab.tabs[].content[],
- * materi-section.content[], BaseBlock.children[]).
+ * Searches both top-level and nested blocks using the container
+ * descriptor from the capability registry as single source of truth.
  */
 export function findBlockInPage(page: CanvaPage, blockId: string): SchemaBlock | null {
   const blocks = getPageBlocks(page);
@@ -138,21 +139,25 @@ export function findBlockInPage(page: CanvaPage, blockId: string): SchemaBlock |
   const top = blocks.find(b => b.id === blockId);
   if (top) return top;
 
-  // 2. Search nested blocks
+  // 2. Search nested blocks using container descriptor
   for (const block of blocks) {
-    // ftab.tabs[].content[]
-    if (block.type === 'ftab') {
-      const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
-      for (const tab of (ft.tabs || [])) {
-        const found = (tab.content || []).find(b => b.id === blockId);
-        if (found) return found;
+    if (isCompositeBlockType(block.type)) {
+      const descriptor = getCompositeContainerDescriptor(block.type);
+      if (descriptor) {
+        if (descriptor.structure === 'direct') {
+          const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+          const found = (children || []).find(b => b.id === blockId);
+          if (found) return found;
+        }
+        if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+          const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+          for (const tab of (tabs || [])) {
+            const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+            const found = (content || []).find(b => b.id === blockId);
+            if (found) return found;
+          }
+        }
       }
-    }
-    // materi-section.content[]
-    if (block.type === 'materi-section') {
-      const ms = block as { content?: SchemaBlock[] };
-      const found = (ms.content || []).find(b => b.id === blockId);
-      if (found) return found;
     }
     // Generic BaseBlock.children[]
     if (block.children && Array.isArray(block.children)) {

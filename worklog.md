@@ -852,3 +852,58 @@ Stage Summary:
 - All 4 new immutable schema operations are fully wired into the canva store
 - Each operation has: history push → immutable operation → editBus emit → commitSchemaUpdate → store setState → toast notification
 - No additional wiring needed — all engine modules are now integrated
+
+---
+Task ID: 1-Capability-Registry-Deep-Wiring
+Agent: Main Agent
+Task: Task #1 — Wire BlockCapabilityRegistry into application (replace ALL hardcoded composite + interactive checks)
+
+Work Log:
+- Audited entire codebase: found 57 hardcoded block type checks across 12 files
+- Added CompositeContainerDescriptor interface + COMPOSITE_CONTAINER_DESCRIPTORS registry to capability-registry.ts
+  - Descriptor for 'ftab': { containerType: 'ftab-tab', accessor: 'tabs', structure: 'tabular', tabContentKey: 'content' }
+  - Descriptor for 'materi-section': { containerType: 'materi-content', accessor: 'content', structure: 'direct' }
+  - getCompositeContainerDescriptor(type) — single source of truth for container structure
+- Added isInteractiveElementType() to capability-registry.ts — bridge for CanvaElement type space
+  - Maps CanvaElement 'game' type to schema registry isBlockTypeInteractive()
+  - Used by BlockRenderer, StageElement, ElementProperties
+- Added processCompositeChildren() to SchemaTraversal.ts — generic descriptor-driven mutation helper
+  - Accepts processor function: (children, tabIndex) => SchemaBlock[]
+  - Returns null on no change (same reference detection)
+  - Supports both direct (materi-section) and tabular (ftab) containers
+  - Optional onlyTabIndex for targeted tab updates
+- Refactored SchemaTraversal.ts (6 hardcoded checks → 0):
+  - getChildBlocks() now uses getCompositeContainerDescriptor()
+  - replaceBlockInSchema() uses processCompositeChildren()
+  - deleteBlockFromSchema() uses processCompositeChildren()
+- Refactored immutable.ts (14 hardcoded checks → 0):
+  - findBlockById() uses isCompositeBlockType + getCompositeContainerDescriptor
+  - replaceBlock() uses processCompositeChildren()
+  - removeBlock() uses processCompositeChildren()
+  - extractBlockFromNested() uses processCompositeChildren()
+  - insertIntoContainer() uses processCompositeChildren() with tabIndex filtering
+  - insertAfterInNested() uses processCompositeChildren()
+  - regenerateNestedIds() uses isCompositeBlockType + getCompositeContainerDescriptor
+- Refactored ui-slice.ts (4 hardcoded checks → 0):
+  - findBlockOwner() uses getCompositeContainerDescriptor()
+  - deleteBlocksByIds() uses getCompositeContainerDescriptor()
+- Refactored ensure-schema.ts (2 hardcoded checks → 0):
+  - findBlockInPage() uses isCompositeBlockType + getCompositeContainerDescriptor
+- Refactored session-state.ts (2 hardcoded checks → 0):
+  - isDocumentPure() uses isCompositeBlockType + getCompositeContainerDescriptor
+- Wired interactive checks in renderer components (3 hardcoded checks → 0):
+  - BlockRenderer.tsx: isInteractiveElementType(element.type)
+  - StageElement.tsx: isInteractiveElementType(element.type)
+  - ElementProperties.tsx: isInteractiveElementType(selectedEl.type)
+- Updated barrel exports in schema/index.ts:
+  - Added getCompositeContainerDescriptor, isInteractiveElementType
+  - Added CompositeContainerDescriptor type export
+- Build verified: TypeScript compiles with zero errors, Next.js production build passes
+
+Stage Summary:
+- 57 hardcoded block type checks → 0 across 8 files
+- CompositeContainerDescriptor is the single source of truth for container structure
+- Adding a new composite block type only requires: (1) add to COMPOSITE_BLOCK_TYPES, (2) add descriptor to COMPOSITE_CONTAINER_DESCRIPTORS — all consuming code auto-supports
+- processCompositeChildren() eliminates all duplicated composite mutation patterns
+- isInteractiveElementType() bridges CanvaElement type space to schema capability registry
+- Build verified clean, no regressions

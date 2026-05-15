@@ -5,6 +5,7 @@ import type { CanvaElement } from '../types';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { resolveModule } from '@/lib/module-resolver';
+import { isInteractiveElementType } from '@/core/schema/capability-registry';
 import QuizWidget from '../QuizWidget';
 import GameWidget from '../GameWidget';
 import PresetModuleCard, { type LayoutVariant } from '@/components/shared/preset-module-card';
@@ -59,7 +60,7 @@ export function BlockRenderer({
     onScoreComplete?.(score, maxScore);
   }, [element.id, pageIndex, reportScore, onScoreComplete]);
 
-  const isInteractive = element.type === 'kuis' || element.type === 'game';
+  const isInteractive = isInteractiveElementType(element.type);
 
   const wrapperClass = `absolute ${isInteractive && interactive ? 'ring-2 ring-emerald-400/50 rounded' : ''} ${className || ''}`;
 

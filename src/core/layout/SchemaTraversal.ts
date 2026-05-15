@@ -32,7 +32,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
-import { isCompositeBlockType } from '../schema/capability-registry';
+import { isCompositeBlockType, getCompositeContainerDescriptor, type CompositeContainerDescriptor } from '../schema/capability-registry';
 
 // ── Path Types ─────────────────────────────────────────────────
 
@@ -91,6 +91,11 @@ export function isCompositeBlock(block: SchemaBlock): boolean {
 /**
  * Get all child blocks from a composite block.
  * Returns the container type along with the blocks.
+ *
+ * Now uses CompositeContainerDescriptor from the capability registry
+ * as the single source of truth for container structure.
+ * When a new composite type is added, just add its descriptor —
+ * this function automatically supports it.
  */
 export function getChildBlocks(block: SchemaBlock): Array<{
   children: SchemaBlock[];
@@ -103,35 +108,36 @@ export function getChildBlocks(block: SchemaBlock): Array<{
     tabIndex?: number;
   }> = [];
 
-  // ftab: each tab has its own content array
-  // Note: ftab-specific child extraction (needs tabs structure knowledge)
-  if (block.type === 'ftab') {
-    const ft = block as { tabs?: Array<{ content: SchemaBlock[] }> };
-    if (ft.tabs) {
-      ft.tabs.forEach((tab, tabIndex) => {
-        if (tab.content && tab.content.length > 0) {
-          result.push({
-            children: tab.content,
-            container: 'ftab-tab',
-            tabIndex,
-          });
-        }
-      });
+  // Use descriptor-driven access for known composite types
+  const descriptor = getCompositeContainerDescriptor(block.type);
+  if (descriptor) {
+    if (descriptor.structure === 'direct') {
+      const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+      if (children && children.length > 0) {
+        result.push({
+          children,
+          container: descriptor.containerType,
+        });
+      }
+      return result;
     }
-    return result;
-  }
 
-  // materi-section: single content array
-  // Note: materi-section-specific child extraction (needs content structure knowledge)
-  if (block.type === 'materi-section') {
-    const ms = block as { content?: SchemaBlock[] };
-    if (ms.content && ms.content.length > 0) {
-      result.push({
-        children: ms.content,
-        container: 'materi-content',
-      });
+    if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+      const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+      if (tabs) {
+        tabs.forEach((tab, tabIndex) => {
+          const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+          if (content && content.length > 0) {
+            result.push({
+              children: content,
+              container: descriptor.containerType,
+              tabIndex,
+            });
+          }
+        });
+      }
+      return result;
     }
-    return result;
   }
 
   // Generic BaseBlock.children (for any composite block with a children array)
@@ -298,6 +304,98 @@ export function traverseSchemaUpToDepth(
 
 // ── Block Replacement ──────────────────────────────────────────
 
+// ── Composite Children Processing (Descriptor-Driven) ──────────
+// This is the KEY helper that eliminates all hardcoded type checks
+// for composite block mutation. It uses the CompositeContainerDescriptor
+// from the capability registry to generically access and update
+// children in any composite block type.
+//
+// Instead of:
+//   if (block.type === 'ftab') { ... update tabs[i].content ... }
+//   if (block.type === 'materi-section') { ... update content ... }
+//
+// You write:
+//   const updated = processCompositeChildren(block, (children) => {
+//     return children.filter(b => b.id !== targetId); // or map, splice, etc.
+//   });
+//   if (updated) return updated;
+//
+// When a new composite type is added with its descriptor, this
+// function automatically supports it without any code changes.
+
+/**
+ * Process children of a composite block using its container descriptor.
+ * Returns a new block with the updated children, or null if:
+ *   - The block is not composite
+ *   - No descriptor is found
+ *   - The processor returns the same children reference (no change)
+ *
+ * The processor receives the current children array and must return
+ * a NEW array with the desired changes. Returning the same reference
+ * signals "no change" and the function returns null.
+ *
+ * For tabular containers (ftab): the processor is called once per tab.
+ * For direct containers (materi-section): the processor is called once.
+ * For generic children: the processor is called once.
+ *
+ * @param block - The composite block to process
+ * @param processor - Function that receives current children and returns updated children.
+ *   Return the SAME array reference to signal "no change".
+ * @param options - Optional: only process a specific tab (for tabular containers)
+ */
+export function processCompositeChildren(
+  block: SchemaBlock,
+  processor: (children: SchemaBlock[], tabIndex: number | undefined) => SchemaBlock[],
+  options?: { onlyTabIndex?: number },
+): SchemaBlock | null {
+  // 1. Known composite types — use descriptor
+  const descriptor = getCompositeContainerDescriptor(block.type);
+  if (descriptor) {
+    if (descriptor.structure === 'direct') {
+      const current = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+      const updated = processor(current || [], undefined);
+      if (updated === current) return null; // No change
+      return { ...block, [descriptor.accessor]: updated };
+    }
+
+    if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+      const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+      if (!tabs) return null;
+
+      let changed = false;
+      const updatedTabs = tabs.map((tab, tabIndex) => {
+        // If onlyTabIndex is specified, skip other tabs
+        if (options?.onlyTabIndex !== undefined && tabIndex !== options.onlyTabIndex) {
+          return tab;
+        }
+
+        const current = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+        const updated = processor(current || [], tabIndex);
+        if (updated !== current) {
+          changed = true;
+          return { ...tab, [descriptor.tabContentKey!]: updated };
+        }
+        return tab;
+      });
+
+      if (!changed) return null;
+      return { ...block, [descriptor.accessor]: updatedTabs };
+    }
+  }
+
+  // 2. Generic BaseBlock.children — fallback for any block with a children array
+  const blockChildren = (block as { children?: SchemaBlock[] }).children;
+  if (Array.isArray(blockChildren)) {
+    const updated = processor(blockChildren, undefined);
+    if (updated === blockChildren) return null; // No change
+    return { ...block, children: updated };
+  }
+
+  return null;
+}
+
+// ── Block Replacement ──────────────────────────────────────────
+
 /**
  * Replace a block in the schema tree by its ID.
  * Returns a NEW ScreenSchema (immutable update).
@@ -306,6 +404,9 @@ export function traverseSchemaUpToDepth(
  * This is the composite-aware replacement for:
  *   schema.blocks = schema.blocks.map(b => b.id === targetId ? newBlock : b)
  * which only works for top-level blocks.
+ *
+ * Now uses CompositeContainerDescriptor for composite block mutation,
+ * eliminating hardcoded type-specific accessor logic.
  */
 export function replaceBlockInSchema(
   schema: ScreenSchema,
@@ -329,39 +430,15 @@ export function replaceBlockInSchema(
 
   function replaceInComposite(
     block: SchemaBlock,
-    _targetId: string,
-    _newBlock: SchemaBlock,
+    targetId: string,
+    replacement: SchemaBlock,
   ): SchemaBlock {
-    // ftab
-    if (block.type === 'ftab') {
-      const ft = block as { tabs?: Array<{ icon: string; label: string; content: SchemaBlock[] }>; showReadMarker?: boolean; showProgress?: boolean } & SchemaBlock;
-      const updatedTabs = ft.tabs?.map(tab => ({
-        ...tab,
-        content: replaceInArray(tab.content),
-      }));
-      return {
-        ...block,
-        ...(updatedTabs ? { tabs: updatedTabs } : {}),
-      };
-    }
-
-    // materi-section
-    if (block.type === 'materi-section') {
-      const ms = block as { content?: SchemaBlock[] } & SchemaBlock;
-      return {
-        ...block,
-        ...(ms.content ? { content: replaceInArray(ms.content) } : {}),
-      };
-    }
-
-    // Generic children
-    const blockChildren = (block as { children?: SchemaBlock[] }).children;
-    if (blockChildren) {
-      return {
-        ...block,
-        children: replaceInArray(blockChildren),
-      };
-    }
+    // Use descriptor-driven mutation for known composite types
+    const updated = processCompositeChildren(block, (children) => {
+      if (!children.some(b => b.id === targetId)) return children; // No change
+      return children.map(b => b.id === targetId ? replacement : b);
+    });
+    if (updated) return updated;
 
     return block;
   }
@@ -381,6 +458,9 @@ export function replaceBlockInSchema(
  *
  * If the block is inside a composite, it's removed from the composite's
  * children array. If it's top-level, it's removed from schema.blocks.
+ *
+ * Now uses CompositeContainerDescriptor for composite block mutation,
+ * eliminating hardcoded type-specific accessor logic.
  */
 export function deleteBlockFromSchema(
   schema: ScreenSchema,
@@ -397,34 +477,13 @@ export function deleteBlockFromSchema(
       });
   }
 
-  function deleteFromComposite(block: SchemaBlock, _targetId: string): SchemaBlock {
-    if (block.type === 'ftab') {
-      const ft = block as { tabs?: Array<{ icon: string; label: string; content: SchemaBlock[] }>; showReadMarker?: boolean; showProgress?: boolean } & SchemaBlock;
-      const updatedTabs = ft.tabs?.map(tab => ({
-        ...tab,
-        content: tab.content.filter(b => b.id !== blockId),
-      }));
-      return {
-        ...block,
-        ...(updatedTabs ? { tabs: updatedTabs } : {}),
-      };
-    }
-
-    if (block.type === 'materi-section') {
-      const ms = block as { content?: SchemaBlock[] } & SchemaBlock;
-      return {
-        ...block,
-        ...(ms.content ? { content: ms.content.filter(b => b.id !== blockId) } : {}),
-      };
-    }
-
-    const blockChildren = (block as { children?: SchemaBlock[] }).children;
-    if (blockChildren) {
-      return {
-        ...block,
-        children: blockChildren.filter(b => b.id !== blockId),
-      };
-    }
+  function deleteFromComposite(block: SchemaBlock, targetId: string): SchemaBlock {
+    // Use descriptor-driven mutation for known composite types
+    const updated = processCompositeChildren(block, (children) => {
+      if (!children.some(b => b.id === targetId)) return children; // No change
+      return children.filter(b => b.id !== targetId);
+    });
+    if (updated) return updated;
 
     return block;
   }

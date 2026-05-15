@@ -36,7 +36,7 @@
 
 import type { ScreenSchema, SchemaBlock } from './types';
 import { validateSchema, type ValidationResult } from './validation';
-import { isCompositeBlockType } from './capability-registry';
+import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
 
 // ── Document State ─────────────────────────────────────────────
 
@@ -173,29 +173,34 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
       }
     }
 
-    // Check nested blocks in composite blocks (using registry as single source of truth)
-    if (isCompositeBlockType(block.type) && block.type === 'materi-section' && 'content' in block) {
-      const ms = block as { content: SchemaBlock[] };
-      for (let j = 0; j < (ms.content?.length || 0); j++) {
-        const child = ms.content[j];
-        for (const key of Object.keys(child)) {
-          if (RUNTIME_STATE_FIELDS.has(key)) {
-            violations.push(`blocks[${i}].content[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
+    // Check nested blocks in composite blocks using container descriptor
+    // (single source of truth — no hardcoded type checks)
+    if (isCompositeBlockType(block.type)) {
+      const descriptor = getCompositeContainerDescriptor(block.type);
+      if (descriptor) {
+        if (descriptor.structure === 'direct') {
+          const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
+          for (let j = 0; j < (children?.length || 0); j++) {
+            const child = children![j];
+            for (const key of Object.keys(child)) {
+              if (RUNTIME_STATE_FIELDS.has(key)) {
+                violations.push(`blocks[${i}].${descriptor.accessor}[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
+              }
+            }
           }
         }
-      }
-    }
-
-    // Check nested blocks in ftab (specific tabs structure)
-    if (isCompositeBlockType(block.type) && block.type === 'ftab' && 'tabs' in block) {
-      const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> };
-      for (let t = 0; t < (ft.tabs?.length || 0); t++) {
-        const tab = ft.tabs[t];
-        for (let j = 0; j < (tab.content?.length || 0); j++) {
-          const child = tab.content![j];
-          for (const key of Object.keys(child)) {
-            if (RUNTIME_STATE_FIELDS.has(key)) {
-              violations.push(`blocks[${i}].tabs[${t}].content[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
+        if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
+          const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
+          for (let t = 0; t < (tabs?.length || 0); t++) {
+            const tab = tabs![t];
+            const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+            for (let j = 0; j < (content?.length || 0); j++) {
+              const child = content![j];
+              for (const key of Object.keys(child)) {
+                if (RUNTIME_STATE_FIELDS.has(key)) {
+                  violations.push(`blocks[${i}].${descriptor.accessor}[${t}].${descriptor.tabContentKey}[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
+                }
+              }
             }
           }
         }

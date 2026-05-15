@@ -282,11 +282,125 @@ const COMPOSITE_BLOCK_TYPES = new Set([
  * where ANY block might have a `children` array, use:
  *   `isCompositeBlockType(type) || (block.children && block.children.length > 0)`
  *
- * Adding a new composite block type? Just add it to COMPOSITE_BLOCK_TYPES above.
+ * Adding a new composite block type? Just add it to COMPOSITE_BLOCK_TYPES above
+ * AND add a CompositeContainerDescriptor to COMPOSITE_CONTAINER_DESCRIPTORS below.
  * No other code needs to change.
  */
 export function isCompositeBlockType(type: string): boolean {
   return COMPOSITE_BLOCK_TYPES.has(type);
+}
+
+// ── Composite Container Descriptor ────────────────────────────
+// Describes HOW to access child blocks in each composite type.
+// This is the SINGLE SOURCE OF TRUTH for container structure.
+//
+// When a new composite block type is added, add a descriptor here.
+// All consuming code (SchemaTraversal, immutable.ts, ui-slice.ts, etc.)
+// will automatically support the new type via the descriptor.
+//
+// WHY: Before this, every file that needed to access composite children
+// had its own `if (block.type === 'ftab') { ... tabs ... }` and
+// `if (block.type === 'materi-section') { ... content ... }` blocks.
+// This was:
+//   1. Duplicated across 6+ files (20+ total occurrences)
+//   2. Error-prone (easy to miss a file when adding a new type)
+//   3. Inconsistent (some files checked 'content' in block, others didn't)
+//
+// Now, the descriptor drives all composite access patterns from one place.
+
+export interface CompositeContainerDescriptor {
+  /** Block type this descriptor applies to */
+  blockType: string;
+  /** How this container appears in BlockPath.container */
+  containerType: 'ftab-tab' | 'materi-content' | 'children';
+  /** Key on the block object that holds the container data */
+  accessor: string;
+  /**
+   * Container structure type:
+   * - 'direct': accessor directly gives SchemaBlock[]
+   *     Example: materi-section.content → SchemaBlock[]
+   * - 'tabular': accessor gives an array of tab objects,
+   *     each with a tabContentKey holding SchemaBlock[]
+   *     Example: ftab.tabs → Array<{ content: SchemaBlock[] }>
+   */
+  structure: 'direct' | 'tabular';
+  /** For tabular structure: the key inside each tab object that holds SchemaBlock[] */
+  tabContentKey?: string;
+}
+
+/**
+ * Registry of all composite container descriptors.
+ * Add new composite types here — consuming code reads from this automatically.
+ */
+const COMPOSITE_CONTAINER_DESCRIPTORS: CompositeContainerDescriptor[] = [
+  {
+    blockType: 'ftab',
+    containerType: 'ftab-tab',
+    accessor: 'tabs',
+    structure: 'tabular',
+    tabContentKey: 'content',
+  },
+  {
+    blockType: 'materi-section',
+    containerType: 'materi-content',
+    accessor: 'content',
+    structure: 'direct',
+  },
+];
+
+const CONTAINER_DESCRIPTOR_MAP = new Map(
+  COMPOSITE_CONTAINER_DESCRIPTORS.map(d => [d.blockType, d])
+);
+
+/**
+ * Get the container descriptor for a composite block type.
+ * Returns null if the type is not a known composite.
+ *
+ * Use this instead of hardcoding `block.type === 'ftab'` / `'materi-section'`
+ * to determine how to access a composite block's children.
+ *
+ * Example:
+ *   const desc = getCompositeContainerDescriptor(block.type);
+ *   if (desc?.structure === 'direct') {
+ *     const children = (block as any)[desc.accessor]; // SchemaBlock[]
+ *   }
+ *   if (desc?.structure === 'tabular') {
+ *     const tabs = (block as any)[desc.accessor]; // Array<Record<string, SchemaBlock[]>>
+ *     for (const tab of tabs) {
+ *       const children = tab[desc.tabContentKey!]; // SchemaBlock[]
+ *     }
+ *   }
+ */
+export function getCompositeContainerDescriptor(type: string): CompositeContainerDescriptor | null {
+  return CONTAINER_DESCRIPTOR_MAP.get(type) ?? null;
+}
+
+// ── CanvaElement Interactive Bridge ────────────────────────────
+// CanvaElement is the legacy editor element model. Its type space
+// differs from SchemaBlock:
+//   CanvaElement: 'kuis' | 'game' | 'materi' | 'modul' | 'teks' | 'shape'
+//   SchemaBlock:  'kuis' | 'sortir-game' | 'roda-game' | ...
+//
+// The 'game' type in CanvaElement is a catch-all for all *-game
+// SchemaBlock types. This function bridges the gap so that
+// CanvaElement-based components can use the capability registry
+// as the single source of truth for interactivity.
+
+/**
+ * Check if a CanvaElement type represents an interactive block.
+ *
+ * This bridges the legacy CanvaElement type space to the schema
+ * capability registry. Use this in canvas editor components that
+ * work with CanvaElement instead of SchemaBlock.
+ *
+ * @param type - CanvaElement type string ('kuis', 'game', etc.)
+ * @returns true if the element type is interactive
+ */
+export function isInteractiveElementType(type: string): boolean {
+  // 'game' is a CanvaElement catch-all for all *-game SchemaBlock types
+  if (type === 'game') return true;
+  // For all other types, delegate to the schema capability registry
+  return isBlockTypeInteractive(type);
 }
 
 // ── Registry Cache (for block types, not instances) ────────────
