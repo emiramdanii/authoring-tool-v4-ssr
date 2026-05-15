@@ -18,6 +18,8 @@ import {
   PRESETS_PETUNJUK,
   PRESETS_DISKUSI,
   PRESETS_REFLEKSI,
+  PRESETS_MOTIVASI,
+  PRESETS_RANGKUMAN,
   PRESETS_PENUTUP,
   PRESETS_SUARA,
   FULL_PRESET_MAP,
@@ -29,13 +31,15 @@ import {
   DEFAULT_PETUNJUK,
   DEFAULT_DISKUSI,
   DEFAULT_REFLEKSI,
+  DEFAULT_MOTIVASI,
+  DEFAULT_RANGKUMAN,
   DEFAULT_PENUTUP,
   DEFAULT_SUARA,
 } from './initial-state';
 
 export type PresetSlice = Pick<AuthoringState,
   | 'activePreset' | 'pendingCanvasGenerate' | 'games'
-  | 'petunjuk' | 'diskusi' | 'refleksi' | 'penutup' | 'suara'
+  | 'petunjuk' | 'diskusi' | 'refleksi' | 'motivasi' | 'rangkuman' | 'penutup' | 'suara'
   | 'applyFullPreset' | 'applyKuisPreset' | 'applyTpPreset'
   | 'applyCpPreset' | 'applyAtpPreset' | 'applyAlurPreset'
   | 'applyMetaPreset' | 'newProject'
@@ -48,6 +52,8 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
   petunjuk: { ...DEFAULT_PETUNJUK },
   diskusi: { ...DEFAULT_DISKUSI },
   refleksi: { ...DEFAULT_REFLEKSI },
+  motivasi: { ...DEFAULT_MOTIVASI },
+  rangkuman: { ...DEFAULT_RANGKUMAN },
   penutup: { ...DEFAULT_PENUTUP },
   suara: { ...DEFAULT_SUARA },
 
@@ -67,6 +73,8 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
     const petunjuk = PRESETS_PETUNJUK[mapping.petunjuk];
     const diskusi = PRESETS_DISKUSI[mapping.diskusi];
     const refleksi = PRESETS_REFLEKSI[mapping.refleksi];
+    const motivasi = PRESETS_MOTIVASI[mapping.motivasi];
+    const rangkuman = PRESETS_RANGKUMAN[mapping.rangkuman];
     const penutup = PRESETS_PENUTUP[mapping.penutup];
     const suara = PRESETS_SUARA[mapping.suara];
 
@@ -85,6 +93,8 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       petunjuk: petunjuk ? deepClone(petunjuk) : { ...DEFAULT_PETUNJUK },
       diskusi: diskusi ? deepClone(diskusi) : { ...DEFAULT_DISKUSI },
       refleksi: refleksi ? deepClone(refleksi) : { ...DEFAULT_REFLEKSI },
+      motivasi: motivasi ? deepClone(motivasi) : { ...DEFAULT_MOTIVASI },
+      rangkuman: rangkuman ? deepClone(rangkuman) : { ...DEFAULT_RANGKUMAN },
       penutup: penutup ? deepClone(penutup) : { ...DEFAULT_PENUTUP },
       suara: suara ? deepClone(suara) : { ...DEFAULT_SUARA },
       dirty: false,
@@ -155,6 +165,8 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       petunjuk: { ...DEFAULT_PETUNJUK },
       diskusi: { ...DEFAULT_DISKUSI },
       refleksi: { ...DEFAULT_REFLEKSI },
+      motivasi: { ...DEFAULT_MOTIVASI },
+      rangkuman: { ...DEFAULT_RANGKUMAN },
       penutup: { ...DEFAULT_PENUTUP },
       suara: { ...DEFAULT_SUARA },
       dirty: false,

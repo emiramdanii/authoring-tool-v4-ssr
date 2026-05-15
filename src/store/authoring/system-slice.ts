@@ -41,6 +41,7 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         skenario: s.skenario, kuis: s.kuis, modules: s.modules,
         games: s.games, materi: s.materi, guruPw: s.guruPw,
         petunjuk: s.petunjuk, diskusi: s.diskusi, refleksi: s.refleksi,
+        motivasi: s.motivasi, rangkuman: s.rangkuman,
         penutup: s.penutup, suara: s.suara,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -79,6 +80,8 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         petunjuk: data.petunjuk || get().petunjuk,
         diskusi: data.diskusi || get().diskusi,
         refleksi: data.refleksi || get().refleksi,
+        motivasi: data.motivasi || get().motivasi,
+        rangkuman: data.rangkuman || get().rangkuman,
         penutup: data.penutup || get().penutup,
         suara: data.suara || get().suara,
         dirty: false,
@@ -103,6 +106,8 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
     check(s.alur.length >= 3, 2);
     check(s.kuis.length >= 5, 2);
     check(s.modules.length > 0, 1);
+    check(!!s.motivasi.pertanyaanPemicu, 1);  // Motivasi has hook question
+    check(s.rangkuman.poin.length > 0, 1);    // Rangkuman has key points
     return Math.round((pts / max) * 100);
   },
 });

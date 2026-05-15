@@ -80,6 +80,8 @@ export type PageTemplateType =
   | 'cover'      // Cover / judul halaman
   | 'petunjuk'   // Petunjuk penggunaan media
   | 'dokumen'    // CP / TP / ATP display
+  | 'tujuan'     // Tujuan Pembelajaran (BSNP — student-facing TP)
+  | 'motivasi'   // Motivasi / Apersepsi (BSNP — hook & connections)
   | 'materi'     // Materi pembelajaran
   | 'diskusi'    // Diskusi & pertanyaan reflektif
   | 'skenario'   // Skenario interaktif
@@ -87,6 +89,7 @@ export type PageTemplateType =
   | 'game'       // Game interaktif (sub-type from modules)
   | 'hasil'      // Hasil / apresiasi
   | 'refleksi'   // Refleksi diri & portofolio
+  | 'rangkuman'  // Rangkuman (BSNP — key concepts & reinforcement)
   | 'penutup'    // Penutup & preview pertemuan berikutnya
   | 'hero'       // Hero banner
   | 'custom';    // Blank canvas (legacy element mode)

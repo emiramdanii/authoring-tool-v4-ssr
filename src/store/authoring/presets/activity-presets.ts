@@ -1,5 +1,5 @@
 // ── Activity Presets (Petunjuk, Diskusi, Refleksi, Penutup, Suara) ─
-import type { PetunjukData, DiskusiData, RefleksiData, PenutupData, SuaraConfig } from '../types';
+import type { PetunjukData, DiskusiData, RefleksiData, MotivasiData, RangkumanData, PenutupData, SuaraConfig } from '../types';
 
 // ── Petunjuk Presets ─────────────────────────────────────────────
 export const PRESETS_PETUNJUK: Record<string, PetunjukData> = {
@@ -116,6 +116,89 @@ export const PRESETS_REFLEKSI: Record<string, RefleksiData> = {
     },
   },
   blank: { title: '', intro: '', pertanyaan: [] },
+};
+
+// ── Motivasi Presets ─────────────────────────────────────────────
+export const PRESETS_MOTIVASI: Record<string, MotivasiData> = {
+  'hakikat-norma': {
+    title: 'Motivasi',
+    intro: 'Mari kita mulai dengan pertanyaan pemantik!',
+    pertanyaanPemicu: 'Bayangkan kamu hidup di sebuah kelas tanpa aturan sama sekali — tidak ada tata tertib, tidak ada jam masuk, tidak ada sanksi. Apa yang akan terjadi dalam seminggu?',
+    koneksi: 'Pengalamanmu tentang aturan di kelas dan di rumah sudah menunjukkan bahwa kehidupan butuh aturan — itulah yang disebut norma!',
+    aktivitas: 'Diskusikan dengan teman sebangku: Sebutkan 3 aturan yang kamu patuhi hari ini (di rumah, di sekolah, atau di jalan). Mengapa kamu mematuhinya?',
+    visual: '\uD83E\uDD14',
+  },
+  'macam-norma': {
+    title: 'Motivasi',
+    intro: 'Mari kita mulai dengan pertanyaan pemantik!',
+    pertanyaanPemicu: 'Kamu sudah tahu bahwa norma itu penting. Tapi tahukah kamu bahwa ada 4 jenis norma yang berbeda sumber dan sanksinya? Mana yang paling kamu rasakan setiap hari?',
+    koneksi: 'Pada pertemuan 1, kamu sudah mempelajari apa itu norma dan fungsinya. Sekarang saatnya mengenal macam-macam norma dan membedakannya!',
+    aktivitas: 'Tebak: Mana yang termasuk norma agama, kesusilaan, kesopanan, atau hukum? "Jangan mencuri" → ? "Hormati orang tua" → ? "Antre dengan tertib" → ?',
+    visual: '\uD83D\uDD04',
+  },
+  'perilaku-patuhan': {
+    title: 'Motivasi',
+    intro: 'Mari kita mulai dengan pertanyaan pemantik!',
+    pertanyaanPemicu: 'Kamu sudah tahu apa itu norma dan macam-macamnya. Tapi apakah sekadar tahu sudah cukup? Apa bedanya orang yang patuh karena tahu dengan orang yang patuh karena takut?',
+    koneksi: 'Pertemuan 1-2 sudah membahas hakikat dan macam norma. Sekarang saatnya MENERAPKAN norma dalam kehidupan nyata!',
+    aktivitas: 'Ceritakan: Kapan terakhir kali kamu patuh norma karena kesadaran sendiri (bukan karena disuruh atau takut hukuman)? Apa yang kamu rasakan?',
+    visual: '\uD83D\uDCAA',
+  },
+  blank: {
+    title: 'Motivasi',
+    intro: 'Mari kita mulai dengan pertanyaan pemantik!',
+    pertanyaanPemicu: '',
+    koneksi: '',
+    aktivitas: '',
+  },
+};
+
+// ── Rangkuman Presets ─────────────────────────────────────────────
+export const PRESETS_RANGKUMAN: Record<string, RangkumanData> = {
+  'hakikat-norma': {
+    title: 'Rangkuman',
+    intro: 'Berikut poin-poin penting dari materi yang telah dipelajari.',
+    poin: [
+      'Norma adalah aturan yang mengatur tingkah laku manusia dalam kehidupan bermasyarakat.',
+      'Norma bersifat mengikat dan memiliki sanksi bagi pelanggarnya.',
+      '5 fungsi norma: mengatur perilaku, menciptakan ketertiban, memberikan keadilan, mengembangkan sikap disiplin, dan menimbulkan rasa tanggung jawab.',
+      'Tanpa norma, kehidupan bermasyarakat akan kacau karena tidak ada pedoman perilaku.',
+    ],
+    tips: 'Ingat: norma itu bukan sekadar aturan, tapi alat yang membuat kehidupan bersama lebih tertib dan adil!',
+    closingStatement: 'Pertemuan berikutnya: kamu akan mengenal 4 macam norma dan sanksinya!',
+  },
+  'macam-norma': {
+    title: 'Rangkuman',
+    intro: 'Berikut poin-poin penting dari materi yang telah dipelajari.',
+    poin: [
+      '4 macam norma: agama, kesusilaan, kesopanan, dan hukum.',
+      'Norma agama bersumber dari Tuhan YME, sanksinya bersifat ukhrawi.',
+      'Norma kesusilaan bersumber dari hati nurani, sanksinya berupa rasa bersalah.',
+      'Norma kesopanan bersumber dari adat istiadat, sanksinya berupa pengucilan sosial.',
+      'Norma hukum bersumber dari negara, sanksinya bersifat tegas dan dapat dipaksakan.',
+    ],
+    tips: 'Cara mudah mengingat: Agama = Tuhan, Kesusilaan = Hati, Kesopanan = Adat, Hukum = Negara!',
+    closingStatement: 'Pertemuan berikutnya: saatnya MENERAPKAN norma dalam kehidupan nyata!',
+  },
+  'perilaku-patuhan': {
+    title: 'Rangkuman',
+    intro: 'Berikut poin-poin penting dari seluruh Bab 3 yang telah dipelajari.',
+    poin: [
+      'Norma mengatur tingkah laku manusia agar kehidupan bermasyarakat tertib dan adil.',
+      'Ada 4 macam norma dengan sumber dan sanksi yang berbeda.',
+      'Perilaku patuh norma diterapkan di 4 lingkungan: keluarga, sekolah, masyarakat, dan negara.',
+      'Kepatuhan karena kesadaran lebih bermakna daripada kepatuhan karena takut sanksi.',
+      'Budaya patuh norma dibangun melalui pemahaman, pembiasaan, dan komitmen pribadi.',
+    ],
+    tips: 'Kuncinya: PATUH karena TAHU, bukan karena TAKUT. Pahami, biasakan, komitmenkan!',
+    closingStatement: 'Selamat! Kamu telah menyelesaikan seluruh Bab 3 tentang Norma. Teruslah menjadi pribadi yang patuh norma!',
+  },
+  blank: {
+    title: 'Rangkuman',
+    intro: 'Berikut poin-poin penting dari materi yang telah dipelajari.',
+    poin: [],
+    tips: '',
+  },
 };
 
 // ── Penutup Presets ──────────────────────────────────────────────

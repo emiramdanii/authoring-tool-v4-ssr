@@ -43,6 +43,9 @@ import type {
   RodaGameBlock,
   FtabBlock,
   NormaKartuBlock,
+  TujuanDisplayBlock,
+  MotivasiBlock,
+  RangkumanBlock,
 } from '../schema/types';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -107,6 +110,12 @@ export function convertToSchema(page: CanvaPage): ScreenSchema | null {
     case 'dokumen':
       blocks.push(...convertDokumen(td));
       break;
+    case 'tujuan':
+      blocks.push(convertTujuan(td));
+      break;
+    case 'motivasi':
+      blocks.push(convertMotivasi(td));
+      break;
     case 'skenario':
       blocks.push(convertSkenario(td));
       break;
@@ -136,6 +145,9 @@ export function convertToSchema(page: CanvaPage): ScreenSchema | null {
       break;
     case 'refleksi':
       blocks.push(convertRefleksi(td));
+      break;
+    case 'rangkuman':
+      blocks.push(convertRangkuman(td));
       break;
     case 'penutup':
       blocks.push(convertPenutup(td));
@@ -531,6 +543,65 @@ function convertPenutup(td: Record<string, unknown>): PenutupBlock {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// BSNP TEMPLATE CONVERTERS — tujuan, motivasi, rangkuman
+// ═══════════════════════════════════════════════════════════════════
+
+function convertTujuan(td: Record<string, unknown>): TujuanDisplayBlock {
+  const objectives = (td.objectives || td.items) as Array<Record<string, unknown>> | undefined;
+  return {
+    type: 'tujuan-display',
+    title: String(td.title || 'Tujuan Pembelajaran'),
+    subtitle: td.subtitle ? String(td.subtitle) : undefined,
+    bsnpRequired: td.bsnpRequired !== undefined ? Boolean(td.bsnpRequired) : true,
+    objectives: (objectives || []).map((obj, i) => ({
+      icon: String(obj.icon || '🎯'),
+      text: String(obj.text || obj.desc || ''),
+      color: String(obj.color || ['y', 'c', 'g', 'p'][i % 4]),
+    })),
+    profil: td.profil ? String(td.profil) : undefined,
+    profilColor: td.profilColor ? String(td.profilColor) : 'g',
+  };
+}
+
+function convertMotivasi(td: Record<string, unknown>): MotivasiBlock {
+  const connections = (td.connections || td.items) as Array<Record<string, unknown>> | undefined;
+  return {
+    type: 'motivasi',
+    title: String(td.title || 'Motivasi / Apersepsi'),
+    bsnpRequired: td.bsnpRequired !== undefined ? Boolean(td.bsnpRequired) : true,
+    hookQuestion: String(td.hookQuestion || td.question || ''),
+    visual: td.visual ? {
+      emoji: String((td.visual as Record<string, unknown>).emoji || '💡'),
+      bgGradient: (td.visual as Record<string, unknown>).bgGradient as [string, string] | undefined,
+    } : { emoji: '💡' },
+    connections: (connections || []).map((conn) => ({
+      icon: String(conn.icon || '🔗'),
+      label: String(conn.label || ''),
+      description: String(conn.description || conn.desc || ''),
+      color: String(conn.color || 'c'),
+    })),
+    transition: td.transition ? String(td.transition) : undefined,
+  };
+}
+
+function convertRangkuman(td: Record<string, unknown>): RangkumanBlock {
+  const concepts = (td.concepts || td.items) as Array<Record<string, unknown>> | undefined;
+  return {
+    type: 'rangkuman',
+    title: String(td.title || 'Rangkuman'),
+    bsnpRequired: td.bsnpRequired !== undefined ? Boolean(td.bsnpRequired) : true,
+    concepts: (concepts || []).map((concept, i) => ({
+      icon: String(concept.icon || '📌'),
+      title: String(concept.title || concept.judul || ''),
+      body: String(concept.body || concept.isi || concept.desc || ''),
+      color: String(concept.color || ['y', 'c', 'g', 'p'][i % 4]),
+    })),
+    closingStatement: td.closingStatement ? String(td.closingStatement) : undefined,
+    accentColor: td.accentColor ? String(td.accentColor) : 'g',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // GENERIC FALLBACK — For template types without a specific converter
 // ═══════════════════════════════════════════════════════════════════
 // This ensures convertToSchema() NEVER returns null for valid template
@@ -561,6 +632,8 @@ function getSectionLabel(tt: string): string {
     cover: 'Cover',
     petunjuk: 'Petunjuk',
     dokumen: 'Dokumen',
+    tujuan: 'Tujuan',
+    motivasi: 'Motivasi',
     skenario: 'Skenario',
     materi: 'Materi',
     diskusi: 'Diskusi',
@@ -568,6 +641,7 @@ function getSectionLabel(tt: string): string {
     game: 'Game',
     hasil: 'Hasil',
     refleksi: 'Refleksi',
+    rangkuman: 'Rangkuman',
     penutup: 'Penutup',
     hero: 'Hero',
   };
@@ -579,6 +653,8 @@ function getSectionColor(tt: string): string {
     cover: 'y',
     petunjuk: 'c',
     dokumen: 'c',
+    tujuan: 'c',
+    motivasi: 'y',
     skenario: 'p',
     materi: 'p',
     diskusi: 'c',
@@ -586,6 +662,7 @@ function getSectionColor(tt: string): string {
     game: 'c',
     hasil: 'g',
     refleksi: 'p',
+    rangkuman: 'g',
     penutup: 'o',
     hero: 'o',
   };

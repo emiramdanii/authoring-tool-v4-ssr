@@ -196,6 +196,25 @@ export interface RefleksiData {
   penugasan?: { judul: string; isi: string; contoh?: string };
 }
 
+// MotivasiData — for apersepsi/motivasi section
+export interface MotivasiData {
+  title: string;
+  intro: string;
+  pertanyaanPemicu: string;       // Hook question to spark curiosity
+  koneksi: string;                 // Connection to prior knowledge
+  aktivitas: string;               // Short activity suggestion
+  visual?: string;                 // Optional visual/emoji prompt
+}
+
+// RangkumanData — for summary/conclusion section
+export interface RangkumanData {
+  title: string;
+  intro: string;
+  poin: string[];                  // Key points
+  tips: string;                    // Study tips or reminders
+  closingStatement?: string;       // Optional closing
+}
+
 export interface PenutupPreviewItem {
   icon: string;
   judul: string;
@@ -292,6 +311,8 @@ export interface AuthoringState {
   petunjuk: PetunjukData;
   diskusi: DiskusiData;
   refleksi: RefleksiData;
+  motivasi: MotivasiData;
+  rangkuman: RangkumanData;
   penutup: PenutupData;
   suara: SuaraConfig;
 
@@ -367,6 +388,12 @@ export interface AuthoringState {
   addSkenarioConsequence: (chapterIndex: number, choiceIndex: number) => void;
   removeSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number) => void;
   updateSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => void;
+
+  // Motivasi actions
+  updateMotivasi: (data: Partial<MotivasiData>) => void;
+
+  // Rangkuman actions
+  updateRangkuman: (data: Partial<RangkumanData>) => void;
 
   // Sound actions
   toggleSuaraAll: () => void;

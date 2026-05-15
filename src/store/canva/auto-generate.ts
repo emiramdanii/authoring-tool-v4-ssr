@@ -173,8 +173,20 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       newPages.push(createPageFromPreset('cover', newPages.length));
     }
 
+    if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
+      newPages.push(createPageFromPreset('petunjuk', newPages.length));
+    }
+
     if (blueprint.includeDokumen && (authStore.cp.capaianFase || authStore.tp.length > 0)) {
       newPages.push(createPageFromPreset('dokumen', newPages.length));
+    }
+
+    if (blueprint.includeTujuan && authStore.tp.length > 0) {
+      newPages.push(createPageFromPreset('tujuan', newPages.length));
+    }
+
+    if (blueprint.includeMotivasi) {
+      newPages.push(createPageFromPreset('motivasi', newPages.length));
     }
 
     if (blueprint.includeSkenario && authStore.skenario.length > 0) {
@@ -236,6 +248,10 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
 
     if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
       newPages.push(createPageFromPreset('refleksi', newPages.length));
+    }
+
+    if (blueprint.includeRangkuman && authStore.materi.blok.length > 0) {
+      newPages.push(createPageFromPreset('rangkuman', newPages.length));
     }
 
     if (blueprint.includePenutup && authStore.penutup.preview.length > 0) {

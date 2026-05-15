@@ -8,6 +8,8 @@ import type {
   PetunjukData,
   DiskusiData,
   RefleksiData,
+  MotivasiData,
+  RangkumanData,
   PenutupData,
   SuaraConfig,
 } from './types';
@@ -33,6 +35,21 @@ export const DEFAULT_PETUNJUK: PetunjukData = { title: '', intro: '', langkah: [
 export const DEFAULT_DISKUSI: DiskusiData = { title: '', intro: '', pertanyaan: [] };
 
 export const DEFAULT_REFLEKSI: RefleksiData = { title: '', intro: '', pertanyaan: [] };
+
+export const DEFAULT_MOTIVASI: MotivasiData = {
+  title: 'Motivasi',
+  intro: 'Mari kita mulai dengan pertanyaan pemantik!',
+  pertanyaanPemicu: '',
+  koneksi: '',
+  aktivitas: '',
+};
+
+export const DEFAULT_RANGKUMAN: RangkumanData = {
+  title: 'Rangkuman',
+  intro: 'Berikut poin-poin penting dari materi yang telah dipelajari.',
+  poin: [],
+  tips: '',
+};
 
 export const DEFAULT_PENUTUP: PenutupData = { title: '', subjudul: '', preview: [] };
 

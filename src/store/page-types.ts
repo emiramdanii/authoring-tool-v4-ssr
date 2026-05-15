@@ -18,6 +18,8 @@ export interface PageTypeOption {
 export interface PageTypeBlueprint {
   includeCover: boolean;
   includeDokumen: boolean;
+  includeTujuan: boolean;
+  includeMotivasi: boolean;
   includeSkenario: boolean;
   includeMateri: boolean;
   includeKuis: boolean;
@@ -26,6 +28,7 @@ export interface PageTypeBlueprint {
   includePetunjuk: boolean;
   includeDiskusi: boolean;
   includeRefleksi: boolean;
+  includeRangkuman: boolean;
   includePenutup: boolean;
   soalPerHalaman: number;
   timer: boolean;
@@ -84,6 +87,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     generate: (config) => ({
       includeCover: true,
       includeDokumen: true,
+      includeTujuan: true,
+      includeMotivasi: true,
       includeSkenario: true,
       includeMateri: true,
       includeKuis: true,
@@ -92,6 +97,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePetunjuk: true,
       includeDiskusi: true,
       includeRefleksi: true,
+      includeRangkuman: true,
       includePenutup: true,
       soalPerHalaman: numOr(config, 'soalPerHalaman', 5),
       timer: boolOr(config, 'timer', false),
@@ -113,6 +119,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     generate: (config) => ({
       includeCover: true,
       includeDokumen: false,
+      includeTujuan: true,
+      includeMotivasi: false,
       includeSkenario: false,
       includeMateri: true,
       includeKuis: false,
@@ -121,6 +129,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePetunjuk: false,
       includeDiskusi: false,
       includeRefleksi: false,
+      includeRangkuman: false,
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
@@ -144,6 +153,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     generate: (config) => ({
       includeCover: true,
       includeDokumen: false,
+      includeTujuan: false,
+      includeMotivasi: false,
       includeSkenario: false,
       includeMateri: false,
       includeKuis: true,
@@ -152,6 +163,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePetunjuk: false,
       includeDiskusi: false,
       includeRefleksi: false,
+      includeRangkuman: false,
       includePenutup: false,
       soalPerHalaman: numOr(config, 'soalPerHalaman', 5),
       timer: true,
@@ -173,6 +185,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     generate: (config) => ({
       includeCover: true,
       includeDokumen: false,
+      includeTujuan: false,
+      includeMotivasi: false,
       includeSkenario: false,
       includeMateri: false,
       includeKuis: false,
@@ -181,6 +195,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePetunjuk: false,
       includeDiskusi: false,
       includeRefleksi: false,
+      includeRangkuman: false,
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
@@ -202,6 +217,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     generate: (config) => ({
       includeCover: true,
       includeDokumen: false,
+      includeTujuan: false,
+      includeMotivasi: false,
       includeSkenario: true,
       includeMateri: true,
       includeKuis: false,
@@ -210,6 +227,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePetunjuk: false,
       includeDiskusi: false,
       includeRefleksi: false,
+      includeRangkuman: false,
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,
@@ -228,6 +246,8 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     generate: () => ({
       includeCover: false,
       includeDokumen: false,
+      includeTujuan: false,
+      includeMotivasi: false,
       includeSkenario: false,
       includeMateri: false,
       includeKuis: false,
@@ -236,6 +256,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       includePetunjuk: false,
       includeDiskusi: false,
       includeRefleksi: false,
+      includeRangkuman: false,
       includePenutup: false,
       soalPerHalaman: 5,
       timer: false,

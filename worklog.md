@@ -459,3 +459,37 @@ Stage Summary:
 - 3 new generators (materi, diskusi, refleksi) + preview renderers
 - 5 re-generate buttons added across content panels
 - Build passes with zero errors
+
+---
+Task ID: Phase-20-wiring
+Agent: Main Agent
+Task: Wire 3 BSNP Template Types (tujuan, motivasi, rangkuman) into page template system
+
+Work Log:
+- **types.ts**: Added `'tujuan' | 'motivasi' | 'rangkuman'` to the `PageTemplateType` union type
+- **PagePresetRegistry.ts**: Added 3 new entries to `PRESET_DEFINITIONS`:
+  - tujuan: label='Tujuan Pembelajaran', category='utama', icon='🎯', color='blue', tags=['bsnp'], sortOrder=15
+  - motivasi: label='Motivasi / Apersepsi', category='utama', icon='💡', color='amber', tags=['bsnp'], sortOrder=25
+  - rangkuman: label='Rangkuman', category='konten', icon='📝', color='emerald', tags=['bsnp'], sortOrder=65
+- **template-data.ts**: Added 3 entries to labelMap in getTemplateLabel():
+  - tujuan: 'Tujuan Pembelajaran', motivasi: 'Motivasi', rangkuman: 'Rangkuman'
+- **TemplateAdapter.ts**: Added 3 cases in convertToSchema() switch + 3 converter functions:
+  - convertTujuan() → creates `tujuan-display` block with objectives from TP items, bsnpRequired=true, profil from CP
+  - convertMotivasi() → creates `motivasi` block with hookQuestion, visual, connections, transition
+  - convertRangkuman() → creates `rangkuman` block with concepts from materi data, closingStatement, accentColor
+  - Updated getSectionLabel(): tujuan='Tujuan', motivasi='Motivasi', rangkuman='Rangkuman'
+  - Updated getSectionColor(): tujuan='c', motivasi='y', rangkuman='g'
+  - Added imports for TujuanDisplayBlock, MotivasiBlock, RangkumanBlock
+- **page-types.ts**: Added `includeTujuan`, `includeMotivasi`, `includeRangkuman` to PageTypeBlueprint interface. Updated all 6 page type generate() functions with the 3 new flags. Full Interaktif has all 3 enabled; Materi Fokus has tujuan only.
+- **auto-generate.ts**: Added page generation for the 3 new types:
+  - tujuan: after cover/petunjuk/dokumen, before skenario — condition: `authStore.tp.length > 0`
+  - motivasi: after tujuan, before skenario — always created (appersepsi page)
+  - rangkuman: after refleksi, before penutup — condition: `authStore.materi.blok.length > 0`
+- Lint verified: Zero new lint errors in any of the 6 modified files
+
+Stage Summary:
+- 3 BSNP template types fully wired into the page template system
+- Users can now create tujuan, motivasi, and rangkuman pages from presets
+- Full Interaktif auto-generate includes all 3 new page types in proper sequence
+- TemplateAdapter converters handle legacy migration for the 3 new types
+- All existing page types remain unchanged; new flags default to false in non-full presets
