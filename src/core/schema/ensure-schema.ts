@@ -41,6 +41,7 @@ import { logger } from '@/core/utils/logger';
 import { assertValidSchema, isSchemaVersionCompatible, SCHEMA_VERSION } from './validation';
 import { deepFreeze } from './immutable';
 import { migrateSchema } from './schema-migration';
+import { assertDocumentPurity } from './session-state';
 
 /**
  * Ensure a page has a native ScreenSchema.
@@ -59,10 +60,14 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     const currentVersion = page.schema.version || 0;
     if (currentVersion < SCHEMA_VERSION) {
       const migrated = migrateSchema(page.schema);
+      // Dev-mode purity guard: ensure migration didn't introduce runtime state
+      assertDocumentPurity(migrated, `ensurePageSchema:migration:${page.id}`);
       // Note: We return the migrated schema but don't mutate page.schema here.
       // The caller (persistence-slice) handles persisting the migration result.
       return deepFreeze(migrated);
     }
+    // Dev-mode purity guard: ensure no runtime state has leaked into schema
+    assertDocumentPurity(page.schema, `ensurePageSchema:read:${page.id}`);
     // Deep freeze in dev mode to catch accidental mutations
     return deepFreeze(page.schema);
   }
@@ -72,7 +77,9 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   if (storedSchema) {
     const migrated = assignStableIds(storedSchema);
     // Validate migrated schema (dev-mode guard)
-    assertValidSchema(migrated, `ensurePageSchema:${page.id}`);
+    assertValidSchema(migrated, `ensurePageSchema:promote:${page.id}`);
+    // Dev-mode purity guard: ensure promotion didn't introduce runtime state
+    assertDocumentPurity(migrated, `ensurePageSchema:promote:${page.id}`);
     return deepFreeze(migrated);
   }
 
@@ -87,7 +94,9 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     if (converted) {
       const migrated = assignStableIds(converted);
       // Validate converted schema (dev-mode guard)
-      assertValidSchema(migrated, `ensurePageSchema:${page.id}`);
+      assertValidSchema(migrated, `ensurePageSchema:legacy:${page.id}`);
+      // Dev-mode purity guard: ensure TemplateAdapter didn't introduce runtime state
+      assertDocumentPurity(migrated, `ensurePageSchema:legacy:${page.id}`);
       return deepFreeze(migrated);
     }
   }
