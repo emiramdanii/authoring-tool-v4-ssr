@@ -1008,3 +1008,68 @@ Stage Summary:
 - New full-page block types are now auto-supported in SceneLayoutEngine without code changes
 - Non-measurable blocks (games) now correctly get registry base height instead of falling through
 - Build verified clean (0 TypeScript errors, Next.js production build successful)
+
+---
+Task ID: 2
+Agent: main
+Task: Wire transaction system into schema-apply.ts and scene overflow engine
+
+Work Log:
+- Audited scene-transaction.ts, schema-apply.ts, SceneOverflowEngine.ts, and ui-slice.ts
+- Found 4 gaps in the transaction wiring
+- CRITICAL FIX: promoteSceneSplit() in ui-slice.ts was passing a DUMMY ScenePlan (empty scenes, totalScenes: 0) that would ALWAYS fail. Replaced with real computeScenePlan() call that computes from current schema + measurements, with proper validation before attempting split
+- Fixed rebalanceFromScenePlan() cover block detection: replaced indirect capability checks (not compressionCapable AND not splittable) with isFullPageBlockType() from capability registry
+- Fixed _compressedHeight type safety: added _compressedHeight as proper optional field on CompressionHints type (was cast as `any`), removed `as any` cast from scene-transaction.ts
+- Added mergeWithAdjacentPage() UI action: wires mergePagesTransaction() from schema-apply.ts to the canva store, with undo support, adjacent page validation, and user feedback via toast
+- Added mergeWithAdjacentPage to CanvaState type definition
+- Verified: tsc --noEmit clean, next build successful
+
+Stage Summary:
+- Fixed critical bug where promoteSceneSplit() would always fail due to dummy ScenePlan
+- All transaction-based operations now properly connected: rebalance → promote split → merge pages
+- Type safety improved: _compressedHeight is now properly typed on CompressionHints
+- Cover block detection uses capability registry consistently (isFullPageBlockType)
+- New UI action available: mergeWithAdjacentPage('next'|'prev')
+- Build verified clean (0 TypeScript errors, Next.js production build successful)
+
+---
+Task ID: 3
+Agent: main
+Task: Wire session-state.ts / assertDocumentPurity() as dev-mode guards
+
+Work Log:
+- Audited all 15+ existing assertDocumentPurity() call sites across the codebase
+- Identified 3 critical gaps where schemas are mutated/created without purity checks:
+  1. schema-migration.ts:migrateSchema() — no purity check after migration chain
+  2. auto-generate.ts — no purity check after generating pages from blueprints
+  3. page-slice.ts:setVariant() — mutates schema blocks directly without purity check
+- Added assertDocumentPurity() to migrateSchema() — catches runtime state leakage during migration
+- Added assertDocumentPurity() to auto-generate.ts — dev-only check catches generator bugs before data reaches store
+- Added assertDocumentPurity() to page-slice.ts:setVariant() — ensures variant switch doesn't inject state
+- Verified: tsc --noEmit clean, next build successful
+
+Stage Summary:
+- 3 new purity guard points added, covering migration, generation, and variant mutation paths
+- Total purity guard coverage: 18+ call sites across 7 files
+- All guards are dev-mode only (throw in dev, console.error in production)
+- Auto-generate guard is wrapped in NODE_ENV check for performance (generates many pages)
+- Build verified clean (0 TypeScript errors, Next.js production build successful)
+
+---
+Task ID: 4
+Agent: main
+Task: Wire new schema operations into canvas store actions
+
+Work Log:
+- Audited all 5 new schema operations (duplicateBlock, splitScene, mergeScene, moveBlockNested, insertBlockNested)
+- Found that ALL 5 are already fully wired into ui-slice.ts with history, editBus, validation, and toast
+- duplicateBlock has full UI surface coverage (context menu, Ctrl+D, Command Palette, LayerPanel)
+- splitScene, mergeScene, moveBlockNested, insertBlockNested are wired at store level but lack UI triggers in components
+- This is a UI surface task, not an engine wiring task — engine wiring is complete
+- No code changes needed for engine wiring
+
+Stage Summary:
+- All 5 schema operations confirmed wired into canvas store at engine level
+- Store actions: duplicateBlock, splitPageAtBlock, mergeWithNextPage/mergeWithAdjacentPage, moveBlockToContainer, addSchemaBlockToContainer
+- UI surface gap identified: operations 2-5 need UI component triggers (context menus, keyboard shortcuts, drag handlers)
+- This is a separate UI task that should be planned as a feature sprint

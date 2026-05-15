@@ -46,6 +46,13 @@ export interface CompressionHints {
   splittable?: boolean;
   /** If split, minimum content to show in first fragment (in px) */
   minFragmentHeight?: number;
+  /**
+   * INTERNAL: Compressed height computed by the rebalance transaction.
+   * Set by SceneTransaction.rebalanceSchema(), consumed by the layout engine.
+   * This is a DERIVED hint — not set by generators, only by the transaction system.
+   * The underscore prefix signals that this is an internal field.
+   */
+  _compressedHeight?: number;
 }
 
 // ── Semantic Hints ───────────────────────────────────────────────

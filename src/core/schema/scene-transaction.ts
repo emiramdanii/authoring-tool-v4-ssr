@@ -415,7 +415,7 @@ export class SceneTransaction {
             compression: {
               ...block.compression!,
               _compressedHeight: fb.height - compression,
-            } as any, // Internal hint — not part of public schema
+            },
           };
           remainingOverflow -= compression;
         }

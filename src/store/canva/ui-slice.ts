@@ -21,7 +21,9 @@ import { createTransaction } from '@/core/schema/scene-transaction';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { getCompositeContainerDescriptor, isCompositeBlockType } from '@/core/schema/capability-registry';
-import { rebalanceFromScenePlan, promoteSceneSplitToPage } from '@/core/schema/schema-apply';
+import { rebalanceFromScenePlan, promoteSceneSplitToPage, mergePagesTransaction } from '@/core/schema/schema-apply';
+import { computeScenePlan } from '@/core/layout/SceneOverflowEngine';
+import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/scene/SceneLayoutEngine';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
 // ═══════════════════════════════════════════════════════════════
@@ -122,7 +124,7 @@ export type UISlice = Pick<
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | 'moveBlockToContainer' | 'addSchemaBlockToContainer'
-  | 'rebalanceCurrentPage' | 'promoteSceneSplit'
+  | 'rebalanceCurrentPage' | 'promoteSceneSplit' | 'mergeWithAdjacentPage'
   | '_lastNudgeTime'
   | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
   | 'canvasPreview' | 'toggleCanvasPreview'
@@ -1810,17 +1812,35 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       return;
     }
 
+    // Compute a real ScenePlan from current schema + measurements.
+    // Previously this passed a dummy ScenePlan which would always fail.
+    const sceneRes = getSceneResolution('16:9');
+    const hasCoverBlock = page.schema.blocks.length === 1 &&
+      page.schema.blocks.some(b => b.type === 'cover' || b.type === 'hero');
+    const safeArea = hasCoverBlock
+      ? DEFAULT_SAFE_AREA
+      : computeSafeArea({
+          showTopNav: false,
+          showBottomNav: false,
+          isCompact: true,
+          pagePadding: 16,
+        });
+
+    const scenePlan = computeScenePlan(page.schema, sceneRes, safeArea, { isCompact: true });
+
+    if (scenePlan.isSingleScene) {
+      toast.info('Konten sudah pas dalam satu scene — tidak perlu split');
+      return;
+    }
+
+    if (sceneIndex < 1 || sceneIndex >= scenePlan.totalScenes) {
+      toast.error(`Scene index ${sceneIndex} tidak valid (total: ${scenePlan.totalScenes} scenes)`);
+      return;
+    }
+
     get()._pushHistory();
 
-    const result = promoteSceneSplitToPage(page.id, {
-      // Re-compute the scene plan for accuracy
-      sourceSchemaId: page.schema.id,
-      scenes: [],
-      totalScenes: 0,
-      isSingleScene: false,
-      splittableBlockIds: [],
-      computedAt: Date.now(),
-    }, sceneIndex);
+    const result = promoteSceneSplitToPage(page.id, scenePlan, sceneIndex);
 
     if (!result.success) {
       toast.error('Split gagal: ' + (result.error || 'Unknown error'));
@@ -1828,6 +1848,59 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     }
 
     toast.success('Scene dipisah menjadi halaman baru', {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  /**
+   * Merge current page with an adjacent page using transaction.
+   *
+   * This is the inverse of promoteSceneSplit(). It combines two
+   * adjacent pages into one, using mergePagesTransaction() for
+   * atomicity — if validation fails, no changes are applied.
+   *
+   * @param direction - 'next' to merge with the page after, 'prev' to merge with the page before
+   */
+  mergeWithAdjacentPage: (direction: 'next' | 'prev' = 'next') => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page?.schema) {
+      toast.info('Halaman ini tidak memiliki schema');
+      return;
+    }
+
+    const adjacentIndex = direction === 'next'
+      ? currentPageIndex + 1
+      : currentPageIndex - 1;
+
+    if (adjacentIndex < 0 || adjacentIndex >= pages.length) {
+      toast.info(direction === 'next' ? 'Tidak ada halaman setelah ini' : 'Tidak ada halaman sebelum ini');
+      return;
+    }
+
+    const adjacentPage = pages[adjacentIndex];
+    if (!adjacentPage?.schema) {
+      toast.info('Halaman sebelah tidak memiliki schema');
+      return;
+    }
+
+    get()._pushHistory();
+
+    const targetId = direction === 'next' ? page.id : adjacentPage.id;
+    const sourceId = direction === 'next' ? adjacentPage.id : page.id;
+
+    const result = mergePagesTransaction(targetId, sourceId);
+
+    if (!result.success) {
+      toast.error('Merge gagal: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    toast.success('Halaman berhasil digabung', {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },

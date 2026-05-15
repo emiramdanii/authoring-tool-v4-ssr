@@ -13,6 +13,7 @@ import {
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
+import { assertDocumentPurity } from '@/core/schema/session-state';
 import { patchHistory } from '@/core/editor/patch-history';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
@@ -162,6 +163,8 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
           variant,
         })),
       };
+      // Dev-mode purity guard: variant change must not introduce runtime state
+      assertDocumentPurity(updatedSchema, 'setVariant');
     }
 
     newPages[currentPageIndex] = { ...page, templateVariant: variant, schema: updatedSchema };

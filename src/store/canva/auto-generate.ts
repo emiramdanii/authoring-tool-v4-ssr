@@ -16,6 +16,7 @@ import {
 import { ensureModuleIds } from '@/lib/module-resolver';
 // FASE 3: Schema-native page creation — no more buildTemplateData()
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
+import { assertDocumentPurity } from '@/core/schema/session-state';
 // FASE 5: Schema-first generation — genXxxSchema() writes content directly to page.schema
 import {
   genCoverSchema,
@@ -380,6 +381,16 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
 
     if (newPages.length === 0) {
       newPages.push(createPageFromPreset('custom', 0));
+    }
+
+    // Dev-mode purity guard: ensure generated schemas have no runtime state leakage.
+    // This catches bugs in schema generators early — before data reaches the store.
+    if (process.env.NODE_ENV !== 'production') {
+      for (const p of newPages) {
+        if (p.schema) {
+          assertDocumentPurity(p.schema, `auto-generate page=${p.id}`);
+        }
+      }
     }
 
     get()._pushHistory();

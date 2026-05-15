@@ -32,6 +32,7 @@
 import type { ScreenSchema, SchemaBlock } from './types';
 import { SCHEMA_VERSION } from './validation';
 import { generateBlockId } from './ensure-schema';
+import { assertDocumentPurity } from './session-state';
 import { logger } from '@/core/utils/logger';
 
 // ── Migration Type ──────────────────────────────────────────────
@@ -150,6 +151,9 @@ export function migrateSchema(schema: ScreenSchema): ScreenSchema {
     );
     current = { ...current, version: SCHEMA_VERSION };
   }
+
+  // Dev-mode purity guard: ensure migration didn't introduce runtime state
+  assertDocumentPurity(current, 'migrateSchema');
 
   return current;
 }

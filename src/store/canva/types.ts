@@ -225,6 +225,8 @@ export interface CanvaState {
   rebalanceCurrentPage: () => void;
   /** Promote a scene split into an actual page split via transaction */
   promoteSceneSplit: (sceneIndex?: number) => void;
+  /** Merge current page with adjacent page via transaction */
+  mergeWithAdjacentPage: (direction?: 'next' | 'prev') => void;
 
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;

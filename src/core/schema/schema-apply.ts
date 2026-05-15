@@ -27,7 +27,7 @@ import { assertValidBlocks, assertValidSchema } from './validation';
 import { assertDocumentPurity } from './session-state';
 import { createTransaction, type TransactionResult, type RebalanceOptions } from './scene-transaction';
 import { splitScene, mergeScene, produce } from './immutable';
-import { isBlockTypeCompressionCapable, isBlockTypeSplittable } from './capability-registry';
+import { isBlockTypeCompressionCapable, isBlockTypeSplittable, isFullPageBlockType } from './capability-registry';
 import { computeScenePlan, type ScenePlan } from '../layout/SceneOverflowEngine';
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
@@ -741,8 +741,12 @@ export function rebalanceFromScenePlan(
   const isCompact = options?.isCompact ?? true;
   const ratioId = options?.ratioId ?? '16:9';
   const sceneRes = getSceneResolution(ratioId);
-  const hasCoverBlock = page.schema.blocks.length === 1 && isBlockTypeCompressionCapable(page.schema.blocks[0].type) === false && !isBlockTypeSplittable(page.schema.blocks[0].type);
-  const safeArea = hasCoverBlock
+  // Check if the page is a full-page block (cover, hero) that fills the entire scene.
+  // Uses capability registry as single source of truth — previously used indirect
+  // capability checks (not compressionCapable AND not splittable) which was fragile.
+  const hasFullPageBlock = page.schema.blocks.length === 1 &&
+    isFullPageBlockType(page.schema.blocks[0].type);
+  const safeArea = hasFullPageBlock
     ? DEFAULT_SAFE_AREA
     : computeSafeArea({
         showTopNav: false,
