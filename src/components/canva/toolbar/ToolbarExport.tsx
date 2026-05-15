@@ -12,7 +12,6 @@ import {
   ChevronDown,
   Loader2,
   MonitorPlay,
-  Store,
   Printer,
   Share2,
   FileJson,
@@ -33,7 +32,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
-import TemplateMarketplace from '@/components/canva/TemplateMarketplace';
+// TemplateMarketplace removed in R-1 cleanup
 
 // ═══════════════════════════════════════════════════════════════════
 // TOOLBAR EXPORT — Bagikan & Export dropdown
@@ -57,7 +56,7 @@ export function ToolbarExport() {
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const soundOn = useAuthoringStore((s) => Object.values(s.suara).some(Boolean));
 
-  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
+  // marketplaceOpen removed — TemplateMarketplace deleted
 
   return (
     <>
@@ -168,13 +167,6 @@ export function ToolbarExport() {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="glass-panel-strong border border-app-border shadow-xl rounded-xl p-1 min-w-[180px]">
               <DropdownMenuItem
-                onClick={() => setMarketplaceOpen(true)}
-                className="px-2.5 py-2 gap-2 cursor-pointer"
-              >
-                <Store size={14} className="text-amber-400" />
-                <span className="text-[11px]">Template Marketplace</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
                 onClick={clearCanvas}
                 className="px-2.5 py-2 gap-2 cursor-pointer"
               >
@@ -205,10 +197,7 @@ export function ToolbarExport() {
       </DropdownMenu>
 
       {/* Template Marketplace Overlay */}
-      <TemplateMarketplace
-        open={marketplaceOpen}
-        onClose={() => setMarketplaceOpen(false)}
-      />
+      {/* TemplateMarketplace removed in R-1 */}
     </>
   );
 }

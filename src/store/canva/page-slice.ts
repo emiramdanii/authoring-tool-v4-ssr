@@ -14,7 +14,7 @@ import { createPage, createElId } from './constants';
 import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
 import { patchHistory } from '@/core/editor/patch-history';
-import { deriveSchema, deriveSchemaForPage, createDeriveContext } from '@/core/schema/derive-schema';
+import { deriveSchema, createDeriveContext } from '@/core/schema/derive-schema';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
 export type PageSlice = Pick<

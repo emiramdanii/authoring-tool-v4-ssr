@@ -23,7 +23,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
-import TemplateMarketplace from '@/components/canva/TemplateMarketplace';
+// TemplateMarketplace removed in R-1 cleanup
 
 // ═══════════════════════════════════════════════════════════════════
 // TOOLBAR ACTIONS — Play, Tambah, Template, Undo/Redo, Tools
@@ -57,7 +57,7 @@ export function ToolbarActions() {
   const canvasPreview = useCanvaStore((s) => s.canvasPreview);
   const toggleCanvasPreview = useCanvaStore((s) => s.toggleCanvasPreview);
 
-  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
+  // marketplaceOpen removed — TemplateMarketplace deleted
 
   // Open Add Block panel
   const openAddBlock = () => {
@@ -147,24 +147,7 @@ export function ToolbarActions() {
         </TooltipContent>
       </Tooltip>
 
-      {/* Template Marketplace — icon only with tooltip */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMarketplaceOpen(true)}
-            className="focus-ring text-amber-400/70 hover:text-amber-400 hover:bg-amber-500/10 h-7 w-7"
-          >
-            <Store size={13} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="text-[10px]">
-          Template Marketplace — Pilih template siap pakai
-        </TooltipContent>
-      </Tooltip>
-
-      <div className="section-divider h-4 w-px mx-0.5" />
+      {/* Template Marketplace removed in R-1 */}
 
       {/* Undo / Redo — icon only */}
       <Tooltip>
@@ -236,11 +219,7 @@ export function ToolbarActions() {
         </TooltipContent>
       </Tooltip>
 
-      {/* Template Marketplace Overlay */}
-      <TemplateMarketplace
-        open={marketplaceOpen}
-        onClose={() => setMarketplaceOpen(false)}
-      />
+      {/* TemplateMarketplace removed in R-1 */}
     </div>
   );
 }

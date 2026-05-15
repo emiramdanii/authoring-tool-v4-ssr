@@ -17,16 +17,10 @@ import { resolveTokens } from '../themes/tokens';
 // ── Preset Registry ────────────────────────────────────────────
 // Lazy-load presets to avoid bundling all lesson data
 
-const PRESET_MAP: Record<string, () => Promise<LessonSchema>> = {
-  'hakikat-norma': () => import('@/presets/ppkn/hakikat-norma-schema').then(m => m.HAKIKAT_NORMA_LESSON),
-  'macam-norma': () => import('@/presets/ppkn/macam-norma-schema').then(m => m.MACAM_NORMA_LESSON),
-  'perilaku-patuh': () => import('@/presets/ppkn/perilaku-patuh-schema').then(m => m.PERILAKU_PATUH_LESSON),
-  'nilai-pancasila': () => import('@/presets/ppkn/nilai-pancasila-schema').then(m => m.NILAI_PANCASILA_LESSON),
-  'bhinneka-tunggal-ika': () => import('@/presets/ppkn/bhinneka-tunggal-ika-schema').then(m => m.BHINNEKA_TUNGAL_IKA_LESSON),
-  'ham-hak-kewajiban': () => import('@/presets/ppkn/ham-hak-kewajiban-schema').then(m => m.HAM_HAK_KEWAJIBAN_LESSON),
-  'demokrasi-pancasila': () => import('@/presets/ppkn/demokrasi-pancasila-schema').then(m => m.DEMOKRASI_PANCASILA_LESSON),
-  'globalisasi': () => import('@/presets/ppkn/globalisasi-schema').then(m => m.GLOBALISASI_LESSON),
-};
+// ── Preset map (cleared for R-1 cleanup — hard-coded PPKn content removed)
+// Presets will be replaced with a lighter, dynamic system in the redesign.
+// To restore: add entries like `'id': () => import('@/presets/ppkn/...').then(m => m.EXPORT)
+const PRESET_MAP: Record<string, () => Promise<LessonSchema>> = {};
 
 export function getAvailablePresets(): string[] {
   return Object.keys(PRESET_MAP);
