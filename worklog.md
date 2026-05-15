@@ -1097,3 +1097,33 @@ Stage Summary:
   - rebalanceCurrentPage: OverflowIndicator 'compact' + Context Menu + Command Palette + Ctrl+Shift+R
   - promoteSceneSplit: OverflowIndicator 'step-mode' + Context Menu + Command Palette + SceneNavigator button
 - All 4 engine tasks (Task #1-#4) are now COMPLETE
+
+---
+Task ID: Schema-Verification
+Agent: Main Agent
+Task: Verify all 4 schema-ops tasks and determine next development priorities
+
+Work Log:
+- Read and verified all schema system files: scene-transaction.ts, schema-apply.ts, session-state.ts, immutable.ts
+- Read and verified ui-slice.ts (1912 lines) — all store actions properly wired
+- Read and verified types.ts (CanvaState interface) — all action signatures present
+- Verified Task #1 ✅: BlockCapabilityRegistry wired into 4 consumer files
+- Verified Task #2 ✅: Transaction system wired into schema-apply.ts (commitSceneTransaction, rebalancePageCompression, promoteSceneSplitToPage, mergePagesTransaction, rebalanceFromScenePlan) and ui-slice.ts (createTransaction for split/merge)
+- Verified Task #3 ✅: assertDocumentPurity() wired as dev-mode guards in commitSchemaUpdate() helper (ui-slice.ts line 108), scene-transaction.ts commit() (line 224), and schema-apply.ts (6 call sites)
+- Verified Task #4 ✅: All immutable operations wired into canvas store actions:
+  - duplicateBlock → duplicateBlockImmutable ✅
+  - splitScene → splitPageAtBlock ✅
+  - mergeScene → mergeWithNextPage ✅
+  - moveBlockNested → moveBlockToContainer ✅
+  - insertBlockNested → addSchemaBlockToContainer ✅
+- TypeScript type check: PASS (zero errors)
+- Next.js production build: PASS
+
+Stage Summary:
+- All 4 systematic schema-ops tasks verified COMPLETE
+- Build is clean — zero TypeScript and production build errors
+- Key architectural gaps identified for next phase:
+  1. SessionInteractionState defined but NOT grouped in store (scattered fields)
+  2. _compressedHeight could leak into localStorage (derived field)
+  3. ui-slice.ts is 1912 lines (could benefit from decomposition)
+  4. UI triggers for schema operations need enhancement
