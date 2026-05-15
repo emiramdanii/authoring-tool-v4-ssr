@@ -11,6 +11,9 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
+import { migrateAllSchemas } from '@/core/schema/schema-migration';
+import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
+import { useAuthoringStore } from '@/store/authoring-store';
 
 // ── Migration version for localStorage data ──────────────────
 // Increment when adding new one-time migration logic.
@@ -114,6 +117,41 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
         // Apply schema migration + clear elements[] for schema pages
         const pages = migrateAllPages(rawPages);
+
+        // Apply schema version migrations (v0→v1, etc.)
+        const { migratedCount } = migrateAllSchemas(pages);
+        if (migratedCount > 0 && process.env.NODE_ENV !== 'production') {
+          console.log(`[Persistence] Migrated ${migratedCount} page schemas to latest version`);
+        }
+
+        // Derive EditorProjectionStore from schema (write-through)
+        // After loading pages, the projection store auto-syncs from schema
+        try {
+          const projection = deriveProjectionFromPages(pages);
+          if (Object.keys(projection).length > 0) {
+            // Spread only defined fields to satisfy AuthoringState type
+            const patch: Record<string, unknown> = { dirty: false };
+            if (projection.tp) patch.tp = projection.tp;
+            if (projection.alur) patch.alur = projection.alur;
+            if (projection.kuis) patch.kuis = projection.kuis;
+            if (projection.materi) patch.materi = projection.materi;
+            if (projection.diskusi) patch.diskusi = projection.diskusi;
+            if (projection.refleksi) patch.refleksi = projection.refleksi;
+            if (projection.skenario) patch.skenario = projection.skenario;
+            if (projection.motivasi) patch.motivasi = projection.motivasi;
+            if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
+            if (projection.meta) {
+              // Merge partial meta into existing meta (keep defaults for missing fields)
+              const currentMeta = useAuthoringStore.getState().meta;
+              patch.meta = { ...currentMeta, ...projection.meta };
+            }
+            useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
+          }
+        } catch (err) {
+          // Projection derivation is best-effort — don't break load on error
+          console.warn('[Persistence] Failed to derive projection from schema:', err);
+        }
+
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'halaman';
         if (data.leftTab) {
@@ -187,6 +225,33 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
         // Apply schema migration + clear elements[] for schema pages
         const pages = migrateAllPages(rawPages);
+
+        // Apply schema version migrations (v0→v1, etc.)
+        migrateAllSchemas(pages);
+
+        // Derive EditorProjectionStore from schema (write-through)
+        try {
+          const projection = deriveProjectionFromPages(pages);
+          if (Object.keys(projection).length > 0) {
+            const patch: Record<string, unknown> = { dirty: false };
+            if (projection.tp) patch.tp = projection.tp;
+            if (projection.alur) patch.alur = projection.alur;
+            if (projection.kuis) patch.kuis = projection.kuis;
+            if (projection.materi) patch.materi = projection.materi;
+            if (projection.diskusi) patch.diskusi = projection.diskusi;
+            if (projection.refleksi) patch.refleksi = projection.refleksi;
+            if (projection.skenario) patch.skenario = projection.skenario;
+            if (projection.motivasi) patch.motivasi = projection.motivasi;
+            if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
+            if (projection.meta) {
+              const currentMeta = useAuthoringStore.getState().meta;
+              patch.meta = { ...currentMeta, ...projection.meta };
+            }
+            useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
+          }
+        } catch (err) {
+          console.warn('[Persistence:DB] Failed to derive projection from schema:', err);
+        }
 
         set({
           pages,

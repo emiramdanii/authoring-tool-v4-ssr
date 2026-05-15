@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// ENSURE PAGE SCHEMA — Lazy Migration on Read (FASE 1 → FASE 4)
+// ENSURE PAGE SCHEMA — Lazy Migration on Read (FASE 1 → FASE 5+)
 // ═══════════════════════════════════════════════════════════════════
 // The central function that makes schema-first architecture work
 // WITHOUT breaking legacy pages.
@@ -15,11 +15,22 @@
 // is effectively "upgraded" to native schema. Next save persists it.
 // The TemplateAdapter is only called ONCE per legacy page — ever.
 //
-// FASE 4 MIGRATION NOTE:
-//   After all users have loaded and re-saved their projects (migration
-//   window), this function can be simplified to just:
+// FASE 5+ STATUS:
+//   ✅ All auto-generate flows use genXxxSchema() directly
+//   ✅ All regenerate flows use regenerateXxxSchema() directly
+//   ✅ Canvas generateFromPageType() uses genXxxSchema() directly
+//   ✅ Schema validation layer enforces invariants
+//   ✅ Immutable schema operations (produce/patch)
+//   ✅ EditorProjectionStore write-through from schema
+//   ✅ Schema version migration system
+//
+//   TemplateAdapter (Path 3) is ONLY hit for legacy pages that
+//   haven't been re-saved since FASE 2. Once all users re-save,
+//   Paths 2-3 can be removed entirely, leaving just:
 //     return page.schema ?? null;
-//   The TemplateAdapter import and paths 2-3 can be removed entirely.
+//
+//   To check how many legacy pages remain, look for
+//   "LEGACY-MIGRATION" warnings in dev console.
 // ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage } from '@/components/canva/types';
@@ -27,8 +38,9 @@ import type { ScreenSchema, SchemaBlock } from './types';
 import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { nanoid } from 'nanoid';
 import { logger } from '@/core/utils/logger';
-import { assertValidSchema, isSchemaVersionCompatible } from './validation';
+import { assertValidSchema, isSchemaVersionCompatible, SCHEMA_VERSION } from './validation';
 import { deepFreeze } from './immutable';
+import { migrateSchema } from './schema-migration';
 
 /**
  * Ensure a page has a native ScreenSchema.
@@ -43,6 +55,14 @@ import { deepFreeze } from './immutable';
 export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   // ═══ Path 1: Already native schema ═══════════════════════════
   if (page.schema) {
+    // Apply version migration if needed (e.g., v0 → v1)
+    const currentVersion = page.schema.version || 0;
+    if (currentVersion < SCHEMA_VERSION) {
+      const migrated = migrateSchema(page.schema);
+      // Note: We return the migrated schema but don't mutate page.schema here.
+      // The caller (persistence-slice) handles persisting the migration result.
+      return deepFreeze(migrated);
+    }
     // Deep freeze in dev mode to catch accidental mutations
     return deepFreeze(page.schema);
   }

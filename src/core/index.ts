@@ -112,6 +112,21 @@ export {
   snapshotBlocks,
 } from './schema/immutable';
 
+// Schema Migration — version upgrade system
+export {
+  migrateSchema,
+  migrateAllSchemas,
+  MIGRATION_CHAIN,
+} from './schema/schema-migration';
+export type { SchemaMigration } from './schema/schema-migration';
+
+// Schema Projection — derive EditorProjectionStore from schema
+export {
+  deriveProjectionFromPages,
+  deriveProjectionFromPage,
+} from './schema/schema-projection';
+export type { SchemaProjection } from './schema/schema-projection';
+
 // Editor Engine — schema-driven visual editing
 export {
   deepMergeBlock,
