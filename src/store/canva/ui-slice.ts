@@ -16,7 +16,7 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 // which import from @/store/canva-store, creating a circular dependency.
 // Use the renderer-free BlockDefinitionRegistry instead.
 import { ensurePageSchema, generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
-import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockImmutable, findBlockById, moveBlockNested, type ContainerRef } from '@/core/schema/immutable';
+import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockImmutable, findBlockById, moveBlockNested, insertBlockNested, type ContainerRef } from '@/core/schema/immutable';
 import { createTransaction } from '@/core/schema/scene-transaction';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
@@ -114,7 +114,7 @@ export type UISlice = Pick<
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
-  | 'moveBlockToContainer'
+  | 'moveBlockToContainer' | 'addSchemaBlockToContainer'
   | 'rebalanceCurrentPage' | 'promoteSceneSplit'
   | '_lastNudgeTime'
   | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
@@ -1642,6 +1642,88 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     const containerLabel = targetContainer.type === 'root' ? 'root' : targetContainer.type;
     toast.success(`Block dipindah ke ${containerLabel}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Add Schema Block to Container ─────────────────────────────────
+  // Uses insertBlockNested() from immutable.ts — tree-aware insertion
+  // into composite containers (materi-section.content, ftab.tabs[].content, etc.)
+  // Example: add a def-box INSIDE a materi-section.
+  addSchemaBlockToContainer: (blockType, container, toIndex) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) {
+      toast.warning('Tidak dapat menambah block ke halaman ini');
+      return;
+    }
+
+    const blocks = schema.blocks;
+    if (!Array.isArray(blocks)) return;
+
+    // Get block definition from registry
+    const definition = BLOCK_DEFINITIONS[blockType];
+    if (!definition) {
+      toast.error(`Block type "${blockType}" tidak ditemukan`);
+      return;
+    }
+
+    get()._pushHistory();
+
+    // Create default block
+    const newBlock: Record<string, unknown> = {
+      id: generateBlockId(),
+      type: blockType,
+      variant: 'A' as const,
+      layout: {
+        position: definition.defaultLayout.position,
+        ...(definition.defaultLayout.defaultX != null ? { x: definition.defaultLayout.defaultX } : {}),
+        ...(definition.defaultLayout.defaultY != null ? { y: definition.defaultLayout.defaultY } : {}),
+        ...(definition.defaultLayout.defaultWidth != null ? { width: definition.defaultLayout.defaultWidth } : {}),
+        ...(definition.defaultLayout.defaultHeight != null ? { height: definition.defaultLayout.defaultHeight } : {}),
+      },
+    };
+
+    // Add default content from registry
+    const defaultContent = definition.createDefault?.() ?? { title: definition.name };
+    Object.assign(newBlock, defaultContent);
+
+    // Use insertBlockNested — handles root + all container types
+    const newBlocks = insertBlockNested(blocks, newBlock as unknown as SchemaBlock, container, toIndex);
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: newBlock.id as string,
+        blockType,
+        pageIndex: currentPageIndex,
+        patch: { _addedToContainer: true, container: container.type },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, newBlocks),
+    };
+    set({ pages: newPages });
+
+    // Select the new block
+    get().selectBlock(newBlock.id as string, blockType);
+
+    const containerLabel = container.type === 'root' ? 'root' :
+      container.type === 'materi-section' ? 'materi-section' :
+      container.type === 'ftab' ? 'ftab' : container.type;
+    toast.success(`${definition.name} ditambahkan ke ${containerLabel}`, {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },

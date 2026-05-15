@@ -217,6 +217,8 @@ export interface CanvaState {
   mergeWithNextPage: () => void;
   /** Move a schema block to a container (root, materi-section, ftab tab, or children) */
   moveBlockToContainer: (blockId: string, targetContainer: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
+  /** Add a new schema block into a container (root, materi-section, ftab tab, or children) */
+  addSchemaBlockToContainer: (blockType: string, container: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
 
   // ── Scene Transaction Actions ──────────────────────────────────
   /** Rebalance the current page's compression/layout using transaction */
