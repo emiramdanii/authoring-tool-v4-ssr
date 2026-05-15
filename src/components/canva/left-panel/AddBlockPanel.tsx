@@ -8,10 +8,15 @@
 // Search/filter at top, click to add block to current page.
 // When a block is selected in the Layer panel, new blocks are
 // inserted after the selected block instead of appended to the end.
+//
+// TEACHER MODE: In 'sederhana' mode, groups are simplified to
+// "Informasi & Materi", "Aktivitas Interaktif", "Struktur Halaman"
+// and "Block" terminology is replaced with "Konten".
 
 import { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, Blocks, ArrowDownToLine } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import {
   getAllBlockDefinitions,
   getBlockDefinition,
@@ -21,29 +26,35 @@ import {
 } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { announceToScreenReader } from '@/lib/a11y';
+import {
+  teacherTerm,
+  personalityToSimplifiedGroup,
+  SIMPLIFIED_GROUPS,
+  type TeacherMode,
+} from '@/core/i18n/teacher-terminology';
 
 export default function AddBlockPanel() {
   const addSchemaBlock = useCanvaStore(s => s.addSchemaBlock);
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const isSederhana = teacherMode === 'sederhana';
   const [search, setSearch] = useState('');
 
   const page = pages[currentPageIndex];
 
+  // Terminology helpers based on teacher mode
+  const blockLabel = isSederhana ? 'Konten' : 'Block';
+
   // Check if current page can accept schema blocks
-  // FASE 1: Schema-first — any page with schema can accept blocks.
-  // We also allow custom pages to be upgraded via ensurePageSchema().
   const canAddBlocks = useMemo(() => {
     if (!page) return false;
-    // Any page that can produce a schema (via ensurePageSchema) can accept blocks
     const schema = ensurePageSchema(page);
     return !!schema;
   }, [page]);
 
   // ── Compute insertion index from selected block ─────────────
-  // When a block is selected, find its index in the schema blocks
-  // array so we can insert after it.
   const { insertAfterIndex, selectedBlockName } = useMemo(() => {
     if (!selectedBlockId || !page) return { insertAfterIndex: undefined, selectedBlockName: null };
     const schema = ensurePageSchema(page);
@@ -51,8 +62,9 @@ export default function AddBlockPanel() {
     const idx = schema.blocks.findIndex(b => b.id === selectedBlockId);
     if (idx === -1) return { insertAfterIndex: undefined, selectedBlockName: null };
     const blockDef = getBlockDefinition(schema.blocks[idx].type);
-    return { insertAfterIndex: idx, selectedBlockName: blockDef?.name || schema.blocks[idx].type };
-  }, [selectedBlockId, page]);
+    const name = blockDef?.name || schema.blocks[idx].type;
+    return { insertAfterIndex: idx, selectedBlockName: isSederhana ? teacherTerm(name, 'sederhana') : name };
+  }, [selectedBlockId, page, isSederhana]);
 
   // Get all block definitions, filter by search
   const allBlocks = useMemo(() => getAllBlockDefinitions(), []);
@@ -60,8 +72,8 @@ export default function AddBlockPanel() {
   // ── Add block handler with screen reader announcement ──────────
   const handleAddBlock = useCallback((block: BlockDefinition) => {
     addSchemaBlock(block.type, insertAfterIndex);
-    announceToScreenReader(`Block ${block.name} ditambahkan`);
-  }, [addSchemaBlock, insertAfterIndex]);
+    announceToScreenReader(`${blockLabel} ${block.name} ditambahkan`);
+  }, [addSchemaBlock, insertAfterIndex, blockLabel]);
 
   const filteredBlocks = useMemo(() => {
     if (!search.trim()) return allBlocks;
@@ -77,18 +89,35 @@ export default function AddBlockPanel() {
     );
   }, [allBlocks, search]);
 
-  // Group filtered blocks by personality (pedagogical intent)
-  const groupedBlocks = useMemo(() => {
+  // ── Grouping logic: simplified groups in sederhana mode ──────
+  // In lengkap mode: group by personality (pedagogical intent)
+  // In sederhana mode: group by simplified categories (informasi, interaktif, struktur)
+  const groupedBlocksLengkap = useMemo(() => {
     const groups: Partial<Record<BlockPersonality, BlockDefinition[]>> = {};
     for (const block of filteredBlocks) {
       const p = block.personality;
       if (!groups[p]) groups[p] = [];
       groups[p]!.push(block);
     }
-    // Sort personality groups by display order
     const sorted = (Object.entries(groups) as [BlockPersonality, BlockDefinition[]][]).sort(([a], [b]) => {
       const orderA = PERSONALITY_CONFIG[a]?.order ?? 99;
       const orderB = PERSONALITY_CONFIG[b]?.order ?? 99;
+      return orderA - orderB;
+    });
+    return sorted;
+  }, [filteredBlocks]);
+
+  const groupedBlocksSederhana = useMemo(() => {
+    const groups: Record<string, BlockDefinition[]> = {};
+    for (const block of filteredBlocks) {
+      const groupKey = personalityToSimplifiedGroup(block.personality);
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(block);
+    }
+    // Sort by simplified group order
+    const sorted = Object.entries(groups).sort(([a], [b]) => {
+      const orderA = SIMPLIFIED_GROUPS[a]?.order ?? 99;
+      const orderB = SIMPLIFIED_GROUPS[b]?.order ?? 99;
       return orderA - orderB;
     });
     return sorted;
@@ -99,9 +128,13 @@ export default function AddBlockPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
         <div className="text-2xl mb-2 opacity-40">📦</div>
-        <div className="text-[10px] text-app-muted">Tidak dapat menambah block</div>
+        <div className="text-[10px] text-app-muted">
+          Tidak dapat menambah {blockLabel.toLowerCase()}
+        </div>
         <div className="text-[8px] text-app-muted mt-1">
-          Block hanya bisa ditambahkan ke halaman template/schema
+          {isSederhana
+            ? 'Konten hanya bisa ditambahkan ke halaman yang sudah ada'
+            : 'Block hanya bisa ditambahkan ke halaman template/schema'}
         </div>
         <div className="text-[8px] text-app-muted mt-0.5">
           Gunakan tab Halaman untuk menambah template terlebih dahulu
@@ -115,7 +148,7 @@ export default function AddBlockPanel() {
       {/* Header */}
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
         <Blocks size={10} />
-        Tambah Block
+        {isSederhana ? 'Tambah Konten' : 'Tambah Block'}
         <span className="text-app-muted">({allBlocks.length})</span>
       </div>
 
@@ -136,92 +169,140 @@ export default function AddBlockPanel() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari block..."
-          aria-label="Cari block"
+          placeholder={isSederhana ? 'Cari konten...' : 'Cari block...'}
+          aria-label={isSederhana ? 'Cari konten' : 'Cari block'}
           aria-describedby="add-block-search-help"
           className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none placeholder:text-app-muted"
         />
         <span id="add-block-search-help" className="sr-only">
-          Ketik untuk mencari block berdasarkan nama, tipe, atau deskripsi
+          Ketik untuk mencari {blockLabel.toLowerCase()} berdasarkan nama, tipe, atau deskripsi
         </span>
       </div>
 
-      {/* Personality groups */}
+      {/* Block groups */}
       <div className="space-y-3">
-        {groupedBlocks.map(([personality, blocks]) => {
-          const config = PERSONALITY_CONFIG[personality];
-          if (!config) return null;
+        {isSederhana ? (
+          // ── Sederhana mode: simplified groups ──
+          groupedBlocksSederhana.map(([groupKey, blocks]) => {
+            const config = SIMPLIFIED_GROUPS[groupKey];
+            if (!config) return null;
 
-          return (
-            <div key={personality}>
-              {/* Personality header */}
-              <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${config.bgColorClass} border ${config.borderColorClass}`}>
-                <span className="text-sm">{config.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className={`text-[10px] font-bold ${config.colorClass}`}>{config.label}</span>
-                    <span className="text-[8px] text-app-muted">({blocks.length})</span>
+            return (
+              <div key={groupKey}>
+                {/* Group header */}
+                <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${config.bgColorClass} border ${config.borderColorClass}`}>
+                  <span className="text-sm">{config.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <span className={`text-[10px] font-bold ${config.colorClass}`}>{config.label}</span>
+                      <span className="text-[8px] text-app-muted">({blocks.length})</span>
+                    </div>
+                    <div className="text-[7px] text-app-muted leading-tight">{config.desc}</div>
                   </div>
-                  <div className="text-[7px] text-app-muted leading-tight">{config.description}</div>
+                </div>
+
+                {/* Block cards */}
+                <div className="space-y-1" role="list" aria-label={`Daftar konten ${config.label}`}>
+                  {blocks.map((block) => (
+                    <button
+                      key={block.type}
+                      onClick={() => handleAddBlock(block)}
+                      aria-label={`Tambah ${teacherTerm(block.name, 'sederhana')} — ${block.description}`}
+                      className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
+                    >
+                      <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform" aria-hidden="true">
+                        {block.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
+                          {teacherTerm(block.name, 'sederhana')}
+                        </div>
+                        <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
+                          {block.description}
+                        </div>
+                      </div>
+                      <Plus
+                        size={14}
+                        className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  ))}
                 </div>
               </div>
+            );
+          })
+        ) : (
+          // ── Lengkap mode: personality groups (original) ──
+          groupedBlocksLengkap.map(([personality, blocks]) => {
+            const config = PERSONALITY_CONFIG[personality];
+            if (!config) return null;
 
-              {/* Block cards */}
-              <div className="space-y-1" role="list" aria-label={`Daftar block ${config.label}`}>
-                {blocks.map((block) => (
-                  <button
-                    key={block.type}
-                    onClick={() => handleAddBlock(block)}
-                    aria-label={`Tambah ${block.name} — ${block.description}`}
-                    className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
-                  >
-                    {/* Block icon */}
-                    <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform" aria-hidden="true">
-                      {block.icon}
-                    </span>
-
-                    {/* Block info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
-                        {block.name}
-                      </div>
-                      <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
-                        {block.description}
-                      </div>
-                      {/* Used-in templates */}
-                      {block.usedInTemplates.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-0.5">
-                          {block.usedInTemplates.slice(0, 3).map((t) => (
-                            <span
-                              key={t}
-                              className="text-[7px] px-1 py-0 rounded bg-app-elevated/40 text-app-muted"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+            return (
+              <div key={personality}>
+                {/* Personality header */}
+                <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${config.bgColorClass} border ${config.borderColorClass}`}>
+                  <span className="text-sm">{config.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <span className={`text-[10px] font-bold ${config.colorClass}`}>{config.label}</span>
+                      <span className="text-[8px] text-app-muted">({blocks.length})</span>
                     </div>
+                    <div className="text-[7px] text-app-muted leading-tight">{config.description}</div>
+                  </div>
+                </div>
 
-                    {/* Add button */}
-                    <Plus
-                      size={14}
-                      className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                  </button>
-                ))}
+                {/* Block cards */}
+                <div className="space-y-1" role="list" aria-label={`Daftar block ${config.label}`}>
+                  {blocks.map((block) => (
+                    <button
+                      key={block.type}
+                      onClick={() => handleAddBlock(block)}
+                      aria-label={`Tambah ${block.name} — ${block.description}`}
+                      className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
+                    >
+                      <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform" aria-hidden="true">
+                        {block.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
+                          {block.name}
+                        </div>
+                        <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
+                          {block.description}
+                        </div>
+                        {block.usedInTemplates.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {block.usedInTemplates.slice(0, 3).map((t) => (
+                              <span
+                                key={t}
+                                className="text-[7px] px-1 py-0 rounded bg-app-elevated/40 text-app-muted"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <Plus
+                        size={14}
+                        className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Empty search state */}
       {filteredBlocks.length === 0 && search.trim() && (
         <div className="text-center py-4">
           <div className="text-[10px] text-app-muted">
-            Tidak ada block yang cocok dengan &quot;{search}&quot;
+            Tidak ada {blockLabel.toLowerCase()} yang cocok dengan &quot;{search}&quot;
           </div>
         </div>
       )}
@@ -229,8 +310,8 @@ export default function AddBlockPanel() {
       {/* Footer hint */}
       <div className="text-[8px] text-app-muted mt-2 pt-2 border-t border-app-border/20">
         {selectedBlockName
-          ? `Block baru akan disisipkan setelah "${selectedBlockName}"`
-          : 'Klik block untuk menambahkan ke halaman saat ini'}
+          ? `${blockLabel} baru akan disisipkan setelah "${selectedBlockName}"`
+          : `Klik ${blockLabel.toLowerCase()} untuk menambahkan ke halaman saat ini`}
       </div>
     </div>
   );

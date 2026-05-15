@@ -22,6 +22,7 @@ export default function PreviewMode() {
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const goPage = useCanvaStore(s => s.goPage);
   const setAppMode = useCanvaStore(s => s.setAppMode);
+  const previewViewport = useCanvaStore(s => s.previewViewport);
   const ratio = useCanvaStore(s => {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
@@ -101,28 +102,65 @@ export default function PreviewMode() {
 
   if (!page) return null;
 
+  const isMobile = previewViewport === 'mobile';
+
   return (
     <div className="flex-1 flex flex-col bg-app-bg relative">
       {/* Main canvas area */}
       <div ref={canvasRef} className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
-        <div
-          className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
-          style={{
-            width: ratio.w,
-            height: ratio.h,
-            transform: `scale(${scale})`,
-            transformOrigin: 'center center',
-          }}
-        >
-          <CanvasErrorBoundary name="PreviewMode">
-            <PageRenderer
-              mode="preview"
-              page={page}
-              currentPageIndex={currentPageIndex}
-              totalPages={totalPages}
-            />
-          </CanvasErrorBoundary>
-        </div>
+        {isMobile ? (
+          /* Mobile phone frame — constrains to phone-like aspect ratio */
+          <div className="flex items-center justify-center w-full h-full">
+            <div
+              className="relative bg-black rounded-[2.5rem] p-3 shadow-2xl shadow-black/60 ring-1 ring-white/10"
+              style={{ maxWidth: 430, aspectRatio: '9/16', height: '90%' }}
+            >
+              {/* Phone notch indicator */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-b-2xl z-10" />
+              {/* Phone screen area */}
+              <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-white">
+                <div
+                  className="relative overflow-hidden"
+                  style={{
+                    width: 393,
+                    height: 852,
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  <CanvasErrorBoundary name="PreviewMode">
+                    <PageRenderer
+                      mode="preview"
+                      page={page}
+                      currentPageIndex={currentPageIndex}
+                      totalPages={totalPages}
+                    />
+                  </CanvasErrorBoundary>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Desktop — normal preview */
+          <div
+            className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
+            style={{
+              width: ratio.w,
+              height: ratio.h,
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
+            }}
+          >
+            <CanvasErrorBoundary name="PreviewMode">
+              <PageRenderer
+                mode="preview"
+                page={page}
+                currentPageIndex={currentPageIndex}
+                totalPages={totalPages}
+              />
+            </CanvasErrorBoundary>
+          </div>
+        )}
       </div>
 
       {/* Floating navigation bar at bottom */}

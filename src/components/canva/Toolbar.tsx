@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import { ToolbarExport } from './toolbar/ToolbarExport';
+import { MobileViewportToggle } from './MobileViewportToggle';
 import type { AppMode } from './types';
 
 // ═══════════════════════════════════════════════════════════════
@@ -124,6 +125,7 @@ export default function Toolbar() {
         <span className="text-[10px] text-app-muted">
           {currentPageIndex + 1}/{pages.length}
         </span>
+        <MobileViewportToggle />
         <div className="flex-1" />
         <Eye size={12} className="text-cyan-400" />
         <span className="text-[10px] font-semibold text-cyan-400">Preview</span>

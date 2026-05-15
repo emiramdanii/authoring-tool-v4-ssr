@@ -253,6 +253,10 @@ export interface CanvaState {
   appMode: AppMode;
   /** Set the application mode — clears selections when entering preview/present */
   setAppMode: (mode: AppMode) => void;
+  /** Preview viewport mode — desktop or mobile simulation */
+  previewViewport: 'desktop' | 'mobile';
+  /** Set the preview viewport mode */
+  setPreviewViewport: (v: 'desktop' | 'mobile') => void;
 
   // ── Actions: Stage ───────────────────────────────────────────
   clearStage: () => void;

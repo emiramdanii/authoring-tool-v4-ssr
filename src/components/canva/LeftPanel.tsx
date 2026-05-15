@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import type { PageTemplateType } from './types';
 import { RATIOS } from './types';
 import { getPresetsGroupedByCategory, type PagePreset } from '@/core/preset/PagePresetRegistry';
@@ -80,24 +81,8 @@ export default function LeftPanel() {
           {/* Add scene button + template dropdown */}
           <AddSceneButton onOpenWizard={() => setWizardOpen(true)} />
 
-          {/* Collapsible: Tambah Block */}
-          <div className="border border-app-border/30 rounded-xl overflow-hidden">
-            <button
-              onClick={() => setAddBlockOpen(!addBlockOpen)}
-              className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-teal-400 uppercase tracking-wider bg-teal-500/5 hover:bg-teal-500/10 transition-colors"
-            >
-              <span className="flex items-center gap-1.5">
-                <Plus size={10} />
-                Tambah Block
-              </span>
-              {addBlockOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-            </button>
-            {addBlockOpen && (
-              <div className="p-2 border-t border-app-border/20">
-                <AddBlockPanel />
-              </div>
-            )}
-          </div>
+          {/* Collapsible: Tambah Block / Konten */}
+          <TambahBlockSection addBlockOpen={addBlockOpen} onToggle={() => setAddBlockOpen(!addBlockOpen)} />
 
           <div className="section-divider" />
 
@@ -124,6 +109,8 @@ function SceneList() {
   const deletePage = useCanvaStore(s => s.deletePage);
   const reorderPage = useCanvaStore(s => s.reorderPage);
   const ratio = useCanvaStore(s => s.currentRatio());
+  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const isSederhana = teacherMode === 'sederhana';
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
@@ -192,7 +179,7 @@ function SceneList() {
                 </div>
                 <div className="text-[8px] text-app-muted">
                   {isSchemaDriven ? (
-                    <span className="text-emerald-400/70">Schema</span>
+                    <span className="text-emerald-400/70">{isSederhana ? 'Siap Pakai' : 'Schema'}</span>
                   ) : isTemplate ? (
                     <span className="text-app-accent/60">Template</span>
                   ) : (
@@ -400,6 +387,39 @@ function RatioSelector() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TAMBAH BLOCK SECTION — Collapsible add-block panel header
+   ══════════════════════════════════════════════════════════════════ */
+
+function TambahBlockSection({ addBlockOpen, onToggle }: {
+  addBlockOpen: boolean;
+  onToggle: () => void;
+}) {
+  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const isSederhana = teacherMode === 'sederhana';
+  const sectionLabel = isSederhana ? 'Tambah Konten' : 'Tambah Block';
+
+  return (
+    <div className="border border-app-border/30 rounded-xl overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-teal-400 uppercase tracking-wider bg-teal-500/5 hover:bg-teal-500/10 transition-colors"
+      >
+        <span className="flex items-center gap-1.5">
+          <Plus size={10} />
+          {sectionLabel}
+        </span>
+        {addBlockOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+      </button>
+      {addBlockOpen && (
+        <div className="p-2 border-t border-app-border/20">
+          <AddBlockPanel />
+        </div>
+      )}
     </div>
   );
 }

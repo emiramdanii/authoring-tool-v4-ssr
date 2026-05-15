@@ -7,7 +7,7 @@ import { RATIOS } from '../types';
 import { PageRenderer } from '../page-renderer';
 import { CanvasErrorBoundary } from '../CanvasErrorBoundary';
 import { StageElement } from './StageElement';
-import { Zap } from 'lucide-react';
+import { Zap, Layout } from 'lucide-react';
 import { useStageKeyboard } from './use-stage-keyboard';
 import { useStageDrag } from './use-stage-drag';
 import { Z } from './constants';
@@ -22,6 +22,7 @@ import {
   resolveZoom,
 } from '@/lib/canva-constants';
 import { screenToPct } from '@/lib/virtual-canvas';
+import CanvasEmptyState from '../CanvasEmptyState';
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Virtual Canvas editing area with zoom + pan
@@ -365,6 +366,8 @@ export default function Stage() {
   const isSchemaDriven = !!page?.schema;
   const isMultiSelected = (elId: string) => selectedElIds.includes(elId) && selectedElIds.length > 1;
 
+  // ── Empty state: no pages at all ──────────────────────────────────
+  if (pages.length === 0) return <CanvasEmptyState />;
   if (!page) return null;
 
   // Cursor style
@@ -428,6 +431,20 @@ export default function Stage() {
               </motion.div>
             </AnimatePresence>
           </CanvasErrorBoundary>
+
+          {/* ══ Page Empty State — page exists but has no blocks ═════ */}
+          {/* Subtle hint inside the canvas frame; only in canvas mode */}
+          {!canvasPreview && !isTemplateMode && (
+            (isSchemaDriven && page.schema && page.schema.blocks.length === 0) ||
+            (!isSchemaDriven && page.elements.length === 0)
+          ) && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: Z.CANVAS_OVERLAY }}>
+              <Layout size={28} className="text-app-muted/30 mb-2" />
+              <span className="text-xs text-app-muted/40 font-medium">
+                Tambah block dari panel kiri atau toolbar
+              </span>
+            </div>
+          )}
 
           {/* ══ Canvas-only overlays (hidden in preview mode) ═════ */}
 

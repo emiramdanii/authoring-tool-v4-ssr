@@ -18,6 +18,7 @@ import {
   PanelLeftOpen,
   Eye,
   MapPin,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
@@ -26,6 +27,9 @@ import { Button } from '@/components/ui/button';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
 import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager';
+import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
+import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
+import CrashRecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/CrashRecoveryDialog';
 
 // Lazy-load panels — each panel is only loaded when first rendered
 const Dashboard = React.lazy(() => import('./Dashboard'));
@@ -136,7 +140,21 @@ function AuthoringToolInner() {
     loadFromStorage();
     // Also load canva state from localStorage on first app mount
     useCanvaStore.getState().loadFromStorage();
+    // Clear dirty exit flag after successful load
+    clearDirtyExitFlag();
   }, [loadFromStorage]);
+
+  // ── Dirty exit flag: set on beforeunload if unsaved changes ──
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const isDirty = useAuthoringStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
+      if (isDirty) {
+        setDirtyExitFlag();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // ── Tour: dismiss / advance ────────────────────────────────
   const dismissTour = useCallback(() => {
@@ -338,6 +356,7 @@ function AuthoringToolInner() {
         {sidebarOpen ? (
           <div className="px-3 py-4 space-y-2">
             <div className="section-divider mb-3" />
+            <TeacherModeToggle />
             <button
               onClick={saveAll}
               disabled={saving}
@@ -357,6 +376,15 @@ function AuthoringToolInner() {
         ) : (
           <div className="px-2 py-3 space-y-2 flex flex-col items-center">
             <div className="section-divider w-full mb-2" />
+            <button
+              onClick={() => useAuthoringStore.getState().setTeacherMode(
+                useAuthoringStore.getState().teacherMode === 'sederhana' ? 'lengkap' : 'sederhana'
+              )}
+              className="tooltip-trigger focus-ring"
+              data-tip={useAuthoringStore.getState().teacherMode === 'sederhana' ? 'Mode Sederhana' : 'Mode Lengkap'}
+            >
+              <GraduationCap size={16} className="text-emerald-400" />
+            </button>
             <button
               onClick={saveAll}
               disabled={saving}
@@ -402,6 +430,9 @@ function AuthoringToolInner() {
               }`}
               title="Perubahan belum disimpan"
             />
+
+            {/* Workflow step indicator — compact progress */}
+            <WorkflowStepIndicator />
 
             <div className="ml-auto flex items-center gap-2">
               <Button
@@ -461,6 +492,9 @@ function AuthoringToolInner() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* ── Crash Recovery Dialog ─────────────────────────── */}
+      <CrashRecoveryDialog />
 
       {/* ── Guided Tour Overlay ────────────────────────────── */}
       {showTour && activePanel === 'dashboard' && (

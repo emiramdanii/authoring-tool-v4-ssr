@@ -12,9 +12,12 @@ import {
   Settings2,
   Sparkles,
   Check,
+  ArrowRight,
 } from 'lucide-react';
 import { renderPreviewContent } from './previews';
 import { useAutoGenerate } from './use-auto-generate';
+import { useAuthoringStore } from '@/store/authoring-store';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ═══════════════════════════════════════════════════════════════════
 // Step Wizard Indicator
@@ -108,6 +111,7 @@ export default function AutoGenerate() {
     handleGenerateAll,
     handleApplyAll,
     parsedStats,
+    appliedCount,
   } = useAutoGenerate();
 
   // Determine current step for the wizard indicator
@@ -441,6 +445,39 @@ export default function AutoGenerate() {
           </div>
         </div>
       )}
+
+      {/* ── Next Step Banner (after apply) ────────────────── */}
+      <AnimatePresence>
+        {appliedCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="bg-emerald-500/10 border border-emerald-500/25 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3"
+          >
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <ArrowRight size={18} className="text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-emerald-300">
+                  Konten sudah diterapkan! Langkah berikutnya:
+                </p>
+                <p className="text-xs text-emerald-400/60 mt-0.5">
+                  Atau lanjut generate konten lainnya
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => useAuthoringStore.getState().setActivePanel('canva')}
+              className="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 flex-shrink-0"
+            >
+              Buka Canva untuk Edit <ArrowRight size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Empty state ─────────────────────────────────────── */}
       {!parsed && (

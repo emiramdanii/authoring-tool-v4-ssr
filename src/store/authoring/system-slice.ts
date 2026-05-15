@@ -6,14 +6,22 @@ import { STORAGE_KEY } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
 
-export type SystemSlice = Pick<AuthoringState, 'dirty' | 'guruPw' | 'markDirty' | 'markClean' | 'saveToStorage' | 'loadFromStorage' | 'calcCompleteness' | 'toggleSuaraAll'>;
+export type SystemSlice = Pick<AuthoringState, 'dirty' | 'guruPw' | 'teacherMode' | 'markDirty' | 'markClean' | 'saveToStorage' | 'loadFromStorage' | 'calcCompleteness' | 'toggleSuaraAll' | 'setTeacherMode'>;
 
 export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice> = (set, get) => ({
   dirty: false,
   guruPw: 'guru123',
+  teacherMode: (typeof window !== 'undefined' && localStorage.getItem('silse_teacher_mode') === 'lengkap') ? 'lengkap' : 'sederhana',
 
   markDirty: () => set({ dirty: true }),
   markClean: () => set({ dirty: false }),
+
+  setTeacherMode: (mode) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('silse_teacher_mode', mode);
+    }
+    set({ teacherMode: mode });
+  },
 
   toggleSuaraAll: () => {
     const s = get().suara;

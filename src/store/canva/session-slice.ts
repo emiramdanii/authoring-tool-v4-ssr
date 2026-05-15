@@ -41,6 +41,8 @@ export type SessionSlice = Pick<
   // ── View modes ──
   | 'canvasPreview' | 'toggleCanvasPreview'
   | 'appMode' | 'setAppMode'
+  // ── Preview viewport ──
+  | 'previewViewport' | 'setPreviewViewport'
   // ── Nudge debounce ──
   | '_lastNudgeTime'
   // ── Panels ──
@@ -72,6 +74,7 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
   sceneTotal: 1,
   canvasPreview: false,
   appMode: 'edit' as AppMode,
+  previewViewport: 'desktop' as 'desktop' | 'mobile',
 
   // ── Schema Block Selection ───────────────────────────────────
   // Central selection action — sets the editing context for a block.
@@ -189,6 +192,9 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
       set({ appMode: mode });
     }
   },
+
+  // ── Preview Viewport ────────────────────────────────────────
+  setPreviewViewport: (v: 'desktop' | 'mobile') => set({ previewViewport: v }),
 
   // ── Panels ──────────────────────────────────────────────────
   toggleLeftPanel: () => set(s => ({ leftPanelOpen: !s.leftPanelOpen })),

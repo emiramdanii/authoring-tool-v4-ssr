@@ -319,6 +319,7 @@ export interface AuthoringState {
   // System
   dirty: boolean;
   guruPw: string;
+  teacherMode: 'lengkap' | 'sederhana';
 
   // Flag for auto canvas generation after preset
   pendingCanvasGenerate: string | null;
@@ -403,6 +404,7 @@ export interface AuthoringState {
   markClean: () => void;
   saveToStorage: () => void;
   loadFromStorage: () => boolean;
+  setTeacherMode: (mode: 'lengkap' | 'sederhana') => void;
 
   // Completeness
   calcCompleteness: () => number;

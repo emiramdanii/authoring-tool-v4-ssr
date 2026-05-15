@@ -91,9 +91,32 @@ export function KuisTab() {
       {/* Quiz List */}
       <div ref={listRef} className="space-y-4">
         {!kuis.length ? (
-          <div className="text-center py-6 bg-app-surface border border-app-border rounded-lg">
-            <HelpCircle size={28} className="text-app-muted mb-2" />
-            <p className="text-sm text-app-muted">Belum ada soal.</p>
+          <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
+              <HelpCircle size={24} className="text-cyan-400" />
+            </div>
+            <p className="text-sm font-medium text-app-primary mb-1">Belum ada soal kuis</p>
+            <p className="text-xs text-app-muted mb-4">Gunakan Auto-Generate atau preset untuk membuat soal dengan cepat</p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={handleRegenerateKuis}
+                className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <Zap size={12} /> Auto-Generate
+              </button>
+              <button
+                onClick={() => applyKuisPreset('norma-10-soal')}
+                className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <Zap size={12} /> Preset 10 Soal
+              </button>
+              <button
+                onClick={handleAdd}
+                className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                ＋ Manual
+              </button>
+            </div>
           </div>
         ) : (
           kuis.map((soal, i) => (

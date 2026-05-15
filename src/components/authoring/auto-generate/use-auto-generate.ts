@@ -70,6 +70,7 @@ export function useAutoGenerate() {
   const [loading, setLoading] = useState<Set<GenType>>(new Set());
   const [previews, setPreviews] = useState<PreviewData[]>([]);
   const [activePreview, setActivePreview] = useState<PreviewData | null>(null);
+  const [appliedCount, setAppliedCount] = useState(0);
 
   // ── Persist text to localStorage ────────────────────────────
   useEffect(() => {
@@ -246,6 +247,9 @@ export function useAutoGenerate() {
         projectionWrite();
       };
 
+      // Track successful apply for NextStepBanner
+      let applySucceeded = false;
+
       switch (preview.type) {
         case 'cp': {
           // CP has no schema block type yet — projection-only
@@ -263,6 +267,7 @@ export function useAutoGenerate() {
             store.getState().addProfil(p);
           }
           toast.success('📋 CP diterapkan ke Dokumen');
+          applySucceeded = true;
           break;
         }
         case 'tp': {
@@ -280,6 +285,7 @@ export function useAutoGenerate() {
             () => store.setState({ tp: tpData, dirty: true }),
           );
           toast.success(`🎯 ${tpData.length} TP diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'atp': {
@@ -294,6 +300,7 @@ export function useAutoGenerate() {
             dirty: true,
           });
           toast.success(`📅 ATP ${atpData.jumlahPertemuan} pertemuan diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'alur': {
@@ -308,6 +315,7 @@ export function useAutoGenerate() {
             () => store.setState({ alur: alurData, dirty: true }),
           );
           toast.success(`🗺️ ${alurData.length} langkah alur diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'kuis': {
@@ -322,6 +330,7 @@ export function useAutoGenerate() {
             () => store.setState({ kuis: kuisData, dirty: true }),
           );
           toast.success(`❓ ${kuisData.length} soal kuis diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'skenario': {
@@ -336,6 +345,7 @@ export function useAutoGenerate() {
             () => store.getState().setSkenario(skenarioData as unknown as import('@/store/authoring/types').SkenarioChapter[]),
           );
           toast.success(`🎭 ${skenarioData.length} bab skenario diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'flashcard': {
@@ -360,6 +370,7 @@ export function useAutoGenerate() {
             },
           );
           toast.success(`🃏 ${flashData.length} flashcard diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'matching': {
@@ -375,6 +386,7 @@ export function useAutoGenerate() {
             store.getState().updateModuleField(newIdx, 'title', 'Matching Game');
           }
           toast.success(`🔀 ${matchData.length} pasangan matching diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'truefalse': {
@@ -389,6 +401,7 @@ export function useAutoGenerate() {
             store.getState().updateModuleField(newIdx, 'title', 'Benar/Salah');
           }
           toast.success(`✅ ${tfData.length} soal benar/salah diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'materi': {
@@ -403,6 +416,7 @@ export function useAutoGenerate() {
             () => store.setState({ materi: { blok: materiData }, dirty: true }),
           );
           toast.success(`📖 ${materiData.length} blok materi diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'diskusi': {
@@ -417,6 +431,7 @@ export function useAutoGenerate() {
             () => store.setState({ diskusi: diskusiData, dirty: true }),
           );
           toast.success(`💬 ${diskusiData.pertanyaan.length} pertanyaan diskusi diterapkan`);
+          applySucceeded = true;
           break;
         }
         case 'refleksi': {
@@ -431,8 +446,13 @@ export function useAutoGenerate() {
             () => store.setState({ refleksi: refleksiData, dirty: true }),
           );
           toast.success(`🪞 ${refleksiData.pertanyaan.length} pertanyaan refleksi diterapkan`);
+          applySucceeded = true;
           break;
         }
+      }
+
+      if (applySucceeded) {
+        setAppliedCount((c) => c + 1);
       }
     },
     [parsed, settings, meta],
@@ -566,5 +586,6 @@ export function useAutoGenerate() {
     handleGenerateAll,
     handleApplyAll,
     parsedStats,
+    appliedCount,
   };
 }
