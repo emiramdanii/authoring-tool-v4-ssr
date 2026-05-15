@@ -61,6 +61,18 @@ export interface CompressionProfile {
   savingsRatios: Record<CompressionStrategy, number>;
   /** Minimum items before compression kicks in */
   minItemsForCompression: number;
+  /**
+   * Count content items in a block for minItemsForCompression check.
+   *
+   * Each block type has different content fields that hold "items"
+   * (questions, cards, steps, etc.). This function extracts the item count
+   * from the block's type-specific content fields.
+   *
+   * If not provided, defaults to 1 (always eligible for compression).
+   * This replaces the old countBlockItems() switch statement — each profile
+   * owns its own item counting logic.
+   */
+  itemCounter?: (block: SchemaBlock) => number;
 }
 
 /** A compression decision made by the engine */
@@ -105,6 +117,27 @@ export interface CompressionParams {
  *   0.5 means compressed = 50% of expanded (50% savings)
  *   0.4 means compressed = 40% of expanded (60% savings)
  */
+// ── Item Count Helper ──────────────────────────────────────────
+// Extracts an array field from a block and returns its length.
+// Used by CompressionProfile.itemCounter to avoid the TS-invalid
+// syntax `(x as unknown[]?.length)` — TypeScript can't parse
+// optional chaining after a type assertion.
+
+function countField(block: SchemaBlock, field: string): number {
+  const arr = (block as Record<string, unknown>)[field];
+  return Array.isArray(arr) ? arr.length : 0;
+}
+
+function countFieldsSum(block: SchemaBlock, ...fields: string[]): number {
+  let sum = 0;
+  const b = block as Record<string, unknown>;
+  for (const field of fields) {
+    const arr = b[field];
+    if (Array.isArray(arr)) sum += arr.length;
+  }
+  return sum;
+}
+
 export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
   'petunjuk': {
     blockType: 'petunjuk',
@@ -112,6 +145,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'accordion',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 4,
+    itemCounter: (b) => countField(b, 'items'),
   },
   'tp': {
     blockType: 'tp',
@@ -119,6 +153,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'reveal-set',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 4,
+    itemCounter: (b) => countField(b, 'items'),
   },
   'alur': {
     blockType: 'alur',
@@ -126,6 +161,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'step-reveal',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.3 },
     minItemsForCompression: 4,
+    itemCounter: (b) => countField(b, 'steps'),
   },
   'kuis': {
     blockType: 'kuis',
@@ -133,6 +169,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'step-reveal',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.3 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'questions'),
   },
   'materi-section': {
     blockType: 'materi-section',
@@ -140,6 +177,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'accordion',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'content'),
   },
   'ftab': {
     blockType: 'ftab',
@@ -147,6 +185,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'accordion',
     savingsRatios: { accordion: 0.4, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'tabs'),
   },
   'nc-grid': {
     blockType: 'nc-grid',
@@ -154,6 +193,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'reveal-set',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 4,
+    itemCounter: (b) => countField(b, 'cards'),
   },
   'diskusi': {
     blockType: 'diskusi',
@@ -161,6 +201,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'reveal-set',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countFieldsSum(b, 'questions', 'kelompok'),
   },
   'rangkuman': {
     blockType: 'rangkuman',
@@ -168,6 +209,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'accordion',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'concepts'),
   },
   'skenario': {
     blockType: 'skenario',
@@ -175,6 +217,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'step-reveal',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.3 },
     minItemsForCompression: 2,
+    itemCounter: (b) => countField(b, 'chapters'),
   },
   'refleksi': {
     blockType: 'refleksi',
@@ -182,6 +225,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'reveal-set',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'questions'),
   },
   'tabel-accord': {
     blockType: 'tabel-accord',
@@ -189,6 +233,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'accordion',
     savingsRatios: { accordion: 0.4, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'rows'),
   },
   'def-box': {
     blockType: 'def-box',
@@ -203,6 +248,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'reveal-set',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 4,
+    itemCounter: (b) => countField(b, 'objectives'),
   },
   'motivasi': {
     blockType: 'motivasi',
@@ -217,6 +263,7 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     defaultStrategy: 'reveal-set',
     savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
     minItemsForCompression: 3,
+    itemCounter: (b) => countField(b, 'preview'),
   },
   'nk-card': {
     blockType: 'nk-card',
@@ -333,71 +380,25 @@ export function computeSceneCompression(
 
 // ── Helper Functions ───────────────────────────────────────────
 
-/** Count content items in a block (for minItemsForCompression check) */
+/**
+ * Count content items in a block for minItemsForCompression check.
+ *
+ * This function now delegates to the profile's itemCounter if available,
+ * falling back to 1 for types without a profile or counter.
+ *
+ * Previously, this was a giant switch statement that had to be updated
+ * for every new block type. Now each CompressionProfile owns its own
+ * counting logic via the itemCounter field.
+ *
+ * Adding a new compressible block type? Just add itemCounter to its
+ * CompressionProfile entry — no need to edit this function.
+ */
 function countBlockItems(block: SchemaBlock): number {
-  const b = block as Record<string, unknown>;
-
-  switch (block.type) {
-    case 'petunjuk': {
-      const items = b.items as unknown[] | undefined;
-      return items?.length ?? 0;
-    }
-    case 'tp': {
-      const items = b.items as unknown[] | undefined;
-      return items?.length ?? 0;
-    }
-    case 'alur': {
-      const steps = b.steps as unknown[] | undefined;
-      return steps?.length ?? 0;
-    }
-    case 'kuis': {
-      const questions = b.questions as unknown[] | undefined;
-      return questions?.length ?? 0;
-    }
-    case 'nc-grid': {
-      const cards = b.cards as unknown[] | undefined;
-      return cards?.length ?? 0;
-    }
-    case 'diskusi': {
-      const questions = b.questions as unknown[] | undefined;
-      const kelompok = b.kelompok as unknown[] | undefined;
-      return (questions?.length ?? 0) + (kelompok?.length ?? 0);
-    }
-    case 'rangkuman': {
-      const concepts = b.concepts as unknown[] | undefined;
-      return concepts?.length ?? 0;
-    }
-    case 'skenario': {
-      const chapters = b.chapters as unknown[] | undefined;
-      return chapters?.length ?? 0;
-    }
-    case 'refleksi': {
-      const questions = b.questions as unknown[] | undefined;
-      return questions?.length ?? 0;
-    }
-    case 'tabel-accord': {
-      const rows = b.rows as unknown[] | undefined;
-      return rows?.length ?? 0;
-    }
-    case 'materi-section': {
-      const content = b.content as unknown[] | undefined;
-      return content?.length ?? 0;
-    }
-    case 'ftab': {
-      const tabs = b.tabs as unknown[] | undefined;
-      return tabs?.length ?? 0;
-    }
-    case 'penutup': {
-      const preview = b.preview as unknown[] | undefined;
-      return preview?.length ?? 0;
-    }
-    case 'tujuan-display': {
-      const objectives = b.objectives as unknown[] | undefined;
-      return objectives?.length ?? 0;
-    }
-    default:
-      return 1;
+  const profile = COMPRESSION_PROFILES[block.type];
+  if (profile?.itemCounter) {
+    return profile.itemCounter(block);
   }
+  return 1; // Default: always eligible for compression
 }
 
 /** Get default parameters for a compression strategy */

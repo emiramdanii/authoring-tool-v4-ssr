@@ -126,6 +126,8 @@ export {
   setPageSchemaBlocks,
   findPageIdByType,
   findPageIdsByType,
+  // Registry-derived mapping cache invalidation
+  invalidateBlockTemplateMapping,
   // Transaction-based operations
   commitSceneTransaction,
   rebalancePageCompression,
@@ -172,6 +174,11 @@ export {
   isCompositeBlockType,
   // Composite container descriptor (descriptor-driven access)
   getCompositeContainerDescriptor,
+  // Full-page / Game block type sets (data-driven, replaces hardcoded checks)
+  isFullPageBlockTypeExplicit,
+  isGameBlockType,
+  getGameBlockTypes,
+  getFullPageBlockTypes,
   // CanvaElement bridges (legacy type space → capability registry)
   isInteractiveElementType,
   isCanvaElementPreviewable,

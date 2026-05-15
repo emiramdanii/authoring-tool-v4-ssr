@@ -31,33 +31,83 @@ import { isBlockTypeCompressionCapable, isBlockTypeSplittable } from './capabili
 import { computeScenePlan, type ScenePlan } from '../layout/SceneOverflowEngine';
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
+import { getBlockMeta } from '../registry/BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK TYPE → TEMPLATE TYPE MAPPING
 // ═══════════════════════════════════════════════════════════════════
 // Maps SchemaBlock.type to the templateType of pages that should
-// contain this block type. Used by applyBlocksToPages() to find
+// contain this block type. Used by applyBlocksByBlockType() to find
 // the right pages to update.
+//
+// DERIVED from BlockDefinitionRegistry.usedInTemplates:
+//   Each block definition has a `usedInTemplates` array that lists
+//   which page template types can contain this block. We derive
+//   the mapping from the registry instead of hardcoding it here.
+//
+// Adding a new block type? Just set usedInTemplates in
+// BlockDefinitionRegistry — this mapping auto-updates.
 
-const BLOCK_TO_TEMPLATE: Record<string, string[]> = {
-  'cover': ['cover'],
-  'petunjuk': ['petunjuk'],
-  'tp': ['dokumen', 'tujuan'],
-  'alur': ['dokumen'],
-  'tujuan-display': ['tujuan'],
-  'motivasi': ['motivasi'],
-  'materi-section': ['materi'],
-  'def-box': ['materi'],
-  'nc-grid': ['materi'],
-  'flashcard-set': ['materi'],
-  'skenario': ['skenario'],
-  'diskusi': ['diskusi'],
-  'kuis': ['kuis'],
-  'refleksi': ['refleksi'],
-  'rangkuman': ['rangkuman'],
-  'hasil': ['hasil'],
-  'penutup': ['penutup'],
-};
+/** Cache for the derived block→template mapping */
+let _blockToTemplateCache: Record<string, string[]> | null = null;
+
+/**
+ * Derive the BLOCK_TO_TEMPLATE mapping from BlockDefinitionRegistry.
+ *
+ * Each BlockDefinitionMeta.usedInTemplates lists which page template
+ * types can contain this block type. This function inverts that
+ * relationship to produce a blockType → templateType[] mapping.
+ *
+ * The result is cached — call getBlockTemplateMapping() instead of
+ * rebuilding on every access.
+ */
+function buildBlockToTemplateMapping(): Record<string, string[]> {
+  const mapping: Record<string, string[]> = {};
+
+  // All known block types from the registry
+  const knownTypes = [
+    'cover', 'hero', 'petunjuk', 'tp', 'alur', 'skenario',
+    'def-box', 'nc-grid', 'flashcard-set', 'ftab', 'nk-card',
+    'materi-section', 'diskusi', 'kuis',
+    'sortir-game', 'roda-game', 'memory-game', 'matching-game',
+    'fill-blank-game', 'word-search-game', 'true-false-game',
+    'drag-drop-game', 'crossword-game', 'team-buzzer-game',
+    'hasil', 'refleksi', 'penutup', 'tabel-accord',
+    'tujuan-display', 'motivasi', 'rangkuman',
+  ];
+
+  for (const blockType of knownTypes) {
+    const meta = getBlockMeta(blockType);
+    if (meta?.usedInTemplates && meta.usedInTemplates.length > 0) {
+      mapping[blockType] = [...meta.usedInTemplates];
+    }
+  }
+
+  return mapping;
+}
+
+/**
+ * Get the block→template mapping (cached).
+ * This is the SINGLE SOURCE OF TRUTH for which block types
+ * belong to which page template types.
+ *
+ * Uses BlockDefinitionRegistry.usedInTemplates as the source,
+ * so adding a new block type only requires updating the registry.
+ */
+function getBlockTemplateMapping(): Record<string, string[]> {
+  if (!_blockToTemplateCache) {
+    _blockToTemplateCache = buildBlockToTemplateMapping();
+  }
+  return _blockToTemplateCache;
+}
+
+/**
+ * Invalidate the block→template mapping cache.
+ * Call this if block definitions change at runtime (rare).
+ */
+export function invalidateBlockTemplateMapping(): void {
+  _blockToTemplateCache = null;
+}
 
 /**
  * Apply SchemaBlock[] to canvas pages matching the template type.
@@ -211,7 +261,8 @@ export function applyBlocksByBlockType(
   blockType: string,
   blocks: SchemaBlock[],
 ): number {
-  const templateTypes = BLOCK_TO_TEMPLATE[blockType] || [];
+  const mapping = getBlockTemplateMapping();
+  const templateTypes = mapping[blockType] || [];
   let totalUpdated = 0;
 
   for (const tt of templateTypes) {

@@ -148,9 +148,11 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
   // ── Special rules based on block type ──
   // These are type-level inferences that are always true regardless of hints.
   // We keep this minimal — prefer hints over hardcoded rules.
+  // Each rule uses a Set lookup instead of hardcoded string checks,
+  // making it easy to add new types without editing conditionals.
 
-  // Cover/hero blocks fill entire scene — never split, never lazy render
-  if (type === 'cover' || type === 'hero') {
+  // Full-page blocks (cover, hero) fill entire scene — never split/compress
+  if (FULL_PAGE_BLOCK_TYPES.has(type)) {
     derived.splittable = false;
     derived.lazyRenderable = false;
     derived.compressionCapable = false;
@@ -166,7 +168,7 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
   // Game blocks are always interactive, not measurable, not splittable
   // Games have fixed visual layout — they don't participate in height
   // measurement and their content is clipped, not resized or scrolled.
-  if (type.endsWith('-game')) {
+  if (GAME_BLOCK_TYPES.has(type)) {
     derived.interactive = true;
     derived.measurable = false;    // Games have fixed visual layout
     derived.splittable = false;
@@ -321,6 +323,66 @@ export function deriveOverflowRule(blockType: string): OverflowRule {
   // All other blocks: content blocks, interactive content, composites
   // They expand to fit content, then compression kicks in if needed
   return 'autoResize';
+}
+
+// ── Full-Page Block Detection ─────────────────────────────────
+// Full-page blocks fill the entire scene height and never participate
+// in normal flow layout (no splitting, no compression, no lazy render).
+// This is the SINGLE SOURCE OF TRUTH for which block types are full-page.
+// All code that checks `type === 'cover' || type === 'hero'` should use
+// isFullPageBlockType() or this set instead.
+
+/** Known full-page block types (fill entire scene, never split/compress) */
+const FULL_PAGE_BLOCK_TYPES = new Set([
+  'cover',  // Cover page — always fills 1280×720
+  'hero',   // Hero banner — always fills 1280×720
+]);
+
+// ── Game Block Detection ───────────────────────────────────────
+// Game blocks are always interactive, not measurable, not splittable.
+// This replaces the old `type.endsWith('-game')` convention.
+//
+// WHY a set instead of string matching:
+//   - `endsWith('-game')` is fragile — a block named 'my-game' that
+//     isn't a game would get wrong capabilities
+//   - A set is explicit and auditable — you can see every game type
+//   - New game types MUST be added here (and to BlockDefinitionRegistry)
+//
+// Adding a new game type? Add it to this set AND to BlockDefinitionRegistry.
+// The capability registry will automatically derive the right capabilities.
+
+/** Known game block types (always interactive, fixed layout, not measurable) */
+const GAME_BLOCK_TYPES = new Set([
+  'sortir-game',
+  'roda-game',
+  'memory-game',
+  'matching-game',
+  'fill-blank-game',
+  'word-search-game',
+  'true-false-game',
+  'drag-drop-game',
+  'crossword-game',
+  'team-buzzer-game',
+]);
+
+/** Check if a block TYPE is a known full-page block */
+export function isFullPageBlockTypeExplicit(type: string): boolean {
+  return FULL_PAGE_BLOCK_TYPES.has(type);
+}
+
+/** Check if a block TYPE is a known game block */
+export function isGameBlockType(type: string): boolean {
+  return GAME_BLOCK_TYPES.has(type);
+}
+
+/** Get all known game block types (for iteration/mapping) */
+export function getGameBlockTypes(): ReadonlySet<string> {
+  return GAME_BLOCK_TYPES;
+}
+
+/** Get all known full-page block types (for iteration/mapping) */
+export function getFullPageBlockTypes(): ReadonlySet<string> {
+  return FULL_PAGE_BLOCK_TYPES;
 }
 
 // ── Composite Block Detection ──────────────────────────────────
@@ -485,11 +547,21 @@ export function isInteractiveElementType(type: string): boolean {
  * @param type - CanvaElement type string ('kuis', 'game', 'materi', 'modul', etc.)
  * @returns true if the element should render a preview widget on canvas
  */
+// ── CanvaElement Previewable Types ───────────────────────────
+// Centralized set of CanvaElement types that show a preview widget
+// on the canvas stage. This replaces scattered `type === 'materi' || type === 'modul'`
+// checks and makes it easy to add new previewable types.
+
+const PREVIEWABLE_ELEMENT_TYPES = new Set([
+  'materi',  // Shows PresetModuleCard preview
+  'modul',   // Shows PresetModuleCard preview
+]);
+
 export function isCanvaElementPreviewable(type: string): boolean {
   // Interactive elements always show a preview widget
   if (isInteractiveElementType(type)) return true;
   // Module/materi types show PresetModuleCard preview
-  if (type === 'materi' || type === 'modul') return true;
+  if (PREVIEWABLE_ELEMENT_TYPES.has(type)) return true;
   return false;
 }
 

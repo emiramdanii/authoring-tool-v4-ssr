@@ -935,3 +935,55 @@ Stage Summary:
 - Game types now correctly derive `measurable: false` → overflow 'clip'
 - `internalScroll` is always an explicit override (never derived from 'interactive')
 - CanvaElement type space properly bridged via isCanvaElementPreviewable()
+---
+Task ID: 1a
+Agent: Main Agent
+Task: Make capability-registry.ts data-driven (replace hardcoded type checks)
+
+Work Log:
+- Added FULL_PAGE_BLOCK_TYPES set (replaces `type === 'cover' || type === 'hero'`)
+- Added GAME_BLOCK_TYPES set (replaces `type.endsWith('-game')` convention)
+- Added PREVIEWABLE_ELEMENT_TYPES set (replaces `type === 'materi' || type === 'modul'`)
+- Exported isFullPageBlockTypeExplicit(), isGameBlockType(), getGameBlockTypes(), getFullPageBlockTypes()
+- Updated getBlockCapabilities() to use Set.has() instead of string equality
+- Updated isCanvaElementPreviewable() to use PREVIEWABLE_ELEMENT_TYPES set
+- Added new exports to schema/index.ts barrel
+
+Stage Summary:
+- capability-registry.ts is now fully data-driven — adding new types only requires adding to a Set
+- Build verified clean
+
+---
+Task ID: 1b
+Agent: Main Agent
+Task: Wire itemCounter into CompressionEngine profiles
+
+Work Log:
+- Added itemCounter field to CompressionProfile interface
+- Added countField() and countFieldsSum() helper functions for type-safe array length extraction
+- Added itemCounter to all 15 compression profile entries
+- Replaced giant countBlockItems() switch statement with profile-based delegation
+- countBlockItems() now simply calls profile.itemCounter(block) with fallback to 1
+
+Stage Summary:
+- countBlockItems() reduced from 65 lines of switch to 6 lines of registry delegation
+- Adding new compressible block types only requires adding itemCounter to profile — no engine edits needed
+- Build verified clean
+
+---
+Task ID: 1c
+Agent: Main Agent
+Task: Derive BLOCK_TO_TEMPLATE from usedInTemplates in schema-apply.ts
+
+Work Log:
+- Replaced hardcoded BLOCK_TO_TEMPLATE constant with registry-derived buildBlockToTemplateMapping()
+- Added getBlockTemplateMapping() with caching for performance
+- Added invalidateBlockTemplateMapping() for cache invalidation (rare use)
+- applyBlocksByBlockType() now uses registry-derived mapping instead of hardcoded Record
+- Added getBlockMeta import from BlockDefinitionRegistry
+- Added invalidateBlockTemplateMapping to barrel exports
+
+Stage Summary:
+- BLOCK_TO_TEMPLATE is now derived from BlockDefinitionRegistry.usedInTemplates
+- Adding new block types only requires setting usedInTemplates in registry — mapping auto-updates
+- Build verified clean
