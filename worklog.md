@@ -656,3 +656,33 @@ Stage Summary:
   - ✅ Schema version migration system
   - ✅ Dev-mode deep freeze + validation guards
   - ✅ Undo/Redo (already implemented with patch-based + snapshot hybrid)
+---
+Task ID: schema-deep-layers
+Agent: Main
+Task: Implement 4 priority schema architecture layers — Operations, Capabilities, Transactions, Isolation
+
+Work Log:
+- Audited existing schema code: immutable.ts had gaps (no nested move, no duplicate, no split/merge)
+- Audited BlockDefinitionRegistry: capabilities were hardcoded, no derivation from hints
+- Audited SceneOverflowEngine: no transaction system for atomic operations
+- Audited session state: no formal boundary between document and interaction state
+- Implemented moveBlockNested() with ContainerRef for tree-aware nested movement
+- Implemented insertBlockNested() for inserting into materi-section/ftab/children
+- Implemented duplicateBlock() with automatic nested ID regeneration
+- Implemented splitScene() for document-level page splitting
+- Implemented mergeScene() with duplicate ID detection and resolution
+- Created BlockCapabilityRegistry: derives 5 capabilities from CompressionHints + SemanticHints
+- Created SceneTransaction: atomic batch mutations with rollback on failure
+- Created session-state.ts: DocumentState vs SessionInteractionState formal boundary
+- Created purity guard: isDocumentPure() and assertDocumentPurity()
+- Created barrel index.ts for schema module
+- Updated core/index.ts with all new exports
+- Exported inferSemanticDefaults from schema-migration.ts
+- All code passes TypeScript type check and Next.js production build
+- Committed and pushed to origin/main
+
+Stage Summary:
+- 7 files changed, 1614 insertions(+), 11 deletions(-)
+- 4 new files: capability-registry.ts, index.ts, scene-transaction.ts, session-state.ts
+- 3 modified files: immutable.ts, schema-migration.ts, core/index.ts
+- Schema module now has complete operation layer, capability registry, transaction system, and interaction isolation
