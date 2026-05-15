@@ -22,6 +22,7 @@ import type { CanvaState } from './types';
 import type { CanvaPage, CanvaElement } from '@/components/canva/types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES } from '@/lib/canva-constants';
+import { isInteractiveElementType } from '@/core/schema/capability-registry';
 
 export type SyncSlice = Pick<CanvaState, 'syncTemplateData'>;
 
@@ -65,19 +66,27 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
       const syncElementIds = (els: CanvaElement[]): { result: CanvaElement[]; changed: boolean } => {
         let changed = false;
         const result = els.map(el => {
-          if (el.type === 'game' && !el.moduleId && el.dataIdx != null && el.dataIdx >= 0) {
-            const gameModules = authStore.modules.filter((m: Record<string, unknown>) =>
-              (GAME_TYPES as readonly string[]).includes(m.type as string)
-            );
-            if (el.dataIdx < gameModules.length && gameModules[el.dataIdx]._id) {
-              changed = true;
-              return { ...el, moduleId: gameModules[el.dataIdx]._id as string };
+          // Use capability registry as single source of truth for interactive element detection.
+          // Previously: hardcoded `el.type === 'game'` / `el.type === 'kuis'` checks.
+          // Now: isInteractiveElementType() covers all interactive types, with
+          // specific handling for game→moduleId and kuis→kuisId re-sync.
+          if (isInteractiveElementType(el.type) && el.dataIdx != null && el.dataIdx >= 0) {
+            // Game elements need moduleId re-sync
+            if (el.type === 'game' && !el.moduleId) {
+              const gameModules = authStore.modules.filter((m: Record<string, unknown>) =>
+                (GAME_TYPES as readonly string[]).includes(m.type as string)
+              );
+              if (el.dataIdx < gameModules.length && gameModules[el.dataIdx]._id) {
+                changed = true;
+                return { ...el, moduleId: gameModules[el.dataIdx]._id as string };
+              }
             }
-          }
-          if (el.type === 'kuis' && !el.kuisId && el.dataIdx != null && el.dataIdx >= 0) {
-            if (el.dataIdx < authStore.kuis.length && authStore.kuis[el.dataIdx]._id) {
-              changed = true;
-              return { ...el, kuisId: authStore.kuis[el.dataIdx]._id as string };
+            // Kuis elements need kuisId re-sync
+            if (el.type === 'kuis' && !el.kuisId) {
+              if (el.dataIdx < authStore.kuis.length && authStore.kuis[el.dataIdx]._id) {
+                changed = true;
+                return { ...el, kuisId: authStore.kuis[el.dataIdx]._id as string };
+              }
             }
           }
           return el;

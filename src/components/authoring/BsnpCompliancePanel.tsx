@@ -22,6 +22,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { PanelId } from '@/store/authoring/types';
+import { isGameBlockType, isBlockTypeInteractive } from '@/core/schema/capability-registry';
 
 // ═══════════════════════════════════════════════════════════════════
 // BSNP COMPLIANCE PANEL — Enhanced with sub-checks & auto-fix
@@ -289,14 +290,13 @@ export default function BsnpCompliancePanel() {
   const hasRangkuman = schemaBlockTypes.has('rangkuman');
   const hasMateriSection = schemaBlockTypes.has('materi-section');
 
-  // ── Game/interactive block detection (Phase 6 enhanced) ──────────
-  const GAME_BLOCK_TYPES = new Set([
-    'kuis', 'sortir-game', 'roda-game', 'skenario',
-    'memory-game', 'matching-game', 'fill-blank-game',
-    'word-search-game', 'true-false-game', 'drag-drop-game',
-    'crossword-game', 'team-buzzer-game',
-  ]);
-  const schemaGameCount = [...schemaBlockTypes].filter(t => GAME_BLOCK_TYPES.has(t)).length;
+  // ── Evaluasi block detection (Phase 6 enhanced) ────────────────
+  // Uses capability registry as single source of truth for game detection,
+  // plus BSNP-specific evaluasi types (kuis, skenario) that are
+  // assessment-oriented but not "game" blocks per the registry.
+  const schemaGameCount = [...schemaBlockTypes].filter(t =>
+    isGameBlockType(t) || t === 'kuis' || t === 'skenario'
+  ).length;
 
   // ── Compliance Logic with sub-checks ─────────────────────────────
   const petunjukStatus: ComplianceStatus =

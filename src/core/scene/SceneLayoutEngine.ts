@@ -24,7 +24,12 @@ import type { SchemaBlock, BlockLayout } from '../schema/types';
 import { getBlockMeta } from '../registry/BlockDefinitionRegistry';
 import { getMeasuredHeight, hasMeasurement } from '../layout/BlockMeasurer';
 import { computeCompressionDecision, type CompressionDecision } from '../layout/CompressionEngine';
-import { deriveOverflowRule, type OverflowRule } from '../schema/capability-registry';
+import {
+  deriveOverflowRule,
+  isFullPageBlockType,
+  isBlockTypeMeasurable,
+  type OverflowRule,
+} from '../schema/capability-registry';
 
 // ── Virtual Scene Coordinate System ───────────────────────────
 
@@ -388,16 +393,28 @@ export function estimateBlockHeight(
       contentHeight = tabHeaderH + progressBarH + maxTabContentH + 16; // 16px padding
       break;
     }
-    case 'cover':
-    case 'hero': {
-      // Cover/hero ALWAYS fills the entire scene height.
-      // Do NOT use estimatedHeight from registry (600px) — it leaves
-      // a 120px gap at the bottom of a 720px scene.
-      // Pass sceneH via options or fall back to a reasonable default.
-      contentHeight = options.sceneH ?? 720;
-      break;
-    }
     default: {
+      // ── Full-page blocks (cover, hero, etc.) ──
+      // Uses capability registry as single source of truth instead of
+      // hardcoded type checks. Any new full-page block type added to
+      // FULL_PAGE_BLOCK_TYPES in capability-registry.ts is automatically handled.
+      if (isFullPageBlockType(block.type)) {
+        // Cover/hero ALWAYS fills the entire scene height.
+        // Do NOT use estimatedHeight from registry (600px) — it leaves
+        // a 120px gap at the bottom of a 720px scene.
+        // Pass sceneH via options or fall back to a reasonable default.
+        contentHeight = options.sceneH ?? 720;
+        break;
+      }
+
+      // ── Non-measurable blocks (games, etc.) ──
+      // These have fixed visual layout — use registry base height.
+      // No content-based adjustment needed.
+      if (!isBlockTypeMeasurable(block.type)) {
+        contentHeight = baseHeight;
+        break;
+      }
+
       // Check if block has generic `children` — estimate their heights too.
       // This ensures blocks using BaseBlock.children get correct height
       // instead of falling through to a flat registry value.

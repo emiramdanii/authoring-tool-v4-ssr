@@ -39,6 +39,7 @@
 
 import type { SchemaBlock, ScreenSchema, CompressionHints, SemanticHints, BlockLayout } from './types';
 import { logger } from '@/core/utils/logger';
+import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
 
 // ── Registered Block Types ──────────────────────────────────────
 // These are the valid type values for SchemaBlock.
@@ -341,36 +342,46 @@ export function validateBlock(
     }
   }
 
-  // 11. Validate nested content blocks (materi-section, ftab)
+  // 11. Validate nested content blocks in composites (materi-section, ftab, etc.)
+  // Uses capability registry's CompositeContainerDescriptor as single source of truth.
+  // When a new composite block type is added, just add a descriptor to the registry —
+  // this validation code automatically supports it.
   const blockType: string = block.type;
-  if (blockType === 'materi-section' && 'content' in block) {
-    const content = (block as { content: SchemaBlock[] }).content;
-    if (Array.isArray(content)) {
-      for (let i = 0; i < content.length; i++) {
-        const childResult = validateBlock(content[i], {
-          ...options,
-          pathPrefix: `${prefix}.content[${i}]`,
-          seenIds,
-        });
-        errors.push(...childResult.errors);
-        warnings.push(...childResult.warnings);
-      }
-    }
-  }
-
-  if (blockType === 'ftab' && 'tabs' in block) {
-    const tabs = (block as { tabs: Array<{ content?: SchemaBlock[] }> }).tabs;
-    if (Array.isArray(tabs)) {
-      for (let t = 0; t < tabs.length; t++) {
-        if (Array.isArray(tabs[t].content)) {
-          for (let i = 0; i < tabs[t].content!.length; i++) {
-            const childResult = validateBlock(tabs[t].content![i], {
+  if (isCompositeBlockType(blockType)) {
+    const descriptor = getCompositeContainerDescriptor(blockType);
+    if (descriptor && descriptor.accessor in block) {
+      if (descriptor.structure === 'direct') {
+        // Direct: accessor gives SchemaBlock[] (e.g., materi-section.content)
+        const content = (block as Record<string, unknown>)[descriptor.accessor];
+        if (Array.isArray(content)) {
+          for (let i = 0; i < content.length; i++) {
+            const childResult = validateBlock(content[i] as SchemaBlock, {
               ...options,
-              pathPrefix: `${prefix}.tabs[${t}].content[${i}]`,
+              pathPrefix: `${prefix}.${descriptor.accessor}[${i}]`,
               seenIds,
             });
             errors.push(...childResult.errors);
             warnings.push(...childResult.warnings);
+          }
+        }
+      } else if (descriptor.structure === 'tabular') {
+        // Tabular: accessor gives array of tab objects, each with content (e.g., ftab.tabs)
+        const tabs = (block as Record<string, unknown>)[descriptor.accessor];
+        if (Array.isArray(tabs)) {
+          const contentKey = descriptor.tabContentKey || 'content';
+          for (let t = 0; t < tabs.length; t++) {
+            const tabContent = (tabs[t] as Record<string, unknown>)?.[contentKey];
+            if (Array.isArray(tabContent)) {
+              for (let i = 0; i < tabContent.length; i++) {
+                const childResult = validateBlock(tabContent[i] as SchemaBlock, {
+                  ...options,
+                  pathPrefix: `${prefix}.${descriptor.accessor}[${t}].${contentKey}[${i}]`,
+                  seenIds,
+                });
+                errors.push(...childResult.errors);
+                warnings.push(...childResult.warnings);
+              }
+            }
           }
         }
       }

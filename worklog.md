@@ -987,3 +987,24 @@ Stage Summary:
 - BLOCK_TO_TEMPLATE is now derived from BlockDefinitionRegistry.usedInTemplates
 - Adding new block types only requires setting usedInTemplates in registry — mapping auto-updates
 - Build verified clean
+
+---
+Task ID: 1
+Agent: main
+Task: Wire BlockCapabilityRegistry into renderer/layout engine
+
+Work Log:
+- Audited 12+ files for hardcoded block type checks vs capability registry usage
+- BsnpCompliancePanel.tsx: Removed duplicate GAME_BLOCK_TYPES Set, replaced with isGameBlockType() import from capability-registry + BSNP-specific evaluasi logic
+- validation.ts: Replaced hardcoded `blockType === 'materi-section'` / `blockType === 'ftab'` checks with isCompositeBlockType() + getCompositeContainerDescriptor() — now automatically supports new composite types
+- sync-slice.ts: Replaced hardcoded `el.type === 'game'` / `el.type === 'kuis'` with isInteractiveElementType() as outer guard, keeping specific game/kuis ID re-sync logic
+- SceneLayoutEngine.ts: Replaced `case 'cover': case 'hero':` with isFullPageBlockType() check + added isBlockTypeMeasurable() guard for non-measurable blocks (games) — now automatically handles new full-page/non-measurable types
+- Verified: tsc --noEmit clean, next build successful
+
+Stage Summary:
+- 4 files successfully refactored to use BlockCapabilityRegistry as single source of truth
+- Eliminated 3 duplicate type sets/checks that could drift from the registry
+- New composite block types are now auto-supported in validation without code changes
+- New full-page block types are now auto-supported in SceneLayoutEngine without code changes
+- Non-measurable blocks (games) now correctly get registry base height instead of falling through
+- Build verified clean (0 TypeScript errors, Next.js production build successful)
