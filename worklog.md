@@ -1127,3 +1127,78 @@ Stage Summary:
   2. _compressedHeight could leak into localStorage (derived field)
   3. ui-slice.ts is 1912 lines (could benefit from decomposition)
   4. UI triggers for schema operations need enhancement
+
+---
+Task ID: P0-compressedHeight-leak
+Agent: Main Agent
+Task: Fix _compressedHeight localStorage leak — remove from schema type, add to purity guard, strip before persist
+
+Work Log:
+- Removed _compressedHeight from CompressionHints interface (types.ts)
+- Added compressedHeightCache to SessionInteractionState (session-state.ts)
+- Added _compressedHeight to RUNTIME_STATE_FIELDS purity guard set
+- Added nested compression object purity check (compression._compressedHeight)
+- Updated SceneTransaction.rebalanceSchema() to write compressed heights to runtime cache instead of schema
+- Added compressedHeights field to TransactionResult interface
+- Added stripRuntimeFieldsFromPages() helper in persistence-slice.ts
+- Strip _compressedHeight on saveToStorage, loadFromStorage, loadFromDB (handles legacy data)
+- Updated all TransactionResult early-returns in schema-apply.ts with compressedHeights: new Map()
+- Build verified: tsc clean + Next.js production build clean
+
+Stage Summary:
+- _compressedHeight no longer exists in CompressionHints type — removed at source
+- Rebalance transaction stores compressed heights in runtime cache (TransactionResult.compressedHeights)
+- Purity guard catches _compressedHeight in both top-level and nested compression objects
+- Legacy data with _compressedHeight is automatically stripped on load and save
+- No functional changes — layout engines use CompressionResult.compressedHeight independently
+
+---
+Task ID: P0-session-interaction-slice
+Agent: Main Agent
+Task: Create sessionInteractionSlice — group 14+ scattered session fields from ui-slice.ts
+
+Work Log:
+- Created session-slice.ts (196 lines) with all ephemeral UI interaction state
+- Extracted from ui-slice.ts: selectBlock, hoverBlock, startEditing, stopEditing, sceneIndex, sceneTotal, setSceneState, navigateScene, canvasPreview, toggleCanvasPreview, appMode, setAppMode, toggleLeftPanel, toggleRightPanel, _lastNudgeTime, selectedBlockIds
+- Added clearAllSelections() helper for mode transitions (DRY)
+- Wired createSessionSlice into store.ts
+- Updated ui-slice.ts type pick (removed session-related keys)
+- ui-slice.ts reduced from 1911 → 1769 lines (-142)
+- Build verified: tsc clean + Next.js production build clean
+
+Stage Summary:
+- Session state logically grouped in dedicated slice file
+- All session fields remain flat in CanvaState (no consumer changes needed)
+- clearAllSelections() eliminates duplicated selection-clearing code
+- Session slice is the Zustand-side counterpart of SessionInteractionState in session-state.ts
+
+---
+Task ID: P1-schema-helpers-extraction
+Agent: Main Agent
+Task: Extract shared schema helpers from ui-slice.ts to reduce duplication
+
+Work Log:
+- Created schema-helpers.ts with findBlockOwner() and commitSchemaUpdate()
+- Updated ui-slice.ts to import from schema-helpers instead of defining locally
+- Removed duplicate isCompositeBlock and getCompositeContainerDescriptor imports from ui-slice.ts (kept needed ones)
+- ui-slice.ts reduced from 1769 → 1683 lines (-86 additional)
+- Build verified: tsc clean + Next.js production build clean
+
+Stage Summary:
+- Shared helpers now accessible from any slice (block-crud, scene-transaction, etc.)
+- ui-slice.ts total reduction: 1911 → 1683 (-228 lines, -12%)
+- Purity: No functional changes — pure code reorganization
+
+---
+Task ID: P2-overflow-indicator-verification
+Agent: Main Agent
+Task: Verify OverflowIndicator onAction wiring in SchemaRenderer
+
+Work Log:
+- Read SchemaRenderer.tsx and confirmed OverflowIndicator onAction is fully wired
+- 'new-page' → splitPageAtBlock() ✅
+- 'compact' → rebalanceCurrentPage() ✅
+- 'step-mode' → promoteSceneSplit(1) ✅
+
+Stage Summary:
+- OverflowIndicator onAction wiring verified correct — no gaps
