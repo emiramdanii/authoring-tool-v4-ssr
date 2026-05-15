@@ -260,3 +260,88 @@ export function assertDocumentPurity(doc: DocumentState, source?: string): void 
     }
   }
 }
+
+// ── Compressed Height Cache ────────────────────────────────────
+// MODULE-LEVEL SINGLETON — same pattern as BlockMeasurer.measurementCache.
+//
+// WHY MODULE-LEVEL:
+//   1. Compressed heights persist across component re-renders
+//   2. Can be read synchronously by SceneOverflowEngine / SceneLayoutEngine
+//   3. No React state (avoids re-render loops)
+//   4. Per-session, NEVER persisted to localStorage
+//
+// LIFECYCLE:
+//   Written by: SceneTransaction.commit() → commitSceneTransaction() → writeCompressedHeights()
+//   Read by:   SceneOverflowEngine.computeScenePlan(), SceneLayoutEngine
+//   Cleared:   On page change, project change, or explicit invalidation
+//
+// This cache is the RUNTIME counterpart of the immutable compression
+// hints on SchemaBlock. The hints declare the STRATEGY (accordion,
+// reveal-set, etc.), while this cache stores the DERIVED RESULT
+// (block X should render at 280px instead of 350px).
+// ═══════════════════════════════════════════════════════════════════
+
+const _compressedHeightCache = new Map<string, number>();
+
+/**
+ * Get the compressed height for a block from the runtime cache.
+ * Returns undefined if no compressed height has been computed.
+ *
+ * Use this in layout engines instead of reading _compressedHeight
+ * from the schema (which was removed — that would leak derived data
+ * into localStorage).
+ */
+export function getCompressedHeight(blockId: string): number | undefined {
+  return _compressedHeightCache.get(blockId);
+}
+
+/**
+ * Check if a block has a cached compressed height.
+ */
+export function hasCompressedHeight(blockId: string): boolean {
+  return _compressedHeightCache.has(blockId);
+}
+
+/**
+ * Store a compressed height for a block.
+ * Called by commitSceneTransaction() after a successful transaction.
+ */
+export function setCompressedHeight(blockId: string, height: number): void {
+  _compressedHeightCache.set(blockId, Math.round(height));
+}
+
+/**
+ * Write a batch of compressed heights from a transaction result.
+ * This is the PRIMARY integration point — after every successful
+ * transaction that produces compressedHeights, call this to make
+ * them available to layout engines.
+ *
+ * @param heights - The compressedHeights Map from TransactionResult
+ */
+export function writeCompressedHeights(heights: Map<string, number>): void {
+  for (const [blockId, height] of heights) {
+    _compressedHeightCache.set(blockId, Math.round(height));
+  }
+}
+
+/**
+ * Remove a single block's compressed height (e.g., when block is deleted).
+ */
+export function removeCompressedHeight(blockId: string): void {
+  _compressedHeightCache.delete(blockId);
+}
+
+/**
+ * Clear all cached compressed heights.
+ * Call when the project changes or the user navigates away.
+ */
+export function clearCompressedHeightCache(): void {
+  _compressedHeightCache.clear();
+}
+
+/**
+ * Get all compressed heights as a readonly map (for debugging).
+ */
+export function getAllCompressedHeights(): ReadonlyMap<string, number> {
+  return _compressedHeightCache;
+}

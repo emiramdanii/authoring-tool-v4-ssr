@@ -24,7 +24,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva/store';
 import { generateBlockId, generatePageId } from './ensure-schema';
 import { assertValidBlocks, assertValidSchema } from './validation';
-import { assertDocumentPurity } from './session-state';
+import { assertDocumentPurity, writeCompressedHeights } from './session-state';
 import { createTransaction, type TransactionResult, type RebalanceOptions } from './scene-transaction';
 import { splitScene, mergeScene, produce } from './immutable';
 import { isBlockTypeCompressionCapable, isBlockTypeSplittable, isFullPageBlockType } from './capability-registry';
@@ -408,6 +408,17 @@ export function commitSceneTransaction(
 
   useCanvaStore.setState({ pages });
 
+  // ═══ Write compressed heights to runtime cache ═════════════════
+  // The transaction's rebalanceSchema() computes compressed heights
+  // and stores them in result.compressedHeights. We must write these
+  // to the module-level cache so layout engines can read them.
+  // Without this, the compressed heights are lost after commit and
+  // the layout engines would recompute independently — potentially
+  // producing different results than the transaction intended.
+  if (result.compressedHeights.size > 0) {
+    writeCompressedHeights(result.compressedHeights);
+  }
+
   return { ...result, pageUpdated: true };
 }
 
@@ -612,6 +623,11 @@ export function promoteSceneSplitToPage(
 
   useCanvaStore.setState({ pages });
 
+  // Write any compressed heights from the transaction to the runtime cache
+  if (result.compressedHeights.size > 0) {
+    writeCompressedHeights(result.compressedHeights);
+  }
+
   return {
     ...result,
     pageUpdated: true,
@@ -681,6 +697,11 @@ export function mergePagesTransaction(
     });
 
   useCanvaStore.setState({ pages });
+
+  // Write any compressed heights from the merge transaction to the runtime cache
+  if (result.compressedHeights.size > 0) {
+    writeCompressedHeights(result.compressedHeights);
+  }
 
   return { ...result, pageUpdated: true };
 }

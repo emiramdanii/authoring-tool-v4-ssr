@@ -30,6 +30,7 @@ import {
   isBlockTypeMeasurable,
   type OverflowRule,
 } from '../schema/capability-registry';
+import { getCompressedHeight } from '../schema/session-state';
 
 // ── Virtual Scene Coordinate System ───────────────────────────
 
@@ -492,9 +493,10 @@ export function resolveSceneLayout(
 
     // ═══ MEASUREMENT-FIRST: Use real DOM height if available ═══
     // This is the KEY change that makes layout deterministic.
-    // If the block has been measured by BlockMeasurer, use the real height.
-    // If not (first render), fall back to estimation.
+    // Height resolution priority: compressed cache > measured > estimated
     // Pipeline: Render (estimated) → Paint → Measure → Re-render (measured)
+    //   → Rebalance (compressed) → Re-render (compressed)
+    const compressedH = block.id ? getCompressedHeight(block.id) : undefined;
     const measuredH = block.id ? getMeasuredHeight(block.id) : undefined;
     const { height: estimatedH, minHeight, maxHeight } = estimateBlockHeight(block, {
       isCompact,
@@ -503,8 +505,11 @@ export function resolveSceneLayout(
       sceneH: scene.h,
     });
 
-    // Use measured height if available, otherwise use estimate
-    const height = measuredH != null ? measuredH : estimatedH;
+    // Use compressed > measured > estimated
+    // Compressed height takes precedence because it represents a deliberate
+    // layout decision from SceneTransaction.rebalanceSchema() — the engine
+    // should honor that decision rather than recomputing independently.
+    const height = compressedH != null ? compressedH : (measuredH != null ? measuredH : estimatedH);
 
     // Check if block overflows available space
     const remainingSpace = contentBottom - currentY;
@@ -518,10 +523,13 @@ export function resolveSceneLayout(
     //   - Content is accessible (expand on interaction)
     //   - No content is lost (unlike clip)
     //   - Block fits within scene bounds
+    //
+    // NOTE: If we already have a cached compressed height, the transaction
+    // already made the compression decision — don't recompute.
     let effectiveHeight = height;
     let compressionDecision: CompressionDecision | undefined;
 
-    if (isOverflowing && measuredH != null) {
+    if (compressedH == null && isOverflowing && measuredH != null) {
       // Try compression — only when we have real measurements
       const decision = computeCompressionDecision(
         block,

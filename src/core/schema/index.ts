@@ -200,6 +200,14 @@ export {
   deriveDocumentState,
   isDocumentPure,
   assertDocumentPurity,
+  // Compressed height cache (runtime, per-session, never persisted)
+  getCompressedHeight,
+  hasCompressedHeight,
+  setCompressedHeight,
+  writeCompressedHeights,
+  removeCompressedHeight,
+  clearCompressedHeightCache,
+  getAllCompressedHeights,
 } from './session-state';
 
 export type { DocumentState, SessionInteractionState } from './session-state';

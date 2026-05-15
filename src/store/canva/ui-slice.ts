@@ -22,6 +22,8 @@ import { computeScenePlan } from '@/core/layout/SceneOverflowEngine';
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/scene/SceneLayoutEngine';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 import { findBlockOwner, commitSchemaUpdate, type BlockOwner } from './schema-helpers';
+import { assertValidSchema } from '@/core/schema/validation';
+import { assertDocumentPurity } from '@/core/schema/session-state';
 
 export type UISlice = Pick<
   CanvaState,
@@ -1217,8 +1219,14 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   // ── Scene Transaction: Split Page at Block ──────────────────────
-  // Uses SceneTransaction for atomic split — measure → split → commit.
-  // If split fails (e.g., block is the last one), the schema is unchanged.
+  // Uses splitScene() for the actual split (pure function, returns
+  // two immutable schemas) with validation gates instead of a full
+  // SceneTransaction. Previous version created a transaction AND
+  // called splitScene() — redundant double work. Now we:
+  //   1. Validate pre-split (block exists, not last block)
+  //   2. Split via splitScene() (pure, returns [first, second])
+  //   3. Validate post-split (assertValidSchema + assertDocumentPurity)
+  //   4. Write to store
   splitPageAtBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -1236,17 +1244,8 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    // Use SceneTransaction for atomic split
-    const tx = createTransaction(schema);
-    tx.splitAt(blockId);
-    const result = tx.commit();
-
-    if (!result.success || !result.schema) {
-      toast.error('Split gagal: ' + (result.error || 'Unknown error'));
-      return;
-    }
-
-    // The transaction gives us the first half. We need the second half too.
+    // Perform the split — splitScene() is a pure function that returns
+    // two immutable ScreenSchemas without modifying the source.
     const splitResult = splitScene(schema, blockId);
     if (!splitResult) {
       toast.error('Split gagal: tidak bisa membagi scene');
@@ -1254,6 +1253,18 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     }
 
     const [firstSchema, secondSchema] = splitResult;
+
+    // Post-split validation — same guarantees as SceneTransaction.commit()
+    try {
+      assertValidSchema(firstSchema, 'splitPageAtBlock (first half)');
+      assertDocumentPurity(firstSchema, 'splitPageAtBlock (first half)');
+      assertValidSchema(secondSchema, 'splitPageAtBlock (second half)');
+      assertDocumentPurity(secondSchema, 'splitPageAtBlock (second half)');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error('Split gagal (validasi): ' + msg);
+      return;
+    }
 
     // Create a new page for the second half
     const newPageId = generatePageId();

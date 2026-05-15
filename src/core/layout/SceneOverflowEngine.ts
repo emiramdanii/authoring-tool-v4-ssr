@@ -38,6 +38,7 @@ import { estimateBlockHeight } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
 import { computeCompressionDecision, type CompressionDecision } from './CompressionEngine';
 import { isFullPageBlockType, isBlockTypeCompressionCapable, isBlockTypeSplittable } from '../schema/capability-registry';
+import { getCompressedHeight } from '../schema/session-state';
 
 // ── Scene Plan Types ───────────────────────────────────────────
 
@@ -178,24 +179,40 @@ export function computeScenePlan(
       continue;
     }
 
-    // Get block height: measured > estimated
-    const measuredH = block.id ? getMeasuredHeight(block.id) : undefined;
-    const { height: estimatedH } = estimateBlockHeight(block, {
-      isCompact,
-      variant: block.variant || 'A',
-      availableWidth: scene.w - safeArea.left - safeArea.right,
-      sceneH: scene.h,
-    });
-    let blockHeight = measuredH != null ? measuredH : estimatedH;
+    // Get block height: compressed cache > measured > estimated
+    // The compressed height cache is written by SceneTransaction.rebalanceSchema()
+    // and represents a deliberate layout decision that should take precedence.
+    // Without this, the engine would recompute compression independently,
+    // potentially producing different results than the transaction intended.
+    const compressedH = block.id ? getCompressedHeight(block.id) : undefined;
+    let blockHeight: number;
+    let measuredH: number | undefined;
+
+    if (compressedH != null) {
+      // Transaction already decided this block's compressed height — use it.
+      // Skip recompression since the transaction already determined the layout.
+      blockHeight = compressedH;
+    } else {
+      measuredH = block.id ? getMeasuredHeight(block.id) : undefined;
+      const { height: estimatedH } = estimateBlockHeight(block, {
+        isCompact,
+        variant: block.variant || 'A',
+        availableWidth: scene.w - safeArea.left - safeArea.right,
+        sceneH: scene.h,
+      });
+      blockHeight = measuredH != null ? measuredH : estimatedH;
+    }
 
     // ═══ COMPRESSION-FIRST: Try to compress before splitting ═══
     // If this block would cause overflow AND it supports compression,
     // compute a compressed height that fits within remaining space.
     // This keeps blocks on the same scene instead of splitting.
+    // NOTE: Skip compression if we already have a cached compressed height
+    // (the transaction already made this decision).
     let prospectiveHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? blockGap : 0);
     let compressionDecision: CompressionDecision | undefined;
 
-    if (prospectiveHeight > availableHeight && measuredH != null && isBlockTypeCompressionCapable(block.type)) {
+    if (compressedH == null && prospectiveHeight > availableHeight && measuredH != null && isBlockTypeCompressionCapable(block.type)) {
       const remainingSpace = availableHeight - currentHeight - (currentBlockIds.length > 0 ? blockGap : 0);
       const decision = computeCompressionDecision(block, measuredH, remainingSpace);
       if (decision) {
