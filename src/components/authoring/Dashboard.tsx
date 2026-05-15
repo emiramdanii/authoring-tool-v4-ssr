@@ -162,12 +162,12 @@ export default function Dashboard() {
   const currentStep = flowSteps.findIndex((s) => !s.active);
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl page-transition">
+    <div className="p-8 space-y-8 max-w-4xl page-transition">
       {/* ══ HEADER ════════════════════════════════════════════════ */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-app-primary tracking-tight">Dashboard</h1>
-          <p className="text-sm text-app-secondary mt-1">Buat media pembelajaran interaktif dalam 5 langkah.</p>
+          <h1 className="text-2xl font-semibold text-app-primary tracking-tight">Dashboard</h1>
+          <p className="text-sm text-app-secondary mt-1.5">Buat media pembelajaran interaktif dalam 5 langkah.</p>
         </div>
         {isPresetMode && (
           <button
@@ -175,7 +175,7 @@ export default function Dashboard() {
               if (currentProjectId) { saveProject(); } else { saveToStorage(); }
               useAuthoringStore.setState({ activePreset: null });
             }}
-            className="px-3 py-1.5 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-lg hover:bg-emerald-600/30 transition-colors"
+            className="px-3 py-1.5 bg-app-success/10 border border-app-success/20 text-app-success text-xs font-medium rounded-lg hover:bg-app-success/15 transition-colors"
           >
             Simpan sebagai Proyek
           </button>
@@ -185,12 +185,12 @@ export default function Dashboard() {
       {/* ══ STATUS BAR ════════════════════════════════════════════ */}
       <div className="flex items-center gap-3">
         {/* Mode Badge */}
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
           isPresetMode
-            ? 'bg-app-accent/10 border border-app-accent/25 text-app-accent'
+            ? 'bg-app-accent/10 border border-app-accent/15 text-app-accent'
             : hasData
-              ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
-              : 'bg-app-elevated/30 border border-app-border/30 text-app-muted'
+              ? 'bg-app-success/10 border border-app-success/15 text-app-success'
+              : 'bg-app-elevated/30 border border-app-border text-app-muted'
         }`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
           {isPresetMode ? `Preset: ${presetLabels[activePreset || ''] || activePreset}` : hasData ? 'Proyek Aktif' : 'Belum Ada Data'}
@@ -215,36 +215,36 @@ export default function Dashboard() {
 
       {/* ══ EMPTY STATE HERO (for first-time users) ══════════════ */}
       {!hasData && (
-        <div className="text-center py-8 bg-app-surface/40 border border-app-border/40 rounded-xl">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-950/50 mb-6">
-            <Rocket className="h-10 w-10 text-blue-500" />
+        <div className="text-center py-12 bg-app-surface border border-app-border rounded-2xl">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-app-accent/10 mb-6">
+            <Rocket className="h-8 w-8 text-app-accent" />
           </div>
-          <h2 className="text-2xl font-bold mb-2 text-app-primary">Mulai dari mana?</h2>
-          <p className="text-app-secondary mb-8 max-w-md mx-auto">
+          <h2 className="text-xl font-semibold mb-2 text-app-primary">Mulai dari mana?</h2>
+          <p className="text-sm text-app-secondary mb-8 max-w-md mx-auto">
             Buat media pembelajaran interaktif dalam 3 langkah mudah
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto px-4">
-            {/* Dari Template — opens Template Wizard */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto px-6">
+            {/* Dari Template */}
             <button
               onClick={() => setWizardOpen(true)}
-              className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-app-accent/40 hover:bg-app-accent/5 transition-all cursor-pointer group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border border-app-border bg-app-elevated/30 hover:border-app-accent/30 hover:bg-app-accent/5 transition-colors cursor-pointer group"
             >
-              <div className="w-12 h-12 rounded-full bg-app-accent/10 flex items-center justify-center group-hover:bg-app-accent/20 transition-colors">
-                <FileText className="h-6 w-6 text-app-accent" />
+              <div className="w-11 h-11 rounded-xl bg-app-accent/10 flex items-center justify-center group-hover:bg-app-accent/15 transition-colors">
+                <FileText className="h-5 w-5 text-app-accent" />
               </div>
-              <span className="text-sm font-semibold text-app-primary">Dari Template</span>
+              <span className="text-sm font-medium text-app-primary">Dari Template</span>
               <span className="text-xs text-app-muted">Pilih template siap pakai</span>
             </button>
 
             {/* Auto-Generate */}
             <button
               onClick={() => setActivePanel('autogen')}
-              className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all cursor-pointer group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border border-app-border bg-app-elevated/30 hover:border-purple-500/30 hover:bg-purple-500/5 transition-colors cursor-pointer group"
             >
-              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                <Sparkles className="h-6 w-6 text-purple-400" />
+              <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/15 transition-colors">
+                <Sparkles className="h-5 w-5 text-purple-400" />
               </div>
-              <span className="text-sm font-semibold text-app-primary">Auto-Generate</span>
+              <span className="text-sm font-medium text-app-primary">Auto-Generate</span>
               <span className="text-xs text-app-muted">AI buatkan untuk Anda</span>
             </button>
 
@@ -254,12 +254,12 @@ export default function Dashboard() {
                 useCanvaStore.getState().resetCanvas();
                 setActivePanel('canva');
               }}
-              className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all cursor-pointer group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border border-app-border bg-app-elevated/30 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-colors cursor-pointer group"
             >
-              <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-                <Pencil className="h-6 w-6 text-cyan-400" />
+              <div className="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/15 transition-colors">
+                <Pencil className="h-5 w-5 text-cyan-400" />
               </div>
-              <span className="text-sm font-semibold text-app-primary">Manual</span>
+              <span className="text-sm font-medium text-app-primary">Manual</span>
               <span className="text-xs text-app-muted">Buat dari nol</span>
             </button>
           </div>
@@ -268,17 +268,17 @@ export default function Dashboard() {
 
       {/* ══ ADAPTIVE "LANGKAH SELANJUTNYA" CARD ═════════════════ */}
       {hasData && (
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300">
+        <div className="bg-app-info/5 border border-app-info/15 rounded-xl p-4 flex items-center gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-app-info/10 flex items-center justify-center text-app-info">
             {nextStep.icon}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-blue-900 dark:text-blue-100 text-sm">Langkah Selanjutnya</p>
-            <p className="text-xs text-blue-700 dark:text-blue-300 truncate">{nextStep.step}</p>
+            <p className="font-medium text-app-primary text-sm">Langkah Selanjutnya</p>
+            <p className="text-xs text-app-secondary truncate">{nextStep.step}</p>
           </div>
           <button
             onClick={nextStep.action}
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors"
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-app-info text-white text-xs font-medium rounded-lg hover:bg-app-info/90 transition-colors"
           >
             Mulai <ArrowRight size={12} />
           </button>
@@ -287,8 +287,8 @@ export default function Dashboard() {
 
       {/* ══ TEMPLATE SELECTION (prominently placed) ══════════════ */}
       <div id="template-section">
-        <h2 className="text-sm font-semibold text-app-secondary mb-1">Mulai dengan Template</h2>
-        <p className="text-xs text-app-muted mb-3">Pilih preset data PPKn atau mulai dari proyek kosong.</p>
+        <h2 className="text-sm font-medium text-app-primary mb-1">Mulai dengan Template</h2>
+        <p className="text-xs text-app-muted mb-4">Pilih preset data PPKn atau mulai dari proyek kosong.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {templates.map((p) => {
             const isCurrentPreset = isPresetMode && activePreset === p.key;
@@ -296,20 +296,20 @@ export default function Dashboard() {
               <button
                 key={p.key}
                 onClick={() => handleTemplateClick(p.key)}
-                className={`rounded-xl p-4 text-center transition-all cursor-pointer border ${
+                className={`rounded-xl p-4 text-center transition-colors cursor-pointer border ${
                   isCurrentPreset
                     ? activeColorMap[p.color]
-                    : `border-app-border/40 bg-app-elevated/30 ${colorMap[p.color]}`
+                    : `border-app-border bg-app-elevated/20 ${colorMap[p.color]}`
                 }`}
               >
                 <div className="text-2xl mb-2">{p.icon}</div>
-                <div className="text-xs font-semibold text-app-primary">{p.label}</div>
-                <div className="text-[0.6rem] text-app-muted mt-0.5">{p.sub}</div>
+                <div className="text-xs font-medium text-app-primary">{p.label}</div>
+                <div className="text-[0.65rem] text-app-muted mt-0.5">{p.sub}</div>
                 {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
-                  <div className="text-[0.55rem] text-app-accent/80 font-bold mt-1 flex items-center justify-center gap-0.5"><Zap size={10} className="inline" /> Schema-Driven</div>
+                  <div className="text-[0.6rem] text-app-accent/70 font-medium mt-1.5 flex items-center justify-center gap-0.5"><Zap size={9} className="inline" /> Schema-Driven</div>
                 )}
                 {isCurrentPreset && (
-                  <div className="text-[0.6rem] text-app-accent font-bold mt-1.5">AKTIF</div>
+                  <div className="text-[0.6rem] text-app-accent font-medium mt-1.5">AKTIF</div>
                 )}
               </button>
             );
@@ -327,8 +327,8 @@ export default function Dashboard() {
       </div>
 
       {/* ══ FLOW PROGRESS ════════════════════════════════════════ */}
-      <div className="bg-app-surface/60 border border-app-border/60 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-app-secondary mb-4">Alur Kerja</h2>
+      <div className="bg-app-surface border border-app-border rounded-xl p-6">
+        <h2 className="text-sm font-medium text-app-primary mb-5">Alur Kerja</h2>
         <div className="flex items-start gap-0">
           {flowSteps.map((step, i) => {
             const isActive = step.active;
@@ -370,13 +370,13 @@ export default function Dashboard() {
         {/* Dokumen — primary CTA */}
         <button
           onClick={() => setActivePanel('dokumen')}
-          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-app-accent/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-surface border border-app-border rounded-xl p-4 hover:border-app-accent/20 hover:bg-app-elevated/30 transition-colors cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-app-accent/10 flex items-center justify-center text-app-accent flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-app-accent/10 flex items-center justify-center text-app-accent flex-shrink-0">
             <FileEdit size={18} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-app-primary">Isi Dokumen</div>
+            <div className="text-sm font-medium text-app-primary">Isi Dokumen</div>
             <div className="text-xs text-app-muted">CP, TP, ATP, Alur Pembelajaran</div>
           </div>
         </button>
@@ -384,13 +384,13 @@ export default function Dashboard() {
         {/* Konten — secondary CTA */}
         <button
           onClick={() => setActivePanel('konten')}
-          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-cyan-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-surface border border-app-border rounded-xl p-4 hover:border-cyan-500/20 hover:bg-app-elevated/30 transition-colors cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 flex-shrink-0">
             <Puzzle size={18} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-app-primary">Tambah Konten</div>
+            <div className="text-sm font-medium text-app-primary">Tambah Konten</div>
             <div className="text-xs text-app-muted">Kuis, modul interaktif, materi</div>
           </div>
         </button>
@@ -399,14 +399,14 @@ export default function Dashboard() {
         {isPresetMode && (
           <button
             onClick={() => setActivePanel('preview')}
-            className="flex items-center gap-4 bg-gradient-to-br from-fuchsia-900/30 to-purple-900/20 border border-fuchsia-500/30 rounded-xl p-4 hover:border-fuchsia-400/50 hover:from-fuchsia-900/40 hover:to-purple-900/30 transition-all cursor-pointer text-left"
+            className="flex items-center gap-4 bg-fuchsia-500/5 border border-fuchsia-500/15 rounded-xl p-4 hover:border-fuchsia-500/25 hover:bg-fuchsia-500/8 transition-colors cursor-pointer text-left"
           >
-            <div className="w-10 h-10 rounded-lg bg-fuchsia-500/15 flex items-center justify-center text-fuchsia-400 flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400 flex-shrink-0">
               <Zap size={18} />
             </div>
             <div>
-              <div className="text-sm font-semibold text-fuchsia-200">Schema Preview</div>
-              <div className="text-xs text-fuchsia-400/60">JSON-driven rendering + 7 tema</div>
+              <div className="text-sm font-medium text-app-primary">Schema Preview</div>
+              <div className="text-xs text-app-muted">JSON-driven rendering + 7 tema</div>
             </div>
           </button>
         )}
@@ -414,13 +414,13 @@ export default function Dashboard() {
         {/* Preview — tertiary CTA */}
         <button
           onClick={() => setActivePanel('preview')}
-          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-emerald-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-surface border border-app-border rounded-xl p-4 hover:border-emerald-500/20 hover:bg-app-elevated/30 transition-colors cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-lg flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 flex-shrink-0">
             📱
           </div>
           <div>
-            <div className="text-sm font-semibold text-app-primary">Preview Siswa</div>
+            <div className="text-sm font-medium text-app-primary">Preview Siswa</div>
             <div className="text-xs text-app-muted">Lihat tampilan lengkap siswa</div>
           </div>
         </button>
@@ -437,13 +437,13 @@ export default function Dashboard() {
               setActivePanel('canva');
             }
           }}
-          className="flex items-center gap-4 bg-app-elevated/40 border border-app-border/40 rounded-xl p-4 hover:border-purple-500/30 hover:bg-app-elevated/60 transition-all cursor-pointer text-left"
+          className="flex items-center gap-4 bg-app-surface border border-app-border rounded-xl p-4 hover:border-purple-500/20 hover:bg-app-elevated/30 transition-colors cursor-pointer text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 text-lg flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 flex-shrink-0">
             🎨
           </div>
           <div>
-            <div className="text-sm font-semibold text-app-primary">Desain Canva</div>
+            <div className="text-sm font-medium text-app-primary">Desain Canva</div>
             <div className="text-xs text-app-muted">Layout & visual slide</div>
           </div>
         </button>
@@ -451,12 +451,12 @@ export default function Dashboard() {
 
       {/* ══ Kelenkapan (collapsible — compact stats) ═════════════ */}
       {hasData && (
-        <details className="group bg-app-surface/40 border border-app-border/40 rounded-xl">
-          <summary className="px-5 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold text-app-secondary hover:text-app-primary transition-colors">
+        <details className="group bg-app-surface border border-app-border rounded-xl">
+          <summary className="px-5 py-3 cursor-pointer flex items-center justify-between text-sm font-medium text-app-secondary hover:text-app-primary transition-colors">
             <span>Statistik Proyek</span>
-            <span className="text-[0.7rem] text-app-muted group-open:rotate-180 transition-transform"><ChevronDown size={14} className="inline" /></span>
+            <span className="text-app-muted group-open:rotate-180 transition-transform"><ChevronDown size={14} className="inline" /></span>
           </summary>
-          <div className="px-5 pb-4 space-y-3">
+          <div className="px-5 pb-5 space-y-3">
             {/* Stats row */}
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
               {[
@@ -468,10 +468,10 @@ export default function Dashboard() {
                 { label: 'Game', val: games.length, icon: <Gamepad2 size={14} />, color: 'text-orange-400' },
                 { label: 'Materi', val: materi.blok.length, icon: <FileEdit size={14} />, color: 'text-sky-400' },
               ].map((s) => (
-                <div key={s.label} className="bg-app-elevated/30 rounded-lg p-2 text-center">
-                  <div className="text-sm mb-0.5">{s.icon}</div>
-                  <div className={`text-sm font-bold ${s.color}`}>{s.val}</div>
-                  <div className="text-[0.6rem] text-app-muted">{s.label}</div>
+                <div key={s.label} className="bg-app-elevated/20 rounded-lg p-3 text-center">
+                  <div className="text-sm mb-1">{s.icon}</div>
+                  <div className={`text-sm font-semibold ${s.color}`}>{s.val}</div>
+                  <div className="text-[0.65rem] text-app-muted">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -480,48 +480,48 @@ export default function Dashboard() {
       )}
 
       {/* ══ BOTTOM TOOLBAR ═══════════════════════════════════════ */}
-      <div className="flex items-center gap-2 pt-2 border-t border-app-border/40">
+      <div className="flex items-center gap-2 pt-4 border-t border-app-border">
         <button
           onClick={() => setWizardOpen(true)}
-          className="px-3 py-1.5 text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors flex items-center gap-1"
+          className="px-3 py-2 text-xs text-white bg-app-success hover:bg-app-success/90 rounded-lg font-medium transition-colors flex items-center gap-1.5"
         >
           <Plus size={12} />
           Buat Baru
         </button>
         <button
           onClick={() => newProject()}
-          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
+          className="px-3 py-2 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border transition-colors"
         >
           Proyek Baru
         </button>
         <button
           onClick={() => setActivePanel('projects')}
-          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
+          className="px-3 py-2 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border transition-colors"
         >
           Buka Proyek
         </button>
         <button
           onClick={() => setActivePanel('import')}
-          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
+          className="px-3 py-2 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border transition-colors"
         >
           Import
         </button>
         <button
           onClick={exportJSON}
-          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
+          className="px-3 py-2 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border transition-colors"
         >
           Export JSON
         </button>
         <button
           onClick={() => setActivePanel('autogen')}
-          className="px-3 py-1.5 text-xs text-app-accent hover:text-app-accent/80 bg-app-accent/5 hover:bg-app-accent/10 rounded-lg border border-app-accent/15 transition-colors"
+          className="px-3 py-2 text-xs text-app-accent hover:text-app-accent/80 bg-app-accent/5 hover:bg-app-accent/10 rounded-lg border border-app-accent/15 transition-colors"
         >
           Auto-Generate
         </button>
         <div className="flex-1" />
         <button
           onClick={() => currentProjectId ? saveProject() : saveToStorage()}
-          className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary transition-colors"
+          className="px-3 py-2 text-xs text-app-secondary hover:text-app-primary transition-colors"
         >
           Simpan
         </button>

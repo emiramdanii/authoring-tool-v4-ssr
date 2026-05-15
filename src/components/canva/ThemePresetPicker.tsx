@@ -66,7 +66,7 @@ export function ThemePresetPicker() {
       <PopoverContent
         align="end"
         side="top"
-        className="w-60 p-1.5 glass-panel border-app-border/30 shadow-lg"
+        className="w-60 p-1.5 bg-app-surface border border-app-border shadow-lg"
       >
         <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider px-2 py-1.5 mb-1 flex items-center gap-1.5">
           <Palette size={10} />

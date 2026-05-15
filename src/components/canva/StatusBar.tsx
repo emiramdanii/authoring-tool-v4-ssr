@@ -85,7 +85,7 @@ export default function StatusBar() {
   const saveConfig = saveIndicatorConfig[saveStatus];
 
   return (
-    <div className="flex items-center gap-3 px-4 py-1 glass-panel text-[10px] text-app-muted select-none">
+    <div className="flex items-center gap-3 px-4 py-1.5 bg-app-surface border-t border-app-border text-[11px] text-app-muted select-none">
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
         <Ratio size={11} className="text-app-muted" />

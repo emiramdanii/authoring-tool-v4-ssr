@@ -39,7 +39,7 @@ export default function RightPanel() {
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
 
   return (
-    <div className="w-full flex flex-col glass-panel overflow-y-auto custom-scrollbar">
+    <div className="w-full flex flex-col bg-app-surface overflow-y-auto custom-scrollbar">
 
       {/* ═══ Context header ═══ */}
       <div className="px-3 py-2 border-b border-app-border bg-app-surface/50 sticky top-0 z-10">

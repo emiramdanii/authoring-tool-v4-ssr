@@ -180,7 +180,7 @@ export default function AutoSaveRecovery() {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md mx-4 rounded-2xl glass-panel-strong border border-app-border shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      <div className="w-full max-w-md mx-4 rounded-2xl bg-app-surface border border-app-border shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         {/* Header */}
         <div className="px-5 py-4 bg-amber-500/10 border-b border-amber-500/20">
           <div className="flex items-center gap-3">

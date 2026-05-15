@@ -49,7 +49,7 @@ export function ToolbarNav() {
           <ChevronDown size={8} className={`transition-transform ${navOpen ? 'rotate-180' : ''}`} />
         </Button>
         {navOpen && (
-          <div className="absolute top-full left-0 mt-1 w-56 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-app-surface border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             <div className="px-3 py-1.5 bg-app-accent/10 border-b border-app-accent/20">
               <div className="text-[9px] font-bold text-app-accent uppercase tracking-wider">Navigasi</div>
             </div>

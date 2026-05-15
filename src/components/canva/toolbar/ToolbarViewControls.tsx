@@ -58,7 +58,7 @@ export function ToolbarViewControls() {
           <ChevronDown size={8} className={`transition-transform ${ratioOpen ? 'rotate-180' : ''}`} />
         </button>
         {ratioOpen && (
-          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl bg-app-surface border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             {RATIOS.map(r => (
               <button
                 key={r.id}

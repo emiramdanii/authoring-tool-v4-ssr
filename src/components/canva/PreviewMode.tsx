@@ -127,7 +127,7 @@ export default function PreviewMode() {
 
       {/* Floating navigation bar at bottom */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
-        <div className="glass-panel-strong rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-xl">
+        <div className="bg-app-surface border-b border-app-border rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-xl">
           {/* Back to Edit */}
           <Button
             variant="ghost"

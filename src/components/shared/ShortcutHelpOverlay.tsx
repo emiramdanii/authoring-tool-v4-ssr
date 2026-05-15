@@ -47,7 +47,7 @@ export function ShortcutHelpOverlay() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="glass-panel-strong rounded-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto custom-scrollbar"
+        className="bg-app-surface border border-app-border rounded-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto custom-scrollbar"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">

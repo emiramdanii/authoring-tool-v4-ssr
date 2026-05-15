@@ -74,7 +74,7 @@ export function ToolbarExport() {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-72 glass-panel-strong border border-app-border shadow-xl rounded-xl p-0 overflow-hidden"
+          className="w-72 bg-app-surface border border-app-border shadow-xl rounded-xl p-0 overflow-hidden"
         >
           {/* ── Preview Section ── */}
           <DropdownMenuLabel className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20 text-[9px] font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1">
@@ -165,7 +165,7 @@ export function ToolbarExport() {
               <Settings2 size={14} />
               <span>Lanjutan</span>
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="glass-panel-strong border border-app-border shadow-xl rounded-xl p-1 min-w-[180px]">
+            <DropdownMenuSubContent className="bg-app-surface border border-app-border shadow-xl rounded-xl p-1 min-w-[180px]">
               <DropdownMenuItem
                 onClick={clearCanvas}
                 className="px-2.5 py-2 gap-2 cursor-pointer"

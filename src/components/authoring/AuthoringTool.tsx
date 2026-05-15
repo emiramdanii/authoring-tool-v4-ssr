@@ -259,22 +259,22 @@ function AuthoringToolInner() {
 
   return (
     <div className="h-screen w-screen flex bg-app-surface text-app-primary overflow-hidden">
-      {/* ── Sidebar ─────────────────────────────────────────── */}
+      {/* ── Sidebar — Clean modern navigation ────────────── */}
       <aside
         role="navigation"
         aria-label="Menu utama"
         className={`${
-          sidebarOpen ? 'w-56' : 'w-14'
-        } flex-shrink-0 glass-panel-strong flex flex-col transition-all duration-300 ease-in-out`}
+          sidebarOpen ? 'w-60' : 'w-16'
+        } flex-shrink-0 bg-app-surface border-r border-app-border flex flex-col transition-all duration-300 ease-in-out`}
         style={{ minHeight: '100vh' }}
       >
         {/* Logo */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-5">
           {sidebarOpen ? (
             <div>
-              <div className="text-sm font-bold text-app-accent">Authoring Tool</div>
-              <div className="text-[0.65rem] text-app-muted mt-0.5">Media Pembelajaran Interaktif</div>
-              <span className="inline-block mt-1.5 bg-app-accent/10 text-app-accent px-2 py-0.5 rounded-full text-[0.6rem] font-semibold border border-app-accent/20">
+              <div className="text-base font-semibold text-app-primary tracking-tight">Authoring Tool</div>
+              <div className="text-xs text-app-muted mt-1">Media Pembelajaran Interaktif</div>
+              <span className="inline-block mt-2 bg-app-accent/10 text-app-accent px-2 py-0.5 rounded-md text-[0.65rem] font-medium">
                 v4.0
               </span>
             </div>
@@ -285,10 +285,10 @@ function AuthoringToolInner() {
           )}
         </div>
 
-        <div className="section-divider" />
+        <div className="section-divider mx-3" />
 
         {/* Navigation */}
-        <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto custom-scrollbar">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -296,10 +296,10 @@ function AuthoringToolInner() {
                 key={item.id}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
+                className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
                   activePanel === item.id
-                    ? 'nav-active font-semibold'
-                    : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
+                    ? 'nav-active font-medium'
+                    : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
                 }`}
                 title={item.label}
               >
@@ -310,7 +310,7 @@ function AuthoringToolInner() {
           })}
 
           {/* Divider */}
-          <div className="section-divider my-2" />
+          <div className="section-divider my-3" />
 
           {NAV_ITEMS_2.map((item) => {
             const Icon = item.icon;
@@ -319,10 +319,10 @@ function AuthoringToolInner() {
                 key={item.id}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-sm transition-colors focus-ring ${
+                className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
                   activePanel === item.id
-                    ? 'nav-active font-semibold'
-                    : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
+                    ? 'nav-active font-medium'
+                    : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
                 }`}
                 title={item.label}
               >
@@ -335,19 +335,19 @@ function AuthoringToolInner() {
 
         {/* Bottom Actions */}
         {sidebarOpen ? (
-          <div className="px-3 py-3 space-y-1.5">
-            <div className="section-divider mb-2" />
+          <div className="px-3 py-4 space-y-2">
+            <div className="section-divider mb-3" />
             <button
               onClick={saveAll}
               disabled={saving}
-              className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-bold transition-all disabled:opacity-60"
+              className="bg-app-accent text-app-inverse hover:bg-app-accent-hover w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-semibold transition-colors disabled:opacity-50"
             >
               <Save size={14} className={saving ? 'animate-spin' : ''} />
               {saving ? 'Menyimpan...' : 'Simpan Semua'}
             </button>
             <button
               onClick={exportJSON}
-              className="text-app-accent border-app-accent/20 bg-app-accent/10 hover:bg-app-accent/18 hover:border-app-accent/35 w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-bold transition-all"
+              className="text-app-secondary border border-app-border hover:bg-app-elevated/50 hover:text-app-primary w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
             >
               <Download size={14} />
               Export JSON
@@ -369,7 +369,7 @@ function AuthoringToolInner() {
               className="tooltip-trigger focus-ring"
               data-tip="Export JSON"
             >
-              <Download size={16} className="text-app-accent/70" />
+              <Download size={16} className="text-app-muted" />
             </button>
           </div>
         )}
@@ -379,18 +379,19 @@ function AuthoringToolInner() {
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* ── Header ───────────────────────────────────────── */}
         {!isCanva && !isPreview && (
-          <header className="h-12 flex-shrink-0 glass-panel-strong flex items-center gap-3 px-4">
+          <header className="h-14 flex-shrink-0 bg-app-surface border-b border-app-border flex items-center gap-3 px-5">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="text-app-muted hover:text-app-primary"
             >
               {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
             </Button>
 
             <div className="text-sm font-medium text-app-primary">
               {PANEL_TITLES[activePanel]}
-              <span className="text-app-muted font-normal"> / {meta.judulPertemuan || 'Proyek Baru'}</span>
+              <span className="text-app-muted font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
             {/* Dirty indicator */}
@@ -404,30 +405,36 @@ function AuthoringToolInner() {
             <div className="ml-auto flex items-center gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setActivePanel('preview')}
-                className="text-emerald-400 border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/18 hover:border-emerald-500/35"
+                className="text-app-success border-app-border hover:bg-app-elevated/50 hover:text-app-success"
               >
                 <Eye size={14} />
                 Preview
               </Button>
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={() => setActivePanel('canva')}
+                className="text-app-secondary"
               >
                 <Palette size={14} />
                 Canva
               </Button>
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={() => setActivePanel('import')}
+                className="text-app-secondary"
               >
                 <ArrowLeftRight size={14} />
                 Import
               </Button>
               <Button
+                size="sm"
                 onClick={saveAll}
                 disabled={saving}
-                className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-60"
+                className="bg-app-accent text-app-inverse hover:bg-app-accent-hover disabled:opacity-50 font-medium"
               >
                 <Save size={14} className={saving ? 'animate-spin' : ''} />
                 {saving ? '...' : 'Simpan'}

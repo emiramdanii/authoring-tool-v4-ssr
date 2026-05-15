@@ -165,14 +165,14 @@
   --semantic-error: #dc2626;
   --semantic-info: #3b82f6;
 
-  /* Navigation */
-  --semantic-nav-active-bg: rgba(251,191,36,0.1);
-  --semantic-nav-active-border: rgba(251,191,36,0.3);
-  --semantic-nav-active-text: #d97706;
+  /* Navigation — Modern active indicator */
+  --semantic-nav-active-bg: rgba(245,158,11,0.08);
+  --semantic-nav-active-border: rgba(245,158,11,0.2);
+  --semantic-nav-active-text: #b45309;
 
-  /* Glass */
-  --semantic-glass-bg: rgba(255,255,255,0.8);
-  --semantic-glass-bg-strong: rgba(255,255,255,0.95);
+  /* Glass — Now just solid surfaces */
+  --semantic-glass-bg: #ffffff;
+  --semantic-glass-bg-strong: #ffffff;
   --semantic-glass-border: #e2e8f0;
 
   /* Canvas (schema renderer — uses lighter palette in light mode) */
@@ -202,77 +202,77 @@
    DARK MODE — .dark class (toggled by next-themes ThemeProvider)
    ═══════════════════════════════════════════════════════════════════ */
 .dark {
-  /* ── shadcn/ui Dark ───────────────────────────────────────────── */
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* ── shadcn/ui Dark — Modern neutral palette ─────────────────── */
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.1 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.1 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.92 0 0);
+  --primary-foreground: oklch(0.1 0 0);
+  --secondary: oklch(0.16 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.16 0 0);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.08 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.16 0 0);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  /* ── Semantic Tokens — Dark Mode ──────────────────────────────── */
-  /* App Chrome */
-  --semantic-bg-app: #0f172a;
-  --semantic-bg-surface: #1e293b;
-  --semantic-bg-elevated: #334155;
-  --semantic-bg-overlay: rgba(0,0,0,0.5);
+  /* ── Semantic Tokens — Dark Mode (Modern Neutral) ─────────── */
+  /* App Chrome — Neutral dark palette (Linear/Vercel-inspired) */
+  --semantic-bg-app: #09090b;
+  --semantic-bg-surface: #111113;
+  --semantic-bg-elevated: #1c1c1f;
+  --semantic-bg-overlay: rgba(0,0,0,0.6);
 
   /* Text */
-  --semantic-text-primary: #f8fafc;
-  --semantic-text-secondary: #94a3b8;
-  --semantic-text-muted: #64748b;
-  --semantic-text-inverse: #0f172a;
+  --semantic-text-primary: #fafafa;
+  --semantic-text-secondary: #a1a1aa;
+  --semantic-text-muted: #71717a;
+  --semantic-text-inverse: #09090b;
 
   /* Borders */
-  --semantic-border-default: rgba(148,163,184,0.15);
-  --semantic-border-subtle: rgba(148,163,184,0.08);
-  --semantic-border-strong: rgba(148,163,184,0.25);
+  --semantic-border-default: rgba(255,255,255,0.08);
+  --semantic-border-subtle: rgba(255,255,255,0.04);
+  --semantic-border-strong: rgba(255,255,255,0.15);
 
-  /* Interactive */
-  --semantic-accent: #fbbf24;
-  --semantic-accent-hover: #f59e0b;
-  --semantic-accent-secondary: #3ecfcf;
+  /* Interactive — Refined amber accent */
+  --semantic-accent: #f59e0b;
+  --semantic-accent-hover: #d97706;
+  --semantic-accent-secondary: #22d3ee;
 
   /* Status */
   --semantic-success: #34d399;
   --semantic-warning: #f59e0b;
   --semantic-error: #f87171;
-  --semantic-info: #3b82f6;
+  --semantic-info: #60a5fa;
 
-  /* Navigation */
-  --semantic-nav-active-bg: rgba(251,191,36,0.15);
-  --semantic-nav-active-border: rgba(251,191,36,0.2);
+  /* Navigation — Modern active indicator */
+  --semantic-nav-active-bg: rgba(245,158,11,0.1);
+  --semantic-nav-active-border: rgba(245,158,11,0.2);
   --semantic-nav-active-text: #fbbf24;
 
-  /* Glass */
-  --semantic-glass-bg: rgba(30,41,59,0.75);
-  --semantic-glass-bg-strong: rgba(30,41,59,0.9);
-  --semantic-glass-border: rgba(148,163,184,0.15);
+  /* Glass — Now just solid surfaces */
+  --semantic-glass-bg: #111113;
+  --semantic-glass-bg-strong: #111113;
+  --semantic-glass-border: rgba(255,255,255,0.06);
 
   /* Canvas (schema renderer — uses darker palette in dark mode) */
   --semantic-canvas-bg: #0e1c2f;
@@ -282,8 +282,8 @@
   --semantic-canvas-muted: #6e90b5;
 
   /* Glow (pulseGlow animation — derived from accent) */
-  --glow-color: rgba(251, 191, 36, 0.3);
-  --glow-color-strong: rgba(251, 191, 36, 0.6);
+  --glow-color: rgba(245, 158, 11, 0.2);
+  --glow-color-strong: rgba(245, 158, 11, 0.4);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -365,45 +365,38 @@
    UTILITY CLASSES — Composed from semantic tokens
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Glass Panel Effect ──────────────────────────────────────── */
+/* ── Clean Panel Surfaces (replaces glass effects) ─────────── */
 .glass-panel {
-  background: var(--semantic-glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--semantic-glass-border);
+  background: var(--semantic-bg-surface);
+  border-right: 1px solid var(--semantic-border-subtle);
 }
 
 .glass-panel-strong {
-  background: var(--semantic-glass-bg-strong);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--semantic-glass-border);
+  background: var(--semantic-bg-surface);
+  border-bottom: 1px solid var(--semantic-border-subtle);
 }
 
-/* ── Subtle Inner Glow for Panels ────────────────────────────── */
+/* ── Subtle elevation for Panels ───────────────────────────── */
 .panel-inner-glow {
-  box-shadow:
-    inset 0 1px 0 0 rgba(148, 163, 184, 0.06),
-    0 0 0 0 transparent;
+  box-shadow: none;
 }
 
-/* ── Active Item Indicator ───────────────────────────────────── */
+/* ── Active Item Indicator — Modern left-accent bar ──────── */
 .nav-active {
   background: var(--semantic-nav-active-bg);
-  border: 1px solid var(--semantic-nav-active-border);
+  border: 1px solid transparent;
+  border-left: 3px solid var(--semantic-accent);
   color: var(--semantic-nav-active-text);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.08);
+  box-shadow: none;
 }
 
-/* ── Card Hover Effect ───────────────────────────────────────── */
+/* ── Card Hover Effect — Clean & Subtle ───────────────────── */
 .card-hover {
-  transition: all 150ms ease;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
 }
 .card-hover:hover {
-  background-color: var(--muted);
-  border-color: var(--semantic-nav-active-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transform: translateY(-1px);
+  background-color: var(--semantic-bg-elevated);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* ── Tooltip ─────────────────────────────────────────────────── */
@@ -434,22 +427,22 @@
   opacity: 1;
 }
 
-/* ── Custom Scrollbar ────────────────────────────────────────── */
+/* ── Custom Scrollbar — Refined & modern ──────────────────── */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--semantic-border-default);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--semantic-border-strong);
 }
 
-/* ── Range Input Styling ─────────────────────────────────────── */
+/* ── Range Input Styling — Clean modern slider ────────────── */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -464,13 +457,14 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--semantic-accent), var(--semantic-accent-hover));
+  background: var(--semantic-accent);
   cursor: pointer;
-  box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+  border: 2px solid var(--semantic-bg-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: box-shadow 0.15s ease;
 }
 input[type="range"]::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 /* ── Color Input ─────────────────────────────────────────────── */
@@ -496,10 +490,10 @@ select {
   padding-right: 24px;
 }
 
-/* ── Section Divider ─────────────────────────────────────────── */
+/* ── Section Divider — Clean solid line ───────────────────── */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--semantic-border-subtle), transparent);
+  background: var(--semantic-border-subtle);
 }
 
 /* ── Accent Top Bar for Cards ────────────────────────────────── */
@@ -548,13 +542,13 @@ select {
   50% { opacity: 0.4; }
 }
 
-/* ── Focus Ring ──────────────────────────────────────────────── */
+/* ── Focus Ring — Clean accessible focus ──────────────────── */
 .focus-ring {
   transition: outline-color 150ms ease, outline-offset 150ms ease;
 }
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(251, 191, 36, 0.5);
-  outline-offset: 1px;
+  outline: 2px solid var(--semantic-accent);
+  outline-offset: 2px;
 }
 
 /* ── Number Input ────────────────────────────────────────────── */
@@ -1095,18 +1089,18 @@ input[type="number"]::-webkit-outer-spin-button {
    PREMIUM DESIGN SYSTEM — Advanced Visual Effects
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Premium Card Glow ───────────────────────────────────────── */
+/* ── Premium Card — Clean subtle lift ─────────────────────── */
 .premium-card-glow {
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 .premium-card-glow:hover {
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.15), 0 8px 32px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
-/* ── Premium Focus Glow ──────────────────────────────────────── */
+/* ── Premium Focus — Clean ring ───────────────────────────── */
 .premium-focus-glow:focus-within {
-  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.15);
+  box-shadow: 0 0 0 2px var(--semantic-accent);
 }
 
 /* ── Premium Skeleton (Aurora Shimmer) ───────────────────────── */
@@ -1124,7 +1118,7 @@ input[type="number"]::-webkit-outer-spin-button {
   100% { background-position: -200% 0; }
 }
 
-/* ── Premium Chip ────────────────────────────────────────────── */
+/* ── Premium Chip — Clean flat chip ───────────────────────── */
 .premium-chip {
   display: inline-flex;
   align-items: center;
@@ -1132,13 +1126,12 @@ input[type="number"]::-webkit-outer-spin-button {
   padding: 4px 12px;
   border-radius: 9999px;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  background: var(--semantic-glass-bg);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--semantic-glass-border);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--semantic-bg-elevated);
+  border: 1px solid var(--semantic-border-subtle);
   color: var(--semantic-text-secondary);
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 .premium-chip:hover {
   background: var(--semantic-bg-elevated);
@@ -1146,11 +1139,11 @@ input[type="number"]::-webkit-outer-spin-button {
   color: var(--semantic-accent);
 }
 
-/* ── Premium Divider ─────────────────────────────────────────── */
+/* ── Premium Divider — Clean accent line ──────────────────── */
 .premium-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--semantic-accent), transparent);
-  opacity: 0.3;
+  background: var(--semantic-border-default);
+  opacity: 0.5;
 }
 
 /* ── Premium Reveal (Scroll Reveal) ──────────────────────────── */

@@ -77,7 +77,7 @@ export default function Toolbar() {
   // ── Interactive mode toolbar (minimal) ──────────────────
   if (isInteractive) {
     return (
-      <div className="flex items-center gap-1 px-3 py-1.5 glass-panel-strong select-none">
+      <div className="flex items-center gap-1 px-3 py-2 bg-app-surface border-b border-app-border select-none">
         <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot" />
         <span className="text-xs font-semibold text-emerald-300 min-w-0 truncate max-w-[140px]">
           {label}
@@ -109,7 +109,7 @@ export default function Toolbar() {
   // ── Preview mode — minimal toolbar ───────────────────────
   if (appMode === 'preview') {
     return (
-      <div className="flex items-center gap-1 px-3 py-1.5 glass-panel-strong select-none">
+      <div className="flex items-center gap-1 px-3 py-2 bg-app-surface border-b border-app-border select-none">
         <Button
           variant="ghost"
           onClick={() => setAppMode('edit')}
@@ -134,7 +134,7 @@ export default function Toolbar() {
 
   // ── EDIT mode: Full toolbar ─────────────────────────────────
   return (
-    <div className="flex items-center gap-1 px-3 py-1.5 glass-panel-strong select-none">
+    <div className="flex items-center gap-1 px-3 py-2 bg-app-surface border-b border-app-border select-none">
       {/* GROUP 1: Logo + Mode Switch */}
       <div className="flex items-center gap-1">
         <ModeSwitch appMode={appMode} setAppMode={setAppMode} />
@@ -192,19 +192,19 @@ function ModeSwitch({ appMode, setAppMode }: { appMode: AppMode; setAppMode: (m:
       id: 'edit',
       label: 'Edit',
       icon: <Edit3 size={12} />,
-      activeClass: 'bg-app-accent/20 text-app-accent border-app-accent/30',
+      activeClass: 'bg-app-accent/10 text-app-accent border-app-accent/15',
     },
     {
       id: 'preview',
       label: 'Preview',
       icon: <Eye size={12} />,
-      activeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+      activeClass: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/15',
     },
     {
       id: 'present',
       label: 'Present',
       icon: <Presentation size={12} />,
-      activeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      activeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15',
     },
   ];
 
@@ -383,7 +383,7 @@ function TambahBlockButton() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="w-72 glass-panel-strong border border-app-border shadow-xl rounded-xl p-0 overflow-hidden max-h-[400px] overflow-y-auto"
+        className="w-72 bg-app-surface border border-app-border shadow-xl rounded-xl p-0 overflow-hidden max-h-[400px] overflow-y-auto"
       >
         <DropdownMenuLabel className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20 text-[9px] font-bold text-teal-400 uppercase tracking-wider">
           Tambah Block
@@ -432,7 +432,7 @@ function ZoomControls() {
           <ChevronDown size={8} className={`transition-transform ${ratioOpen ? 'rotate-180' : ''}`} />
         </button>
         {ratioOpen && (
-          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl glass-panel-strong border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-full left-0 mt-1 w-36 rounded-xl bg-app-surface border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
             {RATIOS_LIST.map(r => (
               <button
                 key={r.id}

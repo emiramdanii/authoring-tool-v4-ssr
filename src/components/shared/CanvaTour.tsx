@@ -351,7 +351,7 @@ export default function CanvaTour() {
           animation: `tourSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
         }}
       >
-        <div className="glass-panel-strong rounded-2xl shadow-2xl overflow-hidden border border-app-accent/20">
+        <div className="bg-app-surface rounded-2xl shadow-2xl overflow-hidden border border-app-accent/15">
           {/* Header with icon + step counter */}
           <div className="bg-app-accent/10 px-5 pt-4 pb-3">
             <div className="flex items-center gap-3">

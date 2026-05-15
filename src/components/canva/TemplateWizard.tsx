@@ -205,7 +205,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="glass-panel-strong border border-app-border max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto custom-scrollbar p-0">
+      <DialogContent className="bg-app-surface border border-app-border max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto custom-scrollbar p-0">
         {/* Header with step indicator */}
         <div className="px-6 pt-6 pb-4 border-b border-app-border/30">
           <h2 className="text-lg font-bold text-app-primary mb-4">Buat Project Baru</h2>
@@ -394,7 +394,7 @@ function StepGradeSemester({ grade, semester, onGradeChange, onSemesterChange }:
             <SelectTrigger className="bg-app-elevated/50 border-app-border/50">
               <SelectValue placeholder="Pilih kelas..." />
             </SelectTrigger>
-            <SelectContent className="glass-panel-strong border-app-border max-h-60">
+            <SelectContent className="bg-app-surface border border-app-border max-h-60">
               {GRADE_OPTIONS.map(opt => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -412,7 +412,7 @@ function StepGradeSemester({ grade, semester, onGradeChange, onSemesterChange }:
             <SelectTrigger className="bg-app-elevated/50 border-app-border/50">
               <SelectValue placeholder="Pilih semester..." />
             </SelectTrigger>
-            <SelectContent className="glass-panel-strong border-app-border">
+            <SelectContent className="bg-app-surface border border-app-border">
               {SEMESTER_OPTIONS.map(opt => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}

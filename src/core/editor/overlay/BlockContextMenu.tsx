@@ -203,7 +203,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
       ref={menuRef}
       role="menu"
       aria-label={`Menu konteks: ${definition?.name || blockType}`}
-      className="fixed z-[100] min-w-[220px] rounded-xl glass-panel-strong border border-app-border-strong shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+      className="fixed z-[100] min-w-[220px] rounded-xl bg-app-surface border border-app-border shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
       style={{ left: adjustedPos.x, top: adjustedPos.y }}
     >
       {items.map((item, i) => {

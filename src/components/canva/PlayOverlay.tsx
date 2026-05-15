@@ -97,7 +97,7 @@ function PlayOverlayHeader() {
   };
 
   return (
-    <div className="glass-panel-strong flex items-center justify-between px-4 py-2 border-b border-app-border/50">
+    <div className="bg-app-surface flex items-center justify-between px-4 py-2 border-b border-app-border">
       <div className="flex items-center gap-3">
         <Gamepad2 size={14} className="text-emerald-400" />
         <span className="text-xs font-bold text-emerald-400">Mode Interaktif</span>
@@ -340,7 +340,7 @@ function PlayCanvas() {
       {/* ══ Bottom Navigation Bar — Premium ═══════════════════ */}
       <div className="w-full px-4 pb-3 pt-2">
         <div className="max-w-2xl mx-auto">
-          <div className="glass-panel-strong rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
+          <div className="bg-app-surface border border-app-border rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
 
             {/* Prev button */}
             <Button

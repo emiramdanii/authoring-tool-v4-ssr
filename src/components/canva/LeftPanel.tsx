@@ -63,7 +63,7 @@ export default function LeftPanel() {
   const [wizardOpen, setWizardOpen] = useState(false);
 
   return (
-    <div className="w-full flex flex-col glass-panel overflow-hidden">
+    <div className="w-full flex flex-col bg-app-surface overflow-hidden">
       {/* Header */}
       <div className="px-3 py-2 border-b border-app-border bg-app-surface/50">
         <div className="text-[10px] font-bold text-app-secondary uppercase tracking-wider">
@@ -286,7 +286,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-60 glass-panel-strong border border-app-border shadow-xl rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
+          className="w-60 border border-app-border shadow-xl rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
         >
           {/* Schema Presets */}
           {availablePresets.length > 0 && (
