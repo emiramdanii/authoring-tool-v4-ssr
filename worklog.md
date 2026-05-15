@@ -1229,3 +1229,26 @@ Stage Summary:
   - Task #4: Schema ops (duplicateBlock, splitScene, mergeScene, moveBlockNested) wired into canvas store ✅
 - Backup of old local branch saved as backup/local-tasks-5-8
 - Zero TS errors confirmed
+---
+Task ID: E.1-E.7
+Agent: Super Z (main)
+Task: Phase E — Productization: Teacher Workflow Polish
+
+Work Log:
+- Canvas Empty State: Created CanvasEmptyState.tsx with 3 action cards (Auto-Gen/Template/Blank) replacing null-return when pages.length === 0
+- Workflow Step Indicator: Created WorkflowStepIndicator.tsx with Materi→Generate→Edit→Preview→Export tracking
+- Auto-Generate Next Step Banner: Added "Buka Canva untuk Edit" CTA after applying generated content
+- Per-Panel Empty States: Rich empty states for KuisTab, MateriTab, DiskusiEditor, RefleksiEditor
+- Mobile Viewport Preview: MobileViewportToggle.tsx + phone frame in PreviewMode + session-slice state
+- Mode Sederhana: TeacherModeToggle + teacher-terminology.ts (30+ term translations) + simplified AddBlockPanel grouping
+- Error Recovery: CrashRecoveryDialog.tsx (dirty exit detection) + schema-recovery.ts (recoverSchema + needsSchemaMigration)
+- Export Polish: Prominent Export button in toolbar + ExportSuccessDialog with 3-step sharing guide
+- Parser Improvements: Detect numbered lists (1. Item - desc), function section headers (Fungsi X:), bullet lists under headers
+- Real Content Testing: 45 tests passing with actual PPKn content, validates parser + generators
+
+Stage Summary:
+- 3 commits pushed to GitHub: Phase E productization, Export polish, Parser improvements
+- Build clean (tsc + next build)
+- All 45 vitest tests passing
+- Key new files: CanvasEmptyState.tsx, WorkflowStepIndicator.tsx, TeacherModeToggle.tsx, CrashRecoveryDialog.tsx, ExportSuccessDialog.tsx, MobileViewportToggle.tsx, teacher-terminology.ts, schema-recovery.ts
+- Modified files: Stage, CanvaBuilder, AuthoringTool, Toolbar, PreviewMode, AddBlockPanel, LeftPanel, KuisTab, MateriTab, DiskusiEditor, RefleksiEditor, parser.ts, use-auto-generate.ts, session-slice.ts
