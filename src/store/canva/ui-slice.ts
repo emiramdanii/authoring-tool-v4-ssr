@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { produce, produceWithPatches } from 'immer';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
-import type { CanvaElement, AppMode } from '@/components/canva/types';
+import type { CanvaElement } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
 import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
@@ -111,119 +111,26 @@ function commitSchemaUpdate(schema: ScreenSchema, newBlocks: SchemaBlock[]): Scr
 
 export type UISlice = Pick<
   CanvaState,
-  | 'setTool' | 'setLeftTab' | 'toggleLeftPanel' | 'toggleRightPanel'
+  | 'setTool' | 'setLeftTab'
   | 'toggleGrid' | 'setGridSize' | 'toggleSnap' | 'snapValue'
   | 'applyLayoutPreset' | 'currentLayoutPreset'
   | 'setZoom' | 'setFitZoom' | 'zoomDelta' | 'zoomToFit' | 'setRatio' | 'nudgeSelected'
   | 'alignSelected' | 'distributeSelected'
-  | 'clearStage' | 'selectBlock' | 'updateSchemaBlock'
-  | 'hoverBlock' | 'startEditing' | 'stopEditing'
+  | 'clearStage' | 'updateSchemaBlock'
   | 'deleteBlock' | 'moveBlockUp' | 'moveBlockDown' | 'duplicateBlock'
   | 'addSchemaBlock'
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
-  | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
+  | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | 'moveBlockToContainer' | 'addSchemaBlockToContainer'
   | 'rebalanceCurrentPage' | 'promoteSceneSplit' | 'mergeWithAdjacentPage'
-  | '_lastNudgeTime'
-  | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
-  | 'canvasPreview' | 'toggleCanvasPreview'
-  | 'appMode' | 'setAppMode'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
   _schemaClipboard: null,
-  selectedBlockIds: [],
-  _lastNudgeTime: undefined,
-  sceneIndex: 0,
-  sceneTotal: 1,
-  canvasPreview: false,
-  appMode: 'edit' as AppMode,
 
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
-  toggleLeftPanel: () => set(s => ({ leftPanelOpen: !s.leftPanelOpen })),
-  toggleRightPanel: () => set(s => ({ rightPanelOpen: !s.rightPanelOpen })),
-
-  // ── Schema Block Selection ───────────────────────────────────
-  // Central selection action — sets the editing context for a block.
-  // Clears element selection when a block is selected (mutual exclusion).
-  // Supports shift+click multi-select via addToSelection parameter.
-  selectBlock: (blockId, blockType, addToSelection) => {
-    editBus.emit({ type: 'select', blockId: blockId ?? null, blockType: blockType ?? null });
-
-    if (!blockId) {
-      // Clear all selection
-      set({
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-        selectedElId: null,
-        selectedElIds: [],
-      });
-      return;
-    }
-
-    if (addToSelection) {
-      // Toggle in multi-select
-      const current = get().selectedBlockIds;
-      const isSelected = current.includes(blockId);
-
-      if (isSelected) {
-        // Deselect from multi-select
-        const newIds = current.filter(id => id !== blockId);
-        set({
-          selectedBlockIds: newIds,
-          selectedBlockId: newIds.length > 0 ? newIds[newIds.length - 1] : null,
-          selectedBlockType: blockType ?? null,
-          editingBlockId: null,
-        });
-      } else {
-        // Add to multi-select
-        const newIds = [...current, blockId];
-        set({
-          selectedBlockIds: newIds,
-          selectedBlockId: blockId,
-          selectedBlockType: blockType ?? null,
-          editingBlockId: null,
-        });
-      }
-    } else {
-      // Single select (replace)
-      set({
-        selectedBlockId: blockId,
-        selectedBlockType: blockType ?? null,
-        editingBlockId: null,
-        selectedBlockIds: [blockId],
-        // When selecting a block, clear element selection to avoid confusion
-        selectedElId: null,
-        selectedElIds: [],
-      });
-    }
-  },
-
-  // ── Schema Block Hover Context ────────────────────────────────
-  // Tracks which block the cursor is over — for hover effects,
-  // layer panel highlighting, and future multi-select support.
-  hoverBlock: (blockId) => {
-    editBus.emit({ type: 'hover', blockId: blockId ?? null });
-    set({ hoveredBlockId: blockId ?? null });
-  },
-
-  // ── Inline Editing Context ────────────────────────────────────
-  // Double-click a text block → enter inline editing mode.
-  // The editing overlay reads editingBlockId to show a floating editor.
-  startEditing: (blockId) => {
-    const blockType = get().selectedBlockType;
-    editBus.emit({ type: 'edit-start', blockId, blockType: blockType ?? 'unknown' });
-    set({ editingBlockId: blockId });
-  },
-  stopEditing: () => {
-    const prevId = get().editingBlockId;
-    if (prevId) editBus.emit({ type: 'edit-end', blockId: prevId });
-    set({ editingBlockId: null });
-  },
 
   // ── Schema Block Content Editing (DEEP PATCH MERGE) ──────────
   // This is THE core editing mechanism for the Visual Editing Engine.
@@ -361,55 +268,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const { snapEnabled, gridSize } = get();
     if (!snapEnabled) return val;
     return Math.round(val / gridSize) * gridSize;
-  },
-
-  // ── Scene Navigation (multi-scene overflow) ──────────────────
-  // SchemaRenderer updates these when the scene plan changes.
-  // Keyboard shortcuts (Ctrl+Arrow) and SceneNavigator call navigateScene().
-  setSceneState: (index, total) => set({ sceneIndex: index, sceneTotal: total }),
-  navigateScene: (index) => {
-    const { sceneTotal } = get();
-    const clamped = Math.max(0, Math.min(index, sceneTotal - 1));
-    set({ sceneIndex: clamped });
-  },
-
-  // ── Canvas Preview Mode ────────────────────────────────────
-  // Quick toggle to switch between editing (canvas) and preview mode.
-  // In preview mode: no selection overlays, no compression badges,
-  // no editing handles — content shown as students will see it.
-  toggleCanvasPreview: () => set(s => ({
-    canvasPreview: !s.canvasPreview,
-    // When entering preview, clear selection to avoid editing state lingering
-    ...(s.canvasPreview ? {} : {
-      selectedBlockId: null,
-      selectedBlockType: null,
-      editingBlockId: null,
-      selectedBlockIds: [],
-      selectedElId: null,
-      selectedElIds: [],
-    }),
-  })),
-
-  // ── App Mode (4-mode architecture) ──────────────────────────
-  // Controls the overall application mode: edit, preview, present, export.
-  // When switching to preview/present, all selections are cleared
-  // to prevent editing state from leaking into non-edit modes.
-  // The existing canvasPreview toggle remains for backward compat —
-  // setAppMode('preview') is the canonical way going forward.
-  setAppMode: (mode) => {
-    if (mode === 'preview' || mode === 'present') {
-      set({
-        appMode: mode,
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-        selectedElId: null,
-        selectedElIds: [],
-      });
-    } else {
-      set({ appMode: mode });
-    }
   },
 
   // ── Layout Presets ────────────────────────────────────────────

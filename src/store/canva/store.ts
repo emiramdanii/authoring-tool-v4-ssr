@@ -11,6 +11,7 @@ import { createHistorySlice } from './history-slice';
 import { createPageSlice } from './page-slice';
 import { createElementSlice } from './element-slice';
 import { createUISlice } from './ui-slice';
+import { createSessionSlice } from './session-slice';
 import { createBackgroundSlice } from './background-slice';
 import { createResetCanvasSlice } from './reset-canvas';
 import { createAutoGenerateSlice } from './auto-generate';
@@ -36,11 +37,10 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     selectedElIds: [], // Phase 4: Multi-select
     selectedBlockId: null, // Schema block selection for editing overlay
     selectedBlockType: null,
-    // selectedBlockIds is provided by UISlice
     hoveredBlockId: null, // Hover context for blocks
     editingBlockId: null, // Inline editing context
-    // NOTE: sceneIndex, sceneTotal, canvasPreview are initialized in UISlice
-    // _clipboard is provided by createElementSlice — no duplicate here
+    // NOTE: selectedBlockIds, sceneIndex, sceneTotal, canvasPreview, appMode,
+    // _lastNudgeTime are now initialized in SessionSlice
     leftPanelOpen: true,
     rightPanelOpen: true,
     _saveStatus: 'unsaved',
@@ -63,6 +63,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     ...createPageSlice(...a),
     ...createElementSlice(...a),
     ...createUISlice(...a),
+    ...createSessionSlice(...a),
     ...createBackgroundSlice(...a),
     ...createResetCanvasSlice(...a),
     ...createAutoGenerateSlice(...a),
