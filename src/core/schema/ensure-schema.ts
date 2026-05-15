@@ -28,6 +28,7 @@ import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { nanoid } from 'nanoid';
 import { logger } from '@/core/utils/logger';
 import { assertValidSchema, isSchemaVersionCompatible } from './validation';
+import { deepFreeze } from './immutable';
 
 /**
  * Ensure a page has a native ScreenSchema.
@@ -41,7 +42,10 @@ import { assertValidSchema, isSchemaVersionCompatible } from './validation';
  */
 export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   // ═══ Path 1: Already native schema ═══════════════════════════
-  if (page.schema) return page.schema;
+  if (page.schema) {
+    // Deep freeze in dev mode to catch accidental mutations
+    return deepFreeze(page.schema);
+  }
 
   // ═══ Path 2: schemaScreen in templateData — promote it ══════
   const storedSchema = page.templateData?.schemaScreen as ScreenSchema | undefined;
@@ -49,18 +53,22 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     const migrated = assignStableIds(storedSchema);
     // Validate migrated schema (dev-mode guard)
     assertValidSchema(migrated, `ensurePageSchema:${page.id}`);
-    return migrated;
+    return deepFreeze(migrated);
   }
 
   // ═══ Path 3: Legacy template page — convert via TemplateAdapter ═══
   const isTemplate = page.templateType && page.templateType !== 'custom';
   if (isTemplate) {
+    // Telemetry: log when legacy path is hit (tracks migration progress)
+    if (process.env.NODE_ENV !== 'production') {
+      logger.warn('LEGACY-MIGRATION', `Page "${page.label}" (${page.templateType}) using TemplateAdapter Path 3 — this page needs re-saving`);
+    }
     const converted = convertToSchema(page);
     if (converted) {
       const migrated = assignStableIds(converted);
       // Validate converted schema (dev-mode guard)
       assertValidSchema(migrated, `ensurePageSchema:${page.id}`);
-      return migrated;
+      return deepFreeze(migrated);
     }
   }
 

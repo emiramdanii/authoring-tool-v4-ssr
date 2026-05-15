@@ -42,6 +42,7 @@ import type {
   SemanticHints,
 } from './types';
 import { generateBlockId } from './ensure-schema';
+import { assertValidBlocks } from './validation';
 import { BLOOM_VERBS, COLOR_PALETTE } from '@/components/authoring/auto-generate/constants';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -911,7 +912,7 @@ export function genFullLessonSchema(
   petunjukLangkah?: Array<{ icon: string; judul: string; isi: string }>,
   tp?: Array<{ desc: string }>,
 ): FullLessonSchema {
-  return {
+  const result: FullLessonSchema = {
     cover: genCoverSchema(meta),
     petunjuk: petunjukLangkah?.length ? genPetunjukSchema(petunjukLangkah) : undefined,
     tp: genTpSchema(parsed, opts),
@@ -928,4 +929,19 @@ export function genFullLessonSchema(
     hasil: genHasilSchema(),
     penutup: genPenutupSchema(meta),
   };
+
+  // Validate all generated blocks in dev mode
+  // This catches generator bugs before they reach the canvas
+  if (process.env.NODE_ENV !== 'production') {
+    const allBlocks: SchemaBlock[] = [
+      result.cover, result.petunjuk, result.tp, result.alur,
+      result.motivasi, result.tujuan, ...result.materi,
+      result.skenario, result.kuis, result.flashcard,
+      result.diskusi, result.refleksi, result.rangkuman,
+      result.hasil, result.penutup,
+    ].filter(Boolean) as SchemaBlock[];
+    assertValidBlocks(allBlocks, 'genFullLessonSchema');
+  }
+
+  return result;
 }

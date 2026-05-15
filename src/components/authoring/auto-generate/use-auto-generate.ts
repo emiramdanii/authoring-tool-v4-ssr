@@ -218,18 +218,43 @@ export function useAutoGenerate() {
     [parsed, meta, settings],
   );
 
-  // ── Apply to store ──────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  // APPLY TO STORE — Schema-First Pipeline
+  // ═══════════════════════════════════════════════════════════════════
+  // UNIDIRECTIONAL FLOW:
+  //   1. Write SchemaBlock[] to canvas (PRIMARY — source of truth)
+  //   2. Write projection to EditorProjectionStore (SECONDARY — compat)
+  //
+  // The schema write is the authority. The projection write exists ONLY
+  // to keep the Konten editor panel working during migration. Once the
+  // Konten panel reads directly from schema, the projection writes can
+  // be removed entirely.
+  //
+  // RULE: Schema → Projection (OK), Projection → Schema (FORBIDDEN)
+  // ═══════════════════════════════════════════════════════════════════
+
   const handleApply = useCallback(
     (preview: PreviewData) => {
+      // ═══ Helper: Schema-first apply + projection compat ═══
+      const applySchemaFirst = (
+        schemaWrite: () => void,
+        projectionWrite: () => void,
+      ) => {
+        // 1. Write to schema tree FIRST (authority)
+        schemaWrite();
+        // 2. Write to projection SECOND (compatibility for Konten panel)
+        projectionWrite();
+      };
+
       switch (preview.type) {
         case 'cp': {
+          // CP has no schema block type yet — projection-only
           const cpData = preview.data as CpState;
           store.getState().updateCp('elemen', cpData.elemen);
           store.getState().updateCp('subElemen', cpData.subElemen);
           store.getState().updateCp('capaianFase', cpData.capaianFase);
           store.getState().updateCp('fase', cpData.fase);
           store.getState().updateCp('kelas', cpData.kelas);
-          // Clear and set profil
           const currentState = store.getState().cp;
           for (let i = currentState.profil.length - 1; i >= 0; i--) {
             store.getState().removeProfil(i);
@@ -242,18 +267,23 @@ export function useAutoGenerate() {
         }
         case 'tp': {
           const tpData = preview.data as TpItem[];
-          // Replace all TPs via setState
-          store.setState({ tp: tpData, dirty: true });
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const tpBlock = genTpSchema(parsed, settings);
-            applyBlockToPages('dokumen', [tpBlock]);
-            applyBlockToPages('tujuan', [tpBlock]);
-          }
+          applySchemaFirst(
+            // PRIMARY: Write schema to canvas
+            () => {
+              if (parsed) {
+                const tpBlock = genTpSchema(parsed, settings);
+                applyBlockToPages('dokumen', [tpBlock]);
+                applyBlockToPages('tujuan', [tpBlock]);
+              }
+            },
+            // SECONDARY: Write projection for Konten panel compat
+            () => store.setState({ tp: tpData, dirty: true }),
+          );
           toast.success(`🎯 ${tpData.length} TP diterapkan`);
           break;
         }
         case 'atp': {
+          // ATP has no schema block type — projection-only
           const atpData = preview.data as { namaBab: string; jumlahPertemuan: number; pertemuan: unknown[] };
           store.setState({
             atp: {
@@ -268,62 +298,73 @@ export function useAutoGenerate() {
         }
         case 'alur': {
           const alurData = preview.data as AlurItem[];
-          store.setState({ alur: alurData, dirty: true });
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const alurBlock = genAlurSchema(parsed, settings, meta);
-            applyBlockToPages('dokumen', [alurBlock]);
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const alurBlock = genAlurSchema(parsed, settings, meta);
+                applyBlockToPages('dokumen', [alurBlock]);
+              }
+            },
+            () => store.setState({ alur: alurData, dirty: true }),
+          );
           toast.success(`🗺️ ${alurData.length} langkah alur diterapkan`);
           break;
         }
         case 'kuis': {
           const kuisData = preview.data as KuisItem[];
-          store.setState({ kuis: kuisData, dirty: true });
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const kuisBlock = genKuisSchema(parsed, settings.jumlahKuis, settings.pertemuan);
-            applyBlockToPages('kuis', kuisBlock);
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const kuisBlock = genKuisSchema(parsed, settings.jumlahKuis, settings.pertemuan);
+                applyBlockToPages('kuis', kuisBlock);
+              }
+            },
+            () => store.setState({ kuis: kuisData, dirty: true }),
+          );
           toast.success(`❓ ${kuisData.length} soal kuis diterapkan`);
           break;
         }
         case 'skenario': {
           const skenarioData = preview.data as SkenarioChapter[];
-          store.getState().setSkenario(skenarioData as unknown as import('@/store/authoring/types').SkenarioChapter[]);
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const skenarioBlock = genSkenarioSchema(parsed, meta);
-            applyBlockToPages('skenario', [skenarioBlock]);
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const skenarioBlock = genSkenarioSchema(parsed, meta);
+                applyBlockToPages('skenario', [skenarioBlock]);
+              }
+            },
+            () => store.getState().setSkenario(skenarioData as unknown as import('@/store/authoring/types').SkenarioChapter[]),
+          );
           toast.success(`🎭 ${skenarioData.length} bab skenario diterapkan`);
           break;
         }
         case 'flashcard': {
           const flashData = preview.data as FlashcardItem[];
-          // Use addModule() which triggers deriveGames() properly
-          // First remove any existing flashcard module, then add the new one
-          const s = store.getState();
-          const existingIdx = s.modules.findIndex((m) => m.type === 'flashcard');
-          if (existingIdx >= 0) s.removeModule(existingIdx);
-          s.addModule('flashcard');
-          // Now update the newly added module with generated data
-          const newIdx = store.getState().modules.findIndex((m) => m.type === 'flashcard');
-          if (newIdx >= 0) {
-            store.getState().updateModuleField(newIdx, 'kartu', flashData);
-            store.getState().updateModuleField(newIdx, 'title', 'Flashcard');
-          }
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const flashcardBlock = genFlashcardSchema(parsed);
-            applyBlockToPages('materi', [flashcardBlock]); // flashcard goes into materi pages
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const flashcardBlock = genFlashcardSchema(parsed);
+                applyBlockToPages('materi', [flashcardBlock]);
+              }
+            },
+            () => {
+              const s = store.getState();
+              const existingIdx = s.modules.findIndex((m) => m.type === 'flashcard');
+              if (existingIdx >= 0) s.removeModule(existingIdx);
+              s.addModule('flashcard');
+              const newIdx = store.getState().modules.findIndex((m) => m.type === 'flashcard');
+              if (newIdx >= 0) {
+                store.getState().updateModuleField(newIdx, 'kartu', flashData);
+                store.getState().updateModuleField(newIdx, 'title', 'Flashcard');
+              }
+            },
+          );
           toast.success(`🃏 ${flashData.length} flashcard diterapkan`);
           break;
         }
         case 'matching': {
+          // Matching/TrueFalse: projection-only until schema game blocks are fully wired
           const matchData = preview.data as MatchingPair[];
-          // Use addModule() which triggers deriveGames() properly
           const s = store.getState();
           const existingIdx = s.modules.findIndex((m) => m.type === 'matching');
           if (existingIdx >= 0) s.removeModule(existingIdx);
@@ -338,7 +379,6 @@ export function useAutoGenerate() {
         }
         case 'truefalse': {
           const tfData = preview.data as TrueFalseItem[];
-          // Use addModule() which triggers deriveGames() properly
           const s = store.getState();
           const existingIdx = s.modules.findIndex((m) => m.type === 'truefalse');
           if (existingIdx >= 0) s.removeModule(existingIdx);
@@ -353,34 +393,43 @@ export function useAutoGenerate() {
         }
         case 'materi': {
           const materiData = preview.data as MateriBlok[];
-          store.setState({ materi: { blok: materiData }, dirty: true });
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const schemaBlocks = genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-            applyBlocksToPages('materi', schemaBlocks);
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const schemaBlocks = genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+                applyBlocksToPages('materi', schemaBlocks);
+              }
+            },
+            () => store.setState({ materi: { blok: materiData }, dirty: true }),
+          );
           toast.success(`📖 ${materiData.length} blok materi diterapkan`);
           break;
         }
         case 'diskusi': {
           const diskusiData = preview.data as DiskusiData;
-          store.setState({ diskusi: diskusiData, dirty: true });
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const diskusiBlock = genDiskusiSchema(parsed, store.getState().tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-            applyBlockToPages('diskusi', [diskusiBlock]);
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const diskusiBlock = genDiskusiSchema(parsed, store.getState().tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+                applyBlockToPages('diskusi', [diskusiBlock]);
+              }
+            },
+            () => store.setState({ diskusi: diskusiData, dirty: true }),
+          );
           toast.success(`💬 ${diskusiData.pertanyaan.length} pertanyaan diskusi diterapkan`);
           break;
         }
         case 'refleksi': {
           const refleksiData = preview.data as RefleksiData;
-          store.setState({ refleksi: refleksiData, dirty: true });
-          // Schema-first: apply to canvas directly
-          if (parsed) {
-            const refleksiBlock = genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-            applyBlockToPages('refleksi', [refleksiBlock]);
-          }
+          applySchemaFirst(
+            () => {
+              if (parsed) {
+                const refleksiBlock = genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+                applyBlockToPages('refleksi', [refleksiBlock]);
+              }
+            },
+            () => store.setState({ refleksi: refleksiData, dirty: true }),
+          );
           toast.success(`🪞 ${refleksiData.pertanyaan.length} pertanyaan refleksi diterapkan`);
           break;
         }

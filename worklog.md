@@ -556,3 +556,47 @@ Stage Summary:
 - TemplateAdapter clearly documented as migration-only (8-phase retirement plan)
 - Validation gates in schema-apply and ensure-schema catch bad data before it reaches the canvas
 - All changes are backward compatible — no breaking changes to existing components
+
+---
+Task ID: Schema-First-Complete
+Agent: Main Agent
+Task: Complete all remaining schema-first architecture steps systematically
+
+Work Log:
+- **Step A: Generator output validation** — Wired assertValidBlocks() into genFullLessonSchema():
+  - Added import for assertValidBlocks from validation.ts
+  - genFullLessonSchema() now validates all generated blocks in dev mode before returning
+  - Catches generator bugs before they reach the canvas
+- **Step B: Deep freeze in dev mode** — Wired deepFreeze() into ensurePageSchema():
+  - All paths (1, 2, 3) now return deepFreeze(schema) in dev mode
+  - Path 1 (native schema): frozen to catch accidental mutations
+  - Path 2 (stored schema): frozen after migration
+  - Path 3 (TemplateAdapter): frozen after conversion
+  - deepFreeze is a no-op in production (zero perf cost)
+- **Step C: Schema-first handleApply** — Restructured useAutoGenerate.ts:
+  - New applySchemaFirst() helper enforces write order:
+    1. Schema write FIRST (PRIMARY — source of truth)
+    2. Projection write SECOND (compatibility for Konten panel)
+  - All schema-capable types (tp, alur, kuis, skenario, flashcard, materi, diskusi, refleksi) use applySchemaFirst()
+  - CP, ATP, matching, truefalse remain projection-only (no schema block type yet)
+  - Clear architectural comments explaining unidirectional flow rule
+  - Dual-write is now EXPLICIT and ORDERED — not random
+- **Step E: TemplateAdapter telemetry** — Added dev-mode logging for Path 3:
+  - When ensurePageSchema() hits TemplateAdapter, it logs: "Page X (type) using TemplateAdapter Path 3 — this page needs re-saving"
+  - Helps track migration progress — when these logs stop appearing, all pages are migrated
+- **Build verified**: TypeScript compiles with zero errors, Next.js production build passes
+
+Stage Summary:
+- All 5 steps completed systematically:
+  A. Generator output validation — catches bugs at generation time
+  B. Deep freeze in dev mode — catches accidental mutations at read time
+  C. Schema-first handleApply — schema write is primary, projection is secondary
+  D. History/undo — already uses structuredClone (compatible with snapshot())
+  E. TemplateAdapter telemetry — tracks legacy migration progress
+- SchemaBlock contract is now fully enforced at every layer:
+  - Generation: assertValidBlocks in genFullLessonSchema
+  - Migration: assertValidSchema in ensurePageSchema
+  - Apply: assertValidBlocks in schema-apply functions
+  - Read: deepFreeze in ensurePageSchema (dev mode)
+- handleApply follows unidirectional flow: Schema → Projection (never reverse)
+- All changes backward compatible — no breaking changes
