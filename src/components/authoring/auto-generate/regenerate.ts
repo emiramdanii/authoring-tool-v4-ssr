@@ -1,12 +1,33 @@
 // ═══════════════════════════════════════════════════════════════════
 // Regenerate Utility — Re-generate content from stored auto-gen text
 // ═══════════════════════════════════════════════════════════════════
+// Two pipelines exist side-by-side:
+//
+//   1. AUTHORING STORE pipeline (original):
+//      ParseResult → MateriBlok[] / KuisItem[] / … → Authoring Store
+//
+//   2. SCHEMA-FIRST pipeline (new):
+//      ParseResult → SchemaBlock[] → page.schema → Canvas Renderer
+//
+// The schema-first pipeline writes SchemaBlock[] directly to canvas
+// pages, bypassing the Authoring Store → TemplateAdapter detour.
+// Both pipelines are kept for backward compatibility.
+// ═══════════════════════════════════════════════════════════════════
 
 import { parse } from './parser';
 import type { ParseResult } from './types';
 import { genMateri, genDiskusi, genRefleksi, genSkenario, genKuis } from './generators';
 import type { MateriBlok, DiskusiData, RefleksiData, KuisItem } from '@/store/authoring-store';
 import type { SkenarioChapter as AutoGenSkenarioChapter } from './types';
+import {
+  genMateriSchema,
+  genKuisSchema,
+  genDiskusiSchema,
+  genRefleksiSchema,
+  genSkenarioSchema,
+} from '@/core/schema/generators';
+import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
+import type { SchemaBlock } from '@/core/schema/types';
 
 /** localStorage key used by the auto-generate hook */
 const STORAGE_KEY = 'silse-autogen-text';
@@ -96,4 +117,137 @@ export function regenerateRefleksi(
  */
 export function canRegenerate(): boolean {
   return getStoredText() !== null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCHEMA-FIRST REGENERATE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+// These functions follow the NEW pipeline:
+//   ParseResult → SchemaBlock[] → applyBlocksToPages / applyBlockToPages
+//     → canvas page.schema updated directly
+//
+// They also return the generated SchemaBlock[] so the caller can
+// optionally update the authoring store for backward compat.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Re-generate materi as SchemaBlock[] and apply directly to canvas pages.
+ * Returns the schema blocks, or null if no valid source text.
+ */
+export function regenerateMateriSchema(
+  meta: { judulPertemuan: string; namaBab: string },
+): SchemaBlock[] | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const materiBlocks = genMateriSchema(parsed, meta);
+  applyBlocksToPages('materi', materiBlocks);
+  return materiBlocks;
+}
+
+/**
+ * Re-generate skenario as a SkenarioBlock and apply directly to canvas pages.
+ * Returns the schema block, or null if no valid source text.
+ */
+export function regenerateSkenarioSchema(
+  meta: { namaBab?: string },
+): SchemaBlock | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const skenarioBlock = genSkenarioSchema(parsed, meta);
+  applyBlockToPages('skenario', skenarioBlock);
+  return skenarioBlock;
+}
+
+/**
+ * Re-generate kuis as a KuisBlock and apply directly to canvas pages.
+ * Returns the schema block, or null if no valid source text.
+ */
+export function regenerateKuisSchema(
+  jumlah: number,
+  jumlahPertemuan: number,
+): SchemaBlock | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const kuisBlock = genKuisSchema(parsed, jumlah, jumlahPertemuan);
+  applyBlockToPages('kuis', kuisBlock);
+  return kuisBlock;
+}
+
+/**
+ * Re-generate diskusi as a DiskusiBlock and apply directly to canvas pages.
+ * Returns the schema block, or null if no valid source text.
+ */
+export function regenerateDiskusiSchema(
+  tp: Array<{ desc: string }>,
+  meta: { judulPertemuan: string; namaBab: string },
+): SchemaBlock | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const diskusiBlock = genDiskusiSchema(parsed, tp, meta);
+  applyBlocksToPages('diskusi', [diskusiBlock]);
+  return diskusiBlock;
+}
+
+/**
+ * Re-generate refleksi as a RefleksiBlock and apply directly to canvas pages.
+ * Returns the schema block, or null if no valid source text.
+ */
+export function regenerateRefleksiSchema(
+  meta: { judulPertemuan: string; namaBab: string },
+): SchemaBlock | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const refleksiBlock = genRefleksiSchema(parsed, meta);
+  applyBlocksToPages('refleksi', [refleksiBlock]);
+  return refleksiBlock;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONVENIENCE: Regenerate ALL sections via schema-first pipeline
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Regenerate all content sections and apply to canvas pages.
+ * Uses schema-first pipeline — writes SchemaBlock[] directly to page.schema.
+ * Also returns authoring store data for Konten editor backward compat.
+ */
+export function regenerateAllToSchema(opts: {
+  jumlahKuis: number;
+  jumlahPertemuan: number;
+  meta: { judulPertemuan: string; namaBab: string };
+  tp: Array<{ desc: string }>;
+}): {
+  materi: MateriBlok[] | null;
+  kuis: KuisItem[] | null;
+  diskusi: DiskusiData | null;
+  refleksi: RefleksiData | null;
+} | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  // Generate schema blocks and apply to canvas
+  const materiBlocks = genMateriSchema(parsed, opts.meta);
+  applyBlocksToPages('materi', materiBlocks);
+
+  const kuisBlock = genKuisSchema(parsed, opts.jumlahKuis, opts.jumlahPertemuan);
+  applyBlockToPages('kuis', kuisBlock);
+
+  const diskusiBlock = genDiskusiSchema(parsed, opts.tp, opts.meta);
+  applyBlocksToPages('diskusi', [diskusiBlock]);
+
+  const refleksiBlock = genRefleksiSchema(parsed, opts.meta);
+  applyBlocksToPages('refleksi', [refleksiBlock]);
+
+  // Return authoring store data for backward compat (projection)
+  return {
+    materi: genMateri(parsed, opts.meta),
+    kuis: genKuis(parsed, opts.jumlahKuis, opts.jumlahPertemuan),
+    diskusi: genDiskusi(parsed, opts.tp, opts.meta),
+    refleksi: genRefleksi(parsed, opts.meta),
+  };
 }

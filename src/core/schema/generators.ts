@@ -38,6 +38,8 @@ import type {
   RangkumanBlock,
   TujuanDisplayBlock,
   MateriSectionBlock,
+  CompressionHints,
+  SemanticHints,
 } from './types';
 import { generateBlockId } from './ensure-schema';
 import { BLOOM_VERBS, COLOR_PALETTE } from '@/components/authoring/auto-generate/constants';
@@ -73,6 +75,8 @@ export function genCoverSchema(
       elemen: meta.mapel || '',
     },
     cta: { label: 'Mulai Belajar →', action: 'next' },
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { topic: meta.namaBab, learningPhase: 'pendahuluan', importance: 1.0 } satisfies SemanticHints,
   };
 }
 
@@ -92,6 +96,8 @@ export function genPetunjukSchema(
     items: langkah.map(l => ({ icon: l.icon, title: l.judul, body: l.isi })),
     tips: tips || undefined,
     tipsColor: 'y',
+    compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+    semantic: { learningPhase: 'pendahuluan', interactionType: 'read' } satisfies SemanticHints,
   };
 }
 
@@ -203,6 +209,8 @@ export function genTpSchema(
     items,
     profil: 'Beriman & Bertakwa kepada Tuhan YME, Bernalar Kritis, Gotong Royong',
     profilColor: 'g',
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { bsnpRelevant: true, learningPhase: 'pendahuluan', importance: 0.9, topic: topWords[0] } satisfies SemanticHints,
   };
 }
 
@@ -213,7 +221,7 @@ export function genTpSchema(
 export function genAlurSchema(
   parsed: ParseResult,
   opts: { pertemuan: number; bloomMax: number },
-  meta: { durasi?: string },
+  meta: { durasi?: string; namaBab?: string },
   totalMinutes = 80,
 ): AlurBlock {
   const { topWords } = parsed;
@@ -256,6 +264,8 @@ export function genAlurSchema(
     title: 'Alur Kegiatan',
     totalDurasi: meta.durasi || `${totalMinutes} menit`,
     steps,
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'pendahuluan' } satisfies SemanticHints,
   };
 }
 
@@ -281,6 +291,8 @@ export function genMateriSchema(
       id: generateBlockId(),
       borderColor: 'c',
       content: introText,
+      compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
@@ -291,6 +303,8 @@ export function genMateriSchema(
       id: generateBlockId(),
       borderColor: 'y',
       content: `<strong>${def.term}</strong> — ${def.meaning}`,
+      compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
@@ -305,6 +319,8 @@ export function genMateriSchema(
         body: `Bagian dari ${en.subject}`,
         color: COLOR_PALETTE[i % COLOR_PALETTE.length],
       })),
+      compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as NcGridBlock);
   }
 
@@ -315,6 +331,8 @@ export function genMateriSchema(
       id: generateBlockId(),
       borderColor: 'c',
       content: `<strong>Fungsi ${fn.subject}</strong> — ${fn.desc}`,
+      compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
@@ -327,6 +345,8 @@ export function genMateriSchema(
         { icon: '🔥', title: 'Sebab', body: c.cause, color: 'r' },
         { icon: '⚡', title: 'Akibat', body: c.effect, color: 'y' },
       ],
+      compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as NcGridBlock);
   }
 
@@ -343,6 +363,8 @@ export function genMateriSchema(
       content: contentBlocks,
       takeaways: topWords.slice(0, 5),
       selfCheck: `Apa yang sudah kamu pelajari tentang ${topWords[0] || 'materi ini'}?`,
+      compression: { priority: 'high', strategy: 'accordion', splittable: true, minFragmentHeight: 200 } satisfies CompressionHints,
+      semantic: { bsnpRelevant: true, learningPhase: 'inti', importance: 0.95, topic: meta.namaBab } satisfies SemanticHints,
     } as MateriSectionBlock);
   } else {
     // Fallback: single def-box
@@ -351,6 +373,8 @@ export function genMateriSchema(
       id: generateBlockId(),
       borderColor: 'y',
       content: `Materi tentang ${meta.namaBab || topWords[0] || 'pembelajaran'}.`,
+      compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
@@ -451,6 +475,8 @@ export function genSkenarioSchema(
         ],
       },
     ],
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { topic, learningPhase: 'inti', interactionType: 'choose', importance: 0.8 } satisfies SemanticHints,
   };
 }
 
@@ -564,6 +590,8 @@ export function genKuisSchema(
     id: generateBlockId(),
     title: 'Kuis Pilihan Ganda',
     questions: questions.slice(0, jumlah),
+    compression: { priority: 'high', strategy: 'scroll', splittable: true } satisfies CompressionHints,
+    semantic: { topic: topWords[0], learningPhase: 'inti', interactionType: 'choose', importance: 0.9 } satisfies SemanticHints,
   };
 }
 
@@ -591,6 +619,8 @@ export function genFlashcardSchema(
     type: 'flashcard-set',
     id: generateBlockId(),
     cards,
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
   };
 }
 
@@ -647,6 +677,8 @@ export function genDiskusiSchema(
     title: `Diskusi ${meta.namaBab}`,
     intro: 'Diskusikan pertanyaan berikut dengan teman sekelompokmu!',
     questions,
+    compression: { priority: 'high', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { topic: meta.namaBab, learningPhase: 'inti', interactionType: 'discuss', importance: 0.85 } satisfies SemanticHints,
   };
 }
 
@@ -701,6 +733,8 @@ export function genRefleksiSchema(
       isi: 'Tulis refleksi pribadimu tentang materi yang baru dipelajari.',
       contoh: 'Saya belajar bahwa norma... Saya akan menerapkannya dengan...',
     },
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { topic: meta.namaBab, learningPhase: 'penutup', interactionType: 'reflect', importance: 0.8 } satisfies SemanticHints,
   };
 }
 
@@ -729,6 +763,8 @@ export function genMotivasiSchema(
       color: COLOR_PALETTE[i % COLOR_PALETTE.length],
     })),
     transition: `Mari kita pelajari lebih dalam tentang ${topic}.`,
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { bsnpRelevant: true, topic, learningPhase: 'pendahuluan', importance: 0.8 } satisfies SemanticHints,
   };
 }
 
@@ -778,6 +814,8 @@ export function genRangkumanSchema(
     concepts,
     closingStatement: `Pahami konsep-konsep di atas dan hubungkan dengan kehidupan sehari-hari.`,
     accentColor: 'g',
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { bsnpRelevant: true, topic: meta.namaBab, learningPhase: 'penutup', importance: 0.9 } satisfies SemanticHints,
   };
 }
 
@@ -802,6 +840,8 @@ export function genTujuanDisplaySchema(
     })),
     profil: tp.profil,
     profilColor: tp.profilColor,
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { bsnpRelevant: true, topic: parsed.topWords?.[0], learningPhase: 'pendahuluan' } satisfies SemanticHints,
   };
 }
 
@@ -815,6 +855,8 @@ export function genHasilSchema(): HasilBlock {
     id: generateBlockId(),
     title: 'Hasil',
     subtitle: 'Lihat skor dan capaianmu!',
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { learningPhase: 'penutup' } satisfies SemanticHints,
   };
 }
 
@@ -835,6 +877,8 @@ export function genPenutupSchema(
       { icon: '🎯', judul: 'Tujuan', isi: 'Capaian pembelajaran hari ini', warna: 'c' },
       { icon: '📝', judul: 'Tugas', isi: 'Refleksi dan penugasan', warna: 'g' },
     ],
+    compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
+    semantic: { topic: meta.namaBab, learningPhase: 'penutup', importance: 0.7 } satisfies SemanticHints,
   };
 }
 

@@ -16,6 +16,26 @@ import {
 import { ensureModuleIds } from '@/lib/module-resolver';
 // FASE 3: Schema-native page creation — no more buildTemplateData()
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
+// FASE 5: Schema-first generation — genXxxSchema() writes content directly to page.schema
+import {
+  genCoverSchema,
+  genMateriSchema,
+  genKuisSchema,
+  genDiskusiSchema,
+  genRefleksiSchema,
+  genSkenarioSchema,
+  genFlashcardSchema,
+  genTpSchema,
+  genAlurSchema,
+  genMotivasiSchema,
+  genRangkumanSchema,
+  genTujuanDisplaySchema,
+  genHasilSchema,
+  genPenutupSchema,
+  genPetunjukSchema,
+} from '@/core/schema/generators';
+import type { SchemaBlock } from '@/core/schema/types';
+import { getStoredText, parseStoredText } from '@/components/authoring/auto-generate/regenerate';
 
 // ── Auto-generate modules from existing authoring data ────────
 export function autoGenerateContent(): {
@@ -167,34 +187,72 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     // Step 2: Build pages using createPageFromPreset (FASE 3 — schema-native)
     // All pages now get page.schema from creation via deriveSchema().
     // One-way data flow: Authoring → deriveSchema() → page.schema → Renderer
+    //
+    // FASE 5: After creation, populate page.schema.blocks with REAL content
+    // from schema generators (not placeholder from ensurePageSchema).
+    // Schema-first: ParseResult → genXxxSchema() → SchemaBlock[] → page.schema
     const newPages: CanvaPage[] = [];
 
+    // Try to get stored auto-gen text for schema generation
+    const storedParsed = parseStoredText();
+
     if (blueprint.includeCover) {
-      newPages.push(createPageFromPreset('cover', newPages.length));
+      const page = createPageFromPreset('cover', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genCoverSchema(authStore.meta)];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
-      newPages.push(createPageFromPreset('petunjuk', newPages.length));
+      const page = createPageFromPreset('petunjuk', newPages.length);
+      if (page.schema) {
+        page.schema.blocks = [genPetunjukSchema(authStore.petunjuk.langkah, authStore.petunjuk.tips)];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeDokumen && (authStore.cp.capaianFase || authStore.tp.length > 0)) {
-      newPages.push(createPageFromPreset('dokumen', newPages.length));
+      const page = createPageFromPreset('dokumen', newPages.length);
+      if (page.schema && storedParsed) {
+        const blocks: SchemaBlock[] = [];
+        blocks.push(genTpSchema(storedParsed, { pertemuan: authStore.atp.jumlahPertemuan || 1, bloomMax: 6 }));
+        blocks.push(genAlurSchema(storedParsed, { pertemuan: authStore.atp.jumlahPertemuan || 1, bloomMax: 6 }, authStore.meta));
+        page.schema.blocks = blocks;
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeTujuan && authStore.tp.length > 0) {
-      newPages.push(createPageFromPreset('tujuan', newPages.length));
+      const page = createPageFromPreset('tujuan', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genTujuanDisplaySchema(storedParsed, { pertemuan: authStore.atp.jumlahPertemuan || 1, bloomMax: 6 })];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeMotivasi) {
-      newPages.push(createPageFromPreset('motivasi', newPages.length));
+      const page = createPageFromPreset('motivasi', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genMotivasiSchema(storedParsed, authStore.meta)];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeSkenario && authStore.skenario.length > 0) {
-      newPages.push(createPageFromPreset('skenario', newPages.length));
+      const page = createPageFromPreset('skenario', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genSkenarioSchema(storedParsed, authStore.meta)];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeMateri && (materiModules.length > 0 || authStore.materi.blok.length > 0)) {
-      newPages.push(createPageFromPreset('materi', newPages.length));
+      const page = createPageFromPreset('materi', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = genMateriSchema(storedParsed, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab });
+      }
+      newPages.push(page);
     }
 
     // Kuis pages — split by soalPerHalaman, with optional pertemuan filtering
@@ -203,11 +261,19 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       if (jumlahPertemuan <= 1) {
         // Single pertemuan — original behavior
         if (kuis.length <= perPage) {
-          newPages.push(createPageFromPreset('kuis', newPages.length));
+          const page = createPageFromPreset('kuis', newPages.length);
+          if (page.schema && storedParsed) {
+            page.schema.blocks = [genKuisSchema(storedParsed, kuis.length, 1)];
+          }
+          newPages.push(page);
         } else {
           const totalPages = Math.ceil(kuis.length / perPage);
           for (let p = 0; p < totalPages; p++) {
-            newPages.push(createPageFromPreset('kuis', newPages.length));
+            const page = createPageFromPreset('kuis', newPages.length);
+            if (page.schema && storedParsed) {
+              page.schema.blocks = [genKuisSchema(storedParsed, perPage, 1)];
+            }
+            newPages.push(page);
           }
         }
       } else {
@@ -219,11 +285,19 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
           );
           if (kuisForPert.length === 0) continue;
           if (kuisForPert.length <= perPage) {
-            newPages.push(createPageFromPreset('kuis', newPages.length));
+            const page = createPageFromPreset('kuis', newPages.length);
+            if (page.schema && storedParsed) {
+              page.schema.blocks = [genKuisSchema(storedParsed, kuisForPert.length, jumlahPertemuan)];
+            }
+            newPages.push(page);
           } else {
             const totalPages = Math.ceil(kuisForPert.length / perPage);
             for (let p = 0; p < totalPages; p++) {
-              newPages.push(createPageFromPreset('kuis', newPages.length));
+              const page = createPageFromPreset('kuis', newPages.length);
+              if (page.schema && storedParsed) {
+                page.schema.blocks = [genKuisSchema(storedParsed, perPage, jumlahPertemuan)];
+              }
+              newPages.push(page);
             }
           }
         }
@@ -235,27 +309,48 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     }
 
     if (blueprint.includeHasil) {
-      newPages.push(createPageFromPreset('hasil', newPages.length));
+      const page = createPageFromPreset('hasil', newPages.length);
+      if (page.schema) {
+        page.schema.blocks = [genHasilSchema()];
+      }
+      newPages.push(page);
     }
 
+    // Petunjuk at end (repeated)
     if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
       newPages.push(createPageFromPreset('petunjuk', newPages.length));
     }
 
     if (blueprint.includeDiskusi && authStore.diskusi.pertanyaan.length > 0) {
-      newPages.push(createPageFromPreset('diskusi', newPages.length));
+      const page = createPageFromPreset('diskusi', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genDiskusiSchema(storedParsed, authStore.tp, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab })];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
-      newPages.push(createPageFromPreset('refleksi', newPages.length));
+      const page = createPageFromPreset('refleksi', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genRefleksiSchema(storedParsed, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab })];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includeRangkuman && authStore.materi.blok.length > 0) {
-      newPages.push(createPageFromPreset('rangkuman', newPages.length));
+      const page = createPageFromPreset('rangkuman', newPages.length);
+      if (page.schema && storedParsed) {
+        page.schema.blocks = [genRangkumanSchema(storedParsed, authStore.meta)];
+      }
+      newPages.push(page);
     }
 
     if (blueprint.includePenutup && authStore.penutup.preview.length > 0) {
-      newPages.push(createPageFromPreset('penutup', newPages.length));
+      const page = createPageFromPreset('penutup', newPages.length);
+      if (page.schema) {
+        page.schema.blocks = [genPenutupSchema(authStore.meta)];
+      }
+      newPages.push(page);
     }
 
     // FASE 3: Store navbar/timer config in page.schema.nav instead of templateData

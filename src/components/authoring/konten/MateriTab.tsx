@@ -7,7 +7,7 @@ import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
 import { Trash2, FileEdit } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
-import { regenerateMateri } from '../auto-generate/regenerate';
+import { regenerateMateri, regenerateMateriSchema } from '../auto-generate/regenerate';
 import { toast } from 'sonner';
 
 // ── Blok Card ──────────────────────────────────────────────────
@@ -109,6 +109,12 @@ export function MateriTab() {
   );
 
   const handleRegenerateMateri = async () => {
+    // Schema-first: regenerate SchemaBlocks and apply to canvas directly
+    const schemaBlocks = regenerateMateriSchema({
+      judulPertemuan: meta.judulPertemuan,
+      namaBab: meta.namaBab,
+    });
+    // Also regenerate authoring store data (projection for Konten editor)
     const bloks = regenerateMateri({
       judulPertemuan: meta.judulPertemuan,
       namaBab: meta.namaBab,

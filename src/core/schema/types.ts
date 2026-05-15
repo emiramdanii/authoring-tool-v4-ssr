@@ -23,10 +23,46 @@ export interface BlockLayout {
   width?: number | 'auto';
   /** Height in % or 'auto' (only for absolute) */
   height?: number | 'auto';
+  /** Preferred width hint: 'full' | 'half' | 'third' — used by layout engine BEFORE render */
+  preferredWidth?: 'full' | 'half' | 'third';
+  /** Minimum height in px — used by layout engine for scene splitting */
+  minHeight?: number;
   /** Z-index layer */
   zIndex?: number;
   /** Rotation in degrees */
   rotation?: number;
+}
+
+// ── Compression Hints ────────────────────────────────────────────
+// Intelligence that the layout/compression engine uses BEFORE render.
+// The renderer is pure + dumb — all intelligence lives here.
+
+export interface CompressionHints {
+  /** How important is this block? High priority blocks stay visible longer. */
+  priority: 'high' | 'medium' | 'low';
+  /** When space is tight, how should this block compress? */
+  strategy: 'accordion' | 'truncate' | 'scroll' | 'none';
+  /** Can this block be split across scenes? */
+  splittable?: boolean;
+  /** If split, minimum content to show in first fragment (in px) */
+  minFragmentHeight?: number;
+}
+
+// ── Semantic Hints ───────────────────────────────────────────────
+// Metadata about the MEANING of this block.
+// Used by AI regeneration, search, export, and smart features.
+
+export interface SemanticHints {
+  /** Topic/keyword this block relates to */
+  topic?: string;
+  /** Importance score 0–1 — used for prioritization in layout + export */
+  importance?: number;
+  /** BSNP relevance — is this block required by BSNP curriculum standards? */
+  bsnpRelevant?: boolean;
+  /** Which phase of learning does this block serve? */
+  learningPhase?: 'pendahuluan' | 'inti' | 'penutup';
+  /** Interaction type hint — what kind of student interaction? */
+  interactionType?: 'read' | 'write' | 'choose' | 'drag' | 'discuss' | 'reflect';
 }
 
 export interface BaseBlock {
@@ -45,8 +81,23 @@ export interface BaseBlock {
    * Default is flow (flexbox) — blocks stack vertically.
    * Set position: 'absolute' for coordinate-based placement.
    * This is the foundation for the Scene Node system.
+   *
+   * Includes preferredWidth and minHeight hints that the layout engine
+   * uses BEFORE render. The renderer is pure + dumb.
    */
   layout?: BlockLayout;
+  /**
+   * Compression intelligence — how the scene engine should handle
+   * this block when space is tight. All intelligence lives here,
+   * NOT in the renderer.
+   */
+  compression?: CompressionHints;
+  /**
+   * Semantic metadata — what this block MEANS, not just what it looks like.
+   * Used by AI regeneration, search, export, and smart features.
+   * This is the foundation for SILSE as a "document engine".
+   */
+  semantic?: SemanticHints;
   /**
    * Optional children for composite blocks.
    * A composite block = mini scene with child blocks.

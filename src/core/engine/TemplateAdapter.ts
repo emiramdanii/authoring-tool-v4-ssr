@@ -1,25 +1,30 @@
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE ADAPTER — Legacy Bridge (FASE 4: Archived)
+// TEMPLATE ADAPTER — Legacy Bridge (FASE 5: DEPRECATED)
 // ═══════════════════════════════════════════════════════════════════
-// @legacy FASE 4 — This module is a LEGACY BRIDGE.
+// @deprecated FASE 5 — This module is DEPRECATED.
 //
-// It converts legacy pages (templateData + colorPalette) to ScreenSchema
-// for unified rendering via SchemaScreenRenderer. This bridge is still
-// needed for:
-//   1. ensurePageSchema() — lazy migration of legacy pages on first read
-//   2. PageRenderer.tsx — paletteToTokenOverrides() for token resolution
+// Schema-first architecture means:
+//   ParseResult → genXxxSchema() → SchemaBlock[] → page.schema
 //
-// All NEW pages are created schema-native via createPageFromPreset()
-// which uses deriveSchema() directly — bypassing this adapter entirely.
+// This adapter is NO LONGER the bridge between authoring and canvas.
+// The schema generators (@/core/schema/generators.ts) now produce
+// SchemaBlock[] directly — the adapter is bypassed entirely.
 //
-// REMAINING CONSUMERS (as of FASE 4):
-//   - src/core/schema/ensure-schema.ts → convertToSchema()
+// REMAINING CONSUMERS (as of FASE 5):
+//   - src/core/schema/ensure-schema.ts → convertToSchema() — LAZY MIGRATION ONLY
 //   - src/components/canva/page-renderer/PageRenderer.tsx → paletteToTokenOverrides()
-//   - src/core/index.ts → re-exports
 //
-// MIGRATION PATH: When all legacy pages have been re-saved (after
-// migration window), this file can be deleted and ensurePageSchema()
-// simplified to just `return page.schema`.
+// All NEW pages get SchemaBlock[] from genXxxSchema() directly.
+// This adapter only runs for OLD pages that haven't been re-saved yet.
+//
+// MIGRATION PATH:
+//   1. Phase: All auto-generate flows now use genXxxSchema() ✓
+//   2. Phase: All regenerate flows now use regenerateXxxSchema() ✓
+//   3. Phase: Canvas generateFromPageType() uses genXxxSchema() ✓
+//   4. Phase: ensurePageSchema() simplified to return page.schema only
+//   5. Phase: This file DELETED
+//
+// AUTHORITY RULE: Schema → Authoring (allowed), Authoring → Schema (NOT allowed)
 // ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage, ColorPalette } from '@/components/canva/types';

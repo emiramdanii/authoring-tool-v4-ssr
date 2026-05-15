@@ -119,52 +119,49 @@ export function applyBlocksToPages(
 }
 
 /**
- * Apply a single SchemaBlock to pages by replacing blocks of the same type.
- * This is useful for regeneration: find the block with the same type
- * and replace it, keeping other blocks intact.
+ * Apply SchemaBlock(s) to pages by replacing blocks of the same type.
+ * This is useful for regeneration: find blocks with the same type
+ * and replace them, keeping other blocks intact.
  *
  * @param templateType - The page template type to match
- * @param newBlock - The new block to apply
+ * @param newBlocks - The new block(s) to apply (single block or array)
  */
 export function applyBlockToPages(
   templateType: string,
-  newBlock: SchemaBlock,
+  newBlocks: SchemaBlock | SchemaBlock[],
 ): number {
   const store = useCanvaStore.getState();
   const pages = [...store.pages];
   let updatedCount = 0;
 
-  const blockWithId = {
-    ...newBlock,
-    id: newBlock.id || generateBlockId(),
-  };
+  // Normalize to array
+  const blocksArray = Array.isArray(newBlocks) ? newBlocks : [newBlocks];
+  const blocksWithIds = blocksArray.map(b => ({
+    ...b,
+    id: b.id || generateBlockId(),
+  }));
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
     if (page.templateType !== templateType) continue;
     if (!page.schema) continue;
 
-    // Find and replace block of the same type
-    const existingIdx = page.schema.blocks.findIndex(b => b.type === newBlock.type);
-    if (existingIdx >= 0) {
-      const newBlocks = [...page.schema.blocks];
-      newBlocks[existingIdx] = blockWithId;
-      pages[i] = {
-        ...page,
-        schema: { ...page.schema, blocks: newBlocks },
-      };
-      updatedCount++;
-    } else {
-      // Append the new block
-      pages[i] = {
-        ...page,
-        schema: {
-          ...page.schema,
-          blocks: [...page.schema.blocks, blockWithId],
-        },
-      };
-      updatedCount++;
+    // For each new block, find and replace existing block of same type, or append
+    let updatedBlocks = [...page.schema.blocks];
+    for (const blockWithId of blocksWithIds) {
+      const existingIdx = updatedBlocks.findIndex(b => b.type === blockWithId.type);
+      if (existingIdx >= 0) {
+        updatedBlocks[existingIdx] = blockWithId;
+      } else {
+        updatedBlocks.push(blockWithId);
+      }
     }
+
+    pages[i] = {
+      ...page,
+      schema: { ...page.schema, blocks: updatedBlocks },
+    };
+    updatedCount++;
   }
 
   if (updatedCount > 0) {

@@ -7,7 +7,7 @@ import type { KuisItem } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
-import { regenerateKuis } from '../auto-generate/regenerate';
+import { regenerateKuis, regenerateKuisSchema } from '../auto-generate/regenerate';
 
 // ── Kuis Tab (Fully Functional) ────────────────────────────────
 export function KuisTab() {
@@ -40,6 +40,9 @@ export function KuisTab() {
 
   const handleRegenerateKuis = async () => {
     const jumlahPertemuan = atp.jumlahPertemuan || 1;
+    // Schema-first: regenerate SchemaBlock and apply to canvas directly
+    regenerateKuisSchema(kuis.length || 10, jumlahPertemuan);
+    // Also regenerate authoring store data (projection for Konten editor)
     const newKuis = regenerateKuis(kuis.length || 10, jumlahPertemuan);
     if (newKuis) {
       useAuthoringStore.setState({ kuis: newKuis as KuisItem[], dirty: true });

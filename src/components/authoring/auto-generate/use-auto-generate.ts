@@ -244,6 +244,12 @@ export function useAutoGenerate() {
           const tpData = preview.data as TpItem[];
           // Replace all TPs via setState
           store.setState({ tp: tpData, dirty: true });
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const tpBlock = genTpSchema(parsed, settings);
+            applyBlockToPages('dokumen', [tpBlock]);
+            applyBlockToPages('tujuan', [tpBlock]);
+          }
           toast.success(`🎯 ${tpData.length} TP diterapkan`);
           break;
         }
@@ -263,18 +269,33 @@ export function useAutoGenerate() {
         case 'alur': {
           const alurData = preview.data as AlurItem[];
           store.setState({ alur: alurData, dirty: true });
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const alurBlock = genAlurSchema(parsed, settings, meta);
+            applyBlockToPages('dokumen', [alurBlock]);
+          }
           toast.success(`🗺️ ${alurData.length} langkah alur diterapkan`);
           break;
         }
         case 'kuis': {
           const kuisData = preview.data as KuisItem[];
           store.setState({ kuis: kuisData, dirty: true });
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const kuisBlock = genKuisSchema(parsed, settings.jumlahKuis, settings.pertemuan);
+            applyBlockToPages('kuis', kuisBlock);
+          }
           toast.success(`❓ ${kuisData.length} soal kuis diterapkan`);
           break;
         }
         case 'skenario': {
           const skenarioData = preview.data as SkenarioChapter[];
           store.getState().setSkenario(skenarioData as unknown as import('@/store/authoring/types').SkenarioChapter[]);
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const skenarioBlock = genSkenarioSchema(parsed, meta);
+            applyBlockToPages('skenario', [skenarioBlock]);
+          }
           toast.success(`🎭 ${skenarioData.length} bab skenario diterapkan`);
           break;
         }
@@ -291,6 +312,11 @@ export function useAutoGenerate() {
           if (newIdx >= 0) {
             store.getState().updateModuleField(newIdx, 'kartu', flashData);
             store.getState().updateModuleField(newIdx, 'title', 'Flashcard');
+          }
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const flashcardBlock = genFlashcardSchema(parsed);
+            applyBlockToPages('materi', [flashcardBlock]); // flashcard goes into materi pages
           }
           toast.success(`🃏 ${flashData.length} flashcard diterapkan`);
           break;
@@ -328,24 +354,39 @@ export function useAutoGenerate() {
         case 'materi': {
           const materiData = preview.data as MateriBlok[];
           store.setState({ materi: { blok: materiData }, dirty: true });
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const schemaBlocks = genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+            applyBlocksToPages('materi', schemaBlocks);
+          }
           toast.success(`📖 ${materiData.length} blok materi diterapkan`);
           break;
         }
         case 'diskusi': {
           const diskusiData = preview.data as DiskusiData;
           store.setState({ diskusi: diskusiData, dirty: true });
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const diskusiBlock = genDiskusiSchema(parsed, store.getState().tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+            applyBlockToPages('diskusi', [diskusiBlock]);
+          }
           toast.success(`💬 ${diskusiData.pertanyaan.length} pertanyaan diskusi diterapkan`);
           break;
         }
         case 'refleksi': {
           const refleksiData = preview.data as RefleksiData;
           store.setState({ refleksi: refleksiData, dirty: true });
+          // Schema-first: apply to canvas directly
+          if (parsed) {
+            const refleksiBlock = genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+            applyBlockToPages('refleksi', [refleksiBlock]);
+          }
           toast.success(`🪞 ${refleksiData.pertanyaan.length} pertanyaan refleksi diterapkan`);
           break;
         }
       }
     },
-    [],
+    [parsed, settings, meta],
   );
 
   // ── Generate all ────────────────────────────────────────────
