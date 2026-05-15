@@ -14,13 +14,13 @@
 //   4. Stable IDs — nanoid(10) for all blocks from creation
 //   5. One-way — Authoring → Schema → Canvas, never reverse
 //
-// FASE 3: The internal implementation now uses deriveSchema()
-// directly — no more buildTemplateData() → TemplateAdapter bridge.
-// One-way data flow: Authoring → deriveSchema() → page.schema → Renderer
+// FASE 3: Presets create schemas directly via ensurePageSchema().
+// derive-schema.ts was removed — no more stub derivation.
+// One-way data flow: Preset → Schema → Canvas
 
 import type { ScreenSchema } from '../schema/types';
 import type { CanvaPage, PageTemplateType } from '@/components/canva/types';
-import { deriveSchema, createDeriveContext } from '../schema/derive-schema';
+import { ensurePageSchema } from '../schema/ensure-schema';
 import { getTemplateLabel, getTemplateExtraProps } from '@/store/canva/template-data';
 import { populateTemplateElements } from '@/lib/canva-constants';
 import { createPage, createElId } from '@/store/canva/constants';
@@ -209,12 +209,11 @@ function buildPresetWithCreate(def: Omit<PagePreset, 'create'>): PagePreset {
       // Custom pages have no schema
       if (def.id === 'custom') return null;
 
-      // FASE 3: Direct schema derivation — no buildTemplateData() bridge.
-      // deriveSchema() reads directly from the authoring store
-      // and produces a ScreenSchema with stable nanoid block IDs.
-      // One-way: Authoring → deriveSchema() → page.schema → Renderer
-      const deriveCtx = createDeriveContext();
-      const schema = deriveSchema(def.id as PageTemplateType, deriveCtx);
+      // Schema-first: use ensurePageSchema to create or migrate schema.
+      // derive-schema.ts was removed — presets rely on ensurePageSchema()
+      // which uses TemplateAdapter for legacy pages or returns existing schema.
+      const basePage = createPage(ctx.label, def.id as PageTemplateType);
+      const schema = ensurePageSchema({ ...basePage, id: ctx.pageId, templateVariant: ctx.variant });
       if (schema) {
         schema.id = ctx.pageId;
       }
@@ -303,14 +302,12 @@ export function createPageFromPreset(
 
   // v4: No more lock model — schema is always owned by the user
 
-  // FASE 3: templateData is legacy — only populated for backward compat
-  // with the export pipeline. Schema-driven pages don't use it.
-  // @deprecated — will be removed when export pipeline uses schema directly.
-  page.templateData = {}; // Empty — deriveSchema bypasses templateData
+  // Schema-first: templateData is deprecated.
+  // Presets create schemas directly via ensurePageSchema().
+  page.templateData = {};
 
-  // FASE 3: Create native schema directly via deriveSchema()
+  // Schema-first: create native schema directly via preset.
   // No TemplateAdapter bridge — pure one-way data flow.
-  // This makes the page schema-native from creation.
   let hasSchema = false;
   if (preset) {
     const schema = preset.create({
@@ -327,7 +324,7 @@ export function createPageFromPreset(
   // Schema-native page: elements[] is EMPTY.
   // SchemaScreenRenderer is the single source of truth.
   // Only fall back to populateTemplateElements for pages without schema
-  // (i.e., pages where deriveSchema returned null).
+  // (i.e., pages where ensurePageSchema returned null).
   if (hasSchema) {
     page.elements = [];
   } else {

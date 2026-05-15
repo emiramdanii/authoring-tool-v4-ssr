@@ -14,7 +14,6 @@ import { createPage, createElId } from './constants';
 import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
 import { patchHistory } from '@/core/editor/patch-history';
-import { deriveSchema, createDeriveContext } from '@/core/schema/derive-schema';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
 export type PageSlice = Pick<
@@ -118,28 +117,26 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPage = { ...page, templateType, templateVariant: 'A' as const, templateData: {} as Record<string, unknown> };
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
-    // ═══ FASE 3: Derive schema directly from authoring ═════
-    // When changing template type, derive schema from the current
-    // authoring state. Pure one-way: Authoring → Schema → Canvas.
+    // ═══ Schema-first: use ensurePageSchema for migration ═══
+    // derive-schema.ts was removed — schemas come from presets or
+    // lazy migration via ensurePageSchema(). One-way: Schema → Canvas.
     if (isTemplate) {
-      const ctx = createDeriveContext();
-      const schema = deriveSchema(templateType, ctx);
+      // Ensure the page gets a schema (via preset or TemplateAdapter)
+      const schema = ensurePageSchema({ ...newPage, templateType });
       if (schema) {
-        schema.id = newPage.id;
-        newPage.schema = schema;
-        // Schema-native page: elements[] is EMPTY.
-        // SchemaScreenRenderer is the single source of truth.
-        // No placeholder elements needed — prevents dual-render bug.
+        newPage.schema = { ...schema, id: newPage.id };
         newPage.elements = [];
+        newPage.pageMode = 'schema';
       } else {
         delete newPage.schema;
-        // Schema derivation failed — fall back to legacy element path
         newPage.elements = populateTemplateElements(newPage, createElId);
+        newPage.pageMode = 'elements';
       }
     } else {
       // Custom pages have no schema
       delete newPage.schema;
       newPage.elements = [];
+      newPage.pageMode = 'elements';
     }
 
     newPages[currentPageIndex] = newPage;

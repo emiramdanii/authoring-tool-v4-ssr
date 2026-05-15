@@ -1,15 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════
 // RICH TEXT — HTML-aware text renderer for schema content
 // ═══════════════════════════════════════════════════════════════════
-// Schema content (especially from derive-schema.ts) often contains
-// HTML markup like <strong>, <em>, <br/> for basic formatting.
+// Schema content often contains HTML markup like <strong>, <em>, <br/>
+// for basic formatting.
 //
 // This component auto-detects HTML tags and renders them properly,
 // falling back to plain text when no HTML is detected.
 //
 // Security note: The HTML content comes from our own schema/preset
-// files, NOT from user input. It passes through stripHtml() in
-// derive-schema.ts before wrapping. This is intentional — we control
+// files, NOT from user input. This is intentional — we control
 // the content source.
 //
 // IMPORTANT: Only allow basic formatting tags. Block-level tags
