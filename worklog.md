@@ -55,3 +55,49 @@ Tested the auto-generate pipeline with real Indonesian PPKn (Pendidikan Pancasil
 2. Multi-word definitions are extremely common in Indonesian academic text — the single-word regex was insufficient
 3. Numbered lists with multi-paragraph descriptions are the norm in Indonesian PPKn textbooks, not the exception
 4. The parser now handles both the "Norma" content (short numbered items with dashes) and the "Budaya Demokrasi" content (long numbered items with descriptions)
+
+---
+Task ID: Phase-E-Productization
+Agent: Main Agent + Subagents
+Task: Phase E — Productization: Teacher Workflow Polish
+
+Work Log:
+- Verified existing engine wiring (Tasks #2-#4 already done from previous sessions)
+- Verified build: tsc + Next.js production build both clean
+- Pushed to GitHub (no conflicts)
+- Phase E.1: Vertical Slice Production Ready
+  - Auto-Generate apply flow navigates to Canva with success toast
+  - Preview buttons show loading state while applying
+  - Dashboard "Buat Baru" navigates to Dokumen panel
+  - Canvas empty state shows professional action buttons (Tambah Block + Auto-Generate)
+  - Page navigator shows color-coded type badges (Cover=amber, Materi=purple, Kuis=yellow, etc.)
+- Phase E.2: Teacher Onboarding / Simple Mode
+  - Created teacher terminology map (30+ technical→teacher-friendly terms)
+  - Created teacher-mode-slice.ts with localStorage persistence
+  - BlockContextMenu uses simplified terms in teacher mode (no emoji prefixes)
+  - StatusBar shows "Bagian" instead of "Scene" in teacher mode
+  - RightPanel hides capability badges and block IDs in teacher mode
+  - TeacherModeToggle in toolbar header
+- Phase E.3: Empty State UX
+  - Dokumen panel: dashed border cards with CTA buttons for TP, ATP, Alur
+  - Konten panel: warm encouraging empty states for MateriTab, KuisTab, Skenario
+  - BSNP panel: FileCheck icon empty state with "Mulai Isi Dokumen" CTA
+  - Add Block panel: organized by category (Konten & Materi, Interaktif, Navigasi, Lainnya)
+- Phase E.4: Auto-Save & Crash Recovery
+  - Error toast on save failure (throttled to 1x per 10s)
+  - Session marker system for crash detection
+  - Recovery dialog for interrupted sessions (30-minute window)
+  - Added _lastSavedAt timestamp
+- Phase E.6: Real Content Testing
+  - Created PPKn SMP Kelas 8 test content (Budaya Demokrasi, 4 sections)
+  - Created 49 pipeline test cases (parser + generators + robustness)
+  - Fixed parser: multi-word definitions, section-aware grouping, numbered items with multi-line descriptions
+  - All 94 tests pass (49 new + 45 existing)
+
+Stage Summary:
+- Phase E productization complete: teacher workflow polished end-to-end
+- Teacher mode toggle allows hiding technical complexity
+- All empty states are inviting and professional
+- Auto-save and crash recovery hardened
+- Parser improved for real Indonesian PPKn academic text
+- Build clean, pushed to GitHub (commit 9f20cc0)
