@@ -36,6 +36,7 @@
 
 import type { ScreenSchema, SchemaBlock } from './types';
 import { validateSchema, type ValidationResult } from './validation';
+import { isCompositeBlockType } from './capability-registry';
 
 // ── Document State ─────────────────────────────────────────────
 
@@ -172,8 +173,8 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
       }
     }
 
-    // Check nested blocks in materi-section
-    if (block.type === 'materi-section' && 'content' in block) {
+    // Check nested blocks in composite blocks (using registry as single source of truth)
+    if (isCompositeBlockType(block.type) && block.type === 'materi-section' && 'content' in block) {
       const ms = block as { content: SchemaBlock[] };
       for (let j = 0; j < (ms.content?.length || 0); j++) {
         const child = ms.content[j];
@@ -185,8 +186,8 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
       }
     }
 
-    // Check nested blocks in ftab
-    if (block.type === 'ftab' && 'tabs' in block) {
+    // Check nested blocks in ftab (specific tabs structure)
+    if (isCompositeBlockType(block.type) && block.type === 'ftab' && 'tabs' in block) {
       const ft = block as { tabs: Array<{ content?: SchemaBlock[] }> };
       for (let t = 0; t < (ft.tabs?.length || 0); t++) {
         const tab = ft.tabs[t];

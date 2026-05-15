@@ -126,6 +126,11 @@ export {
   setPageSchemaBlocks,
   findPageIdByType,
   findPageIdsByType,
+  // Transaction-based operations
+  commitSceneTransaction,
+  rebalancePageCompression,
+  promoteSceneSplitToPage,
+  mergePagesTransaction,
 } from './schema-apply';
 
 // ── Schema Projection (Schema → Store) ───────────────────────────
@@ -156,6 +161,9 @@ export {
   isBlockTypeInteractive,
   isBlockTypeCompressionCapable,
   isBlockTypeSplittable,
+  isBlockTypeMeasurable,
+  // Composite block detection (single source of truth)
+  isCompositeBlockType,
 } from './capability-registry';
 
 export type { BlockCapabilityInfo, DerivedCapabilities } from './capability-registry';

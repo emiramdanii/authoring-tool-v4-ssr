@@ -18,6 +18,7 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 import { ensurePageSchema, generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
 import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockImmutable, findBlockById, moveBlockNested, type ContainerRef } from '@/core/schema/immutable';
 import { createTransaction } from '@/core/schema/scene-transaction';
+import { assertDocumentPurity } from '@/core/schema/session-state';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
@@ -84,9 +85,18 @@ function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | nu
 // Replaces the repeated pattern:
 //   { ...schema, blocks: newBlocks }
 // With version tracking via bumpVersion().
+//
+// DEV-MODE GUARD:
+//   assertDocumentPurity() checks that no runtime state (selection,
+//   hover, DOM refs, etc.) has leaked into the schema. This catches
+//   bugs where UI state accidentally gets written to the document.
+//   In dev: throws. In prod: logs to console.
 // ═══════════════════════════════════════════════════════════════
 function commitSchemaUpdate(schema: ScreenSchema, newBlocks: SchemaBlock[]): ScreenSchema {
-  return bumpVersion({ ...schema, blocks: newBlocks });
+  const updated = bumpVersion({ ...schema, blocks: newBlocks });
+  // Dev-mode purity guard: catches runtime state leaking into schema
+  assertDocumentPurity(updated, 'commitSchemaUpdate');
+  return updated;
 }
 
 export type UISlice = Pick<

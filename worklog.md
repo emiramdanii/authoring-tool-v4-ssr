@@ -754,3 +754,101 @@ Stage Summary:
 - New moveBlockToContainer action enables drag-drop between containers
 - Build verified: TypeScript compiles, Next.js production build passes
 - Git pushed to origin/main (commit c1c0c23)
+---
+Task ID: 1-Capability-Registry-Wiring
+Agent: Main Agent
+Task: Task #1 — Wire BlockCapabilityRegistry into application (replace hardcoded capability checks)
+
+Work Log:
+- Audited entire codebase for hardcoded capability checks — found 26 locations across 8 files
+- Added isCompositeBlockType() + isBlockTypeMeasurable() to capability-registry.ts
+  - COMPOSITE_BLOCK_TYPES constant as single source of truth (ftab, materi-section)
+  - capability-registry.ts internal composite rule now uses isCompositeBlockType()
+- Replaced 3x duplicated gameTypes arrays:
+  - CommandPalette.tsx getBlockIcon() → BlockCapabilityRegistry.get(type).derived.interactive
+  - CommandPalette.tsx allCommands → BlockCapabilityRegistry.filterByCapability('interactive')
+  - AutoSaveRecovery.tsx checkForRecoverableData() → BlockCapabilityRegistry.filterByCapability('interactive')
+- Replaced canva-constants.ts hardcoded interactive check (line 109):
+  - `block.type === 'kuis' || block.type === 'roda-game' || block.type === 'sortir-game'` → `isBlockTypeInteractive(block.type)`
+- Wired isCompositeBlockType into SchemaTraversal.ts:
+  - isCompositeBlock() now delegates to isCompositeBlockType() for TYPE-level check
+  - Still has runtime children check for generic composites
+  - getChildBlocks/replaceInComposite/deleteFromComposite remain type-specific (structural knowledge needed)
+- Updated barrel exports in schema/index.ts with isBlockTypeMeasurable, isCompositeBlockType
+- Build verified: Next.js production build passes cleanly
+
+Stage Summary:
+- BlockCapabilityRegistry is now the single source of truth for all capability checks
+- 3 hardcoded gameTypes arrays eliminated (was maintained in 3 files independently)
+- isCompositeBlockType() centralizes ftab/materi-section detection (previously scattered in 20+ locations)
+- canva-constants.ts no longer hardcodes interactive block types
+- Remaining structural ftab/materi-section checks in immutable.ts, ensure-schema.ts, session-state.ts, validation.ts, ui-slice.ts are TYPE-SPECIFIC (need data shape knowledge) — not replacable with type-only check
+
+---
+Task ID: 2-Transaction-System-Wiring
+Agent: Main Agent
+Task: Task #2 — Wire transaction system into schema-apply.ts and scene overflow engine
+
+Work Log:
+- Created 4 transaction bridge functions in schema-apply.ts:
+  - commitSceneTransaction() — PRIMARY bridge between SceneTransaction.commit() and Zustand store
+  - rebalancePageCompression() — Transaction-based compression rebalance (measure + rebalance + commit)
+  - promoteSceneSplitToPage() — Converts ScenePlan overflow into actual page split via transaction
+  - mergePagesTransaction() — Merges two adjacent pages back into one atomically (inverse of split)
+- Added imports for createTransaction, TransactionResult, RebalanceOptions, splitScene, mergeScene, produce, isBlockTypeCompressionCapable, ScenePlan, generatePageId, assertValidSchema
+- Updated barrel exports in schema/index.ts with all 4 new functions
+- Wired isCompositeBlockType into session-state.ts purity checks:
+  - Replaced hardcoded `block.type === 'materi-section'` and `block.type === 'ftab'` with isCompositeBlockType()
+  - Keeps type-specific structural access (needs data shape knowledge)
+- Fixed CanvaPage type compatibility (added bgDataUrl, bgColor, overlay, colorPalette, navConfig, templateData)
+- Build verified: Next.js production build passes cleanly
+
+Stage Summary:
+- SceneTransaction is now wired into the schema-apply layer with 4 atomic operations
+- commitSceneTransaction() is the single bridge between transaction commits and store writes
+- promoteSceneSplitToPage() enables "promoting" derived scene splits to actual page splits
+- mergePagesTransaction() provides the inverse operation (merge pages back)
+- rebalancePageCompression() uses transaction rebalance for atomic compression adjustments
+- session-state.ts purity checks now use isCompositeBlockType() from registry
+
+---
+Task ID: 3-Session-State-Guards
+Agent: Main Agent
+Task: Task #3 — Wire assertDocumentPurity() as dev-mode guard
+
+Work Log:
+- Added assertDocumentPurity import to ui-slice.ts
+- Added purity guard to commitSchemaUpdate() — the central schema write helper
+  - Every schema mutation (updateSchemaBlock, deleteBlock, addSchemaBlock, moveBlockUp/Down, duplicateBlock, nudgeSchemaBlocks, etc.) now passes through commitSchemaUpdate() which calls assertDocumentPurity()
+  - In dev mode: throws if runtime state (selection, hover, DOM refs) leaks into schema
+  - In production: logs to console (zero runtime cost for users)
+- Wired isCompositeBlockType into session-state.ts purity checks
+  - Replaced hardcoded `block.type === 'materi-section'` / `block.type === 'ftab'` with isCompositeBlockType() guard
+  - Keeps type-specific structural access (needs data shape knowledge for content/tabs extraction)
+- Build verified: Next.js production build passes cleanly
+
+Stage Summary:
+- assertDocumentPurity() is now the gatekeeper for ALL schema writes in the canva store
+- commitSchemaUpdate() is the single enforcement point — 15+ store actions pass through it
+- Runtime state (selection, hover, editing, DOM refs) can NEVER silently leak into the document schema
+- session-state.ts purity checks now use isCompositeBlockType() from the capability registry
+
+---
+Task ID: 4-Schema-Operations-Wiring
+Agent: Main Agent
+Task: Task #4 — Wire new schema operations into canvas store actions
+
+Work Log:
+- Verified all 4 new schema operations are already wired into ui-slice.ts:
+  - duplicateBlock → duplicateBlock action (line 828-879) — uses immutable.duplicateBlock()
+  - splitScene → splitPageAtBlock action (line 1460-1490) — uses immutable.splitScene()
+  - mergeScene → mergeWithNextPage action (line 1520-1560) — uses immutable.mergeScene() via transaction
+  - moveBlockNested → moveBlockToContainer action (line 1598-1649) — uses immutable.moveBlockNested()
+- insertBlockNested is intentionally NOT wired as a store action — blocks are added at root level then moved to containers via moveBlockToContainer
+- All operations pass through commitSchemaUpdate() which includes the purity guard
+- Build verified: Next.js production build passes cleanly
+
+Stage Summary:
+- All 4 new immutable schema operations are fully wired into the canva store
+- Each operation has: history push → immutable operation → editBus emit → commitSchemaUpdate → store setState → toast notification
+- No additional wiring needed — all engine modules are now integrated

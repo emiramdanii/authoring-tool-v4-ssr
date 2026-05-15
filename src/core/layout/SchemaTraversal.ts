@@ -32,6 +32,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
+import { isCompositeBlockType } from '../schema/capability-registry';
 
 // ── Path Types ─────────────────────────────────────────────────
 
@@ -70,16 +71,21 @@ export interface BlockOwner {
 // ── Composite Block Detection ──────────────────────────────────
 
 /**
- * Check if a block type is a known composite (contains nested blocks).
+ * Check if a block is composite (contains nested blocks).
+ * Uses isCompositeBlockType() from the capability registry as the
+ * single source of truth for known composite types (ftab, materi-section).
+ * Also checks for generic BaseBlock.children at runtime.
+ *
  * Composite blocks are special because their children participate in
  * the scene layout engine but are rendered inside the parent.
  */
 export function isCompositeBlock(block: SchemaBlock): boolean {
-  return block.type === 'ftab'
-    || block.type === 'materi-section'
-    || (block.type !== 'ftab' && block.type !== 'materi-section'
-        && Array.isArray((block as { children?: SchemaBlock[] }).children)
-        && ((block as { children?: SchemaBlock[] }).children?.length ?? 0) > 0);
+  // Use registry for known composite types
+  if (isCompositeBlockType(block.type)) return true;
+
+  // Generic runtime check: any block with non-empty children array
+  const blockChildren = (block as { children?: SchemaBlock[] }).children;
+  return Array.isArray(blockChildren) && blockChildren.length > 0;
 }
 
 /**
@@ -98,6 +104,7 @@ export function getChildBlocks(block: SchemaBlock): Array<{
   }> = [];
 
   // ftab: each tab has its own content array
+  // Note: ftab-specific child extraction (needs tabs structure knowledge)
   if (block.type === 'ftab') {
     const ft = block as { tabs?: Array<{ content: SchemaBlock[] }> };
     if (ft.tabs) {
@@ -115,6 +122,7 @@ export function getChildBlocks(block: SchemaBlock): Array<{
   }
 
   // materi-section: single content array
+  // Note: materi-section-specific child extraction (needs content structure knowledge)
   if (block.type === 'materi-section') {
     const ms = block as { content?: SchemaBlock[] };
     if (ms.content && ms.content.length > 0) {
@@ -126,7 +134,7 @@ export function getChildBlocks(block: SchemaBlock): Array<{
     return result;
   }
 
-  // Generic BaseBlock.children
+  // Generic BaseBlock.children (for any composite block with a children array)
   const blockChildren = (block as { children?: SchemaBlock[] }).children;
   if (blockChildren && blockChildren.length > 0) {
     result.push({

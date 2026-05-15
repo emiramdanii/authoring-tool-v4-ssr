@@ -22,6 +22,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { CANVA_STORAGE_KEY } from '@/store/canva/constants';
 import { STORAGE_KEY as AUTHORING_STORAGE_KEY } from '@/store/authoring/types';
+import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
 import {
   AlertTriangle,
   RotateCcw,
@@ -91,15 +92,13 @@ function checkForRecoverableData(): RecoveryStats | null {
         (parsed.atp?.pertemuan && Array.isArray(parsed.atp.pertemuan) && parsed.atp.pertemuan.length > 0);
 
       if (hasData) {
-        // Count games from modules
-        const gameTypes = [
-          'sortir-game', 'roda-game', 'memory-game', 'matching-game',
-          'fill-blank-game', 'word-search-game', 'true-false-game',
-          'drag-drop-game', 'crossword-game', 'team-buzzer-game',
-        ];
+        // Use capability registry as single source of truth for interactive/game types
+        const interactiveBlockTypes = new Set(
+          BlockCapabilityRegistry.filterByCapability('interactive')
+        );
         const modules = parsed.modules || [];
         const gameCount = modules.filter(
-          (m: Record<string, unknown>) => gameTypes.includes(m.type as string)
+          (m: Record<string, unknown>) => interactiveBlockTypes.has(m.type as string)
         ).length;
         const moduleCount = modules.length - gameCount;
 

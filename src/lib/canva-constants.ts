@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import type { CanvaPage, CanvaElement, Ratio } from '@/components/canva/types';
+import { isBlockTypeInteractive } from '@/core/schema/capability-registry';
 
 // ═══════════════════════════════════════════════════════════════
 // VIRTUAL CANVAS — Fixed coordinate space for WYSIWYG editing
@@ -105,9 +106,10 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
 
   if (schema?.blocks) {
     // Scan schema blocks for interactive block types that reference authoring modules
+    // Uses capability registry as single source of truth
     for (const block of schema.blocks) {
-      if (block.type === 'kuis' || block.type === 'roda-game' || block.type === 'sortir-game') {
-        // These blocks reference kuis data — extract ID if available
+      if (isBlockTypeInteractive(block.type)) {
+        // These blocks reference kuis/game data — extract ID if available
         const blockId = block.id;
         if (block.type === 'kuis' && blockId) {
           kuisId = blockId; // Schema block ID serves as reference

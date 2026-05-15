@@ -32,6 +32,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { getAllBlockMeta, getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
+import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -88,13 +89,8 @@ type CommandCategory = keyof typeof CATEGORY_CONFIG;
 // ═══════════════════════════════════════════════════════════════════
 
 function getBlockIcon(blockType: string, blockIcon: string): React.ReactNode {
-  // Map known game types to Gamepad2 icon
-  const gameTypes = [
-    'sortir-game', 'roda-game', 'memory-game', 'matching-game',
-    'fill-blank-game', 'word-search-game', 'true-false-game',
-    'drag-drop-game', 'crossword-game', 'team-buzzer-game',
-  ];
-  if (gameTypes.includes(blockType)) {
+  // Use capability registry as single source of truth for interactive blocks
+  if (BlockCapabilityRegistry.get(blockType).derived.interactive) {
     return <Gamepad2 size={16} className="text-emerald-400" />;
   }
 
@@ -191,11 +187,10 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     const authStore = useAuthoringStore.getState();
 
     // ── Block commands (content blocks) ──────────────────────
-    const gameTypes = new Set([
-      'sortir-game', 'roda-game', 'memory-game', 'matching-game',
-      'fill-blank-game', 'word-search-game', 'true-false-game',
-      'drag-drop-game', 'crossword-game', 'team-buzzer-game',
-    ]);
+    // Use capability registry as single source of truth for interactive/game types
+    const interactiveBlockTypes = new Set(
+      BlockCapabilityRegistry.filterByCapability('interactive')
+    );
 
     // Compute insertion context from selected block
     const selectedBlockId = store.selectedBlockId;
@@ -217,7 +212,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     }
 
     for (const meta of blockMetas) {
-      const isGame = gameTypes.has(meta.type) || meta.category === 'interactive';
+      const isGame = interactiveBlockTypes.has(meta.type) || meta.category === 'interactive';
       const category: CommandCategory = isGame ? 'game' : 'block';
 
       // Add insertion hint to description when a block is selected

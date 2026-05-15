@@ -149,7 +149,8 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
   }
 
   // Composite blocks (materi-section, ftab) are measurable and splittable
-  if (type === 'materi-section' || type === 'ftab') {
+  // Uses COMPOSITE_BLOCK_TYPES as the single source of truth
+  if (isCompositeBlockType(type)) {
     derived.splittable = compression?.splittable ?? true;
     derived.lazyRenderable = false; // Complex blocks need eager rendering
     sources.splittable = compression?.splittable != null ? 'hint' : 'definition';
@@ -208,6 +209,43 @@ export function isBlockTypeCompressionCapable(type: string): boolean {
 /** Check if a block TYPE is splittable across scenes */
 export function isBlockTypeSplittable(type: string): boolean {
   return BlockCapabilityRegistry.get(type).derived.splittable;
+}
+
+/** Check if a block TYPE is measurable (height can be determined) */
+export function isBlockTypeMeasurable(type: string): boolean {
+  return BlockCapabilityRegistry.get(type).derived.measurable;
+}
+
+// ── Composite Block Detection ──────────────────────────────────
+// Composite blocks have nested children (ftab.tabs[].content, materi-section.content).
+// This is the SINGLE SOURCE OF TRUTH for which block types are composite.
+// All code that checks `block.type === 'ftab' || block.type === 'materi-section'`
+// should use this function instead.
+
+/** Known composite block types (contain nested SchemaBlock children) */
+const COMPOSITE_BLOCK_TYPES = new Set([
+  'ftab',           // tabs[].content → SchemaBlock[]
+  'materi-section', // content → SchemaBlock[]
+]);
+
+/**
+ * Check if a block TYPE is a known composite (contains nested blocks).
+ *
+ * Composite blocks are special because:
+ *   1. Their children participate in the scene layout engine
+ *   2. They need composite-aware traversal (SchemaTraversal)
+ *   3. They affect immutable operations (updateBlockInSchema, deepClone, etc.)
+ *   4. They have special compression rules (not lazy-renderable)
+ *
+ * IMPORTANT: This only checks the TYPE level. For runtime instance checks
+ * where ANY block might have a `children` array, use:
+ *   `isCompositeBlockType(type) || (block.children && block.children.length > 0)`
+ *
+ * Adding a new composite block type? Just add it to COMPOSITE_BLOCK_TYPES above.
+ * No other code needs to change.
+ */
+export function isCompositeBlockType(type: string): boolean {
+  return COMPOSITE_BLOCK_TYPES.has(type);
 }
 
 // ── Registry Cache (for block types, not instances) ────────────
