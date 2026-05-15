@@ -159,7 +159,7 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
   return { type, derived, sources };
 }
 
-// ── Convenience Functions ───────────────────────────────────────
+// ── Instance Convenience Functions (requires SchemaBlock) ────────
 
 /** Check if a block is compression-capable */
 export function isBlockCompressionCapable(block: SchemaBlock): boolean {
@@ -184,6 +184,30 @@ export function isBlockMeasurable(block: SchemaBlock): boolean {
 /** Check if a block can be lazy-rendered */
 export function isBlockLazyRenderable(block: SchemaBlock): boolean {
   return getBlockCapabilities(block).derived.lazyRenderable;
+}
+
+// ── Type-string Convenience Functions (no SchemaBlock needed) ───
+// These use the cached BlockCapabilityRegistry internally,
+// so they're O(1) after the first call per type.
+
+/** Check if a block TYPE fills the entire scene (cover, hero, etc.) */
+export function isFullPageBlockType(type: string): boolean {
+  return !BlockCapabilityRegistry.get(type).derived.measurable;
+}
+
+/** Check if a block TYPE is interactive */
+export function isBlockTypeInteractive(type: string): boolean {
+  return BlockCapabilityRegistry.get(type).derived.interactive;
+}
+
+/** Check if a block TYPE is compression-capable */
+export function isBlockTypeCompressionCapable(type: string): boolean {
+  return BlockCapabilityRegistry.get(type).derived.compressionCapable;
+}
+
+/** Check if a block TYPE is splittable across scenes */
+export function isBlockTypeSplittable(type: string): boolean {
+  return BlockCapabilityRegistry.get(type).derived.splittable;
 }
 
 // ── Registry Cache (for block types, not instances) ────────────

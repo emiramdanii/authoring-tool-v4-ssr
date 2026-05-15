@@ -15,13 +15,20 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 // NOTE: Do NOT import from SceneRegistry here — it pulls in React renderers
 // which import from @/store/canva-store, creating a circular dependency.
 // Use the renderer-free BlockDefinitionRegistry instead.
-import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
+import { ensurePageSchema, generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
+import { bumpVersion, splitScene, mergeScene } from '@/core/schema/immutable';
+import { createTransaction } from '@/core/schema/scene-transaction';
+import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
 // ═══════════════════════════════════════════════════════════════
 // NESTED BLOCK FINDER — Finds blocks inside composite blocks
 // (ftab.tabs[].content[], materi-section.content[])
 // Returns the path to the block so Immer can update it.
+//
+// Uses isCompositeBlock() from SchemaTraversal to detect composite
+// blocks instead of hardcoded type checks. When new composite
+// block types are added, they're automatically supported here.
 // ═══════════════════════════════════════════════════════════════
 
 type BlockOwner =
@@ -35,9 +42,12 @@ function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | nu
   const idx = blocks.findIndex(b => b.id === blockId);
   if (idx !== -1) return { kind: 'top-level', index: idx };
 
-  // 2. Search inside ftab.tabs[].content[]
+  // 2. Search inside composite blocks (ftab, materi-section, generic children)
   for (let bi = 0; bi < blocks.length; bi++) {
     const block = blocks[bi];
+    if (!isCompositeBlock(block)) continue;
+
+    // ftab: each tab has its own content array
     if (block.type === 'ftab') {
       const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
       const tabs = ft.tabs || [];
@@ -46,17 +56,19 @@ function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | nu
         const ci = content.findIndex(b => b.id === blockId);
         if (ci !== -1) return { kind: 'ftab-tab', blockIndex: bi, tabIndex: ti, childIndex: ci };
       }
+      continue;
     }
-    // 3. Search inside materi-section.content[]
+
+    // materi-section: single content array
     if (block.type === 'materi-section') {
       const ms = block as { content?: SchemaBlock[] };
       const content = ms.content || [];
       const ci = content.findIndex(b => b.id === blockId);
       if (ci !== -1) return { kind: 'materi-section', blockIndex: bi, childIndex: ci };
+      continue;
     }
-    // 4. Search inside generic BaseBlock.children[]
-    // This is a fallback for any block type that uses the generic `children` field.
-    // Without this, edits to blocks nested via `children` are silently dropped.
+
+    // Generic BaseBlock.children — fallback for any composite block type
     if (block.children && Array.isArray(block.children)) {
       const ci = block.children.findIndex(b => b.id === blockId);
       if (ci !== -1) return { kind: 'children', blockIndex: bi, childIndex: ci };
@@ -64,6 +76,17 @@ function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwner | nu
   }
 
   return null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCHEMA UPDATE HELPER — Centralized page.schema update with version bump
+//
+// Replaces the repeated pattern:
+//   { ...schema, blocks: newBlocks }
+// With version tracking via bumpVersion().
+// ═══════════════════════════════════════════════════════════════
+function commitSchemaUpdate(schema: ScreenSchema, newBlocks: SchemaBlock[]): ScreenSchema {
+  return bumpVersion({ ...schema, blocks: newBlocks });
 }
 
 export type UISlice = Pick<
@@ -79,7 +102,7 @@ export type UISlice = Pick<
   | 'addSchemaBlock'
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
-  | 'moveBlockToPage'
+  | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | '_lastNudgeTime'
   | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
   | 'canvasPreview' | 'toggleCanvasPreview'
@@ -247,7 +270,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         },
       });
 
-      const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+      const newSchema: ScreenSchema = commitSchemaUpdate(schema, newBlocks);
       const newPages = [...pages];
       newPages[currentPageIndex] = { ...page, schema: newSchema };
       set({ pages: newPages });
@@ -301,7 +324,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         },
       });
 
-      const newSchema: ScreenSchema = { ...schema, blocks: newBlocks as SchemaBlock[] };
+      const newSchema: ScreenSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
       const newPages = [...pages];
       newPages[currentPageIndex] = { ...page, schema: newSchema };
       set({ pages: newPages });
@@ -650,7 +673,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
@@ -728,7 +751,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     });
 
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks as SchemaBlock[] } };
+    newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
   },
 
@@ -792,7 +815,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     });
 
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, schema: { ...schema, blocks: newBlocks as SchemaBlock[] } };
+    newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
   },
 
@@ -868,7 +891,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
     set({ pages: newPages });
     // Select the cloned block
@@ -955,7 +978,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
     set({ pages: newPages });
 
@@ -1011,8 +1034,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       };
     };
 
-    // Use Immer produce to handle both top-level and nested blocks
-    const newBlocks = produce(blocks, draft => {
+    // Use Immer produceWithPatches so PatchHistory gets fine-grained
+    // inverse patches for precise undo (instead of snapshot fallback).
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       for (const blockId of idsToNudge) {
         const owner = findBlockOwner(blocks as SchemaBlock[], blockId);
         if (!owner) continue;
@@ -1053,10 +1077,28 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       }
     });
 
+    // Emit patches for PatchHistory fine-grained undo
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: idsToNudge[0],
+        blockType: 'nudge',
+        pageIndex: currentPageIndex,
+        patch: { _nudged: true, dxPct, dyPct, count: idsToNudge.length },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: {
+          forward: forwardPatches,
+          inverse: inversePatches,
+          pageIndex: currentPageIndex,
+        },
+      },
+    });
+
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks },
+      schema: commitSchemaUpdate(schema, newBlocks),
     };
     set({ pages: newPages });
   },
@@ -1089,26 +1131,30 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
         draft.splice(idx, 1);
       }
 
-      // Remove nested blocks (after top-level removals)
+      // Remove nested blocks using SchemaTraversal.isCompositeBlock()
       for (const blockId of blockIds) {
-        // Check if it was a top-level block (already removed)
-        const wasTopLevel = topLevelIndices.length > 0;
-        // Search in ftab tabs
         for (const block of draft) {
+          if (!isCompositeBlock(block)) continue;
+
+          // ftab tabs
           if (block.type === 'ftab') {
             const ft = block as { tabs?: Array<{ content?: SchemaBlock[] }> };
             for (const tab of (ft.tabs || [])) {
               const ci = (tab.content || []).findIndex(b => b.id === blockId);
               if (ci !== -1) { tab.content?.splice(ci, 1); break; }
             }
+            continue;
           }
-          // Search in materi-section
+
+          // materi-section
           if (block.type === 'materi-section') {
             const ms = block as { content?: SchemaBlock[] };
             const ci = (ms.content || []).findIndex(b => b.id === blockId);
             if (ci !== -1) { ms.content?.splice(ci, 1); break; }
+            continue;
           }
-          // Search in generic children
+
+          // Generic children
           if (block.children && Array.isArray(block.children)) {
             const ci = block.children.findIndex(b => b.id === blockId);
             if (ci !== -1) { block.children.splice(ci, 1); break; }
@@ -1137,7 +1183,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
     set({
       pages: newPages,
@@ -1201,7 +1247,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
     set({ pages: newPages });
   },
@@ -1300,7 +1346,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: { ...schema, blocks: newBlocks as SchemaBlock[] },
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
     set({ pages: newPages });
     get().selectBlock(newBlock.id!, clipboard.type);
@@ -1362,11 +1408,11 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...sourcePage,
-      schema: { ...sourceSchema, blocks: newSourceBlocks },
+      schema: commitSchemaUpdate(sourceSchema, newSourceBlocks),
     };
     newPages[targetPageIndex] = {
       ...targetPage,
-      schema: { ...targetSchema, blocks: newTargetBlocks },
+      schema: commitSchemaUpdate(targetSchema, newTargetBlocks),
     };
 
     // Emit editBus event for cross-page move
@@ -1395,6 +1441,165 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     const targetLabel = targetPage.label || `Halaman ${targetPageIndex + 1}`;
     toast.success(`"${blockName}" dipindahkan ke ${targetLabel}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Scene Transaction: Split Page at Block ──────────────────────
+  // Uses SceneTransaction for atomic split — measure → split → commit.
+  // If split fails (e.g., block is the last one), the schema is unchanged.
+  splitPageAtBlock: (blockId) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    // Find the block index — only top-level blocks can be split points
+    const blockIndex = schema.blocks.findIndex(b => b.id === blockId);
+    if (blockIndex === -1 || blockIndex === schema.blocks.length - 1) {
+      toast.info('Tidak bisa split — block terakhir atau tidak ditemukan');
+      return;
+    }
+
+    get()._pushHistory();
+
+    // Use SceneTransaction for atomic split
+    const tx = createTransaction(schema);
+    tx.splitAt(blockId);
+    const result = tx.commit();
+
+    if (!result.success || !result.schema) {
+      toast.error('Split gagal: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    // The transaction gives us the first half. We need the second half too.
+    const splitResult = splitScene(schema, blockId);
+    if (!splitResult) {
+      toast.error('Split gagal: tidak bisa membagi scene');
+      return;
+    }
+
+    const [firstSchema, secondSchema] = splitResult;
+
+    // Create a new page for the second half
+    const newPageId = generatePageId();
+    const currentPageLabel = page.label || `Halaman ${currentPageIndex + 1}`;
+    const newPage: typeof page = {
+      ...page,
+      id: newPageId,
+      label: `${currentPageLabel} (lanjutan)`,
+      schema: secondSchema,
+      elements: [], // Schema-driven, no elements
+      templateData: {},
+    };
+
+    // Update current page with first half
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, firstSchema.blocks),
+    };
+    // Insert new page after current
+    newPages.splice(currentPageIndex + 1, 0, newPage);
+
+    set({
+      pages: newPages,
+      selectedBlockId: null,
+      selectedBlockType: null,
+      editingBlockId: null,
+      selectedBlockIds: [],
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId,
+        blockType: 'split',
+        pageIndex: currentPageIndex,
+        patch: { _splitAt: blockId, newPageId },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    toast.success('Halaman berhasil di-split', {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Scene Transaction: Merge with Next Page ─────────────────────
+  // Uses SceneTransaction for atomic merge — merge → validate → commit.
+  // If merge fails (e.g., duplicate IDs), the schemas are unchanged.
+  mergeWithNextPage: () => {
+    const { pages, currentPageIndex } = get();
+    if (currentPageIndex >= pages.length - 1) {
+      toast.info('Tidak ada halaman berikutnya untuk di-merge');
+      return;
+    }
+
+    const sourcePage = pages[currentPageIndex];
+    const targetPage = pages[currentPageIndex + 1];
+
+    const sourceSchema = ensurePageSchema(sourcePage);
+    const targetSchema = ensurePageSchema(targetPage);
+    if (!sourceSchema || !targetSchema) {
+      toast.warning('Tidak bisa merge — salah satu halaman tidak memiliki schema');
+      return;
+    }
+
+    get()._pushHistory();
+
+    // Use SceneTransaction for atomic merge
+    const tx = createTransaction(sourceSchema);
+    tx.custom('merge', (schema) => mergeScene(schema, targetSchema));
+    const result = tx.commit();
+
+    if (!result.success || !result.schema) {
+      toast.error('Merge gagal: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    // Update current page with merged schema
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...sourcePage,
+      schema: commitSchemaUpdate(sourceSchema, result.schema.blocks),
+    };
+    // Remove the next page (it's been merged into current)
+    newPages.splice(currentPageIndex + 1, 1);
+
+    set({
+      pages: newPages,
+      selectedBlockId: null,
+      selectedBlockType: null,
+      editingBlockId: null,
+      selectedBlockIds: [],
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: 'merge',
+        blockType: 'merge',
+        pageIndex: currentPageIndex,
+        patch: { _mergedWith: currentPageIndex + 1 },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    toast.success('Halaman berhasil digabung', {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },

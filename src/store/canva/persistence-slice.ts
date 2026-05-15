@@ -13,6 +13,7 @@ import { CANVA_STORAGE_KEY } from './constants';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
+import { assertDocumentPurity } from '@/core/schema/session-state';
 import { useAuthoringStore } from '@/store/authoring-store';
 
 // ── Migration version for localStorage data ──────────────────
@@ -46,6 +47,16 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   saveToStorage: () => {
     try {
       const { pages, ratioId } = get();
+
+      // ── Purity Guard: Ensure no runtime state leaks into persisted data ──
+      // In dev mode, throws if any schema contains runtime state fields.
+      // In production, logs the violation but continues saving.
+      for (const page of pages) {
+        if (page.schema) {
+          assertDocumentPurity(page.schema, `saveToStorage page=${page.id}`);
+        }
+      }
+
       localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({
         pages,
         ratioId,
@@ -122,6 +133,13 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const { migratedCount } = migrateAllSchemas(pages);
         if (migratedCount > 0 && process.env.NODE_ENV !== 'production') {
           console.log(`[Persistence] Migrated ${migratedCount} page schemas to latest version`);
+        }
+
+        // ── Purity Guard: Check loaded data for runtime state leakage ──
+        for (const page of pages) {
+          if (page.schema) {
+            assertDocumentPurity(page.schema, `loadFromStorage page=${page.id}`);
+          }
         }
 
         // Derive EditorProjectionStore from schema (write-through)
@@ -228,6 +246,13 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
         // Apply schema version migrations (v0→v1, etc.)
         migrateAllSchemas(pages);
+
+        // ── Purity Guard: Check loaded data for runtime state leakage ──
+        for (const page of pages) {
+          if (page.schema) {
+            assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
+          }
+        }
 
         // Derive EditorProjectionStore from schema (write-through)
         try {

@@ -145,11 +145,17 @@ export {
 export {
   BlockCapabilityRegistry,
   getBlockCapabilities,
+  // Instance-based (requires SchemaBlock)
   isBlockCompressionCapable,
   isBlockSplittable,
   isBlockInteractive,
   isBlockMeasurable,
   isBlockLazyRenderable,
+  // Type-string based (no SchemaBlock needed — uses cached registry)
+  isFullPageBlockType,
+  isBlockTypeInteractive,
+  isBlockTypeCompressionCapable,
+  isBlockTypeSplittable,
 } from './capability-registry';
 
 export type { BlockCapabilityInfo, DerivedCapabilities } from './capability-registry';

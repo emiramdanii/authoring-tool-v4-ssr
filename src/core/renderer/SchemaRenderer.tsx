@@ -38,6 +38,7 @@ import { computeScenePlan, createDerivedSchema, type ScenePlan } from '../layout
 import { SceneNavigator } from '../layout/SceneNavigator';
 import { useCanvaStore } from '@/store/canva-store';
 import { useCanvasBlockDrag } from '@/hooks/use-canvas-block-drag';
+import { isFullPageBlockType } from '../schema/capability-registry';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -137,7 +138,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   showBottomNav = false,
 }: ScreenRendererProps) {
   const isCompact = mode === 'canvas';
-  const hasCoverBlock = screen.blocks.length === 1 && (screen.blocks[0].type === 'cover' || screen.blocks[0].type === 'hero');
+  const hasCoverBlock = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
 
   // ═══ MEASUREMENT COMMIT QUEUE ═════════════════════════════════
   // Instead of re-rendering on every single measurement, we batch

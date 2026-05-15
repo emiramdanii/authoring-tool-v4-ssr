@@ -73,6 +73,7 @@ import {
 } from '@/core';
 import { alpha, COLORS } from '@/lib/color-palette';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { isFullPageBlockType } from '@/core/schema/capability-registry';
 
 // ── Props ──────────────────────────────────────────────────────
 
@@ -231,7 +232,7 @@ export default function SchemaPlayer({
   // Cover/hero pages don't show bottom nav — they fill the entire scene.
   // This matches PageFrame behavior where isCoverPage hides navbars.
   const isCoverScreen = currentScreen?.blocks.length === 1 &&
-    (currentScreen.blocks[0].type === 'cover' || currentScreen.blocks[0].type === 'hero');
+    isFullPageBlockType(currentScreen.blocks[0].type);
   const showBottomNav = showControls && !isCoverScreen;
 
   return (

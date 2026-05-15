@@ -211,6 +211,10 @@ export interface CanvaState {
   reorderSchemaBlocks: (fromIndex: number, toIndex: number) => void;
   /** Move a schema block to another page */
   moveBlockToPage: (blockId: string, targetPageIndex: number) => void;
+  /** Split the current page's schema at a block boundary, creating a new page */
+  splitPageAtBlock: (blockId: string) => void;
+  /** Merge the current page's schema with the next page's schema */
+  mergeWithNextPage: () => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

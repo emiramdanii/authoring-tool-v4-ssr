@@ -37,6 +37,7 @@ import type { SceneResolution, SafeArea } from '../scene/SceneLayoutEngine';
 import { estimateBlockHeight } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
 import { computeCompressionDecision, supportsCompression, type CompressionDecision } from './CompressionEngine';
+import { isFullPageBlockType, isBlockTypeCompressionCapable } from '../schema/capability-registry';
 
 // ── Scene Plan Types ───────────────────────────────────────────
 
@@ -125,8 +126,8 @@ export function computeScenePlan(
     };
   }
 
-  // Single cover/hero block fills the entire scene
-  if (blocks.length === 1 && (blocks[0].type === 'cover' || blocks[0].type === 'hero')) {
+  // Full-page block (cover/hero) fills the entire scene
+  if (blocks.length === 1 && isFullPageBlockType(blocks[0].type)) {
     return {
       sourceSchemaId: schema.id,
       scenes: [{
@@ -181,7 +182,7 @@ export function computeScenePlan(
     let prospectiveHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? blockGap : 0);
     let compressionDecision: CompressionDecision | undefined;
 
-    if (prospectiveHeight > availableHeight && measuredH != null && supportsCompression(block.type)) {
+    if (prospectiveHeight > availableHeight && measuredH != null && isBlockTypeCompressionCapable(block.type)) {
       const remainingSpace = availableHeight - currentHeight - (currentBlockIds.length > 0 ? blockGap : 0);
       const decision = computeCompressionDecision(block, measuredH, remainingSpace);
       if (decision) {

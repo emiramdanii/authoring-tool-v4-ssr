@@ -18,6 +18,7 @@ import type { LessonSchema } from '../schema/types';
 import type { SchemaRenderMode } from '../renderer/SchemaRenderer';
 import { SchemaScreenRenderer, TokenResolver } from '../renderer/SchemaRenderer';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '../scene/SceneLayoutEngine';
+import { isFullPageBlockType } from '../schema/capability-registry';
 
 // Re-export utility functions from the renderer-free module
 export { loadPreset, getAvailablePresets, schemaToCanvaPages } from './SchemaEngine.utils';
@@ -61,9 +62,9 @@ export function SchemaEngine({
   // correct scene dimensions and safe area, matching the canvas path.
   const isCompact = mode === 'canvas';
   const hasCoverBlock = schema.screens[0]?.blocks.length === 1 &&
-    (schema.screens[0].blocks[0].type === 'cover' || schema.screens[0].blocks[0].type === 'hero');
+    isFullPageBlockType(schema.screens[0].blocks[0].type);
   const isCoverScreen = screen?.blocks.length === 1 &&
-    (screen.blocks[0].type === 'cover' || screen.blocks[0].type === 'hero');
+    isFullPageBlockType(screen.blocks[0].type);
   const sceneResolution = getSceneResolution(ratioId);
   const safeArea = computeSafeArea({
     showTopNav,
