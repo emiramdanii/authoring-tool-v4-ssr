@@ -105,17 +105,24 @@ export {
   patchBlock,
   removeBlock,
   insertBlock,
+  insertBlockNested,
   moveBlock,
+  moveBlockNested,
+  duplicateBlock,
+  splitScene,
+  mergeScene,
   updateSchema,
   bumpVersion,
   snapshot,
   snapshotBlocks,
 } from './schema/immutable';
+export type { ContainerRef } from './schema/immutable';
 
 // Schema Migration — version upgrade system
 export {
   migrateSchema,
   migrateAllSchemas,
+  inferSemanticDefaults,
   MIGRATION_CHAIN,
 } from './schema/schema-migration';
 export type { SchemaMigration } from './schema/schema-migration';
@@ -126,6 +133,34 @@ export {
   deriveProjectionFromPage,
 } from './schema/schema-projection';
 export type { SchemaProjection } from './schema/schema-projection';
+
+// Block Capability Registry — derived from schema hints
+export {
+  BlockCapabilityRegistry,
+  getBlockCapabilities as getSchemaCapabilities,
+  isBlockCompressionCapable,
+  isBlockSplittable,
+  isBlockInteractive,
+  isBlockMeasurable,
+  isBlockLazyRenderable,
+} from './schema/capability-registry';
+export type { BlockCapabilityInfo, DerivedCapabilities } from './schema/capability-registry';
+
+// Scene Transaction System — atomic layout mutations
+export {
+  SceneTransaction,
+  createTransaction,
+} from './schema/scene-transaction';
+export type { TransactionStep, TransactionResult, RebalanceOptions } from './schema/scene-transaction';
+
+// Session State — document vs interaction isolation
+export {
+  createSessionState,
+  deriveDocumentState,
+  isDocumentPure,
+  assertDocumentPurity,
+} from './schema/session-state';
+export type { DocumentState, SessionInteractionState } from './schema/session-state';
 
 // Editor Engine — schema-driven visual editing
 export {

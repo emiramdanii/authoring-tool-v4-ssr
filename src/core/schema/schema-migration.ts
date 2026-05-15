@@ -245,3 +245,6 @@ function inferSemanticDefaults(block: SchemaBlock): Record<string, unknown> {
     interactionType: interactionMap[blockType] || 'read',
   };
 }
+
+// Re-export for external use (e.g., capability-registry)
+export { inferSemanticDefaults };
