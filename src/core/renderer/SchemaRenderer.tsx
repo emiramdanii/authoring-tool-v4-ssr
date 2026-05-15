@@ -38,7 +38,7 @@ import { computeScenePlan, createDerivedSchema, type ScenePlan } from '../layout
 import { SceneNavigator } from '../layout/SceneNavigator';
 import { useCanvaStore } from '@/store/canva-store';
 import { useCanvasBlockDrag } from '@/hooks/use-canvas-block-drag';
-import { isFullPageBlockType } from '../schema/capability-registry';
+import { isFullPageBlockType, isBlockInteractive, isBlockTypeRendererHandlesCompression } from '../schema/capability-registry';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -376,7 +376,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {resolvedBlocks.map((resolved, resolvedIdx) => {
         const positionStyle = getBlockPositionStyle(resolved);
         // For cover/hero blocks that need pointer-events
-        const pointerEvents = resolved.block.interactive ? 'auto' : undefined;
+        const pointerEvents = isBlockInteractive(resolved.block) ? 'auto' : undefined;
         const blockId = resolved.block.id || resolved.key;
 
         // Map this resolved block back to its index in screen.blocks (original schema)
@@ -549,7 +549,10 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     const definition = SCENE_REGISTRY[block.type];
     return {
       BlockComponent: definition?.renderer ?? null,
-      handlesCompression: definition?.capabilities?.handlesCompression ?? false,
+      // Use capability registry as single source of truth for compression handling.
+      // Previously read from SceneRegistry, which duplicates capability info
+      // already available in the registry.
+      handlesCompression: isBlockTypeRendererHandlesCompression(block.type),
     };
   }, [block.type]);
 

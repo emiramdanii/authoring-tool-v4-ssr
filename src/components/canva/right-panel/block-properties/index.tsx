@@ -25,6 +25,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
+import { getBlockCapabilities as getDerivedCapabilities, isBlockTypeInteractive, isBlockTypeCompressionCapable, isBlockTypeSplittable, isBlockTypeMeasurable, isBlockTypeRendererHandlesCompression } from '@/core/schema/capability-registry';
 import { Settings2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './use-selected-block';
@@ -126,11 +127,11 @@ export default function BlockPropertiesPanel() {
           />
         )}
 
-        {/* Capabilities (collapsed) */}
+        {/* Capabilities — Editor capabilities from BlockDefinitionRegistry */}
         {definition && (
           <details className="mt-2">
             <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
-              Kemampuan
+              Kemampuan Editor
             </summary>
             <div className="grid grid-cols-2 gap-1 mt-1">
               <CapabilityBadge label="Editable" value={definition.capabilities.editable} />
@@ -142,6 +143,35 @@ export default function BlockPropertiesPanel() {
             </div>
           </details>
         )}
+
+        {/* Derived Capabilities — From BlockCapabilityRegistry (schema hints + definition) */}
+        <details className="mt-1">
+          <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
+            Kemampuan Layout
+          </summary>
+          <div className="grid grid-cols-2 gap-1 mt-1">
+            <CapabilityBadge label="Kompresi" value={isBlockTypeCompressionCapable(selectedBlockType)} />
+            <CapabilityBadge label="Splittable" value={isBlockTypeSplittable(selectedBlockType)} />
+            <CapabilityBadge label="Interaktif" value={isBlockTypeInteractive(selectedBlockType)} />
+            <CapabilityBadge label="Measurable" value={isBlockTypeMeasurable(selectedBlockType)} />
+            <CapabilityBadge label="Renderer Kompresi" value={isBlockTypeRendererHandlesCompression(selectedBlockType)} />
+          </div>
+          {/* Source traceability — show where each capability was derived from */}
+          <div className="mt-1 space-y-0.5">
+            {(() => {
+              const info = getDerivedCapabilities({ type: selectedBlockType } as any);
+              return Object.entries(info.sources).map(([cap, source]) => (
+                <div key={cap} className="flex items-center gap-1 text-[8px] text-app-muted">
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500'
+                  }`} />
+                  <span className="font-mono">{cap}</span>
+                  <span className="opacity-60">← {source}</span>
+                </div>
+              ));
+            })()}
+          </div>
+        </details>
 
         {/* Layout info (collapsed) */}
         {definition && (

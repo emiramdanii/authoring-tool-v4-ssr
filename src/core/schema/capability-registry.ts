@@ -15,11 +15,12 @@
 // ask the registry once — it reads from hints + definition.
 //
 // CAPABILITY FLAGS:
-//   - compressionCapable — Can this block be compressed? (strategy !== 'none')
-//   - splittable         — Can this block be split across scenes?
-//   - interactive        — Does this block handle user interaction?
-//   - measurable         — Can we measure this block's rendered height?
-//   - lazyRenderable     — Can this block be rendered lazily (offscreen)?
+//   - compressionCapable       — Can this block be compressed? (strategy !== 'none')
+//   - splittable               — Can this block be split across scenes?
+//   - interactive              — Does this block handle user interaction?
+//   - measurable               — Can we measure this block's rendered height?
+//   - lazyRenderable           — Can this block be rendered lazily (offscreen)?
+//   - rendererHandlesCompression — Does the renderer handle compression natively?
 //
 // DESIGN PRINCIPLE:
 //   Capabilities are DERIVED, not stored. You should never need to
@@ -44,6 +45,18 @@ export interface DerivedCapabilities {
   measurable: boolean;
   /** Can this block be lazily rendered (offscreen / virtualized)? */
   lazyRenderable: boolean;
+  /**
+   * Does the block's renderer handle compression natively?
+   *
+   * When true: the renderer component uses useBlockCompression() internally
+   *   and manages its own compressed/expanded UI.
+   * When false: CompressionBoundary wraps the block in CompressedBlockWrapper
+   *   to provide generic compression UI.
+   *
+   * This is DERIVED from BlockDefinitionRegistry.handlesCompression.
+   * It is a renderer-level concern, not a schema hint.
+   */
+  rendererHandlesCompression: boolean;
 }
 
 export interface BlockCapabilityInfo {
@@ -63,6 +76,7 @@ const DEFAULT_CAPABILITIES: DerivedCapabilities = {
   interactive: false,
   measurable: true,   // Most blocks are measurable by default
   lazyRenderable: true, // Most blocks can be lazily rendered
+  rendererHandlesCompression: false, // Most renderers don't handle compression natively
 };
 
 // ── Registry ───────────────────────────────────────────────────
@@ -91,6 +105,7 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
     interactive: 'default',
     measurable: 'default',
     lazyRenderable: 'default',
+    rendererHandlesCompression: 'default',
   };
 
   // ── Derive from CompressionHints ──
@@ -122,6 +137,14 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
     sources.interactive = 'definition';
   }
 
+  // ── Renderer capability: handlesCompression ──
+  // This is always derived from the definition (not from schema hints)
+  // because it's a RENDERER property, not a schema property.
+  if (definitionCaps.handlesCompression) {
+    derived.rendererHandlesCompression = true;
+    sources.rendererHandlesCompression = 'definition';
+  }
+
   // ── Special rules based on block type ──
   // These are type-level inferences that are always true regardless of hints.
   // We keep this minimal — prefer hints over hardcoded rules.
@@ -132,10 +155,12 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
     derived.lazyRenderable = false;
     derived.compressionCapable = false;
     derived.measurable = false; // Fixed scene, no measurement needed
+    derived.rendererHandlesCompression = false; // No compression for full-page blocks
     sources.splittable = 'definition';
     sources.lazyRenderable = 'definition';
     sources.compressionCapable = 'definition';
     sources.measurable = 'definition';
+    sources.rendererHandlesCompression = 'definition';
   }
 
   // Game blocks are always interactive and not splittable
@@ -143,9 +168,11 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
     derived.interactive = true;
     derived.splittable = false;
     derived.lazyRenderable = false;
+    derived.rendererHandlesCompression = false; // Games don't compress
     sources.interactive = 'definition';
     sources.splittable = 'definition';
     sources.lazyRenderable = 'definition';
+    sources.rendererHandlesCompression = 'definition';
   }
 
   // Composite blocks (materi-section, ftab) are measurable and splittable
@@ -153,8 +180,12 @@ export function getBlockCapabilities(block: SchemaBlock): BlockCapabilityInfo {
   if (isCompositeBlockType(type)) {
     derived.splittable = compression?.splittable ?? true;
     derived.lazyRenderable = false; // Complex blocks need eager rendering
+    // Composite renderers (FtabRenderer, MateriSectionRenderer) handle
+    // compression natively — they use useBlockCompression() internally.
+    derived.rendererHandlesCompression = true;
     sources.splittable = compression?.splittable != null ? 'hint' : 'definition';
     sources.lazyRenderable = 'definition';
+    sources.rendererHandlesCompression = 'definition';
   }
 
   return { type, derived, sources };
@@ -187,6 +218,11 @@ export function isBlockLazyRenderable(block: SchemaBlock): boolean {
   return getBlockCapabilities(block).derived.lazyRenderable;
 }
 
+/** Check if a block's renderer handles compression natively */
+export function isBlockRendererHandlesCompression(block: SchemaBlock): boolean {
+  return getBlockCapabilities(block).derived.rendererHandlesCompression;
+}
+
 // ── Type-string Convenience Functions (no SchemaBlock needed) ───
 // These use the cached BlockCapabilityRegistry internally,
 // so they're O(1) after the first call per type.
@@ -214,6 +250,11 @@ export function isBlockTypeSplittable(type: string): boolean {
 /** Check if a block TYPE is measurable (height can be determined) */
 export function isBlockTypeMeasurable(type: string): boolean {
   return BlockCapabilityRegistry.get(type).derived.measurable;
+}
+
+/** Check if a block TYPE's renderer handles compression natively */
+export function isBlockTypeRendererHandlesCompression(type: string): boolean {
+  return BlockCapabilityRegistry.get(type).derived.rendererHandlesCompression;
 }
 
 // ── Composite Block Detection ──────────────────────────────────

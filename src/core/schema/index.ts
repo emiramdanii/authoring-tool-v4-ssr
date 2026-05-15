@@ -156,12 +156,14 @@ export {
   isBlockInteractive,
   isBlockMeasurable,
   isBlockLazyRenderable,
+  isBlockRendererHandlesCompression,
   // Type-string based (no SchemaBlock needed — uses cached registry)
   isFullPageBlockType,
   isBlockTypeInteractive,
   isBlockTypeCompressionCapable,
   isBlockTypeSplittable,
   isBlockTypeMeasurable,
+  isBlockTypeRendererHandlesCompression,
   // Composite block detection (single source of truth)
   isCompositeBlockType,
 } from './capability-registry';
