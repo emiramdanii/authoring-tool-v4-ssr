@@ -14,7 +14,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FilePlus } from 'lucide-react';
 
 export interface SceneNavigatorProps {
   /** Current scene index (0-based) */
@@ -27,6 +27,8 @@ export interface SceneNavigatorProps {
   isCompact?: boolean;
   /** Position of the navigator */
   position?: 'bottom' | 'top';
+  /** Callback to promote current scene to a new page (optional) */
+  onPromoteScene?: () => void;
 }
 
 export const SceneNavigator = React.memo(function SceneNavigator({
@@ -35,6 +37,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
   onSceneChange,
   isCompact = false,
   position = 'bottom',
+  onPromoteScene,
 }: SceneNavigatorProps) {
   const handlePrev = useCallback(() => {
     if (currentScene > 0) onSceneChange(currentScene - 1);
@@ -122,6 +125,19 @@ export const SceneNavigator = React.memo(function SceneNavigator({
       >
         {currentScene + 1}/{totalScenes}
       </span>
+
+      {/* Promote to page button — only when multi-scene and callback provided */}
+      {onPromoteScene && (
+        <button
+          onClick={onPromoteScene}
+          className="flex items-center justify-center rounded-full transition-colors hover:bg-white/10 ml-1"
+          style={{ width: isCompact ? 20 : 24, height: isCompact ? 20 : 24 }}
+          aria-label="Promosi scene ke halaman"
+          title="Promosi Scene ke Halaman Baru"
+        >
+          <FilePlus size={isCompact ? 11 : 13} className="text-emerald-400/80" />
+        </button>
+      )}
     </div>
   );
 });

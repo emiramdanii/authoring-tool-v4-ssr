@@ -39,6 +39,7 @@ import { SceneNavigator } from '../layout/SceneNavigator';
 import { useCanvaStore } from '@/store/canva-store';
 import { useCanvasBlockDrag } from '@/hooks/use-canvas-block-drag';
 import { isFullPageBlockType, isBlockInteractive, isBlockTypeRendererHandlesCompression } from '../schema/capability-registry';
+import { OverflowIndicator } from './blocks/OverflowIndicator';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -399,14 +400,24 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
               transition: isBeingDragged ? 'none' : undefined,
             }}
           >
-            {/* Overflow indicator for debugging (canvas mode only) */}
+            {/* Overflow indicator — wired to split/rebalance actions (canvas mode only) */}
             {resolved.isOverflowing && isCompact && (
-              <div
-                className="absolute -top-0.5 right-1 text-[7px] font-bold px-1 rounded-b bg-amber-500/80 text-black"
-                style={{ zIndex: 100 }}
-              >
-                overflow
-              </div>
+              <OverflowIndicator
+                estimatedHeight={resolved.height}
+                availableHeight={sceneRes.h - safeArea.top - safeArea.bottom}
+                onAction={(action) => {
+                  const store = useCanvaStore.getState();
+                  if (action === 'new-page') {
+                    store.splitPageAtBlock(blockId);
+                  } else if (action === 'compact') {
+                    store.rebalanceCurrentPage();
+                  } else if (action === 'step-mode') {
+                    store.promoteSceneSplit(1);
+                  }
+                }}
+                tokens={tokens}
+                isCompact={isCompact}
+              />
             )}
             {/* Compression indicator (canvas mode only) */}
             {resolved.compression && isCompact && (
@@ -483,6 +494,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         onSceneChange={(idx) => setSceneState(idx, scenePlan.totalScenes)}
         isCompact={isCompact}
         position="bottom"
+        onPromoteScene={isCompact ? () => useCanvaStore.getState().promoteSceneSplit(1) : undefined}
       />
 
       {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}

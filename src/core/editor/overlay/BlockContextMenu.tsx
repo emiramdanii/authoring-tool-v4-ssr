@@ -58,6 +58,12 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  // Scene/page transaction actions
+  const splitPageAtBlock = useCanvaStore(s => s.splitPageAtBlock);
+  const mergeWithAdjacentPage = useCanvaStore(s => s.mergeWithAdjacentPage);
+  const rebalanceCurrentPage = useCanvaStore(s => s.rebalanceCurrentPage);
+  const promoteSceneSplit = useCanvaStore(s => s.promoteSceneSplit);
+  const sceneTotal = useCanvaStore(s => s.sceneTotal);
 
   const definition = getBlockMeta(blockType);
   const isEditing = editingBlockId === blockId;
@@ -167,6 +173,32 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
             action: () => handleAction(() => moveBlockToPage(blockId, p.index)),
           })),
         }]
+      : []),
+    { type: 'divider' },
+    // ═══ Page / Scene operations ═══════════════════════════════
+    // These actions use the SceneTransaction system for atomic
+    // mutations. They're the primary UI triggers for split, merge,
+    // rebalance, and promote operations.
+    {
+      type: 'item' as const,
+      label: '📄 Pisah Halaman di Sini',
+      shortcut: 'Ctrl+Shift+S',
+      action: () => handleAction(() => splitPageAtBlock(blockId)),
+    },
+    ...(currentPageIndex < pages.length - 1
+      ? [{ type: 'item' as const, label: '🔗 Gabung dengan Halaman Berikutnya', shortcut: 'Ctrl+Shift+M', action: () => handleAction(() => mergeWithAdjacentPage('next')) }]
+      : []),
+    ...(currentPageIndex > 0
+      ? [{ type: 'item' as const, label: '🔗 Gabung dengan Halaman Sebelumnya', action: () => handleAction(() => mergeWithAdjacentPage('prev')) }]
+      : []),
+    {
+      type: 'item' as const,
+      label: '📐 Optimalkan Tata Letak',
+      shortcut: 'Ctrl+Shift+R',
+      action: () => handleAction(() => rebalanceCurrentPage()),
+    },
+    ...(sceneTotal > 1
+      ? [{ type: 'item' as const, label: '🎬 Promosi Scene ke Halaman', action: () => handleAction(() => promoteSceneSplit(1)) }]
       : []),
     { type: 'divider' },
     // AI generate

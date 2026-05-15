@@ -372,6 +372,57 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           toast.success('Tersimpan');
         },
       },
+      // ── Page / Scene transaction actions ─────────────────────
+      // These use the SceneTransaction system for atomic mutations.
+      // They are the Command Palette triggers for split, merge,
+      // rebalance, and promote — all with auto-rollback on failure.
+      {
+        id: 'action-split-page',
+        label: 'Pisah Halaman di Block Ini',
+        description: 'Split halaman di block terpilih menjadi halaman baru',
+        icon: <Copy size={16} className="text-sky-400" />,
+        category: 'action',
+        shortcut: 'Ctrl+Shift+S',
+        action: () => {
+          const s = useCanvaStore.getState();
+          if (s.selectedBlockId) s.splitPageAtBlock(s.selectedBlockId);
+          else toast.info('Pilih block terlebih dahulu untuk split');
+        },
+      },
+      {
+        id: 'action-merge-next-page',
+        label: 'Gabung dengan Halaman Berikutnya',
+        description: 'Merge halaman ini dengan halaman setelahnya',
+        icon: <Layout size={16} className="text-sky-400" />,
+        category: 'action',
+        shortcut: 'Ctrl+Shift+M',
+        action: () => useCanvaStore.getState().mergeWithAdjacentPage('next'),
+      },
+      {
+        id: 'action-merge-prev-page',
+        label: 'Gabung dengan Halaman Sebelumnya',
+        description: 'Merge halaman ini dengan halaman sebelumnya',
+        icon: <Layout size={16} className="text-sky-400" />,
+        category: 'action',
+        action: () => useCanvaStore.getState().mergeWithAdjacentPage('prev'),
+      },
+      {
+        id: 'action-rebalance-page',
+        label: 'Optimalkan Tata Letak',
+        description: 'Rebalance kompresi dan layout halaman saat ini',
+        icon: <Layout size={16} className="text-emerald-400" />,
+        category: 'action',
+        shortcut: 'Ctrl+Shift+R',
+        action: () => useCanvaStore.getState().rebalanceCurrentPage(),
+      },
+      {
+        id: 'action-promote-scene',
+        label: 'Promosi Scene ke Halaman',
+        description: 'Konversi scene overflow menjadi halaman baru',
+        icon: <Layout size={16} className="text-emerald-400" />,
+        category: 'action',
+        action: () => useCanvaStore.getState().promoteSceneSplit(1),
+      },
     );
 
     // ── Navigation commands ──────────────────────────────────

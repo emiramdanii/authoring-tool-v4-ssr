@@ -1073,3 +1073,27 @@ Stage Summary:
 - Store actions: duplicateBlock, splitPageAtBlock, mergeWithNextPage/mergeWithAdjacentPage, moveBlockToContainer, addSchemaBlockToContainer
 - UI surface gap identified: operations 2-5 need UI component triggers (context menus, keyboard shortcuts, drag handlers)
 - This is a separate UI task that should be planned as a feature sprint
+---
+Task ID: 4
+Agent: Main Agent
+Task: Wire UI triggers for scene/page transaction store actions (split, merge, rebalance, promote)
+
+Work Log:
+- Audited all 11 store actions in ui-slice.ts — found 5 completely orphaned (no UI trigger)
+- Gap 1 (CRITICAL): OverflowIndicator component existed but was never rendered — replaced debug overflow badge with real OverflowIndicator wired to splitPageAtBlock(), rebalanceCurrentPage(), promoteSceneSplit()
+- Gap 2 (CRITICAL): mergeWithNextPage/mergeWithAdjacentPage had zero UI triggers — added to BlockContextMenu and CommandPalette
+- Gap 3 (HIGH): promoteSceneSplit had no UI trigger — added to BlockContextMenu, CommandPalette, and SceneNavigator promote button
+- Gap 4 (MEDIUM): rebalanceCurrentPage had no UI trigger — added to BlockContextMenu, CommandPalette, keyboard shortcut
+- Added keyboard shortcuts: Ctrl+Shift+S (split), Ctrl+Shift+M (merge next), Ctrl+Shift+R (rebalance) — priority 12
+- Added static shortcut metadata (no-op handlers) to CANVAS_SHORTCUTS for help overlay
+- SceneNavigator: added onPromoteScene prop + FilePlus button, wired in SchemaRenderer
+- Fixed TS error: ResolvedBlockPosition has `height` not `estimatedHeight`
+- Build verified: tsc clean + Next.js production build clean
+
+Stage Summary:
+- 5 previously orphaned store actions now have full UI trigger coverage:
+  - splitPageAtBlock: OverflowIndicator 'new-page' + Context Menu + Command Palette + Ctrl+Shift+S
+  - mergeWithAdjacentPage: Context Menu (next/prev) + Command Palette + Ctrl+Shift+M
+  - rebalanceCurrentPage: OverflowIndicator 'compact' + Context Menu + Command Palette + Ctrl+Shift+R
+  - promoteSceneSplit: OverflowIndicator 'step-mode' + Context Menu + Command Palette + SceneNavigator button
+- All 4 engine tasks (Task #1-#4) are now COMPLETE

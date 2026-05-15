@@ -650,6 +650,53 @@ export function getCanvaShortcuts(deps: CanvaShortcutDeps): ShortcutDefinition[]
     },
 
     // ═══════════════════════════════════════════════════════════════
+    // PAGE OPERATIONS — Split / Merge / Rebalance (Ctrl+Shift, priority 12)
+    // ═══════════════════════════════════════════════════════════════
+    {
+      id: 'canvas.page-split',
+      keys: 'ctrl+shift+s',
+      scope: 'canvas',
+      priority: 12,
+      handler: (e) => {
+        const store = getCanvaState();
+        if (isInteractive()) return;
+        if (!store.selectedBlockId) return;
+        e.preventDefault();
+        store.splitPageAtBlock(store.selectedBlockId);
+      },
+      description: 'Pisah halaman di block terpilih',
+      category: 'Page',
+    },
+    {
+      id: 'canvas.page-merge-next',
+      keys: 'ctrl+shift+m',
+      scope: 'canvas',
+      priority: 12,
+      handler: (e) => {
+        const store = getCanvaState();
+        if (isInteractive()) return;
+        e.preventDefault();
+        store.mergeWithAdjacentPage('next');
+      },
+      description: 'Gabung dengan halaman berikutnya',
+      category: 'Page',
+    },
+    {
+      id: 'canvas.page-rebalance',
+      keys: 'ctrl+shift+r',
+      scope: 'canvas',
+      priority: 12,
+      handler: (e) => {
+        const store = getCanvaState();
+        if (isInteractive()) return;
+        e.preventDefault();
+        store.rebalanceCurrentPage();
+      },
+      description: 'Optimalkan tata letak halaman',
+      category: 'Page',
+    },
+
+    // ═══════════════════════════════════════════════════════════════
     // NAVIGATION — Scene prev/next (Ctrl+Arrow, priority 6)
     // ═══════════════════════════════════════════════════════════════
     {
@@ -717,6 +764,11 @@ export const CANVAS_SHORTCUTS: ShortcutDefinition[] = [
   { id: 'canvas.schema-reorder-up', keys: 'alt+arrowup', scope: 'canvas', priority: 15, handler: () => {}, description: 'Move schema block up (reorder)', category: 'Block' },
   { id: 'canvas.schema-reorder-down', keys: 'alt+arrowdown', scope: 'canvas', priority: 15, handler: () => {}, description: 'Move schema block down (reorder)', category: 'Block' },
   { id: 'canvas.schema-select-all', keys: 'ctrl+a', scope: 'canvas', priority: 15, handler: () => {}, description: 'Select all schema blocks', category: 'Selection' },
+
+  // ── Page operations ──────────────────────────────────────────
+  { id: 'canvas.page-split', keys: 'ctrl+shift+s', scope: 'canvas', priority: 12, handler: () => {}, description: 'Pisah halaman di block terpilih', category: 'Page' },
+  { id: 'canvas.page-merge-next', keys: 'ctrl+shift+m', scope: 'canvas', priority: 12, handler: () => {}, description: 'Gabung dengan halaman berikutnya', category: 'Page' },
+  { id: 'canvas.page-rebalance', keys: 'ctrl+shift+r', scope: 'canvas', priority: 12, handler: () => {}, description: 'Optimalkan tata letak halaman', category: 'Page' },
 
   // ── Element editing ──────────────────────────────────────────────
   { id: 'canvas.delete-block', keys: 'delete', scope: 'canvas', priority: 8, handler: () => {}, description: 'Delete selected element', category: 'Element' },
