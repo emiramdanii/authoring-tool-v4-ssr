@@ -686,3 +686,37 @@ Stage Summary:
 - 4 new files: capability-registry.ts, index.ts, scene-transaction.ts, session-state.ts
 - 3 modified files: immutable.ts, schema-migration.ts, core/index.ts
 - Schema module now has complete operation layer, capability registry, transaction system, and interaction isolation
+---
+Task ID: Engine-Wiring
+Agent: Main Agent
+Task: Wire 4 engine modules into application — capability registry, schema ops, purity guard, scene transactions
+
+Work Log:
+- Step 1 — Wire BlockCapabilityRegistry:
+  - Added 4 type-string convenience functions: isFullPageBlockType(), isBlockTypeInteractive(), isBlockTypeCompressionCapable(), isBlockTypeSplittable()
+  - Replaced 5 hardcoded `type === 'cover' || type === 'hero'` checks across SceneOverflowEngine, SchemaRenderer, SchemaEngine, SchemaPlayer with isFullPageBlockType()
+  - Replaced supportsCompression() with isBlockTypeCompressionCapable() in SceneOverflowEngine
+  - Added type-string functions to barrel export in index.ts
+- Step 2 — Wire schema operations into ui-slice.ts:
+  - Created commitSchemaUpdate() helper with bumpVersion() for centralized version tracking
+  - Replaced all 13 `{ ...schema, blocks: newBlocks }` patterns with commitSchemaUpdate()
+  - Imported isCompositeBlock() from SchemaTraversal and wired into findBlockOwner() and deleteSchemaBlocks()
+  - Fixed nudgeSchemaBlocks to use produceWithPatches (was missing undo support)
+  - Added editBus patch emission for nudge operations
+- Step 3 — Wire purity guard (session-state.ts):
+  - Added assertDocumentPurity() calls in saveToStorage(), loadFromStorage(), loadFromDB()
+  - Dev mode throws on runtime state leakage; production logs the violation
+  - Checks 20+ forbidden runtime state fields in schema blocks
+- Step 4 — Wire SceneTransaction (scene-transaction.ts):
+  - Added splitPageAtBlock(blockId) action — splits current page schema at block boundary
+  - Added mergeWithNextPage() action — merges current page with next page's schema
+  - Both use SceneTransaction for atomic safety (auto-rollback on failure)
+  - Updated CanvaState type and UISlice with new actions
+  - Imported createTransaction, splitScene, mergeScene, generatePageId
+
+Stage Summary:
+- All 4 engine modules are now wired into the application (capability-registry, immutable ops, session-state, scene-transaction)
+- Schema version tracking is now automatic via bumpVersion() on every mutation
+- Purity guard prevents runtime state from leaking into persisted data
+- Split/merge page operations are available as store actions with atomic safety
+- Build passes clean, committed as c2ff4a2, pushed to origin/main
