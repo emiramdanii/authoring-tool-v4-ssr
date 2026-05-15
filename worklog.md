@@ -720,3 +720,37 @@ Stage Summary:
 - Purity guard prevents runtime state from leaking into persisted data
 - Split/merge page operations are available as store actions with atomic safety
 - Build passes clean, committed as c2ff4a2, pushed to origin/main
+---
+Task ID: Engine-Wiring
+Agent: Main Agent
+Task: Wire 4 engine modules into application (systematic integration)
+
+Work Log:
+- **Module 1: BlockCapabilityRegistry** → renderer & layout engine
+  - CompressionEngine.supportsCompression() now delegates to isBlockTypeCompressionCapable() from capability registry (single source of truth)
+  - Added isBlockTypeSplittable() to SceneOverflowEngine
+  - Added splittableBlockIds field to SceneSlice and ScenePlan types
+  - Warm registry cache on app startup via BlockCapabilityRegistry.getAll() in StoreInit.tsx
+  - Removed unused supportsCompression import from SceneOverflowEngine
+- **Module 2: Session State / Document Purity** → dev-mode guard
+  - assertDocumentPurity() added to schema-apply.ts at 3 checkpoint functions:
+    applyBlocksToPages, applyBlockToPages, setPageSchemaBlocks
+  - Every schema written to store is now purity-checked in dev mode
+  - assertDocumentPurity() added to SceneTransaction.commit() for atomic validation
+- **Module 3: Transaction System** → already wired for split/merge
+  - splitPageAtBlock and mergeWithNextPage already use createTransaction()
+  - Added purity guard to transaction commit (validation + purity double gate)
+- **Module 4: New Schema Operations** → canvas store
+  - duplicateBlock() now uses immutable.duplicateBlock() which deep-clones AND regenerates nested child IDs (fixes potential duplicate ID bug)
+  - Added moveBlockToContainer() store action using immutable.moveBlockNested() for tree-aware moves between root, materi-section, ftab, children
+  - ContainerRef type exported from immutable.ts and added to CanvaState type
+
+Stage Summary:
+- All 4 engine modules fully wired into the application
+- BlockCapabilityRegistry is now the single source of truth for compression/splittable checks
+- Document purity guards prevent runtime state leakage into the schema at 5 checkpoints
+- Transaction commit validates both structural correctness AND purity
+- duplicateBlock is more robust (nested ID regeneration)
+- New moveBlockToContainer action enables drag-drop between containers
+- Build verified: TypeScript compiles, Next.js production build passes
+- Git pushed to origin/main (commit c1c0c23)
