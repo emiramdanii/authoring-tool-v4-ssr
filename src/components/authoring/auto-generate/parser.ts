@@ -38,10 +38,12 @@ export function parse(text: string): ParseResult {
     definitions.push({ term: m[1].trim(), meaning: m[2].trim() });
   }
 
-  // Enumerations: "terdiri dari/meliputi/antara lain X, Y, Z"
-  const enumRegex = /([^.]+?)\s+(?:terdiri dari|meliputi|antara lain)\s+([^.]+)/gi;
+  // Enumerations: Multiple detection strategies
   const enumerations: { subject: string; items: string[] }[] = [];
-  while ((m = enumRegex.exec(raw)) !== null) {
+
+  // Strategy 1: "terdiri dari/meliputi/antara lain X, Y, Z"
+  const enumRegex1 = /([^.]+?)\s+(?:terdiri dari|meliputi|antara lain)\s+([^.]+)/gi;
+  while ((m = enumRegex1.exec(raw)) !== null) {
     const items = m[2]
       .split(/[,;]\s*/)
       .map((s) => s.replace(/^(?:yaitu|yakni|ialah)\s+/i, '').trim())
@@ -51,11 +53,117 @@ export function parse(text: string): ParseResult {
     }
   }
 
-  // Functions: "berfungsi/berperan/berguna/bertujuan untuk X"
-  const funcRegex = /([^.]+?)\s+(?:berfungsi|berperan|berguna|bertujuan)\s+(?:sebagai|untuk|dalam)?\s*([^.]+)/gi;
+  // Strategy 2: Numbered lists — "1. Item - description" or "1) Item: description"
+  // Detect groups of consecutive numbered items in the original text (not the flattened raw)
+  const numberedListRegex = /(?:^|\n)\s*(\d+)\.\s+([^-\n]+?)(?:\s*[-–—:]\s*([^.\n]*))?/gm;
+  const numberedGroups = new Map<string, { subject: string; items: string[] }>();
+  const textLines = text.split('\n');
+  let currentGroupSubject = '';
+  let currentGroupItems: string[] = [];
+  let lastNum = 0;
+
+  for (const line of textLines) {
+    const numMatch = line.match(/^\s*(\d+)\.\s+(.+)/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1]);
+      const content = numMatch[2].trim();
+      // Extract item name (before dash/colon) and optional description
+      const itemMatch = content.match(/^([^–\-—:]+?)(?:\s*[-–—:]\s*(.+))?$/);
+      const itemName = itemMatch ? itemMatch[1].trim() : content;
+
+      if (num === 1 && lastNum !== 0) {
+        // New group starting — save previous group
+        if (currentGroupItems.length >= 2 && currentGroupSubject) {
+          numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+        }
+        currentGroupItems = [];
+        currentGroupSubject = '';
+      }
+
+      // Try to find subject from lines above this numbered list
+      if (num === 1) {
+        const prevLines = textLines.slice(Math.max(0, textLines.indexOf(line) - 3), textLines.indexOf(line));
+        for (const pl of prevLines.reverse()) {
+          const subjectMatch = pl.match(/^(.+?):\s*$/);
+          if (subjectMatch) {
+            currentGroupSubject = subjectMatch[1].replace(/^(Jenis|Macam|Kategori|Bentuk|Ciri|Sifat|Contoh)\s*-?\s*/i, '$1 ').trim();
+            break;
+          }
+        }
+        if (!currentGroupSubject) {
+          // Use a generic subject based on context
+          currentGroupSubject = 'Daftar';
+        }
+      }
+
+      currentGroupItems.push(itemName);
+      lastNum = num;
+    } else if (lastNum > 0 && line.trim().length > 0 && !line.match(/^\s*\d/)) {
+      // Non-numbered line after numbered items — save the group
+      if (currentGroupItems.length >= 2 && currentGroupSubject) {
+        numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+      }
+      currentGroupItems = [];
+      currentGroupSubject = '';
+      lastNum = 0;
+    }
+  }
+  // Don't forget the last group
+  if (currentGroupItems.length >= 2 && currentGroupSubject) {
+    numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+  }
+
+  for (const [, group] of numberedGroups) {
+    enumerations.push(group);
+  }
+
+  // Strategy 3: Bullet/dash lists under a header ending with colon
+  const bulletSectionRegex = /([A-Z][^.:\n]+?):\s*\n((?:\s*[-–—•*]\s+.+\n?)+)/gm;
+  while ((m = bulletSectionRegex.exec(text)) !== null) {
+    const subject = m[1].trim();
+    const items = m[2]
+      .split('\n')
+      .map((l) => l.replace(/^\s*[-–—•*]\s+/, '').trim())
+      .filter((l) => l.length > 0);
+    if (items.length >= 2) {
+      // Check we don't already have this enumeration
+      const exists = enumerations.some((e) => e.subject === subject);
+      if (!exists) {
+        enumerations.push({ subject, items });
+      }
+    }
+  }
+
+  // Functions: Multiple detection strategies
   const functions: { subject: string; desc: string }[] = [];
-  while ((m = funcRegex.exec(raw)) !== null) {
+
+  // Strategy 1: "berfungsi/berperan/berguna/bertujuan untuk X"
+  const funcRegex1 = /([^.]+?)\s+(?:berfungsi|berperan|berguna|bertujuan)\s+(?:sebagai|untuk|dalam)?\s*([^.]+)/gi;
+  while ((m = funcRegex1.exec(raw)) !== null) {
     functions.push({ subject: m[1].trim(), desc: m[2].trim() });
+  }
+
+  // Strategy 2: "Fungsi X:" or "Tujuan X:" section headers with bullet/dash items below
+  const funcSectionRegex = /(?:Fungsi|Tujuan|Peran|Manfaat)\s+([^:\n]+):\s*\n((?:\s*[-–—•*]\s+.+\n?)+)/gim;
+  while ((m = funcSectionRegex.exec(text)) !== null) {
+    const subject = m[1].trim();
+    const descLines = m[2]
+      .split('\n')
+      .map((l) => l.replace(/^\s*[-–—•*]\s+/, '').trim())
+      .filter((l) => l.length > 0);
+    for (const desc of descLines) {
+      functions.push({ subject, desc });
+    }
+  }
+
+  // Strategy 3: Inline "X berfungsi/berperan sebagai Y" without "untuk"
+  const funcRegex2 = /([A-Z][^,.]+?)\s+(?:berfungsi|berperan)\s+(?:sebagai|untuk|dalam)\s+([^,.]+)/g;
+  while ((m = funcRegex2.exec(raw)) !== null) {
+    const entry = { subject: m[1].trim(), desc: m[2].trim() };
+    // Deduplicate
+    if (!functions.some((f) => f.subject === entry.subject && f.desc === entry.desc)) {
+      functions.push(entry);
+    }
   }
 
   // Causes: "karena/sehingga/akibat/menyebabkan X"
