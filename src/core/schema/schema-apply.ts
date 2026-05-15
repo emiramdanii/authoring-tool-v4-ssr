@@ -441,6 +441,7 @@ export function rebalancePageCompression(
       executedSteps: [],
       error: `Page "${pageId}" has no schema`,
       measurements,
+      compressedHeights: new Map(),
       pageUpdated: false,
     };
   }
@@ -491,6 +492,7 @@ export function promoteSceneSplitToPage(
       executedSteps: [],
       error: `Page "${pageId}" has no schema`,
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
     };
   }
@@ -502,6 +504,7 @@ export function promoteSceneSplitToPage(
       executedSteps: [],
       error: 'Scene plan is single scene — no split needed',
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
     };
   }
@@ -513,6 +516,7 @@ export function promoteSceneSplitToPage(
       executedSteps: [],
       error: `Invalid scene index ${sceneIndex} for plan with ${scenePlan.totalScenes} scenes`,
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
     };
   }
@@ -532,6 +536,7 @@ export function promoteSceneSplitToPage(
       executedSteps: [],
       error: 'No blocks found for the target scene',
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
     };
   }
@@ -574,6 +579,7 @@ export function promoteSceneSplitToPage(
       executedSteps: result.executedSteps,
       error: `Page "${pageId}" not found during commit`,
       measurements: result.measurements,
+      compressedHeights: result.compressedHeights,
       pageUpdated: false,
     };
   }
@@ -640,6 +646,7 @@ export function mergePagesTransaction(
       executedSteps: [],
       error: 'Both pages must have schemas',
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
     };
   }
@@ -733,6 +740,7 @@ export function rebalanceFromScenePlan(
       executedSteps: [],
       error: `Page "${pageId}" has no schema`,
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
       scenePlan: null,
     };
@@ -765,6 +773,7 @@ export function rebalanceFromScenePlan(
       schema: page.schema,
       executedSteps: [],
       measurements: new Map(),
+      compressedHeights: new Map(),
       pageUpdated: false,
       scenePlan,
     };

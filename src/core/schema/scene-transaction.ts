@@ -87,6 +87,13 @@ export interface TransactionResult {
   error?: string;
   /** Measurement cache from this transaction */
   measurements: Map<string, number>;
+  /**
+   * Compressed height cache — block ID → compressed height in px.
+   * Written by rebalanceSchema() as a RUNTIME value — NOT persisted in schema.
+   * The caller should write this to the session interaction state's
+   * compressedHeightCache for use by the layout engines.
+   */
+  compressedHeights: Map<string, number>;
 }
 
 // ── Scene Transaction ──────────────────────────────────────────
@@ -96,6 +103,8 @@ export class SceneTransaction {
   private originalSchema: ScreenSchema;
   private steps: TransactionStep[] = [];
   private measurements = new Map<string, number>();
+  /** Runtime cache for compressed heights — NOT written to schema */
+  private compressedHeights = new Map<string, number>();
   private committed = false;
   private rolledBack = false;
 
@@ -204,10 +213,10 @@ export class SceneTransaction {
    */
   commit(): TransactionResult {
     if (this.committed) {
-      return { success: false, schema: null, executedSteps: [], error: 'Transaction already committed', measurements: this.measurements };
+      return { success: false, schema: null, executedSteps: [], error: 'Transaction already committed', measurements: this.measurements, compressedHeights: new Map() };
     }
     if (this.rolledBack) {
-      return { success: false, schema: null, executedSteps: [], error: 'Transaction already rolled back', measurements: this.measurements };
+      return { success: false, schema: null, executedSteps: [], error: 'Transaction already rolled back', measurements: this.measurements, compressedHeights: new Map() };
     }
 
     const executedSteps: TransactionStep[] = [];
@@ -229,6 +238,7 @@ export class SceneTransaction {
         schema: this.schema,
         executedSteps,
         measurements: this.measurements,
+        compressedHeights: this.compressedHeights,
       };
     } catch (err) {
       // Rollback — restore original schema
@@ -247,6 +257,7 @@ export class SceneTransaction {
         executedSteps,
         error: errorMessage,
         measurements: this.measurements,
+        compressedHeights: new Map(),
       };
     }
   }
@@ -410,11 +421,18 @@ export class SceneTransaction {
         const compression = Math.min(remainingOverflow, maxCompression);
 
         if (compression > 0) {
+          const compressedHeight = fb.height - compression;
+          // Store in runtime cache — NOT on the schema.
+          // _compressedHeight was removed from CompressionHints because it
+          // leaked derived data into localStorage. The caller writes this
+          // to the session interaction state's compressedHeightCache.
+          const blockId = block.id || `block-${fb.index}`;
+          this.compressedHeights.set(blockId, compressedHeight);
+          // DO NOT write _compressedHeight to block.compression
           blocks[fb.index] = {
             ...block,
             compression: {
               ...block.compression!,
-              _compressedHeight: fb.height - compression,
             },
           };
           remainingOverflow -= compression;

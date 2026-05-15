@@ -109,6 +109,13 @@ export interface SessionInteractionState {
   layoutCache: unknown | null;
   /** Timestamp of last user interaction (for auto-save debounce) */
   lastInteractionAt: number;
+  /**
+   * Compressed height cache — block ID → compressed height in px.
+   * Written by SceneTransaction.rebalanceSchema() instead of writing
+   * directly to the schema (which would leak derived data into localStorage).
+   * This cache is per-session and is NEVER persisted.
+   */
+  compressedHeightCache: Map<string, number>;
 }
 
 /**
@@ -129,6 +136,7 @@ export function createSessionState(): SessionInteractionState {
     measuredHeights: new Map(),
     layoutCache: null,
     lastInteractionAt: Date.now(),
+    compressedHeightCache: new Map(),
   };
 }
 
@@ -161,6 +169,7 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
     'editingBlockId', 'resizingBlockId', 'draggingBlockId',
     'elementRef', 'containerRef', 'domNode',
     'measuredHeight', 'cachedLayout', 'renderCache',
+    '_compressedHeight', // Derived by rebalance transaction — must NOT persist
   ]);
 
   for (let i = 0; i < doc.blocks.length; i++) {
@@ -170,6 +179,16 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
     for (const key of blockKeys) {
       if (RUNTIME_STATE_FIELDS.has(key)) {
         violations.push(`blocks[${i}].${key}: Runtime state field "${key}" must NOT be in document schema`);
+      }
+    }
+
+    // Check nested runtime fields inside compression object
+    // (e.g., compression._compressedHeight — derived value that must NOT persist)
+    if (block.compression && typeof block.compression === 'object') {
+      for (const compKey of Object.keys(block.compression)) {
+        if (RUNTIME_STATE_FIELDS.has(compKey)) {
+          violations.push(`blocks[${i}].compression.${compKey}: Runtime state field "${compKey}" must NOT be in document schema`);
+        }
       }
     }
 

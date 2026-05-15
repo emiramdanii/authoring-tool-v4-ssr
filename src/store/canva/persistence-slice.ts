@@ -42,23 +42,54 @@ export type PersistenceSlice = Pick<
   | 'saveToStorage' | 'loadFromStorage' | 'loadFromDB'
 >;
 
+// ── Schema Strip Helper ───────────────────────────────────────
+// Removes derived runtime fields that might have been written to
+// schema blocks before the purity enforcement was in place.
+// This is a belt-and-suspenders strip before JSON serialization.
+function stripRuntimeFieldsFromPages(pages: CanvaPage[]): CanvaPage[] {
+  return pages.map(page => {
+    if (!page.schema) return page;
+    return {
+      ...page,
+      schema: {
+        ...page.schema,
+        blocks: page.schema.blocks.map(block => {
+          // Strip _compressedHeight from compression hints (legacy data)
+          // Use explicit type cast to preserve CompressionHints type after delete
+          if (block.compression && '_compressedHeight' in block.compression) {
+            const cleanCompression = { ...block.compression };
+            delete (cleanCompression as Record<string, unknown>)._compressedHeight;
+            return { ...block, compression: cleanCompression };
+          }
+          return block;
+        }),
+      },
+    };
+  });
+}
+
 export const createPersistenceSlice: StateCreator<CanvaState, [], [], PersistenceSlice> = (set, get) => ({
   // ── Persistence ──────────────────────────────────────────────
   saveToStorage: () => {
     try {
       const { pages, ratioId } = get();
 
+      // ── Strip derived runtime fields before persistence ──
+      // Belt-and-suspenders: remove any _compressedHeight that might
+      // exist from older transaction writes (now moved to runtime cache).
+      const cleanPages = stripRuntimeFieldsFromPages(pages);
+
       // ── Purity Guard: Ensure no runtime state leaks into persisted data ──
       // In dev mode, throws if any schema contains runtime state fields.
       // In production, logs the violation but continues saving.
-      for (const page of pages) {
+      for (const page of cleanPages) {
         if (page.schema) {
           assertDocumentPurity(page.schema, `saveToStorage page=${page.id}`);
         }
       }
 
       localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({
-        pages,
+        pages: cleanPages,
         ratioId,
         _lastSavedAt: Date.now(),
         _migrationVersion: STORAGE_MIGRATION_VERSION,
@@ -135,8 +166,13 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           console.log(`[Persistence] Migrated ${migratedCount} page schemas to latest version`);
         }
 
+        // ── Strip derived runtime fields from legacy data ──
+        // Older versions may have _compressedHeight in compression hints.
+        // Remove it before the purity check so we don't throw on old data.
+        const cleanPages = stripRuntimeFieldsFromPages(pages);
+
         // ── Purity Guard: Check loaded data for runtime state leakage ──
-        for (const page of pages) {
+        for (const page of cleanPages) {
           if (page.schema) {
             assertDocumentPurity(page.schema, `loadFromStorage page=${page.id}`);
           }
@@ -145,7 +181,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Derive EditorProjectionStore from schema (write-through)
         // After loading pages, the projection store auto-syncs from schema
         try {
-          const projection = deriveProjectionFromPages(pages);
+          const projection = deriveProjectionFromPages(cleanPages);
           if (Object.keys(projection).length > 0) {
             // Spread only defined fields to satisfy AuthoringState type
             const patch: Record<string, unknown> = { dirty: false };
@@ -176,7 +212,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           leftTab = TAB_MIGRATION[data.leftTab] || 'halaman';
         }
         set({
-          pages,
+          pages: cleanPages,
           ratioId: data.ratioId || '9:16',
           currentPageIndex: 0,
           selectedElId: null,
@@ -247,8 +283,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Apply schema version migrations (v0→v1, etc.)
         migrateAllSchemas(pages);
 
+        // ── Strip derived runtime fields from legacy data ──
+        const cleanPages = stripRuntimeFieldsFromPages(pages);
+
         // ── Purity Guard: Check loaded data for runtime state leakage ──
-        for (const page of pages) {
+        for (const page of cleanPages) {
           if (page.schema) {
             assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
           }
@@ -256,7 +295,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
         // Derive EditorProjectionStore from schema (write-through)
         try {
-          const projection = deriveProjectionFromPages(pages);
+          const projection = deriveProjectionFromPages(cleanPages);
           if (Object.keys(projection).length > 0) {
             const patch: Record<string, unknown> = { dirty: false };
             if (projection.tp) patch.tp = projection.tp;
@@ -279,7 +318,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
 
         set({
-          pages,
+          pages: cleanPages,
           ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           selectedElId: null,

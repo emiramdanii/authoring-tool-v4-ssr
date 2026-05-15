@@ -46,13 +46,12 @@ export interface CompressionHints {
   splittable?: boolean;
   /** If split, minimum content to show in first fragment (in px) */
   minFragmentHeight?: number;
-  /**
-   * INTERNAL: Compressed height computed by the rebalance transaction.
-   * Set by SceneTransaction.rebalanceSchema(), consumed by the layout engine.
-   * This is a DERIVED hint — not set by generators, only by the transaction system.
-   * The underscore prefix signals that this is an internal field.
-   */
-  _compressedHeight?: number;
+  // NOTE: _compressedHeight was REMOVED from CompressionHints.
+  // It was a derived runtime value that leaked into localStorage via schema.
+  // The layout engines (CompressionEngine, SceneOverflowEngine, SceneLayoutEngine)
+  // compute their own CompressionResult.compressedHeight at runtime.
+  // The rebalance transaction now writes to a runtime cache instead of the schema.
+  // See: session-state.ts → compressedHeightCache
 }
 
 // ── Semantic Hints ───────────────────────────────────────────────
