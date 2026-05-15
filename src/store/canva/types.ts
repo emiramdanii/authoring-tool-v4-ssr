@@ -217,6 +217,13 @@ export interface CanvaState {
   mergeWithNextPage: () => void;
   /** Move a schema block to a container (root, materi-section, ftab tab, or children) */
   moveBlockToContainer: (blockId: string, targetContainer: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
+
+  // ── Scene Transaction Actions ──────────────────────────────────
+  /** Rebalance the current page's compression/layout using transaction */
+  rebalanceCurrentPage: () => void;
+  /** Promote a scene split into an actual page split via transaction */
+  promoteSceneSplit: (sceneIndex?: number) => void;
+
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

@@ -131,6 +131,8 @@ export {
   rebalancePageCompression,
   promoteSceneSplitToPage,
   mergePagesTransaction,
+  // Scene plan → transaction bridge
+  rebalanceFromScenePlan,
 } from './schema-apply';
 
 // ── Schema Projection (Schema → Store) ───────────────────────────

@@ -20,6 +20,7 @@ import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockIm
 import { createTransaction } from '@/core/schema/scene-transaction';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
+import { rebalanceFromScenePlan, promoteSceneSplitToPage } from '@/core/schema/schema-apply';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 
 // ═══════════════════════════════════════════════════════════════
@@ -114,6 +115,7 @@ export type UISlice = Pick<
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | 'moveBlockToContainer'
+  | 'rebalanceCurrentPage' | 'promoteSceneSplit'
   | '_lastNudgeTime'
   | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
   | 'canvasPreview' | 'toggleCanvasPreview'
@@ -1640,6 +1642,104 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     const containerLabel = targetContainer.type === 'root' ? 'root' : targetContainer.type;
     toast.success(`Block dipindah ke ${containerLabel}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Scene Transaction Actions ────────────────────────────────────
+  // These actions use the SceneTransaction system for atomic layout
+  // mutations. They bridge the SceneOverflowEngine's derived plans
+  // with the store, ensuring multi-step operations are all-or-nothing.
+
+  /**
+   * Rebalance the current page's layout using transaction.
+   *
+   * This is the user-facing action that:
+   *   1. Computes a fresh ScenePlan from measurements
+   *   2. If blocks overflow, applies compression via transaction
+   *   3. Commits atomically — if validation fails, no changes
+   *
+   * Strategy: compression-first. If compression isn't enough,
+   * the user can call promoteSceneSplit() to create a new page.
+   */
+  rebalanceCurrentPage: () => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page?.schema) {
+      toast.info('Halaman ini tidak memiliki schema');
+      return;
+    }
+
+    get()._pushHistory();
+
+    const result = rebalanceFromScenePlan(page.id, {
+      isCompact: true,
+      compressionFirst: true,
+    });
+
+    if (!result.success) {
+      toast.error('Rebalance gagal: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    if (!result.pageUpdated) {
+      if (result.scenePlan?.isSingleScene) {
+        toast.info('Konten sudah pas — tidak perlu rebalance');
+      }
+      return;
+    }
+
+    toast.success('Layout halaman dioptimalkan', {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  /**
+   * Promote a scene split into an actual page split.
+   *
+   * When the SceneOverflowEngine determines that content needs to be
+   * split across multiple scenes, this action converts the derived
+   * plan into an actual page split:
+   *   - The original page keeps scene 0 blocks
+   *   - A new page is created for scene 1+ blocks
+   *   - The transaction ensures atomicity
+   *
+   * @param sceneIndex - Which scene to promote (1+ = new page)
+   */
+  promoteSceneSplit: (sceneIndex = 1) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page?.schema) {
+      toast.info('Halaman ini tidak memiliki schema');
+      return;
+    }
+
+    get()._pushHistory();
+
+    const result = promoteSceneSplitToPage(page.id, {
+      // Re-compute the scene plan for accuracy
+      sourceSchemaId: page.schema.id,
+      scenes: [],
+      totalScenes: 0,
+      isSingleScene: false,
+      splittableBlockIds: [],
+      computedAt: Date.now(),
+    }, sceneIndex);
+
+    if (!result.success) {
+      toast.error('Split gagal: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    toast.success('Scene dipisah menjadi halaman baru', {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },
