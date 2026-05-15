@@ -77,6 +77,41 @@ export { SchemaEngine, loadPreset, getAvailablePresets, schemaToCanvaPages } fro
 // Template Adapter — converts legacy pages to schema
 export { convertToSchema, paletteToTokenOverrides } from './engine/TemplateAdapter';
 
+// Schema Validation — runtime invariant checker
+export {
+  validateBlock,
+  validateSchema,
+  validateBlocks,
+  assertValidSchema,
+  assertValidBlocks,
+  isSchemaVersionCompatible,
+  getRegisteredBlockTypes,
+  SCHEMA_VERSION,
+} from './schema/validation';
+export type {
+  ValidationError,
+  ValidationResult,
+} from './schema/validation';
+
+// Schema Immutable Operations — safe mutations for the schema tree
+export {
+  deepFreeze,
+  isDeepFrozen,
+  deepClone,
+  produce,
+  findBlockById,
+  findBlockIndex,
+  replaceBlock,
+  patchBlock,
+  removeBlock,
+  insertBlock,
+  moveBlock,
+  updateSchema,
+  bumpVersion,
+  snapshot,
+  snapshotBlocks,
+} from './schema/immutable';
+
 // Editor Engine — schema-driven visual editing
 export {
   deepMergeBlock,

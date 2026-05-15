@@ -27,6 +27,7 @@ import type { ScreenSchema, SchemaBlock } from './types';
 import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { nanoid } from 'nanoid';
 import { logger } from '@/core/utils/logger';
+import { assertValidSchema, isSchemaVersionCompatible } from './validation';
 
 /**
  * Ensure a page has a native ScreenSchema.
@@ -45,7 +46,10 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   // ═══ Path 2: schemaScreen in templateData — promote it ══════
   const storedSchema = page.templateData?.schemaScreen as ScreenSchema | undefined;
   if (storedSchema) {
-    return assignStableIds(storedSchema);
+    const migrated = assignStableIds(storedSchema);
+    // Validate migrated schema (dev-mode guard)
+    assertValidSchema(migrated, `ensurePageSchema:${page.id}`);
+    return migrated;
   }
 
   // ═══ Path 3: Legacy template page — convert via TemplateAdapter ═══
@@ -53,7 +57,10 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   if (isTemplate) {
     const converted = convertToSchema(page);
     if (converted) {
-      return assignStableIds(converted);
+      const migrated = assignStableIds(converted);
+      // Validate converted schema (dev-mode guard)
+      assertValidSchema(migrated, `ensurePageSchema:${page.id}`);
+      return migrated;
     }
   }
 

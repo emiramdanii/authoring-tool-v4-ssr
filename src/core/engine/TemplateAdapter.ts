@@ -1,30 +1,52 @@
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE ADAPTER — Legacy Bridge (FASE 5: DEPRECATED)
+// TEMPLATE ADAPTER — Migration-Only Bridge (DEPRECATED)
 // ═══════════════════════════════════════════════════════════════════
-// @deprecated FASE 5 — This module is DEPRECATED.
+// @deprecated This module is DEPRECATED and MIGRATION-ONLY.
 //
+// ═══ ARCHITECTURE ════════════════════════════════════════════════
 // Schema-first architecture means:
 //   ParseResult → genXxxSchema() → SchemaBlock[] → page.schema
 //
-// This adapter is NO LONGER the bridge between authoring and canvas.
-// The schema generators (@/core/schema/generators.ts) now produce
-// SchemaBlock[] directly — the adapter is bypassed entirely.
+// The SchemaBlock tree is the SINGLE SOURCE OF TRUTH.
+// All systems read from it:
+//   - Canvas Renderer
+//   - Export Engine
+//   - Layout Engine
+//   - Compression Engine
+//   - AI Regeneration
+//   - Editor Projection (formerly "Authoring Store")
 //
-// REMAINING CONSUMERS (as of FASE 5):
+// This adapter is NOT part of the new architecture.
+// It exists ONLY to convert legacy pages that haven't been re-saved.
+//
+// ═══ UNIDIRECTIONAL FLOW ════════════════════════════════════════
+//   Schema → EditorProjectionStore (allowed)
+//   EditorProjectionStore → Schema (FORBIDDEN)
+//
+// ═══ REMAINING CONSUMERS ════════════════════════════════════════
 //   - src/core/schema/ensure-schema.ts → convertToSchema() — LAZY MIGRATION ONLY
 //   - src/components/canva/page-renderer/PageRenderer.tsx → paletteToTokenOverrides()
 //
 // All NEW pages get SchemaBlock[] from genXxxSchema() directly.
 // This adapter only runs for OLD pages that haven't been re-saved yet.
 //
-// MIGRATION PATH:
-//   1. Phase: All auto-generate flows now use genXxxSchema() ✓
-//   2. Phase: All regenerate flows now use regenerateXxxSchema() ✓
-//   3. Phase: Canvas generateFromPageType() uses genXxxSchema() ✓
-//   4. Phase: ensurePageSchema() simplified to return page.schema only
-//   5. Phase: This file DELETED
+// ═══ MIGRATION PATH ═════════════════════════════════════════════
+//   Phase 1: All auto-generate flows now use genXxxSchema() ✓
+//   Phase 2: All regenerate flows now use regenerateXxxSchema() ✓
+//   Phase 3: Canvas generateFromPageType() uses genXxxSchema() ✓
+//   Phase 4: Schema validation layer enforces invariants ✓
+//   Phase 5: Immutable schema operations (produce/patch) ✓
+//   Phase 6: AuthoringStore → EditorProjectionStore naming ✓
+//   Phase 7: ensurePageSchema() simplified to return page.schema only
+//   Phase 8: This file DELETED
 //
-// AUTHORITY RULE: Schema → Authoring (allowed), Authoring → Schema (NOT allowed)
+// ═══ 3-LAYER ARCHITECTURE ══════════════════════════════════════
+//   Layer 1 — Semantic Generation:  genMateriSchema() etc.
+//   Layer 2 — Layout Intelligence:  Scene/Layout Engine
+//   Layer 3 — Rendering:           Pure + Dumb Renderer
+//
+// This adapter violates all 3 layers — it generates AND layouts
+// AND renders from templateData. That's why it must be retired.
 // ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage, ColorPalette } from '@/components/canva/types';

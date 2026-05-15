@@ -493,3 +493,66 @@ Stage Summary:
 - Full Interaktif auto-generate includes all 3 new page types in proper sequence
 - TemplateAdapter converters handle legacy migration for the 3 new types
 - All existing page types remain unchanged; new flags default to false in non-full presets
+
+---
+Task ID: Schema-First-Architecture
+Agent: Main Agent
+Task: Schema-First Architecture Stabilization — Validation, Immutable Ops, Naming, Deprecation
+
+Work Log:
+- Created `src/core/schema/validation.ts` — Runtime invariant checker for SchemaBlock:
+  - validateBlock() — Single block validation (pure serializable, no DOM refs, no runtime refs, deterministic)
+  - validateSchema() — Full ScreenSchema validation
+  - validateBlocks() — Array of SchemaBlock validation
+  - assertValidSchema() / assertValidBlocks() — Dev-mode throw, prod-mode log
+  - validateCompressionHints() — priority/strategy enum validation
+  - validateSemanticHints() — learningPhase/interactionType enum validation, importance 0-1 range
+  - validateLayoutHints() — position/preferredWidth enum validation
+  - isSchemaVersionCompatible() — Version compatibility check
+  - getRegisteredBlockTypes() — Export the 30+ registered types
+  - SCHEMA_VERSION = 1 constant
+  - Deep recursive validation for children, materi-section.content, ftab.tabs[].content
+  - Circular reference detection via seenIds tracking
+- Created `src/core/schema/immutable.ts` — Safe mutation operations for the schema tree:
+  - deepFreeze() / isDeepFrozen() — Dev-mode deep freeze (prod = no-op)
+  - deepClone() — structuredClone with JSON fallback
+  - produce() — Immer-style immutable update (deep-clone + mutate draft)
+  - findBlockById() / findBlockIndex() — Deep search including nested blocks
+  - replaceBlock() — Replace by ID (handles nested in materi-section, ftab, children)
+  - patchBlock() — Partial update by ID
+  - removeBlock() — Remove by ID (handles nested)
+  - insertBlock() — Insert at position/before/after
+  - moveBlock() — Reorder blocks
+  - updateSchema() — Immutable ScreenSchema update with auto version bump
+  - bumpVersion() — Manual version increment
+  - snapshot() / snapshotBlocks() — Deep-clone for undo/redo
+- Wired validation into schema-apply.ts:
+  - assertValidBlocks() called in applyBlocksToPages, applyBlockToPages, setPageSchemaBlocks
+  - Dev-mode guard: throws on invalid blocks, logs in production
+- Wired validation into ensure-schema.ts:
+  - assertValidSchema() called after Path 2 (stored schema) and Path 3 (TemplateAdapter conversion)
+  - Ensures migrated schemas are always valid before being returned
+- Renamed AuthoringStore → EditorProjectionStore (mindset shift):
+  - Created `src/store/editor-projection-store.ts` with useEditorProjectionStore alias
+  - AuthoringState aliased as EditorProjectionState
+  - Full backward compatibility — all imports from authoring-store.ts still work
+  - Added architectural comments explaining projection-only role
+- Updated `src/store/authoring-store.ts` with deprecation notice and migration guide
+- Updated `src/core/engine/TemplateAdapter.ts` header:
+  - Enhanced deprecation docs with 3-layer architecture explanation
+  - Updated migration path (8 phases, 6 completed)
+  - Added unidirectional flow rule: Schema → EditorProjection OK, reverse FORBIDDEN
+  - Explained why TemplateAdapter violates all 3 layers
+- Updated `src/core/index.ts` with new exports:
+  - All validation functions and types
+  - All immutable operation functions
+  - SCHEMA_VERSION constant
+- Build verified: TypeScript compiles with zero errors, Next.js production build passes
+
+Stage Summary:
+- SchemaBlock contract is now enforced at runtime with validation layer
+- Immutable operations ensure schema tree is never accidentally mutated
+- EditorProjectionStore naming clarifies it's a derived projection, not authoritative
+- TemplateAdapter clearly documented as migration-only (8-phase retirement plan)
+- Validation gates in schema-apply and ensure-schema catch bad data before it reaches the canvas
+- All changes are backward compatible — no breaking changes to existing components

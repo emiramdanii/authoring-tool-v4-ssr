@@ -17,6 +17,7 @@ import type { SchemaBlock, ScreenSchema } from './types';
 import type { CanvaPage } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva/store';
 import { generateBlockId } from './ensure-schema';
+import { assertValidBlocks } from './validation';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK TYPE → TEMPLATE TYPE MAPPING
@@ -70,6 +71,9 @@ export function applyBlocksToPages(
   const store = useCanvaStore.getState();
   const pages = [...store.pages];
   let updatedCount = 0;
+
+  // Validate blocks before writing (dev-mode guard)
+  assertValidBlocks(blocks, 'applyBlocksToPages');
 
   // Ensure all blocks have stable IDs
   const blocksWithIds = blocks.map(b => ({
@@ -136,6 +140,10 @@ export function applyBlockToPages(
 
   // Normalize to array
   const blocksArray = Array.isArray(newBlocks) ? newBlocks : [newBlocks];
+
+  // Validate blocks before writing (dev-mode guard)
+  assertValidBlocks(blocksArray, 'applyBlockToPages');
+
   const blocksWithIds = blocksArray.map(b => ({
     ...b,
     id: b.id || generateBlockId(),
@@ -210,6 +218,10 @@ export function setPageSchemaBlocks(
   if (idx < 0) return false;
 
   const page = pages[idx];
+
+  // Validate blocks before writing (dev-mode guard)
+  assertValidBlocks(blocks, 'setPageSchemaBlocks');
+
   const blocksWithIds = blocks.map(b => ({
     ...b,
     id: b.id || generateBlockId(),
