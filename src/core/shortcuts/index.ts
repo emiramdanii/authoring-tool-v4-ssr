@@ -4,5 +4,6 @@
 
 export { shortcutRegistry, useShortcutRegistration } from './ShortcutRegistry';
 export type { ShortcutDefinition, ShortcutScope, KeyModifier } from './ShortcutRegistry';
-export { CANVAS_SHORTCUTS, GLOBAL_SHORTCUTS, INTERACTIVE_SHORTCUTS } from './canvas-shortcuts';
+export { getCanvaShortcuts, CANVAS_SHORTCUTS, GLOBAL_SHORTCUTS, INTERACTIVE_SHORTCUTS } from './canvas-shortcuts';
+export type { CanvaShortcutDeps } from './canvas-shortcuts';
 export { keyboardManager } from './keyboard-manager';

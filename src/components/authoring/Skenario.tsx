@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { Drama, Trash2, Pencil } from 'lucide-react';
 import { COLORS } from '@/lib/color-palette';
+import { RegenerateButton } from './konten/RegenerateButton';
+import { regenerateSkenario } from './auto-generate/regenerate';
 
 // ── Constants ────────────────────────────────────────────────────
 const BG_THEMES = [
@@ -583,6 +585,7 @@ function ChapterDetail({
 // ── Main Skenario Component ─────────────────────────────────────
 export default function Skenario() {
   const skenario = useAuthoringStore((s) => s.skenario);
+  const meta = useAuthoringStore((s) => s.meta);
   const addSkenarioChapter = useAuthoringStore((s) => s.addSkenarioChapter);
   const removeSkenarioChapter = useAuthoringStore((s) => s.removeSkenarioChapter);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -606,6 +609,19 @@ export default function Skenario() {
     },
     [removeSkenarioChapter, editingIndex],
   );
+
+  const handleRegenerateSkenario = async () => {
+    const chapters = regenerateSkenario({ namaBab: meta.namaBab });
+    if (chapters) {
+      useAuthoringStore.getState().setSkenario(
+        chapters as unknown as import('@/store/authoring/types').SkenarioChapter[],
+      );
+      toast.success(`🎭 ${chapters.length} bab skenario berhasil digenerate ulang`);
+    } else {
+      toast.error('Gagal regenerate — tidak ada teks sumber.');
+      useAuthoringStore.getState().setActivePanel('autogen');
+    }
+  };
 
   // Editing mode
   if (editingIndex !== null && editingIndex < skenario.length) {
@@ -631,9 +647,16 @@ export default function Skenario() {
         </p>
       </div>
 
-      {/* Chapter count */}
-      <div className="text-xs text-app-muted">
-        {skenario.length} bab skenario
+      {/* Chapter count + Regenerate button */}
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-app-muted">
+          {skenario.length} bab skenario
+        </div>
+        <RegenerateButton
+          label="Skenario"
+          onRegenerate={handleRegenerateSkenario}
+          hasExistingData={skenario.length > 0}
+        />
       </div>
 
       {/* Empty state */}

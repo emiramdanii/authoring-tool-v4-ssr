@@ -4,7 +4,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
-import { Target, ClipboardList, Trash2, Tag, Map } from 'lucide-react';
+import { Target, ClipboardList, Trash2, Tag, Map, Ruler, Calendar, GripVertical, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { COLORS } from '@/lib/color-palette';
 
 // ── Accordion Item ───────────────────────────────────────────────
@@ -28,26 +29,38 @@ function AccordionSection({
         className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-elevated/80 transition-colors"
       >
         <div className="flex items-center gap-2.5">
-          <span>{icon}</span>
+          <span className="text-app-secondary">{icon}</span>
           <span className="text-sm font-semibold text-app-primary">{title}</span>
         </div>
-        <span className={`text-app-muted text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
-          ▾
-        </span>
+        <ChevronDown
+          size={16}
+          className={`text-app-muted transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
+        />
       </button>
-      {open && (
-        <div className="p-4 bg-app-surface/80 space-y-4 border-t border-app-border">
-          {children}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden border-t border-app-border"
+          >
+            <div className="p-4 bg-app-surface/80 space-y-4">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 // ── Shared field styles ──────────────────────────────────────────
 const fieldLabel = 'block text-xs font-medium text-app-secondary mb-1.5';
-const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors';
-const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/50 focus:border-app-accent/50 transition-colors resize-none';
+const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:border-app-accent/60 focus:shadow-[0_0_0_3px_rgba(var(--accent-rgb,59,130,246),0.08)] transition-all duration-200';
+const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:border-app-accent/60 focus:shadow-[0_0_0_3px_rgba(var(--accent-rgb,59,130,246),0.08)] transition-all duration-200 resize-none';
 
 // ── Identitas Media ─────────────────────────────────────────────
 function MetaSection() {
@@ -186,7 +199,7 @@ function DragHandle({ onPointerDown, index }: { onPointerDown: (e: React.Pointer
       className="text-app-muted hover:text-app-secondary cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
       aria-label="Drag to reorder"
     >
-      ⠿
+      <GripVertical size={16} />
     </span>
   );
 }
@@ -210,11 +223,12 @@ function TpSection() {
   if (!tp.length) {
     return (
       <div className="text-center py-8">
-        <Target size={24} className="text-app-muted mb-2" />
+        <Target size={28} className="text-app-muted mx-auto mb-3" />
         <p className="text-sm text-app-muted">Belum ada Tujuan Pembelajaran.</p>
+        <p className="text-xs text-app-muted/70 mt-1">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
         <button
           onClick={addTp}
-          className="mt-3 px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          className="mt-4 px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
         >
           ＋ Tambah TP
         </button>
@@ -339,9 +353,10 @@ function AtpSection() {
       </div>
 
       {!atp.pertemuan.length ? (
-        <div className="text-center py-6">
-          <div className="text-3xl mb-2">📅</div>
+        <div className="text-center py-8">
+          <Calendar size={28} className="text-app-muted mx-auto mb-3" />
           <p className="text-sm text-app-muted">Belum ada pertemuan.</p>
+          <p className="text-xs text-app-muted/70 mt-1">Klik tombol di bawah untuk menambahkan pertemuan pertama.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -447,9 +462,10 @@ function AlurSection() {
   return (
     <div className="space-y-4">
       {!alur.length ? (
-        <div className="text-center py-6">
-          <Map size={24} className="text-app-muted mb-2" />
+        <div className="text-center py-8">
+          <Map size={28} className="text-app-muted mx-auto mb-3" />
           <p className="text-sm text-app-muted">Belum ada langkah.</p>
+          <p className="text-xs text-app-muted/70 mt-1">Tambahkan langkah Pendahuluan, Inti, dan Penutup.</p>
         </div>
       ) : (
         alur.map((step, i) => {
@@ -540,7 +556,7 @@ export default function Dokumen() {
     <div className="p-6 space-y-5 max-w-4xl">
       <div>
         <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-          <span>📐</span> Dokumen Pembelajaran
+          <Ruler size={18} /> Dokumen Pembelajaran
         </h2>
         <p className="text-sm text-app-secondary mt-1">
           Lengkapi semua dokumen perencanaan pembelajaran dalam satu halaman.
@@ -560,7 +576,7 @@ export default function Dokumen() {
           <TpSection />
         </AccordionSection>
 
-        <AccordionSection icon="📅" title="Alur Tujuan Pembelajaran">
+        <AccordionSection icon={<Calendar size={16} className="inline" />} title="Alur Tujuan Pembelajaran">
           <AtpSection />
         </AccordionSection>
 

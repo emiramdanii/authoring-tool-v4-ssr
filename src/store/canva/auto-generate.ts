@@ -125,6 +125,7 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     const blueprint = pageType.generate(config);
     const authStore = useAuthoringStore.getState();
     const kuis = authStore.kuis.filter((k: { q: string }) => k.q.trim());
+    const jumlahPertemuan = authStore.atp.jumlahPertemuan || 1;
     let games = authStore.modules.filter((m: Module) =>
       (GAME_TYPES as readonly string[]).includes(m.type)
     );
@@ -184,15 +185,35 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
       newPages.push(createPageFromPreset('materi', newPages.length));
     }
 
-    // Kuis pages — split by soalPerHalaman
+    // Kuis pages — split by soalPerHalaman, with optional pertemuan filtering
     if (blueprint.includeKuis && kuis.length > 0) {
       const perPage = blueprint.soalPerHalaman || 5;
-      if (kuis.length <= perPage) {
-        newPages.push(createPageFromPreset('kuis', newPages.length));
-      } else {
-        const totalPages = Math.ceil(kuis.length / perPage);
-        for (let p = 0; p < totalPages; p++) {
+      if (jumlahPertemuan <= 1) {
+        // Single pertemuan — original behavior
+        if (kuis.length <= perPage) {
           newPages.push(createPageFromPreset('kuis', newPages.length));
+        } else {
+          const totalPages = Math.ceil(kuis.length / perPage);
+          for (let p = 0; p < totalPages; p++) {
+            newPages.push(createPageFromPreset('kuis', newPages.length));
+          }
+        }
+      } else {
+        // Per-pertemuan kuis pages
+        for (let pert = 1; pert <= jumlahPertemuan; pert++) {
+          // Include items tagged for this pertemuan, plus untagged items (pertemuan === undefined)
+          const kuisForPert = kuis.filter((k: { q: string; pertemuan?: number }) =>
+            k.pertemuan === pert || k.pertemuan === undefined
+          );
+          if (kuisForPert.length === 0) continue;
+          if (kuisForPert.length <= perPage) {
+            newPages.push(createPageFromPreset('kuis', newPages.length));
+          } else {
+            const totalPages = Math.ceil(kuisForPert.length / perPage);
+            for (let p = 0; p < totalPages; p++) {
+              newPages.push(createPageFromPreset('kuis', newPages.length));
+            }
+          }
         }
       }
     }

@@ -42,4 +42,7 @@ export const GEN_BUTTONS: { type: GenType; icon: string; label: string; color: s
   { type: 'skenario', icon: '🎭', label: 'Skenario', color: 'purple' },
   { type: 'matching', icon: '🔀', label: 'Game Matching', color: 'cyan' },
   { type: 'truefalse', icon: '✅', label: 'Game Benar/Salah', color: 'amber' },
+  { type: 'materi', icon: '📖', label: 'Materi', color: 'blue' },
+  { type: 'diskusi', icon: '💬', label: 'Diskusi', color: 'green' },
+  { type: 'refleksi', icon: '🪞', label: 'Refleksi', color: 'yellow' },
 ];

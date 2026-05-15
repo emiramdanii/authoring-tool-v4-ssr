@@ -2,7 +2,7 @@
 // Generators — All gen* functions for auto-generating content
 // ═══════════════════════════════════════════════════════════════════
 
-import type { CpState, TpItem, AlurItem, KuisItem } from '@/store/authoring-store';
+import type { CpState, TpItem, AlurItem, KuisItem, MateriBlok, DiskusiData, DiskusiPertanyaan, RefleksiData, RefleksiPertanyaan } from '@/store/authoring-store';
 import type {
   ParseResult,
   GenSettings,
@@ -244,9 +244,11 @@ export function genAlur(tps: TpItem[], meta: { durasi?: string }, totalMinutes =
   return steps;
 }
 
-export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: number = 1): KuisItem[] {
+export function genKuis(parsed: ParseResult, jumlah: number, jumlahPertemuan: number = 1): KuisItem[] {
   const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
   const kuis: KuisItem[] = [];
+  // Distribute soal evenly across pertemuan
+  const soalPerPertemuan = Math.ceil(jumlah / jumlahPertemuan);
 
   const makeWrongOpts = (correct: string, exclude: string[] = []): string[] => {
     const pool = topWords.filter(
@@ -278,11 +280,13 @@ export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: n
     if (kuis.length >= jumlah) break;
     const wrongs = makeWrongOpts(def.meaning, [def.term]);
     const { opts, ans } = shuffleInsert(def.meaning, wrongs);
+    const idx = kuis.length;
     kuis.push({
       q: `${def.term} adalah ...`,
       opts,
       ans,
       ex: `${def.term} ${def.meaning}.`,
+      pertemuan: Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan),
     });
   }
 
@@ -292,11 +296,13 @@ export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: n
     const correctItem = en.items[0];
     const wrongs = makeWrongOpts(correctItem, en.items);
     const { opts, ans } = shuffleInsert(correctItem, wrongs);
+    const idx = kuis.length;
     kuis.push({
       q: `Berikut ini yang termasuk ${en.subject.toLowerCase()} adalah ...`,
       opts,
       ans,
       ex: `${en.subject} terdiri dari ${en.items.join(', ')}.`,
+      pertemuan: Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan),
     });
   }
 
@@ -305,11 +311,13 @@ export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: n
     if (kuis.length >= jumlah) break;
     const wrongs = makeWrongOpts(fn.desc, [fn.subject]);
     const { opts, ans } = shuffleInsert(fn.desc, wrongs);
+    const idx = kuis.length;
     kuis.push({
       q: `${fn.subject} berfungsi untuk ...`,
       opts,
       ans,
       ex: `${fn.subject} berfungsi ${fn.desc}.`,
+      pertemuan: Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan),
     });
   }
 
@@ -318,11 +326,13 @@ export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: n
     if (kuis.length >= jumlah) break;
     const wrongs = makeWrongOpts(c.effect, [c.cause]);
     const { opts, ans } = shuffleInsert(c.effect, wrongs);
+    const idx = kuis.length;
     kuis.push({
       q: `Apa yang terjadi ${c.cause ? `karena ${c.cause.toLowerCase().slice(0, 40)}` : 'dalam materi berikut'} ...`,
       opts,
       ans,
       ex: `${c.cause} menyebabkan ${c.effect}.`,
+      pertemuan: Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan),
     });
   }
 
@@ -334,11 +344,13 @@ export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: n
     const correct = s.slice(0, 80);
     const wrongs = makeWrongOpts(correct, [keyWord]);
     const { opts, ans } = shuffleInsert(correct, wrongs);
+    const idx = kuis.length;
     kuis.push({
       q: `Pernyataan yang benar mengenai ${keyWord} adalah ...`,
       opts,
       ans,
       ex: correct,
+      pertemuan: Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan),
     });
   }
 
@@ -348,11 +360,13 @@ export function genKuis(parsed: ParseResult, jumlah: number, _jumlahPertemuan: n
     const correct = `Pernyataan yang sesuai dengan konsep ${topic}`;
     const wrongs = makeWrongOpts(correct);
     const { opts, ans } = shuffleInsert(correct, wrongs);
+    const idx = kuis.length;
     kuis.push({
       q: `Manakah pernyataan berikut yang benar tentang ${topic}?`,
       opts,
       ans,
       ex: `Jawaban yang benar berkaitan dengan konsep ${topic}.`,
+      pertemuan: Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan),
     });
   }
 
@@ -490,4 +504,169 @@ export function genTrueFalse(parsed: ParseResult): TrueFalseItem[] {
   }
 
   return items;
+}
+
+export function genMateri(parsed: ParseResult, meta: { judulPertemuan: string; namaBab: string }): MateriBlok[] {
+  const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
+  const bloks: MateriBlok[] = [];
+
+  // Intro block from first 2 sentences of text
+  const introText = sentences.slice(0, 2).join(' ');
+  bloks.push({
+    tipe: 'teks',
+    judul: meta.judulPertemuan || 'Materi Pembelajaran',
+    isi: introText || `Materi tentang ${meta.namaBab || topWords[0] || 'pembelajaran'}.`,
+  });
+
+  // Definitions → definisi blocks
+  for (const def of definitions) {
+    bloks.push({
+      tipe: 'definisi',
+      judul: def.term,
+      isi: def.meaning,
+    });
+  }
+
+  // Enumerations → poin blocks
+  for (const en of enumerations) {
+    bloks.push({
+      tipe: 'poin',
+      judul: en.subject,
+      butir: en.items,
+    });
+  }
+
+  // Functions → highlight blocks
+  for (const fn of functions) {
+    bloks.push({
+      tipe: 'highlight',
+      judul: fn.subject,
+      isi: fn.desc,
+      warna: 'blue',
+    });
+  }
+
+  // Causes → compare blocks
+  for (const c of causes) {
+    bloks.push({
+      tipe: 'compare',
+      judul: 'Sebab-Akibat',
+      kiri: { isi: c.cause },
+      kanan: { isi: c.effect },
+    });
+  }
+
+  // Summary infobox
+  const summaryWords = topWords.slice(0, 5).join(', ');
+  bloks.push({
+    tipe: 'infobox',
+    judul: 'Ringkasan',
+    isi: `Poin penting dari materi ini: ${summaryWords}. Pahami konsep-konsep tersebut dan hubungkan dengan kehidupan sehari-hari.`,
+  });
+
+  return bloks;
+}
+
+export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { judulPertemuan: string; namaBab: string }): DiskusiData {
+  const { definitions, enumerations } = parsed;
+  const pertanyaan: DiskusiPertanyaan[] = [];
+  const labels = ['Pertanyaan 1', 'Pertanyaan 2', 'Pertanyaan 3', 'Pertanyaan 4', 'Pertanyaan 5'];
+  const icons = ['💭', '🤔', '🗣️', '👥', '✋'];
+
+  // From definitions
+  for (const def of definitions) {
+    if (pertanyaan.length >= 5) break;
+    pertanyaan.push({
+      label: labels[pertanyaan.length],
+      icon: icons[pertanyaan.length],
+      teks: `Jelaskan apa yang dimaksud dengan ${def.term}! Berikan contoh dalam kehidupan sehari-hari.`,
+      petunjuk: `Gunakan definisi ${def.term} sebagai dasar jawabanmu.`,
+    });
+  }
+
+  // From enumerations
+  for (const en of enumerations) {
+    if (pertanyaan.length >= 5) break;
+    pertanyaan.push({
+      label: labels[pertanyaan.length],
+      icon: icons[pertanyaan.length],
+      teks: `Sebutkan dan diskusikan ${en.subject}! Mana yang paling relevan?`,
+      petunjuk: `Pertimbangkan masing-masing poin dan pilih yang paling relevan.`,
+    });
+  }
+
+  // From TP (Tujuan Pembelajaran)
+  for (const t of tp) {
+    if (pertanyaan.length >= 5) break;
+    pertanyaan.push({
+      label: labels[pertanyaan.length],
+      icon: icons[pertanyaan.length],
+      teks: `Bagaimana ${t.desc}? Diskusikan dengan teman sekelasmu!`,
+      petunjuk: `Hubungkan dengan pengalaman pribadimu.`,
+    });
+  }
+
+  return {
+    title: `Diskusi ${meta.namaBab}`,
+    intro: 'Diskusikan pertanyaan berikut dengan teman sekelompokmu!',
+    pertanyaan,
+  };
+}
+
+export function genRefleksi(parsed: ParseResult, meta: { judulPertemuan: string; namaBab: string }): RefleksiData {
+  const { topWords } = parsed;
+  const pertanyaan: RefleksiPertanyaan[] = [];
+  const colors = ['blue', 'green', 'amber', 'purple'];
+  const icons = ['🪞', '💭', '🎯', '📝'];
+  const topic = topWords[0] || meta.namaBab || 'materi';
+
+  // General reflection from top words
+  const topWord = topWords[0] || 'materi ini';
+  pertanyaan.push({
+    teks: `Hal baru apa yang kamu pelajari tentang ${topWord}?`,
+    petunjuk: 'Tuliskan minimal 2 hal baru yang kamu pelajari.',
+    warna: colors[0],
+    icon: icons[0],
+  });
+
+  // Application
+  if (pertanyaan.length < 4) {
+    pertanyaan.push({
+      teks: `Bagaimana kamu akan menerapkan pemahaman tentang ${topic} dalam kehidupan sehari-hari?`,
+      petunjuk: 'Berikan contoh konkret penerapannya.',
+      warna: colors[1],
+      icon: icons[1],
+    });
+  }
+
+  // Commitment
+  if (pertanyaan.length < 4) {
+    pertanyaan.push({
+      teks: 'Tulis komitmen pribadimu untuk menerapkan nilai-nilai yang dipelajari!',
+      petunjuk: 'Gunakan kalimat "Saya berkomitmen untuk..."',
+      warna: colors[2],
+      icon: icons[2],
+    });
+  }
+
+  // Metacognition
+  if (pertanyaan.length < 4) {
+    pertanyaan.push({
+      teks: 'Bagian mana dari materi ini yang paling menantang? Mengapa?',
+      petunjuk: 'Jelaskan kesulitan yang kamu hadapi dan bagaimana mengatasinya.',
+      warna: colors[3],
+      icon: icons[3],
+    });
+  }
+
+  return {
+    title: `Refleksi ${meta.namaBab}`,
+    intro: 'Renungkan pertanyaan berikut untuk memperdalam pemahamanmu!',
+    pertanyaan,
+    penugasan: {
+      judul: 'Tugas Refleksi',
+      isi: 'Tulis refleksi pribadimu tentang materi yang baru dipelajari.',
+      contoh: 'Saya belajar bahwa norma...Saya akan menerapkannya dengan...',
+    },
+  };
 }

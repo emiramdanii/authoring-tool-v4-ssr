@@ -6,6 +6,9 @@ import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
 import { Trash2, FileEdit } from 'lucide-react';
+import { RegenerateButton } from './RegenerateButton';
+import { regenerateMateri } from '../auto-generate/regenerate';
+import { toast } from 'sonner';
 
 // ── Blok Card ──────────────────────────────────────────────────
 function BlokCard({
@@ -88,6 +91,7 @@ function BlokCard({
 // ── Materi Tab ─────────────────────────────────────────────────
 export function MateriTab() {
   const materi = useAuthoringStore((s) => s.materi);
+  const meta = useAuthoringStore((s) => s.meta);
   const addMateriBlok = useAuthoringStore((s) => s.addMateriBlok);
   const removeMateriBlok = useAuthoringStore((s) => s.removeMateriBlok);
   const moveMateriBlok = useAuthoringStore((s) => s.moveMateriBlok);
@@ -104,11 +108,32 @@ export function MateriTab() {
     [addMateriBlok],
   );
 
+  const handleRegenerateMateri = async () => {
+    const bloks = regenerateMateri({
+      judulPertemuan: meta.judulPertemuan,
+      namaBab: meta.namaBab,
+    });
+    if (bloks) {
+      useAuthoringStore.setState({ materi: { blok: bloks as MateriBlok[] }, dirty: true });
+      toast.success(`📖 ${bloks.length} blok materi berhasil digenerate ulang`);
+    } else {
+      toast.error('Gagal regenerate — tidak ada teks sumber.');
+      useAuthoringStore.getState().setActivePanel('autogen');
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Block count */}
-      <div className="text-xs text-app-muted">
-        {materi.blok.length} blok materi
+      {/* Header with Regenerate button */}
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-app-muted">
+          {materi.blok.length} blok materi
+        </div>
+        <RegenerateButton
+          label="Materi"
+          onRegenerate={handleRegenerateMateri}
+          hasExistingData={materi.blok.length > 0}
+        />
       </div>
 
       {/* Empty state */}

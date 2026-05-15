@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { CpState, TpItem, AlurItem, KuisItem, AtpState } from '@/store/authoring-store';
+import type { CpState, TpItem, AlurItem, KuisItem, AtpState, MateriBlok, DiskusiData, RefleksiData } from '@/store/authoring-store';
 import type {
   PreviewData,
   FlashcardItem,
@@ -34,6 +34,12 @@ export function renderPreviewContent(preview: PreviewData) {
       return <MatchingPreview data={preview.data as MatchingPair[]} />;
     case 'truefalse':
       return <TrueFalsePreview data={preview.data as TrueFalseItem[]} />;
+    case 'materi':
+      return <MateriPreview data={preview.data as MateriBlok[]} />;
+    case 'diskusi':
+      return <DiskusiPreview data={preview.data as DiskusiData} />;
+    case 'refleksi':
+      return <RefleksiPreview data={preview.data as RefleksiData} />;
     default:
       return <p className="text-sm text-app-secondary">Preview tidak tersedia</p>;
   }
@@ -359,6 +365,141 @@ function TrueFalsePreview({ data }: { data: TrueFalseItem[] }) {
       {data.length > 12 && (
         <div className="text-xs text-app-muted text-center py-2">
           +{data.length - 12} soal lainnya...
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MateriPreview({ data }: { data: MateriBlok[] }) {
+  const tipeColors: Record<string, string> = {
+    teks: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
+    definisi: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+    poin: 'bg-green-500/15 text-green-400 border-green-500/20',
+    highlight: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/20',
+    compare: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
+    infobox: 'bg-rose-500/15 text-rose-400 border-rose-500/20',
+  };
+
+  return (
+    <div className="space-y-2">
+      {data.map((blok, i) => {
+        const colorClass = tipeColors[blok.tipe] || 'bg-app-elevated/50 text-app-secondary border-app-border/30';
+        return (
+          <div key={i} className="bg-app-elevated/50 rounded-lg p-3 space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${colorClass}`}>
+                {blok.tipe}
+              </span>
+              {blok.judul && (
+                <span className="text-sm font-semibold text-app-primary">{blok.judul}</span>
+              )}
+            </div>
+            {blok.isi && (
+              <p className="text-xs text-app-secondary leading-relaxed">{blok.isi}</p>
+            )}
+            {blok.butir && blok.butir.length > 0 && (
+              <ul className="text-xs text-app-secondary space-y-0.5 ml-3">
+                {blok.butir.map((b, bi) => (
+                  <li key={bi} className="flex items-start gap-1.5">
+                    <span className="text-app-muted mt-0.5">•</span>
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {blok.kiri && blok.kanan && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-app-elevated/30 rounded px-2 py-1.5">
+                  <p className="text-[0.6rem] text-app-muted uppercase">Sebab</p>
+                  <p className="text-xs text-app-secondary">{blok.kiri.isi || blok.kiri.judul || '-'}</p>
+                </div>
+                <div className="bg-app-elevated/30 rounded px-2 py-1.5">
+                  <p className="text-[0.6rem] text-app-muted uppercase">Akibat</p>
+                  <p className="text-xs text-app-secondary">{blok.kanan.isi || blok.kanan.judul || '-'}</p>
+                </div>
+              </div>
+            )}
+            {blok.warna && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[0.6rem] text-app-muted">Warna:</span>
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: blok.warna === 'blue' ? '#60a5fa' : blok.warna }} />
+                <span className="text-[0.6rem] text-app-muted">{blok.warna}</span>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DiskusiPreview({ data }: { data: DiskusiData }) {
+  return (
+    <div className="space-y-3">
+      <div className="bg-app-elevated/50 rounded-lg p-3">
+        <h4 className="text-sm font-semibold text-app-primary">{data.title}</h4>
+        <p className="text-xs text-app-secondary mt-1">{data.intro}</p>
+      </div>
+      <div className="space-y-2">
+        {data.pertanyaan.map((p, i) => (
+          <div key={i} className="bg-app-elevated/50 rounded-lg p-3 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{p.icon}</span>
+              <span className="text-xs font-semibold text-green-400 bg-green-500/15 px-2 py-0.5 rounded">
+                {p.label}
+              </span>
+            </div>
+            <p className="text-sm text-app-primary">{p.teks}</p>
+            <p className="text-xs text-app-muted italic">💡 Petunjuk: {p.petunjuk}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RefleksiPreview({ data }: { data: RefleksiData }) {
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
+    green: 'bg-green-500/15 text-green-400 border-green-500/20',
+    amber: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+    purple: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-app-elevated/50 rounded-lg p-3">
+        <h4 className="text-sm font-semibold text-app-primary">{data.title}</h4>
+        <p className="text-xs text-app-secondary mt-1">{data.intro}</p>
+      </div>
+      <div className="space-y-2">
+        {data.pertanyaan.map((p, i) => {
+          const colorClass = colorMap[p.warna || 'blue'] || colorMap.blue;
+          return (
+            <div key={i} className="bg-app-elevated/50 rounded-lg p-3 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{p.icon}</span>
+                <span className={`text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${colorClass}`}>
+                  {p.warna || 'blue'}
+                </span>
+              </div>
+              <p className="text-sm text-app-primary">{p.teks}</p>
+              <p className="text-xs text-app-muted italic">💡 {p.petunjuk}</p>
+            </div>
+          );
+        })}
+      </div>
+      {data.penugasan && (
+        <div className="bg-app-elevated/50 border border-amber-500/20 rounded-lg p-3 space-y-1.5">
+          <h5 className="text-sm font-semibold text-amber-400">📝 {data.penugasan.judul}</h5>
+          <p className="text-xs text-app-secondary">{data.penugasan.isi}</p>
+          {data.penugasan.contoh && (
+            <div className="bg-app-elevated/30 rounded px-3 py-2 mt-1">
+              <p className="text-[0.6rem] text-app-muted uppercase tracking-wider">Contoh</p>
+              <p className="text-xs text-app-muted italic">{data.penugasan.contoh}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

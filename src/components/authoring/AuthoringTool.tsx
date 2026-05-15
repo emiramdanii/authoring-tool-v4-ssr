@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
   FileText,
@@ -444,14 +445,21 @@ function AuthoringToolInner() {
         )}
 
         {/* ── Content ──────────────────────────────────────── */}
-        <main
-          role="main"
-          className={`flex-1 flex flex-col min-h-0 ${
-            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-app-surface'
-          }`}
-        >
-          {renderPanel()}
-        </main>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activePanel}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            role="main"
+            className={`flex-1 flex flex-col min-h-0 ${
+              isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-app-surface'
+            }`}
+          >
+            {renderPanel()}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* ── Guided Tour Overlay ────────────────────────────── */}

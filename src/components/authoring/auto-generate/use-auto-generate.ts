@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
-import type { CpState, TpItem, AlurItem, KuisItem } from '@/store/authoring-store';
+import type { CpState, TpItem, AlurItem, KuisItem, MateriBlok, DiskusiData, RefleksiData } from '@/store/authoring-store';
 import type {
   ParseResult,
   GenSettings,
@@ -26,6 +26,9 @@ import {
   genSkenario,
   genMatching,
   genTrueFalse,
+  genMateri,
+  genDiskusi,
+  genRefleksi,
 } from './generators';
 
 export function useAutoGenerate() {
@@ -33,7 +36,12 @@ export function useAutoGenerate() {
   const meta = useAuthoringStore((s) => s.meta);
 
   // ── Local state ─────────────────────────────────────────────
-  const [text, setText] = useState('');
+  const [text, setText] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try { return localStorage.getItem('silse-autogen-text') || ''; } catch { return ''; }
+    }
+    return '';
+  });
   const [parsed, setParsed] = useState<ParseResult | null>(null);
   const [settings, setSettings] = useState<GenSettings>({
     jumlahKuis: 10,
@@ -43,6 +51,11 @@ export function useAutoGenerate() {
   const [loading, setLoading] = useState<Set<GenType>>(new Set());
   const [previews, setPreviews] = useState<PreviewData[]>([]);
   const [activePreview, setActivePreview] = useState<PreviewData | null>(null);
+
+  // ── Persist text to localStorage ────────────────────────────
+  useEffect(() => {
+    try { localStorage.setItem('silse-autogen-text', text); } catch { /* ignore */ }
+  }, [text]);
 
   // ── Parse handler ───────────────────────────────────────────
   const handleParse = useCallback(() => {
@@ -139,6 +152,28 @@ export function useAutoGenerate() {
               count = (data as TrueFalseItem[]).length;
               label = 'Game Benar/Salah';
               icon = '✅';
+              break;
+            }
+            case 'materi': {
+              data = genMateri(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+              count = (data as MateriBlok[]).length;
+              label = 'Materi';
+              icon = '📖';
+              break;
+            }
+            case 'diskusi': {
+              const authStore = store.getState();
+              data = genDiskusi(parsed, authStore.tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+              count = (data as DiskusiData).pertanyaan.length;
+              label = 'Diskusi';
+              icon = '💬';
+              break;
+            }
+            case 'refleksi': {
+              data = genRefleksi(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+              count = (data as RefleksiData).pertanyaan.length;
+              label = 'Refleksi';
+              icon = '🪞';
               break;
             }
           }
@@ -271,6 +306,24 @@ export function useAutoGenerate() {
           toast.success(`✅ ${tfData.length} soal benar/salah diterapkan`);
           break;
         }
+        case 'materi': {
+          const materiData = preview.data as MateriBlok[];
+          store.setState({ materi: { blok: materiData }, dirty: true });
+          toast.success(`📖 ${materiData.length} blok materi diterapkan`);
+          break;
+        }
+        case 'diskusi': {
+          const diskusiData = preview.data as DiskusiData;
+          store.setState({ diskusi: diskusiData, dirty: true });
+          toast.success(`💬 ${diskusiData.pertanyaan.length} pertanyaan diskusi diterapkan`);
+          break;
+        }
+        case 'refleksi': {
+          const refleksiData = preview.data as RefleksiData;
+          store.setState({ refleksi: refleksiData, dirty: true });
+          toast.success(`🪞 ${refleksiData.pertanyaan.length} pertanyaan refleksi diterapkan`);
+          break;
+        }
       }
     },
     [],
@@ -283,7 +336,7 @@ export function useAutoGenerate() {
       return;
     }
 
-    const types: GenType[] = ['cp', 'tp', 'atp', 'alur', 'kuis', 'flashcard', 'skenario', 'matching', 'truefalse'];
+    const types: GenType[] = ['cp', 'tp', 'atp', 'alur', 'kuis', 'flashcard', 'skenario', 'matching', 'truefalse', 'materi', 'diskusi', 'refleksi'];
     setLoading(new Set(types));
     toast.info('⚡ Generating semua konten...');
 
@@ -325,6 +378,19 @@ export function useAutoGenerate() {
               data = genMatching(parsed); count = (data as MatchingPair[]).length; label = 'Game Matching'; icon = '🔀'; break;
             case 'truefalse':
               data = genTrueFalse(parsed); count = (data as TrueFalseItem[]).length; label = 'Game Benar/Salah'; icon = '✅'; break;
+            case 'materi': {
+              data = genMateri(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+              count = (data as MateriBlok[]).length; label = 'Materi'; icon = '📖'; break;
+            }
+            case 'diskusi': {
+              const authStore = store.getState();
+              data = genDiskusi(parsed, authStore.tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+              count = (data as DiskusiData).pertanyaan.length; label = 'Diskusi'; icon = '💬'; break;
+            }
+            case 'refleksi': {
+              data = genRefleksi(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+              count = (data as RefleksiData).pertanyaan.length; label = 'Refleksi'; icon = '🪞'; break;
+            }
           }
 
           allPreviews.push({ type, label, icon, data, count });

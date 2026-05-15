@@ -43,7 +43,7 @@ export interface GenSettings {
   bloomMax: number;
 }
 
-export type GenType = 'cp' | 'tp' | 'atp' | 'alur' | 'kuis' | 'flashcard' | 'skenario' | 'matching' | 'truefalse';
+export type GenType = 'cp' | 'tp' | 'atp' | 'alur' | 'kuis' | 'flashcard' | 'skenario' | 'matching' | 'truefalse' | 'materi' | 'diskusi' | 'refleksi';
 
 export interface PreviewData {
   type: GenType;

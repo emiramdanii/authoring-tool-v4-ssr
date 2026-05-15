@@ -1,14 +1,18 @@
 'use client';
 
 import { useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { KuisItem } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
+import { RegenerateButton } from './RegenerateButton';
+import { regenerateKuis } from '../auto-generate/regenerate';
 
 // ── Kuis Tab (Fully Functional) ────────────────────────────────
 export function KuisTab() {
   const kuis = useAuthoringStore((s) => s.kuis);
+  const atp = useAuthoringStore((s) => s.atp);
   const addKuis = useAuthoringStore((s) => s.addKuis);
   const deleteKuis = useAuthoringStore((s) => s.deleteKuis);
   const updateKuis = useAuthoringStore((s) => s.updateKuis);
@@ -34,8 +38,30 @@ export function KuisTab() {
     }, 100);
   };
 
+  const handleRegenerateKuis = async () => {
+    const jumlahPertemuan = atp.jumlahPertemuan || 1;
+    const newKuis = regenerateKuis(kuis.length || 10, jumlahPertemuan);
+    if (newKuis) {
+      useAuthoringStore.setState({ kuis: newKuis as KuisItem[], dirty: true });
+      toast.success(`❓ ${newKuis.length} soal kuis berhasil digenerate ulang`);
+    } else {
+      toast.error('Gagal regenerate — tidak ada teks sumber.');
+      useAuthoringStore.getState().setActivePanel('autogen');
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Header with Regenerate button */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-app-muted">{kuis.length} soal kuis</span>
+        <RegenerateButton
+          label="Kuis"
+          onRegenerate={handleRegenerateKuis}
+          hasExistingData={kuis.length > 0}
+        />
+      </div>
+
       {/* Preset Cards */}
       <div className="bg-app-surface border border-app-border rounded-xl p-4">
         <h4 className="text-sm font-semibold text-app-primary mb-3"><Zap size={16} className="inline" /> Preset Kuis</h4>
