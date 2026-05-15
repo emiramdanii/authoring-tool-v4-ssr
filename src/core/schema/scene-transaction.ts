@@ -51,6 +51,7 @@ import {
   snapshot,
 } from './immutable';
 import { assertValidSchema } from './validation';
+import { assertDocumentPurity } from './session-state';
 import { logger } from '@/core/utils/logger';
 
 // ── Transaction Step Types ──────────────────────────────────────
@@ -219,6 +220,8 @@ export class SceneTransaction {
 
       // Validate the result before committing
       assertValidSchema(this.schema, 'SceneTransaction.commit');
+      // Purity guard: ensure no runtime state leaked during transaction steps
+      assertDocumentPurity(this.schema, 'SceneTransaction.commit');
 
       this.committed = true;
       return {

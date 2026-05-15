@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { initCanvaStoreSubscriptions } from '@/store/canva/init';
 import { preloadSounds } from '@/lib/sounds';
+import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
 
 let _initCalled = false;
 
@@ -31,7 +32,11 @@ export function StoreInit() {
       // 2. Wire up subscriptions (auto-sync, auto-save, etc.)
       initCanvaStoreSubscriptions();
 
-      // 3. Preload sound effects so they play instantly on first interaction
+      // 3. Warm BlockCapabilityRegistry cache — eagerly load all block type
+      //    capabilities so first render doesn't pay the derivation cost.
+      BlockCapabilityRegistry.getAll();
+
+      // 4. Preload sound effects so they play instantly on first interaction
       preloadSounds();
     }
   }, []);

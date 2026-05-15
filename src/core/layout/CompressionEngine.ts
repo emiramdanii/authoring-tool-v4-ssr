@@ -38,6 +38,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock } from '../schema/types';
+import { isBlockTypeCompressionCapable } from '../schema/capability-registry';
 
 // ── Compression Types ──────────────────────────────────────────
 
@@ -418,7 +419,18 @@ export function getCompressionProfile(blockType: string): CompressionProfile | u
   return COMPRESSION_PROFILES[blockType];
 }
 
-/** Check if a block type supports compression */
+/**
+ * Check if a block type supports compression.
+ *
+ * Delegates to BlockCapabilityRegistry (single source of truth) and also
+ * verifies that a compression profile exists (we need to know HOW to
+ * compress). Both must be true:
+ *   1. Capability registry says compressionCapable (schema hints / definition)
+ *   2. CompressionEngine has a profile (strategy + savings data)
+ *
+ * This replaces the old `blockType in COMPRESSION_PROFILES` check which
+ * duplicated capability info already available in the registry.
+ */
 export function supportsCompression(blockType: string): boolean {
-  return blockType in COMPRESSION_PROFILES;
+  return isBlockTypeCompressionCapable(blockType) && blockType in COMPRESSION_PROFILES;
 }

@@ -18,6 +18,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva/store';
 import { generateBlockId } from './ensure-schema';
 import { assertValidBlocks } from './validation';
+import { assertDocumentPurity } from './session-state';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK TYPE → TEMPLATE TYPE MAPPING
@@ -87,25 +88,31 @@ export function applyBlocksToPages(
 
     // Update this page's schema
     if (page.schema) {
+      const newSchema: ScreenSchema = {
+        ...page.schema,
+        blocks: blocksWithIds,
+      };
+      // Dev-mode purity guard: ensure no runtime state leaked into schema
+      assertDocumentPurity(newSchema, 'applyBlocksToPages');
       pages[i] = {
         ...page,
-        schema: {
-          ...page.schema,
-          blocks: blocksWithIds,
-        },
+        schema: newSchema,
         pageMode: 'schema',
         elements: [],
       };
     } else {
       // Page has no schema yet — create one
+      const newSchema: ScreenSchema = {
+        id: page.id,
+        version: 1,
+        templateType,
+        blocks: blocksWithIds,
+      };
+      // Dev-mode purity guard
+      assertDocumentPurity(newSchema, 'applyBlocksToPages (new)');
       pages[i] = {
         ...page,
-        schema: {
-          id: page.id,
-          version: 1,
-          templateType,
-          blocks: blocksWithIds,
-        },
+        schema: newSchema,
         pageMode: 'schema',
         elements: [],
       };
@@ -165,9 +172,11 @@ export function applyBlockToPages(
       }
     }
 
+    const newSchema: ScreenSchema = { ...page.schema, blocks: updatedBlocks };
+    assertDocumentPurity(newSchema, 'applyBlockToPages');
     pages[i] = {
       ...page,
-      schema: { ...page.schema, blocks: updatedBlocks },
+      schema: newSchema,
     };
     updatedCount++;
   }
@@ -228,21 +237,25 @@ export function setPageSchemaBlocks(
   }));
 
   if (page.schema) {
+    const newSchema: ScreenSchema = { ...page.schema, blocks: blocksWithIds };
+    assertDocumentPurity(newSchema, 'setPageSchemaBlocks');
     pages[idx] = {
       ...page,
-      schema: { ...page.schema, blocks: blocksWithIds },
+      schema: newSchema,
       pageMode: 'schema' as const,
       elements: [],
     };
   } else {
+    const newSchema: ScreenSchema = {
+      id: page.id,
+      version: 1,
+      templateType: page.templateType || 'custom',
+      blocks: blocksWithIds,
+    };
+    assertDocumentPurity(newSchema, 'setPageSchemaBlocks (new)');
     pages[idx] = {
       ...page,
-      schema: {
-        id: page.id,
-        version: 1,
-        templateType: page.templateType || 'custom',
-        blocks: blocksWithIds,
-      },
+      schema: newSchema,
       pageMode: 'schema' as const,
       elements: [],
     };

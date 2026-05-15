@@ -36,8 +36,8 @@ import type { SchemaBlock, ScreenSchema } from '../schema/types';
 import type { SceneResolution, SafeArea } from '../scene/SceneLayoutEngine';
 import { estimateBlockHeight } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
-import { computeCompressionDecision, supportsCompression, type CompressionDecision } from './CompressionEngine';
-import { isFullPageBlockType, isBlockTypeCompressionCapable } from '../schema/capability-registry';
+import { computeCompressionDecision, type CompressionDecision } from './CompressionEngine';
+import { isFullPageBlockType, isBlockTypeCompressionCapable, isBlockTypeSplittable } from '../schema/capability-registry';
 
 // ── Scene Plan Types ───────────────────────────────────────────
 
@@ -57,6 +57,8 @@ export interface SceneSlice {
   hasOverflow: boolean;
   /** Compression decisions for blocks in this scene */
   compressionDecisions?: Map<string, CompressionDecision>;
+  /** Block IDs in this scene that are splittable (can be broken across scenes) */
+  splittableBlockIds?: string[];
 }
 
 /**
@@ -72,6 +74,8 @@ export interface ScenePlan {
   totalScenes: number;
   /** Whether the content fits in a single scene (no split needed) */
   isSingleScene: boolean;
+  /** Block IDs that are splittable across scenes (from capability registry) */
+  splittableBlockIds: string[];
   /** Timestamp of when this plan was computed (for cache invalidation) */
   computedAt: number;
 }
@@ -110,6 +114,11 @@ export function computeScenePlan(
   const availableHeight = scene.h - safeArea.top - safeArea.bottom;
   const blocks = schema.blocks;
 
+  // Pre-compute splittable block IDs from capability registry
+  const splittableBlockIds = blocks
+    .filter(b => isBlockTypeSplittable(b.type))
+    .map(b => b.id || b.type);
+
   // If no blocks or single cover/hero block, return single-scene plan
   if (blocks.length === 0) {
     return {
@@ -122,6 +131,7 @@ export function computeScenePlan(
       }],
       totalScenes: 1,
       isSingleScene: true,
+      splittableBlockIds: [],
       computedAt: Date.now(),
     };
   }
@@ -138,6 +148,7 @@ export function computeScenePlan(
       }],
       totalScenes: 1,
       isSingleScene: true,
+      splittableBlockIds: [],
       computedAt: Date.now(),
     };
   }
@@ -148,7 +159,9 @@ export function computeScenePlan(
   // scene (better UX) while still fitting within 720px.
   const scenes: SceneSlice[] = [];
   const sceneCompressionDecisions = new Map<string, CompressionDecision>();
+  const sceneSplittableIds = new Set<string>(splittableBlockIds);
   let currentBlockIds: string[] = [];
+  let currentSplittableIds: string[] = [];
   let currentHeight = 0;
   let sceneIndex = 0;
 
@@ -196,6 +209,8 @@ export function computeScenePlan(
     // (Recompute with potentially compressed blockHeight)
     const finalHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? blockGap : 0);
 
+    const isSplittable = sceneSplittableIds.has(blockId);
+
     if (finalHeight > availableHeight && currentBlockIds.length > 0) {
       // This block doesn't fit — close current scene, start new one
       scenes.push({
@@ -204,10 +219,12 @@ export function computeScenePlan(
         totalHeight: currentHeight,
         hasOverflow: false,
         compressionDecisions: new Map(sceneCompressionDecisions),
+        splittableBlockIds: [...currentSplittableIds],
       });
       sceneCompressionDecisions.clear();
       sceneIndex++;
       currentBlockIds = [blockId];
+      currentSplittableIds = isSplittable ? [blockId] : [];
       currentHeight = blockHeight;
       // Re-add compression decision if any
       if (compressionDecision) {
@@ -216,6 +233,7 @@ export function computeScenePlan(
     } else {
       // Block fits — add to current scene
       currentBlockIds.push(blockId);
+      if (isSplittable) currentSplittableIds.push(blockId);
       currentHeight = finalHeight;
     }
   }
@@ -228,6 +246,7 @@ export function computeScenePlan(
       totalHeight: currentHeight,
       hasOverflow: currentHeight > availableHeight,
       compressionDecisions: new Map(sceneCompressionDecisions),
+      splittableBlockIds: [...currentSplittableIds],
     });
   }
 
@@ -238,6 +257,7 @@ export function computeScenePlan(
       blockIds: blocks.map(b => b.id || 'block-0'),
       totalHeight: 0,
       hasOverflow: false,
+      splittableBlockIds: [...splittableBlockIds],
     });
   }
 
@@ -246,6 +266,7 @@ export function computeScenePlan(
     scenes,
     totalScenes: scenes.length,
     isSingleScene: scenes.length === 1,
+    splittableBlockIds,
     computedAt: Date.now(),
   };
 }

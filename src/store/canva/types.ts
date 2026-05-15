@@ -215,6 +215,8 @@ export interface CanvaState {
   splitPageAtBlock: (blockId: string) => void;
   /** Merge the current page's schema with the next page's schema */
   mergeWithNextPage: () => void;
+  /** Move a schema block to a container (root, materi-section, ftab tab, or children) */
+  moveBlockToContainer: (blockId: string, targetContainer: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;

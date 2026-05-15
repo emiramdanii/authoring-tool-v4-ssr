@@ -16,7 +16,7 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 // which import from @/store/canva-store, creating a circular dependency.
 // Use the renderer-free BlockDefinitionRegistry instead.
 import { ensurePageSchema, generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
-import { bumpVersion, splitScene, mergeScene } from '@/core/schema/immutable';
+import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockImmutable, findBlockById, moveBlockNested, type ContainerRef } from '@/core/schema/immutable';
 import { createTransaction } from '@/core/schema/scene-transaction';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
@@ -103,6 +103,7 @@ export type UISlice = Pick<
   | '_schemaClipboard' | 'copySchemaBlock' | 'pasteSchemaBlock'
   | 'selectedBlockIds' | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
+  | 'moveBlockToContainer'
   | '_lastNudgeTime'
   | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
   | 'canvasPreview' | 'toggleCanvasPreview'
@@ -820,8 +821,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   // duplicateBlock: Clone a block and insert it after the original
-  // FASE 1: Now operates on page.schema + uses nanoid for clone ID
-  // FIX: Uses findBlockOwner so nested blocks can be duplicated.
+  // Uses immutable.duplicateBlock() which deep-clones AND regenerates
+  // nested child IDs (ftab tabs, materi-section content, children).
+  // This is more robust than the previous manual clone which only
+  // changed the top-level ID, leaving nested children with duplicate IDs.
   duplicateBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -833,69 +836,39 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const blocks = schema.blocks;
     if (!Array.isArray(blocks)) return;
 
+    // Verify block exists
     const owner = findBlockOwner(blocks, blockId);
     if (!owner) return;
 
     get()._pushHistory();
 
-    // Deep clone the block with a stable nanoid
-    let original: SchemaBlock;
-    if (owner.kind === 'top-level') {
-      original = blocks[owner.index];
-    } else if (owner.kind === 'ftab-tab') {
-      const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
-      original = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex] as SchemaBlock;
-    } else if (owner.kind === 'materi-section') {
-      const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
-      original = ms.content?.[owner.childIndex] as SchemaBlock;
-    } else {
-      original = blocks[owner.blockIndex].children?.[owner.childIndex] as SchemaBlock;
-    }
+    // Use the immutable duplicateBlock — deep clone + regenerate nested IDs
+    const { clonedBlock, newBlocks } = duplicateBlockImmutable(blocks, blockId);
 
-    const clone = produce(original, (draft) => {
-      draft.id = generateBlockId(); // ← Stable nanoid, not Date.now()
-    });
-
-    // ═══ PATCH-BASED DUPLICATE via produceWithPatches ══════════════
-    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
-      if (owner.kind === 'top-level') {
-        draft.splice(owner.index + 1, 0, clone as SchemaBlock);
-      } else if (owner.kind === 'ftab-tab') {
-        const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
-        content?.splice(owner.childIndex + 1, 0, clone as SchemaBlock);
-      } else if (owner.kind === 'materi-section') {
-        const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
-        content?.splice(owner.childIndex + 1, 0, clone as SchemaBlock);
-      } else {
-        draft[owner.blockIndex].children?.splice(owner.childIndex + 1, 0, clone as SchemaBlock);
-      }
-    });
+    // Determine original block type for editBus
+    const originalBlock = findBlockById(blocks, blockId);
+    const blockType = originalBlock?.type || 'unknown';
 
     editBus.emit({
       type: 'patch',
       patch: {
-        blockId: clone.id ?? blockId,
-        blockType: original.type,
+        blockId: clonedBlock.id ?? blockId,
+        blockType,
         pageIndex: currentPageIndex,
         patch: { _duplicated: true },
         timestamp: Date.now(),
         source: 'user',
-        _immerPatches: {
-          forward: forwardPatches,
-          inverse: inversePatches,
-          pageIndex: currentPageIndex,
-        },
       },
     });
 
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
+      schema: commitSchemaUpdate(schema, newBlocks),
     };
     set({ pages: newPages });
     // Select the cloned block
-    get().selectBlock(clone.id ?? null, clone.type);
+    get().selectBlock(clonedBlock.id ?? null, clonedBlock.type);
     toast.success('Block diduplikat', {
       action: {
         label: 'Undo',
@@ -1600,6 +1573,63 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     });
 
     toast.success('Halaman berhasil digabung', {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Move Block to Container (nested move) ──────────────────────
+  // Uses moveBlockNested() from immutable.ts — tree-aware move
+  // between root, materi-section.content, ftab.tabs[].content, or children.
+  // Example: move a def-box from root INTO a materi-section.
+  moveBlockToContainer: (blockId, targetContainer, toIndex) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || !blockId) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    const blocks = schema.blocks;
+    if (!Array.isArray(blocks)) return;
+
+    // Verify block exists
+    const block = findBlockById(blocks, blockId);
+    if (!block) return;
+
+    get()._pushHistory();
+
+    // Use the immutable moveBlockNested — handles extraction + insertion
+    const newBlocks = moveBlockNested(blocks, {
+      blockId,
+      targetContainer,
+      toIndex,
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId,
+        blockType: block.type,
+        pageIndex: currentPageIndex,
+        patch: { _movedToContainer: targetContainer },
+        timestamp: Date.now(),
+        source: 'user',
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, newBlocks),
+    };
+    set({ pages: newPages });
+
+    const containerLabel = targetContainer.type === 'root' ? 'root' : targetContainer.type;
+    toast.success(`Block dipindah ke ${containerLabel}`, {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },
