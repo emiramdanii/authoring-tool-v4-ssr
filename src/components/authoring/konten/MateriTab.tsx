@@ -5,7 +5,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
-import { Trash2, FileEdit } from 'lucide-react';
+import { Trash2, FileEdit, BookOpen, Zap } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
 import { regenerateMateri, regenerateMateriSchema } from '../auto-generate/regenerate';
 import { toast } from 'sonner';
@@ -144,9 +144,26 @@ export function MateriTab() {
 
       {/* Empty state */}
       {materi.blok.length === 0 ? (
-        <div className="text-center py-8 bg-app-surface border border-app-border rounded-xl">
-          <FileEdit size={28} className="text-app-muted mb-2" />
-          <p className="text-sm text-app-muted">Belum ada blok materi. Tambahkan blok di bawah.</p>
+        <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
+          <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mx-auto mb-3">
+            <BookOpen size={24} className="text-teal-400" />
+          </div>
+          <p className="text-sm font-medium text-app-primary mb-1">Belum ada materi</p>
+          <p className="text-xs text-app-muted mb-4">Gunakan Auto-Generate atau buat manual</p>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={handleRegenerateMateri}
+              className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Zap size={12} /> Auto-Generate
+            </button>
+            <button
+              onClick={() => handleAdd('teks')}
+              className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              Buat Manual
+            </button>
+          </div>
         </div>
       ) : (
         /* Block list */

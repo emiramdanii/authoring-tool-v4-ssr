@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -21,6 +21,7 @@ import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import CanvaTour from '@/components/shared/CanvaTour';
 import { MobileGuard } from '@/components/shared/MobileGuard';
+import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
 
 // Lazy-loaded: PlayOverlay is only needed when user clicks "Play" — purely client-side
 const PlayOverlay = dynamic(() => import('./PlayOverlay'), { ssr: false });
@@ -42,6 +43,15 @@ export default function CanvaBuilder() {
   const leftPanelOpen = useCanvaStore((s) => s.leftPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
   const commandPalette = useCommandPalette();
+
+  // ── Export success dialog ───────────────────────────────────
+  const [showExportSuccess, setShowExportSuccess] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setShowExportSuccess(true);
+    window.addEventListener('silse-export-success', handler);
+    return () => window.removeEventListener('silse-export-success', handler);
+  }, []);
 
   // NOTE: loadFromStorage() removed from CanvaBuilder mount.
   // Persistence is now handled by:
@@ -181,6 +191,9 @@ export default function CanvaBuilder() {
 
         {/* Command Palette (Cmd+K / Ctrl+K) — available from anywhere */}
         <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
+
+        {/* Export Success Dialog */}
+        <ExportSuccessDialog open={showExportSuccess} onClose={() => setShowExportSuccess(false)} />
       </div>
     </MobileGuard>
   );

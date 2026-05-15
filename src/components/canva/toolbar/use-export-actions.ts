@@ -27,6 +27,7 @@ export function useExportActions() {
     setIsExporting(true);
     try {
       await exportWithFallback();
+      window.dispatchEvent(new CustomEvent('silse-export-success'));
     } finally {
       setIsExporting(false);
     }

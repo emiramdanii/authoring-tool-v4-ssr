@@ -21,6 +21,8 @@ import {
   Monitor,
   Presentation,
   Edit3,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,6 +40,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import { ToolbarExport } from './toolbar/ToolbarExport';
+import { useExportActions } from './toolbar/use-export-actions';
 import { MobileViewportToggle } from './MobileViewportToggle';
 import type { AppMode } from './types';
 
@@ -176,7 +179,10 @@ export default function Toolbar() {
 
       <div className="section-divider h-5 w-px mx-1" />
 
-      {/* GROUP 7: Export */}
+      {/* One-click HTML Export — prominent CTA for teachers */}
+      <QuickExportButton />
+
+      {/* GROUP 7: Export (advanced options dropdown) */}
       <ToolbarExport />
     </div>
   );
@@ -487,5 +493,25 @@ function ZoomControls() {
         <PlusCircle size={12} />
       </Button>
     </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   QUICK EXPORT BUTTON — One-click HTML export CTA for teachers
+   ══════════════════════════════════════════════════════════════════ */
+
+function QuickExportButton() {
+  const { exportHtml, isExporting } = useExportActions();
+
+  return (
+    <button
+      onClick={exportHtml}
+      disabled={isExporting}
+      className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-emerald-600/90 hover:bg-emerald-600 text-white text-[10px] font-bold transition-all shadow-sm hover:shadow disabled:opacity-50"
+      title="Download HTML — siap dibagikan ke siswa"
+    >
+      {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+      <span className="hidden sm:inline">Export</span>
+    </button>
   );
 }
