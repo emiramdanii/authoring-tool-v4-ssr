@@ -13,7 +13,7 @@ import { CANVA_STORAGE_KEY } from './constants';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
-import { assertDocumentPurity } from '@/core/schema/session-state';
+import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { useAuthoringStore } from '@/store/authoring-store';
 
 // ── Migration version for localStorage data ──────────────────
@@ -106,6 +106,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     try {
       const raw = localStorage.getItem(CANVA_STORAGE_KEY);
       if (!raw) return false;
+
+      // Clear runtime caches when loading new project data.
+      // Compressed heights are per-session and derived from measurements
+      // that belong to the previous project — they're stale for new data.
+      clearCompressedHeightCache();
+
       const data = JSON.parse(raw);
       if (data.pages && Array.isArray(data.pages)) {
         // Ensure all pages have new fields (backward compat)
@@ -235,6 +241,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   // ── Load from Database ──────────────────────────────────────────
   loadFromDB: (data: DBProjectData) => {
     try {
+      // Clear runtime caches when loading new project data from DB.
+      clearCompressedHeightCache();
+
       if (data.pages && Array.isArray(data.pages)) {
         const rawPages: CanvaPage[] = data.pages.map((p) => {
           // Map DB Page → CanvaPage

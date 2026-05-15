@@ -23,7 +23,7 @@ import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/s
 import { ZOOM_FIT, ZOOM_MIN, ZOOM_MAX, clampZoom } from '@/lib/canva-constants';
 import { findBlockOwner, commitSchemaUpdate, type BlockOwner } from './schema-helpers';
 import { assertValidSchema } from '@/core/schema/validation';
-import { assertDocumentPurity } from '@/core/schema/session-state';
+import { assertDocumentPurity, removeCompressedHeight } from '@/core/schema/session-state';
 
 export type UISlice = Pick<
   CanvaState,
@@ -471,6 +471,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       ...page,
       schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
+    // Clean up compressed height cache for the deleted block
+    removeCompressedHeight(blockId);
+
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
     // Undo toast: clicking "Undo" triggers the store's undo()
@@ -954,6 +957,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       ...page,
       schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
     };
+    // Clean up compressed height cache for all deleted blocks
+    for (const deletedId of blockIds) {
+      removeCompressedHeight(deletedId);
+    }
     set({
       pages: newPages,
       selectedBlockId: null,
