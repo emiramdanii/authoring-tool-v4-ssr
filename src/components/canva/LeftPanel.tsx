@@ -128,6 +128,25 @@ function SceneList() {
         const isTemplate = p.templateType && p.templateType !== 'custom';
         const isSchemaDriven = !!p.schema;
 
+        // Determine page type badge color
+        const badgeColorMap: Record<string, string> = {
+          cover: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+          petunjuk: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+          dokumen: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+          hero: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+          materi: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+          skenario: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+          kuis: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+          game: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+          diskusi: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+          hasil: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+          refleksi: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+          penutup: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+          tujuan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+          custom: 'bg-app-elevated/50 text-app-muted border-app-border/30',
+        };
+        const badgeColor = badgeColorMap[p.templateType || 'custom'] || badgeColorMap.custom;
+
         return (
           <button
             key={p.id}
@@ -177,14 +196,11 @@ function SceneList() {
                   {isSchemaDriven && <Zap size={10} className="text-emerald-400 inline" />}
                   <span className="truncate">{p.label}</span>
                 </div>
-                <div className="text-[8px] text-app-muted">
-                  {isSchemaDriven ? (
-                    <span className="text-emerald-400/70">{isSederhana ? 'Siap Pakai' : 'Schema'}</span>
-                  ) : isTemplate ? (
-                    <span className="text-app-accent/60">Template</span>
-                  ) : (
-                    <span className="text-emerald-400/60">Bebas</span>
-                  )}
+                <div className="text-[8px] mt-0.5">
+                  {/* Page type badge */}
+                  <span className={`inline-flex items-center px-1.5 py-0 rounded text-[7px] font-bold uppercase tracking-wider border ${badgeColor}`}>
+                    {badge.name}
+                  </span>
                 </div>
               </div>
             </div>

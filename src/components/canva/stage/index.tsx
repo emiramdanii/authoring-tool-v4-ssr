@@ -7,7 +7,7 @@ import { RATIOS } from '../types';
 import { PageRenderer } from '../page-renderer';
 import { CanvasErrorBoundary } from '../CanvasErrorBoundary';
 import { StageElement } from './StageElement';
-import { Zap, Layout } from 'lucide-react';
+import { Zap, Layout, Plus, Sparkles } from 'lucide-react';
 import { useStageKeyboard } from './use-stage-keyboard';
 import { useStageDrag } from './use-stage-drag';
 import { Z } from './constants';
@@ -23,6 +23,7 @@ import {
 } from '@/lib/canva-constants';
 import { screenToPct } from '@/lib/virtual-canvas';
 import CanvasEmptyState from '../CanvasEmptyState';
+import { useAuthoringStore } from '@/store/authoring-store';
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Virtual Canvas editing area with zoom + pan
@@ -433,16 +434,39 @@ export default function Stage() {
           </CanvasErrorBoundary>
 
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}
-          {/* Subtle hint inside the canvas frame; only in canvas mode */}
+          {/* Professional empty state with action buttons */}
           {!canvasPreview && !isTemplateMode && (
             (isSchemaDriven && page.schema && page.schema.blocks.length === 0) ||
             (!isSchemaDriven && page.elements.length === 0)
           ) && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: Z.CANVAS_OVERLAY }}>
-              <Layout size={28} className="text-app-muted/30 mb-2" />
-              <span className="text-xs text-app-muted/40 font-medium">
-                Tambah block dari panel kiri atau toolbar
-              </span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: Z.CANVAS_OVERLAY }}>
+              <div className="bg-app-surface/90 backdrop-blur-sm border border-app-border/50 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center">
+                <div className="w-12 h-12 rounded-xl bg-app-elevated/60 flex items-center justify-center">
+                  <Layout size={22} className="text-app-muted/50" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-app-primary/70 mb-1">
+                    Halaman kosong
+                  </p>
+                  <p className="text-xs text-app-muted/60">
+                    Tambahkan konten atau generate otomatis
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 w-full">
+                  <button
+                    onClick={() => useCanvaStore.getState().setLeftTab('halaman')}
+                    className="flex-1 px-3 py-2 bg-app-accent/10 hover:bg-app-accent/20 border border-app-accent/20 text-app-accent text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Plus size={13} /> Tambah Block
+                  </button>
+                  <button
+                    onClick={() => useAuthoringStore.getState().setActivePanel('autogen')}
+                    className="flex-1 px-3 py-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Sparkles size={13} /> Auto-Generate
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

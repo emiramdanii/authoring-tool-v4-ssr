@@ -541,7 +541,7 @@ export default function Dashboard() {
       <div className="flex items-center gap-2 pt-4 border-t border-app-border">
         {/* Primary actions */}
         <button
-          onClick={() => setWizardOpen(true)}
+          onClick={() => setActivePanel('dokumen')}
           className="px-3 py-1.5 text-xs text-white bg-app-success hover:bg-app-success/90 rounded-lg font-medium transition-colors flex items-center gap-1.5"
         >
           <Plus size={12} />

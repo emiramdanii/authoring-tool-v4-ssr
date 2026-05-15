@@ -32,6 +32,7 @@ import { useSelectedBlock } from './use-selected-block';
 import { SchemaDrivenEditor } from './SchemaDrivenEditor';
 import { CapabilityBadge } from './CapabilityBadge';
 import { BlockVariantSwitcher } from './BlockVariantSwitcher';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 export default function BlockPropertiesPanel() {
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
@@ -40,6 +41,7 @@ export default function BlockPropertiesPanel() {
   const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
   const stopEditing = useCanvaStore(s => s.stopEditing);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const { block } = useSelectedBlock();
 
   if (!selectedBlockId || !selectedBlockType) return null;
@@ -61,7 +63,7 @@ export default function BlockPropertiesPanel() {
       <div className="border-b border-blue-500/10">
         <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
           <Settings2 size={12} className="text-blue-400" />
-          <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Block</span>
+          <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">{teacherTerm('Block', teacherMode)}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -83,7 +85,7 @@ export default function BlockPropertiesPanel() {
       {/* Header */}
       <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
         <Settings2 size={12} className="text-blue-400" />
-        <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Block Properti</span>
+        <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">{teacherMode ? 'Properti Konten' : 'Block Properti'}</span>
         <Button
           variant="ghost"
           size="icon"
@@ -99,8 +101,8 @@ export default function BlockPropertiesPanel() {
         <div className="flex items-center gap-2">
           <span className="text-lg">{definition?.icon || '📦'}</span>
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-bold text-app-primary truncate">{definition?.name || selectedBlockType}</div>
-            <div className="text-[9px] text-app-muted">{definition?.category || 'unknown'} &middot; {selectedBlockType}</div>
+            <div className="text-[11px] font-bold text-app-primary truncate">{teacherTerm(definition?.name || selectedBlockType, teacherMode)}</div>
+            <div className="text-[9px] text-app-muted">{teacherMode ? (definition?.category || '') : `${definition?.category || 'unknown'} · ${selectedBlockType}`}</div>
           </div>
           {editingBlockId === selectedBlockId && (
             <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
@@ -112,11 +114,13 @@ export default function BlockPropertiesPanel() {
         {/* Block Variant Switcher */}
         {block && <BlockVariantSwitcher block={block} />}
 
-        {/* Block ID */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-app-muted w-14">ID</span>
-          <span className="text-[10px] text-app-secondary font-mono truncate flex-1">{selectedBlockId}</span>
-        </div>
+        {/* Block ID — hidden in teacher mode (not meaningful for teachers) */}
+        {!teacherMode && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-app-muted w-14">ID</span>
+            <span className="text-[10px] text-app-secondary font-mono truncate flex-1">{selectedBlockId}</span>
+          </div>
+        )}
 
         {/* ═══ SCHEMA-DRIVEN DYNAMIC EDITOR ═════════════════ */}
         {block && (
@@ -127,8 +131,8 @@ export default function BlockPropertiesPanel() {
           />
         )}
 
-        {/* Capabilities — Editor capabilities from BlockDefinitionRegistry */}
-        {definition && (
+        {/* Capabilities — hidden in teacher mode, shown in advanced mode */}
+        {!teacherMode && definition && (
           <details className="mt-2">
             <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
               Kemampuan Editor
@@ -144,37 +148,39 @@ export default function BlockPropertiesPanel() {
           </details>
         )}
 
-        {/* Derived Capabilities — From BlockCapabilityRegistry (schema hints + definition) */}
-        <details className="mt-1">
-          <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
-            Kemampuan Layout
-          </summary>
-          <div className="grid grid-cols-2 gap-1 mt-1">
-            <CapabilityBadge label="Kompresi" value={isBlockTypeCompressionCapable(selectedBlockType)} />
-            <CapabilityBadge label="Splittable" value={isBlockTypeSplittable(selectedBlockType)} />
-            <CapabilityBadge label="Interaktif" value={isBlockTypeInteractive(selectedBlockType)} />
-            <CapabilityBadge label="Measurable" value={isBlockTypeMeasurable(selectedBlockType)} />
-            <CapabilityBadge label="Renderer Kompresi" value={isBlockTypeRendererHandlesCompression(selectedBlockType)} />
-          </div>
-          {/* Source traceability — show where each capability was derived from */}
-          <div className="mt-1 space-y-0.5">
-            {(() => {
-              const info = getDerivedCapabilities({ type: selectedBlockType } as any);
-              return Object.entries(info.sources).map(([cap, source]) => (
-                <div key={cap} className="flex items-center gap-1 text-[8px] text-app-muted">
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500'
-                  }`} />
-                  <span className="font-mono">{cap}</span>
-                  <span className="opacity-60">← {source}</span>
-                </div>
-              ));
-            })()}
-          </div>
-        </details>
+        {/* Derived Capabilities — hidden in teacher mode */}
+        {!teacherMode && (
+          <details className="mt-1">
+            <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
+              Kemampuan Layout
+            </summary>
+            <div className="grid grid-cols-2 gap-1 mt-1">
+              <CapabilityBadge label="Kompresi" value={isBlockTypeCompressionCapable(selectedBlockType)} />
+              <CapabilityBadge label="Splittable" value={isBlockTypeSplittable(selectedBlockType)} />
+              <CapabilityBadge label="Interaktif" value={isBlockTypeInteractive(selectedBlockType)} />
+              <CapabilityBadge label="Measurable" value={isBlockTypeMeasurable(selectedBlockType)} />
+              <CapabilityBadge label="Renderer Kompresi" value={isBlockTypeRendererHandlesCompression(selectedBlockType)} />
+            </div>
+            {/* Source traceability — show where each capability was derived from */}
+            <div className="mt-1 space-y-0.5">
+              {(() => {
+                const info = getDerivedCapabilities({ type: selectedBlockType } as any);
+                return Object.entries(info.sources).map(([cap, source]) => (
+                  <div key={cap} className="flex items-center gap-1 text-[8px] text-app-muted">
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500'
+                    }`} />
+                    <span className="font-mono">{cap}</span>
+                    <span className="opacity-60">← {source}</span>
+                  </div>
+                ));
+              })()}
+            </div>
+          </details>
+        )}
 
-        {/* Layout info (collapsed) */}
-        {definition && (
+        {/* Layout info — hidden in teacher mode */}
+        {!teacherMode && definition && (
           <details className="mt-1">
             <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
               Layout

@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════
 // Parser — Extracts structured data from raw text
+// Improved for real Indonesian PPKn academic text patterns:
+//   - Multi-word definition terms (e.g. "Budaya demokrasi adalah...")
+//   - Section headers (A., B., C., D.) as context
+//   - Numbered items with multi-line descriptions
+//   - "antara lain:" / "meliputi:" / "Berikut ini" enumeration intros
+//   - Bullet lists under descriptive headers
 // ═══════════════════════════════════════════════════════════════════
 
 import type { ParseResult } from './types';
@@ -30,15 +36,47 @@ export function parse(text: string): ParseResult {
     .slice(0, 30)
     .map(([w]) => w);
 
+  // ═════════════════════════════════════════════════════════════════
   // Definitions: "X adalah/merupakan/yaitu/ialah Y"
-  const defRegex = /([A-Z][^\s,.:;]{1,40})\s+(?:adalah|merupakan|yaitu|ialah)\s+([^.]+)/g;
+  // ═════════════════════════════════════════════════════════════════
   const definitions: { term: string; meaning: string }[] = [];
-  let m;
-  while ((m = defRegex.exec(raw)) !== null) {
-    definitions.push({ term: m[1].trim(), meaning: m[2].trim() });
+  let m: RegExpExecArray | null;
+
+  // Strategy 1: Multi-word definition terms (1 uppercase word + 0–3 lowercase words)
+  // Matches patterns like:
+  //   "Budaya demokrasi adalah segala hal yang berkaitan..."
+  //   "Musyawarah merupakan cara penyelesaian masalah..."
+  //   "Norma agama bersumber dari..." (not a definition, won't match)
+  const defRegexMulti = /([A-Z][a-zA-Z]+(?:\s+[a-z][a-zA-Z]+){0,3})\s+(?:adalah|merupakan|yaitu|ialah)\s+([^.]+)/g;
+  while ((m = defRegexMulti.exec(raw)) !== null) {
+    const term = m[1].trim();
+    const meaning = m[2].trim();
+    // Validate: term should be 2-60 chars, meaning should be substantive
+    if (term.length >= 2 && term.length <= 60 && meaning.length > 5) {
+      // Avoid duplicates (prefer multi-word match over single-word)
+      if (!definitions.some((d) => d.term === term)) {
+        definitions.push({ term, meaning });
+      }
+    }
   }
 
+  // Strategy 2: Single-word definitions (fallback, catches short terms)
+  // e.g. "Norma adalah aturan..." where "Norma" is a single word
+  // Only adds if not already captured by the multi-word regex
+  const defRegexSingle = /([A-Z][^\s,.:;]{1,40})\s+(?:adalah|merupakan|yaitu|ialah)\s+([^.]+)/g;
+  while ((m = defRegexSingle.exec(raw)) !== null) {
+    const term = m[1].trim();
+    const meaning = m[2].trim();
+    if (term.length >= 2 && meaning.length > 5) {
+      if (!definitions.some((d) => d.term === term)) {
+        definitions.push({ term, meaning });
+      }
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════════
   // Enumerations: Multiple detection strategies
+  // ═════════════════════════════════════════════════════════════════
   const enumerations: { subject: string; items: string[] }[] = [];
 
   // Strategy 1: "terdiri dari/meliputi/antara lain X, Y, Z"
@@ -49,21 +87,30 @@ export function parse(text: string): ParseResult {
       .map((s) => s.replace(/^(?:yaitu|yakni|ialah)\s+/i, '').trim())
       .filter(Boolean);
     if (items.length >= 2) {
-      enumerations.push({ subject: m[1].trim(), items });
+      const subject = m[1].trim();
+      if (!enumerations.some((e) => e.subject === subject)) {
+        enumerations.push({ subject, items });
+      }
     }
   }
 
-  // Strategy 2: Numbered lists — "1. Item - description" or "1) Item: description"
-  // Detect groups of consecutive numbered items in the original text (not the flattened raw)
-  const numberedListRegex = /(?:^|\n)\s*(\d+)\.\s+([^-\n]+?)(?:\s*[-–—:]\s*([^.\n]*))?/gm;
-  const numberedGroups = new Map<string, { subject: string; items: string[] }>();
+  // Strategy 2: Numbered lists — with improved handling of multi-line descriptions
+  // Key improvements:
+  //   - Tolerate non-numbered continuation lines between numbered items
+  //   - Better subject detection: "meliputi:", "antara lain:", section headers
+  //   - Section headers (A., B., C., D.) used as context
   const textLines = text.split('\n');
+  const numberedGroups = new Map<string, { subject: string; items: string[] }>();
   let currentGroupSubject = '';
   let currentGroupItems: string[] = [];
   let lastNum = 0;
+  let continuationLinesSinceLastNumber = 0;
+  const MAX_CONTINUATION_LINES = 3; // allow up to 3 non-numbered lines between numbered items
 
-  for (const line of textLines) {
+  for (let lineIdx = 0; lineIdx < textLines.length; lineIdx++) {
+    const line = textLines[lineIdx];
     const numMatch = line.match(/^\s*(\d+)\.\s+(.+)/);
+
     if (numMatch) {
       const num = parseInt(numMatch[1]);
       const content = numMatch[2].trim();
@@ -82,30 +129,80 @@ export function parse(text: string): ParseResult {
 
       // Try to find subject from lines above this numbered list
       if (num === 1) {
-        const prevLines = textLines.slice(Math.max(0, textLines.indexOf(line) - 3), textLines.indexOf(line));
+        const prevLines = textLines.slice(Math.max(0, lineIdx - 5), lineIdx);
         for (const pl of prevLines.reverse()) {
+          // Pattern 1: Line ending with ":"
           const subjectMatch = pl.match(/^(.+?):\s*$/);
           if (subjectMatch) {
-            currentGroupSubject = subjectMatch[1].replace(/^(Jenis|Macam|Kategori|Bentuk|Ciri|Sifat|Contoh)\s*-?\s*/i, '$1 ').trim();
+            const rawSubject = subjectMatch[1]
+              .replace(/^(Jenis|Macam|Kategori|Bentuk|Ciri|Sifat|Contoh|Hambatan|Faktor|Penyebab|Prinsip)\s*-?\s*/i, '$1 ')
+              .trim();
+            currentGroupSubject = rawSubject;
+            break;
+          }
+          // Pattern 2: Section header "A. Title" / "B. Title"
+          const sectionMatch = pl.match(/^[A-Z]\.\s+(.+)/);
+          if (sectionMatch) {
+            currentGroupSubject = sectionMatch[1].trim();
+            break;
+          }
+          // Pattern 3: Non-empty text line (use as context, but skip blank lines going up)
+          if (pl.trim().length > 10) {
+            // Use last meaningful line as subject, truncated
+            currentGroupSubject = pl.trim().replace(/[.:]\s*$/, '');
             break;
           }
         }
         if (!currentGroupSubject) {
-          // Use a generic subject based on context
           currentGroupSubject = 'Daftar';
         }
       }
 
       currentGroupItems.push(itemName);
       lastNum = num;
-    } else if (lastNum > 0 && line.trim().length > 0 && !line.match(/^\s*\d/)) {
-      // Non-numbered line after numbered items — save the group
-      if (currentGroupItems.length >= 2 && currentGroupSubject) {
-        numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+      continuationLinesSinceLastNumber = 0;
+    } else if (lastNum > 0 && line.trim().length > 0) {
+      // Non-numbered line after numbered items
+      continuationLinesSinceLastNumber++;
+
+      // Check if this might be a continuation of a numbered item (description text)
+      // or if it's a new section that breaks the group
+      const isSectionHeader = /^[A-Z]\.\s+/.test(line.trim());
+      const isBulletItem = /^\s*[-–—•*]\s+/.test(line);
+      const isBlankLine = line.trim().length === 0;
+
+      if (isSectionHeader) {
+        // Section header definitely breaks the group
+        if (currentGroupItems.length >= 2 && currentGroupSubject) {
+          numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+        }
+        currentGroupItems = [];
+        currentGroupSubject = '';
+        lastNum = 0;
+        continuationLinesSinceLastNumber = 0;
+      } else if (continuationLinesSinceLastNumber > MAX_CONTINUATION_LINES) {
+        // Too many continuation lines — save the group and reset
+        if (currentGroupItems.length >= 2 && currentGroupSubject) {
+          numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+        }
+        currentGroupItems = [];
+        currentGroupSubject = '';
+        lastNum = 0;
+        continuationLinesSinceLastNumber = 0;
+      } else if (isBulletItem) {
+        // Bullet items after numbered items — save the numbered group
+        if (currentGroupItems.length >= 2 && currentGroupSubject) {
+          numberedGroups.set(currentGroupSubject, { subject: currentGroupSubject, items: currentGroupItems });
+        }
+        currentGroupItems = [];
+        currentGroupSubject = '';
+        lastNum = 0;
+        continuationLinesSinceLastNumber = 0;
       }
-      currentGroupItems = [];
-      currentGroupSubject = '';
-      lastNum = 0;
+      // Otherwise, it's a continuation line — keep the group alive
+    } else if (lastNum > 0 && line.trim().length === 0) {
+      // Blank line — increment continuation counter but don't break yet
+      continuationLinesSinceLastNumber++;
     }
   }
   // Don't forget the last group
@@ -114,7 +211,9 @@ export function parse(text: string): ParseResult {
   }
 
   for (const [, group] of numberedGroups) {
-    enumerations.push(group);
+    if (!enumerations.some((e) => e.subject === group.subject)) {
+      enumerations.push(group);
+    }
   }
 
   // Strategy 3: Bullet/dash lists under a header ending with colon
@@ -134,7 +233,9 @@ export function parse(text: string): ParseResult {
     }
   }
 
+  // ═════════════════════════════════════════════════════════════════
   // Functions: Multiple detection strategies
+  // ═════════════════════════════════════════════════════════════════
   const functions: { subject: string; desc: string }[] = [];
 
   // Strategy 1: "berfungsi/berperan/berguna/bertujuan untuk X"
@@ -166,7 +267,9 @@ export function parse(text: string): ParseResult {
     }
   }
 
+  // ═════════════════════════════════════════════════════════════════
   // Causes: "karena/sehingga/akibat/menyebabkan X"
+  // ═════════════════════════════════════════════════════════════════
   const causeRegex = /([^.]*?(?:karena|akibat|menyebabkan|sehingga)[^.]+)/gi;
   const causes: { cause: string; effect: string }[] = [];
   while ((m = causeRegex.exec(raw)) !== null) {

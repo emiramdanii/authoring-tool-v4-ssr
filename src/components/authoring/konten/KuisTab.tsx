@@ -96,7 +96,7 @@ export function KuisTab() {
               <HelpCircle size={24} className="text-cyan-400" />
             </div>
             <p className="text-sm font-medium text-app-primary mb-1">Belum ada soal kuis</p>
-            <p className="text-xs text-app-muted mb-4">Gunakan Auto-Generate atau preset untuk membuat soal dengan cepat</p>
+            <p className="text-xs text-app-muted mb-4">Generate otomatis dari materi atau buat manual.</p>
             <div className="flex items-center justify-center gap-2">
               <button
                 onClick={handleRegenerateKuis}

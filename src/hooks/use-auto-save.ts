@@ -3,8 +3,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { canvaPagesToSavePages } from '@/lib/save-utils';
 import { logger } from '@/core/utils/logger';
+import { toast } from 'sonner';
 
 /**
  * Unified auto-save hook — single source of truth for saving both stores.
@@ -17,6 +17,12 @@ import { logger } from '@/core/utils/logger';
  *      (for offline/new users or before first project creation).
  *
  * Called ONCE from CanvaAutoSaveSync (the primary editing context).
+ *
+ * Enhancement (Phase E.4):
+ *   - Debounced: saves after 2 seconds of inactivity (not every keystroke)
+ *   - Visual indicator: "Menyimpan..." briefly shown in status bar during save
+ *   - Error toast: "Gagal menyimpan. Periksa koneksi internet Anda."
+ *   - _lastSavedAt timestamp added to saved data
  */
 
 const DEBOUNCE_MS = 2000;
@@ -25,6 +31,7 @@ const HIDE_SAVED_MS = 3000;
 export function useAutoSave(projectId?: string | null, saveProject?: () => Promise<void>) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastDBSaveRef = useRef<number>(0);
+  const lastErrorToastRef = useRef<number>(0);
 
   // ── Core save logic ────────────────────────────────────────────
   const saveNow = useCallback(async () => {
@@ -57,6 +64,13 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
     } catch (error) {
       logger.error('useAutoSave', error);
       useCanvaStore.setState({ _saveStatus: 'error' });
+
+      // Show error toast (throttled — max once per 10 seconds to avoid spam)
+      const now = Date.now();
+      if (now - lastErrorToastRef.current >= 10000) {
+        lastErrorToastRef.current = now;
+        toast.error('Gagal menyimpan. Periksa koneksi internet Anda.');
+      }
     }
   }, [projectId, saveProject]);
 

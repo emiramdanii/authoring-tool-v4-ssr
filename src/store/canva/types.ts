@@ -282,6 +282,14 @@ export interface CanvaState {
   loadFromStorage: () => boolean;
   loadFromDB: (data: DBProjectData) => void;
 
+  // ── Teacher Mode ─────────────────────────────────────────────
+  /** true = simple/teacher mode (default), false = advanced/technical mode */
+  teacherMode: boolean;
+  /** Toggle between teacher and advanced mode */
+  toggleTeacherMode: () => void;
+  /** Set teacher mode explicitly */
+  setTeacherMode: (mode: boolean) => void;
+
   // ── Export ────────────────────────────────────────────────────
   // Legacy export methods removed — all exports now use Vite SSR pipeline
   // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts

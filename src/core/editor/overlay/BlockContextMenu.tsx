@@ -14,6 +14,7 @@ import { useCanvaStore } from '@/store/canva-store';
 // the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
 import { getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
 import { createFocusTrap } from '@/lib/a11y';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -64,6 +65,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   const rebalanceCurrentPage = useCanvaStore(s => s.rebalanceCurrentPage);
   const promoteSceneSplit = useCanvaStore(s => s.promoteSceneSplit);
   const sceneTotal = useCanvaStore(s => s.sceneTotal);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
 
   const definition = getBlockMeta(blockType);
   const isEditing = editingBlockId === blockId;
@@ -150,15 +152,15 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     // Order
     { type: 'item', label: 'Pindah Atas', shortcut: 'Alt+↑', action: () => handleAction(() => moveBlockUp(blockId)) },
     { type: 'item', label: 'Pindah Bawah', shortcut: 'Alt+↓', action: () => handleAction(() => moveBlockDown(blockId)) },
-    { type: 'item', label: 'Duplikat', shortcut: 'Ctrl+D', action: () => handleAction(() => duplicateBlock(blockId)) },
+    { type: 'item', label: teacherMode ? 'Gandakan' : 'Duplikat', shortcut: 'Ctrl+D', action: () => handleAction(() => duplicateBlock(blockId)) },
     { type: 'divider' },
     // Variant submenu — only show when block has > 1 variant (no point switching if only A)
     ...(definition && definition.capabilities.variants.length > 1
       ? [{
           type: 'submenu' as const,
-          label: 'Ganti Varian',
+          label: teacherMode ? 'Ganti Gaya Tampilan' : 'Ganti Varian',
           items: definition.capabilities.variants.map((v) => ({
-            label: v === 'A' ? '🟢 Varian A — Default' : v === 'B' ? '🔵 Varian B — Compact' : '🟣 Varian C — Expanded',
+            label: v === 'A' ? 'Varian A — Bawaan' : v === 'B' ? 'Varian B — Ringkas' : 'Varian C — Lebar',
             action: () => handleAction(() => updateSchemaBlock(blockId, { variant: v })),
           })),
         }]
@@ -181,30 +183,30 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     // rebalance, and promote operations.
     {
       type: 'item' as const,
-      label: '📄 Pisah Halaman di Sini',
+      label: 'Pisah Halaman di Sini',
       shortcut: 'Ctrl+Shift+S',
       action: () => handleAction(() => splitPageAtBlock(blockId)),
     },
     ...(currentPageIndex < pages.length - 1
-      ? [{ type: 'item' as const, label: '🔗 Gabung dengan Halaman Berikutnya', shortcut: 'Ctrl+Shift+M', action: () => handleAction(() => mergeWithAdjacentPage('next')) }]
+      ? [{ type: 'item' as const, label: 'Gabung dengan Halaman Berikutnya', shortcut: 'Ctrl+Shift+M', action: () => handleAction(() => mergeWithAdjacentPage('next')) }]
       : []),
     ...(currentPageIndex > 0
-      ? [{ type: 'item' as const, label: '🔗 Gabung dengan Halaman Sebelumnya', action: () => handleAction(() => mergeWithAdjacentPage('prev')) }]
+      ? [{ type: 'item' as const, label: 'Gabung dengan Halaman Sebelumnya', action: () => handleAction(() => mergeWithAdjacentPage('prev')) }]
       : []),
     {
       type: 'item' as const,
-      label: '📐 Optimalkan Tata Letak',
+      label: 'Optimalkan Tata Letak',
       shortcut: 'Ctrl+Shift+R',
       action: () => handleAction(() => rebalanceCurrentPage()),
     },
     ...(sceneTotal > 1
-      ? [{ type: 'item' as const, label: '🎬 Promosi Scene ke Halaman', action: () => handleAction(() => promoteSceneSplit(1)) }]
+      ? [{ type: 'item' as const, label: teacherMode ? 'Pisahkan ke Halaman Baru' : 'Promosi Scene ke Halaman', action: () => handleAction(() => promoteSceneSplit(1)) }]
       : []),
     { type: 'divider' },
     // AI generate
     {
       type: 'item',
-      label: '🤖 AI Generate Konten',
+      label: 'AI Generate Konten',
       accent: true,
       action: () => {
         useCanvaStore.getState().selectBlock(blockId, blockType);
@@ -216,7 +218,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     // Delete — use bulk delete for multi-select
     {
       type: 'item',
-      label: isMultiSelect ? `Hapus ${selectedBlockIds.length} Block` : 'Hapus Block',
+      label: isMultiSelect ? `Hapus ${selectedBlockIds.length} ${teacherTerm('Block', teacherMode)}` : `Hapus ${teacherTerm('Block', teacherMode)}`,
       shortcut: 'Del',
       danger: true,
       action: () => handleAction(() => {

@@ -3,6 +3,12 @@
 // ═══════════════════════════════════════════════════════════════════════
 // AUTO-SAVE RECOVERY — Detects unsaved changes and offers recovery
 // ═══════════════════════════════════════════════════════════════════════
+// Phase E.4 Enhancement:
+//   - Checks if saved data was within the last 30 minutes
+//   - Uses _lastSavedAt timestamp from both stores
+//   - If data is stale (>30 min), doesn't show recovery dialog
+//   - Shows detailed recovery information to help users decide
+//
 // On app mount, checks if localStorage has saved data for BOTH:
 //   1. Canva store (pages, layout)
 //   2. Authoring store (CP, TP, ATP, Alur, Kuis, Modules, Games, Materi)
@@ -35,6 +41,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// ── Constants ────────────────────────────────────────────────────────
+const RECOVERY_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes
+
 interface CanvaRecoveryData {
   timestamp: number;
   pageCount: number;
@@ -62,18 +71,23 @@ interface RecoveryStats {
 function checkForRecoverableData(): RecoveryStats | null {
   try {
     const stats: RecoveryStats = { canva: null, authoring: null };
+    const now = Date.now();
 
     // ── Check canva store ────────────────────────────────────
     const canvaSaved = localStorage.getItem(CANVA_STORAGE_KEY);
     if (canvaSaved) {
       const parsed = JSON.parse(canvaSaved);
       if (parsed?.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
-        const currentPage = parsed.pages[0];
-        stats.canva = {
-          timestamp: parsed._lastSavedAt || Date.now(),
-          pageCount: parsed.pages.length,
-          currentPageLabel: currentPage?.label || 'Untitled',
-        };
+        const savedAt = parsed._lastSavedAt || 0;
+        // Only offer recovery if saved within the last 30 minutes
+        if (now - savedAt <= RECOVERY_MAX_AGE_MS) {
+          const currentPage = parsed.pages[0];
+          stats.canva = {
+            timestamp: savedAt || Date.now(),
+            pageCount: parsed.pages.length,
+            currentPageLabel: currentPage?.label || 'Untitled',
+          };
+        }
       }
     }
 
@@ -92,27 +106,31 @@ function checkForRecoverableData(): RecoveryStats | null {
         (parsed.atp?.pertemuan && Array.isArray(parsed.atp.pertemuan) && parsed.atp.pertemuan.length > 0);
 
       if (hasData) {
-        // Use capability registry as single source of truth for interactive/game types
-        const interactiveBlockTypes = new Set(
-          BlockCapabilityRegistry.filterByCapability('interactive')
-        );
-        const modules = parsed.modules || [];
-        const gameCount = modules.filter(
-          (m: Record<string, unknown>) => interactiveBlockTypes.has(m.type as string)
-        ).length;
-        const moduleCount = modules.length - gameCount;
+        const savedAt = parsed._lastSavedAt || 0;
+        // Only offer recovery if saved within the last 30 minutes
+        if (now - savedAt <= RECOVERY_MAX_AGE_MS) {
+          // Use capability registry as single source of truth for interactive/game types
+          const interactiveBlockTypes = new Set(
+            BlockCapabilityRegistry.filterByCapability('interactive')
+          );
+          const modules = parsed.modules || [];
+          const gameCount = modules.filter(
+            (m: Record<string, unknown>) => interactiveBlockTypes.has(m.type as string)
+          ).length;
+          const moduleCount = modules.length - gameCount;
 
-        stats.authoring = {
-          timestamp: Date.now(), // Authoring store doesn't save timestamp
-          tpCount: parsed.tp?.length || 0,
-          kuisCount: parsed.kuis?.length || 0,
-          moduleCount,
-          gameCount,
-          alurCount: parsed.alur?.length || 0,
-          materiCount: parsed.materi?.blok?.length || 0,
-          hasCp: !!parsed.cp?.capaianFase,
-          hasAtp: !!(parsed.atp?.pertemuan && parsed.atp.pertemuan.length > 0),
-        };
+          stats.authoring = {
+            timestamp: savedAt || Date.now(),
+            tpCount: parsed.tp?.length || 0,
+            kuisCount: parsed.kuis?.length || 0,
+            moduleCount,
+            gameCount,
+            alurCount: parsed.alur?.length || 0,
+            materiCount: parsed.materi?.blok?.length || 0,
+            hasCp: !!parsed.cp?.capaianFase,
+            hasAtp: !!(parsed.atp?.pertemuan && parsed.atp.pertemuan.length > 0),
+          };
+        }
       }
     }
 

@@ -11,6 +11,7 @@ import AIAssistantSection from './AIAssistantSection';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import { Layers, Zap, Box, Sparkles } from 'lucide-react';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 // ═══════════════════════════════════════════════════════════════
 // CONTEXT PANEL — Canva-style contextual right panel (280px fixed)
@@ -30,6 +31,7 @@ export default function RightPanel() {
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const selectedElId = useCanvaStore(s => s.selectedElId);
   const selectedElIds = useCanvaStore(s => s.selectedElIds);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
 
   if (!rightPanelOpen) return null;
 
@@ -46,22 +48,22 @@ export default function RightPanel() {
         {hasMultiBlockSelection ? (
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
             <Layers size={11} />
-            {selectedBlockIds.length} Block Terpilih
+            {selectedBlockIds.length} {teacherTerm('Block', teacherMode)} Terpilih
           </div>
         ) : hasBlockSelection ? (
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
             <Zap size={11} />
-            Block Properties
+            {teacherMode ? 'Properti Konten' : 'Block Properties'}
           </div>
         ) : hasElementSelection ? (
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-app-accent uppercase tracking-wider">
             <Box size={11} />
-            Element Properties
+            {teacherMode ? 'Properti Elemen' : 'Element Properties'}
           </div>
         ) : (
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-app-secondary uppercase tracking-wider">
             <Layers size={11} />
-            Scene Properties
+            {teacherMode ? 'Properti Halaman' : 'Scene Properties'}
           </div>
         )}
       </div>

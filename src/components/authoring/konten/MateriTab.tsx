@@ -149,7 +149,7 @@ export function MateriTab() {
             <BookOpen size={24} className="text-teal-400" />
           </div>
           <p className="text-sm font-medium text-app-primary mb-1">Belum ada materi</p>
-          <p className="text-xs text-app-muted mb-4">Gunakan Auto-Generate atau buat manual</p>
+          <p className="text-xs text-app-muted mb-4">Gunakan Auto-Generate atau tambah blok manual.</p>
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={handleRegenerateMateri}

@@ -18,6 +18,7 @@ import { createAutoGenerateSlice } from './auto-generate';
 import { createSyncSlice } from './sync-slice';
 import { createPersistenceSlice } from './persistence-slice';
 import { createSchemaPresetSlice } from './schema-preset-slice';
+import { createTeacherModeSlice } from './teacher-mode-slice';
 // connectHistoryToEditBus moved to @/store/canva/init.ts
 
 export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector((...a) => {
@@ -70,6 +71,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     ...createSyncSlice(...a),
     ...createPersistenceSlice(...a),
     ...createSchemaPresetSlice(...a),
+    ...createTeacherModeSlice(...a),
   };
 }), { name: 'CanvaStore', enabled: process.env.NODE_ENV === 'development' }));
 

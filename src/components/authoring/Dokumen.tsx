@@ -222,13 +222,15 @@ function TpSection() {
 
   if (!tp.length) {
     return (
-      <div className="text-center py-8">
-        <Target size={28} className="text-app-muted mx-auto mb-3" />
-        <p className="text-sm text-app-muted">Belum ada Tujuan Pembelajaran.</p>
-        <p className="text-xs text-app-muted/70 mt-1">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
+      <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+        <div className="w-12 h-12 rounded-xl bg-app-accent/10 flex items-center justify-center mx-auto mb-3">
+          <Target size={24} className="text-app-accent/70" />
+        </div>
+        <p className="text-sm font-medium text-app-primary mb-1">Belum ada Tujuan Pembelajaran</p>
+        <p className="text-xs text-app-muted mb-4">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
         <button
           onClick={addTp}
-          className="mt-4 px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
         >
           ＋ Tambah TP
         </button>
@@ -353,10 +355,18 @@ function AtpSection() {
       </div>
 
       {!atp.pertemuan.length ? (
-        <div className="text-center py-8">
-          <Calendar size={28} className="text-app-muted mx-auto mb-3" />
-          <p className="text-sm text-app-muted">Belum ada pertemuan.</p>
-          <p className="text-xs text-app-muted/70 mt-1">Klik tombol di bawah untuk menambahkan pertemuan pertama.</p>
+        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
+            <Calendar size={24} className="text-amber-400/70" />
+          </div>
+          <p className="text-sm font-medium text-app-primary mb-1">Belum ada pertemuan</p>
+          <p className="text-xs text-app-muted mb-4">Tambahkan pertemuan untuk menyusun Alur Tujuan Pembelajaran.</p>
+          <button
+            onClick={addAtpPertemuan}
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          >
+            ＋ Tambah Pertemuan
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -462,10 +472,18 @@ function AlurSection() {
   return (
     <div className="space-y-4">
       {!alur.length ? (
-        <div className="text-center py-8">
-          <Map size={28} className="text-app-muted mx-auto mb-3" />
-          <p className="text-sm text-app-muted">Belum ada langkah.</p>
-          <p className="text-xs text-app-muted/70 mt-1">Tambahkan langkah Pendahuluan, Inti, dan Penutup.</p>
+        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
+            <Map size={24} className="text-emerald-400/70" />
+          </div>
+          <p className="text-sm font-medium text-app-primary mb-1">Belum ada langkah kegiatan</p>
+          <p className="text-xs text-app-muted mb-4">Tambahkan langkah Pendahuluan, Inti, dan Penutup untuk menyusun alur pembelajaran.</p>
+          <button
+            onClick={addAlur}
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          >
+            ＋ Tambah Langkah
+          </button>
         </div>
       ) : (
         alur.map((step, i) => {

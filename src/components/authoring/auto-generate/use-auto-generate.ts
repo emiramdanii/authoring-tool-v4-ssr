@@ -49,6 +49,7 @@ import {
 } from '@/core/schema/generators';
 import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
 import type { SchemaBlock } from '@/core/schema/types';
+import { useCanvaStore } from '@/store/canva-store';
 
 export function useAutoGenerate() {
   const store = useAuthoringStore;
@@ -453,6 +454,31 @@ export function useAutoGenerate() {
 
       if (applySucceeded) {
         setAppliedCount((c) => c + 1);
+
+        // ═══ Navigate to Canva after apply ═══════════════════════
+        // Guide the teacher to see their generated content on the canvas.
+        // Find the first page with schema content, or default to page 0.
+        const canvaPages = useCanvaStore.getState().pages;
+        let targetIdx = 0;
+        const schemaPageIdx = canvaPages.findIndex(
+          (p) => p.schema && p.schema.blocks.length > 0
+        );
+        if (schemaPageIdx >= 0) targetIdx = schemaPageIdx;
+
+        // Navigate to canva and select the relevant page
+        useAuthoringStore.getState().setActivePanel('canva');
+        useCanvaStore.getState().goPage(targetIdx);
+
+        toast.success('Materi berhasil di-generate! Lihat hasilnya di Canva.', {
+          duration: 5000,
+          action: {
+            label: 'Lihat Hasil di Canva',
+            onClick: () => {
+              useAuthoringStore.getState().setActivePanel('canva');
+              useCanvaStore.getState().goPage(targetIdx);
+            },
+          },
+        });
       }
     },
     [parsed, settings, meta],
@@ -551,7 +577,22 @@ export function useAutoGenerate() {
     for (const p of previews) {
       handleApply(p);
     }
-    toast.success('⚡ Semua konten berhasil diterapkan ke proyek!');
+    // Navigation and toast are handled inside handleApply,
+    // but we add an extra confirmation toast for the bulk action.
+    toast.success('Semua konten berhasil diterapkan ke proyek!', {
+      duration: 5000,
+      action: {
+        label: 'Lihat Hasil di Canva',
+        onClick: () => {
+          useAuthoringStore.getState().setActivePanel('canva');
+          const canvaPages = useCanvaStore.getState().pages;
+          const schemaPageIdx = canvaPages.findIndex(
+            (p) => p.schema && p.schema.blocks.length > 0
+          );
+          useCanvaStore.getState().goPage(schemaPageIdx >= 0 ? schemaPageIdx : 0);
+        },
+      },
+    });
   }, [previews, handleApply]);
 
   // ── Parsed stats ────────────────────────────────────────────

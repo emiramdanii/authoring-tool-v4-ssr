@@ -20,6 +20,7 @@ import {
   ChevronUp,
   Sparkles,
   Zap,
+  FileCheck,
 } from 'lucide-react';
 import type { PanelId } from '@/store/authoring/types';
 import { isGameBlockType, isBlockTypeInteractive } from '@/core/schema/capability-registry';
@@ -475,6 +476,17 @@ export default function BsnpCompliancePanel() {
     setActivePanel(panel);
   }, [setActivePanel]);
 
+  // ── Check if completely empty (no content entered at all) ──────
+  const hasAnyContent =
+    cp.capaianFase ||
+    tp.length > 0 ||
+    materi.blok.length > 0 ||
+    modules.length > 0 ||
+    kuis.length > 0 ||
+    games.length > 0 ||
+    alur.length > 0 ||
+    pages.length > 0;
+
   return (
     <div className="bg-app-surface/60 border border-app-border/60 rounded-xl p-4 space-y-4">
       {/* Header */}
@@ -485,6 +497,24 @@ export default function BsnpCompliancePanel() {
           8 komponen wajib MPI
         </span>
       </div>
+
+      {/* Empty state — show when no content exists */}
+      {!hasAnyContent ? (
+        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+          <div className="w-12 h-12 rounded-xl bg-app-accent/10 flex items-center justify-center mx-auto mb-3">
+            <FileCheck size={24} className="text-app-accent/70" />
+          </div>
+          <p className="text-sm font-medium text-app-primary mb-1">Isi dokumen terlebih dahulu</p>
+          <p className="text-xs text-app-muted mb-4">Isi dokumen terlebih dahulu untuk melihat kepatuhan BSNP.</p>
+          <button
+            onClick={() => setActivePanel('dokumen')}
+            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          >
+            Mulai Isi Dokumen
+          </button>
+        </div>
+      ) : (
+        <>
 
       {/* Overall Progress Bar */}
       <div>
@@ -551,6 +581,8 @@ export default function BsnpCompliancePanel() {
             Semua komponen BSNP telah lengkap! Media Pembelajaran Interaktif siap digunakan.
           </p>
         </div>
+      )}
+      </>
       )}
     </div>
   );

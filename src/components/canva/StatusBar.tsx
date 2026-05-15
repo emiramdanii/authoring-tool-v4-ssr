@@ -8,6 +8,7 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
 import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 // ═══════════════════════════════════════════════════════════════
 // Phase 2: StatusBar redesign
@@ -43,6 +44,9 @@ export default function StatusBar() {
 
   // ── Canvas preview mode ───────────────────────────────────────
   const canvasPreview = useCanvaStore(s => s.canvasPreview);
+
+  // ── Teacher mode ──────────────────────────────────────────────
+  const teacherMode = useCanvaStore(s => s.teacherMode);
 
   // ── Unified save indicator ────────────────────────────────────
   const canvaStatus = useCanvaStore((s) => s._saveStatus as SaveStatus | undefined);
@@ -111,16 +115,16 @@ export default function StatusBar() {
       {sceneTotal > 1 && (
         <span className="flex items-center gap-1">
           <Layers size={11} className="text-emerald-400/60" />
-          <span className="text-emerald-400/70 font-medium">Scene {sceneIndex + 1}/{sceneTotal}</span>
+          <span className="text-emerald-400/70 font-medium">{teacherMode ? 'Bagian' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
         </span>
       )}
 
       {/* Block selection feedback — shows block type when selected */}
-      {selectedBlockId && selectedBlockType && (
+      {selectedBlockId && selectedBlockType && !teacherMode && (
         <span className="flex items-center gap-1">
           <Zap size={11} className="text-amber-400/60" />
           <span className="text-amber-400/70 font-medium">
-            {BLOCK_DEFINITIONS[selectedBlockType]?.name || selectedBlockType}
+            {teacherTerm(BLOCK_DEFINITIONS[selectedBlockType]?.name || selectedBlockType, teacherMode)}
           </span>
         </span>
       )}

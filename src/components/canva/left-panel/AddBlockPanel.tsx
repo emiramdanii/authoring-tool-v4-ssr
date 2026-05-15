@@ -110,7 +110,7 @@ export default function AddBlockPanel() {
   const groupedBlocksSederhana = useMemo(() => {
     const groups: Record<string, BlockDefinition[]> = {};
     for (const block of filteredBlocks) {
-      const groupKey = personalityToSimplifiedGroup(block.personality);
+      const groupKey = personalityToSimplifiedGroup(block.personality, block.type);
       if (!groups[groupKey]) groups[groupKey] = [];
       groups[groupKey].push(block);
     }

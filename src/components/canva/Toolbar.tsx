@@ -7,6 +7,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { patchHistory } from '@/core/editor/patch-history';
 import { showUndoRedoToast } from '@/components/shared/StatusToast';
 import { AutoSaveIndicator, SaveNowButton } from '@/components/shared/StatusToast';
+import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import {
   Play,
   Undo2,
@@ -173,6 +174,9 @@ export default function Toolbar() {
 
       <div className="flex-1" />
 
+      {/* Teacher Mode Toggle */}
+      <TeacherModeToggle />
+
       {/* GROUP 6: Auto-save indicator */}
       <AutoSaveIndicator />
       <SaveNowButton />
@@ -292,9 +296,7 @@ function SceneNav({
       {showSceneNav && (
         <>
           <span className="text-[8px] text-app-muted mx-0.5">•</span>
-          <span className="text-[10px] text-emerald-400/70 font-medium">
-            Scene {sceneIndex + 1}/{sceneTotal}
-          </span>
+          <SceneSubCounter sceneIndex={sceneIndex} sceneTotal={sceneTotal} />
         </>
       )}
 
@@ -310,6 +312,19 @@ function SceneNav({
         <ChevronRight size={13} />
       </Button>
     </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SCENE SUB-COUNTER — shows "Scene 2/3" or "Bagian 2/3" in teacher mode
+   ══════════════════════════════════════════════════════════════════ */
+
+function SceneSubCounter({ sceneIndex, sceneTotal }: { sceneIndex: number; sceneTotal: number }) {
+  const teacherMode = useCanvaStore(s => s.teacherMode);
+  return (
+    <span className="text-[10px] text-emerald-400/70 font-medium">
+      {teacherMode ? 'Bagian' : 'Scene'} {sceneIndex + 1}/{sceneTotal}
+    </span>
   );
 }
 
@@ -377,6 +392,7 @@ function UndoRedoButtons() {
 
 function TambahBlockButton() {
   const [open, setOpen] = useState(false);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -394,7 +410,7 @@ function TambahBlockButton() {
         className="w-72 bg-app-surface border border-app-border shadow-xl rounded-xl p-0 overflow-hidden max-h-[400px] overflow-y-auto"
       >
         <DropdownMenuLabel className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20 text-[9px] font-bold text-teal-400 uppercase tracking-wider">
-          Tambah Block
+          Tambah {teacherMode ? 'Konten' : 'Block'}
         </DropdownMenuLabel>
         <div className="p-2">
           <AddBlockPanel />

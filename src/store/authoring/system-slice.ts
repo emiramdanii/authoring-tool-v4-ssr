@@ -51,13 +51,12 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         petunjuk: s.petunjuk, diskusi: s.diskusi, refleksi: s.refleksi,
         motivasi: s.motivasi, rangkuman: s.rangkuman,
         penutup: s.penutup, suara: s.suara,
+        _lastSavedAt: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       set({ dirty: false });
-      toast.success('\u2705 Tersimpan ke browser');
       return true;
     } catch {
-      toast.error('\u274C Gagal menyimpan');
       return false;
     }
   },
@@ -94,7 +93,6 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         suara: data.suara || get().suara,
         dirty: false,
       });
-      toast.info('\uD83D\uDCC2 Data tersimpan dimuat');
       return true;
     } catch {
       return false;

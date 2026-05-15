@@ -15,24 +15,41 @@ export type TeacherMode = 'lengkap' | 'sederhana';
 /** Technical → Teacher-friendly term mapping */
 export const TEACHER_TERMS: Record<string, string> = {
   // Core concepts
-  'Schema': 'Halaman',
+  'Schema': 'Tampilan',
   'SchemaBlock': 'Konten',
+  'Schema Block': 'Konten',
   'Block': 'Konten',
   'Template Type': 'Jenis Halaman',
   'Template': 'Template',
-  'Compression': 'Tata Letak Otomatis',
-  'Scene': 'Layar',
+  'Compression': 'Kompak',
+  'Rebalance': 'Optimalkan',
+  'Transaction': 'Perubahan',
+  'Scene': 'Halaman',
   'Page': 'Halaman',
   'Element': 'Elemen',
   'Canvas': 'Area Kerja',
+  'Variant': 'Gaya Tampilan',
+  'Flow Layout': 'Tata Letak Otomatis',
+  'Absolute Position': 'Posisi Bebas',
+  'Safe Area': 'Area Aman',
+  'Scene Overflow': 'Halaman Penuh',
+  'Split Scene': 'Pisah Halaman',
+  'Merge Scene': 'Gabung Halaman',
+  'Composite Block': 'Konten Gabungan',
+  'Container': 'Wadah',
+  'Projection': 'Data',
+  'BSNP Compliance': 'Kesesuaian BSNP',
+  'Capability': 'Kemampuan',
 
   // Block type display names
   'Materi Section': 'Bagian Materi',
-  'Ftab': 'Tab Interaktif',
-  'NcGrid': 'Tabel Norma',
+  'Ftab': 'Tab',
+  'NcGrid': 'Kisi Norma',
+  'Def Box': 'Kotak Definisi',
   'DefBox': 'Kotak Definisi',
   'Tujuan Display': 'Tujuan Pembelajaran',
   'Norma Kartu': 'Kartu Norma',
+  'NK Card': 'Kartu Norma',
   'Tabel Accord': 'Tabel Accord',
   'Rangkuman': 'Rangkuman',
   'Motivasi': 'Motivasi',
@@ -61,12 +78,18 @@ export const TEACHER_TERMS: Record<string, string> = {
 
 /**
  * Translate a technical term based on the current teacher mode.
- * In 'lengkap' mode, returns the original term unchanged.
- * In 'sederhana' mode, returns the teacher-friendly equivalent
+ *
+ * Accepts either:
+ *   - TeacherMode string ('lengkap' | 'sederhana')
+ *   - boolean (true = sederhana/simple, false = lengkap/full)
+ *
+ * In 'lengkap' mode (or false), returns the original term unchanged.
+ * In 'sederhana' mode (or true), returns the teacher-friendly equivalent
  * (or the original if no mapping exists).
  */
-export function teacherTerm(technical: string, mode: TeacherMode): string {
-  if (mode === 'lengkap') return technical;
+export function teacherTerm(technical: string, mode: TeacherMode | boolean): string {
+  const isSimple = typeof mode === 'boolean' ? mode : mode === 'sederhana';
+  if (!isSimple) return technical;
   return TEACHER_TERMS[technical] || technical;
 }
 
@@ -91,9 +114,9 @@ export interface SimplifiedGroup {
 export const SIMPLIFIED_GROUPS: Record<string, SimplifiedGroup> = {
   informasi: {
     key: 'informasi',
-    label: 'Informasi & Materi',
+    label: 'Konten & Materi',
     icon: '\uD83D\uDCD6',
-    desc: 'Menampilkan teks dan informasi',
+    desc: 'Teks, definisi, dan materi pembelajaran',
     colorClass: 'text-blue-400',
     bgColorClass: 'bg-blue-500/10',
     borderColorClass: 'border-blue-500/20',
@@ -101,23 +124,43 @@ export const SIMPLIFIED_GROUPS: Record<string, SimplifiedGroup> = {
   },
   interaktif: {
     key: 'interaktif',
-    label: 'Aktivitas Interaktif',
+    label: 'Interaktif',
     icon: '\uD83C\uDFAE',
-    desc: 'Kuis, game, dan latihan',
+    desc: 'Kuis, diskusi, game, dan latihan',
     colorClass: 'text-emerald-400',
     bgColorClass: 'bg-emerald-500/10',
     borderColorClass: 'border-emerald-500/20',
     order: 1,
   },
+  navigasi: {
+    key: 'navigasi',
+    label: 'Navigasi',
+    icon: '\uD83D\uDD17',
+    desc: 'Tab, langkah, dan navigasi halaman',
+    colorClass: 'text-cyan-400',
+    bgColorClass: 'bg-cyan-500/10',
+    borderColorClass: 'border-cyan-500/20',
+    order: 2,
+  },
   struktur: {
     key: 'struktur',
     label: 'Struktur Halaman',
     icon: '\uD83D\uDCCB',
-    desc: 'Judul, petunjuk, penutup',
+    desc: 'Sampul, petunjuk, penutup',
     colorClass: 'text-gray-400',
     bgColorClass: 'bg-gray-500/10',
     borderColorClass: 'border-gray-500/20',
-    order: 2,
+    order: 3,
+  },
+  lainnya: {
+    key: 'lainnya',
+    label: 'Lainnya',
+    icon: '\u2728',
+    desc: 'Konten lainnya',
+    colorClass: 'text-purple-400',
+    bgColorClass: 'bg-purple-500/10',
+    borderColorClass: 'border-purple-500/20',
+    order: 4,
   },
 };
 
@@ -126,14 +169,18 @@ export const SIMPLIFIED_GROUPS: Record<string, SimplifiedGroup> = {
  * In sederhana mode, blocks are grouped by these simpler categories.
  *
  * Personality → Simplified group mapping:
- *   understanding → informasi
- *   discussion    → interaktif
- *   reflection    → interaktif
- *   assessment    → interaktif
- *   activation    → interaktif
- *   structure     → struktur
+ *   understanding → informasi (Konten & Materi)
+ *   discussion    → interaktif (Interaktif)
+ *   reflection    → interaktif (Interaktif)
+ *   assessment    → interaktif (Interaktif)
+ *   activation    → interaktif (Interaktif)
+ *   structure     → navigasi (for nav blocks like ftab) or struktur (for page structure)
+ *   default       → lainnya
+ *
+ * @param personality The block's personality from the registry
+ * @param blockType Optional block type for finer-grained categorization
  */
-export function personalityToSimplifiedGroup(personality: string): string {
+export function personalityToSimplifiedGroup(personality: string, blockType?: string): string {
   switch (personality) {
     case 'understanding':
       return 'informasi';
@@ -142,9 +189,15 @@ export function personalityToSimplifiedGroup(personality: string): string {
     case 'assessment':
     case 'activation':
       return 'interaktif';
-    case 'structure':
+    case 'structure': {
+      // Navigational blocks go to 'navigasi', structural blocks go to 'struktur'
+      const navigasiTypes = ['ftab', 'step-navigator', 'tab-navigator'];
+      if (blockType && navigasiTypes.includes(blockType)) {
+        return 'navigasi';
+      }
       return 'struktur';
+    }
     default:
-      return 'informasi';
+      return 'lainnya';
   }
 }

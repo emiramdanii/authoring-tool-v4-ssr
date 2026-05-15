@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { GEN_BUTTONS } from './constants';
 import { Spinner } from './Spinner';
 import {
@@ -113,6 +114,9 @@ export default function AutoGenerate() {
     parsedStats,
     appliedCount,
   } = useAutoGenerate();
+
+  // Track applying state for button loading indicators
+  const [applying, setApplying] = useState(false);
 
   // Determine current step for the wizard indicator
   const currentStep = parsed ? 3 : text.trim().length >= 50 ? 2 : 1;
@@ -402,17 +406,34 @@ export default function AutoGenerate() {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
-                onClick={() => handleApply(activePreview)}
-                className="px-4 py-2 bg-app-accent hover:bg-app-accent-hover text-app-inverse font-semibold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow"
+                onClick={() => {
+                  setApplying(true);
+                  // Brief delay for visual feedback before navigation
+                  setTimeout(() => {
+                    handleApply(activePreview);
+                    setApplying(false);
+                  }, 150);
+                }}
+                disabled={applying}
+                className="px-4 py-2 bg-app-accent hover:bg-app-accent-hover disabled:bg-app-accent/60 text-app-inverse font-semibold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow disabled:shadow-none"
               >
-                <CheckCircle2 size={14} /> Terapkan ke Proyek
+                {applying ? <Spinner /> : <CheckCircle2 size={14} />}
+                {applying ? 'Menerapkan...' : 'Terapkan ke Proyek'}
               </button>
               {previews.length > 1 && (
                 <button
-                  onClick={handleApplyAll}
-                  className="px-3 py-2 bg-app-elevated hover:bg-app-elevated/80 text-app-primary text-xs rounded-lg transition-all duration-200 flex items-center gap-1.5 border border-transparent hover:border-app-border"
+                  onClick={() => {
+                    setApplying(true);
+                    setTimeout(() => {
+                      handleApplyAll();
+                      setApplying(false);
+                    }, 150);
+                  }}
+                  disabled={applying}
+                  className="px-3 py-2 bg-app-elevated hover:bg-app-elevated/80 disabled:bg-app-elevated/40 text-app-primary text-xs rounded-lg transition-all duration-200 flex items-center gap-1.5 border border-transparent hover:border-app-border disabled:cursor-not-allowed"
                 >
-                  <Zap size={13} /> Terapkan Semua ({previews.length})
+                  {applying ? <Spinner /> : <Zap size={13} />}
+                  {applying ? '...' : `Terapkan Semua (${previews.length})`}
                 </button>
               )}
             </div>

@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { Drama, Trash2, Pencil } from 'lucide-react';
+import { Drama, Trash2, Pencil, Zap } from 'lucide-react';
 import { COLORS } from '@/lib/color-palette';
 import { RegenerateButton } from './konten/RegenerateButton';
 import { regenerateSkenario } from './auto-generate/regenerate';
@@ -661,18 +661,26 @@ export default function Skenario() {
 
       {/* Empty state */}
       {skenario.length === 0 ? (
-        <div className="text-center py-12 bg-app-surface border border-app-border rounded-xl">
-          <div className="text-4xl mb-3"><Drama size={36} className="text-app-muted" /></div>
-          <p className="text-sm text-app-secondary mb-1">Belum ada bab skenario.</p>
-          <p className="text-xs text-app-muted mb-4">
-            Tambahkan bab pertama untuk mulai membuat skenario interaktif.
-          </p>
-          <button
-            onClick={handleAdd}
-            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
-          >
-            ＋ Tambah Bab Pertama
-          </button>
+        <div className="text-center py-10 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+          <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
+            <Drama size={24} className="text-purple-400/70" />
+          </div>
+          <p className="text-sm font-medium text-app-primary mb-1">Belum ada skenario pembelajaran</p>
+          <p className="text-xs text-app-muted mb-4">Generate dari materi yang sudah dimasukkan.</p>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={handleRegenerateSkenario}
+              className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Zap size={12} /> Auto-Generate
+            </button>
+            <button
+              onClick={handleAdd}
+              className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              Buat Manual
+            </button>
+          </div>
         </div>
       ) : (
         <>
