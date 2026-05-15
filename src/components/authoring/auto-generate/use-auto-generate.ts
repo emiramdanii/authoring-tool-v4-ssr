@@ -30,6 +30,25 @@ import {
   genDiskusi,
   genRefleksi,
 } from './generators';
+// Schema-first generators — write SchemaBlock[] directly to canvas pages
+import {
+  genMateriSchema,
+  genKuisSchema,
+  genDiskusiSchema,
+  genRefleksiSchema,
+  genSkenarioSchema,
+  genFlashcardSchema,
+  genTpSchema,
+  genAlurSchema,
+  genMotivasiSchema,
+  genRangkumanSchema,
+  genTujuanDisplaySchema,
+  genHasilSchema,
+  genPenutupSchema,
+  genCoverSchema,
+} from '@/core/schema/generators';
+import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
+import type { SchemaBlock } from '@/core/schema/types';
 
 export function useAutoGenerate() {
   const store = useAuthoringStore;
