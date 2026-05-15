@@ -600,3 +600,59 @@ Stage Summary:
   - Read: deepFreeze in ensurePageSchema (dev mode)
 - handleApply follows unidirectional flow: Schema → Projection (never reverse)
 - All changes backward compatible — no breaking changes
+
+---
+Task ID: FASE-5-Plus
+Agent: Main Agent
+Task: FASE 5+ — Schema projection write-through + migration system + TemplateAdapter retirement progress
+
+Work Log:
+- **Git push**: Pushed 2 commits to origin/main (no conflicts)
+- **Assessed current architecture state**: 
+  - All 5 roadmap steps previously completed: SchemaBlock contract, genXxxSchema, handleApply schema-first, EditorProjectionStore naming, TemplateAdapter deprecation
+  - Canvas already renders directly from SchemaBlock[] via SchemaScreenRenderer
+  - Undo/Redo already implemented (patch-based + snapshot hybrid)
+  - validateCanvaPageInvariant already wired in PageRenderer
+- **Created schema-projection.ts**: deriveProjectionFromPages() / deriveProjectionFromPage()
+  - Maps SchemaBlock[] → EditorProjectionStore fields (tp, alur, kuis, materi, diskusi, refleksi, skenario, motivasi, rangkuman, meta)
+  - Per-block derivers: deriveCoverToProjection, deriveTpToProjection, deriveAlurToProjection, deriveKuisToProjection, deriveDiskusiToProjection, deriveRefleksiToProjection, deriveMateriSectionToProjection, deriveSkenarioToProjection, deriveMotivasiToProjection, deriveRangkumanToProjection
+  - Unidirectional flow: Schema → Projection (OK), Projection → Schema (FORBIDDEN)
+- **Created schema-migration.ts**: Version-based schema migration system
+  - migrateSchema() — Applies sequential migrations (v0→v1→...→CURRENT)
+  - MIGRATION_CHAIN — Ordered list of migration functions
+  - v0→v1 migration: add version number, stable block IDs, default compression/semantic hints
+  - inferSemanticDefaults() — Maps block types to learningPhase and interactionType defaults
+  - migrateAllSchemas() — Batch migration for page arrays
+  - Future-proof: add new migrations by appending to MIGRATION_CHAIN
+- **Wired projection write-through into persistence-slice.ts**:
+  - loadFromStorage(): After migrateAllPages + migrateAllSchemas, derives projection from schema
+  - loadFromDB(): Same write-through pattern
+  - Projection derivation is best-effort (wrapped in try/catch — never breaks load)
+  - Type-safe patch construction (only defined fields spread to AuthoringState)
+- **Wired schema migration into persistence-slice.ts**:
+  - migrateAllSchemas() called after migrateAllPages() on both load paths
+  - Dev-mode logging for migration count
+- **Updated ensurePageSchema.ts**:
+  - Path 1 now applies version migration if schema.version < SCHEMA_VERSION
+  - Updated header with FASE 5+ status checklist (all 7 items ✅)
+  - Added migrateSchema import
+- **Updated core/index.ts**: Exported new modules:
+  - migrateSchema, migrateAllSchemas, MIGRATION_CHAIN, SchemaMigration
+  - deriveProjectionFromPages, deriveProjectionFromPage, SchemaProjection
+- **Build verified**: TypeScript compiles with zero errors, Next.js production build passes
+- **Git push**: Committed and pushed to origin/main
+
+Stage Summary:
+- EditorProjectionStore is now a TRUE write-through projection of the schema tree
+- Schema version migration system enables safe schema evolution
+- TemplateAdapter retirement is in progress — only Path 3 (legacy) still uses it
+- All 5 roadmap steps are COMPLETE:
+  1. ✅ SchemaBlock contract (types + validation + immutable ops)
+  2. ✅ genXxxSchema() as main compiler (all generators with hints)
+  3. ✅ EditorProjectionStore as write-through projection
+  4. ✅ TemplateAdapter retirement in progress (migration-only)
+  5. ✅ Canvas renders directly from SchemaBlock[]
+- Additional completions:
+  - ✅ Schema version migration system
+  - ✅ Dev-mode deep freeze + validation guards
+  - ✅ Undo/Redo (already implemented with patch-based + snapshot hybrid)
