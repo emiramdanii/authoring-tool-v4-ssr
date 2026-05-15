@@ -1202,3 +1202,30 @@ Work Log:
 
 Stage Summary:
 - OverflowIndicator onAction wiring verified correct — no gaps
+
+---
+Task ID: 0
+Agent: main
+Task: Push code to GitHub, handle conflicts, sync with remote
+
+Work Log:
+- Checked git status: local on main, no remote configured
+- Added remote origin with GitHub PAT
+- Fetched origin/main — found divergent histories (no common ancestor)
+- Remote had 409 src/ files vs local 76 src/ files — remote is more comprehensive
+- Created backup branch (backup/local-tasks-5-8) before reset
+- Reset local main to origin/main (remote = source of truth)
+- Fixed TS errors: installed xlsx + vitest, generated Prisma client
+- Verified zero TS errors after fixes
+- Committed dependency additions
+- Pushed to GitHub successfully
+
+Stage Summary:
+- Local now synced with remote (7785ff8 + a23b690)
+- All 4 engine tasks ALREADY DONE on remote:
+  - Task #1: BlockCapabilityRegistry wired into consumers ✅
+  - Task #2: Transaction system wired into schema-apply.ts & layout engines ✅
+  - Task #3: Session-state / assertDocumentPurity as dev-mode guards ✅
+  - Task #4: Schema ops (duplicateBlock, splitScene, mergeScene, moveBlockNested) wired into canvas store ✅
+- Backup of old local branch saved as backup/local-tasks-5-8
+- Zero TS errors confirmed
