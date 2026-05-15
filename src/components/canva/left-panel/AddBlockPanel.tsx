@@ -1,9 +1,10 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════
-// ADD BLOCK PANEL — Block palette for adding schema blocks from registry
+// ADD BLOCK PANEL — Block palette grouped by pedagogical personality
 // ═══════════════════════════════════════════════════════════════
-// Shows all registered block types grouped by category.
+// Shows all registered block types grouped by Block Personality
+// (pedagogical intent) instead of technical category.
 // Search/filter at top, click to add block to current page.
 // When a block is selected in the Layer panel, new blocks are
 // inserted after the selected block instead of appended to the end.
@@ -14,21 +15,12 @@ import { useCanvaStore } from '@/store/canva-store';
 import {
   getAllBlockDefinitions,
   getBlockDefinition,
+  PERSONALITY_CONFIG,
   type BlockDefinition,
+  type BlockPersonality,
 } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { announceToScreenReader } from '@/lib/a11y';
-
-// ── Category display config ──────────────────────────────────────
-
-const CATEGORY_CONFIG: Record<string, { label: string; icon: string; colorClass: string; order: number }> = {
-  layout:     { label: 'Layout',      icon: '📐', colorClass: 'text-app-accent bg-app-accent/10 border-app-accent/20', order: 0 },
-  content:    { label: 'Konten',       icon: '📝', colorClass: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', order: 1 },
-  interactive:{ label: 'Interaktif',   icon: '🎮', colorClass: 'text-teal-400 bg-teal-500/10 border-teal-500/20', order: 2 },
-  navigation: { label: 'Navigasi',     icon: '🧭', colorClass: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', order: 3 },
-  feedback:   { label: 'Umpan Balik',  icon: '🏆', colorClass: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20', order: 4 },
-  decoration: { label: 'Dekorasi',     icon: '🎨', colorClass: 'text-pink-400 bg-pink-500/10 border-pink-500/20', order: 5 },
-};
 
 export default function AddBlockPanel() {
   const addSchemaBlock = useCanvaStore(s => s.addSchemaBlock);
@@ -79,22 +71,24 @@ export default function AddBlockPanel() {
         b.name.toLowerCase().includes(q) ||
         b.type.toLowerCase().includes(q) ||
         b.description.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q)
+        b.category.toLowerCase().includes(q) ||
+        b.personality.toLowerCase().includes(q) ||
+        (PERSONALITY_CONFIG[b.personality]?.label ?? '').toLowerCase().includes(q)
     );
   }, [allBlocks, search]);
 
-  // Group filtered blocks by category
+  // Group filtered blocks by personality (pedagogical intent)
   const groupedBlocks = useMemo(() => {
-    const groups: Record<string, BlockDefinition[]> = {};
+    const groups: Partial<Record<BlockPersonality, BlockDefinition[]>> = {};
     for (const block of filteredBlocks) {
-      const cat = block.category;
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(block);
+      const p = block.personality;
+      if (!groups[p]) groups[p] = [];
+      groups[p]!.push(block);
     }
-    // Sort categories by display order
-    const sorted = Object.entries(groups).sort(([a], [b]) => {
-      const orderA = CATEGORY_CONFIG[a]?.order ?? 99;
-      const orderB = CATEGORY_CONFIG[b]?.order ?? 99;
+    // Sort personality groups by display order
+    const sorted = (Object.entries(groups) as [BlockPersonality, BlockDefinition[]][]).sort(([a], [b]) => {
+      const orderA = PERSONALITY_CONFIG[a]?.order ?? 99;
+      const orderB = PERSONALITY_CONFIG[b]?.order ?? 99;
       return orderA - orderB;
     });
     return sorted;
@@ -152,22 +146,24 @@ export default function AddBlockPanel() {
         </span>
       </div>
 
-      {/* Category groups */}
+      {/* Personality groups */}
       <div className="space-y-3">
-        {groupedBlocks.map(([category, blocks]) => {
-          const config = CATEGORY_CONFIG[category] || {
-            label: category,
-            icon: '📦',
-            colorClass: 'text-app-secondary bg-app-elevated/10 border-app-border/20',
-          };
+        {groupedBlocks.map(([personality, blocks]) => {
+          const config = PERSONALITY_CONFIG[personality];
+          if (!config) return null;
 
           return (
-            <div key={category}>
-              {/* Category header */}
-              <div className="text-[9px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <span>{config.icon}</span>
-                <span className={config.colorClass.split(' ')[0]}>{config.label}</span>
-                <span className="text-app-muted font-normal">({blocks.length})</span>
+            <div key={personality}>
+              {/* Personality header */}
+              <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${config.bgColorClass} border ${config.borderColorClass}`}>
+                <span className="text-sm">{config.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className={`text-[10px] font-bold ${config.colorClass}`}>{config.label}</span>
+                    <span className="text-[8px] text-app-muted">({blocks.length})</span>
+                  </div>
+                  <div className="text-[7px] text-app-muted leading-tight">{config.description}</div>
+                </div>
               </div>
 
               {/* Block cards */}

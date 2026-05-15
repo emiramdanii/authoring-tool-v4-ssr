@@ -1,16 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring/types';
 import { useProjectManager } from '@/hooks/use-project-manager';
 import {
   ChevronDown, Target, Calendar, ClipboardList, HelpCircle, Puzzle, Gamepad2, FileEdit, Zap,
-  Rocket, FileText, Sparkles, Pencil, Play, Layers, ArrowRight,
+  Rocket, FileText, Sparkles, Pencil, Play, Layers, ArrowRight, Plus,
 } from 'lucide-react';
 import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
+import dynamic from 'next/dynamic';
+
+// Lazy-load TemplateWizard — it's a modal that's not always visible
+const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
 
 // Schema-driven presets use this path for beautiful rendering
 const SCHEMA_DRIVEN_PRESETS = new Set(['hakikat-norma', 'macam-norma']);
@@ -47,6 +51,7 @@ function getNextStep(
 }
 
 export default function Dashboard() {
+  const [wizardOpen, setWizardOpen] = useState(false);
   const meta = useAuthoringStore((s) => s.meta);
   const cp = useAuthoringStore((s) => s.cp);
   const tp = useAuthoringStore((s) => s.tp);
@@ -219,12 +224,9 @@ export default function Dashboard() {
             Buat media pembelajaran interaktif dalam 3 langkah mudah
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto px-4">
-            {/* Dari Template */}
+            {/* Dari Template — opens Template Wizard */}
             <button
-              onClick={() => {
-                // Scroll to template section (below)
-                document.getElementById('template-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => setWizardOpen(true)}
               className="flex flex-col items-center gap-2 p-5 rounded-xl border border-app-border/40 bg-app-elevated/30 hover:border-app-accent/40 hover:bg-app-accent/5 transition-all cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-full bg-app-accent/10 flex items-center justify-center group-hover:bg-app-accent/20 transition-colors">
@@ -480,6 +482,13 @@ export default function Dashboard() {
       {/* ══ BOTTOM TOOLBAR ═══════════════════════════════════════ */}
       <div className="flex items-center gap-2 pt-2 border-t border-app-border/40">
         <button
+          onClick={() => setWizardOpen(true)}
+          className="px-3 py-1.5 text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors flex items-center gap-1"
+        >
+          <Plus size={12} />
+          Buat Baru
+        </button>
+        <button
           onClick={() => newProject()}
           className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary bg-app-elevated/30 hover:bg-app-elevated/50 rounded-lg border border-app-border/30 transition-colors"
         >
@@ -517,6 +526,9 @@ export default function Dashboard() {
           Simpan
         </button>
       </div>
+
+      {/* Template Wizard Modal */}
+      <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { produce, produceWithPatches } from 'immer';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
-import type { CanvaElement } from '@/components/canva/types';
+import type { CanvaElement, AppMode } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
 import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
@@ -83,6 +83,7 @@ export type UISlice = Pick<
   | '_lastNudgeTime'
   | 'sceneIndex' | 'sceneTotal' | 'setSceneState' | 'navigateScene'
   | 'canvasPreview' | 'toggleCanvasPreview'
+  | 'appMode' | 'setAppMode'
 >;
 
 export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, get) => ({
@@ -92,6 +93,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   sceneIndex: 0,
   sceneTotal: 1,
   canvasPreview: false,
+  appMode: 'edit' as AppMode,
 
   setTool: (tool) => set({ tool }),
   setLeftTab: (tab) => set({ leftTab: tab }),
@@ -342,6 +344,28 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       selectedElIds: [],
     }),
   })),
+
+  // ── App Mode (4-mode architecture) ──────────────────────────
+  // Controls the overall application mode: edit, preview, present, export.
+  // When switching to preview/present, all selections are cleared
+  // to prevent editing state from leaking into non-edit modes.
+  // The existing canvasPreview toggle remains for backward compat —
+  // setAppMode('preview') is the canonical way going forward.
+  setAppMode: (mode) => {
+    if (mode === 'preview' || mode === 'present') {
+      set({
+        appMode: mode,
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
+        selectedElId: null,
+        selectedElIds: [],
+      });
+    } else {
+      set({ appMode: mode });
+    }
+  },
 
   // ── Layout Presets ────────────────────────────────────────────
   applyLayoutPreset: (presetId) => {

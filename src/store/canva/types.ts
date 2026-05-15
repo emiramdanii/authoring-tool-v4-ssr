@@ -12,6 +12,7 @@ import type {
   ColorPalette,
   NavConfig,
   LayoutPreset,
+  AppMode,
 } from '@/components/canva/types';
 import type { PageTypeDefinition } from '@/store/page-types';
 import type { SchemaBlock } from '@/core/schema/types';
@@ -231,6 +232,10 @@ export interface CanvaState {
   canvasPreview: boolean;
   /** Toggle canvas preview mode */
   toggleCanvasPreview: () => void;
+  /** Current application mode — controls UI chrome, overlays, and interaction model */
+  appMode: AppMode;
+  /** Set the application mode — clears selections when entering preview/present */
+  setAppMode: (mode: AppMode) => void;
 
   // ── Actions: Stage ───────────────────────────────────────────
   clearStage: () => void;

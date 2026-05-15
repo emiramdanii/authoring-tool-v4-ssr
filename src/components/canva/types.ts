@@ -196,6 +196,13 @@ export type ElementsCanvaPage = CanvaPage & {
   schema?: undefined;
 };
 
+// ── App Mode (4-mode architecture) ──────────────────────────────
+// EDIT:    Full canvas editing — selection, overlays, drag, nudge
+// PREVIEW: Quick student-view — no editing chrome, no overlays
+// PRESENT: Fullscreen playback — PlayOverlay with interactive widgets
+// EXPORT:  Export pipeline — PDF/PPTX generation, no UI chrome
+export type AppMode = 'edit' | 'preview' | 'present' | 'export';
+
 export type LeftTab = 'halaman' | 'layer' | 'sisipkan' | 'halamanBaru' | 'riwayat';
 export type Tool = 'select' | 'text';
 export type ResizeDir = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | 'tm' | 'bm';

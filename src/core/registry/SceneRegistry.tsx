@@ -27,8 +27,10 @@ import type { PropertySchema } from '../editor/types';
 export {
   BLOCK_DEFINITIONS,
   DEFAULT_CAPABILITIES,
+  PERSONALITY_CONFIG,
   getBlockMeta,
   getBlocksByCategoryMeta,
+  getBlocksByPersonalityMeta,
   getBlocksForTemplateTypeMeta,
   isBlockRegisteredMeta,
   getBlockCapabilitiesMeta,
@@ -39,6 +41,7 @@ export type {
   BlockCapabilities,
   SceneBlockLayout,
   BlockDefinitionMeta,
+  BlockPersonality,
 } from './BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -190,6 +193,11 @@ export function getBlockDefinition(type: string): BlockDefinition | undefined {
 /** Get all block types in a category */
 export function getBlocksByCategory(category: string): BlockDefinition[] {
   return Object.values(SCENE_REGISTRY).filter(b => b.category === category);
+}
+
+/** Get all block types with a given personality */
+export function getBlocksByPersonality(personality: string): BlockDefinition[] {
+  return Object.values(SCENE_REGISTRY).filter(b => b.personality === personality);
 }
 
 /** Get all block types used in a template */

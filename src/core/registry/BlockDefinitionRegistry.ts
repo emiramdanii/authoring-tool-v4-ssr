@@ -20,6 +20,87 @@
 
 import type { PropertySchema } from '../editor/types';
 
+// ═══════════════════════════════════════════════════════════════════
+// BLOCK PERSONALITY — Pedagogical intent grouping
+// ═══════════════════════════════════════════════════════════════════
+// Instead of grouping blocks by technical category (layout, content, etc.),
+// we group them by their pedagogical purpose — what role they play
+// in the learning experience.
+
+export type BlockPersonality = 'understanding' | 'discussion' | 'reflection' | 'assessment' | 'activation' | 'structure';
+
+export const PERSONALITY_CONFIG: Record<BlockPersonality, {
+  label: string;
+  icon: string;
+  color: string;
+  colorClass: string;
+  bgColorClass: string;
+  borderColorClass: string;
+  order: number;
+  description: string;
+}> = {
+  understanding: {
+    label: 'Membangun Pemahaman',
+    icon: '📖',
+    color: '#3B82F6',
+    colorClass: 'text-blue-400',
+    bgColorClass: 'bg-blue-500/10',
+    borderColorClass: 'border-blue-500/20',
+    order: 0,
+    description: 'Siswa perlu memahami konsep ini',
+  },
+  discussion: {
+    label: 'Mengembangkan Diskusi',
+    icon: '💬',
+    color: '#22C55E',
+    colorClass: 'text-green-400',
+    bgColorClass: 'bg-green-500/10',
+    borderColorClass: 'border-green-500/20',
+    order: 1,
+    description: 'Siswa perlu berdiskusi dan berkolaborasi',
+  },
+  reflection: {
+    label: 'Mendalami Refleksi',
+    icon: '🪞',
+    color: '#EAB308',
+    colorClass: 'text-yellow-400',
+    bgColorClass: 'bg-yellow-500/10',
+    borderColorClass: 'border-yellow-500/20',
+    order: 2,
+    description: 'Siswa perlu merenung dan merefleksi',
+  },
+  assessment: {
+    label: 'Mengukur Pemahaman',
+    icon: '❓',
+    color: '#EF4444',
+    colorClass: 'text-red-400',
+    bgColorClass: 'bg-red-500/10',
+    borderColorClass: 'border-red-500/20',
+    order: 3,
+    description: 'Siswa perlu diuji pemahamannya',
+  },
+  activation: {
+    label: 'Menghidupkan Kelas',
+    icon: '⚡',
+    color: '#A855F7',
+    colorClass: 'text-purple-400',
+    bgColorClass: 'bg-purple-500/10',
+    borderColorClass: 'border-purple-500/20',
+    order: 4,
+    description: 'Siswa perlu aktivitas menyenangkan',
+  },
+  structure: {
+    label: 'Struktur & Navigasi',
+    icon: '🏗️',
+    color: '#6B7280',
+    colorClass: 'text-gray-400',
+    bgColorClass: 'bg-gray-500/10',
+    borderColorClass: 'border-gray-500/20',
+    order: 5,
+    description: 'Kerangka presentasi',
+  },
+};
+
 import {
   COVER_PROPERTY_SCHEMA,
   HERO_PROPERTY_SCHEMA,
@@ -102,6 +183,8 @@ export interface BlockDefinitionMeta {
   name: string;
   icon: string;
   category: 'layout' | 'content' | 'interactive' | 'navigation' | 'feedback' | 'decoration';
+  /** Pedagogical intent — groups blocks by learning purpose */
+  personality: BlockPersonality;
   description: string;
   capabilities: BlockCapabilities;
   defaultLayout: SceneBlockLayout;
@@ -122,6 +205,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Cover',
     icon: '🏠',
     category: 'layout',
+    personality: 'structure',
     description: 'Halaman judul dengan icon, title, badges, dan CTA',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
     defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
@@ -143,6 +227,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Hero Banner',
     icon: '🖼️',
     category: 'layout',
+    personality: 'structure',
     description: 'Banner hero dengan gradient, title, dan CTA — mirip Cover tapi untuk konten',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], movable: false, resizable: false },
     defaultLayout: { position: 'absolute', defaultX: 0, defaultY: 0, defaultWidth: 100, defaultHeight: 100, zIndex: 0 },
@@ -164,6 +249,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Petunjuk',
     icon: '📌',
     category: 'content',
+    personality: 'structure',
     description: 'Petunjuk penggunaan dengan grid item dan tips',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -194,6 +280,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Tujuan Pembelajaran',
     icon: '🎯',
     category: 'content',
+    personality: 'structure',
     description: 'Daftar tujuan pembelajaran dengan nomor dan profil',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -212,6 +299,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Alur Kegiatan',
     icon: '⏱️',
     category: 'navigation',
+    personality: 'structure',
     description: 'Timeline vertikal kegiatan pembelajaran',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -228,6 +316,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Skenario',
     icon: '🎭',
     category: 'interactive',
+    personality: 'discussion',
     description: 'Cerita interaktif dengan pilihan dan konsekuensi',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -252,6 +341,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Definisi',
     icon: '📖',
     category: 'content',
+    personality: 'understanding',
     description: 'Kotak definisi dengan border accent',
     capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, resizable: true, movable: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -268,6 +358,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Kartu Norma',
     icon: '📋',
     category: 'content',
+    personality: 'understanding',
     description: 'Grid kartu dengan icon, title, body',
     capabilities: { ...DEFAULT_CAPABILITIES, resizable: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -283,6 +374,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Kartu Kilat',
     icon: '🃏',
     category: 'interactive',
+    personality: 'activation',
     description: 'Set kartu kilat flip dengan navigasi',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -298,6 +390,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Tab Fungsi',
     icon: '📑',
     category: 'navigation',
+    personality: 'understanding',
     description: 'Tab konten dengan read marker dan progress',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, composite: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -315,6 +408,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Kartu Norma Detail',
     icon: '📜',
     category: 'content',
+    personality: 'understanding',
     description: 'Kartu detail jenis norma dengan sanksi dan contoh',
     capabilities: { ...DEFAULT_CAPABILITIES, backgroundCustom: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -337,6 +431,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Diskusi',
     icon: '💬',
     category: 'interactive',
+    personality: 'discussion',
     description: 'Pertanyaan diskusi dengan area jawaban',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -353,6 +448,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Kuis',
     icon: '❓',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Kuis pilihan ganda dengan feedback',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -370,6 +466,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Game Sortir',
     icon: '🎮',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game mengelompokkan kartu ke kolom',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -388,6 +485,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Game Roda',
     icon: '🎡',
     category: 'interactive',
+    personality: 'activation',
     description: 'Game roda putar dengan pertanyaan',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -410,6 +508,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Hasil',
     icon: '🏆',
     category: 'feedback',
+    personality: 'structure',
     description: 'Tampilan skor dan apresiasi',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -427,6 +526,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Refleksi',
     icon: '📝',
     category: 'interactive',
+    personality: 'reflection',
     description: 'Refleksi diri dengan pertanyaan dan penugasan',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -444,6 +544,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Penutup',
     icon: '🎊',
     category: 'feedback',
+    personality: 'structure',
     description: 'Penutup dengan preview pertemuan berikutnya',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -461,6 +562,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Tabel Accordion',
     icon: '📊',
     category: 'content',
+    personality: 'understanding',
     description: 'Tabel accordion dengan expandable rows',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -477,6 +579,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Bagian Materi',
     icon: '📚',
     category: 'content',
+    personality: 'understanding',
     description: 'Bagian materi BSNP dengan header, konten, poin penting, dan evaluasi diri',
     capabilities: { ...DEFAULT_CAPABILITIES, composite: true, backgroundCustom: true, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -499,6 +602,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Tujuan (Tampilan)',
     icon: '🎯',
     category: 'content',
+    personality: 'understanding',
     description: 'Tampilan tujuan pembelajaran untuk siswa — BSNP wajib',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -521,6 +625,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Motivasi / Apersepsi',
     icon: '💡',
     category: 'content',
+    personality: 'reflection',
     description: 'Pertanyaan pemicu dan koneksi pengetahuan awal — BSNP apersepsi',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -543,6 +648,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Rangkuman',
     icon: '📝',
     category: 'content',
+    personality: 'reflection',
     description: 'Rangkuman konsep kunci di akhir materi — BSNP penguatan',
     capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A', 'B', 'C'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
@@ -564,6 +670,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Game Memory',
     icon: '🧠',
     category: 'interactive',
+    personality: 'activation',
     description: 'Game mencocokkan kartu tersembunyi berpasangan',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -585,6 +692,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Game Pasangkan',
     icon: '🔀',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game mencocokkan kolom kiri dengan kolom kanan',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -606,6 +714,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Game Isian',
     icon: '✏️',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game mengisi jawaban singkat pada teks rumpang',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -626,6 +735,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Teka-Teki Kata',
     icon: '🔍',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game mencari kata tersembunyi dalam grid huruf',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -644,6 +754,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Benar-Salah',
     icon: '✅',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game menentukan pernyataan benar atau salah',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -664,6 +775,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Seret & Letakkan',
     icon: '🖐️',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game menempatkan item ke area target yang tepat',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -690,6 +802,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Teka Silang',
     icon: '🔤',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game teka silang dengan petunjuk dan grid huruf',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -712,6 +825,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     name: 'Kuis Tim',
     icon: '🏆',
     category: 'interactive',
+    personality: 'assessment',
     description: 'Game kuis berbasis tim dengan sistem buzzer',
     capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'] },
     defaultLayout: { position: 'flow' },
@@ -743,6 +857,11 @@ export function getBlockMeta(type: string): BlockDefinitionMeta | undefined {
 /** Get all block types in a category */
 export function getBlocksByCategoryMeta(category: string): BlockDefinitionMeta[] {
   return Object.values(BLOCK_DEFINITIONS).filter(b => b.category === category);
+}
+
+/** Get all block types with a given personality */
+export function getBlocksByPersonalityMeta(personality: BlockPersonality): BlockDefinitionMeta[] {
+  return Object.values(BLOCK_DEFINITIONS).filter(b => b.personality === personality);
 }
 
 /** Get all block types used in a template */

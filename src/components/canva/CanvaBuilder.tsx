@@ -12,46 +12,49 @@ import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
 import Stage from './stage';
 import RightPanel from './right-panel';
+import PreviewMode from './PreviewMode';
+import PresentMode from './PresentMode';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
 import CommandPalette, { useCommandPalette } from '@/components/shared/CommandPalette';
 import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import CanvaTour from '@/components/shared/CanvaTour';
 import { MobileGuard } from '@/components/shared/MobileGuard';
-// connectHistoryToEditBus is called once in store.ts (canonical location).
-// Removed duplicate call — was causing double-recording in PatchHistory.
 
 // Lazy-loaded: PlayOverlay is only needed when user clicks "Play" — purely client-side
 const PlayOverlay = dynamic(() => import('./PlayOverlay'), { ssr: false });
 
+// ═══════════════════════════════════════════════════════════════
+// CANVA BUILDER v5 — Mode-aware 3-column layout
+// ═══════════════════════════════════════════════════════════════
+// Architecture:
+//   appMode === 'present'  → PresentMode (fullscreen stage only)
+//   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
+//   appMode === 'edit'     → Full 3-panel layout (ScenePanel | Stage | ContextPanel)
+//
+// The existing interactive mode (PlayOverlay) still works via
+// the interactive store and overlays on top of everything.
+// ═══════════════════════════════════════════════════════════════
+
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const leftPanelOpen = useCanvaStore((s) => s.leftPanelOpen);
+  const appMode = useCanvaStore((s) => s.appMode);
   const commandPalette = useCommandPalette();
 
   // NOTE: loadFromStorage() removed from CanvaBuilder mount.
-  // It was causing a race condition: resetCanvas() creates fresh pages,
-  // then CanvaBuilder mounts and loadFromStorage() overwrites them with
-  // stale data from localStorage. Persistence is now handled by:
+  // Persistence is now handled by:
   // 1. Unified auto-save via useAutoSave() hook (2 000 ms debounce)
   // 2. AuthoringTool initial load via loadFromStorage on first app mount
 
   // ── Unified auto-save ──────────────────────────────────────
   // Auto-save is now handled by CanvaAutoSaveSync component,
   // which connects the project context to the auto-save hook.
-  // When a project is loaded, it saves to DB; otherwise localStorage.
-  // No other component should implement its own auto-save subscription.
-  // NOTE: The CanvaAutoSaveSync component renders below.
 
   // ── Sync interactive page total with canva pages ─────────────
   useEffect(() => {
     useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
   }, [useCanvaStore((s) => s.pages.length)]);
-
-  // ── PatchHistory ↔ EditBus connection ──────────────────────
-  // Removed: connectHistoryToEditBus() was already called in store.ts
-  // (line 83). Having it here too caused every schema edit to be
-  // recorded TWICE in PatchHistory, making undo/redo unreliable.
 
   // ── Warn before unload if authoring data is dirty ────────────
   useEffect(() => {
@@ -59,7 +62,6 @@ export default function CanvaBuilder() {
       const authDirty = useAuthoringStore.getState().dirty;
       if (authDirty) {
         e.preventDefault();
-        // Modern browsers ignore custom messages, but legacy support
         e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
       }
     };
@@ -68,19 +70,10 @@ export default function CanvaBuilder() {
   }, []);
 
   // ── Unified keyboard shortcuts via registry ──────────────────
-  // Replaces the separate useEffect with window.addEventListener('keydown', ...)
-  // These shortcuts are scoped to 'canvas' and only fire when the
-  // keyboardManager's active context is 'canvas'.
   useKeyboardShortcuts([
     // ═══════════════════════════════════════════════════════════════
     // CONSOLIDATED KEYBOARD SHORTCUTS
     // ═══════════════════════════════════════════════════════════════
-    // Architecture: Single ShortcutRegistry with priority-based routing.
-    // Schema block handlers (priority 15) always win over legacy
-    // element handlers (priority 5-8). This eliminates the dual
-    // keydown listener problem where use-stage-keyboard.ts and
-    // CanvaBuilder both listened on window, causing double-firing.
-    //
     // Priority tiers:
     //   15  → Schema block operations (selectedBlockId is set)
     //   10  → App-level operations (undo/redo, zoom, copy/paste)
@@ -140,7 +133,7 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        if (!store.selectedBlockId) return; // Fall through to element handler
+        if (!store.selectedBlockId) return;
         e.preventDefault();
         if (store.selectedBlockIds.length > 1) {
           store.deleteSchemaBlocks(store.selectedBlockIds);
@@ -180,7 +173,7 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        if (!store.selectedBlockId) return; // Fall through to element copy
+        if (!store.selectedBlockId) return;
         e.preventDefault();
         store.copySchemaBlock(store.selectedBlockId);
       },
@@ -195,9 +188,8 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        if (!store.selectedBlockId) return; // Fall through to element cut
+        if (!store.selectedBlockId) return;
         e.preventDefault();
-        // Cut = Copy + Delete
         store.copySchemaBlock(store.selectedBlockId);
         store.deleteBlock(store.selectedBlockId);
       },
@@ -212,12 +204,10 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        // Schema clipboard takes priority over element clipboard
         if (store._schemaClipboard) {
           e.preventDefault();
           store.pasteSchemaBlock();
         }
-        // If no schema clipboard, fall through to element paste handler
       },
       description: 'Paste schema block',
       category: 'Block',
@@ -230,7 +220,7 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        if (!store.selectedBlockId) return; // Fall through to element duplicate
+        if (!store.selectedBlockId) return;
         e.preventDefault();
         store.duplicateBlock(store.selectedBlockId);
       },
@@ -247,8 +237,8 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        if (!store.selectedBlockId) return; // Fall through to element nudge
-        if (e.altKey) return; // Alt+Arrow = reorder, handled separately
+        if (!store.selectedBlockId) return;
+        if (e.altKey) return;
         e.preventDefault();
         store.nudgeSchemaBlocks(0, e.shiftKey ? -5 : -1);
       },
@@ -264,7 +254,7 @@ export default function CanvaBuilder() {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
         if (!store.selectedBlockId) return;
-        if (e.altKey) return; // Alt+Arrow = reorder
+        if (e.altKey) return;
         e.preventDefault();
         store.nudgeSchemaBlocks(0, e.shiftKey ? 5 : 1);
       },
@@ -343,7 +333,6 @@ export default function CanvaBuilder() {
       handler: (e) => {
         const store = useCanvaStore.getState();
         if (useInteractiveStore.getState().mode === 'interactive') return;
-        // Check if current page has schema blocks
         const page = store.pages[store.currentPageIndex];
         if (page?.schema?.blocks?.length) {
           e.preventDefault();
@@ -351,7 +340,6 @@ export default function CanvaBuilder() {
             .map((b: { id?: string }) => b.id)
             .filter((id: string | undefined): id is string => id != null);
           if (allBlockIds.length > 0) {
-            // Select the first block as primary, all as multi-select
             const firstBlock = page.schema.blocks[0];
             useCanvaStore.setState({
               selectedBlockId: firstBlock.id ?? null,
@@ -361,7 +349,6 @@ export default function CanvaBuilder() {
           }
           return;
         }
-        // Fall through to legacy element select-all
       },
       description: 'Select all schema blocks',
       category: 'Selection',
@@ -553,6 +540,11 @@ export default function CanvaBuilder() {
       priority: 3,
       handler: () => {
         const store = useCanvaStore.getState();
+        // If in app preview/present mode, exit to edit first
+        if (store.appMode === 'preview' || store.appMode === 'present') {
+          store.setAppMode('edit');
+          return;
+        }
         // If in canvas preview mode, exit preview first
         if (store.canvasPreview) {
           store.toggleCanvasPreview();
@@ -692,6 +684,39 @@ export default function CanvaBuilder() {
     },
   ], []);
 
+  // ── Present mode: fullscreen stage only ──────────────────────
+  if (appMode === 'present') {
+    return (
+      <MobileGuard>
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-black text-app-primary">
+          <UndoRedoToast />
+          <CanvaAutoSaveSync />
+          <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+          <PresentMode />
+          <PlayOverlay />
+        </div>
+      </MobileGuard>
+    );
+  }
+
+  // ── Preview mode: stage + floating nav, no panels ─────────────
+  if (appMode === 'preview') {
+    return (
+      <MobileGuard>
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary">
+          <UndoRedoToast />
+          <CanvaAutoSaveSync />
+          <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+          <Toolbar />
+          <PreviewMode />
+          <PlayOverlay />
+          <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
+        </div>
+      </MobileGuard>
+    );
+  }
+
+  // ── EDIT mode: Full 3-panel layout ───────────────────────────
   return (
     <MobileGuard>
       <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
@@ -706,24 +731,34 @@ export default function CanvaBuilder() {
           <Toolbar />
         </div>
 
-        {/* Main builder row — always visible (design view) */}
+        {/* Main builder row — 3-column Canva-style layout */}
         <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-          <div className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-            leftPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
-          }`} data-tour="left-panel" role="complementary" aria-label="Panel halaman dan block">
+          {/* Left Panel — Scene Panel (fixed 240px) */}
+          <div
+            className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+              leftPanelOpen ? 'w-[240px]' : 'w-0'
+            }`}
+            data-tour="left-panel"
+            role="complementary"
+            aria-label="Panel halaman dan block"
+          >
             {leftPanelOpen && <LeftPanel />}
           </div>
 
-          {/* Stage Canvas Area — recessed with inner shadow */}
-          {/* FIX: Added flex flex-col so Stage's flex-1 works and canvasAreaRef
-              returns correct clientHeight (available viewport space, not content height) */}
+          {/* Stage Canvas Area — flex-1 zoom-to-fit */}
           <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
             <Stage />
           </div>
 
-          <div className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-            rightPanelOpen ? 'w-56 md:w-60 lg:w-[280px]' : 'w-0'
-          }`} data-tour="right-panel" role="complementary" aria-label="Panel properti">
+          {/* Right Panel — Context Panel (fixed 280px) */}
+          <div
+            className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+              rightPanelOpen ? 'w-[280px]' : 'w-0'
+            }`}
+            data-tour="right-panel"
+            role="complementary"
+            aria-label="Panel properti"
+          >
             <CanvasErrorBoundary name="RightPanel">
               {rightPanelOpen && <RightPanel />}
             </CanvasErrorBoundary>

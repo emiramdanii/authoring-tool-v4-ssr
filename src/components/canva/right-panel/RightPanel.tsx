@@ -10,52 +10,88 @@ import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AIAssistantSection from './AIAssistantSection';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
+import { Layers, Zap, Box, Sparkles } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
-// Phase 2: RightPanel redesign — 5 sections instead of 9
-// Structure:
-//   1. 📋 Properti Elemen — ALWAYS visible when element selected (not collapsible)
-//   2. 🖼️ Background — BG + Gradient merged from LeftPanel
-//   3. 🎨 Palet Warna — only if palette exists
-//   4. 🧭 Navigasi — navbar config
-//   5. ⚙️ Pengaturan Halaman — Tipe Halaman + Layout + Grid/Snap + Template Edit
-// Removed: Layer mini (already in LeftPanel Layer tab)
+// CONTEXT PANEL — Canva-style contextual right panel (280px fixed)
+// ═══════════════════════════════════════════════════════════════
+// Context-aware: shows different sections based on selection:
 //
-// ARCH-4: Each section is now self-contained — reads its own data
-// from the store via targeted selectors. No more prop drilling.
+//   Multi-select blocks → Alignment Tools + Block Properties
+//   Single block selected → Block Properties + AI Assistant
+//   No selection → Scene Properties (bg, palette, nav, settings)
+//
+// The panel always shows PageInfo at the bottom.
 // ═══════════════════════════════════════════════════════════════
 
 export default function RightPanel() {
   const rightPanelOpen = useCanvaStore(s => s.rightPanelOpen);
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
+  const selectedElId = useCanvaStore(s => s.selectedElId);
+  const selectedElIds = useCanvaStore(s => s.selectedElIds);
 
   if (!rightPanelOpen) return null;
+
+  // Determine context mode
+  const hasBlockSelection = selectedBlockId != null;
+  const hasMultiBlockSelection = selectedBlockIds.length > 1;
+  const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
 
   return (
     <div className="w-full flex flex-col glass-panel overflow-y-auto custom-scrollbar">
 
-      {/* ═══ Section 0: Schema Block Properties (when block selected) ═══ */}
-      <BlockPropertiesPanel />
+      {/* ═══ Context header ═══ */}
+      <div className="px-3 py-2 border-b border-app-border bg-app-surface/50 sticky top-0 z-10">
+        {hasMultiBlockSelection ? (
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
+            <Layers size={11} />
+            {selectedBlockIds.length} Block Terpilih
+          </div>
+        ) : hasBlockSelection ? (
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+            <Zap size={11} />
+            Block Properties
+          </div>
+        ) : hasElementSelection ? (
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-app-accent uppercase tracking-wider">
+            <Box size={11} />
+            Element Properties
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-app-secondary uppercase tracking-wider">
+            <Layers size={11} />
+            Scene Properties
+          </div>
+        )}
+      </div>
 
-      {/* ═══ Section 0b: AI Content Assistant ═══ */}
-      <AIAssistantSection />
+      {/* ═══ Context-aware content ═══ */}
 
-      {/* ═══ Section 1: Properti Elemen — ALWAYS VISIBLE (not collapsible) ═══ */}
-      <ElementProperties />
-
-      {/* ═══ Section 1b: Alignment Tools (multi-select) ═══ */}
-      <AlignmentTools />
-
-      {/* ═══ Section 2: Background + Gradient (merged) ═══ */}
-      <BackgroundSection />
-
-      {/* ═══ Section 3: Color Palette ═══ */}
-      <PaletteSection />
-
-      {/* ═══ Section 4: Navigation Config ═══ */}
-      <NavigationSection />
-
-      {/* ═══ Section 5: Pengaturan Halaman (merged: Tipe + Layout + Grid + Template Edit) ═══ */}
-      <PageSettingsSection />
+      {hasMultiBlockSelection ? (
+        /* ── Multi-block selected: Alignment + Block props ── */
+        <>
+          <AlignmentTools />
+          <BlockPropertiesPanel />
+        </>
+      ) : hasBlockSelection ? (
+        /* ── Single block selected: Content-first properties ── */
+        <>
+          <BlockPropertiesPanel />
+          <AIAssistantSection />
+        </>
+      ) : (
+        /* ── No block selection: Scene-level properties ── */
+        <>
+          {/* Element properties for legacy elements (always available) */}
+          <ElementProperties />
+          <AlignmentTools />
+          <BackgroundSection />
+          <PaletteSection />
+          <NavigationSection />
+          <PageSettingsSection />
+        </>
+      )}
 
       {/* ── Page Info (always visible at bottom) ───────────────── */}
       <PageInfo />
