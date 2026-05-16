@@ -18,7 +18,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
-import { Search, BookOpen, Loader2, FileText, Sparkles, Settings2, LayoutGrid } from 'lucide-react';
+import { Search, BookOpen, Loader2, FileText, Sparkles, Settings2, LayoutGrid, Wand2 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
@@ -34,6 +34,7 @@ import {
 } from '@/core/template/template-gallery';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import TemplateCustomizeDialog from './TemplateCustomizeDialog';
+import AITemplateGenerator from './AITemplateGenerator';
 
 // ── Color mapping for template cards ─────────────────────────
 const COLOR_MAP: Record<string, { bg: string; border: string; text: string; badge: string; hoverBg: string }> = {
@@ -132,6 +133,7 @@ export default function TemplateGalleryPanel() {
   const [activePattern, setActivePattern] = useState<TemplatePattern | null>(null);
   const [loadingTemplateId, setLoadingTemplateId] = useState<string | null>(null);
   const [customizeTemplate, setCustomizeTemplate] = useState<LessonTemplate | null>(null);
+  const [activeView, setActiveView] = useState<'prebuilt' | 'ai'>('prebuilt');
 
   // All templates
   const allTemplates = useMemo(() => getAllLessonTemplates(), []);
@@ -239,22 +241,51 @@ export default function TemplateGalleryPanel() {
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
         <Sparkles size={10} />
         {panelTitle}
-        <span className="text-app-muted">({filteredTemplates.length})</span>
+        {activeView === 'prebuilt' && <span className="text-app-muted">({filteredTemplates.length})</span>}
       </div>
 
-      {/* Search input */}
-      <div className="relative">
-        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" aria-hidden="true" />
-        <input
-          id="template-gallery-search"
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={searchPlaceholder}
-          aria-label="Cari template"
-          className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none placeholder:text-app-muted"
-        />
+      {/* View toggle: Pre-built vs AI Generate */}
+      <div className="flex gap-1">
+        <button
+          onClick={() => setActiveView('prebuilt')}
+          className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center gap-1 ${
+            activeView === 'prebuilt'
+              ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
+              : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
+          }`}
+        >
+          <LayoutGrid size={9} />
+          {isSederhana ? 'Template Siap Pakai' : 'Pre-built'}
+        </button>
+        <button
+          onClick={() => setActiveView('ai')}
+          className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center gap-1 ${
+            activeView === 'ai'
+              ? 'bg-violet-500/15 border border-violet-500/30 text-violet-300'
+              : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
+          }`}
+        >
+          <Wand2 size={9} />
+          {isSederhana ? 'Buat dari AI' : 'AI Generate'}
+        </button>
       </div>
+
+      {/* ── Pre-built Template View ──────────────────────────────── */}
+      {activeView === 'prebuilt' && (
+        <>
+          {/* Search input */}
+          <div className="relative">
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" aria-hidden="true" />
+            <input
+              id="template-gallery-search"
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label="Cari template"
+              className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none placeholder:text-app-muted"
+            />
+          </div>
 
       {/* Pattern tabs */}
       <div className="flex gap-1 overflow-x-auto custom-scrollbar">
@@ -345,10 +376,19 @@ export default function TemplateGalleryPanel() {
           </div>
         )}
       </div>
+        </>
+      )}
+
+      {/* ── AI Generator View ────────────────────────────────────── */}
+      {activeView === 'ai' && (
+        <AITemplateGenerator />
+      )}
 
       {/* Footer hint */}
       <div className="text-[8px] text-app-muted mt-2 pt-2 border-t border-app-border/20">
-        Klik &quot;Gunakan&quot; untuk langsung menerapkan, atau &quot;Sesuaikan&quot; untuk mengatur halaman
+        {activeView === 'prebuilt'
+          ? 'Klik "Gunakan" untuk langsung menerapkan, atau "Sesuaikan" untuk mengatur halaman'
+          : 'AI akan membuat template lengkap berdasarkan topik yang kamu masukkan'}
       </div>
 
       {/* Customization dialog */}

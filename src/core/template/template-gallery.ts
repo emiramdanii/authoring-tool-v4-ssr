@@ -469,6 +469,7 @@ const SUBJECT_MOCK_DATA: Record<string, MockSubjectData> = {
 
   // ── Seni Budaya: Seni Rupa (Kelas 9) ──
   'seni-seni-rupa': {
+
     sentences: [
       'Seni rupa adalah cabang seni yang menghasilkan karya yang dapat dilihat dan dirasakan melalui indera penglihatan.',
       'Seni rupa dibedakan menjadi seni rupa dua dimensi dan tiga dimensi.',
@@ -490,10 +491,127 @@ const SUBJECT_MOCK_DATA: Record<string, MockSubjectData> = {
     ],
     causes: [],
   },
+
+  // ── IPA: Sistem Peredaran Darah ──
+  'ipa-peredaran-darah': {
+    sentences: [
+      'Sistem peredaran darah adalah sistem transportasi dalam tubuh yang mengangkut oksigen, nutrisi, dan zat sisa.',
+      'Jantung adalah organ utama yang memompa darah ke seluruh tubuh.',
+      'Peredaran darah besar mengalir dari jantung ke seluruh tubuh dan kembali ke jantung.',
+    ],
+    words: ['peredaran darah', 'jantung', 'pembuluh', 'arteri', 'vena', 'kapiler', 'darah', 'oksigen'],
+    topWords: ['peredaran darah', 'jantung', 'pembuluh', 'darah', 'oksigen'],
+    definitions: [
+      { term: 'Sistem peredaran darah', meaning: 'sistem yang mengangkut darah dari jantung ke seluruh tubuh dan kembali lagi' },
+      { term: 'Jantung', meaning: 'organ berotot yang memompa darah ke seluruh tubuh melalui pembuluh darah' },
+      { term: 'Arteri', meaning: 'pembuluh darah yang membawa darah keluar dari jantung' },
+    ],
+    enumerations: [
+      { subject: 'Komponen darah', items: ['Plasma darah', 'Sel darah merah', 'Sel darah putih', 'Keping darah'] },
+      { subject: 'Jenis peredaran darah', items: ['Peredaran darah besar', 'Peredaran darah kecil'] },
+    ],
+    functions: [
+      { subject: 'Jantung', desc: 'memompa darah ke seluruh tubuh secara teratur' },
+      { subject: 'Hemoglobin', desc: 'mengikat dan mengangkut oksigen dalam darah' },
+    ],
+    causes: [
+      { cause: 'Penyumbatan pembuluh darah', effect: 'serangan jantung atau stroke' },
+    ],
+  },
+
+  // ── MTK: Bilangan Bulat ──
+  'mtk-bilangan-bulat': {
+    sentences: [
+      'Bilangan bulat adalah himpunan bilangan yang terdiri dari bilangan bulat positif, nol, dan bilangan bulat negatif.',
+      'Garis bilangan digunakan untuk menggambarkan letak bilangan bulat secara berurutan.',
+      'Operasi hitung bilangan bulat mengikuti aturan tanda yang berlaku.',
+    ],
+    words: ['bilangan', 'bulat', 'positif', 'negatif', 'nol', 'garis bilangan', 'operasi', 'hitung'],
+    topWords: ['bilangan', 'bulat', 'positif', 'negatif', 'hitung'],
+    definitions: [
+      { term: 'Bilangan bulat', meaning: 'himpunan bilangan yang terdiri dari bilangan bulat negatif, nol, dan bilangan bulat positif' },
+      { term: 'Garis bilangan', meaning: 'garis lurus yang digunakan untuk menggambarkan letak bilangan secara berurutan' },
+    ],
+    enumerations: [
+      { subject: 'Jenis bilangan bulat', items: ['Bilangan bulat positif', 'Nol', 'Bilangan bulat negatif'] },
+      { subject: 'Operasi hitung bilangan bulat', items: ['Penjumlahan', 'Pengurangan', 'Perkalian', 'Pembagian'] },
+    ],
+    functions: [],
+    causes: [],
+  },
+
+  // ── B.Indonesia: Teks Narasi ──
+  'bin-teks-narasi': {
+    sentences: [
+      'Teks narasi adalah teks yang menceritakan suatu peristiwa atau kejadian secara berurutan.',
+      'Struktur teks narasi terdiri dari orientasi, komplikasi, dan resolusi.',
+      'Teks narasi menggunakan kata hubung waktu untuk menghubungkan peristiwa secara kronologis.',
+    ],
+    words: ['narasi', 'teks', 'cerita', 'orientasi', 'komplikasi', 'resolusi', 'kronologis', 'peristiwa'],
+    topWords: ['narasi', 'teks', 'cerita', 'peristiwa', 'kronologis'],
+    definitions: [
+      { term: 'Teks narasi', meaning: 'teks yang menceritakan peristiwa atau kejadian secara berurutan berdasarkan urutan waktu' },
+      { term: 'Orientasi', meaning: 'bagian awal teks narasi yang memperkenalkan tokoh, latar, dan situasi' },
+      { term: 'Komplikasi', meaning: 'bagian yang berisi masalah atau konflik yang dialami tokoh' },
+    ],
+    enumerations: [
+      { subject: 'Struktur teks narasi', items: ['Orientasi', 'Komplikasi', 'Resolusi', 'Koda'] },
+      { subject: 'Ciri kebahasaan teks narasi', items: ['Kata hubung waktu', 'Kata kerja material', 'Kata keterangan tempat', 'Kata sifat dan kata keterangan'] },
+    ],
+    functions: [],
+    causes: [],
+  },
+
+  // ── IPS: Aktivitas Ekonomi ──
+  'ips-aktivitas-ekonomi': {
+    sentences: [
+      'Aktivitas ekonomi adalah kegiatan yang dilakukan manusia untuk memenuhi kebutuhan hidupnya.',
+      'Kegiatan ekonomi meliputi produksi, distribusi, dan konsumsi.',
+      'Pelaku ekonomi adalah pihak-pihak yang melakukan kegiatan ekonomi dalam suatu negara.',
+    ],
+    words: ['ekonomi', 'produksi', 'distribusi', 'konsumsi', 'pelaku', 'rumah tangga', 'perusahaan', 'pemerintah'],
+    topWords: ['ekonomi', 'produksi', 'distribusi', 'konsumsi', 'pelaku'],
+    definitions: [
+      { term: 'Produksi', meaning: 'kegiatan menghasilkan barang atau jasa untuk memenuhi kebutuhan' },
+      { term: 'Distribusi', meaning: 'kegiatan menyalurkan barang atau jasa dari produsen ke konsumen' },
+      { term: 'Konsumsi', meaning: 'kegiatan menggunakan atau menghabiskan barang atau jasa untuk memenuhi kebutuhan' },
+    ],
+    enumerations: [
+      { subject: 'Jenis pelaku ekonomi', items: ['Rumah tangga', 'Perusahaan', 'Pemerintah', 'Masyarakat luar negeri'] },
+      { subject: 'Faktor produksi', items: ['Sumber daya alam', 'Sumber daya manusia', 'Modal', 'Kewirausahaan'] },
+    ],
+    functions: [
+      { subject: 'Distribusi', desc: 'menyalurkan barang dari produsen ke konsumen dengan tepat waktu dan tempat' },
+    ],
+    causes: [
+      { cause: 'Ketidakseimbangan produksi dan konsumsi', effect: 'kelangkaan barang atau penurunan harga' },
+    ],
+  },
+
+  // ── Informatika: Algoritma Pencarian ──
+  'info-algoritma-pencarian': {
+    sentences: [
+      'Algoritma pencarian adalah metode untuk menemukan data tertentu dalam sekumpulan data.',
+      'Linear search memeriksa setiap elemen satu per satu dari awal hingga akhir.',
+      'Binary search hanya bekerja pada data yang sudah terurut dan membagi data menjadi dua bagian.',
+    ],
+    words: ['algoritma', 'pencarian', 'linear', 'binary', 'data', 'terurut', 'kompleksitas', 'efisiensi'],
+    topWords: ['algoritma', 'pencarian', 'linear', 'binary', 'data'],
+    definitions: [
+      { term: 'Linear search', meaning: 'algoritma pencarian yang memeriksa setiap elemen satu per satu dari awal hingga data ditemukan' },
+      { term: 'Binary search', meaning: 'algoritma pencarian yang membagi data terurut menjadi dua bagian dan mengeliminasi setengahnya setiap langkah' },
+    ],
+    enumerations: [
+      { subject: 'Langkah linear search', items: ['Mulai dari elemen pertama', 'Bandingkan dengan data yang dicari', 'Jika cocok, kembalikan posisi', 'Jika tidak, lanjut ke elemen berikutnya'] },
+      { subject: 'Langkah binary search', items: ['Tentukan titik tengah', 'Bandingkan data tengah dengan target', 'Eliminasi setengah data', 'Ulangi hingga ditemukan'] },
+    ],
+    functions: [],
+    causes: [],
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE DEFINITIONS — 6 SMP templates
+// TEMPLATE DEFINITIONS — 16 SMP templates
 // ═══════════════════════════════════════════════════════════════════
 
 export const LESSON_TEMPLATES: LessonTemplate[] = [
@@ -782,6 +900,137 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
       { type: 'kuis', title: 'Kuis', description: '5 soal tentang unsur-unsur seni rupa' },
       { type: 'refleksi', title: 'Refleksi', description: 'Membuat karya seni rupa sederhana' },
       { type: 'penutup', title: 'Penutup', description: 'Penutup dan tugas berkarya' },
+    ],
+  },
+
+  // ── IPA: Sistem Peredaran Darah (Eksperimen) ──
+  {
+    id: 'ipa-peredaran-darah',
+    title: 'Sistem Peredaran Darah',
+    subtitle: 'IPA Kelas 8 - Semester 2',
+    description: 'Mempelajari organ-organ sistem peredaran darah manusia, jenis peredaran darah, dan gangguan kesehatan yang terkait.',
+    mapel: 'IPA',
+    kelas: '8',
+    semester: '2',
+    icon: '🫀',
+    color: 'emerald',
+    tags: ['peredaran darah', 'jantung', 'pembuluh', 'darah', 'organ'],
+    pattern: 'eksperimen',
+    pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'diskusi', 'kuis', 'rangkuman', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Sistem Peredaran Darah' },
+      { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Menjelaskan organ dan mekanisme peredaran darah' },
+      { type: 'skenario', title: 'Skenario Ilmiah', description: 'Menelusuri aliran darah dalam tubuh' },
+      { type: 'materi', title: 'Materi Pembelajaran', description: 'Organ, pembuluh darah, dan mekanisme peredaran darah' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Apa yang terjadi jika jantung berhenti berdetak?' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang sistem peredaran darah' },
+      { type: 'rangkuman', title: 'Rangkuman', description: 'Konsep kunci: jantung, pembuluh, peredaran besar & kecil' },
+      { type: 'penutup', title: 'Penutup', description: 'Penutup dan tugas pengamatan' },
+    ],
+  },
+
+  // ── MTK: Bilangan Bulat (Standar) ──
+  {
+    id: 'mtk-bilangan-bulat',
+    title: 'Bilangan Bulat',
+    subtitle: 'Matematika Kelas 7 - Semester 1',
+    description: 'Mengenal bilangan bulat, operasi hitung (penjumlahan, pengurangan, perkalian, pembagian), dan penerapannya dalam kehidupan sehari-hari.',
+    mapel: 'MTK',
+    kelas: '7',
+    semester: '1',
+    icon: '🔢',
+    color: 'sky',
+    tags: ['bilangan', 'bulat', 'operasi', 'hitung', 'negatif', 'positif'],
+    pattern: 'standar',
+    pageTypes: ['cover', 'tujuan', 'motivasi', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Bilangan Bulat' },
+      { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Mengenal dan mengoperasikan bilangan bulat' },
+      { type: 'motivasi', title: 'Motivasi', description: 'Mengapa ada bilangan negatif?' },
+      { type: 'materi', title: 'Materi Pembelajaran', description: 'Definisi, garis bilangan, dan operasi hitung' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Penerapan bilangan bulat dalam kehidupan' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang bilangan bulat' },
+      { type: 'refleksi', title: 'Refleksi', description: 'Kesulitan dalam operasi bilangan bulat' },
+      { type: 'penutup', title: 'Penutup', description: 'Ringkasan dan latihan tambahan' },
+    ],
+  },
+
+  // ── B.Indonesia: Teks Narasi (Interaktif) ──
+  {
+    id: 'bin-teks-narasi',
+    title: 'Teks Narasi',
+    subtitle: 'B. Indonesia Kelas 8 - Semester 2',
+    description: 'Mengenal struktur dan ciri kebahasaan teks narasi, serta praktik menulis teks narasi yang menarik dan runtut.',
+    mapel: 'B.Indonesia',
+    kelas: '8',
+    semester: '2',
+    icon: '✍️',
+    color: 'orange',
+    tags: ['narasi', 'teks', 'cerita', 'menulis', 'struktur'],
+    pattern: 'interaktif',
+    pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Teks Narasi' },
+      { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Menganalisis dan menulis teks narasi' },
+      { type: 'skenario', title: 'Skenario Kreatif', description: 'Menulis akhir cerita yang berbeda' },
+      { type: 'materi', title: 'Materi Pembelajaran', description: 'Struktur, jenis, dan ciri kebahasaan teks narasi' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Menganalisis cerita pendek bersama kelompok' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang teks narasi' },
+      { type: 'refleksi', title: 'Refleksi', description: 'Menulis teks narasi berdasarkan pengalaman' },
+      { type: 'penutup', title: 'Penutup', description: 'Tugas menulis narasi kreatif' },
+    ],
+  },
+
+  // ── IPS: Aktivitas Ekonomi (Standar) ──
+  {
+    id: 'ips-aktivitas-ekonomi',
+    title: 'Aktivitas Ekonomi',
+    subtitle: 'IPS Kelas 8 - Semester 1',
+    description: 'Mempelajari kegiatan ekonomi (produksi, distribusi, konsumsi), pelaku ekonomi, dan peran mereka dalam perekonomian Indonesia.',
+    mapel: 'IPS',
+    kelas: '8',
+    semester: '1',
+    icon: '💰',
+    color: 'violet',
+    tags: ['ekonomi', 'produksi', 'distribusi', 'konsumsi', 'pelaku ekonomi'],
+    pattern: 'standar',
+    pageTypes: ['cover', 'tujuan', 'motivasi', 'materi', 'diskusi', 'kuis', 'rangkuman', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Aktivitas Ekonomi' },
+      { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Menjelaskan kegiatan dan pelaku ekonomi' },
+      { type: 'motivasi', title: 'Motivasi', description: 'Apa yang kamu lakukan saat membeli makanan?' },
+      { type: 'materi', title: 'Materi Pembelajaran', description: 'Produksi, distribusi, konsumsi, dan pelaku ekonomi' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Pelaku ekonomi di lingkungan sekitar' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang aktivitas ekonomi' },
+      { type: 'rangkuman', title: 'Rangkuman', description: 'Konsep kunci: produksi, distribusi, konsumsi' },
+      { type: 'penutup', title: 'Penutup', description: 'Tugas observasi aktivitas ekonomi' },
+    ],
+  },
+
+  // ── Informatika: Algoritma Pencarian (Mini) ──
+  {
+    id: 'info-algoritma-pencarian',
+    title: 'Algoritma Pencarian',
+    subtitle: 'Informatika Kelas 9 - Semester 1',
+    description: 'Mengenal algoritma pencarian linear dan binary, memahami langkah-langkahnya, dan membandingkan efisiensinya — pertemuan singkat.',
+    mapel: 'Informatika',
+    kelas: '9',
+    semester: '1',
+    icon: '🔍',
+    color: 'sky',
+    tags: ['algoritma', 'pencarian', 'linear', 'binary', 'komputasi'],
+    pattern: 'mini',
+    pageTypes: ['cover', 'materi', 'kuis', 'penutup'],
+    estimatedPages: 4,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Algoritma Pencarian' },
+      { type: 'materi', title: 'Materi Inti', description: 'Linear search dan binary search' },
+      { type: 'kuis', title: 'Kuis Cepat', description: '3 soal tentang algoritma pencarian' },
+      { type: 'penutup', title: 'Penutup', description: 'Latihan implementasi sederhana' },
     ],
   },
 ];

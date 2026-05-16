@@ -155,6 +155,18 @@ export default function AddBlockPanel() {
   // ── Fragment state ──
   const [fragmentFilter, setFragmentFilter] = useState<TemplateFragmentCategory | 'all'>('all');
 
+  // Get fragments grouped by category
+  const allFragments = useMemo(() => getAllFragments(), []);
+
+  // ── Context-aware fragment suggestion based on current page type ──
+  const suggestedFragments = useMemo(() => {
+    if (!page) return [];
+    const templateType = page.templateType;
+    if (!templateType || templateType === 'custom') return [];
+    // Suggest fragments whose bestFitPageType matches the current page type
+    return allFragments.filter(f => f.bestFitPageType === templateType);
+  }, [page, allFragments]);
+
   // ── Quick insert fragment handler ──
   const handleInsertFragment = useCallback((fragmentId: string) => {
     const fragment = getFragment(fragmentId);
@@ -167,8 +179,6 @@ export default function AddBlockPanel() {
     toast.success(`"${fragment.title}" ditambahkan`);
   }, [addSchemaBlock, insertAfterIndex]);
 
-  // Get fragments grouped by category
-  const allFragments = useMemo(() => getAllFragments(), []);
   const filteredFragments = useMemo(() => {
     if (fragmentFilter === 'all') return allFragments;
     return getFragmentsByCategory(fragmentFilter);
@@ -192,6 +202,33 @@ export default function AddBlockPanel() {
           {isSederhana ? 'Sisipkan Cepat' : 'Quick Insert'}
           <span className="text-app-muted">({filteredFragments.length})</span>
         </div>
+
+        {/* Context-aware suggestions — Phase F.4 */}
+        {suggestedFragments.length > 0 && (
+          <div className="space-y-1">
+            <div className="text-[7px] text-app-accent font-bold uppercase tracking-wider flex items-center gap-1">
+              💡 {isSederhana ? 'Cocok untuk halaman ini' : 'Suggested for this page'}
+            </div>
+            {suggestedFragments.map(fragment => (
+              <button
+                key={fragment.id}
+                onClick={() => handleInsertFragment(fragment.id)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-accent/20 bg-app-accent/5 hover:bg-app-accent/10 text-left transition-all active:scale-[0.98] group"
+                title={fragment.description}
+              >
+                <span className="text-base flex-shrink-0 group-hover:scale-110 transition-transform">{fragment.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[9px] font-bold text-app-accent truncate group-hover:text-app-primary transition-colors">
+                    {fragment.title}
+                  </div>
+                  <div className="text-[7px] text-app-muted truncate">
+                    {fragment.description}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Category filter chips */}
         <div className="flex flex-wrap gap-1">

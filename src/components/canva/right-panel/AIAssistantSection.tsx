@@ -7,6 +7,7 @@ import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { SchemaBlock } from '@/core/schema/types';
 import AIAssistantPanel from '../ai-assistant/AIAssistantPanel';
 import AIGenerateLessonPanel from '../ai-assistant/AIGenerateLessonPanel';
+import AIRefinePanel from '../ai-assistant/AIRefinePanel';
 import Section from './Section';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -21,7 +22,7 @@ import Section from './Section';
 
 const HINT_DISMISSED_KEY = 'mpi_ai_assistant_hint_dismissed';
 
-type AITab = 'generate' | 'content';
+type AITab = 'generate' | 'content' | 'refine';
 
 /**
  * Check if a schema block appears to have no meaningful content.
@@ -163,13 +164,26 @@ export default function AIAssistantSection() {
             <span className="text-[10px]">🤖</span>
             Konten AI
           </button>
+          <button
+            onClick={() => setActiveTab('refine')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[8px] font-bold transition-all ${
+              activeTab === 'refine'
+                ? 'bg-violet-500/15 text-violet-300 border border-violet-500/20'
+                : 'text-app-muted hover:text-app-secondary border border-transparent'
+            }`}
+          >
+            <span className="text-[10px]">🪄</span>
+            Refine
+          </button>
         </div>
 
         {/* Tab content */}
         {activeTab === 'generate' ? (
           <AIGenerateLessonPanel />
-        ) : (
+        ) : activeTab === 'content' ? (
           <AIAssistantPanel />
+        ) : (
+          <AIRefinePanel />
         )}
       </Section>
 
