@@ -28,31 +28,24 @@ import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
 // ═══════════════════════════════════════════════════════════════
-// These components are only loaded when needed, reducing initial
-// bundle size. Each has a lightweight fallback.
 
-// PlayOverlay — only needed in interactive/preview mode (already was lazy)
 const PlayOverlay = dynamic(() => import('./PlayOverlay'), {
   ssr: false,
   loading: () => null,
 });
 
-// CommandPalette — only visible when Cmd+K is pressed
 const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette').then(mod => ({ default: mod.default })), {
   ssr: false,
   loading: () => null,
 });
 
 // ═══════════════════════════════════════════════════════════════
-// CANVA BUILDER v5 — Mode-aware 3-column layout
+// CANVA BUILDER v6 — Modern & Clean 3-column layout
 // ═══════════════════════════════════════════════════════════════
 // Architecture:
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
 //   appMode === 'edit'     → Full 3-panel layout (ScenePanel | Stage | ContextPanel)
-//
-// The existing interactive mode (PlayOverlay) still works via
-// the interactive store and overlays on top of everything.
 // ═══════════════════════════════════════════════════════════════
 
 export default function CanvaBuilder() {
@@ -64,34 +57,18 @@ export default function CanvaBuilder() {
   // ── Export success dialog ───────────────────────────────────
   const [showExportSuccess, setShowExportSuccess] = useState(false);
 
-  // [G.4] Verified: cleanup is present — removeEventListener called on unmount
   useEffect(() => {
     const handler = () => setShowExportSuccess(true);
     window.addEventListener('silse-export-success', handler);
     return () => window.removeEventListener('silse-export-success', handler);
   }, []);
 
-  // NOTE: loadFromStorage() removed from CanvaBuilder mount.
-  // Persistence is now handled by:
-  // 1. Unified auto-save via useAutoSave() hook (2 000 ms debounce)
-  // 2. AuthoringTool initial load via loadFromStorage on first app mount
-
-  // ── Unified auto-save ──────────────────────────────────────
-  // Auto-save is now handled by CanvaAutoSaveSync component,
-  // which connects the project context to the auto-save hook.
-
   // ── Sync interactive page total with canva pages ─────────────
-  // [G.4] Fixed: this useEffect runs a side-effect on each render cycle
-  // triggered by the store selector. The subscription is via useCanvaStore
-  // selector which is properly managed by React/Zustand — no manual cleanup needed.
-  // However, the pattern of calling setTotalPages in a useEffect from a
-  // selector dependency is intentional and lightweight.
   useEffect(() => {
     useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
   }, [useCanvaStore((s) => s.pages.length)]);
 
   // ── Warn before unload if authoring data is dirty ────────────
-  // [G.4] Verified: cleanup is present — removeEventListener called on unmount
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const authDirty = useAuthoringStore.getState().dirty;
@@ -105,8 +82,6 @@ export default function CanvaBuilder() {
   }, []);
 
   // ── Unified keyboard shortcuts via registry ──────────────────
-  // Shortcut definitions are extracted to src/core/shortcuts/canva-shortcuts.ts
-  // for maintainability. Dependencies are injected here at registration time.
   useKeyboardShortcuts(
     getCanvaShortcuts({
       getCanvaState: useCanvaStore.getState,
@@ -164,7 +139,6 @@ export default function CanvaBuilder() {
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
-        {/* Visually hidden live region for screen reader announcements */}
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
 
         {/* Top Toolbar */}
@@ -176,35 +150,39 @@ export default function CanvaBuilder() {
 
         {/* Main builder row — 3-column Canva-style layout */}
         <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-          {/* Left Panel — Scene Panel (fixed 240px) */}
+          {/* Left Panel — Icon Rail + Expandable */}
           <div
-            className={`border-r border-app-border shadow-[1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-              leftPanelOpen ? 'w-[240px]' : 'w-0'
-            }`}
+            className="flex-shrink-0 overflow-hidden shadow-app-panel"
+            style={{
+              width: leftPanelOpen
+                ? 'var(--semantic-panel-default)'
+                : 'var(--semantic-panel-collapsed)',
+            }}
             data-tour="left-panel"
             data-testid="left-panel"
             role="complementary"
             aria-label="Panel halaman dan block"
           >
-            {leftPanelOpen && (
+            {leftPanelOpen ? (
               <ProfilerWrapper id="LeftPanel">
                 <LeftPanel />
               </ProfilerWrapper>
-            )}
+            ) : null}
           </div>
 
           {/* Stage Canvas Area — flex-1 zoom-to-fit */}
-          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
+          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden bg-app-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
             <ProfilerWrapper id="Stage">
               <Stage />
             </ProfilerWrapper>
           </div>
 
-          {/* Right Panel — Context Panel (fixed 280px) */}
+          {/* Right Panel — Context Panel */}
           <div
-            className={`border-l border-app-border shadow-[-1px_0_4px_-2px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-              rightPanelOpen ? 'w-[280px]' : 'w-0'
-            }`}
+            className="flex-shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out shadow-app-panel-left"
+            style={{
+              width: rightPanelOpen ? 'var(--semantic-panel-expanded)' : '0px',
+            }}
             data-tour="right-panel"
             data-testid="right-panel"
             role="complementary"
@@ -223,16 +201,16 @@ export default function CanvaBuilder() {
         {/* Status Bar */}
         <StatusBar />
 
-        {/* Play Preview Overlay — renders on top of everything */}
+        {/* Play Preview Overlay */}
         <PlayOverlay />
 
-        {/* Guided Tour — auto-starts on first visit, re-trigger via ? key */}
+        {/* Guided Tour */}
         <CanvaTour />
 
-        {/* Command Palette (Cmd+K / Ctrl+K) — available from anywhere */}
+        {/* Command Palette */}
         <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
 
-        {/* Offline Indicator — shows sync status in bottom-left */}
+        {/* Offline Indicator */}
         <OfflineIndicator />
 
         {/* Export Success Dialog */}

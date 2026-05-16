@@ -9,6 +9,7 @@ import {
   Palette,
   Sparkles,
   FolderOpen,
+  ArrowLeft,
   ArrowLeftRight,
   Clock,
   Save,
@@ -278,7 +279,8 @@ function AuthoringToolInner() {
 
   return (
     <div className="h-screen w-screen flex bg-app-surface text-app-primary overflow-hidden">
-      {/* ── Sidebar — Clean modern navigation ────────────── */}
+      {/* ── Sidebar — Hidden in Canva mode (CanvaBuilder has its own icon rail) ── */}
+      {!isCanva && (
       <aside
         role="navigation"
         aria-label="Menu utama"
@@ -404,6 +406,22 @@ function AuthoringToolInner() {
           </div>
         )}
       </aside>
+      )}
+
+      {/* ── Canva mode: Floating back-to-dashboard button ──── */}
+      {isCanva && (
+        <div className="fixed top-3 left-3 z-50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActivePanel('dashboard')}
+            className="bg-app-surface/90 border border-app-border shadow-sm text-app-secondary hover:text-app-primary gap-1.5 backdrop-blur-sm"
+          >
+            <ArrowLeft size={14} />
+            Dashboard
+          </Button>
+        </div>
+      )}
 
       {/* ── Main Area ───────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">

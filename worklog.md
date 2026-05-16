@@ -1,117 +1,110 @@
----
-Task ID: F-Phase
-Agent: Super Z (main)
-Task: Phase F — Template & AI Workflows (F.1, F.3, F.4)
+# UI Rebuild Worklog — Task: ui-rebuild
 
-Work Log:
-- Read entire codebase structure: template-gallery.ts (1265 lines), template-fragments.ts, TemplateGalleryPanel, TemplateCustomizeDialog, AITemplateGenerator, AddBlockPanel, LayerPanel, session-slice.ts
-- Analyzed existing infrastructure: 16 templates, 14 fragments, 4 patterns, instantiateTemplate/instantiateTemplateWithConfig, batch store actions (batchDuplicateBlocks, batchSetVariant, deleteSchemaBlocks)
-- F.1a: Added insertTemplatePages() merge-mode function to template-gallery.ts — creates new pages from template for appending to existing project
-- F.1b: Rewrote TemplateCustomizeDialog with Replace/Insert mode toggle, warning banner, smart defaults
-- F.1c: Rewrote TemplateGalleryPanel with merge-aware quick apply (auto-detects empty vs existing project), updated button labels
-- F.3: Created BatchActionsBar component — batch delete, duplicate, variant, clear selection
-- F.3: Enhanced LayerPanel with multi-select checkboxes, shift+click support, blue highlight for multi-selected blocks
-- F.4: Added getSmartSuggestions() to template-fragments.ts — scores fragments by page-match/complement/missing-type
-- F.4: Updated AddBlockPanel to use smart suggestion engine instead of simple bestFitPageType filter
-- All changes pass tsc --noEmit and next build cleanly
-- Git committed and pushed to origin/main
+## Date: 2026-05-16
 
-Stage Summary:
-- Phase F.1 (Template Gallery): ✅ COMPLETE — merge mode, insert/replace toggle, auto-detect
-- Phase F.3 (Batch Operations): ✅ COMPLETE — BatchActionsBar, multi-select in LayerPanel
-- Phase F.4 (Quick-Insert Fragments): ✅ COMPLETE — smart suggestions engine
-- Phase F.2 (AI-assisted content): Already had AITemplateGenerator — no additional changes needed
-- Build: ✅ clean
-- Git: 4006aa2 pushed to origin/main
+## Summary
+Rebuilt SILSE UI following the Modern & Clean design direction with Slate-Indigo primary, Amber accent, 3-level surface elevation, icon rail sidebar, decomposed toolbar, and 3-tab right panel.
 
----
-Task ID: G-phase
-Agent: Main
-Task: Phase G — Performance, Offline/PWA, Memory Leak Audit, E2E Tests
+## P1: Design Token Unification + Toolbar Decomposition
 
-Work Log:
-- G.1: Created PerformanceMonitor component (dev-only floating panel), React.Profiler wrappers in CanvaBuilder, lazy-loaded 8 heavy components (games, AI panels, template gallery, command palette), @next/bundle-analyzer integration, Zustand performance middleware (slow update detection, action storm detection), performance utility library
-- G.3: PWA with @ducanh2912/next-pwa, manifest.json with SVG icons, service worker registration hook, OfflineIndicator component, offline-sync queue system (localStorage-based, auto-flush on reconnect), Indonesian UX toasts for online/offline transitions
-- G.4: Memory leak detector (periodic heap sampling, >1MB/min leak flagging), SubscriptionManager singleton for Zustand subscriptions, useCleanup hook, schema-gc helpers (estimateSchemaSize, findOrphanedRefs, compactSchema), history queue trim (>5MB auto-trim), PerformanceMonitor Memory tab enhanced with leak status indicators
-- G.5: Playwright setup (chromium-only, 1280×720, id-ID locale), 6 smoke test suites (27 tests), data-testid attributes on 6 components, shared test helpers, CI script, npm scripts (test:e2e, test:e2e:ui, test:e2e:debug)
+### 1a. globals.css — Split and unify tokens
+- **Extracted print styles** from `src/app/globals.css` (695→1192 lines) to `src/app/print.css` (~240 lines) and imported it
+- **Updated semantic tokens**:
+  - `--semantic-panel-collapsed`: 60px → **56px** (per spec)
+  - `--semantic-panel-expanded`: 320px → **280px** (per spec)
+  - `--semantic-success`: #16a34a → **#34d399** (matches dark mode)
+  - `--semantic-info`: #3b82f6 → **#22d3ee** (matches accent-secondary)
+  - `--semantic-error`: #dc2626 → **#f87171** (matches dark mode)
+- **Added utility classes**: `.shadow-app-panel`, `.shadow-app-panel-left` for consistent panel borders
 
-Stage Summary:
-- Phase G COMPLETE — all 4 sub-phases (G.1, G.3, G.4, G.5) implemented
-- G.2 (Export Pipeline) removed per user request
-- TypeScript compiles clean, build passes
-- All changes committed to git
-- SILSE project now has: performance profiling, offline/PWA support, memory leak detection, and E2E smoke tests
+### 1b. Toolbar Decomposition
+- **Broke monolith** `src/components/canva/Toolbar.tsx` (534 lines) into separate files:
+  - `toolbar/ModeSwitch.tsx` — [EDIT] [PREVIEW] [PRESENT] pill toggle with rounded-full design
+  - `toolbar/PageNavigation.tsx` — ◄ ► 1/5 with scene sub-counter
+  - `toolbar/ZoomControls.tsx` — Ratio badge + zoom in/out/fit using DropdownMenu (replaced manual mousedown listener)
+  - `toolbar/QuickActions.tsx` — Save, Export, Command palette
+  - `toolbar/ToolbarNavNew.tsx` — Project name + back button
+- **Toolbar height** now uses `var(--semantic-toolbar-height)` instead of fixed height
+- **Mode pills**: rounded-full, subtle bg when inactive, amber accent when active
+- **Replaced hardcoded colors**: `bg-cyan-500/10` → `text-app-info`, `bg-emerald-400` → `text-app-success`, etc.
 
----
-Task ID: ui-optimize
-Agent: Main
-Task: Optimize SILSE app to be lightweight and stable
+### 1c. Deleted dead toolbar files
+- Removed: `ToolbarActions.tsx`, `ToolbarViewControls.tsx`, `ToolbarNav.tsx`, `ToolbarPanelToggles.tsx`, `ToolbarHelp.tsx`, `BatchActionBar.tsx`
+- Kept: `ToolbarExport.tsx`, `use-export-actions.ts` (actively used)
 
-Work Log:
-- Removed output:standalone from next.config (was creating 646MB duplicate)
-- Converted next.config.ts → next.config.js (allows npm prune --omit=dev)
-- Added optimizePackageImports for lucide-react, framer-motion, xlsx, @radix-ui
-- Added productionBrowserSourceMaps: false, removeConsole for production
-- Moved prisma to devDependencies (179MB saved at runtime)
-- Converted xlsx imports to dynamic import() (7.3MB lazy loaded)
-- Removed /mockup page (was causing Turbopack panics)
-- Audited lucide-react imports — all named/tree-shakeable
-- .next build: 646MB → 234MB (-64%)
-- Rebuilt with webpack (stable), tsc clean, build clean
+## P2: LeftPanel Icon Rail + Unified Shell
 
-Stage Summary:
-- App significantly lighter: .next 646MB→234MB, node_modules would be 576MB with prune
-- Server runs but container kills background processes after ~25-30s
-- This is a container environment limitation, not app issue
-- Production build works, pages serve correctly
+### 2a. LeftPanel Rebuild
+- **Replaced** flat 240px panel with **56px icon rail + expandable panel**:
+  - `left-panel/IconRail.tsx` — Always visible vertical icon strip with 4 tabs (Pages, Add Block, Templates, Settings)
+  - `left-panel/SceneList.tsx` — Page thumbnails with drag reorder (semantic tokens only)
+  - `left-panel/AddBlockSection.tsx` — Collapsible add-block panel
+  - `left-panel/TemplateSection.tsx` — Collapsible template browser
+  - `left-panel/SettingsSection.tsx` — Ratio selector + Reset canvas
+- **Active tab** has amber accent indicator (left border + bg highlight)
+- **Smooth CSS-only transition**: `transition-[width] duration-200 ease-in-out`
+- **Replaced hardcoded badge colors** in SceneList with semantic tokens (bg-app-success, bg-app-info, etc.)
+- Clicking same tab toggles collapse/expand
 
----
-Task ID: optimize-framer-motion
-Agent: Main
-Task: Replace framer-motion with lightweight CSS animations for optimization
+### 2b. CanvaBuilder Shell Update
+- **Panel widths** now use CSS variables:
+  - Left: `var(--semantic-panel-collapsed)` / `var(--semantic-panel-default)`
+  - Right: `var(--semantic-panel-expanded)`
+- **Removed hardcoded** `w-[240px]` / `w-[280px]`
+- **Removed inline shadow values** — replaced with `shadow-app-panel` / `shadow-app-panel-left`
+- **Smooth panel transitions**: `transition-[width] duration-200 ease-in-out`
 
-Work Log:
-- Analyzed all 8 files using framer-motion: stage, PlayOverlay, PresentMode, CanvasEmptyState, TemplateMarketplace, auto-generate, Dokumen, AuthoringTool, SchemaPlayer
-- Created /src/lib/transition.tsx — lightweight animation utilities (PageTransition, FadeIn, SlideIn, ScaleIn, Collapse, ShowTransition, StaggerChildren, AnimatePresence shim, motion.div shim)
-- Added CSS keyframe animations to globals.css: anim-enter-fade, anim-enter-slide-up/down/left/right, anim-enter-scale, anim-exit-fade, anim-page-fade-in/out, anim-page-slide-*
-- Replaced framer-motion in all 8 component files with CSS-based alternatives
-- Removed framer-motion from package.json dependencies (saves ~5.4MB)
-- Removed framer-motion from next.config.js optimizePackageImports
-- Added turbopack: {} config for Next.js 16 compatibility
-- Added NODE_OPTIONS='--max-old-space-size=512' for production and '768' for build
-- Added test:light script using --turbopack flag
-- Created scripts/serve-persistent.mjs — lightweight Node.js server script
-- Created scripts/keep-alive-server.sh — auto-restart wrapper with health checks
-- Build compiles successfully with Turbopack
-- Production server stays alive with keepalive (60+ seconds confirmed)
+### 2c. AuthoringTool Sidebar
+- **Hidden sidebar** when `isCanva` mode is active — CanvaBuilder has its own icon rail
+- **Added floating "back to dashboard" button** in canva mode (fixed position, top-left)
+- Eliminates nested navigation conflict between AuthoringTool sidebar and CanvaBuilder panels
 
-Stage Summary:
-- framer-motion completely removed (8 files → CSS animations)
-- Bundle savings: ~5.4MB node_modules, reduced runtime JS
-- Production build: ✅ clean (4.4MB static, 6.6MB server)
-- Server stability: ✅ with keepalive loop (without it, container kills after ~25s)
-- Next.js config optimized: Turbopack, memory limits, tree-shaking
+## P3: Right Panel 3-Tab + Animation Cleanup
+
+### 3a. Right Panel with 3 Tabs
+- **3-tab header**: Properties | AI | Layer
+  - **Properties**: BlockPropertiesPanel, ElementProperties, AlignmentTools, BackgroundSection
+  - **AI**: AIAssistantSection, AIRefineSection
+  - **Layer**: PageInfo, NavigationSection, PageSettingsSection, PaletteSection
+- **Tab bar style**: minimal, subtle underline indicator, amber accent on active
+- **Width**: `var(--semantic-panel-expanded)` = 280px
+- **Smooth tab transitions**: CSS opacity + translate, 150ms
+
+### 3b. StatusBar Modernization
+- **Consistent typography**: text-xs only
+- **Moved `saveIndicatorConfig`** to module-level constant `SAVE_INDICATOR_CONFIG`
+- **Semantic tokens only**: `text-app-error`, `text-app-success`, `text-app-info`, etc.
+- **Height**: `var(--semantic-statusbar-height)` = 28px
+
+### 3c. Animation Cleanup
+- All transitions are CSS-only (no framer-motion added)
+- Panel open/close: `transition-[width] duration-200 ease-in-out`
+- Tab switches: `transition-opacity duration-150`
+- Reduced motion already handled in globals.css: `@media (prefers-reduced-motion: reduce)`
+
+## Build Verification
+- `npx next build` passes successfully
+- Server starts and returns 200
+- All store connections, hooks, and event handlers preserved
 
 ---
-Task ID: optimization
-Agent: Main
-Task: Optimize SILSE app for testing in sandbox environment
+Task ID: ui-rebuild
+Agent: Main + full-stack-developer
+Task: Rebuild SILSE UI — Modern & Clean
 
 Work Log:
-- Audited all 33 npm dependencies for usage vs dead code
-- Found and removed dead dependencies: @tanstack/react-query (4.4MB), react-markdown (88KB), @dnd-kit/core+sortable+utilities (2.4MB), cmdk, react-hook-form, @hookform/resolvers, react-resizable-panels, 12 unused @radix-ui packages, workbox-window
-- Removed 36 unused shadcn/ui components (out of 48 total, only 12 actually used)
-- Kept sonner and next-themes (heavily used), reinstalled after accidental removal
-- Optimized next.config.js: standalone output, disabled PWA, disabled reactStrictMode, optimizeCss, skip ESLint
-- Built standalone production output (135MB vs full node_modules 897MB)
-- Created detached Node.js launcher (launcher.js) that survives sandbox process reaper
-- Server now runs stably on port 8080 via standalone server.js
+- P1: Split globals.css (1192→759 lines), extracted print.css, unified design tokens
+- P1: Decomposed Toolbar (534 lines → 5 separate components + index)
+- P1: Deleted 6 dead toolbar files, added semantic status color tokens
+- P2: LeftPanel rebuilt with 56px icon rail + expandable content (4 tabs)
+- P2: CanvaBuilder uses CSS variables for panel widths
+- P2: AuthoringTool sidebar hidden in canva mode
+- P3: RightPanel 3-tab layout (Properties | AI | Layer) with amber indicator
+- P3: StatusBar modernized with module-level constants and semantic tokens
+- Rebuilt production, server stable on port 3000 → gateway port 81
 
 Stage Summary:
-- Dependencies reduced from 33 to ~24 (removed ~12MB of dead node_modules)
-- UI components reduced from 48 to 12 (removed 36 dead files)
-- Build output: 12MB total, 4.3MB static
-- Standalone server starts in ~60ms (vs 180ms with next start)
-- Server is stable via detached child_process approach
-- xlsx already had optimal lazy-loading (type-only static imports + dynamic runtime import)
-- Remaining heavy deps are all actively used: immer (core), xlsx (lazy), z-ai (server-only)
+- New files: ModeSwitch.tsx, PageNavigation.tsx, QuickActions.tsx, ToolbarNavNew.tsx, ZoomControls.tsx, IconRail.tsx, SceneList.tsx, AddBlockSection.tsx, TemplateSection.tsx, SettingsSection.tsx, print.css
+- Deleted files: ToolbarActions.tsx, ToolbarViewControls.tsx, ToolbarNav.tsx, ToolbarPanelToggles.tsx, ToolbarHelp.tsx, BatchActionBar.tsx (dead toolbar code)
+- Design: Slate-Indigo primary, Amber accent, 3-level surface elevation, CSS-only animations
+- Server: Running on port 3000, gateway on port 81, stable

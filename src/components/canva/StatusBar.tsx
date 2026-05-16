@@ -11,19 +11,43 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 // ═══════════════════════════════════════════════════════════════
-// Phase 2: StatusBar redesign
-// - Replace mouse position with unified save indicator
-// - Add template type to page info
-// - Include overlay elements in count
-// - Add zoom slider
+// STATUS BAR v6 — Modernized & Clean
+// ═══════════════════════════════════════════════════════════════
+// - Consistent text-xs typography
+// - Semantic tokens only (no hardcoded colors)
+// - Styled range slider
+// - saveIndicatorConfig as module-level constant
 // ═══════════════════════════════════════════════════════════════
 
 type SaveStatus = 'unsaved' | 'saving' | 'saved' | 'error';
 
+// Module-level constant — moved from render
+const SAVE_INDICATOR_CONFIG: Record<SaveStatus, { icon: React.ReactNode; label: string; className: string }> = {
+  unsaved: {
+    icon: <span className="inline-block w-2 h-2 rounded-full bg-app-error/60" />,
+    label: 'Belum tersimpan',
+    className: 'text-app-error/60',
+  },
+  saving: {
+    icon: <Loader2 size={10} className="animate-spin" />,
+    label: 'Menyimpan...',
+    className: 'text-app-warning/60',
+  },
+  saved: {
+    icon: <CheckCircle2 size={10} />,
+    label: 'Tersimpan',
+    className: 'text-app-success/50',
+  },
+  error: {
+    icon: <AlertCircle size={10} />,
+    label: 'Gagal simpan',
+    className: 'text-app-error/60',
+  },
+};
+
 export default function StatusBar() {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
-  const ratioId = useCanvaStore(s => s.ratioId);
   const storeZoom = useCanvaStore(s => s.zoom);
   const storeFitZoom = useCanvaStore(s => s.fitZoom);
   const setZoom = useCanvaStore(s => s.setZoom);
@@ -59,37 +83,20 @@ export default function StatusBar() {
     return cs;
   })();
 
-  // Count all elements (overlayElements is always empty at runtime — merged into elements on load)
   const totalElements = page?.elements.length || 0;
   const templateBadge = TEMPLATE_BADGE_MAP[page?.templateType || 'custom'];
 
-  const saveIndicatorConfig: Record<SaveStatus, { icon: React.ReactNode; label: string; className: string }> = {
-    unsaved: {
-      icon: <span className="inline-block w-2 h-2 rounded-full bg-red-400/60" />,
-      label: 'Belum tersimpan',
-      className: 'text-red-400/60',
-    },
-    saving: {
-      icon: <Loader2 size={10} className="animate-spin" />,
-      label: 'Menyimpan...',
-      className: 'text-amber-400/60',
-    },
-    saved: {
-      icon: <CheckCircle2 size={10} />,
-      label: 'Tersimpan',
-      className: 'text-emerald-500/50',
-    },
-    error: {
-      icon: <AlertCircle size={10} />,
-      label: 'Gagal simpan',
-      className: 'text-red-400/60',
-    },
-  };
+  const saveConfig = SAVE_INDICATOR_CONFIG[saveStatus];
 
-  const saveConfig = saveIndicatorConfig[saveStatus];
+  const zoomPercent = storeZoom === -1
+    ? Math.round(storeFitZoom * 100)
+    : Math.round(storeZoom * 100);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-1.5 bg-app-surface border-t border-app-border text-[11px] text-app-muted select-none">
+    <div
+      className="flex items-center gap-3 px-4 py-1.5 bg-app-surface border-t border-app-border text-xs text-app-muted select-none"
+      style={{ height: 'var(--semantic-statusbar-height)' }}
+    >
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
         <Ratio size={11} className="text-app-muted" />
@@ -111,19 +118,19 @@ export default function StatusBar() {
         </span>
       </span>
 
-      {/* Scene indicator — only when multi-scene */}
+      {/* Scene indicator */}
       {sceneTotal > 1 && (
         <span className="flex items-center gap-1">
-          <Layers size={11} className="text-emerald-400/60" />
-          <span className="text-emerald-400/70 font-medium">{teacherMode ? 'Bagian' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
+          <Layers size={11} className="text-app-success/60" />
+          <span className="text-app-success/70 font-medium">{teacherMode ? 'Bagian' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
         </span>
       )}
 
-      {/* Block selection feedback — shows block type when selected */}
+      {/* Block selection feedback */}
       {selectedBlockId && selectedBlockType && !teacherMode && (
         <span className="flex items-center gap-1">
-          <Zap size={11} className="text-amber-400/60" />
-          <span className="text-amber-400/70 font-medium">
+          <Zap size={11} className="text-app-accent/60" />
+          <span className="text-app-accent/70 font-medium">
             {teacherTerm(BLOCK_DEFINITIONS[selectedBlockType]?.name || selectedBlockType, teacherMode)}
           </span>
         </span>
@@ -132,8 +139,8 @@ export default function StatusBar() {
       {/* Canvas preview mode indicator */}
       {canvasPreview && (
         <span className="flex items-center gap-1">
-          <Eye size={11} className="text-cyan-400/60" />
-          <span className="text-cyan-400/70 font-medium">Preview</span>
+          <Eye size={11} className="text-app-info/60" />
+          <span className="text-app-info/70 font-medium">Preview</span>
         </span>
       )}
 
@@ -145,7 +152,7 @@ export default function StatusBar() {
         <span className="hidden sm:inline">{saveConfig.label}</span>
       </span>
 
-      {/* Spacer + Theme preset picker + Theme toggle + Zoom slider (right side) */}
+      {/* Right side: Theme preset + Theme toggle + Zoom slider */}
       <div className="flex items-center gap-1.5 ml-auto">
         <ThemePresetPicker />
         <ThemeToggle />
@@ -155,7 +162,7 @@ export default function StatusBar() {
           min={10}
           max={300}
           step={5}
-          value={storeZoom === -1 ? Math.round(storeFitZoom * 100) : Math.round(storeZoom * 100)}
+          value={zoomPercent}
           onChange={e => setZoom(parseInt(e.target.value) / 100)}
           className="w-16 h-1 accent-app-accent"
         />

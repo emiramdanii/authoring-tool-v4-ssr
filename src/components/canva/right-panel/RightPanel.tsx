@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import ElementProperties from './ElementProperties';
 import BackgroundSection from './BackgroundSection';
@@ -9,7 +10,7 @@ import PageSettingsSection from './PageSettingsSection';
 import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
-import { Layers, Zap, Box, Sparkles } from 'lucide-react';
+import { Layers, Zap, Box, Sparkles, Settings2 } from 'lucide-react';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import dynamic from 'next/dynamic';
 
@@ -35,16 +36,21 @@ const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'),
 });
 
 // ═══════════════════════════════════════════════════════════════
-// CONTEXT PANEL — Canva-style contextual right panel (280px fixed)
+// RIGHT PANEL v6 — 3-Tab Layout
 // ═══════════════════════════════════════════════════════════════
-// Context-aware: shows different sections based on selection:
-//
-//   Multi-select blocks → Alignment Tools + Block Properties
-//   Single block selected → Block Properties + AI Assistant
-//   No selection → Scene Properties (bg, palette, nav, settings)
-//
-// The panel always shows PageInfo at the bottom.
+// Tabs:
+//   Properties → Block/Eleent props, Alignment, Background
+//   AI         → AI Assistant, AI Refine
+//   Layer ⚙    → PageInfo, Navigation, PageSettings, Palette
 // ═══════════════════════════════════════════════════════════════
+
+type RightPanelTab = 'properties' | 'ai' | 'layer';
+
+const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
+  { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
+  { id: 'ai', label: 'AI', icon: <Sparkles size={12} /> },
+  { id: 'layer', label: 'Layer', icon: <Layers size={12} /> },
+];
 
 export default function RightPanel() {
   const rightPanelOpen = useCanvaStore(s => s.rightPanelOpen);
@@ -54,6 +60,8 @@ export default function RightPanel() {
   const selectedElIds = useCanvaStore(s => s.selectedElIds);
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
+  const [activeTab, setActiveTab] = useState<RightPanelTab>('properties');
+
   if (!rightPanelOpen) return null;
 
   // Determine context mode
@@ -61,64 +69,90 @@ export default function RightPanel() {
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
 
-  return (
-    <div className="w-full flex flex-col bg-app-surface overflow-y-auto custom-scrollbar">
+  // Auto-switch to AI tab when a block is selected and AI tab is relevant
+  // But let user manually switch tabs
 
-      {/* ═══ Context header ═══ */}
-      <div className="px-3 py-2 border-b border-app-border bg-app-surface/50 sticky top-0 z-10">
-        {hasMultiBlockSelection ? (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
-            <Layers size={11} />
-            {selectedBlockIds.length} {teacherTerm('Block', teacherMode)} Terpilih
-          </div>
-        ) : hasBlockSelection ? (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
-            <Zap size={11} />
-            {teacherMode ? 'Properti Konten' : 'Block Properties'}
-          </div>
-        ) : hasElementSelection ? (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-app-accent uppercase tracking-wider">
-            <Box size={11} />
-            {teacherMode ? 'Properti Elemen' : 'Element Properties'}
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-app-secondary uppercase tracking-wider">
-            <Layers size={11} />
-            {teacherMode ? 'Properti Halaman' : 'Scene Properties'}
-          </div>
-        )}
+  return (
+    <div className="w-full flex flex-col bg-app-surface overflow-hidden" style={{ width: 'var(--semantic-panel-expanded)' }}>
+      {/* ── Tab Bar ──────────────────────────────────────────── */}
+      <div className="flex items-center border-b border-app-border px-1 pt-1 flex-shrink-0">
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1 px-3 py-2 text-[10px] font-bold transition-all relative ${
+                isActive
+                  ? 'text-app-accent'
+                  : 'text-app-muted hover:text-app-secondary'
+              }`}
+              aria-selected={isActive}
+              role="tab"
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+              {/* Active indicator — subtle underline */}
+              {isActive && (
+                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-app-accent rounded-t-full" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ═══ Context-aware content ═══ */}
+      {/* ── Tab Content ──────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Properties Tab */}
+        <div
+          className={`transition-opacity duration-150 ${activeTab === 'properties' ? 'opacity-100' : 'hidden'}`}
+          role="tabpanel"
+          aria-label="Properti"
+        >
+          {hasMultiBlockSelection ? (
+            <>
+              <AlignmentTools />
+              <BlockPropertiesPanel />
+            </>
+          ) : hasBlockSelection ? (
+            <BlockPropertiesPanel />
+          ) : (
+            <>
+              <ElementProperties />
+              <AlignmentTools />
+              <BackgroundSection />
+            </>
+          )}
+        </div>
 
-      {hasMultiBlockSelection ? (
-        /* ── Multi-block selected: Alignment + Block props ── */
-        <>
-          <AlignmentTools />
-          <BlockPropertiesPanel />
-        </>
-      ) : hasBlockSelection ? (
-        /* ── Single block selected: Content-first properties ── */
-        <>
-          <BlockPropertiesPanel />
-          <AIRefineSection />
-          <AIAssistantSection />
-        </>
-      ) : (
-        /* ── No block selection: Scene-level properties ── */
-        <>
-          {/* Element properties for legacy elements (always available) */}
-          <ElementProperties />
-          <AlignmentTools />
-          <BackgroundSection />
-          <PaletteSection />
+        {/* AI Tab */}
+        <div
+          className={`transition-opacity duration-150 ${activeTab === 'ai' ? 'opacity-100' : 'hidden'}`}
+          role="tabpanel"
+          aria-label="AI"
+        >
+          {hasBlockSelection ? (
+            <>
+              <AIRefineSection />
+              <AIAssistantSection />
+            </>
+          ) : (
+            <AIAssistantSection />
+          )}
+        </div>
+
+        {/* Layer Tab */}
+        <div
+          className={`transition-opacity duration-150 ${activeTab === 'layer' ? 'opacity-100' : 'hidden'}`}
+          role="tabpanel"
+          aria-label="Layer"
+        >
+          <PageInfo />
           <NavigationSection />
           <PageSettingsSection />
-        </>
-      )}
-
-      {/* ── Page Info (always visible at bottom) ───────────────── */}
-      <PageInfo />
+          <PaletteSection />
+        </div>
+      </div>
     </div>
   );
 }

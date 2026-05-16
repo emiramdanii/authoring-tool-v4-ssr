@@ -1581,7 +1581,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
   // ── Batch Duplicate Blocks ───────────────────────────────────────
   // Clones each selected block with a new ID and inserts after original.
-  batchDuplicateBlocks: (blockIds) => {
+  batchDuplicateBlocks: async (blockIds) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page || blockIds.length === 0) return;
@@ -1591,7 +1591,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    const { generateBlockId } = require('@/core/schema/ensure-schema') as typeof import('@/core/schema/ensure-schema');
+    const { generateBlockId } = await import('@/core/schema/ensure-schema');
     const newBlocks = [...schema.blocks];
 
     // Process in reverse order so insertion indices stay stable
