@@ -11,10 +11,12 @@
 //
 // It must be rendered inside the ThemeProvider (client component tree)
 // so that all store modules have been loaded before initialization.
+//
+// [G.4] Added cleanup on unmount for all subscriptions and timers.
 
 import { useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { initCanvaStoreSubscriptions } from '@/store/canva/init';
+import { initCanvaStoreSubscriptions, cleanupCanvaStoreSubscriptions } from '@/store/canva/init';
 import { preloadSounds } from '@/lib/sounds';
 import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
 import { useServiceWorker } from '@/hooks/use-service-worker';
@@ -49,9 +51,13 @@ export function StoreInit() {
     // 5. Initialize offline sync auto-flush (replays queued saves when online)
     const cleanupAutoFlush = initAutoFlush();
 
-    // Cleanup on unmount (unlikely for root component, but good practice)
+    // [G.4] Cleanup on unmount — unsubscribes all store subscriptions,
+    // clears timers, and resets initialization state so the store
+    // can be safely re-initialized if the component remounts.
     return () => {
       cleanupAutoFlush();
+      cleanupCanvaStoreSubscriptions();
+      _initCalled = false;
     };
   }, []);
 

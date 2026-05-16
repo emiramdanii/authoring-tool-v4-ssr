@@ -159,12 +159,23 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
       }
     });
 
+    // [G.4] Fixed: proper cleanup of both store subscriptions and debounce timer
     return () => {
       unsubscribeCanva();
       unsubscribeAuth();
       if (debounceTimer) clearTimeout(debounceTimer);
     };
   }, [saveNow]);
+
+  // [G.4] Fixed: cleanup the HIDE_SAVED_MS timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
 
   return { saveNow };
 }

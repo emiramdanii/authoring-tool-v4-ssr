@@ -12,6 +12,10 @@
 //
 // Both systems coexist. SchemaBlock edits record patches via the
 // editBus → PatchHistory pipeline, while legacy edits use snapshots.
+//
+// [G.4] Added: getHistorySize() and trimHistory() for memory management.
+// History queue is now explicitly capped and can be trimmed when
+// total snapshot memory exceeds 5MB estimated.
 
 import { applyPatches } from 'immer';
 import type { StateCreator } from 'zustand';
@@ -27,6 +31,67 @@ export type HistorySlice = Pick<
   | 'undo' | 'redo' | 'canUndo' | 'canRedo' | '_pushHistory' | 'timeTravel'
 >;
 
+// ── [G.4] Memory estimation constants ──────────────────────────
+/** Maximum estimated total history size in bytes before trimming */
+const MAX_HISTORY_BYTES = 5 * 1024 * 1024; // 5MB
+
+/**
+ * Estimate the byte size of a snapshot by serializing to JSON.
+ * This is expensive, so it should only be called periodically.
+ */
+function estimateSnapshotBytes(snapshot: Snapshot): number {
+  try {
+    return new Blob([JSON.stringify(snapshot)]).size;
+  } catch {
+    // Fallback: rough estimate based on page count
+    return snapshot.pages.length * 10000; // ~10KB per page as rough guess
+  }
+}
+
+/**
+ * [G.4] Estimate total memory used by the history queue.
+ * Iterates all snapshots and estimates their serialized size.
+ */
+export function getHistorySize(history: Snapshot[]): number {
+  let totalBytes = 0;
+  for (const snapshot of history) {
+    totalBytes += estimateSnapshotBytes(snapshot);
+  }
+  return totalBytes;
+}
+
+/**
+ * [G.4] Trim history queue if total estimated size exceeds MAX_HISTORY_BYTES.
+ * Drops oldest entries first, keeping at least 5 entries so undo still works.
+ * Returns the trimmed history array.
+ */
+export function trimHistory(history: Snapshot[], historyIdx: number): { history: Snapshot[]; historyIdx: number } {
+  const totalBytes = getHistorySize(history);
+  if (totalBytes <= MAX_HISTORY_BYTES) {
+    return { history, historyIdx };
+  }
+
+  // Drop oldest entries until we're under the limit, keeping at least 5
+  let newHistory = [...history];
+  let newIdx = historyIdx;
+  const minEntries = 5;
+
+  while (newHistory.length > minEntries && getHistorySize(newHistory) > MAX_HISTORY_BYTES * 0.7) {
+    newHistory.shift();
+    newIdx = Math.max(-1, newIdx - 1);
+  }
+
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+    const newBytes = getHistorySize(newHistory);
+    console.log(
+      `[G.4] Trimmed history: ${history.length} → ${newHistory.length} entries, ` +
+      `${(totalBytes / 1048576).toFixed(1)}MB → ${(newBytes / 1048576).toFixed(1)}MB`
+    );
+  }
+
+  return { history: newHistory, historyIdx: newIdx };
+}
+
 export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> = (_set, get) => ({
   _history: [],
   _historyIdx: -1,
@@ -38,8 +103,22 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
     const snapshot: Snapshot = { pages: structuredClone(pages), currentPageIndex, ratioId };
     const newHistory = _history.slice(0, _historyIdx + 1);
     newHistory.push(snapshot);
-    if (newHistory.length > MAX_HISTORY) newHistory.shift();
-    _set({ _history: newHistory, _historyIdx: newHistory.length - 1 });
+
+    // [G.4] Ensure history is capped at MAX_HISTORY
+    if (newHistory.length > MAX_HISTORY) {
+      // Drop the oldest entry — this dereferences the snapshot
+      // allowing GC to reclaim the structuredClone'd pages
+      newHistory.shift();
+    }
+
+    // [G.4] Periodic memory check: trim if total history exceeds 5MB
+    // Only check every 10 pushes to avoid expensive estimation on every edit
+    if (newHistory.length > 0 && newHistory.length % 10 === 0) {
+      const trimmed = trimHistory(newHistory, newHistory.length - 1);
+      _set({ _history: trimmed.history, _historyIdx: trimmed.historyIdx });
+    } else {
+      _set({ _history: newHistory, _historyIdx: newHistory.length - 1 });
+    }
   },
 
   undo: () => {

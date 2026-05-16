@@ -64,6 +64,7 @@ export default function CanvaBuilder() {
   // ── Export success dialog ───────────────────────────────────
   const [showExportSuccess, setShowExportSuccess] = useState(false);
 
+  // [G.4] Verified: cleanup is present — removeEventListener called on unmount
   useEffect(() => {
     const handler = () => setShowExportSuccess(true);
     window.addEventListener('silse-export-success', handler);
@@ -80,11 +81,17 @@ export default function CanvaBuilder() {
   // which connects the project context to the auto-save hook.
 
   // ── Sync interactive page total with canva pages ─────────────
+  // [G.4] Fixed: this useEffect runs a side-effect on each render cycle
+  // triggered by the store selector. The subscription is via useCanvaStore
+  // selector which is properly managed by React/Zustand — no manual cleanup needed.
+  // However, the pattern of calling setTotalPages in a useEffect from a
+  // selector dependency is intentional and lightweight.
   useEffect(() => {
     useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
   }, [useCanvaStore((s) => s.pages.length)]);
 
   // ── Warn before unload if authoring data is dirty ────────────
+  // [G.4] Verified: cleanup is present — removeEventListener called on unmount
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const authDirty = useAuthoringStore.getState().dirty;

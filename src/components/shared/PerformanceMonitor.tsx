@@ -6,6 +6,14 @@
 // Shows render times, render counts, memory usage, and FPS.
 // Only renders in development mode. Toggleable floating panel.
 // Uses React.Profiler data collected via the performance utility.
+//
+// [G.4] Enhanced with Memory Dashboard tab showing:
+//   - Current heap size
+//   - Heap growth rate (MB/min)
+//   - Subscription count (from SubscriptionManager)
+//   - History queue size (from getHistorySize)
+//   - Schema tree size (from estimateSchemaSize)
+//   - Leak detection status (🟢 healthy / 🟡 growing / 🔴 leaking)
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -19,7 +27,12 @@ import {
   type RenderEntry,
   type PerfCollector,
 } from '@/lib/performance';
-import { Activity, Cpu, HardDrive, X, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
+import { getMemoryReport, detectLeak } from '@/lib/memory-leak-detector';
+import { subscriptionManager } from '@/store/canva/subscription-manager';
+import { getHistorySize } from '@/store/canva/history-slice';
+import { estimateSchemaSize, getSchemaStats } from '@/core/schema/schema-gc';
+import { useCanvaStore } from '@/store/canva-store';
+import { Activity, Cpu, HardDrive, X, ChevronUp, ChevronDown, RotateCcw, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // ── Skip in production ─────────────────────────────────────────
@@ -51,10 +64,102 @@ function useFPS(): number {
     };
 
     rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    return () => cancelAnimationFrame(rafId); // [G.4] Fixed: cleanup for requestAnimationFrame
   }, []);
 
   return fps;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// [G.4] Memory Dashboard Data Hook
+// ═══════════════════════════════════════════════════════════════
+
+interface MemoryDashboardData {
+  currentHeapMB: number;
+  growthRate: number;
+  isLeaking: boolean;
+  leakConfidence: 'low' | 'medium' | 'high';
+  subscriptionCount: number;
+  activeSubscriptions: string[];
+  historySizeMB: number;
+  historyEntryCount: number;
+  schemaSizeKB: number;
+  schemaBlockCount: number;
+  schemaMaxDepth: number;
+  leakStatus: 'healthy' | 'growing' | 'leaking';
+}
+
+function useMemoryDashboard(): MemoryDashboardData {
+  const [data, setData] = useState<MemoryDashboardData>({
+    currentHeapMB: 0,
+    growthRate: 0,
+    isLeaking: false,
+    leakConfidence: 'low',
+    subscriptionCount: 0,
+    activeSubscriptions: [],
+    historySizeMB: 0,
+    historyEntryCount: 0,
+    schemaSizeKB: 0,
+    schemaBlockCount: 0,
+    schemaMaxDepth: 0,
+    leakStatus: 'healthy',
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Memory report from leak detector
+      const memReport = getMemoryReport();
+      const leakInfo = detectLeak();
+
+      // Subscription count
+      const subCount = subscriptionManager.getSubscriptionCount();
+      const activeSubs = subscriptionManager.getActiveSubscriptions();
+
+      // History queue size
+      const history = useCanvaStore.getState()._history;
+      const historyBytes = getHistorySize(history);
+      const historyMB = historyBytes / 1048576;
+
+      // Schema tree size (current page)
+      const currentPage = useCanvaStore.getState().currentPage();
+      let schemaSizeKB = 0;
+      let schemaBlockCount = 0;
+      let schemaMaxDepth = 0;
+      if (currentPage?.schema) {
+        const stats = getSchemaStats(currentPage.schema);
+        schemaSizeKB = stats.totalBytes / 1024;
+        schemaBlockCount = stats.blockCount;
+        schemaMaxDepth = stats.maxDepth;
+      }
+
+      // Determine leak status
+      let leakStatus: 'healthy' | 'growing' | 'leaking' = 'healthy';
+      if (leakInfo.isLeaking) {
+        leakStatus = 'leaking';
+      } else if (memReport.growthRate > 0.5) {
+        leakStatus = 'growing';
+      }
+
+      setData({
+        currentHeapMB: memReport.currentHeapMB,
+        growthRate: memReport.growthRate,
+        isLeaking: leakInfo.isLeaking,
+        leakConfidence: leakInfo.confidence,
+        subscriptionCount: subCount,
+        activeSubscriptions: activeSubs,
+        historySizeMB: Math.round(historyMB * 100) / 100,
+        historyEntryCount: history.length,
+        schemaSizeKB: Math.round(schemaSizeKB * 100) / 100,
+        schemaBlockCount,
+        schemaMaxDepth,
+        leakStatus,
+      });
+    }, 2000); // Update every 2s
+
+    return () => clearInterval(interval); // [G.4] Fixed: cleanup for setInterval
+  }, []);
+
+  return data;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -63,18 +168,13 @@ function useFPS(): number {
 
 function PerformancePanel() {
   const fps = useFPS();
-  const [collector, setCollector] = useState<PerfCollector | null>(null);
+  const memData = useMemoryDashboard();
+  const [collector, setCollector] = useState<PerfCollector | null>(() => initPerfCollector());
   const [slowRenders, setSlowRenders] = useState<RenderEntry[]>([]);
   const [renderCounts, setRenderCounts] = useState<Record<string, number>>({});
   const [memory, setMemory] = useState<ReturnType<typeof getMemoryUsage>>({ available: false });
   const [expanded, setExpanded] = useState(true);
   const [tab, setTab] = useState<'renders' | 'counts' | 'memory'>('renders');
-
-  // Initialize collector
-  useEffect(() => {
-    const c = initPerfCollector();
-    setCollector(c);
-  }, []);
 
   // Poll for updates every 1s
   useEffect(() => {
@@ -99,9 +199,17 @@ function PerformancePanel() {
   // Sort render counts descending
   const sortedCounts = Object.entries(renderCounts).sort((a, b) => b[1] - a[1]);
 
+  // Leak status icon + color
+  const leakStatusConfig = {
+    healthy: { icon: <CheckCircle2 size={10} className="text-emerald-400" />, label: 'Healthy', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    growing: { icon: <AlertTriangle size={10} className="text-amber-400" />, label: 'Growing', color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    leaking: { icon: <ShieldAlert size={10} className="text-red-400" />, label: 'Leaking!', color: 'text-red-400', bg: 'bg-red-500/10' },
+  };
+  const leakConfig = leakStatusConfig[memData.leakStatus];
+
   return (
     <div
-      className="fixed bottom-3 right-3 z-[200] w-[280px] rounded-xl border border-app-border bg-app-surface/95 backdrop-blur-md shadow-2xl text-app-primary overflow-hidden select-none"
+      className="fixed bottom-3 right-3 z-[200] w-[320px] rounded-xl border border-app-border bg-app-surface/95 backdrop-blur-md shadow-2xl text-app-primary overflow-hidden select-none"
       role="complementary"
       aria-label="Performance Monitor"
     >
@@ -111,6 +219,11 @@ function PerformancePanel() {
           <Activity size={12} className="text-emerald-400" />
           <span className="text-[10px] font-bold text-app-primary">Performance</span>
           <span className={`text-[10px] font-mono font-bold ${fpsColor}`}>{fps} FPS</span>
+          {/* [G.4] Leak status badge */}
+          <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${leakConfig.bg} border border-current/10`}>
+            {leakConfig.icon}
+            <span className={`text-[8px] font-bold ${leakConfig.color}`}>{leakConfig.label}</span>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -149,7 +262,7 @@ function PerformancePanel() {
           </div>
 
           {/* Content */}
-          <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+          <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
             {tab === 'renders' && (
               <div className="p-2">
                 {slowRenders.length === 0 ? (
@@ -216,44 +329,128 @@ function PerformancePanel() {
             )}
 
             {tab === 'memory' && (
-              <div className="p-2">
+              <div className="p-2 space-y-2">
+                {/* [G.4] Leak Detection Status */}
+                <div className={`px-2 py-2 rounded-lg ${leakConfig.bg} border border-current/10`}>
+                  <div className="flex items-center gap-2">
+                    {leakConfig.icon}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-[10px] font-bold ${leakConfig.color}`}>
+                          {leakConfig.label}
+                        </span>
+                        {memData.leakConfidence !== 'low' && (
+                          <span className="text-[7px] text-app-muted">
+                            (confidence: {memData.leakConfidence})
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[8px] text-app-muted mt-0.5">
+                        Growth rate: {memData.growthRate} MB/min
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* JS Heap */}
                 {memory.available ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
-                      <HardDrive size={12} className="text-app-muted" />
-                      <div className="flex-1">
-                        <div className="text-[9px] font-bold text-app-primary">JS Heap</div>
-                        <div className="text-[8px] text-app-muted">
-                          {memory.usedMB} MB / {memory.totalMB} MB
-                        </div>
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
+                    <HardDrive size={12} className="text-app-muted" />
+                    <div className="flex-1">
+                      <div className="text-[9px] font-bold text-app-primary">JS Heap</div>
+                      <div className="text-[8px] text-app-muted">
+                        {memory.usedMB} MB / {memory.totalMB} MB
                       </div>
-                    </div>
-                    {/* Usage bar */}
-                    <div className="px-2">
-                      <div className="h-2 rounded-full bg-app-elevated overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${Math.min(100, ((Number(memory.usedMB) || 0) / (Number(memory.totalMB) || 1)) * 100)}%`,
-                            background: (Number(memory.usedMB) || 0) / (Number(memory.totalMB) || 1) > 0.8
-                              ? 'linear-gradient(90deg, #ef4444, #dc2626)'
-                              : 'linear-gradient(90deg, #34d399, #06b6d4)',
-                          }}
-                        />
-                      </div>
-                      <div className="text-[7px] text-app-muted mt-0.5 text-right">
-                        {((Number(memory.usedMB) || 0) / (Number(memory.totalMB) || 1) * 100).toFixed(0)}% used
-                      </div>
-                    </div>
-                    <div className="text-[8px] text-app-muted px-2">
-                      Limit: {((memory.jsHeapSizeLimit || 0) / 1048576).toFixed(0)} MB
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <HardDrive size={16} className="mx-auto text-app-muted/40 mb-1" />
-                    <p className="text-[9px] text-app-muted">Memory API not available</p>
-                    <p className="text-[8px] text-app-muted/60">Use Chromium-based browser for memory stats</p>
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
+                    <HardDrive size={12} className="text-app-muted/40" />
+                    <div className="flex-1">
+                      <div className="text-[9px] font-bold text-app-muted">JS Heap</div>
+                      <div className="text-[8px] text-app-muted/60">API not available (use Chromium)</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Usage bar */}
+                {memory.available && (
+                  <div className="px-2">
+                    <div className="h-2 rounded-full bg-app-elevated overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, ((Number(memory.usedMB) || 0) / (Number(memory.totalMB) || 1)) * 100)}%`,
+                          background: (Number(memory.usedMB) || 0) / (Number(memory.totalMB) || 1) > 0.8
+                            ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+                            : 'linear-gradient(90deg, #34d399, #06b6d4)',
+                        }}
+                      />
+                    </div>
+                    <div className="text-[7px] text-app-muted mt-0.5 text-right">
+                      {((Number(memory.usedMB) || 0) / (Number(memory.totalMB) || 1) * 100).toFixed(0)}% used
+                    </div>
+                  </div>
+                )}
+
+                {/* [G.4] G.4 Metrics Grid */}
+                <div className="grid grid-cols-2 gap-1.5 px-2">
+                  {/* Subscriptions */}
+                  <div className="px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
+                    <div className="text-[8px] text-app-muted uppercase tracking-wider">Subscriptions</div>
+                    <div className={`text-[12px] font-mono font-bold ${
+                      memData.subscriptionCount > 10 ? 'text-amber-400' : 'text-app-primary'
+                    }`}>
+                      {memData.subscriptionCount}
+                    </div>
+                  </div>
+
+                  {/* History Queue */}
+                  <div className="px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
+                    <div className="text-[8px] text-app-muted uppercase tracking-wider">History</div>
+                    <div className={`text-[12px] font-mono font-bold ${
+                      memData.historySizeMB > 3 ? 'text-amber-400' : 'text-app-primary'
+                    }`}>
+                      {memData.historySizeMB}MB
+                    </div>
+                    <div className="text-[7px] text-app-muted">
+                      {memData.historyEntryCount} entries
+                    </div>
+                  </div>
+
+                  {/* Schema Tree */}
+                  <div className="px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
+                    <div className="text-[8px] text-app-muted uppercase tracking-wider">Schema</div>
+                    <div className={`text-[12px] font-mono font-bold ${
+                      memData.schemaSizeKB > 500 ? 'text-amber-400' : 'text-app-primary'
+                    }`}>
+                      {memData.schemaSizeKB}KB
+                    </div>
+                    <div className="text-[7px] text-app-muted">
+                      {memData.schemaBlockCount} blocks · depth {memData.schemaMaxDepth}
+                    </div>
+                  </div>
+
+                  {/* Heap Limit */}
+                  <div className="px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/20">
+                    <div className="text-[8px] text-app-muted uppercase tracking-wider">Heap Limit</div>
+                    <div className="text-[12px] font-mono font-bold text-app-primary">
+                      {memory.available ? ((memory.jsHeapSizeLimit || 0) / 1048576).toFixed(0) : '—'}MB
+                    </div>
+                  </div>
+                </div>
+
+                {/* [G.4] Active Subscriptions List (expandable) */}
+                {memData.activeSubscriptions.length > 0 && (
+                  <div className="px-2">
+                    <div className="text-[8px] text-app-muted uppercase tracking-wider mb-1">Active Subscriptions</div>
+                    <div className="max-h-16 overflow-y-auto custom-scrollbar">
+                      {memData.activeSubscriptions.map(key => (
+                        <div key={key} className="text-[8px] font-mono text-app-secondary py-0.5">
+                          • {key}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

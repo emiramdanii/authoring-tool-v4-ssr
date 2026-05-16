@@ -9,11 +9,15 @@
 //
 // Call initCanvaStoreSubscriptions() once from the app entry
 // point (layout.tsx or a top-level client component).
+//
+// [G.4] All subscriptions are now tracked via SubscriptionManager
+// to prevent memory leaks from unclosed subscriptions.
 
 import { useCanvaStore } from './store';
-import { startAutoSync } from './sync-slice';
+import { startAutoSync, stopAutoSync } from './sync-slice';
 import { connectHistoryToEditBus } from '@/core/editor/patch-history';
-import { setCanvaStoreRef, startInteractiveCanvaSync } from '@/store/interactive-store';
+import { setCanvaStoreRef, startInteractiveCanvaSync, stopInteractiveCanvaSync } from '@/store/interactive-store';
+import { subscriptionManager } from './subscription-manager';
 
 let _initialized = false;
 
@@ -23,6 +27,7 @@ const AUTO_SAVE_DELAY = 1000; // 1 second debounce
 
 /**
  * Start debounced auto-save to localStorage.
+ * [G.4] Subscription tracked via SubscriptionManager.
  *
  * Subscribes to `pages` and `ratioId` changes only (NOT `_saveStatus`)
  * to prevent infinite loops. When a change is detected:
@@ -31,7 +36,7 @@ const AUTO_SAVE_DELAY = 1000; // 1 second debounce
  *   3. Sets `_saveStatus` to `'saved'` after successful save
  */
 function startAutoSave() {
-  useCanvaStore.subscribe(
+  const unsub = useCanvaStore.subscribe(
     (state) => ({ pages: state.pages, ratioId: state.ratioId }),
     () => {
       // Set saving status immediately for UI feedback
@@ -48,6 +53,9 @@ function startAutoSave() {
     },
     { equalityFn: (a, b) => a.pages === b.pages && a.ratioId === b.ratioId }
   );
+
+  // [G.4] Track subscription for cleanup
+  subscriptionManager.registerSubscription('auto-save-pages', unsub);
 }
 
 /**
@@ -71,14 +79,44 @@ export function initCanvaStoreSubscriptions() {
   setCanvaStoreRef(useCanvaStore);
 
   // Auto-sync: when authoring data changes, sync canva templateData
+  // [G.4] Track the auto-sync subscription
   startAutoSync(() => useCanvaStore.getState().syncTemplateData());
+  // Note: startAutoSync manages its own _unsubscribe; we track
+  // the cleanup via stopAutoSync() in cleanupCanvaStoreSubscriptions
 
   // Patch-based undo/redo: record immer patches from editBus
-  connectHistoryToEditBus();
+  // [G.4] Track the editBus subscription
+  const editBusUnsub = connectHistoryToEditBus();
+  subscriptionManager.registerSubscription('editbus-patch-history', editBusUnsub);
 
   // Sync canva page count → interactive store totalPages
+  // [G.4] Track interactive canva sync
   startInteractiveCanvaSync();
 
   // Auto-save: debounce pages/ratioId changes → localStorage
   startAutoSave();
+}
+
+/**
+ * [G.4] Cleanup all canva store subscriptions.
+ * Call this on component unmount or page navigation to prevent
+ * memory leaks from unclosed subscriptions.
+ */
+export function cleanupCanvaStoreSubscriptions() {
+  // Clean up managed subscriptions via SubscriptionManager
+  subscriptionManager.cleanupAll();
+
+  // Clean up auto-sync subscription (managed by sync-slice module)
+  stopAutoSync();
+
+  // Clean up interactive store canva sync subscription
+  stopInteractiveCanvaSync();
+
+  // Clear any pending save timer
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+
+  _initialized = false;
 }
