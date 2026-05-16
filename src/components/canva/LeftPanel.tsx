@@ -165,6 +165,7 @@ function SceneList() {
         return (
           <button
             key={p.id}
+            data-testid={`page-tab-${i}`}
             onClick={() => goPage(i)}
             draggable
             onDragStart={() => setDragIdx(i)}
@@ -283,6 +284,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
     <div className="space-y-1.5">
       {/* Blank page button */}
       <button
+        data-testid="add-blank-page-btn"
         onClick={() => { useCanvaStore.getState().addPage(); }}
         className="w-full py-2 rounded-xl border border-dashed border-app-border hover:border-app-accent/30 text-[11px] text-app-secondary hover:text-app-accent transition-colors flex items-center justify-center gap-1"
       >
@@ -468,7 +470,7 @@ function TemplateGallerySection({ galleryOpen, onToggle }: {
   const sectionLabel = isSederhana ? 'Pilih Template' : 'Template Gallery';
 
   return (
-    <div className="border border-app-border/30 rounded-xl overflow-hidden">
+    <div className="border border-app-border/30 rounded-xl overflow-hidden" data-testid="template-gallery">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/5 hover:bg-amber-500/10 transition-colors"

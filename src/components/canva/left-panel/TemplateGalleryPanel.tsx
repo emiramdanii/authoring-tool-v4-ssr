@@ -297,7 +297,7 @@ export default function TemplateGalleryPanel() {
   const searchPlaceholder = isSederhana ? 'Cari template...' : 'Cari template...';
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="template-gallery-panel">
       {/* Header */}
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
         <Sparkles size={10} />

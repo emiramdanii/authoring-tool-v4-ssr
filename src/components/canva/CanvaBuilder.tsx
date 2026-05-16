@@ -160,7 +160,7 @@ export default function CanvaBuilder() {
   // ── EDIT mode: Full 3-panel layout ───────────────────────────
   return (
     <MobileGuard>
-      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-app-bg text-app-primary focus-ring" id="main-content" data-testid="canva-builder">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
@@ -168,7 +168,7 @@ export default function CanvaBuilder() {
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
 
         {/* Top Toolbar */}
-        <div data-tour="toolbar" role="toolbar" aria-label="Toolbar editor">
+        <div data-tour="toolbar" data-testid="toolbar" role="toolbar" aria-label="Toolbar editor">
           <ProfilerWrapper id="Toolbar">
             <Toolbar />
           </ProfilerWrapper>
@@ -182,6 +182,7 @@ export default function CanvaBuilder() {
               leftPanelOpen ? 'w-[240px]' : 'w-0'
             }`}
             data-tour="left-panel"
+            data-testid="left-panel"
             role="complementary"
             aria-label="Panel halaman dan block"
           >
@@ -193,7 +194,7 @@ export default function CanvaBuilder() {
           </div>
 
           {/* Stage Canvas Area — flex-1 zoom-to-fit */}
-          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
+          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
             <ProfilerWrapper id="Stage">
               <Stage />
             </ProfilerWrapper>
@@ -205,6 +206,7 @@ export default function CanvaBuilder() {
               rightPanelOpen ? 'w-[280px]' : 'w-0'
             }`}
             data-tour="right-panel"
+            data-testid="right-panel"
             role="complementary"
             aria-label="Panel properti"
           >

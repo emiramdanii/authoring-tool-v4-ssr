@@ -314,6 +314,7 @@ function AuthoringToolInner() {
             return (
               <button
                 key={item.id}
+                data-testid={`nav-${item.id}`}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
                 className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${

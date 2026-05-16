@@ -200,7 +200,7 @@ export default function AddBlockPanel() {
   const fragmentCategoryKeys = useMemo(() => Object.keys(fragmentCategories) as TemplateFragmentCategory[], [fragmentCategories]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="add-block-panel">
       {/* Header */}
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
         <Blocks size={10} />
@@ -368,6 +368,7 @@ export default function AddBlockPanel() {
                   {blocks.map((block) => (
                     <button
                       key={block.type}
+                      data-testid={`add-block-btn-${block.type}`}
                       onClick={() => handleAddBlock(block)}
                       aria-label={`Tambah ${teacherTerm(block.name, 'sederhana')} — ${block.description}`}
                       className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
@@ -419,6 +420,7 @@ export default function AddBlockPanel() {
                   {blocks.map((block) => (
                     <button
                       key={block.type}
+                      data-testid={`add-block-btn-${block.type}`}
                       onClick={() => handleAddBlock(block)}
                       aria-label={`Tambah ${block.name} — ${block.description}`}
                       className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"

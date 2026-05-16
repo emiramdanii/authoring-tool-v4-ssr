@@ -81,7 +81,7 @@ export default function BlockPropertiesPanel() {
   }
 
   return (
-    <div className="border-b border-blue-500/10">
+    <div className="border-b border-blue-500/10" data-testid="block-properties-panel">
       {/* Header */}
       <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
         <Settings2 size={12} className="text-blue-400" />
