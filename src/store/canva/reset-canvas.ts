@@ -12,6 +12,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { GAME_TYPES, MATERI_RAKIT_TYPES } from '@/lib/canva-constants';
 // FASE 3: Schema-native page creation — no more buildTemplateData()
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
+import { clearCompressedHeightCache } from '@/core/schema/session-state';
 
 export type ResetCanvasSlice = Pick<CanvaState, 'resetCanvas'>;
 
@@ -90,6 +91,11 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
     }
 
     get()._pushHistory();
+
+    // Clear runtime caches — compressed heights belong to the old pages,
+    // they're stale for the new pages that will be measured fresh.
+    clearCompressedHeightCache();
+
     set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
     // Save new pages to localStorage immediately so loadFromStorage()

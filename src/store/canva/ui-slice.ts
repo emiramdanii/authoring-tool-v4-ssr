@@ -1226,14 +1226,15 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   },
 
   // ── Scene Transaction: Split Page at Block ──────────────────────
-  // Uses splitScene() for the actual split (pure function, returns
-  // two immutable schemas) with validation gates instead of a full
-  // SceneTransaction. Previous version created a transaction AND
-  // called splitScene() — redundant double work. Now we:
-  //   1. Validate pre-split (block exists, not last block)
-  //   2. Split via splitScene() (pure, returns [first, second])
-  //   3. Validate post-split (assertValidSchema + assertDocumentPurity)
-  //   4. Write to store
+  // Uses SceneTransaction for atomic split — splitAt → validate → commit.
+  // The transaction provides:
+  //   1. Atomic validation (assertValidSchema + assertDocumentPurity)
+  //   2. Auto-rollback on failure (store unchanged)
+  //   3. Audit trail (steps logged in dev mode)
+  //
+  // Note: splitAt keeps the FIRST schema (blocks before the split).
+  // The second schema is derived via splitScene() separately for the
+  // new page, since the transaction only operates on one schema.
   splitPageAtBlock: (blockId) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
@@ -1251,25 +1252,35 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     get()._pushHistory();
 
-    // Perform the split — splitScene() is a pure function that returns
-    // two immutable ScreenSchemas without modifying the source.
+    // ═══ TRANSACTION-BASED SPLIT ═══════════════════════════════════
+    // Use SceneTransaction for the first half (atomic validation + rollback).
+    // The splitAt step keeps blocks before the split point.
+    const tx = createTransaction(schema);
+    tx.splitAt(blockId);
+    const result = tx.commit();
+
+    if (!result.success || !result.schema) {
+      toast.error('Split gagal: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    // Derive the second schema from the original (not the transaction result)
+    // splitScene returns both halves — we use the second for the new page.
     const splitResult = splitScene(schema, blockId);
     if (!splitResult) {
       toast.error('Split gagal: tidak bisa membagi scene');
       return;
     }
 
-    const [firstSchema, secondSchema] = splitResult;
+    const [, secondSchema] = splitResult;
 
-    // Post-split validation — same guarantees as SceneTransaction.commit()
+    // Validate second schema (the transaction only validates the first)
     try {
-      assertValidSchema(firstSchema, 'splitPageAtBlock (first half)');
-      assertDocumentPurity(firstSchema, 'splitPageAtBlock (first half)');
       assertValidSchema(secondSchema, 'splitPageAtBlock (second half)');
       assertDocumentPurity(secondSchema, 'splitPageAtBlock (second half)');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      toast.error('Split gagal (validasi): ' + msg);
+      toast.error('Split gagal (validasi halaman baru): ' + msg);
       return;
     }
 
@@ -1285,11 +1296,11 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       templateData: {},
     };
 
-    // Update current page with first half
+    // Update current page with first half (from transaction result)
     const newPages = [...pages];
     newPages[currentPageIndex] = {
       ...page,
-      schema: commitSchemaUpdate(schema, firstSchema.blocks),
+      schema: commitSchemaUpdate(schema, result.schema.blocks),
     };
     // Insert new page after current
     newPages.splice(currentPageIndex + 1, 0, newPage);

@@ -45,10 +45,14 @@ import {
   patchBlock,
   removeBlock,
   insertBlock,
+  insertBlockNested,
   moveBlock,
+  moveBlockNested,
+  duplicateBlock as duplicateBlockImmutable,
   splitScene,
   mergeScene,
   snapshot,
+  type ContainerRef,
 } from './immutable';
 import { assertValidSchema } from './validation';
 import { assertDocumentPurity } from './session-state';
@@ -64,7 +68,10 @@ export type TransactionStep =
   | { type: 'patchBlock'; blockId: string; patch: Partial<SchemaBlock> }
   | { type: 'removeBlock'; blockId: string }
   | { type: 'insertBlock'; block: SchemaBlock; afterId?: string; atIndex?: number }
+  | { type: 'insertBlockNested'; block: SchemaBlock; container: ContainerRef; toIndex?: number }
   | { type: 'moveBlock'; fromIndex: number; toIndex: number }
+  | { type: 'moveBlockNested'; blockId: string; sourceContainer?: ContainerRef; targetContainer: ContainerRef; toIndex?: number }
+  | { type: 'duplicateBlock'; blockId: string; newId?: string }
   | { type: 'custom'; name: string; fn: (schema: ScreenSchema) => ScreenSchema };
 
 export interface RebalanceOptions {
@@ -189,6 +196,43 @@ export class SceneTransaction {
   move(fromIndex: number, toIndex: number): this {
     this.assertActive();
     this.steps.push({ type: 'moveBlock', fromIndex, toIndex });
+    return this;
+  }
+
+  /**
+   * Insert a block into a nested container (materi-section, ftab, children).
+   * Tree-aware: uses insertBlockNested() from immutable.ts which
+   * handles ContainerRef routing.
+   */
+  insertNested(block: SchemaBlock, container: ContainerRef, toIndex?: number): this {
+    this.assertActive();
+    this.steps.push({ type: 'insertBlockNested', block, container, toIndex });
+    return this;
+  }
+
+  /**
+   * Move a block within/between nested containers.
+   * Tree-aware: uses moveBlockNested() from immutable.ts.
+   */
+  moveNested(blockId: string, targetContainer: ContainerRef, options?: { sourceContainer?: ContainerRef; toIndex?: number }): this {
+    this.assertActive();
+    this.steps.push({
+      type: 'moveBlockNested',
+      blockId,
+      sourceContainer: options?.sourceContainer,
+      targetContainer,
+      toIndex: options?.toIndex,
+    });
+    return this;
+  }
+
+  /**
+   * Duplicate a block by ID, creating a deep clone with regenerated IDs.
+   * Uses duplicateBlock() from immutable.ts which handles nested children.
+   */
+  duplicate(blockId: string, newId?: string): this {
+    this.assertActive();
+    this.steps.push({ type: 'duplicateBlock', blockId, newId });
     return this;
   }
 
@@ -349,6 +393,35 @@ export class SceneTransaction {
       case 'moveBlock': {
         this.schema = produce(this.schema, draft => {
           draft.blocks = moveBlock(draft.blocks, step.fromIndex, step.toIndex);
+        });
+        break;
+      }
+
+      case 'insertBlockNested': {
+        this.schema = produce(this.schema, draft => {
+          draft.blocks = insertBlockNested(draft.blocks, step.block, step.container, step.toIndex);
+        });
+        break;
+      }
+
+      case 'moveBlockNested': {
+        this.schema = produce(this.schema, draft => {
+          draft.blocks = moveBlockNested(draft.blocks, {
+            blockId: step.blockId,
+            sourceContainer: step.sourceContainer,
+            targetContainer: step.targetContainer,
+            toIndex: step.toIndex,
+          });
+        });
+        break;
+      }
+
+      case 'duplicateBlock': {
+        const { newBlocks } = duplicateBlockImmutable(this.schema.blocks, step.blockId, {
+          newId: step.newId,
+        });
+        this.schema = produce(this.schema, draft => {
+          draft.blocks = newBlocks;
         });
         break;
       }
