@@ -16,15 +16,32 @@ import RightPanel from './right-panel';
 import PreviewMode from './PreviewMode';
 import PresentMode from './PresentMode';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
-import CommandPalette, { useCommandPalette } from '@/components/shared/CommandPalette';
+import { OfflineIndicator } from '@/components/shared/OfflineIndicator';
+import { useCommandPalette } from '@/components/shared/CommandPalette';
 import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import CanvaTour from '@/components/shared/CanvaTour';
 import { MobileGuard } from '@/components/shared/MobileGuard';
 import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
+import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 
-// Lazy-loaded: PlayOverlay is only needed when user clicks "Play" — purely client-side
-const PlayOverlay = dynamic(() => import('./PlayOverlay'), { ssr: false });
+// ═══════════════════════════════════════════════════════════════
+// LAZY-LOADED HEAVY COMPONENTS
+// ═══════════════════════════════════════════════════════════════
+// These components are only loaded when needed, reducing initial
+// bundle size. Each has a lightweight fallback.
+
+// PlayOverlay — only needed in interactive/preview mode (already was lazy)
+const PlayOverlay = dynamic(() => import('./PlayOverlay'), {
+  ssr: false,
+  loading: () => null,
+});
+
+// CommandPalette — only visible when Cmd+K is pressed
+const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette').then(mod => ({ default: mod.default })), {
+  ssr: false,
+  loading: () => null,
+});
 
 // ═══════════════════════════════════════════════════════════════
 // CANVA BUILDER v5 — Mode-aware 3-column layout
@@ -109,6 +126,7 @@ export default function CanvaBuilder() {
           <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
           <PresentMode />
           <PlayOverlay />
+          <OfflineIndicator />
         </div>
       </MobileGuard>
     );
@@ -125,6 +143,7 @@ export default function CanvaBuilder() {
           <Toolbar />
           <PreviewMode />
           <PlayOverlay />
+          <OfflineIndicator />
           <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
         </div>
       </MobileGuard>
@@ -143,7 +162,9 @@ export default function CanvaBuilder() {
 
         {/* Top Toolbar */}
         <div data-tour="toolbar" role="toolbar" aria-label="Toolbar editor">
-          <Toolbar />
+          <ProfilerWrapper id="Toolbar">
+            <Toolbar />
+          </ProfilerWrapper>
         </div>
 
         {/* Main builder row — 3-column Canva-style layout */}
@@ -157,12 +178,18 @@ export default function CanvaBuilder() {
             role="complementary"
             aria-label="Panel halaman dan block"
           >
-            {leftPanelOpen && <LeftPanel />}
+            {leftPanelOpen && (
+              <ProfilerWrapper id="LeftPanel">
+                <LeftPanel />
+              </ProfilerWrapper>
+            )}
           </div>
 
           {/* Stage Canvas Area — flex-1 zoom-to-fit */}
           <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden shadow-[inset_0_0_16px_-8px_rgba(0,0,0,0.2)] bg-app-bg" data-tour="canvas-stage" role="main" aria-label="Area kerja editor">
-            <Stage />
+            <ProfilerWrapper id="Stage">
+              <Stage />
+            </ProfilerWrapper>
           </div>
 
           {/* Right Panel — Context Panel (fixed 280px) */}
@@ -175,7 +202,11 @@ export default function CanvaBuilder() {
             aria-label="Panel properti"
           >
             <CanvasErrorBoundary name="RightPanel">
-              {rightPanelOpen && <RightPanel />}
+              {rightPanelOpen && (
+                <ProfilerWrapper id="RightPanel">
+                  <RightPanel />
+                </ProfilerWrapper>
+              )}
             </CanvasErrorBoundary>
           </div>
         </div>
@@ -191,6 +222,9 @@ export default function CanvaBuilder() {
 
         {/* Command Palette (Cmd+K / Ctrl+K) — available from anywhere */}
         <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
+
+        {/* Offline Indicator — shows sync status in bottom-left */}
+        <OfflineIndicator />
 
         {/* Export Success Dialog */}
         <ExportSuccessDialog open={showExportSuccess} onClose={() => setShowExportSuccess(false)} />

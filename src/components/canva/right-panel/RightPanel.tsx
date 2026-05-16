@@ -7,12 +7,32 @@ import PaletteSection from './PaletteSection';
 import NavigationSection from './NavigationSection';
 import PageSettingsSection from './PageSettingsSection';
 import BlockPropertiesPanel from './BlockPropertiesPanel';
-import AIAssistantSection from './AIAssistantSection';
-import AIRefineSection from '../ai-assistant/AIRefineSection';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import { Layers, Zap, Box, Sparkles } from 'lucide-react';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import dynamic from 'next/dynamic';
+
+// Lazy-loaded: AI sections are heavy (API calls, complex UI, code editors)
+const AIAssistantSection = dynamic(() => import('./AIAssistantSection'), {
+  ssr: false,
+  loading: () => (
+    <div className="p-3 space-y-2">
+      <div className="h-4 w-24 animate-pulse bg-app-elevated/20 rounded" />
+      <div className="h-20 animate-pulse bg-app-elevated/20 rounded-lg" />
+    </div>
+  ),
+});
+
+const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'), {
+  ssr: false,
+  loading: () => (
+    <div className="p-3 space-y-2">
+      <div className="h-4 w-20 animate-pulse bg-app-elevated/20 rounded" />
+      <div className="h-16 animate-pulse bg-app-elevated/20 rounded-lg" />
+    </div>
+  ),
+});
 
 // ═══════════════════════════════════════════════════════════════
 // CONTEXT PANEL — Canva-style contextual right panel (280px fixed)

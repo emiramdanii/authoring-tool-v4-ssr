@@ -44,6 +44,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
+  manifest: "/manifest.json",
   openGraph: {
     title: "Authoring Tool v4 — Media Pembelajaran Interaktif",
     description: "Aplikasi authoring tool untuk membuat media pembelajaran interaktif PPKn.",
@@ -63,6 +64,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="SILSE" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${nunito.variable} antialiased bg-background text-foreground`}
       >

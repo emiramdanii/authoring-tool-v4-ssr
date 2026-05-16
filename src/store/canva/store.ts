@@ -21,9 +21,44 @@ import { createSchemaPresetSlice } from './schema-preset-slice';
 import { createTeacherModeSlice } from './teacher-mode-slice';
 // connectHistoryToEditBus moved to @/store/canva/init.ts
 
+// ── Performance middleware (dev-only) ──────────────────────────
+// Wraps `set` to track slow state updates and detect action storms.
+import { trackAction } from './performance-middleware';
+
+const IS_DEV = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
+
 export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector((...a) => {
-  const set = a[0];
+  const rawSet = a[0];
   const get = a[1];
+
+  // Wrap set with performance tracking (dev-only)
+  const set: typeof rawSet = IS_DEV
+    ? (partial, replace) => {
+        const start = performance.now();
+        rawSet(partial, replace);
+        const duration = performance.now() - start;
+
+        // Infer action name from changed keys
+        let actionName = 'unknown';
+        if (typeof partial === 'function') {
+          try {
+            const result = partial(get());
+            if (result && typeof result === 'object') {
+              const keys = Object.keys(result as Record<string, unknown>);
+              actionName = keys.length > 0 ? keys.slice(0, 3).join('+') : 'empty-update';
+            }
+          } catch { actionName = 'fn-update'; }
+        } else if (partial && typeof partial === 'object') {
+          const keys = Object.keys(partial as Record<string, unknown>);
+          actionName = keys.length > 0 ? keys.slice(0, 3).join('+') : 'empty-update';
+        }
+
+        trackAction(actionName, duration);
+      }
+    : rawSet;
+
+  // Create the api object with the tracked set for slices
+  const api = [set, get, a[2]] as typeof a;
 
   return {
     // ── Initial state ────────────────────────────────────────────
@@ -60,18 +95,18 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     },
 
     // ── Composed slices ─────────────────────────────────────────
-    ...createHistorySlice(...a),
-    ...createPageSlice(...a),
-    ...createElementSlice(...a),
-    ...createUISlice(...a),
-    ...createSessionSlice(...a),
-    ...createBackgroundSlice(...a),
-    ...createResetCanvasSlice(...a),
-    ...createAutoGenerateSlice(...a),
-    ...createSyncSlice(...a),
-    ...createPersistenceSlice(...a),
-    ...createSchemaPresetSlice(...a),
-    ...createTeacherModeSlice(...a),
+    ...createHistorySlice(...api),
+    ...createPageSlice(...api),
+    ...createElementSlice(...api),
+    ...createUISlice(...api),
+    ...createSessionSlice(...api),
+    ...createBackgroundSlice(...api),
+    ...createResetCanvasSlice(...api),
+    ...createAutoGenerateSlice(...api),
+    ...createSyncSlice(...api),
+    ...createPersistenceSlice(...api),
+    ...createSchemaPresetSlice(...api),
+    ...createTeacherModeSlice(...api),
   };
 }), { name: 'CanvaStore', enabled: process.env.NODE_ENV === 'development' }));
 

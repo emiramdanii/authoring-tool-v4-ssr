@@ -30,6 +30,7 @@ import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager'
 import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import CrashRecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/CrashRecoveryDialog';
+import PerformanceMonitor from '@/components/shared/PerformanceMonitor';
 
 // Lazy-load panels — each panel is only loaded when first rendered
 const Dashboard = React.lazy(() => import('./Dashboard'));
@@ -492,6 +493,9 @@ function AuthoringToolInner() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* ── Dev Performance Monitor (only in development) ── */}
+      <PerformanceMonitor />
 
       {/* ── Crash Recovery Dialog ─────────────────────────── */}
       <CrashRecoveryDialog />

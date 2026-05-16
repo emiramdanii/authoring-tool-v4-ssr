@@ -5,24 +5,29 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { logger } from '@/core/utils/logger';
 import { toast } from 'sonner';
+import { enqueueSave, type SyncPayload } from '@/lib/offline-sync';
+import { canvaPagesToSavePages } from '@/lib/save-utils';
 
 /**
  * Unified auto-save hook — single source of truth for saving both stores.
  *
- * Supports two persistence modes:
+ * Supports three persistence modes:
  *   1. **Database mode** (preferred): When a `projectId` is available
  *      and a `saveProject` callback is provided, saves via the
  *      ProjectManager's unified save path (no more direct fetch).
- *   2. **localStorage fallback**: When no `projectId`, saves to localStorage
+ *   2. **Offline queue**: When offline with a `projectId`, enqueues the
+ *      save for later sync instead of failing the DB save.
+ *   3. **localStorage fallback**: When no `projectId`, saves to localStorage
  *      (for offline/new users or before first project creation).
  *
  * Called ONCE from CanvaAutoSaveSync (the primary editing context).
  *
- * Enhancement (Phase E.4):
+ * Enhancement (Phase E.4 + G.3):
  *   - Debounced: saves after 2 seconds of inactivity (not every keystroke)
  *   - Visual indicator: "Menyimpan..." briefly shown in status bar during save
  *   - Error toast: "Gagal menyimpan. Periksa koneksi internet Anda."
  *   - _lastSavedAt timestamp added to saved data
+ *   - Offline queue: enqueues DB saves when offline, replays on reconnect
  */
 
 const DEBOUNCE_MS = 2000;
@@ -32,6 +37,38 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastDBSaveRef = useRef<number>(0);
   const lastErrorToastRef = useRef<number>(0);
+
+  // ── Helper: build sync payload from current store state ──────
+  const buildSyncPayload = useCallback((): SyncPayload => {
+    const canvaState = useCanvaStore.getState();
+    const authoringState = useAuthoringStore.getState();
+    return {
+      pages: canvaPagesToSavePages(canvaState.pages),
+      ratioId: canvaState.ratioId,
+      meta: {
+        title: authoringState.meta.judulPertemuan || 'Proyek Baru',
+        subject: authoringState.meta.mapel,
+        grade: authoringState.meta.kelas,
+      },
+      authoringData: {
+        meta: authoringState.meta,
+        cp: authoringState.cp,
+        tp: authoringState.tp,
+        atp: authoringState.atp,
+        alur: authoringState.alur,
+        skenario: authoringState.skenario,
+        kuis: authoringState.kuis,
+        modules: authoringState.modules,
+        games: authoringState.games,
+        materi: authoringState.materi,
+        petunjuk: authoringState.petunjuk,
+        diskusi: authoringState.diskusi,
+        refleksi: authoringState.refleksi,
+        penutup: authoringState.penutup,
+        suara: authoringState.suara,
+      },
+    };
+  }, []);
 
   // ── Core save logic ────────────────────────────────────────────
   const saveNow = useCallback(async () => {
@@ -44,10 +81,19 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
 
       // If projectId and saveProject are available, save to DB via the unified path
       if (projectId && saveProject) {
-        const now = Date.now();
-        if (now - lastDBSaveRef.current >= 2000) {
-          lastDBSaveRef.current = now;
-          await saveProject();
+        const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+
+        if (isOffline) {
+          // Offline: enqueue for later sync instead of trying the DB save
+          enqueueSave(projectId, buildSyncPayload());
+          useCanvaStore.setState({ _saveStatus: 'saved' });
+        } else {
+          // Online: save to DB directly
+          const now = Date.now();
+          if (now - lastDBSaveRef.current >= 2000) {
+            lastDBSaveRef.current = now;
+            await saveProject();
+          }
         }
       }
 
@@ -72,7 +118,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
         toast.error('Gagal menyimpan. Periksa koneksi internet Anda.');
       }
     }
-  }, [projectId, saveProject]);
+  }, [projectId, saveProject, buildSyncPayload]);
 
   // ── Subscribe to both stores for change detection ────────────────
   useEffect(() => {

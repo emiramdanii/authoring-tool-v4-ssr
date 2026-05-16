@@ -29,7 +29,11 @@ import { COLORS } from '@/lib/color-palette';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import AddBlockPanel from './left-panel/AddBlockPanel';
-import TemplateGalleryPanel from './left-panel/TemplateGalleryPanel';
+// Lazy-loaded: TemplateGalleryPanel is heavy (template browsing, filtering, AI generator)
+const TemplateGalleryPanel = dynamic(() => import('./left-panel/TemplateGalleryPanel'), {
+  ssr: false,
+  loading: () => <div className="h-32 animate-pulse bg-app-elevated/20 rounded-lg" />,
+});
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
@@ -43,8 +47,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 // Lazy-loaded: PageTypeCreator and TemplateWizard are modals not always visible
-const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), { ssr: false });
-const TemplateWizard = dynamic(() => import('./TemplateWizard'), { ssr: false });
+const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), {
+  ssr: false,
+  loading: () => <div className="h-8 animate-pulse bg-app-elevated/20 rounded-lg" />,
+});
+const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // ═══════════════════════════════════════════════════════════════
 // SCENE PANEL — Canva-style left panel (240px fixed)

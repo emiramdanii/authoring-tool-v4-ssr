@@ -35,8 +35,22 @@ import {
   type TemplateCustomization,
 } from '@/core/template/template-gallery';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
-import TemplateCustomizeDialog, { type TemplateApplyMode } from './TemplateCustomizeDialog';
-import AITemplateGenerator from './AITemplateGenerator';
+import dynamic from 'next/dynamic';
+
+// Lazy-loaded: TemplateCustomizeDialog is a modal only shown on demand
+const TemplateCustomizeDialog = dynamic(() => import('./TemplateCustomizeDialog'), {
+  ssr: false,
+  loading: () => null,
+});
+
+// Lazy-loaded: AITemplateGenerator is a heavy AI panel only used in 'ai' view
+const AITemplateGenerator = dynamic(() => import('./AITemplateGenerator'), {
+  ssr: false,
+  loading: () => <div className="h-32 animate-pulse bg-app-elevated/20 rounded-lg" />,
+});
+
+// Type needed for callback signature (mirrors TemplateCustomizeDialog's export)
+type TemplateApplyMode = 'replace' | 'insert';
 
 // ── Color mapping for template cards ─────────────────────────
 const COLOR_MAP: Record<string, { bg: string; border: string; text: string; badge: string; hoverBg: string }> = {
