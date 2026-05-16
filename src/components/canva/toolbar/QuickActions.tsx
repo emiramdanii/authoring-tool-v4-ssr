@@ -5,7 +5,7 @@ import { useExportActions } from './use-export-actions';
 import { AutoSaveIndicator, SaveNowButton } from '@/components/shared/StatusToast';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import { ToolbarExport } from './ToolbarExport';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, PanelRightOpen, PanelRightClose } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // QUICK ACTIONS — Save, Export, Command palette button
@@ -13,6 +13,8 @@ import { Download, Loader2 } from 'lucide-react';
 
 export function QuickActions() {
   const { exportHtml, isExporting } = useExportActions();
+  const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
+  const toggleRightPanel = useCanvaStore((s) => s.toggleRightPanel);
 
   return (
     <div className="flex items-center gap-1">
@@ -24,6 +26,19 @@ export function QuickActions() {
       <SaveNowButton />
 
       <div className="section-divider h-5 w-px mx-1" />
+
+      {/* Toggle Right Panel */}
+      <button
+        onClick={toggleRightPanel}
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-all ${
+          rightPanelOpen
+            ? 'bg-app-accent/10 text-app-accent hover:bg-app-accent/20'
+            : 'text-app-muted hover:text-app-secondary hover:bg-app-elevated/50'
+        }`}
+        title={rightPanelOpen ? 'Tutup panel properti' : 'Buka panel properti'}
+      >
+        {rightPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+      </button>
 
       {/* One-click HTML Export — prominent CTA for teachers */}
       <button

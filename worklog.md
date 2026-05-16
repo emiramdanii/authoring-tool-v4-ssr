@@ -185,3 +185,35 @@ Stage Summary:
 - Fixes: 16 templates for all subjects, wildcard matching in filter, DB persistence via ProjectManager
 - Wizard flow now complete: select subject → grade → template → info → create project → persist to DB → navigate to canva
 - Server stable on port 3000
+---
+Task ID: fix-buttons
+Agent: Main Agent
+Task: Fix all non-functional buttons in the SILSE app
+
+Work Log:
+- Identified 6 major broken/non-functional areas from code review:
+  1. No right panel toggle button in toolbar
+  2. LayerPanel component existed but was never rendered anywhere
+  3. Right Panel "Layer" tab showed page settings instead of actual block layer list
+  4. No "Layer" tab in left panel IconRail
+  5. SCORM export route (/api/export/scorm) didn't exist
+  6. archiver package not installed for ZIP creation
+
+Fixes applied:
+1. Added right panel toggle button (PanelRightOpen/Close icons) to QuickActions.tsx
+2. Added LayerPanel import and rendering to RightPanel.tsx "Layer" tab
+3. Added "layer" tab type to IconRail.tsx (5 tabs now: pages, add-block, templates, layer, settings)
+4. Added LayerPanel rendering to LeftPanel.tsx when layer tab is active
+5. Created /api/export/scorm/route.ts with SCORM 1.2 ZIP generation using archiver
+6. Installed archiver + @types/archiver packages
+
+Build: npx next build passes successfully
+Server: Running on dev mode (port 3000) with working API routes
+
+Stage Summary:
+- Right panel toggle: FIXED - toggle button in toolbar
+- Layer panel: FIXED - accessible from both left panel IconRail AND right panel Layer tab
+- SCORM export: FIXED - new API route with archiver ZIP generation
+- All store actions (selectBlock, hoverBlock, startEditing, etc.) verified working
+- TemplateWizard flow: previously fixed (deepFreeze issue)
+- Export with fallback: client-side fallback already implemented

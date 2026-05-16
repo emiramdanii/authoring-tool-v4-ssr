@@ -10,6 +10,7 @@ import PageSettingsSection from './PageSettingsSection';
 import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
+import LayerPanel from '../left-panel/LayerPanel';
 import { Layers, Zap, Box, Sparkles, Settings2 } from 'lucide-react';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import dynamic from 'next/dynamic';
@@ -141,16 +142,18 @@ export default function RightPanel() {
           )}
         </div>
 
-        {/* Layer Tab */}
+        {/* Layer Tab — Block layer list + page settings */}
         <div
           className={`transition-opacity duration-150 ${activeTab === 'layer' ? 'opacity-100' : 'hidden'}`}
           role="tabpanel"
           aria-label="Layer"
         >
-          <PageInfo />
+          <LayerPanel />
+          <div className="border-t border-app-border/30 mx-2" />
           <NavigationSection />
           <PageSettingsSection />
           <PaletteSection />
+          <PageInfo />
         </div>
       </div>
     </div>
