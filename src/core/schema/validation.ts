@@ -77,7 +77,7 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
 }
 
 /** Check if a value is pure-serializable (no functions, Symbols, DOM refs, class instances) */
-function isPureSerializable(val: unknown, path: string, errors: ValidationError[]): boolean {
+function isPureSerializable(val: unknown, path: string, errors: ValidationError[], seen = new WeakSet()): boolean {
   if (val === null || val === undefined) return true;
 
   const t = typeof val;
@@ -97,6 +97,10 @@ function isPureSerializable(val: unknown, path: string, errors: ValidationError[
   }
 
   if (t === 'object') {
+    // Circular reference protection
+    if (seen.has(val as object)) return true;
+    seen.add(val as object);
+
     // Check for DOM references
     if (typeof window !== 'undefined' && val instanceof Node) {
       errors.push({ path, message: 'DOM Node reference found — SchemaBlock must not contain DOM refs', severity: 'error' });
@@ -119,7 +123,7 @@ function isPureSerializable(val: unknown, path: string, errors: ValidationError[
         return false;
       }
       // Unknown class instance
-      errors.push({ path, message: `Class instance found (${val.constructor?.name}) — SchemaBlock must be plain serializable`, severity: 'error' });
+      errors.push({ path, message: `Class instance found (${(val as object).constructor?.name}) — SchemaBlock must be plain serializable`, severity: 'error' });
       return false;
     }
 
@@ -127,14 +131,14 @@ function isPureSerializable(val: unknown, path: string, errors: ValidationError[
     if (Array.isArray(val)) {
       let ok = true;
       for (let i = 0; i < val.length; i++) {
-        if (!isPureSerializable(val[i], `${path}[${i}]`, errors)) ok = false;
+        if (!isPureSerializable(val[i], `${path}[${i}]`, errors, seen)) ok = false;
       }
       return ok;
     }
 
     let ok = true;
     for (const key of Object.keys(val)) {
-      if (!isPureSerializable(val[key], `${path}.${key}`, errors)) ok = false;
+      if (!isPureSerializable((val as Record<string, unknown>)[key], `${path}.${key}`, errors, seen)) ok = false;
     }
     return ok;
   }

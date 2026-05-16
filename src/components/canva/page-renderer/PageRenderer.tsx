@@ -97,7 +97,7 @@ export function PageRenderer({
     if (schema) return schema;
     // Custom pages have no schema — return null
     return null;
-  }, [page.schema, page.templateData, isTemplate, templateType, page]);
+  }, [page.schema, page.templateData, isTemplate, templateType]);
 
   // Resolve tokens, applying palette overrides for legacy pages
   const tokens = React.useMemo(() => {

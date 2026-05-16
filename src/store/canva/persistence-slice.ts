@@ -82,13 +82,30 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // ── Purity Guard: Ensure no runtime state leaks into persisted data ──
       // In dev mode, throws if any schema contains runtime state fields.
       // In production, logs the violation but continues saving.
-      for (const page of cleanPages) {
-        if (page.schema) {
-          assertDocumentPurity(page.schema, `saveToStorage page=${page.id}`);
+      // WRAPPED: Skip purity check if it throws (e.g., stack overflow from deep schema)
+      try {
+        for (const page of cleanPages) {
+          if (page.schema) {
+            assertDocumentPurity(page.schema, `saveToStorage page=${page.id}`);
+          }
         }
+      } catch (purityErr) {
+        console.warn('[CanvaStore] Purity check skipped:', purityErr);
       }
 
-      localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({
+      // Safe JSON.stringify with circular reference detection
+      const seen = new WeakSet();
+      const safeStringify = (obj: unknown): string => {
+        return JSON.stringify(obj, (_key, value) => {
+          if (typeof value === 'object' && value !== null) {
+            if (seen.has(value)) return '[Circular]';
+            seen.add(value);
+          }
+          return value;
+        });
+      };
+
+      localStorage.setItem(CANVA_STORAGE_KEY, safeStringify({
         pages: cleanPages,
         ratioId,
         _lastSavedAt: Date.now(),

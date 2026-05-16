@@ -114,19 +114,20 @@ export default function Dashboard() {
       applyFullPreset(pKey);
       setTimeout(async () => {
         await useCanvaStore.getState().loadSchemaPreset(pKey);
-        useAuthoringStore.getState().setActivePanel('canva');
+        setActivePanel('canva');
       }, 100);
     } else if (pKey === 'blank') {
       useAuthoringStore.getState().newProject();
+      // Use setActivePanel from hook to override newProject()'s reset to 'dashboard'
       setTimeout(() => {
         useCanvaStore.getState().resetCanvas();
-        useAuthoringStore.getState().setActivePanel('canva');
+        setActivePanel('canva');
       }, 100);
     } else {
       applyFullPreset(pKey);
       setTimeout(() => {
         useCanvaStore.getState().resetCanvas();
-        useAuthoringStore.getState().setActivePanel('canva');
+        setActivePanel('canva');
       }, 300);
     }
   };

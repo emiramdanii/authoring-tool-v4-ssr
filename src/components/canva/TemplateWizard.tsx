@@ -36,6 +36,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
 import {
   SUBJECTS,
@@ -165,6 +166,19 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
 
       toast.success(`Project "${title.trim()}" berhasil dibuat!`);
       onOpenChange(false);
+
+      // Update authoring store metadata so Dashboard reflects the new project
+      const authoringStore = useAuthoringStore.getState();
+      if (title.trim()) authoringStore.updateMeta('judulPertemuan', title.trim());
+      if (subject) authoringStore.updateMeta('mapel', subject);
+      if (grade) authoringStore.updateMeta('kelas', grade);
+      // Mark as dirty so user is prompted to save
+      useAuthoringStore.setState({ dirty: true });
+
+      // Navigate to Canva editor after a short delay (let modal close animation finish)
+      setTimeout(() => {
+        useAuthoringStore.getState().setActivePanel('canva');
+      }, 300);
 
       // Reset wizard state
       setStep(1);

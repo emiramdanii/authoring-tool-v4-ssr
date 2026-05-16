@@ -194,11 +194,15 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   }, [screen.blocks, screen.id, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
 
   // Sync scene state to store whenever scene plan changes
+  // Use ref for sceneIndex to avoid circular dependency (effect reads + writes sceneIndex)
+  const sceneIndexRef = useRef(sceneIndex);
+  sceneIndexRef.current = sceneIndex;
+
   useEffect(() => {
     const totalScenes = scenePlan.totalScenes;
-    const clampedIndex = Math.min(sceneIndex, Math.max(0, totalScenes - 1));
+    const clampedIndex = Math.min(sceneIndexRef.current, Math.max(0, totalScenes - 1));
     setSceneState(clampedIndex, totalScenes);
-  }, [scenePlan.totalScenes, sceneIndex, setSceneState]);
+  }, [scenePlan.totalScenes, setSceneState]);
 
   // Get the derived schema for the current scene
   const effectiveSchema = useMemo(() => {

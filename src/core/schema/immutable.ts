@@ -51,15 +51,17 @@ import { processCompositeChildren } from '../layout/SchemaTraversal';
  *   const frozen = deepFreeze(schema);
  *   frozen.blocks[0].type = 'x'; // TypeError in dev mode!
  */
-export function deepFreeze<T>(obj: T): T {
+export function deepFreeze<T>(obj: T, seen = new WeakSet()): T {
   if (process.env.NODE_ENV === 'production') return obj;
   if (obj === null || obj === undefined || typeof obj !== 'object') return obj;
+  if (seen.has(obj)) return obj;  // circular ref protection
+  seen.add(obj);
 
   if (Array.isArray(obj)) {
-    for (const item of obj) deepFreeze(item);
+    for (const item of obj) deepFreeze(item, seen);
   } else {
     for (const val of Object.values(obj as Record<string, unknown>)) {
-      deepFreeze(val);
+      deepFreeze(val, seen);
     }
   }
 
