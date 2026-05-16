@@ -10,7 +10,8 @@
 //   4. Isi Info Dasar (title, teacher, school)
 //
 // On "Buat Project": calls createProjectFromTemplate() → sets pages
-// in canva store → closes wizard → editor is ready.
+// in canva store → persists to DB via ProjectManager → closes wizard
+// → editor is ready.
 
 import React, { useState, useMemo, useCallback } from 'react';
 import {
@@ -37,6 +38,7 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useProjectManager } from '@/hooks/use-project-manager';
 import { toast } from 'sonner';
 import {
   SUBJECTS,
@@ -80,6 +82,9 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
   const [guru, setGuru] = useState('');
   const [sekolah, setSekolah] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+
+  // ProjectManager for DB persistence
+  const { createProject } = useProjectManager();
 
   // Filtered templates based on subject/grade
   const filteredTemplates = useMemo(
@@ -164,9 +169,6 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
         selectedBlockIds: [],
       });
 
-      toast.success(`Project "${title.trim()}" berhasil dibuat!`);
-      onOpenChange(false);
-
       // Update authoring store metadata so Dashboard reflects the new project
       const authoringStore = useAuthoringStore.getState();
       if (title.trim()) authoringStore.updateMeta('judulPertemuan', title.trim());
@@ -174,6 +176,24 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
       if (grade) authoringStore.updateMeta('kelas', grade);
       // Mark as dirty so user is prompted to save
       useAuthoringStore.setState({ dirty: true });
+
+      // Persist to database via ProjectManager
+      try {
+        await createProject({
+          title: title.trim(),
+          subject,
+          grade,
+        });
+      } catch (dbErr) {
+        // DB save failed — project is still in memory, just log warning
+        console.warn('TemplateWizard: DB persist failed, project is in memory only', dbErr);
+        // Save to localStorage as fallback
+        useCanvaStore.getState().saveToStorage();
+        useAuthoringStore.getState().saveToStorage();
+      }
+
+      toast.success(`Project "${title.trim()}" berhasil dibuat!`);
+      onOpenChange(false);
 
       // Navigate to Canva editor after a short delay (let modal close animation finish)
       setTimeout(() => {
@@ -195,7 +215,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
     } finally {
       setIsCreating(false);
     }
-  }, [selectedTemplateId, title, guru, sekolah, onOpenChange]);
+  }, [selectedTemplateId, title, guru, sekolah, subject, grade, onOpenChange, createProject]);
 
   // ── Reset on close ──────────────────────────────────────────────
 

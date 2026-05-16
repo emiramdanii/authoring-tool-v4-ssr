@@ -153,3 +153,35 @@ Stage Summary:
 - Root cause: deepFreeze() in dev mode + mutable patterns = TypeError
 - Fix: immutable spread/map operations in 3 files
 - Wizard should now work: select subject → grade → template → info → create project
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix all issues — "Perbaiki semua senior sampai bisa dipake"
+
+Work Log:
+- Investigated full wizard flow: TemplateWizard → CourseTemplateRegistry → PagePresetRegistry → CanvaStore → AuthoringStore
+- Found CRITICAL: Wizard does NOT persist to database — only stores in Zustand memory, project lost on refresh
+- Found CRITICAL: Only 3 course templates (PPKn VII, IPA VIII, Template Kosong) — most subjects show no templates
+- Found CRITICAL: getCourseTemplatesFiltered() bug — template-kosong filtered out when subject doesn't match 'Lainnya'
+- Found: TemplateWizard doesn't call useProjectManager().createProject() for DB persistence
+- Fixed CourseTemplateRegistry.ts:
+  - Expanded from 3 templates to 16 templates covering all 8 subjects (PPKn, IPA, MTK, B.Indonesia, B.Inggris, Seni, PJOK + universal empty)
+  - Each subject gets 2 templates (VII and VIII) with appropriate learning flows
+  - Changed template-kosong to use subject='*' and grade='*' (universal wildcard)
+  - Fixed getCourseTemplatesFiltered() to match wildcard '*' in both subject and grade filters
+  - Now template-kosong ALWAYS appears at the end regardless of subject/grade selection
+- Fixed TemplateWizard.tsx:
+  - Added useProjectManager() import for DB persistence
+  - After setting up Zustand store, calls createProject() to persist to database
+  - Falls back to localStorage save if DB save fails
+  - Project now survives page refresh
+- Build clean (0 TypeScript errors), npx next build successful
+- API routes tested: POST /api/projects works, PUT /api/projects/[id]/save works, GET /api/projects works
+- Server running on port 3000
+
+Stage Summary:
+- Root causes: (1) No DB persistence in wizard, (2) Only 3 templates for 2 subjects, (3) Filter bug hides empty template
+- Fixes: 16 templates for all subjects, wildcard matching in filter, DB persistence via ProjectManager
+- Wizard flow now complete: select subject → grade → template → info → create project → persist to DB → navigate to canva
+- Server stable on port 3000
