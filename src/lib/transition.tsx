@@ -220,6 +220,7 @@ export function PageTransition({
       prevKeyRef.current = pageKey;
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [pageKey, children, duration]);
 
   // On mount, immediately go to visible after enter animation
@@ -350,7 +351,7 @@ export function Collapse({ open, children, className = '', duration = 0.25 }: Co
   const [height, setHeight] = useState<number | 'auto'>(open ? 'auto' : 0);
 
   useEffect(() => {
-    if (!contentRef.current) return;
+    if (!contentRef.current) return undefined;
     if (open) {
       const h = contentRef.current.scrollHeight;
       setHeight(h);
@@ -365,6 +366,7 @@ export function Collapse({ open, children, className = '', duration = 0.25 }: Co
       contentRef.current.offsetHeight;
       requestAnimationFrame(() => setHeight(0));
     }
+    return undefined;
   }, [open, duration]);
 
   return (
@@ -450,6 +452,7 @@ export function ShowTransition({
     if (show) {
       setShouldRender(true);
       setAnimClass(enterClass);
+      return undefined;
     } else {
       setAnimClass(exitClass);
       const timer = setTimeout(() => setShouldRender(false), duration * 1000);

@@ -3,7 +3,7 @@
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '@/store/canva-store';
 import type { AppMode } from '@/components/canva/types';
-import { ToolbarNav } from './toolbar/ToolbarNavNew';
+import { ToolbarNav } from './toolbar/ToolbarNav';
 import { ModeSwitch } from './toolbar/ModeSwitch';
 import { PageNavigation } from './toolbar/PageNavigation';
 import { ZoomControls } from './toolbar/ZoomControls';

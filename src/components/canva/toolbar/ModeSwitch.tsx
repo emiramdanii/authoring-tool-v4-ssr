@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Edit3, Eye, Presentation } from 'lucide-react';
 import type { AppMode } from '@/components/canva/types';
-import { useInteractiveStore } from '@/store/interactive-store';
 
 // ═══════════════════════════════════════════════════════════════
 // MODE SWITCH — [EDIT] [PREVIEW] [PRESENT] pill toggle

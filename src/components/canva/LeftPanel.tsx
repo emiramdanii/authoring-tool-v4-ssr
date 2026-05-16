@@ -64,18 +64,21 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 
 export default function LeftPanel() {
   const [activeTab, setActiveTab] = useState<LeftPanelTab>('pages');
-  const [expanded, setExpanded] = useState(true);
   const [addBlockOpen, setAddBlockOpen] = useState(true);
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
 
+  // Sync expanded state with store's leftPanelOpen
+  const expanded = useCanvaStore(s => s.leftPanelOpen);
+  const toggleLeftPanel = useCanvaStore(s => s.toggleLeftPanel);
+
   const handleTabChange = (tab: LeftPanelTab) => {
     if (activeTab === tab && expanded) {
       // Clicking same tab collapses the panel
-      setExpanded(false);
+      toggleLeftPanel();
     } else {
       setActiveTab(tab);
-      setExpanded(true);
+      if (!expanded) toggleLeftPanel();
     }
   };
 

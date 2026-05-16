@@ -163,11 +163,9 @@ export default function CanvaBuilder() {
             role="complementary"
             aria-label="Panel halaman dan block"
           >
-            {leftPanelOpen ? (
-              <ProfilerWrapper id="LeftPanel">
-                <LeftPanel />
-              </ProfilerWrapper>
-            ) : null}
+            <ProfilerWrapper id="LeftPanel">
+              <LeftPanel />
+            </ProfilerWrapper>
           </div>
 
           {/* Stage Canvas Area — flex-1 zoom-to-fit */}

@@ -8,3 +8,4 @@ export { ModeSwitch } from './ModeSwitch';
 export { PageNavigation } from './PageNavigation';
 export { ZoomControls } from './ZoomControls';
 export { QuickActions } from './QuickActions';
+export { ToolbarNav } from './ToolbarNav';
