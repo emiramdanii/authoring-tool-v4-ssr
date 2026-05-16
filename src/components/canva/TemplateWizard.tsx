@@ -124,10 +124,30 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
         sekolah: sekolah.trim() || undefined,
       };
 
-      const pages = createProjectFromTemplate(selectedTemplateId, metadata);
+      const rawPages = createProjectFromTemplate(selectedTemplateId, metadata);
 
       // Get theme from template
       const themeId = getTemplateThemeId(selectedTemplateId);
+
+      // Apply theme IMMUTABLY — schemas may be deepFrozen in dev mode,
+      // so we must create new page objects instead of mutating in place.
+      const pages = rawPages.map(page => {
+        if (!page.schema) return page;
+
+        const updatedSchema = {
+          ...page.schema,
+          background: {
+            ...(page.schema.background ?? {}),
+            type: page.schema.background?.type ?? 'gradient',
+          } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
+        };
+
+        return {
+          ...page,
+          schema: updatedSchema,
+          templateData: { ...page.templateData, schemaThemeId: themeId },
+        };
+      });
 
       // Set pages in canva store (replaces current project)
       const store = useCanvaStore.getState();
@@ -142,27 +162,6 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
         editingBlockId: null,
         selectedBlockIds: [],
       });
-
-      // Set theme for pages
-      if (themeId && themeId !== 'default') {
-        // Set theme on all pages via the store's setSchemaThemeId
-        // We need to do this page by page since setSchemaThemeId operates on current page
-        for (let i = 0; i < pages.length; i++) {
-          const page = pages[i];
-          if (page.schema) {
-            page.schema = {
-              ...page.schema,
-              background: {
-                ...page.schema.background,
-                type: page.schema.background?.type ?? 'gradient',
-              } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
-            };
-            // Store themeId in templateData for the theme resolver
-            page.templateData = { ...page.templateData, schemaThemeId: themeId };
-          }
-        }
-        useCanvaStore.setState({ pages: [...pages] });
-      }
 
       toast.success(`Project "${title.trim()}" berhasil dibuat!`);
       onOpenChange(false);

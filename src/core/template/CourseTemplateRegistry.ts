@@ -278,7 +278,7 @@ export function createProjectFromTemplate(
     // Use existing PagePresetRegistry to create schema-native pages
     const page = createPageFromPreset(scene.templateType, i);
 
-    // Override label with the scene's label
+    // Override label with the scene's label (immutable — page is fresh, not frozen yet)
     page.label = scene.label;
 
     // Set variant if specified
@@ -287,33 +287,38 @@ export function createProjectFromTemplate(
     }
 
     // For the cover page, inject the metadata (title, guru, sekolah)
+    // IMPORTANT: Schema may be deepFrozen in dev mode from ensurePageSchema().
+    // We must create new objects immutably instead of mutating in place.
     if (scene.templateType === 'cover' && page.schema?.blocks) {
-      for (const block of page.schema.blocks) {
-        if (block.type === 'cover') {
+      page.schema = {
+        ...page.schema,
+        blocks: page.schema.blocks.map(block => {
+          if (block.type !== 'cover') return block;
           const cover = block as unknown as Record<string, unknown>;
-          if (metadata.title) {
-            cover.title = metadata.title;
-          }
-          if (metadata.guru || metadata.sekolah) {
-            const meta = (cover.meta as Record<string, string>) || {};
-            if (metadata.guru) meta.elemen = metadata.guru;
-            if (metadata.sekolah) meta.fase = metadata.sekolah;
-            cover.meta = meta;
-          }
-        }
-      }
+          const newMeta = { ...((cover.meta as Record<string, string>) || {}) };
+          if (metadata.guru) newMeta.elemen = metadata.guru;
+          if (metadata.sekolah) newMeta.fase = metadata.sekolah;
+          return {
+            ...block,
+            ...(metadata.title ? { title: metadata.title } : {}),
+            ...(metadata.guru || metadata.sekolah ? { meta: newMeta } : {}),
+          };
+        }),
+      };
     }
 
-    // For the penutup page, inject closing info
+    // For the penutup page, inject closing info (immutable)
     if (scene.templateType === 'penutup' && page.schema?.blocks) {
-      for (const block of page.schema.blocks) {
-        if (block.type === 'penutup') {
-          const penutup = block as unknown as Record<string, unknown>;
-          if (metadata.title) {
-            penutup.subtitle = `Terima kasih — ${metadata.title}`;
-          }
-        }
-      }
+      page.schema = {
+        ...page.schema,
+        blocks: page.schema.blocks.map(block => {
+          if (block.type !== 'penutup') return block;
+          return {
+            ...block,
+            ...(metadata.title ? { subtitle: `Terima kasih — ${metadata.title}` } : {}),
+          };
+        }),
+      };
     }
 
     pages.push(page);

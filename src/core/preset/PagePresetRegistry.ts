@@ -244,10 +244,12 @@ function buildPresetWithCreate(def: Omit<PagePreset, 'create'>): PagePreset {
       // which uses TemplateAdapter for legacy pages or returns existing schema.
       const basePage = createPage(ctx.label, def.id as PageTemplateType);
       const schema = ensurePageSchema({ ...basePage, id: ctx.pageId, templateVariant: ctx.variant });
+      // IMPORTANT: ensurePageSchema may return a deepFrozen schema in dev mode.
+      // We must create a new object to set the ID instead of mutating.
       if (schema) {
-        schema.id = ctx.pageId;
+        return { ...schema, id: ctx.pageId };
       }
-      return schema;
+      return null;
     },
   };
 }
