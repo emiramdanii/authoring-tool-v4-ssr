@@ -176,3 +176,23 @@ Stage Summary:
 - Quick insert: 15 fragment patterns one-click away
 - Build: tsc ✅, Next.js production ✅
 - Git: commit 721c3fa, pushed to GitHub
+---
+Task ID: F.3 + F.4
+Agent: main
+Task: Phase F — Template & AI Workflows Enhancement
+
+Work Log:
+- Assessed existing Phase F codebase: F.1 (Template Gallery) and F.2 (AI Refine) already complete
+- F.3: Enhanced BatchOperationsBar with move up/down, batch duplicate, compression priority
+- Added 3 new store actions: batchDuplicateBlocks, batchMoveBlocks, batchToggleCompression
+- F.4: Upgraded fragment quick-insert in AddBlockPanel with category filter + full fragment cards
+- Exported TemplateFragmentCategory type from template-fragments.ts
+- Fixed TypeScript type error in batchToggleCompression (strategy field required)
+- Build verification: tsc clean, next build clean
+
+Stage Summary:
+- Phase F.1 ✅ (pre-existing): 11 templates, 8 subjects, 4 patterns, search/filter, customize dialog
+- Phase F.2 ✅ (pre-existing): AIRefineSection, quick-refine modes, custom instruction, auto-apply
+- Phase F.3 ✅ ENHANCED: BatchOperationsBar now has move, duplicate, delete, variant, compression priority
+- Phase F.4 ✅ ENHANCED: Fragment quick-insert has category filter, full card list, descriptions, toast
+- Commit: 2f40cd3
