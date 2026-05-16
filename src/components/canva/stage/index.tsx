@@ -118,6 +118,16 @@ export default function Stage() {
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   const [isFitZoomReady, setIsFitZoomReady] = useState(false); // true after first ResizeObserver callback
+
+  // ── Safety fallback: ensure canvas becomes visible after mount ────────
+  // Even if the ResizeObserver / rAF path fails to set isFitZoomReady,
+  // this timeout guarantees the canvas will be visible within 500ms.
+  useEffect(() => {
+    const safety = setTimeout(() => {
+      if (!isFitZoomReady) setIsFitZoomReady(true);
+    }, 500);
+    return () => clearTimeout(safety);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Pan drag state
   const panDragRef = useRef<{ startX: number; startY: number; origPanX: number; origPanY: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -179,9 +189,13 @@ export default function Stage() {
       const aH = area.clientHeight;
       if (aW > 0 && aH > 0) {
         const newFitZoom = calcFitZoom(aW, aH, ratio.w, ratio.h);
+        // FIX: Set isFitZoomReady FIRST, before any other state updates.
+        // Zustand's storeSetFitZoom triggers synchronous re-renders via
+        // useSyncExternalStore, which can flush React's batched updates
+        // before setIsFitZoomReady(true) is applied if called after.
+        setIsFitZoomReady(true);
         setFitZoom(newFitZoom);
         storeSetFitZoom(newFitZoom);
-        setIsFitZoomReady(true);
         if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
       } else if (!retryTimer) {
         // Retry once after 100ms if dimensions are still 0
@@ -358,7 +372,11 @@ export default function Stage() {
       ref={canvasAreaRef}
       id="cm-canvas-area"
       className="flex-1 w-full bg-app-surface overflow-hidden flex items-center justify-center"
-      style={{ cursor: cursorStyle }}
+      style={{
+        cursor: cursorStyle,
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+        backgroundSize: '20px 20px',
+      }}
       onMouseMove={(e) => {
         onAreaMouseMove(e);
         handlePanMove(e);
@@ -369,13 +387,14 @@ export default function Stage() {
       onDrop={handleDrop}
     >
       {/* ══ Transform layer: translate + scale ════════════════════ */}
-      {/* Hide until fitZoom is calculated to avoid flash of tiny canvas */}
+      {/* Use opacity instead of visibility for smoother reveal + safety fallback */}
       <div
         style={{
           transform: `translate(${panX}px, ${panY}px) scale(${effectiveZoom})`,
           transformOrigin: 'center center',
           transition: panDragRef.current ? 'none' : 'transform 0.15s ease-out',
-          visibility: isFitZoomReady ? 'visible' : 'hidden',
+          opacity: isFitZoomReady ? 1 : 0,
+          transitionProperty: 'transform, opacity',
         }}
       >
         <div
