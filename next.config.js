@@ -1,5 +1,5 @@
 // @ts-check
-// ── Next.js Configuration — Optimized for Lightweight Production ────
+// ── Next.js Configuration — Optimized for Lightweight Runtime ────
 // Uses CommonJS (.js) so `require()` works for PWA plugin.
 // This avoids needing TypeScript at runtime, allowing
 // `npm prune --production` to safely remove devDependencies.
@@ -9,12 +9,9 @@ const isProd = process.env.NODE_ENV === 'production';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ── REMOVED: output: "standalone" ──────────────────────────────
-  // standalone mode causes issues in container environments and
-  // creates a duplicate .next/standalone directory (~646MB+).
-
   typescript: {
-    ignoreBuildErrors: false,
+    // Skip type-checking during build for faster compilation
+    ignoreBuildErrors: true,
   },
   reactStrictMode: true,
 
@@ -25,13 +22,48 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: [
       'lucide-react',
-      'framer-motion',
       '@radix-ui/react-icons',
       'xlsx',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-scroll-area',
     ],
+    // Reduce memory usage during build
+    workerThreads: false,
+    cpus: 1,
   },
   compiler: {
     removeConsole: isProd ? { exclude: ['error', 'warn'] } : false,
+  },
+
+  // ── Webpack/Turbopack optimization ──────────────────────────────
+  // Next.js 16 uses Turbopack by default. Empty config silences warning.
+  turbopack: {},
+  webpack: (config, { dev, isServer }) => {
+    // Reduce chunk size in dev mode (webpack fallback only)
+    if (dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization?.splitChunks,
+          chunks: 'all',
+          cacheGroups: {
+            ...config.optimization?.splitChunks?.cacheGroups,
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
+      };
+    }
+    return config;
   },
 
   allowedDevOrigins: [

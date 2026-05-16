@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { PageTransition, type PageDirection } from '@/lib/transition';
 import { useCanvaStore } from '@/store/canva-store';
 import { RATIOS } from '../types';
 import { PageRenderer } from '../page-renderer';
@@ -53,29 +53,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 //   - Uses getBoundingClientRect() for accuracy after transforms
 // ═══════════════════════════════════════════════════════════════
 
-// ── Design-mode page transition variants (subtle fade + scale) ───
-const designPageVariants = {
-  enter: {
-    opacity: 0,
-    scale: 0.98,
-  },
-  center: {
-    opacity: 1,
-    scale: 1,
-    pointerEvents: 'auto' as const,
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.98,
-    pointerEvents: 'none' as const,
-  },
-};
 
-const designPageTransition = {
-  type: 'tween' as const,
-  ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
-  duration: 0.22,
-};
 
 export default function Stage() {
   // ── Targeted selectors to avoid unnecessary re-renders ──────────
@@ -412,26 +390,19 @@ export default function Stage() {
         >
           {/* ══ Use PageRenderer for consistent rendering ══════ */}
           <CanvasErrorBoundary name="PageRenderer">
-            <AnimatePresence mode="wait" custom={pageDirection}>
-              <motion.div
-                key={`stage-page-${currentPageIndex}`}
-                custom={pageDirection}
-                variants={designPageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={designPageTransition}
-                className="absolute inset-0"
-              >
-                <PageRenderer
-                  mode={canvasPreview ? 'preview' : 'canvas'}
-                  page={page}
-                  currentPageIndex={currentPageIndex}
-                  totalPages={pages.length}
-                  isTemplateSelected={!canvasPreview}
-                />
-              </motion.div>
-            </AnimatePresence>
+            <PageTransition
+              pageKey={`stage-page-${currentPageIndex}`}
+              direction={pageDirection as PageDirection}
+              duration={0.22}
+            >
+              <PageRenderer
+                mode={canvasPreview ? 'preview' : 'canvas'}
+                page={page}
+                currentPageIndex={currentPageIndex}
+                totalPages={pages.length}
+                isTemplateSelected={!canvasPreview}
+              />
+            </PageTransition>
           </CanvasErrorBoundary>
 
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}

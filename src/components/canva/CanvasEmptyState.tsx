@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { FadeIn, ScaleIn, SlideIn, StaggerChildren } from '@/lib/transition';
 import { Sparkles, FileText, Plus, Lightbulb } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -17,14 +17,7 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), { ssr: false })
 // canvas. Three action cards guide them to start creating.
 // ═══════════════════════════════════════════════════════════════
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
-  }),
-};
+// Animation handled by CSS classes — no JS variants needed
 
 interface ActionCard {
   id: string;
@@ -93,50 +86,32 @@ export default function CanvasEmptyState() {
     <>
       <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-app-surface px-4 py-8">
         {/* Illustration / Icon */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="mb-6"
-        >
+        <ScaleIn delay={0} className="mb-6">
           <div className="w-16 h-16 rounded-2xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
             <Sparkles size={28} className="text-app-accent" />
           </div>
-        </motion.div>
+        </ScaleIn>
 
         {/* Headline */}
-        <motion.h2
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.35 }}
-          className="text-xl font-bold text-app-primary mb-2 text-center"
-        >
+        <SlideIn direction="up" delay={0.1} className="text-xl font-bold text-app-primary mb-2 text-center">
           Mulai Buat Media Pembelajaran
-        </motion.h2>
+        </SlideIn>
 
         {/* Subtext */}
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.35 }}
-          className="text-sm text-app-secondary mb-8 text-center max-w-md"
-        >
+        <SlideIn direction="up" delay={0.15} className="text-sm text-app-secondary mb-8 text-center max-w-md">
           Pilih cara memulai di bawah, atau tambah halaman dari panel kiri
-        </motion.p>
+        </SlideIn>
 
         {/* Action Cards */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 w-full max-w-xl">
           {cards.map((card, i) => {
             const Icon = card.icon;
             return (
-              <motion.button
+              <button
                 key={card.id}
-                custom={i}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
                 onClick={card.action}
-                className={`flex-1 min-w-0 p-5 rounded-xl border bg-app-elevated/30 text-left transition-all hover:-translate-y-0.5 active:scale-[0.98] focus-ring ${card.borderClass} ${card.hoverBorderClass}`}
+                className={`anim-enter-slide-up flex-1 min-w-0 p-5 rounded-xl border bg-app-elevated/30 text-left transition-all hover:-translate-y-0.5 active:scale-[0.98] focus-ring ${card.borderClass} ${card.hoverBorderClass}`}
+                style={{ animationDelay: `${i * 0.08}s`, animationFillMode: 'both' }}
               >
                 <div className={`w-10 h-10 rounded-lg ${card.iconBgClass} flex items-center justify-center mb-3`}>
                   <Icon size={20} className={card.colorClass} />
@@ -147,23 +122,18 @@ export default function CanvasEmptyState() {
                 <div className="text-xs text-app-muted leading-relaxed">
                   {card.description}
                 </div>
-              </motion.button>
+              </button>
             );
           })}
         </div>
 
         {/* Tip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-app-elevated/40 border border-app-border/30 max-w-md"
-        >
+        <FadeIn delay={0.4} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-app-elevated/40 border border-app-border/30 max-w-md">
           <Lightbulb size={14} className="text-amber-400 flex-shrink-0" />
           <span className="text-xs text-app-secondary">
             Tip: Auto-Generate paling cepat — tempel materi, edit sedikit, selesai!
           </span>
-        </motion.div>
+        </FadeIn>
       </div>
 
       {/* Template Wizard Dialog */}

@@ -3,9 +3,10 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "test -f export-output/index.html || vite build --config vite.export.config.ts; next dev -p 3000 2>&1 | tee dev.log",
-    "build": "vite build --config vite.export.config.ts && next build",
-    "start": "NODE_ENV=production node node_modules/.bin/next start -p 8080",
+    "dev": "test -f export-output/index.html || vite build --config vite.export.config.ts; NODE_OPTIONS='--max-old-space-size=512' next dev -p 3000 2>&1 | tee dev.log",
+    "build": "vite build --config vite.export.config.ts && NODE_OPTIONS='--max-old-space-size=768' next build",
+    "start": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=512' node node_modules/.bin/next start -p 8080",
+    "test:light": "NODE_OPTIONS='--max-old-space-size=512' next dev -p 3000 --turbopack",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -52,7 +53,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "framer-motion": "^12.23.2",
+
     "immer": "^11.1.8",
     "lucide-react": "^0.525.0",
     "nanoid": "^5.1.11",

@@ -18,7 +18,7 @@ import {
 import { renderPreviewContent } from './previews';
 import { useAutoGenerate } from './use-auto-generate';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ShowTransition } from '@/lib/transition';
 
 // ═══════════════════════════════════════════════════════════════════
 // Step Wizard Indicator
@@ -468,15 +468,11 @@ export default function AutoGenerate() {
       )}
 
       {/* ── Next Step Banner (after apply) ────────────────── */}
-      <AnimatePresence>
-        {appliedCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="bg-emerald-500/10 border border-emerald-500/25 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3"
-          >
+      {appliedCount > 0 && (
+        <div
+          className="bg-emerald-500/10 border border-emerald-500/25 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 anim-enter-slide-up"
+          style={{ animationDuration: '0.3s' }}
+        >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
                 <ArrowRight size={18} className="text-emerald-400" />
@@ -496,9 +492,8 @@ export default function AutoGenerate() {
             >
               Buka Canva untuk Edit <ArrowRight size={14} />
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* ── Empty state ─────────────────────────────────────── */}
       {!parsed && (

@@ -13,48 +13,13 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { PageTransition, type PageDirection } from '@/lib/transition';
 import { RotateCcw } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 
 // ── Transition Configurations ───────────────────────────────────
 
 type TransitionType = 'slide' | 'fade' | 'zoom' | 'flip';
-
-const TRANSITION_CONFIGS: Record<
-  TransitionType,
-  {
-    initial: Record<string, number>;
-    animate: Record<string, number>;
-    exit: Record<string, number>;
-    duration: number;
-  }
-> = {
-  slide: {
-    initial: { opacity: 0, x: 40 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -40 },
-    duration: 0.25,
-  },
-  fade: {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-    duration: 0.25,
-  },
-  zoom: {
-    initial: { opacity: 0, scale: 0.92 },
-    animate: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 1.08 },
-    duration: 0.3,
-  },
-  flip: {
-    initial: { opacity: 0, rotateY: 90 },
-    animate: { opacity: 1, rotateY: 0 },
-    exit: { opacity: 0, rotateY: -90 },
-    duration: 0.35,
-  },
-};
 
 const TRANSITION_LABELS: Record<TransitionType, { icon: string; label: string }> = {
   slide: { icon: '↔️', label: 'Slide' },
@@ -253,27 +218,23 @@ export default function SchemaPlayer({
           perspective: transitionType === 'flip' ? 1200 : undefined,
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={screenIdx}
-            className="absolute inset-0"
-            initial={TRANSITION_CONFIGS[transitionType].initial}
-            animate={TRANSITION_CONFIGS[transitionType].animate}
-            exit={TRANSITION_CONFIGS[transitionType].exit}
-            transition={{ duration: TRANSITION_CONFIGS[transitionType].duration, ease: 'easeInOut' }}
-          >
-            <SchemaEngine
-              schema={schema}
-              screenIndex={screenIdx}
-              mode={mode === 'canvas' ? 'canvas' : 'preview'}
-              themeOverride={themeId}
-              interactive={interactive}
-              ratioId={ratioId}
-              showTopNav={false}
-              showBottomNav={showBottomNav}
-            />
-          </motion.div>
-        </AnimatePresence>
+        <PageTransition
+          pageKey={`schema-screen-${screenIdx}`}
+          direction={0 as PageDirection}
+          duration={transitionType === 'slide' ? 0.25 : transitionType === 'fade' ? 0.25 : transitionType === 'zoom' ? 0.3 : 0.35}
+          className="absolute inset-0"
+        >
+          <SchemaEngine
+            schema={schema}
+            screenIndex={screenIdx}
+            mode={mode === 'canvas' ? 'canvas' : 'preview'}
+            themeOverride={themeId}
+            interactive={interactive}
+            ratioId={ratioId}
+            showTopNav={false}
+            showBottomNav={showBottomNav}
+          />
+        </PageTransition>
       </div>
 
       {/* ══ BOTTOM NAVIGATION BAR ══════════════════════════════ */}
@@ -388,7 +349,7 @@ export default function SchemaPlayer({
           {/* Transition type selector (compact, preview mode only) */}
           {!isCompact && (
             <div className="flex items-center justify-center gap-1 px-3 pb-1.5">
-              {(Object.keys(TRANSITION_CONFIGS) as TransitionType[]).map((t) => {
+              {(Object.keys(TRANSITION_LABELS) as TransitionType[]).map((t) => {
                 const cfg = TRANSITION_LABELS[t];
                 const isActive = t === transitionType;
                 return (

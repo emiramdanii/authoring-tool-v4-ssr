@@ -5,7 +5,7 @@ import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authorin
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { Target, ClipboardList, Trash2, Tag, Map, Ruler, Calendar, GripVertical, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Collapse } from '@/lib/transition';
 import { COLORS } from '@/lib/color-palette';
 
 // ── Accordion Item ───────────────────────────────────────────────
@@ -37,22 +37,11 @@ function AccordionSection({
           className={`text-app-muted transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
         />
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="overflow-hidden border-t border-app-border"
-          >
-            <div className="p-4 bg-app-surface/80 space-y-4">
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Collapse open={open} className="border-t border-app-border" duration={0.25}>
+        <div className="p-4 bg-app-surface/80 space-y-4">
+          {children}
+        </div>
+      </Collapse>
     </div>
   );
 }

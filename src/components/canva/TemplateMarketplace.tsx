@@ -5,13 +5,13 @@
 // ═══════════════════════════════════════════════════════════════════
 // Full-screen overlay marketplace for Indonesian SMP teachers to
 // browse, preview, and apply pre-built MPI templates with one click.
-// Uses design tokens, shadcn/ui, Framer Motion, and real Indonesian content.
+// Uses design tokens, shadcn/ui, CSS animations, and real Indonesian content.
 //
 // v2: Visual thumbnail previews + improved preview modal with
 //     wireframe visual + block list combined view.
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ShowTransition } from '@/lib/transition';
 import { X, Search, ChevronLeft, ChevronRight, CheckCircle2, Layers, BookOpen, Eye, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,28 +77,6 @@ function resolveGradient(colors: [string, string]): string {
   return `linear-gradient(135deg, ${c1}, ${c2})`;
 }
 
-// ── Animation variants ───────────────────────────────────────
-
-const overlayVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.25 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } },
-};
-
-const panelVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.97 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' as const } },
-  exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.2 } },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.3, ease: 'easeOut' as const },
-  }),
-};
 
 // ═══════════════════════════════════════════════════════════════════
 // PREVIEW MODE — Screen-by-screen walkthrough with visual preview
@@ -119,18 +97,12 @@ function TemplatePreview({
   const currentScreen = screens[screenIdx];
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm anim-enter-fade"
       onClick={onClose}
     >
-      <motion.div
-        className="relative w-full max-w-2xl mx-4 rounded-2xl border border-app-border glass-panel-strong overflow-hidden"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+      <div
+        className="relative w-full max-w-2xl mx-4 rounded-2xl border border-app-border glass-panel-strong overflow-hidden anim-enter-scale"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -190,14 +162,10 @@ function TemplatePreview({
             </span>
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`screen-${template.id}-${screenIdx}-${viewMode}`}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
+          <div
+            key={`screen-${template.id}-${screenIdx}-${viewMode}`}
+            className="anim-enter-slide-left"
+          >
               {viewMode === 'visual' ? (
                 /* ── Visual preview mode ── */
                 <div className="flex gap-4">
@@ -246,8 +214,7 @@ function TemplatePreview({
                   ))}
                 </div>
               )}
-            </motion.div>
-          </AnimatePresence>
+          </div>
 
           {/* Screen dots */}
           <div className="flex items-center justify-center gap-1.5 mt-6">
@@ -298,8 +265,8 @@ function TemplatePreview({
             <ChevronRight size={14} />
           </Button>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -351,13 +318,10 @@ function TemplateCard({
   }, [template]);
 
   return (
-    <motion.div
+    <div
       id={`tpl-card-${template.id}`}
-      custom={index}
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      className="group relative flex flex-col rounded-xl border border-app-border/60 bg-app-surface/40 overflow-hidden cursor-pointer hover:border-app-accent/40 transition-colors"
+      className="group relative flex flex-col rounded-xl border border-app-border/60 bg-app-surface/40 overflow-hidden cursor-pointer hover:border-app-accent/40 transition-colors anim-enter-slide-up"
+      style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'both' }}
       onClick={() => onPreview(template)}
       role="button"
       tabIndex={0}
@@ -440,7 +404,7 @@ function TemplateCard({
           Gunakan Template
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -518,25 +482,16 @@ export default function TemplateMarketplace({
   return (
     <>
       {/* ── Main overlay ── */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm"
-            variants={overlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            onClick={onClose}
+      <ShowTransition show={open} enterClass="anim-enter-fade" exitClass="anim-exit-fade" duration={0.25}>
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm"
+          onClick={onClose}
+        >
+          <div
+            className="relative w-full max-w-5xl mx-4 mt-6 mb-6 rounded-2xl border border-app-border glass-panel-strong overflow-hidden flex flex-col anim-enter-scale"
+            style={{ maxHeight: 'calc(100vh - 48px)', animationDuration: '0.3s' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              className="relative w-full max-w-5xl mx-4 mt-6 mb-6 rounded-2xl border border-app-border glass-panel-strong overflow-hidden flex flex-col"
-              style={{ maxHeight: 'calc(100vh - 48px)' }}
-              variants={panelVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              onClick={(e) => e.stopPropagation()}
-            >
               {/* ── Header ── */}
               <div className="flex items-center gap-3 px-5 py-4 border-b border-app-border shrink-0">
                 <div className="flex items-center gap-2">
@@ -660,21 +615,18 @@ export default function TemplateMarketplace({
                   SMP Kurikulum Merdeka
                 </span>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </ShowTransition>
 
       {/* ── Preview overlay ── */}
-      <AnimatePresence>
-        {previewTemplate && (
-          <TemplatePreview
-            template={previewTemplate}
-            onClose={() => setPreviewTemplate(null)}
-            onApply={handleApply}
-          />
-        )}
-      </AnimatePresence>
+      <ShowTransition show={!!previewTemplate} enterClass="anim-enter-fade" exitClass="anim-exit-fade" duration={0.2}>
+        <TemplatePreview
+          template={previewTemplate!}
+          onClose={() => setPreviewTemplate(null)}
+          onApply={handleApply}
+        />
+      </ShowTransition>
     </>
   );
 }

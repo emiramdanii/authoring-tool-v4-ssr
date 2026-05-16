@@ -312,6 +312,111 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHTWEIGHT TRANSITION ANIMATIONS (framer-motion replacement)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Enter animations ─────────────────────────────────────────── */
+@keyframes animEnterFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes animEnterSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes animEnterSlideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes animEnterSlideLeft {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes animEnterSlideRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes animEnterScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Exit animations ──────────────────────────────────────────── */
+@keyframes animExitFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes animExitSlideUp {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+/* ── Page transition animations (directional) ─────────────────── */
+@keyframes animPageFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes animPageFadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.98); }
+}
+
+@keyframes animPageSlideRightIn {
+  from { opacity: 0; transform: translateX(30px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes animPageSlideLeftOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(-30px) scale(0.98); }
+}
+
+@keyframes animPageSlideLeftIn {
+  from { opacity: 0; transform: translateX(-30px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes animPageSlideRightOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(30px) scale(0.98); }
+}
+
+/* ── Animation utility classes ────────────────────────────────── */
+.anim-enter-fade { animation: animEnterFade 0.2s ease-out both; }
+.anim-enter-slide-up { animation: animEnterSlideUp 0.3s ease-out both; }
+.anim-enter-slide-down { animation: animEnterSlideDown 0.3s ease-out both; }
+.anim-enter-slide-left { animation: animEnterSlideLeft 0.2s ease-out both; }
+.anim-enter-slide-right { animation: animEnterSlideRight 0.2s ease-out both; }
+.anim-enter-scale { animation: animEnterScale 0.2s ease-out both; }
+.anim-exit-fade { animation: animExitFade 0.15s ease-in both; }
+.anim-exit-slide-up { animation: animExitSlideUp 0.15s ease-in both; }
+
+.anim-page-fade-in { animation: animPageFadeIn 0.22s ease-out both; }
+.anim-page-fade-out { animation: animPageFadeOut 0.22s ease-in both; }
+.anim-page-slide-right-in { animation: animPageSlideRightIn 0.22s ease-out both; }
+.anim-page-slide-left-out { animation: animPageSlideLeftOut 0.22s ease-in both; }
+.anim-page-slide-left-in { animation: animPageSlideLeftIn 0.22s ease-out both; }
+.anim-page-slide-right-out { animation: animPageSlideRightOut 0.22s ease-in both; }
+
+/* ── Hover/Tap for motion.div replacement ─────────────────────── */
+.motion-hover-tap {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.motion-hover-tap:hover {
+  transform: scale(1.02);
+}
+.motion-hover-tap:active {
+  transform: scale(0.98);
+}
+
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(249, 193, 46, 0.3)); }
   50% { box-shadow: 0 0 20px var(--glow-color-strong, rgba(249, 193, 46, 0.6)); }

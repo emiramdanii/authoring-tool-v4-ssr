@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { PageTransition, type PageDirection } from '@/lib/transition';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { PageRenderer } from './page-renderer';
@@ -19,37 +19,14 @@ import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 // PLAY OVERLAY — Full-screen interactive preview overlay
 //
 // Premium v4 enhancements:
-// - Framer Motion page transitions (slide/fade)
+// - CSS-based page transitions (slide/fade) via PageTransition
 // - Bottom navigation bar with progress dots + score tier
 // - Score summary with star rating + tier label
 // - Smooth page transition with directional awareness
 // - Keyboard shortcuts (Esc, ← →, F, O, Space)
 // ═══════════════════════════════════════════════════════════════
 
-// ── Transition variants ────────────────────────────────────────
-const pageVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? '100%' : '-100%',
-    opacity: 0,
-    scale: 0.96,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-  },
-  exit: (direction: number) => ({
-    x: direction > 0 ? '-100%' : '100%',
-    opacity: 0,
-    scale: 0.96,
-  }),
-};
 
-const pageTransition: Record<string, unknown> = {
-  type: 'tween',
-  ease: [0.25, 0.46, 0.45, 0.94], // ease-out quad
-  duration: 0.35,
-};
 
 export default function PlayOverlay() {
   const mode = useInteractiveStore((s) => s.mode);
@@ -58,13 +35,9 @@ export default function PlayOverlay() {
   if (!isPlaying) return null;
 
   return (
-    <motion.div
-      className="fixed inset-0 bg-app-surface flex flex-col select-none"
+    <div
+      className="fixed inset-0 bg-app-surface flex flex-col select-none anim-enter-fade"
       style={{ zIndex: 70 }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
     >
       {/* Top bar */}
       <PlayOverlayHeader />
@@ -73,7 +46,7 @@ export default function PlayOverlay() {
       <div className="flex-1 min-h-0 overflow-hidden">
         <PlayCanvas />
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -308,23 +281,18 @@ function PlayCanvas() {
     <div ref={canvasRef} className="w-full h-full flex flex-col items-center justify-center relative">
       {/* ══ Animated page content ══════════════════════════════ */}
       <div className="flex-1 min-h-0 flex items-center justify-center w-full">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={`play-page-${interactivePageIdx}`}
-            custom={direction}
-            variants={pageVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={pageTransition}
-            className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
-            style={{
-              width: ratio.w,
-              height: ratio.h,
-              transform: `scale(${scale})`,
-              transformOrigin: 'center center',
-            }}
-          >
+        <PageTransition
+          pageKey={`play-page-${interactivePageIdx}`}
+          direction={direction as PageDirection}
+          duration={0.35}
+          className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
+          style={{
+            width: ratio.w,
+            height: ratio.h,
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center',
+          }}
+        >
             <CanvasErrorBoundary name="PlayPreview">
               <PageRenderer
                 mode="preview"
@@ -333,8 +301,7 @@ function PlayCanvas() {
                 totalPages={totalPages}
               />
             </CanvasErrorBoundary>
-          </motion.div>
-        </AnimatePresence>
+        </PageTransition>
       </div>
 
       {/* ══ Bottom Navigation Bar — Premium ═══════════════════ */}
@@ -507,13 +474,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
   const tier = totalMaxVal > 0 ? getScoreTier(totalPctVal) : null;
 
   return (
-    <motion.div
-      className="w-full h-full overflow-auto p-6"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-    >
+    <div className="w-full h-full overflow-auto p-6 anim-enter-scale">
       <div className="text-center mb-4">
         <div className="text-sm font-bold text-app-primary">Overview — {pages.length} Halaman</div>
         {totalMaxVal > 0 && (
@@ -546,20 +507,15 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
               ? { background: p.bgColor }
               : { background: p.bgColor || COLORS.bgDark };
           return (
-            <motion.button
+            <button
               key={p.id}
               onClick={() => handleSelect(i)}
-              className={`relative rounded-xl overflow-hidden transition-all hover:scale-105 ${
+              className={`relative rounded-xl overflow-hidden transition-all hover:scale-105 anim-enter-slide-up ${
                 isActive
                   ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
                   : 'ring-1 ring-app-border/40 hover:ring-app-border/60'
               }`}
-              style={{ aspectRatio: `${ratio.w}/${ratio.h}` }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
+              style={{ aspectRatio: `${ratio.w}/${ratio.h}`, animationDelay: `${i * 0.03}s`, animationFillMode: 'both' }}
             >
               <div className="absolute inset-0" style={bgStyle}>
                 <div className="absolute inset-0 bg-black/30" />
@@ -582,10 +538,10 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
                   AKTIF
                 </div>
               )}
-            </motion.button>
+            </button>
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 }

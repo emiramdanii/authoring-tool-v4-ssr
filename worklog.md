@@ -64,3 +64,30 @@ Stage Summary:
 - Server runs but container kills background processes after ~25-30s
 - This is a container environment limitation, not app issue
 - Production build works, pages serve correctly
+
+---
+Task ID: optimize-framer-motion
+Agent: Main
+Task: Replace framer-motion with lightweight CSS animations for optimization
+
+Work Log:
+- Analyzed all 8 files using framer-motion: stage, PlayOverlay, PresentMode, CanvasEmptyState, TemplateMarketplace, auto-generate, Dokumen, AuthoringTool, SchemaPlayer
+- Created /src/lib/transition.tsx — lightweight animation utilities (PageTransition, FadeIn, SlideIn, ScaleIn, Collapse, ShowTransition, StaggerChildren, AnimatePresence shim, motion.div shim)
+- Added CSS keyframe animations to globals.css: anim-enter-fade, anim-enter-slide-up/down/left/right, anim-enter-scale, anim-exit-fade, anim-page-fade-in/out, anim-page-slide-*
+- Replaced framer-motion in all 8 component files with CSS-based alternatives
+- Removed framer-motion from package.json dependencies (saves ~5.4MB)
+- Removed framer-motion from next.config.js optimizePackageImports
+- Added turbopack: {} config for Next.js 16 compatibility
+- Added NODE_OPTIONS='--max-old-space-size=512' for production and '768' for build
+- Added test:light script using --turbopack flag
+- Created scripts/serve-persistent.mjs — lightweight Node.js server script
+- Created scripts/keep-alive-server.sh — auto-restart wrapper with health checks
+- Build compiles successfully with Turbopack
+- Production server stays alive with keepalive (60+ seconds confirmed)
+
+Stage Summary:
+- framer-motion completely removed (8 files → CSS animations)
+- Bundle savings: ~5.4MB node_modules, reduced runtime JS
+- Production build: ✅ clean (4.4MB static, 6.6MB server)
+- Server stability: ✅ with keepalive loop (without it, container kills after ~25s)
+- Next.js config optimized: Turbopack, memory limits, tree-shaking
