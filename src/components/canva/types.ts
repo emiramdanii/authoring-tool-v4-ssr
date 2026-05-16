@@ -206,7 +206,7 @@ export type ElementsCanvaPage = CanvaPage & {
 // EXPORT:  Export pipeline — PDF/PPTX generation, no UI chrome
 export type AppMode = 'edit' | 'preview' | 'present' | 'export';
 
-export type LeftTab = 'halaman' | 'layer' | 'sisipkan' | 'halamanBaru' | 'riwayat';
+export type LeftTab = 'pages' | 'add-block' | 'templates' | 'layer' | 'settings';
 export type Tool = 'select' | 'text';
 export type ResizeDir = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | 'tm' | 'bm';
 

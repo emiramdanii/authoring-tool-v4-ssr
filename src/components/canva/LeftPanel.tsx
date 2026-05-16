@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Plus,
   FilePlus2,
@@ -64,7 +64,9 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 // ═══════════════════════════════════════════════════════════════
 
 export default function LeftPanel() {
-  const [activeTab, setActiveTab] = useState<LeftPanelTab>('pages');
+  // Sync activeTab with store's leftTab — single source of truth
+  const storeLeftTab = useCanvaStore(s => s.leftTab);
+  const [activeTab, setActiveTab] = useState<LeftPanelTab>(storeLeftTab);
   const [addBlockOpen, setAddBlockOpen] = useState(true);
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -73,12 +75,25 @@ export default function LeftPanel() {
   const expanded = useCanvaStore(s => s.leftPanelOpen);
   const toggleLeftPanel = useCanvaStore(s => s.toggleLeftPanel);
 
+  // When store leftTab changes (e.g., from CommandPalette or Stage buttons),
+  // sync local activeTab and open the panel if needed
+  const prevStoreTab = useRef(storeLeftTab);
+  useEffect(() => {
+    if (storeLeftTab !== prevStoreTab.current) {
+      prevStoreTab.current = storeLeftTab;
+      setActiveTab(storeLeftTab);
+      if (!expanded) toggleLeftPanel();
+    }
+  }, [storeLeftTab, expanded, toggleLeftPanel]);
+
   const handleTabChange = (tab: LeftPanelTab) => {
     if (activeTab === tab && expanded) {
       // Clicking same tab collapses the panel
       toggleLeftPanel();
     } else {
       setActiveTab(tab);
+      // Sync store so other components (CommandPalette, Stage) can read current tab
+      useCanvaStore.getState().setLeftTab(tab);
       if (!expanded) toggleLeftPanel();
     }
   };

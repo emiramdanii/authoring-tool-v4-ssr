@@ -252,7 +252,7 @@ function createInitialState(): CanvaState {
     ratioId: '16:9',
     zoom: -1,
     tool: 'select',
-    leftTab: 'halaman',
+    leftTab: 'pages',
     selectedElId: null,
     selectedElIds: [],
     selectedBlockId: null,
@@ -655,9 +655,9 @@ describe('UI Slice', () => {
 
   it('should set left tab', () => {
     const { getState } = store;
-    expect(getState().leftTab).toBe('halaman');
-    getState().setLeftTab('sisipkan');
-    expect(getState().leftTab).toBe('sisipkan');
+    expect(getState().leftTab).toBe('pages');
+    getState().setLeftTab('add-block');
+    expect(getState().leftTab).toBe('add-block');
   });
 
   it('should toggle left panel', () => {

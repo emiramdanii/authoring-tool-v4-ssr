@@ -463,28 +463,28 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       },
       {
         id: 'nav-sisipkan-tab',
-        label: 'Buka Tab Sisipkan',
+        label: 'Buka Tab Tambah Block',
         description: 'Tambah block, modul, game ke halaman ini',
         icon: <Layout size={16} className="text-teal-400" />,
         category: 'navigation',
         action: () => {
           useAuthoringStore.getState().setActivePanel('canva');
           const canvaState = useCanvaStore.getState();
-          if (!canvaState.leftPanelOpen) useCanvaStore.setState({ leftPanelOpen: true });
-          canvaState.setLeftTab('sisipkan');
+          if (!canvaState.leftPanelOpen) canvaState.toggleLeftPanel();
+          canvaState.setLeftTab('add-block');
         },
       },
       {
         id: 'nav-halaman-baru-tab',
-        label: 'Buka Tab + Halaman',
+        label: 'Buka Tab Halaman',
         description: 'Tambah halaman baru, preset, auto-generate',
         icon: <Layout size={16} className="text-sky-400" />,
         category: 'navigation',
         action: () => {
           useAuthoringStore.getState().setActivePanel('canva');
           const canvaState = useCanvaStore.getState();
-          if (!canvaState.leftPanelOpen) useCanvaStore.setState({ leftPanelOpen: true });
-          canvaState.setLeftTab('halamanBaru');
+          if (!canvaState.leftPanelOpen) canvaState.toggleLeftPanel();
+          canvaState.setLeftTab('pages');
         },
       },
       {

@@ -134,10 +134,15 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
         newPage.pageMode = 'elements';
       }
     } else {
-      // Custom pages have no schema
-      delete newPage.schema;
+      // Custom pages also support schema (empty schema for block additions)
+      newPage.schema = {
+        id: newPage.id,
+        version: 1,
+        templateType: 'custom',
+        blocks: [],
+      };
       newPage.elements = [];
-      newPage.pageMode = 'elements';
+      newPage.pageMode = 'schema';
     }
 
     newPages[currentPageIndex] = newPage;

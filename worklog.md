@@ -217,3 +217,57 @@ Stage Summary:
 - All store actions (selectBlock, hoverBlock, startEditing, etc.) verified working
 - TemplateWizard flow: previously fixed (deepFreeze issue)
 - Export with fallback: client-side fallback already implemented
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix "Tambah Block tidak fungsi" - Make add block work for all pages, fix tab sync, fix non-functional buttons
+
+Work Log:
+- Audited entire add block flow: AddBlockPanel → addSchemaBlock → ensurePageSchema → store
+- Found ROOT CAUSE: Custom/blank pages have no schema, ensurePageSchema returns null, addSchemaBlock fails with toast warning
+- Found LEFT TAB DISCONNECT: LeftPanel uses local useState<LeftPanelTab> while store uses LeftTab with different values
+- Found Stage empty state button calling setLeftTab('halaman') which is no-op
+- Found CommandPalette tab-switch commands using old tab names (no-op)
+
+Fixes Applied:
+1. **addSchemaBlock auto-creates empty schema for custom pages** (ui-slice.ts)
+   - When page has no schema, creates empty ScreenSchema with version 1
+   - Sets pageMode='schema' and clears elements[] on conversion
+   - Users can now add blocks to ANY page including blank pages
+
+2. **createPage gives blank pages an empty schema** (constants.ts)
+   - All new pages start with pageMode='schema' and an empty schema.blocks=[]
+   - schema.id matches page.id for consistency
+
+3. **Unified LeftTab type** (types.ts)
+   - Changed from 'halaman'|'layer'|'sisipkan'|'halamanBaru'|'riwayat' 
+   - To 'pages'|'add-block'|'templates'|'layer'|'settings' (matches LeftPanelTab)
+
+4. **LeftPanel syncs with store leftTab** (LeftPanel.tsx)
+   - Added useEffect to react to store leftTab changes
+   - handleTabChange also writes to store via setLeftTab()
+   - Other components (Stage, CommandPalette) can now control LeftPanel tabs
+
+5. **Fixed Stage empty state button** (stage/index.tsx)
+   - Changed from setLeftTab('halaman') to setLeftTab('add-block') + open panel
+
+6. **Fixed CommandPalette tab commands** (CommandPalette.tsx)
+   - 'sisipkan' → 'add-block', 'halamanBaru' → 'pages'
+   - Uses toggleLeftPanel() instead of raw setState
+
+7. **Updated TAB_MIGRATION map** (persistence-slice.ts)
+   - All legacy tab names map to new unified names
+   - Default leftTab changed from 'halaman' to 'pages'
+
+8. **Fixed setTemplateType for custom pages** (page-slice.ts)
+   - Custom pages now get empty schema instead of deleting schema
+
+9. **Updated tests** (store-slices.test.ts)
+   - Changed old tab names to new ones
+
+Stage Summary:
+- Build: ✅ Compiled successfully (no TypeScript errors)
+- Server: ✅ Running on port 3000 (dev mode via start-server.mjs)
+- All add block flows should now work: AddBlockPanel, CommandPalette, fragments
+- Tab navigation now synced between store and LeftPanel
+- Custom/blank pages now support schema blocks immediately

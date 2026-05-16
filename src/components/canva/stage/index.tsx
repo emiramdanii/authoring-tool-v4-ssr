@@ -445,7 +445,10 @@ export default function Stage() {
                 </div>
                 <div className="flex items-center gap-2 w-full">
                   <button
-                    onClick={() => useCanvaStore.getState().setLeftTab('halaman')}
+                    onClick={() => {
+                      useCanvaStore.getState().setLeftTab('add-block');
+                      if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
+                    }}
                     className="flex-1 px-3 py-2 bg-app-accent/10 hover:bg-app-accent/20 border border-app-accent/20 text-app-accent text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Plus size={13} /> Tambah Block

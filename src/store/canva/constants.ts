@@ -10,13 +10,13 @@ export const MAX_HISTORY = 50;
 export const CANVA_STORAGE_KEY = 'canva_state_v2';
 
 export function createPage(label: string, templateType: PageTemplateType = 'custom'): CanvaPage {
-  // ═══ pageMode: Schema-driven for templates, elements for custom ═══
-  // This discriminator prevents dual-render at the type level.
-  // Template pages use schema as single source of truth.
-  // Custom pages use elements[] (legacy path, will be migrated later).
-  const isTemplate = templateType !== 'custom';
+  // ═══ pageMode: Schema-driven for all pages ═══
+  // Even custom/blank pages now support schema blocks.
+  // When a user adds a "Halaman Kosong", they can immediately
+  // add blocks to it via the AddBlockPanel.
+  const pageId = generatePageId();
   return {
-    id: generatePageId(),
+    id: pageId,
     label,
     bgDataUrl: null,
     bgColor: templateType === 'custom' ? '#1e293b' : '#0f172a',
@@ -26,7 +26,14 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
     colorPalette: null,
     navConfig: { ...DEFAULT_NAV_CONFIG },
     templateData: {},
-    pageMode: isTemplate ? 'schema' : 'elements',
+    pageMode: 'schema',
+    // Blank pages get an empty schema so blocks can be added immediately
+    schema: {
+      id: pageId,
+      version: 1,
+      templateType,
+      blocks: [],
+    },
     // v4: overlayElements removed — all elements in elements[]
   };
 }

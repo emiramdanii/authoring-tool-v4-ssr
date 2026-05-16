@@ -68,7 +68,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     zoom: -1, // -1 = auto-fit (calculated by Stage on mount)
     fitZoom: 0.5, // Updated by Stage's ResizeObserver — initial fallback
     tool: 'select',
-    leftTab: 'halaman',
+    leftTab: 'pages',
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
     selectedBlockId: null, // Schema block selection for editing overlay

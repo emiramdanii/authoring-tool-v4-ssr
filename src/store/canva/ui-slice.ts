@@ -688,10 +688,19 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     if (!page) return;
 
     // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
-    const schema = ensurePageSchema(page);
+    // If the page has no schema (e.g., custom/blank page), auto-create one
+    // so users can add blocks to ANY page.
+    let schema = ensurePageSchema(page);
+    let needsSchemaInit = false;
     if (!schema) {
-      toast.warning('Tidak dapat menambah block ke halaman ini');
-      return;
+      // Auto-create empty schema for custom/blank pages
+      schema = {
+        id: page.id,
+        version: 1,
+        templateType: 'custom',
+        blocks: [],
+      };
+      needsSchemaInit = true;
     }
 
     const blocks = schema.blocks;
@@ -748,9 +757,14 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
     const newPages = [...pages];
+    const updatedSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
     newPages[currentPageIndex] = {
       ...page,
-      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
+      schema: updatedSchema,
+      // Ensure pageMode is schema-driven when adding blocks
+      pageMode: 'schema',
+      // Clear legacy elements when converting to schema-driven page
+      ...(needsSchemaInit ? { elements: [] } : {}),
     };
     set({ pages: newPages });
 

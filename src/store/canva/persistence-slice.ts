@@ -27,14 +27,19 @@ const STORAGE_MIGRATION_VERSION = 1;
 
 // ── Legacy tab name migration map ──────────────────────────────
 const TAB_MIGRATION: Record<string, LeftTab> = {
-  templates: 'sisipkan',
-  elems: 'sisipkan',
-  ratio: 'halaman',
-  pages: 'halaman',
-  layers: 'halaman',
-  rakit: 'sisipkan',
-  layer: 'halaman',
-  tambah: 'sisipkan', // 8.3: Old 'tambah' tab split into 'sisipkan' + 'halamanBaru'
+  templates: 'templates',
+  elems: 'add-block',
+  ratio: 'pages',
+  pages: 'pages',
+  layers: 'layer',
+  rakit: 'add-block',
+  layer: 'layer',
+  tambah: 'add-block',
+  // Legacy tab names → new unified names
+  halaman: 'pages',
+  sisipkan: 'add-block',
+  halamanBaru: 'pages',
+  riwayat: 'layer',
 };
 
 export type PersistenceSlice = Pick<
@@ -230,9 +235,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
 
         // Migrate legacy leftTab names
-        let leftTab: LeftTab = 'halaman';
+        let leftTab: LeftTab = 'pages';
         if (data.leftTab) {
-          leftTab = TAB_MIGRATION[data.leftTab] || 'halaman';
+          leftTab = TAB_MIGRATION[data.leftTab] || 'pages';
         }
         set({
           pages: cleanPages,
@@ -352,7 +357,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           selectedBlockIds: [],
           leftPanelOpen: true,
           rightPanelOpen: true,
-          leftTab: 'halaman',
+          leftTab: 'pages',
         });
       }
     } catch (err) {
