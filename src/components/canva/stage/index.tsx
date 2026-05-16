@@ -23,6 +23,7 @@ import {
 } from '@/lib/canva-constants';
 import { screenToPct } from '@/lib/virtual-canvas';
 import CanvasEmptyState from '../CanvasEmptyState';
+import BatchOperationsBar from './BatchOperationsBar';
 import { useAuthoringStore } from '@/store/authoring-store';
 
 // ═══════════════════════════════════════════════════════════════
@@ -553,11 +554,9 @@ export default function Stage() {
             </div>
           )}
 
-          {/* Multi-select info badge (schema blocks) */}
-          {selectedBlockIds.length > 1 && (
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
-              {selectedBlockIds.length} block terpilih • Shift+klik untuk tambah • Del untuk hapus
-            </div>
+          {/* Batch operations bar (replaces old multi-select badge) */}
+          {!canvasPreview && selectedBlockIds.length > 1 && (
+            <BatchOperationsBar />
           )}
         </div>
       </div>

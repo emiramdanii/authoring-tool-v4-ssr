@@ -39,6 +39,7 @@ export type UISlice = Pick<
   | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | 'moveBlockToContainer' | 'addSchemaBlockToContainer'
+  | 'batchSetVariant'
   | 'rebalanceCurrentPage' | 'promoteSceneSplit' | 'mergeWithAdjacentPage'
 >;
 
@@ -1533,6 +1534,43 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     const containerLabel = container.type;
     toast.success(`${definition.name} ditambahkan ke ${containerLabel}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Batch Set Variant ─────────────────────────────────────────────
+  // Set variant (A/B/C) on multiple blocks at once.
+  // Uses the existing updateSchemaBlock internally for per-block deep merge.
+  batchSetVariant: (blockIds, variant) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || blockIds.length === 0) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    get()._pushHistory();
+
+    const newBlocks = schema.blocks.map(block => {
+      if (block.id && blockIds.includes(block.id)) {
+        return { ...block, variant };
+      }
+      return block;
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, newBlocks),
+    };
+
+    set({ pages: newPages });
+
+    toast.success(`${blockIds.length} block diubah ke Variant ${variant}`, {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },

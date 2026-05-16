@@ -11,6 +11,8 @@
 //   2. instantiateTemplate() uses existing generators — no duplication
 //   3. Mock ParseResult provides contextual content per subject
 //   4. Schema-first: SchemaBlock[] is the single source of truth
+//   5. Template Patterns: Standar, Interaktif, Eksperimen, Mini
+//   6. Customizable: teachers can toggle pages before applying
 // ═══════════════════════════════════════════════════════════════════
 
 import type { PageTemplateType } from '@/components/canva/types';
@@ -40,6 +42,79 @@ import { assertDocumentPurity } from '@/core/schema/session-state';
 // LESSON TEMPLATE INTERFACE
 // ═══════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════
+// TEMPLATE PATTERN — Learning flow archetype
+// ═══════════════════════════════════════════════════════════════════
+// Each pattern represents a pedagogical approach:
+//   - standar:     Cover → TP → Motivasi → Materi → Kuis → Refleksi → Penutup
+//   - interaktif:  Cover → TP → Skenario → Game/Diskusi → Refleksi → Penutup
+//   - eksperimen:  Cover → TP → Skenario Ilmiah → Materi → Praktikum → Kuis → Rangkuman
+//   - mini:        Cover → Materi → Kuis → Penutup (untuk pertemuan singkat)
+
+export type TemplatePattern = 'standar' | 'interaktif' | 'eksperimen' | 'mini';
+
+export const TEMPLATE_PATTERNS: Record<TemplatePattern, {
+  id: TemplatePattern;
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
+}> = {
+  standar: {
+    id: 'standar',
+    label: 'Standar',
+    description: 'Alur lengkap pembelajaran: pembuka, materi, latihan, penutup',
+    icon: '📋',
+    color: 'sky',
+  },
+  interaktif: {
+    id: 'interaktif',
+    label: 'Interaktif',
+    description: 'Banyak aktivitas interaktif: skenario, game, diskusi',
+    icon: '🎮',
+    color: 'violet',
+  },
+  eksperimen: {
+    id: 'eksperimen',
+    label: 'Eksperimen',
+    description: 'Berbasis praktikum dan penyelidikan ilmiah',
+    icon: '🔬',
+    color: 'emerald',
+  },
+  mini: {
+    id: 'mini',
+    label: 'Mini',
+    description: 'Pertemuan singkat: materi inti + kuis cepat',
+    icon: '⚡',
+    color: 'amber',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// TEMPLATE CUSTOMIZATION — User-configurable options before apply
+// ═══════════════════════════════════════════════════════════════════
+
+export interface TemplateCustomization {
+  /** Which pages to include (by index in template.pageTypes) */
+  enabledPages: boolean[];
+  /** Number of quiz questions (for kuis pages) */
+  jumlahKuis: number;
+  /** Variant preference */
+  variant: 'A' | 'B' | 'C';
+  /** Teacher name to inject into cover */
+  guru?: string;
+  /** School name to inject into cover */
+  sekolah?: string;
+}
+
+export function getDefaultCustomization(template: LessonTemplate): TemplateCustomization {
+  return {
+    enabledPages: template.pageTypes.map(() => true),
+    jumlahKuis: 5,
+    variant: 'A',
+  };
+}
+
 export interface LessonTemplate {
   id: string;
   title: string;
@@ -51,6 +126,8 @@ export interface LessonTemplate {
   icon: string;
   color: string; // tailwind color key (e.g., 'amber', 'emerald', 'sky')
   tags: string[];
+  /** Learning flow pattern */
+  pattern: TemplatePattern;
   pageTypes: PageTemplateType[];
   estimatedPages: number;
   // Preview content — short descriptions of what each page will contain
@@ -270,6 +347,126 @@ const SUBJECT_MOCK_DATA: Record<string, MockSubjectData> = {
     ],
   },
 
+  // ── PPKn: Norma (Kelas 7) ──
+  'ppkn-norma': {
+    sentences: [
+      'Norma adalah aturan atau ketentuan yang mengatur tingkah laku manusia dalam kehidupan bermasyarakat.',
+      'Setiap norma memiliki sanksi yang berbeda-beda tergantung jenisnya.',
+      'Pelanggaran terhadap norma dapat menimbulkan ketidakharmonisan dalam masyarakat.',
+    ],
+    words: ['norma', 'aturan', 'sanksi', 'masyarakat', 'hukum', 'kesopanan', 'kesusilaan', 'agama'],
+    topWords: ['norma', 'aturan', 'sanksi', 'masyarakat', 'hukum'],
+    definitions: [
+      { term: 'Norma', meaning: 'aturan atau ketentuan yang mengatur tingkah laku manusia dalam kehidupan bermasyarakat' },
+      { term: 'Sanksi', meaning: 'hukuman atau konsekuensi yang diberikan jika melanggar suatu norma' },
+      { term: 'Norma kesopanan', meaning: 'norma yang mengatur tingkah laku manusia dalam pergaulan masyarakat' },
+    ],
+    enumerations: [
+      { subject: 'Jenis-jenis norma', items: ['Norma kesopanan', 'Norma kesusilaan', 'Norma hukum', 'Norma agama'] },
+    ],
+    functions: [
+      { subject: 'Norma', desc: 'mengatur tingkah laku manusia agar tertib dan harmonis' },
+    ],
+    causes: [
+      { cause: 'Pelanggaran norma', effect: 'ketidakharmonisan dalam masyarakat' },
+    ],
+  },
+
+  // ── IPA: Tata Surya (Kelas 9) ──
+  'ipa-tata-surya': {
+    sentences: [
+      'Tata surya adalah sistem tata surya yang terdiri dari matahari sebagai pusat dan planet-planet yang mengorbitnya.',
+      'Rotasi bumi menyebabkan terjadinya siang dan malam, sedangkan revolusi bumi menyebabkan pergantian musim.',
+      'Matahari adalah bintang terdekat dengan bumi yang menjadi sumber energi utama di tata surya.',
+    ],
+    words: ['tata surya', 'planet', 'rotasi', 'revolusi', 'matahari', 'bumi', 'orbit', 'gravitasi'],
+    topWords: ['tata surya', 'planet', 'rotasi', 'revolusi', 'matahari'],
+    definitions: [
+      { term: 'Tata surya', meaning: 'sistem yang terdiri dari matahari dan semua benda langit yang mengorbitnya' },
+      { term: 'Rotasi', meaning: 'perputaran benda langit pada porosnya' },
+      { term: 'Revolusi', meaning: 'perputaran benda langit mengelilingi benda langit lain yang lebih besar' },
+    ],
+    enumerations: [
+      { subject: 'Planet dalam tata surya', items: ['Merkurius', 'Venus', 'Bumi', 'Mars', 'Jupiter', 'Saturnus', 'Uranus', 'Neptunus'] },
+      { subject: 'Akibat rotasi bumi', items: ['Pergantian siang dan malam', 'Perbedaan waktu', 'Gerak semu harian matahari'] },
+    ],
+    functions: [
+      { subject: 'Gravitasi matahari', desc: 'menahan planet-planet agar tetap pada orbitnya' },
+    ],
+    causes: [
+      { cause: 'Rotasi bumi', effect: 'terjadinya siang dan malam' },
+      { cause: 'Revolusi bumi', effect: 'terjadinya pergantian musim' },
+    ],
+  },
+
+  // ── MTK: Bangun Ruang (Kelas 8) ──
+  'mtk-bangun-ruang': {
+    sentences: [
+      'Bangun ruang sisi datar adalah bangun ruang yang semua sisinya berbentuk datar.',
+      'Kubus memiliki 6 sisi berbentuk persegi yang sama besar, 12 rusuk, dan 8 titik sudut.',
+      'Volume balok dapat dihitung dengan rumus panjang kali lebar kali tinggi.',
+    ],
+    words: ['bangun', 'ruang', 'volume', 'luas', 'permukaan', 'kubus', 'balok', 'prisma', 'limas'],
+    topWords: ['bangun', 'ruang', 'volume', 'luas', 'permukaan'],
+    definitions: [
+      { term: 'Volume', meaning: 'besaran yang menyatakan isi suatu bangun ruang' },
+      { term: 'Luas permukaan', meaning: 'jumlah luas seluruh sisi suatu bangun ruang' },
+      { term: 'Kubus', meaning: 'bangun ruang sisi datar yang terdiri dari 6 sisi persegi sama besar' },
+    ],
+    enumerations: [
+      { subject: 'Sifat-sifat kubus', items: ['6 sisi persegi sama besar', '12 rusuk sama panjang', '8 titik sudut', '4 diagonal ruang'] },
+      { subject: 'Rumus volume', items: ['Kubus: sisi x sisi x sisi', 'Balok: p x l x t', 'Prisma: alas x tinggi', 'Limas: 1/3 x alas x tinggi'] },
+    ],
+    functions: [],
+    causes: [],
+  },
+
+  // ── B. Inggris: Descriptive Text (Kelas 8) ──
+  'bing-descriptive-text': {
+    sentences: [
+      'Descriptive text is a text that describes a particular person, place, or thing.',
+      'The structure of descriptive text consists of identification and description.',
+      'Descriptive text uses simple present tense and adjective to describe the object.',
+    ],
+    words: ['descriptive', 'text', 'identification', 'description', 'adjective', 'structure', 'describe', 'feature'],
+    topWords: ['descriptive', 'text', 'identification', 'description', 'adjective'],
+    definitions: [
+      { term: 'Descriptive text', meaning: 'teks yang menggambarkan orang, tempat, atau benda secara spesifik' },
+      { term: 'Identification', meaning: 'bagian awal yang memperkenalkan objek yang akan dideskripsikan' },
+      { term: 'Description', meaning: 'bagian yang berisi penggambaran detail objek' },
+    ],
+    enumerations: [
+      { subject: 'Language features of descriptive text', items: ['Simple present tense', 'Adjectives', 'Relating verbs (is, has)', 'Detailed noun phrases', 'Comparisons'] },
+    ],
+    functions: [
+      { subject: 'Descriptive text', desc: 'memperjelas gambaran objek agar pembaca dapat membayangkannya' },
+    ],
+    causes: [],
+  },
+
+  // ── PJOK: Kebugaran Jasmani (Kelas 8) ──
+  'pjok-kebugaran': {
+    sentences: [
+      'Kebugaran jasmani adalah kemampuan seseorang untuk melakukan pekerjaan sehari-hari secara efisien tanpa merasa kelelahan berlebihan.',
+      'Komponen kebugaran jasmani meliputi kekuatan, daya tahan, kelentukan, dan kecepatan.',
+      'Latihan kebugaran jasmani harus dilakukan secara rutin dan bertahap untuk mendapatkan hasil yang optimal.',
+    ],
+    words: ['kebugaran', 'jasmani', 'latihan', 'kekuatan', 'daya tahan', 'kelentukan', 'kecepatan'],
+    topWords: ['kebugaran', 'jasmani', 'latihan', 'kekuatan', 'daya tahan'],
+    definitions: [
+      { term: 'Kebugaran jasmani', meaning: 'kemampuan tubuh untuk melakukan aktivitas tanpa kelelahan berlebihan' },
+      { term: 'Daya tahan', meaning: 'kemampuan tubuh untuk melakukan aktivitas dalam waktu lama' },
+      { term: 'Kekuatan otot', meaning: 'kemampuan otot untuk menghasilkan tenaga saat berkontraksi' },
+    ],
+    enumerations: [
+      { subject: 'Komponen kebugaran jasmani', items: ['Kekuatan otot', 'Daya tahan kardiovaskular', 'Kelentukan', 'Kecepatan', 'Kelincahan'] },
+    ],
+    functions: [
+      { subject: 'Latihan rutin', desc: 'meningkatkan kemampuan tubuh secara bertahap' },
+    ],
+    causes: [],
+  },
+
   // ── Seni Budaya: Seni Rupa (Kelas 9) ──
   'seni-seni-rupa': {
     sentences: [
@@ -300,6 +497,7 @@ const SUBJECT_MOCK_DATA: Record<string, MockSubjectData> = {
 // ═══════════════════════════════════════════════════════════════════
 
 export const LESSON_TEMPLATES: LessonTemplate[] = [
+  // ── PPKn: Budaya Demokrasi (Standar) ──
   {
     id: 'ppkn-budaya-demokrasi',
     title: 'Budaya Demokrasi',
@@ -311,6 +509,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     icon: '⚖️',
     color: 'amber',
     tags: ['demokrasi', 'musyawarah', 'kebebasan', 'hak', 'kewajiban'],
+    pattern: 'standar',
     pageTypes: ['cover', 'tujuan', 'motivasi', 'materi', 'diskusi', 'kuis', 'refleksi', 'rangkuman', 'penutup'],
     estimatedPages: 9,
     pagePreview: [
@@ -325,6 +524,35 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
       { type: 'penutup', title: 'Penutup', description: 'Ringkasan dan tindak lanjut' },
     ],
   },
+
+  // ── PPKn: Norma (Interaktif) ──
+  {
+    id: 'ppkn-norma',
+    title: 'Norma dalam Kehidupan',
+    subtitle: 'PPKn Kelas 7 - Semester 1',
+    description: 'Mengenal berbagai norma (kesopanan, kesusilaan, hukum, agama) dan perannya dalam mengatur kehidupan bermasyarakat.',
+    mapel: 'PPKn',
+    kelas: '7',
+    semester: '1',
+    icon: '📜',
+    color: 'amber',
+    tags: ['norma', 'aturan', 'sanksi', 'masyarakat', 'hukum'],
+    pattern: 'interaktif',
+    pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Norma, kelas, dan mapel' },
+      { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Membedakan jenis-jenis norma dan fungsinya' },
+      { type: 'skenario', title: 'Skenario Interaktif', description: 'Memilih tindakan berdasarkan norma yang berlaku' },
+      { type: 'materi', title: 'Materi Pembelajaran', description: 'Jenis norma, sanksi, dan contoh penerapannya' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Studi kasus pelanggaran norma di lingkungan' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang jenis-jenis norma' },
+      { type: 'refleksi', title: 'Refleksi', description: 'Norma mana yang paling sering kamu terapkan?' },
+      { type: 'penutup', title: 'Penutup', description: 'Penutup dan komitmen mematuhi norma' },
+    ],
+  },
+
+  // ── IPA: Fotosintesis (Eksperimen) ──
   {
     id: 'ipa-fotosintesis',
     title: 'Fotosintesis',
@@ -336,18 +564,49 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     icon: '🔬',
     color: 'emerald',
     tags: ['fotosintesis', 'klorofil', 'glukosa', 'oksigen', 'tumbuhan'],
-    pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'kuis', 'rangkuman', 'penutup'],
-    estimatedPages: 7,
+    pattern: 'eksperimen',
+    pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'diskusi', 'kuis', 'rangkuman', 'penutup'],
+    estimatedPages: 8,
     pagePreview: [
       { type: 'cover', title: 'Sampul', description: 'Judul materi Fotosintesis, kelas, dan mapel' },
       { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Menjelaskan proses fotosintesis dan faktor-faktornya' },
       { type: 'skenario', title: 'Skenario Ilmiah', description: 'Cerita interaktif tentang proses fotosintesis' },
       { type: 'materi', title: 'Materi Pembelajaran', description: 'Definisi, tahapan, dan faktor fotosintesis' },
+      { type: 'diskusi', title: 'Praktikum / Diskusi', description: 'Mengamati pengaruh cahaya terhadap tumbuhan' },
       { type: 'kuis', title: 'Kuis', description: '5 soal tentang proses fotosintesis' },
       { type: 'rangkuman', title: 'Rangkuman', description: 'Konsep kunci: klorofil, reaksi terang & gelap' },
       { type: 'penutup', title: 'Penutup', description: 'Penutup dan tindak lanjut' },
     ],
   },
+
+  // ── IPA: Sistem Tata Surya (Eksperimen) ──
+  {
+    id: 'ipa-tata-surya',
+    title: 'Sistem Tata Surya',
+    subtitle: 'IPA Kelas 9 - Semester 1',
+    description: 'Mempelajari anggota tata surya, rotasi dan revolusi bumi, serta pengaruhnya terhadap kehidupan.',
+    mapel: 'IPA',
+    kelas: '9',
+    semester: '1',
+    icon: '🪐',
+    color: 'emerald',
+    tags: ['tata surya', 'planet', 'rotasi', 'revolusi', 'matahari', 'bumi'],
+    pattern: 'eksperimen',
+    pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'diskusi', 'kuis', 'rangkuman', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Tata Surya, kelas, dan mapel' },
+      { type: 'tujuan', title: 'Tujuan Pembelajaran', description: 'Menjelaskan anggota dan mekanisme tata surya' },
+      { type: 'skenario', title: 'Skenario Antariksa', description: 'Petualangan menjelajahi tata surya' },
+      { type: 'materi', title: 'Materi Pembelajaran', description: 'Planet, rotasi, revolusi, dan fenomena alam' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Apa yang terjadi jika bumi tidak berotasi?' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang tata surya' },
+      { type: 'rangkuman', title: 'Rangkuman', description: 'Konsep kunci: rotasi, revolusi, planet' },
+      { type: 'penutup', title: 'Penutup', description: 'Penutup dan tugas observasi' },
+    ],
+  },
+
+  // ── MTK: Persamaan Linear (Standar) ──
   {
     id: 'mtk-persamaan-linear',
     title: 'Persamaan Linear',
@@ -359,6 +618,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     icon: '📐',
     color: 'sky',
     tags: ['persamaan', 'linear', 'variabel', 'substitusi', 'eliminasi', 'grafik'],
+    pattern: 'standar',
     pageTypes: ['cover', 'tujuan', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
     estimatedPages: 7,
     pagePreview: [
@@ -371,6 +631,31 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
       { type: 'penutup', title: 'Penutup', description: 'Penutup dan tindak lanjut' },
     ],
   },
+
+  // ── MTK: Bangun Ruang (Mini) ──
+  {
+    id: 'mtk-bangun-ruang',
+    title: 'Bangun Ruang Sisi Datar',
+    subtitle: 'Matematika Kelas 8 - Semester 2',
+    description: 'Menghitung luas permukaan dan volume kubus, balok, prisma, dan limas — pertemuan singkat dengan fokus latihan soal.',
+    mapel: 'MTK',
+    kelas: '8',
+    semester: '2',
+    icon: '📦',
+    color: 'sky',
+    tags: ['bangun', 'ruang', 'volume', 'luas', 'kubus', 'balok'],
+    pattern: 'mini',
+    pageTypes: ['cover', 'materi', 'kuis', 'penutup'],
+    estimatedPages: 4,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Bangun Ruang, kelas, dan mapel' },
+      { type: 'materi', title: 'Materi Inti', description: 'Rumus luas permukaan dan volume bangun ruang' },
+      { type: 'kuis', title: 'Latihan Soal', description: '5 soal hitung volume dan luas permukaan' },
+      { type: 'penutup', title: 'Penutup', description: 'Ringkasan rumus dan tugas latihan' },
+    ],
+  },
+
+  // ── B. Indonesia: Teks Deskripsi (Standar) ──
   {
     id: 'bin-teks-deskripsi',
     title: 'Teks Deskripsi',
@@ -382,6 +667,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     icon: '📖',
     color: 'orange',
     tags: ['deskripsi', 'teks', 'panca indera', 'identifikasi', 'menulis'],
+    pattern: 'standar',
     pageTypes: ['cover', 'tujuan', 'motivasi', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
     estimatedPages: 8,
     pagePreview: [
@@ -395,6 +681,35 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
       { type: 'penutup', title: 'Penutup', description: 'Penutup dan tugas menulis' },
     ],
   },
+
+  // ── B. Inggris: Descriptive Text (Standar) ──
+  {
+    id: 'bing-descriptive-text',
+    title: 'Descriptive Text',
+    subtitle: 'B. Inggris Kelas 8 - Semester 1',
+    description: 'Mempelajari struktur descriptive text (identification + description) dan practice menulis descriptive text dalam Bahasa Inggris.',
+    mapel: 'B.Inggris',
+    kelas: '8',
+    semester: '1',
+    icon: '🌍',
+    color: 'purple',
+    tags: ['descriptive', 'text', 'english', 'writing', 'identification', 'description'],
+    pattern: 'standar',
+    pageTypes: ['cover', 'tujuan', 'motivasi', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
+    estimatedPages: 8,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Descriptive Text — English Class' },
+      { type: 'tujuan', title: 'Learning Objectives', description: 'Identify structure and write descriptive text' },
+      { type: 'motivasi', title: 'Motivasi', description: 'Pertanyaan pemantik tentang mendeskripsikan benda' },
+      { type: 'materi', title: 'Materi', description: 'Structure, language features, and examples' },
+      { type: 'diskusi', title: 'Diskusi', description: 'Analyze descriptive text examples in groups' },
+      { type: 'kuis', title: 'Kuis', description: '5 soal tentang descriptive text' },
+      { type: 'refleksi', title: 'Refleksi', description: 'Write a descriptive text about your favorite place' },
+      { type: 'penutup', title: 'Penutup', description: 'Summary and writing assignment' },
+    ],
+  },
+
+  // ── IPS: Kerajaan Hindu-Buddha (Interaktif) ──
   {
     id: 'ips-kerajaan-hindu-buddha',
     title: 'Kerajaan Hindu-Buddha',
@@ -406,6 +721,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     icon: '🏛️',
     color: 'violet',
     tags: ['kerajaan', 'hindu', 'buddha', 'prasasti', 'nusantara', 'sejarah'],
+    pattern: 'interaktif',
     pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'kuis', 'diskusi', 'rangkuman', 'penutup'],
     estimatedPages: 8,
     pagePreview: [
@@ -419,6 +735,31 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
       { type: 'penutup', title: 'Penutup', description: 'Penutup dan tugas investigasi' },
     ],
   },
+
+  // ── PJOK: Kebugaran Jasmani (Mini) ──
+  {
+    id: 'pjok-kebugaran',
+    title: 'Kebugaran Jasmani',
+    subtitle: 'PJOK Kelas 8 - Semester 1',
+    description: 'Mengenal komponen kebugaran jasmani dan latihan dasar yang dapat dilakukan secara mandiri — pertemuan singkat.',
+    mapel: 'PJOK',
+    kelas: '8',
+    semester: '1',
+    icon: '⚽',
+    color: 'cyan',
+    tags: ['kebugaran', 'jasmani', 'olahraga', 'latihan', 'kesehatan'],
+    pattern: 'mini',
+    pageTypes: ['cover', 'materi', 'kuis', 'penutup'],
+    estimatedPages: 4,
+    pagePreview: [
+      { type: 'cover', title: 'Sampul', description: 'Judul materi Kebugaran Jasmani, kelas, dan mapel' },
+      { type: 'materi', title: 'Materi Inti', description: 'Komponen kebugaran dan contoh latihan' },
+      { type: 'kuis', title: 'Kuis Cepat', description: '3 soal tentang kebugaran jasmani' },
+      { type: 'penutup', title: 'Penutup', description: 'Tugas latihan di rumah' },
+    ],
+  },
+
+  // ── Seni Budaya: Seni Rupa (Standar) ──
   {
     id: 'seni-seni-rupa',
     title: 'Seni Rupa',
@@ -430,6 +771,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     icon: '🎨',
     color: 'pink',
     tags: ['seni', 'rupa', 'warna', 'garis', 'bentuk', 'dimensi'],
+    pattern: 'standar',
     pageTypes: ['cover', 'tujuan', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
     estimatedPages: 7,
     pagePreview: [
@@ -468,6 +810,17 @@ export function getLessonTemplatesByMapel(mapel: string): LessonTemplate[] {
 /** Get unique mapel values from all templates */
 export function getTemplateMapelList(): string[] {
   const set = new Set(LESSON_TEMPLATES.map(t => t.mapel));
+  return Array.from(set);
+}
+
+/** Get templates filtered by pattern */
+export function getLessonTemplatesByPattern(pattern: TemplatePattern): LessonTemplate[] {
+  return LESSON_TEMPLATES.filter(t => t.pattern === pattern);
+}
+
+/** Get unique pattern values from all templates */
+export function getTemplatePatternList(): TemplatePattern[] {
+  const set = new Set(LESSON_TEMPLATES.map(t => t.pattern));
   return Array.from(set);
 }
 
@@ -513,6 +866,87 @@ export function instantiateTemplate(template: LessonTemplate): CanvaPage[] {
     for (const p of pages) {
       if (p.schema) {
         assertDocumentPurity(p.schema, `template-gallery page=${p.id}`);
+      }
+    }
+  }
+
+  return pages;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INSTANTIATE TEMPLATE WITH CONFIG — Customization support
+// ═══════════════════════════════════════════════════════════════════
+// Like instantiateTemplate(), but respects TemplateCustomization:
+//   - enabledPages[] — toggle individual pages on/off
+//   - jumlahKuis — override number of quiz questions
+//   - variant — set preferred variant for all pages
+//   - guru / sekolah — inject teacher info into cover
+
+export function instantiateTemplateWithConfig(
+  template: LessonTemplate,
+  config: TemplateCustomization,
+): CanvaPage[] {
+  const parsed = createMockParseResult(template);
+  const meta = {
+    namaBab: template.title,
+    kelas: template.kelas,
+    mapel: template.mapel,
+    durasi: '2 x 40 menit',
+    ikon: template.icon,
+    judulPertemuan: template.title,
+    ...(config.guru ? { guru: config.guru } : {}),
+    ...(config.sekolah ? { sekolah: config.sekolah } : {}),
+  };
+  const opts = { pertemuan: 1, bloomMax: 6, jumlahKuis: config.jumlahKuis };
+  const pages: CanvaPage[] = [];
+  let pageIndex = 0;
+
+  for (let i = 0; i < template.pageTypes.length; i++) {
+    // Skip disabled pages
+    if (!config.enabledPages[i]) continue;
+
+    const pageType = template.pageTypes[i];
+    const page = createPageFromPreset(pageType, pageIndex);
+
+    // Set variant
+    if (config.variant && page.schema) {
+      page.templateVariant = config.variant;
+    }
+
+    if (page.schema) {
+      const blocks = generateBlocksForPageType(pageType, parsed, meta, opts);
+      if (blocks.length > 0) {
+        page.schema.blocks = blocks;
+      }
+    }
+
+    // Inject teacher info into cover block
+    if (pageType === 'cover' && page.schema?.blocks && (config.guru || config.sekolah)) {
+      for (const block of page.schema.blocks) {
+        if (block.type === 'cover') {
+          const cover = block as unknown as Record<string, unknown>;
+          const coverMeta = (cover.meta as Record<string, string>) || {};
+          if (config.guru) coverMeta.elemen = config.guru;
+          if (config.sekolah) coverMeta.fase = config.sekolah;
+          cover.meta = coverMeta;
+        }
+      }
+    }
+
+    // Set label from pagePreview if available
+    if (template.pagePreview[i]) {
+      page.label = template.pagePreview[i].title;
+    }
+
+    pages.push(page);
+    pageIndex++;
+  }
+
+  // Dev-mode purity guard
+  if (process.env.NODE_ENV !== 'production') {
+    for (const p of pages) {
+      if (p.schema) {
+        assertDocumentPurity(p.schema, `template-gallery-config page=${p.id}`);
       }
     }
   }

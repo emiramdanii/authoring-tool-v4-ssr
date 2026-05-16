@@ -6,12 +6,14 @@ import { useCanvaStore } from '@/store/canva-store';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { SchemaBlock } from '@/core/schema/types';
 import AIAssistantPanel from '../ai-assistant/AIAssistantPanel';
+import AIGenerateLessonPanel from '../ai-assistant/AIGenerateLessonPanel';
 import Section from './Section';
 
 // ═══════════════════════════════════════════════════════════════════
 // AI ASSISTANT SECTION — Self-contained wrapper with discoverability
 // ═══════════════════════════════════════════════════════════════════
 // Features:
+//   - Tabbed view: "Buat Materi" (generate lesson) / "Konten AI" (per-block)
 //   - Listens for "open-ai-assistant" custom event (toolbar, shortcut, cmd)
 //   - Auto-expands when a block with empty content is selected
 //   - Shows a one-time floating hint for first-time block additions
@@ -19,45 +21,39 @@ import Section from './Section';
 
 const HINT_DISMISSED_KEY = 'mpi_ai_assistant_hint_dismissed';
 
+type AITab = 'generate' | 'content';
+
 /**
  * Check if a schema block appears to have no meaningful content.
- * Different block types store content in different fields (title, questions,
- * pairs, items, etc). We check common content fields.
  */
 function isBlockEmpty(block: SchemaBlock): boolean {
   const b = block as unknown as Record<string, unknown>;
 
-  // If the block has a title, check if it's non-empty
   if (typeof b.title === 'string' && b.title.trim().length > 0) return false;
 
-  // Check common array-based content fields
   const arrayFields = ['questions', 'pairs', 'items', 'cards', 'words', 'steps', 'pool', 'concepts', 'chapters', 'content'];
   for (const field of arrayFields) {
     if (Array.isArray(b[field]) && b[field].length > 0) return false;
   }
 
-  // Check string content fields
   const stringFields = ['hookQuestion', 'content', 'subtitle', 'text'];
   for (const field of stringFields) {
     if (typeof b[field] === 'string' && (b[field] as string).trim().length > 0) return false;
   }
 
-  // If we get here, the block appears empty
   return true;
 }
 
 export default function AIAssistantSection() {
-  // Track whether the user has manually toggled the section
-  // (prevents auto-expand from overriding user intent)
   const [manuallyCollapsed, setManuallyCollapsed] = useState(true);
   const [forceOpen, setForceOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<AITab>('generate');
 
-  // ── Store selectors ─────────────────────────────────────────────
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const pages = useCanvaStore((s) => s.pages);
 
-  // ── Check if selected block has empty content ───────────────────
+  // Check if selected block has empty content
   const selectedBlockEmpty = (() => {
     if (!selectedBlockId) return false;
     const currentPage = pages[currentPageIndex];
@@ -69,32 +65,35 @@ export default function AIAssistantSection() {
     return isBlockEmpty(block);
   })();
 
-  // ── Listen for "open-ai-assistant" custom event ─────────────────
+  // Listen for "open-ai-assistant" custom event
   useEffect(() => {
     const handler = () => setForceOpen(true);
     window.addEventListener('open-ai-assistant', handler);
     return () => window.removeEventListener('open-ai-assistant', handler);
   }, []);
 
-  // Reset forceOpen when manually toggling
   const handleToggle = useCallback(() => {
     setForceOpen(false);
     setManuallyCollapsed((c) => !c);
   }, []);
 
-  // ── Compute collapsed state ─────────────────────────────────────
-  // Priority: forceOpen (from event/shortcut) > auto-expand for empty block > manual
   const collapsed = forceOpen
     ? false
     : (selectedBlockEmpty && selectedBlockId)
       ? false
       : manuallyCollapsed;
 
-  // ── Floating hint logic ─────────────────────────────────────────
+  // Switch to content tab when a block with empty content is selected
+  useEffect(() => {
+    if (selectedBlockEmpty && selectedBlockId) {
+      setActiveTab('content');
+    }
+  }, [selectedBlockEmpty, selectedBlockId]);
+
+  // Floating hint logic
   const [showHint, setShowHint] = useState(false);
   const hintDismissedRef = useRef(false);
 
-  // Check localStorage once on mount
   useEffect(() => {
     try {
       if (localStorage.getItem(HINT_DISMISSED_KEY) === 'true') {
@@ -105,12 +104,9 @@ export default function AIAssistantSection() {
     }
   }, []);
 
-  // Show hint when a block is selected (first time only)
   useEffect(() => {
     if (hintDismissedRef.current) return;
     if (!selectedBlockId) return;
-
-    // Small delay so the user notices the block first
     const timer = setTimeout(() => {
       if (!hintDismissedRef.current) {
         setShowHint(true);
@@ -129,7 +125,6 @@ export default function AIAssistantSection() {
     }
   }, []);
 
-  // Auto-dismiss after 6 seconds
   useEffect(() => {
     if (!showHint) return;
     const timer = setTimeout(dismissHint, 6000);
@@ -144,10 +139,41 @@ export default function AIAssistantSection() {
         collapsed={collapsed}
         onToggle={handleToggle}
       >
-        <AIAssistantPanel />
+        {/* Tab bar */}
+        <div className="flex gap-0.5 mb-3 bg-app-elevated/30 rounded-lg p-0.5">
+          <button
+            onClick={() => setActiveTab('generate')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-all ${
+              activeTab === 'generate'
+                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
+                : 'text-app-muted hover:text-app-secondary border border-transparent'
+            }`}
+          >
+            <span className="text-[10px]">✨</span>
+            Buat Materi
+          </button>
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-all ${
+              activeTab === 'content'
+                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
+                : 'text-app-muted hover:text-app-secondary border border-transparent'
+            }`}
+          >
+            <span className="text-[10px]">🤖</span>
+            Konten AI
+          </button>
+        </div>
+
+        {/* Tab content */}
+        {activeTab === 'generate' ? (
+          <AIGenerateLessonPanel />
+        ) : (
+          <AIAssistantPanel />
+        )}
       </Section>
 
-      {/* Floating hint — first time only, positioned near right panel */}
+      {/* Floating hint */}
       {showHint && typeof document !== 'undefined' && createPortal(
         <div
           className="fixed z-[150] animate-in fade-in slide-in-from-right-4 duration-500"
@@ -165,7 +191,6 @@ export default function AIAssistantSection() {
             <div className="text-[9px] text-amber-800/70 mt-1">
               Klik tombol AI di toolbar, atau tekan Ctrl+I
             </div>
-            {/* Arrow pointing right towards the panel */}
             <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-amber-500/90" />
           </div>
         </div>,

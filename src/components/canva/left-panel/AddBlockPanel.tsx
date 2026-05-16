@@ -14,7 +14,7 @@
 // and "Block" terminology is replaced with "Konten".
 
 import { useState, useMemo, useCallback } from 'react';
-import { Search, Plus, Blocks, ArrowDownToLine } from 'lucide-react';
+import { Search, Plus, Blocks, ArrowDownToLine, Zap } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import {
@@ -32,6 +32,11 @@ import {
   SIMPLIFIED_GROUPS,
   type TeacherMode,
 } from '@/core/i18n/teacher-terminology';
+import {
+  getAllFragments,
+  getFragment,
+  FRAGMENT_CATEGORIES,
+} from '@/core/template/template-fragments';
 
 export default function AddBlockPanel() {
   const addSchemaBlock = useCanvaStore(s => s.addSchemaBlock);
@@ -143,6 +148,21 @@ export default function AddBlockPanel() {
     );
   }
 
+  // ── Quick insert fragment handler ──
+  const handleInsertFragment = useCallback((fragmentId: string) => {
+    const fragment = getFragment(fragmentId);
+    if (!fragment) return;
+    // Insert the first block type from the fragment
+    for (const blockType of fragment.blockTypes) {
+      addSchemaBlock(blockType, insertAfterIndex);
+    }
+    announceToScreenReader(`Fragment ${fragment.title} ditambahkan`);
+  }, [addSchemaBlock, insertAfterIndex]);
+
+  // Get fragments
+  const fragments = useMemo(() => getAllFragments(), []);
+  const fragmentCategories = useMemo(() => FRAGMENT_CATEGORIES, []);
+
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -150,6 +170,32 @@ export default function AddBlockPanel() {
         <Blocks size={10} />
         {isSederhana ? 'Tambah Konten' : 'Tambah Block'}
         <span className="text-app-muted">({allBlocks.length})</span>
+      </div>
+
+      {/* Quick Insert Fragments */}
+      <div className="space-y-1.5">
+        <div className="text-[8px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+          <Zap size={8} />
+          {isSederhana ? 'Sisipkan Cepat' : 'Quick Insert'}
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {fragments.slice(0, 8).map(fragment => (
+            <button
+              key={fragment.id}
+              onClick={() => handleInsertFragment(fragment.id)}
+              className="inline-flex items-center gap-1 px-1.5 py-1 rounded-lg text-[8px] font-semibold border border-app-border/20 bg-app-elevated/30 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all active:scale-95"
+              title={fragment.description}
+            >
+              <span className="text-[9px]">{fragment.icon}</span>
+              {fragment.title}
+            </button>
+          ))}
+          {fragments.length > 8 && (
+            <span className="text-[8px] text-app-muted px-1.5 py-1">
+              +{fragments.length - 8} lagi
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Insertion point indicator — shows when a block is selected */}

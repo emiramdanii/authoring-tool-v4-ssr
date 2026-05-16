@@ -219,6 +219,8 @@ export interface CanvaState {
   moveBlockToContainer: (blockId: string, targetContainer: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
   /** Add a new schema block into a container (root, materi-section, ftab tab, or children) */
   addSchemaBlockToContainer: (blockType: string, container: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
+  /** Batch set variant on multiple blocks */
+  batchSetVariant: (blockIds: string[], variant: 'A' | 'B' | 'C') => void;
 
   // ── Scene Transaction Actions ──────────────────────────────────
   /** Rebalance the current page's compression/layout using transaction */
