@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
-import * as XLSX from 'xlsx';
+import type { WorkBook } from 'xlsx';
 import type { SheetPreview } from './types';
 import { logger } from '@/core/utils/logger';
 import {
@@ -16,12 +16,21 @@ import {
 } from './constants';
 import { sheetToAoa, normalizeSheetName } from './helpers';
 
+// ── Lazy-loaded XLSX module ─────────────────────────────────────
+// xlsx (7.3MB) is only needed when the user imports/exports Excel.
+// We dynamically import it so it's never included in the initial bundle.
+let xlsxCache: Promise<typeof import('xlsx')> | null = null;
+function getXLSX(): Promise<typeof import('xlsx')> {
+  if (!xlsxCache) xlsxCache = import('xlsx');
+  return xlsxCache;
+}
+
 export function useExcelImport() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSheets, setPreviewSheets] = useState<SheetPreview[]>([]);
-  const [pendingWorkbook, setPendingWorkbook] = useState<XLSX.WorkBook | null>(null);
+  const [pendingWorkbook, setPendingWorkbook] = useState<WorkBook | null>(null);
   const [activePreviewTab, setActivePreviewTab] = useState('META');
 
   // ── Import JSON ─────────────────────────────────────
@@ -57,7 +66,8 @@ export function useExcelImport() {
   }, []);
 
   // ── Download Excel Template ──────────────────────────────
-  const downloadExcelTemplate = useCallback(() => {
+  const downloadExcelTemplate = useCallback(async () => {
+    const XLSX = await getXLSX();
     const s = useAuthoringStore.getState();
     const wb = XLSX.utils.book_new();
 
@@ -172,8 +182,9 @@ export function useExcelImport() {
   // ── Parse Excel file and build preview ───────────────────
   const parseExcelFile = useCallback((file: File) => {
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
+        const XLSX = await getXLSX();
         const data = new Uint8Array(reader.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
         const sheets: SheetPreview[] = [];
@@ -181,7 +192,7 @@ export function useExcelImport() {
         for (const sheetName of wb.SheetNames) {
           const normName = normalizeSheetName(sheetName);
           const ws = wb.Sheets[sheetName];
-          const aoa = sheetToAoa(ws);
+          const aoa = sheetToAoa(XLSX, ws);
 
           if (aoa.length === 0) continue;
 

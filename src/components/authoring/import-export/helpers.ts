@@ -1,8 +1,10 @@
-import * as XLSX from 'xlsx';
+import type { WorkSheet } from 'xlsx';
 import { SHEET_NAMES } from './constants';
 
 // ── Helper: convert sheet to array of arrays ────────────────────
-export function sheetToAoa(sheet: XLSX.WorkSheet): string[][] {
+// NOTE: XLSX is loaded dynamically via getXLSX() in the caller.
+// We accept the already-loaded module to avoid re-importing.
+export function sheetToAoa(XLSX: typeof import('xlsx'), sheet: WorkSheet): string[][] {
   const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
   const rows: string[][] = [];
   for (let r = range.s.r; r <= range.e.r; r++) {
