@@ -10,6 +10,7 @@
 //   - Choose variant (A/B/C)
 //   - Preview final page count
 //   - Inject guru/sekolah info into cover
+//   - CHOOSE MODE: Replace all pages OR Insert into existing project
 //
 // TEACHER MODE: In 'sederhana' mode, simpler labels.
 // ═══════════════════════════════════════════════════════════════════
@@ -26,8 +27,12 @@ import {
   Settings2,
   Minus,
   Plus,
+  Replace,
+  Merge,
+  Layers,
 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import {
   type LessonTemplate,
   type TemplateCustomization,
@@ -56,9 +61,12 @@ const PAGE_TYPE_ICONS: Record<string, string> = {
   custom: '🔧',
 };
 
+// ── Apply mode ──
+export type TemplateApplyMode = 'replace' | 'insert';
+
 interface TemplateCustomizeDialogProps {
   template: LessonTemplate;
-  onApply: (template: LessonTemplate, config: TemplateCustomization) => void;
+  onApply: (template: LessonTemplate, config: TemplateCustomization, mode: TemplateApplyMode) => void;
   onClose: () => void;
   isLoading?: boolean;
 }
@@ -72,12 +80,18 @@ export default function TemplateCustomizeDialog({
   const teacherMode = useAuthoringStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
   const meta = useAuthoringStore(s => s.meta);
+  const existingPageCount = useCanvaStore(s => s.pages.length);
 
   const [config, setConfig] = useState<TemplateCustomization>(() => ({
     ...getDefaultCustomization(template),
     guru: '',
     sekolah: '',
   }));
+
+  // ── Apply mode: replace or insert ──
+  const [applyMode, setApplyMode] = useState<TemplateApplyMode>(
+    existingPageCount === 0 ? 'replace' : 'insert',
+  );
 
   // Count enabled pages
   const enabledCount = useMemo(
@@ -121,10 +135,15 @@ export default function TemplateCustomizeDialog({
 
   // Apply
   const handleApply = useCallback(() => {
-    onApply(template, config);
-  }, [template, config, onApply]);
+    onApply(template, config, applyMode);
+  }, [template, config, applyMode, onApply]);
 
   const patternConfig = TEMPLATE_PATTERNS[template.pattern];
+
+  // Summary text depends on mode
+  const summaryText = applyMode === 'replace'
+    ? `${enabledCount} halaman akan menggantikan ${existingPageCount} halaman yang ada`
+    : `${enabledCount} halaman baru ditambahkan (total: ${existingPageCount + enabledCount})`;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -165,6 +184,57 @@ export default function TemplateCustomizeDialog({
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-3 space-y-4">
+          {/* ── Apply Mode Section ── */}
+          <div>
+            <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Layers size={10} />
+              {isSederhana ? 'Cara Penerapan' : 'Apply Mode'}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={() => setApplyMode('replace')}
+                className={`px-2.5 py-2.5 rounded-lg border text-left transition-all ${
+                  applyMode === 'replace'
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    : 'bg-app-elevated/40 border-app-border/20 text-app-secondary hover:border-app-border-strong'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Replace size={10} className={applyMode === 'replace' ? 'text-amber-400' : 'text-app-muted'} />
+                  <span className="text-[10px] font-bold">
+                    {isSederhana ? 'Ganti Semua' : 'Replace All'}
+                  </span>
+                </div>
+                <div className="text-[7px] text-app-muted leading-relaxed">
+                  {existingPageCount > 0
+                    ? `Hapus ${existingPageCount} halaman yang ada, ganti dengan template baru`
+                    : 'Buat project baru dari template ini'}
+                </div>
+              </button>
+              <button
+                onClick={() => setApplyMode('insert')}
+                disabled={existingPageCount === 0}
+                className={`px-2.5 py-2.5 rounded-lg border text-left transition-all ${
+                  applyMode === 'insert'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-app-elevated/40 border-app-border/20 text-app-secondary hover:border-app-border-strong'
+                } disabled:opacity-30 disabled:cursor-not-allowed`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Merge size={10} className={applyMode === 'insert' ? 'text-emerald-400' : 'text-app-muted'} />
+                  <span className="text-[10px] font-bold">
+                    {isSederhana ? 'Tambahkan' : 'Insert'}
+                  </span>
+                </div>
+                <div className="text-[7px] text-app-muted leading-relaxed">
+                  {existingPageCount > 0
+                    ? `Tambahkan halaman template ke project yang sudah ada (total: ${existingPageCount + enabledCount})`
+                    : 'Tidak ada halaman yang bisa ditambahkan'}
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* ── Page Toggle Section ── */}
           <div>
             <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -291,19 +361,33 @@ export default function TemplateCustomizeDialog({
         <div className="px-4 py-3 border-t border-app-border/30 space-y-2">
           {/* Summary */}
           <div className="flex items-center justify-between text-[9px]">
-            <span className="text-app-muted">
-              {enabledCount} halaman akan dibuat
+            <span className={applyMode === 'replace' && existingPageCount > 0 ? 'text-amber-400' : 'text-app-muted'}>
+              {summaryText}
             </span>
             <span className="text-app-muted">
               {config.jumlahKuis} soal kuis • Variant {config.variant}
             </span>
           </div>
 
+          {/* Warning for replace mode */}
+          {applyMode === 'replace' && existingPageCount > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <span className="text-[10px]">⚠️</span>
+              <span className="text-[8px] text-amber-300">
+                {existingPageCount} halaman yang ada akan dihapus dan diganti dengan template ini
+              </span>
+            </div>
+          )}
+
           {/* Apply button */}
           <button
             onClick={handleApply}
             disabled={isLoading || enabledCount < 2}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none bg-app-accent/15 border border-app-accent/30 text-app-accent hover:bg-app-accent/25"
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
+              applyMode === 'insert'
+                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
+                : 'bg-app-accent/15 border border-app-accent/30 text-app-accent hover:bg-app-accent/25'
+            }`}
           >
             {isLoading ? (
               <>
@@ -312,8 +396,10 @@ export default function TemplateCustomizeDialog({
               </>
             ) : (
               <>
-                <Sparkles size={12} />
-                {isSederhana ? 'Buat Materi' : 'Apply Template'}
+                {applyMode === 'insert' ? <Merge size={12} /> : <Sparkles size={12} />}
+                {applyMode === 'insert'
+                  ? (isSederhana ? 'Tambahkan ke Project' : 'Insert into Project')
+                  : (isSederhana ? 'Buat Materi' : 'Apply Template')}
                 <ChevronRight size={12} />
               </>
             )}

@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 // Shows all blocks in the current screen's schema.
 // Click to select → opens property panel.
+// Shift+Click for multi-select → BatchActionsBar appears.
 // Drag grip handle to reorder → intuitive block ordering.
 // Alt+↑/Alt+↓ keyboard reorder for accessibility.
 // Hover highlights on canvas. Selection syncs both ways.
@@ -14,13 +15,15 @@ import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { ScreenSchema } from '@/core/schema/types';
-import { MousePointer2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { MousePointer2, GripVertical, ChevronUp, ChevronDown, CheckSquare, Square } from 'lucide-react';
 import { announceToScreenReader } from '@/lib/a11y';
+import BatchActionsBar from './BatchActionsBar';
 
 export default function LayerPanel() {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const hoveredBlockId = useCanvaStore(s => s.hoveredBlockId);
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
   const selectBlock = useCanvaStore(s => s.selectBlock);
@@ -38,8 +41,6 @@ export default function LayerPanel() {
   // Resolve the schema for the current page — schema-first
   const schema = useMemo<ScreenSchema | null>(() => {
     if (!page) return null;
-    // ═══ SCHEMA-FIRST: Use ensurePageSchema() ═════════════════
-    // Lazily migrates legacy pages on first access.
     return ensurePageSchema(page);
   }, [page]);
 
@@ -55,6 +56,8 @@ export default function LayerPanel() {
     );
   }
 
+  const isMultiSelect = selectedBlockIds && selectedBlockIds.length > 1;
+
   return (
     <div className="space-y-1">
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -63,9 +66,13 @@ export default function LayerPanel() {
         <span className="text-app-muted">({schema.blocks.length})</span>
       </div>
 
+      {/* Batch actions bar — shows when multi-select active */}
+      <BatchActionsBar />
+
       <LayerList
         schema={schema}
         selectedBlockId={selectedBlockId}
+        selectedBlockIds={selectedBlockIds}
         hoveredBlockId={hoveredBlockId}
         editingBlockId={editingBlockId}
         selectBlock={selectBlock}
@@ -77,6 +84,7 @@ export default function LayerPanel() {
         moveBlockDown={moveBlockDown}
         duplicateBlock={duplicateBlock}
         reorderSchemaBlocks={reorderSchemaBlocks}
+        isMultiSelect={isMultiSelect}
       />
 
       {/* Screen info */}
@@ -90,7 +98,7 @@ export default function LayerPanel() {
           )}
         </div>
         <div className="text-[8px] text-app-muted mt-0.5">
-          Klik = select · Double-klik = edit · Drag = reorder · Alt+↑↓ = pindah
+          Klik = select · Shift+klik = pilih banyak · Drag = reorder · Alt+↑↓ = pindah
         </div>
       </div>
     </div>
@@ -98,12 +106,13 @@ export default function LayerPanel() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// LAYER LIST — Contains the drag-sort logic
+// LAYER LIST — Contains the drag-sort logic + multi-select
 // ═══════════════════════════════════════════════════════════════
 
 function LayerList({
   schema,
   selectedBlockId,
+  selectedBlockIds,
   hoveredBlockId,
   editingBlockId,
   selectBlock,
@@ -115,12 +124,14 @@ function LayerList({
   moveBlockDown,
   duplicateBlock,
   reorderSchemaBlocks,
+  isMultiSelect,
 }: {
   schema: ScreenSchema;
   selectedBlockId: string | null;
+  selectedBlockIds: string[];
   hoveredBlockId: string | null;
   editingBlockId: string | null;
-  selectBlock: (id: string, type: string) => void;
+  selectBlock: (id: string | null, type?: string | null, addToSelection?: boolean) => void;
   hoverBlock: (id: string | null) => void;
   startEditing: (id: string) => void;
   stopEditing: () => void;
@@ -129,6 +140,7 @@ function LayerList({
   moveBlockDown: (id: string) => void;
   duplicateBlock: (id: string) => void;
   reorderSchemaBlocks: (fromIndex: number, toIndex: number) => void;
+  isMultiSelect: boolean;
 }) {
   // Drag state
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -143,7 +155,6 @@ function LayerList({
     if (e.altKey && e.key === 'ArrowUp') {
       e.preventDefault();
       moveBlockUp(selectedBlockId);
-      // Find the block name for announcement
       const blockIdx = schema.blocks.findIndex(
         (b, i) => (b.id || `${b.type}-${i}`) === selectedBlockId
       );
@@ -195,7 +206,7 @@ function LayerList({
 
   // Drag start handler (on the grip handle)
   const handleDragStart = useCallback((e: React.PointerEvent, index: number) => {
-    if (e.button !== 0) return; // left click only
+    if (e.button !== 0) return;
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
@@ -220,7 +231,6 @@ function LayerList({
 
       if (fromIdx !== null && toIdx !== null && fromIdx !== toIdx) {
         reorderSchemaBlocks(fromIdx, toIdx);
-        // Announce drag reorder
         const block = schema.blocks[fromIdx];
         const definition = getBlockDefinition(block.type);
         const blockName = definition?.name || block.type;
@@ -250,6 +260,7 @@ function LayerList({
         const blockId = block.id || `${block.type}-${idx}`;
         const definition = getBlockDefinition(block.type);
         const isSelected = selectedBlockId === blockId;
+        const isInMultiSelect = selectedBlockIds?.includes(blockId) ?? false;
         const isHovered = hoveredBlockId === blockId;
         const isEditing = editingBlockId === blockId;
         const layout = block.layout?.position === 'absolute' ? 'absolute' : 'flow';
@@ -262,7 +273,7 @@ function LayerList({
             key={blockId}
             ref={(el) => registerRef(idx, el)}
             role="option"
-            aria-selected={isSelected}
+            aria-selected={isSelected || isInMultiSelect}
             aria-label={`Block ${blockName}, posisi ${idx + 1} dari ${schema.blocks.length}`}
             tabIndex={isSelected ? 0 : -1}
             className={`w-full flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-left transition-all ${
@@ -270,13 +281,32 @@ function LayerList({
                 ? 'opacity-40 bg-blue-500/10 border border-blue-500/20'
                 : isDragOver
                   ? 'bg-blue-500/10 border border-blue-500/30 ring-1 ring-blue-400/40'
-                  : isSelected
-                    ? 'bg-blue-500/15 border border-blue-500/30 text-blue-200'
-                    : isHovered
-                      ? 'bg-app-elevated/60 border border-app-border/20 text-app-secondary'
-                      : 'border border-transparent text-app-secondary hover:bg-app-elevated/40 hover:text-app-secondary'
+                  : isInMultiSelect
+                    ? 'bg-blue-500/10 border border-blue-500/25 text-blue-200'
+                    : isSelected
+                      ? 'bg-blue-500/15 border border-blue-500/30 text-blue-200'
+                      : isHovered
+                        ? 'bg-app-elevated/60 border border-app-border/20 text-app-secondary'
+                        : 'border border-transparent text-app-secondary hover:bg-app-elevated/40 hover:text-app-secondary'
             }`}
           >
+            {/* Multi-select checkbox */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                selectBlock(blockId, block.type, true);
+              }}
+              className="flex-shrink-0 p-0.5 rounded hover:bg-app-elevated/50 transition-colors"
+              title={isInMultiSelect ? 'Hapus dari pilihan' : 'Tambah ke pilihan (Shift+klik)'}
+              aria-label={isInMultiSelect ? 'Hapus dari pilihan' : 'Tambah ke pilihan'}
+            >
+              {isInMultiSelect ? (
+                <CheckSquare size={12} className="text-blue-400" />
+              ) : (
+                <Square size={12} className="text-app-muted/40 hover:text-app-muted" />
+              )}
+            </button>
+
             {/* Drag handle */}
             <button
               onPointerDown={(e) => handleDragStart(e, idx)}
@@ -290,7 +320,15 @@ function LayerList({
             {/* Main clickable area */}
             <button
               className="flex-1 flex items-center gap-2 min-w-0 text-left bg-transparent border-none p-0"
-              onClick={() => selectBlock(blockId, block.type)}
+              onClick={(e) => {
+                if (e.shiftKey) {
+                  // Shift+click → toggle multi-select
+                  selectBlock(blockId, block.type, true);
+                } else {
+                  // Normal click → single select
+                  selectBlock(blockId, block.type);
+                }
+              }}
               onDoubleClick={() => {
                 if (isEditing) {
                   stopEditing();
@@ -335,8 +373,8 @@ function LayerList({
               </span>
             </button>
 
-            {/* Quick actions (visible on selected, hidden during drag) */}
-            {isSelected && dragIndex === null && (
+            {/* Quick actions (visible on selected, hidden during drag, hidden during multi-select) */}
+            {isSelected && dragIndex === null && !isMultiSelect && (
               <div className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label="Aksi block">
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockUp(blockId); }}

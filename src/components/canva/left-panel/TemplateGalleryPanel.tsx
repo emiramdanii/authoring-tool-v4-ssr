@@ -9,9 +9,10 @@
 //
 // ENHANCED (Phase F.1):
 //   - Pattern tabs (Standar, Interaktif, Eksperimen, Mini)
-//   - Template customization dialog before apply
+//   - Template customization dialog with merge/replace mode
 //   - Expanded page preview with step indicators
-//   - 11 templates across 8 subjects
+//   - 16 templates across 8+ subjects
+//   - INSERT mode: add template pages to existing project
 //
 // TEACHER MODE: In 'sederhana' mode, uses simpler terminology
 // ("Pilih Template" instead of "Template Gallery").
@@ -27,13 +28,14 @@ import {
   getTemplateMapelList,
   instantiateTemplate,
   instantiateTemplateWithConfig,
+  insertTemplatePages,
   TEMPLATE_PATTERNS,
   type LessonTemplate,
   type TemplatePattern,
   type TemplateCustomization,
 } from '@/core/template/template-gallery';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
-import TemplateCustomizeDialog from './TemplateCustomizeDialog';
+import TemplateCustomizeDialog, { type TemplateApplyMode } from './TemplateCustomizeDialog';
 import AITemplateGenerator from './AITemplateGenerator';
 
 // ── Color mapping for template cards ─────────────────────────
@@ -108,6 +110,8 @@ const MAPEL_CONFIG: Record<string, { label: string; icon: string }> = {
   'IPS': { label: 'IPS', icon: '🏛️' },
   'Seni': { label: 'Seni', icon: '🎨' },
   'PJOK': { label: 'PJOK', icon: '⚽' },
+  'Informatika': { label: 'Informatika', icon: '💻' },
+  'Prakarya': { label: 'Prakarya', icon: '🔧' },
 };
 
 // ── Page type icon mapping ──
@@ -127,6 +131,7 @@ export default function TemplateGalleryPanel() {
   const isSederhana = teacherMode === 'sederhana';
   const loadCustomSchema = useCanvaStore(s => s.loadCustomSchema);
   const _pushHistory = useCanvaStore(s => s._pushHistory);
+  const existingPages = useCanvaStore(s => s.pages);
 
   const [search, setSearch] = useState('');
   const [activeMapel, setActiveMapel] = useState<string | null>(null);
@@ -170,58 +175,100 @@ export default function TemplateGalleryPanel() {
     return result;
   }, [allTemplates, activePattern, activeMapel, search]);
 
-  // ── Quick apply template (default config) ──────────────────────
+  // ── Quick apply template (default config, replace mode) ──────
   const handleQuickApply = useCallback(async (template: LessonTemplate) => {
     setLoadingTemplateId(template.id);
 
     try {
       await new Promise(resolve => setTimeout(resolve, 150));
 
+      // If project is empty → replace (same as before)
+      // If project has pages → insert (merge mode — don't destroy existing work)
       const pages = instantiateTemplate(template);
 
       _pushHistory();
-      useCanvaStore.setState({
-        pages,
-        currentPageIndex: 0,
-        selectedElId: null,
-        selectedElIds: [],
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-      });
 
-      toast.success(`Template "${template.title}" diterapkan — ${pages.length} halaman`);
+      if (existingPages.length === 0) {
+        // Replace mode — no existing pages to preserve
+        useCanvaStore.setState({
+          pages,
+          currentPageIndex: 0,
+          selectedElId: null,
+          selectedElIds: [],
+          selectedBlockId: null,
+          selectedBlockType: null,
+          editingBlockId: null,
+          selectedBlockIds: [],
+        });
+        toast.success(`Template "${template.title}" diterapkan — ${pages.length} halaman`);
+      } else {
+        // Insert mode — append to existing pages
+        useCanvaStore.setState(state => ({
+          pages: [...state.pages, ...pages],
+          currentPageIndex: state.pages.length, // Navigate to first new page
+          selectedElId: null,
+          selectedElIds: [],
+          selectedBlockId: null,
+          selectedBlockType: null,
+          editingBlockId: null,
+          selectedBlockIds: [],
+        }));
+        toast.success(`${pages.length} halaman dari "${template.title}" ditambahkan ke project`);
+      }
     } catch (err) {
       console.error('TemplateGallery: Failed to apply template', err);
       toast.error(`Gagal menerapkan template "${template.title}"`);
     } finally {
       setLoadingTemplateId(null);
     }
-  }, [_pushHistory]);
+  }, [_pushHistory, existingPages.length]);
 
-  // ── Apply with customization ──────────────────────────────
-  const handleCustomApply = useCallback(async (template: LessonTemplate, config: TemplateCustomization) => {
+  // ── Apply with customization (supports merge/replace mode) ──
+  const handleCustomApply = useCallback(async (
+    template: LessonTemplate,
+    config: TemplateCustomization,
+    mode: TemplateApplyMode,
+  ) => {
     setLoadingTemplateId(template.id);
 
     try {
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      const pages = instantiateTemplateWithConfig(template, config);
-
       _pushHistory();
-      useCanvaStore.setState({
-        pages,
-        currentPageIndex: 0,
-        selectedElId: null,
-        selectedElIds: [],
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-      });
 
-      toast.success(`Template "${template.title}" diterapkan — ${pages.length} halaman`);
+      if (mode === 'insert' && existingPages.length > 0) {
+        // Insert/merge mode — append new pages to existing
+        const result = insertTemplatePages(template, existingPages.length, config);
+
+        useCanvaStore.setState(state => ({
+          pages: [...state.pages, ...result.newPages],
+          currentPageIndex: state.pages.length, // Navigate to first new page
+          selectedElId: null,
+          selectedElIds: [],
+          selectedBlockId: null,
+          selectedBlockType: null,
+          editingBlockId: null,
+          selectedBlockIds: [],
+        }));
+
+        toast.success(`${result.newPages.length} halaman dari "${template.title}" ditambahkan (total: ${result.totalAfterInsert})`);
+      } else {
+        // Replace mode — overwrite all pages
+        const pages = instantiateTemplateWithConfig(template, config);
+
+        useCanvaStore.setState({
+          pages,
+          currentPageIndex: 0,
+          selectedElId: null,
+          selectedElIds: [],
+          selectedBlockId: null,
+          selectedBlockType: null,
+          editingBlockId: null,
+          selectedBlockIds: [],
+        });
+
+        toast.success(`Template "${template.title}" diterapkan — ${pages.length} halaman`);
+      }
     } catch (err) {
       console.error('TemplateGallery: Failed to apply template with config', err);
       toast.error(`Gagal menerapkan template "${template.title}"`);
@@ -229,7 +276,7 @@ export default function TemplateGalleryPanel() {
       setLoadingTemplateId(null);
       setCustomizeTemplate(null);
     }
-  }, [_pushHistory]);
+  }, [_pushHistory, existingPages.length]);
 
   // Panel title based on teacher mode
   const panelTitle = isSederhana ? 'Pilih Template' : 'Template Gallery';
@@ -356,6 +403,7 @@ export default function TemplateGalleryPanel() {
             template={template}
             isLoading={loadingTemplateId === template.id}
             isAnyLoading={loadingTemplateId !== null}
+            hasExistingPages={existingPages.length > 0}
             onQuickApply={handleQuickApply}
             onCustomize={() => setCustomizeTemplate(template)}
           />
@@ -387,7 +435,9 @@ export default function TemplateGalleryPanel() {
       {/* Footer hint */}
       <div className="text-[8px] text-app-muted mt-2 pt-2 border-t border-app-border/20">
         {activeView === 'prebuilt'
-          ? 'Klik "Gunakan" untuk langsung menerapkan, atau "Sesuaikan" untuk mengatur halaman'
+          ? (existingPages.length > 0
+              ? 'Klik "Gunakan" untuk menambahkan halaman ke project, atau "Sesuaikan" untuk mengatur'
+              : 'Klik "Gunakan" untuk langsung menerapkan, atau "Sesuaikan" untuk mengatur halaman')
           : 'AI akan membuat template lengkap berdasarkan topik yang kamu masukkan'}
       </div>
 
@@ -412,12 +462,14 @@ function TemplateCard({
   template,
   isLoading,
   isAnyLoading,
+  hasExistingPages,
   onQuickApply,
   onCustomize,
 }: {
   template: LessonTemplate;
   isLoading: boolean;
   isAnyLoading: boolean;
+  hasExistingPages: boolean;
   onQuickApply: (t: LessonTemplate) => void;
   onCustomize: () => void;
 }) {
@@ -530,7 +582,9 @@ function TemplateCard({
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none ${
               isLoading
                 ? `${colors.bg} ${colors.text} border ${colors.border}`
-                : `bg-app-accent/10 border border-app-accent/20 hover:bg-app-accent/20 text-app-accent`
+                : hasExistingPages
+                  ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-300'
+                  : 'bg-app-accent/10 border border-app-accent/20 hover:bg-app-accent/20 text-app-accent'
             }`}
           >
             {isLoading ? (
@@ -541,7 +595,7 @@ function TemplateCard({
             ) : (
               <>
                 <Sparkles size={10} />
-                Gunakan
+                {hasExistingPages ? 'Tambahkan' : 'Gunakan'}
               </>
             )}
           </button>

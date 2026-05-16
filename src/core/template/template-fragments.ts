@@ -231,6 +231,84 @@ export function getFragmentsByCategory(category: TemplateFragment['category']): 
   return TEMPLATE_FRAGMENTS.filter(f => f.category === category);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// SMART FRAGMENT SUGGESTIONS — Context-aware recommendations
+// ═══════════════════════════════════════════════════════════════════
+// Given the current page type and existing blocks, recommend which
+// fragments would complement the page best. The logic avoids
+// suggesting fragments that would duplicate existing block types.
+
+export interface FragmentSuggestion {
+  fragment: TemplateFragment;
+  /** Why this fragment is recommended */
+  reason: 'page-match' | 'complement' | 'missing-type';
+  /** Priority score (higher = more relevant) */
+  score: number;
+}
+
+export function getSmartSuggestions(
+  pageType: PageTemplateType,
+  existingBlockTypes: string[],
+): FragmentSuggestion[] {
+  const suggestions: FragmentSuggestion[] = [];
+  const existingSet = new Set(existingBlockTypes);
+
+  for (const fragment of TEMPLATE_FRAGMENTS) {
+    // Skip fragments whose blocks are already present
+    const allBlocksPresent = fragment.blockTypes.every(bt => existingSet.has(bt));
+    if (allBlocksPresent) continue;
+
+    let reason: FragmentSuggestion['reason'];
+    let score: number;
+
+    if (fragment.bestFitPageType === pageType) {
+      // Best fit: page type matches exactly
+      reason = 'page-match';
+      score = 100;
+    } else if (isComplementaryCategory(fragment.category, pageType)) {
+      // Complementary: fragment category complements page type
+      reason = 'complement';
+      score = 60;
+    } else {
+      // Missing type: page doesn't have this kind of content yet
+      reason = 'missing-type';
+      score = 30;
+    }
+
+    // Boost score if some blocks in the fragment are missing
+    const missingCount = fragment.blockTypes.filter(bt => !existingSet.has(bt)).length;
+    score += missingCount * 10;
+
+    suggestions.push({ fragment, reason, score });
+  }
+
+  // Sort by score descending
+  suggestions.sort((a, b) => b.score - a.score);
+
+  return suggestions;
+}
+
+/** Check if a fragment category naturally complements a page type */
+function isComplementaryCategory(
+  category: TemplateFragment['category'],
+  pageType: PageTemplateType,
+): boolean {
+  const COMPLEMENT_MAP: Partial<Record<PageTemplateType, TemplateFragment['category'][]>> = {
+    materi: ['konten', 'interaktif'],
+    kuis: ['evaluasi'],
+    diskusi: ['interaktif', 'konten'],
+    skenario: ['interaktif'],
+    refleksi: ['penutup'],
+    rangkuman: ['penutup', 'konten'],
+    cover: ['konten'],
+    tujuan: ['konten'],
+    motivasi: ['interaktif', 'konten'],
+    penutup: ['penutup'],
+  };
+
+  return COMPLEMENT_MAP[pageType]?.includes(category) ?? false;
+}
+
 // ── Fragment category config ──
 
 export const FRAGMENT_CATEGORIES: Record<TemplateFragment['category'], {

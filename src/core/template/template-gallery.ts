@@ -1203,6 +1203,41 @@ export function instantiateTemplateWithConfig(
   return pages;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// INSERT TEMPLATE PAGES — Merge mode: add pages to existing project
+// ═══════════════════════════════════════════════════════════════════
+// Instead of replacing all pages (instantiateTemplate), this function
+// creates new pages from a template and returns them for appending
+// to an existing project. This is the "merge" flow:
+//
+//   1. Teacher has an existing project with some pages
+//   2. Teacher picks a template and clicks "Tambahkan ke Project"
+//   3. New pages from the template are appended after existing pages
+//   4. Existing pages remain untouched
+//
+// The function also supports partial insertion (only enabled pages).
+
+export interface InsertTemplateResult {
+  /** New pages created from the template */
+  newPages: CanvaPage[];
+  /** Total pages after insertion (for display) */
+  totalAfterInsert: number;
+}
+
+export function insertTemplatePages(
+  template: LessonTemplate,
+  existingPageCount: number,
+  config?: TemplateCustomization,
+): InsertTemplateResult {
+  const effectiveConfig = config ?? getDefaultCustomization(template);
+  const newPages = instantiateTemplateWithConfig(template, effectiveConfig);
+
+  return {
+    newPages,
+    totalAfterInsert: existingPageCount + newPages.length,
+  };
+}
+
 // ── Internal: Generate blocks for a specific page type ──────────
 
 function generateBlocksForPageType(

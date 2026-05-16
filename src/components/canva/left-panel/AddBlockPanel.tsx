@@ -37,9 +37,11 @@ import {
   getAllFragments,
   getFragmentsByCategory,
   getFragment,
+  getSmartSuggestions,
   FRAGMENT_CATEGORIES,
   type TemplateFragment,
   type TemplateFragmentCategory,
+  type FragmentSuggestion,
 } from '@/core/template/template-fragments';
 
 export default function AddBlockPanel() {
@@ -159,13 +161,24 @@ export default function AddBlockPanel() {
   const allFragments = useMemo(() => getAllFragments(), []);
 
   // ── Context-aware fragment suggestion based on current page type ──
-  const suggestedFragments = useMemo(() => {
+  const smartSuggestions = useMemo(() => {
     if (!page) return [];
     const templateType = page.templateType;
     if (!templateType || templateType === 'custom') return [];
-    // Suggest fragments whose bestFitPageType matches the current page type
-    return allFragments.filter(f => f.bestFitPageType === templateType);
-  }, [page, allFragments]);
+    // Get existing block types on this page
+    const schema = ensurePageSchema(page);
+    const existingTypes = schema?.blocks.map(b => b.type) ?? [];
+    // Use smart suggestion engine
+    return getSmartSuggestions(templateType, existingTypes);
+  }, [page]);
+
+  // Top 3 suggestions for "Suggested for this page" section
+  const suggestedFragments = useMemo(() => {
+    return smartSuggestions
+      .filter(s => s.reason === 'page-match' || s.reason === 'complement')
+      .slice(0, 3)
+      .map(s => s.fragment);
+  }, [smartSuggestions]);
 
   // ── Quick insert fragment handler ──
   const handleInsertFragment = useCallback((fragmentId: string) => {
