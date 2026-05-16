@@ -145,3 +145,34 @@ Stage Summary:
 - reset-canvas properly clears compressed height cache
 - 3 new high-level transaction wrappers available in schema-apply.ts for UI components
 - Build: tsc ✅, Next.js production ✅
+
+---
+Task ID: Phase-F
+Agent: Main (Senior Dev)
+Task: Phase F — Template & AI Workflows
+
+Work Log:
+- Extended template-gallery.ts with TemplatePattern type (standar/interaktif/eksperimen/mini)
+- Added TemplateCustomization interface + getDefaultCustomization()
+- Expanded from 6 to 11 templates (PPKn x2, IPA x2, MTK x2, B.Indonesia, B.Inggris, IPS, PJOK, Seni)
+- Added mock data for 5 new templates (ppkn-norma, ipa-tata-surya, mtk-bangun-ruang, bing-descriptive-text, pjok-kebugaran)
+- Added instantiateTemplateWithConfig() for customization before apply
+- Built TemplateCustomizeDialog: toggle pages on/off, set jumlah kuis, variant A/B/C, guru/sekolah
+- Enhanced TemplateGalleryPanel: pattern tabs, expanded page preview, customize button + quick apply
+- Created /api/ai/lesson endpoint: AI generates complete lesson structure from topic + pattern
+- Built use-ai-lesson.ts hook with abort control
+- Built AIGenerateLessonPanel: topic → AI → complete lesson → apply to canvas
+- Tabbed AI Assistant: "Buat Materi" (generate lesson) / "Konten AI" (per-block generation)
+- Added batchSetVariant() to canva store for multi-block variant changes
+- Built BatchOperationsBar: appears when 2+ blocks selected, batch delete/variant/clear
+- Created template-fragments.ts: 15 pre-built block patterns (4 categories)
+- Added Quick Insert section to AddBlockPanel with fragment chips
+
+Stage Summary:
+- Phase F complete: Template & AI Workflows
+- 11 templates across 8 subjects with 4 learning patterns
+- AI lesson generation: topic → complete lesson in seconds
+- Batch operations: multi-select delete, variant change
+- Quick insert: 15 fragment patterns one-click away
+- Build: tsc ✅, Next.js production ✅
+- Git: commit 721c3fa, pushed to GitHub
