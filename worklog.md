@@ -108,3 +108,27 @@ Stage Summary:
 - Deleted files: ToolbarActions.tsx, ToolbarViewControls.tsx, ToolbarNav.tsx, ToolbarPanelToggles.tsx, ToolbarHelp.tsx, BatchActionBar.tsx (dead toolbar code)
 - Design: Slate-Indigo primary, Amber accent, 3-level surface elevation, CSS-only animations
 - Server: Running on port 3000, gateway on port 81, stable
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix canvas black screen — canvas toolbar appears but canvas is just black
+
+Work Log:
+- Investigated Stage component in src/components/canva/stage/index.tsx
+- Found root cause: isFitZoomReady state never becomes true due to Zustand batching race condition
+- storeSetFitZoom() triggers synchronous re-render via useSyncExternalStore, flushing React batch before setIsFitZoomReady(true) is applied
+- The visibility:hidden on transform layer prevents canvas from ever appearing
+- Applied fix: reordered state updates (setIsFitZoomReady(true) FIRST before storeSetFitZoom)
+- Replaced visibility:hidden → opacity:0 (smoother reveal, less fragile)
+- Added 500ms safety fallback timeout that forces isFitZoomReady=true even if ResizeObserver fails
+- Added subtle dot pattern to canvas workspace background for visibility
+- Built Next.js successfully (no TypeScript errors)
+- Restarted server with detached launcher, verified 200 OK on ports 3000 and 81
+- Git pushed fix to main
+
+Stage Summary:
+- Canvas black screen root cause: Zustand batching race condition with isFitZoomReady
+- Fix: opacity instead of visibility + safety timeout + reorder state updates
+- Server running on port 3000, gateway on port 81
+- Build clean, git pushed
