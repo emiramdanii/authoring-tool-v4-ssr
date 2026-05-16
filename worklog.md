@@ -132,3 +132,24 @@ Stage Summary:
 - Fix: opacity instead of visibility + safety timeout + reorder state updates
 - Server running on port 3000, gateway on port 81
 - Build clean, git pushed
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix wizard creation flow — "Saya coba ikutin flow wizard tapi gagal membuat"
+
+Work Log:
+- Investigated TemplateWizard.tsx, CourseTemplateRegistry.ts, PagePresetRegistry.ts
+- Found root cause: ensurePageSchema() returns deepFrozen schemas in dev mode
+- TemplateWizard.handleCreate() was mutating frozen page.schema and page.templateData in place
+- CourseTemplateRegistry.createProjectFromTemplate() was mutating frozen cover/penutup blocks
+- PagePresetRegistry.buildPresetWithCreate() was mutating frozen schema.id
+- All three caused TypeError: Cannot assign to read only property in dev mode
+- Fixed all three files to use immutable operations (spread + map) instead of in-place mutation
+- Build clean, TypeScript check passes, server running
+- Git pushed fix to main
+
+Stage Summary:
+- Root cause: deepFreeze() in dev mode + mutable patterns = TypeError
+- Fix: immutable spread/map operations in 3 files
+- Wizard should now work: select subject → grade → template → info → create project
