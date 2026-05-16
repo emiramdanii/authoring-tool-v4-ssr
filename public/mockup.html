@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>SILSE — Modern Clean UI Mockup</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   SILSE Modern & Clean Design System
+   ═══════════════════════════════════════════════════════ */
+:root {
+  /* — Surface Elevation — */
+  --bg-base: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-elevated: #334155;
+  --bg-hover: #3B4A5E;
+  
+  /* — Text — */
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-accent: #FBBF24;
+  
+  /* — Brand — */
+  --accent: #FBBF24;
+  --accent-dim: rgba(251,191,36,0.15);
+  --accent-hover: #F59E0B;
+  
+  /* — Status — */
+  --success: #34D399;
+  --success-dim: rgba(52,211,153,0.12);
+  --error: #F87171;
+  --error-dim: rgba(248,113,113,0.12);
+  --info: #60A5FA;
+  --info-dim: rgba(96,165,250,0.12);
+  
+  /* — Border — */
+  --border: rgba(148,163,184,0.12);
+  --border-strong: rgba(148,163,184,0.25);
+  
+  /* — Layout — */
+  --sidebar-w: 56px;
+  --panel-left: 240px;
+  --panel-right: 280px;
+  --toolbar-h: 44px;
+  --statusbar-h: 28px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════ APP SHELL ═══════ */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ═══════ SIDEBAR (Icon Rail) ═══════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-base);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), #F59E0B);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; color: #0F172A;
+  margin-bottom: 16px;
+}
+
+.sidebar-nav {
+  display: flex; flex-direction: column; gap: 2px;
+  flex: 1; width: 100%; padding: 0 6px;
+}
+
+.sidebar-item {
+  width: 44px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.sidebar-item:hover { background: var(--bg-surface); color: var(--text-secondary); }
+.sidebar-item.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.sidebar-item.active::before {
+  content: '';
+  position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 20px; border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.sidebar-bottom {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 0 6px; width: 100%;
+}
+
+/* ═══════ MAIN AREA ═══════ */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ═══════ TOOLBAR ═══════ */
+.toolbar {
+  height: var(--toolbar-h);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbar-group {
+  display: flex; align-items: center; gap: 4px;
+}
+
+.toolbar-sep {
+  width: 1px; height: 20px;
+  background: var(--border-strong);
+  margin: 0 4px;
+}
+
+.toolbar-spacer { flex: 1; }
+
+.tool-btn {
+  height: 30px; padding: 0 8px;
+  display: flex; align-items: center; gap: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.tool-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.tool-btn.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(251,191,36,0.2); }
+.tool-btn.primary {
+  background: var(--accent);
+  color: #0F172A; font-weight: 600;
+  border-color: transparent;
+}
+.tool-btn.primary:hover { background: var(--accent-hover); }
+
+.tool-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.tool-btn-icon {
+  width: 30px; height: 30px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--radius-sm); color: var(--text-secondary);
+  cursor: pointer; transition: all 0.15s ease;
+}
+.tool-btn-icon:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* Page indicator */
+.page-indicator {
+  font-size: 12px; color: var(--text-secondary);
+  padding: 0 8px; min-width: 80px;
+  display: flex; align-items: center; gap: 6px;
+}
+.page-indicator .current { color: var(--text-primary); font-weight: 600; }
+
+/* Mode pills */
+.mode-pills {
+  display: flex; background: var(--bg-base); border-radius: var(--radius-sm);
+  padding: 2px; gap: 2px;
+}
+.mode-pill {
+  padding: 4px 10px; border-radius: 4px;
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mode-pill.active {
+  background: var(--accent);
+  color: #0F172A; font-weight: 600;
+}
+
+/* ═══════ CONTENT AREA ═══════ */
+.content-area {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ═══════ LEFT PANEL ═══════ */
+.left-panel {
+  width: var(--panel-left);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 12px 14px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--text-muted);
+}
+.panel-action {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s ease;
+}
+.panel-action:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* Scene List */
+.scene-list {
+  flex: 1; overflow-y: auto; padding: 0 8px 8px;
+}
+.scene-list::-webkit-scrollbar { width: 4px; }
+.scene-list::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 4px; }
+
+.scene-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.15s ease;
+  margin-bottom: 2px; position: relative;
+}
+.scene-item:hover { background: var(--bg-elevated); }
+.scene-item.active {
+  background: var(--accent-dim);
+}
+
+.scene-thumb {
+  width: 48px; height: 27px; border-radius: 3px;
+  background: var(--bg-base); border: 1px solid var(--border);
+  flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.scene-item.active .scene-thumb { border-color: rgba(251,191,36,0.4); }
+
+.scene-info { flex: 1; min-width: 0; }
+.scene-name {
+  font-size: 12px; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 500;
+}
+.scene-item.active .scene-name { color: var(--accent); }
+.scene-meta { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+.scene-delete {
+  width: 20px; height: 20px;
+  display: none; align-items: center; justify-content: center;
+  border-radius: 3px; color: var(--text-muted);
+  cursor: pointer; opacity: 0; transition: opacity 0.1s;
+  font-size: 14px;
+}
+.scene-item:hover .scene-delete { display: flex; opacity: 1; }
+.scene-delete:hover { color: var(--error); background: var(--error-dim); }
+
+/* Add Scene Button */
+.add-scene-btn {
+  margin: 4px 8px 8px;
+  padding: 6px; border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  color: var(--text-muted); font-size: 12px;
+  cursor: pointer; transition: all 0.15s ease;
+}
+.add-scene-btn:hover {
+  border-color: var(--accent); color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Panel Divider */
+.panel-divider {
+  height: 1px; background: var(--border); margin: 4px 0;
+}
+
+/* Block Section */
+.block-section {
+  padding: 8px;
+}
+.block-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+}
+.block-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 4px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.block-item:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+.block-item-icon {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.block-item-label {
+  font-size: 10px; color: var(--text-muted);
+  text-align: center; line-height: 1.2;
+}
+
+/* ═══════ STAGE ═══════ */
+.stage-area {
+  flex: 1;
+  background: var(--bg-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-frame {
+  width: 960px; height: 540px;
+  background: #1a1a2e;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--border), 0 8px 32px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Canvas content mockup */
+.canvas-content {
+  width: 100%; height: 100%;
+  padding: 32px 40px;
+  display: flex; flex-direction: column;
+}
+
+.canvas-header-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.canvas-badge {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 600;
+}
+.canvas-title {
+  font-size: 22px; font-weight: 700; color: #F1F5F9;
+  font-family: 'Fredoka', sans-serif;
+}
+
+.canvas-body {
+  flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+.canvas-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.canvas-card-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 6px;
+}
+.canvas-card-text {
+  font-size: 13px; color: #CBD5E1; line-height: 1.6;
+}
+
+.canvas-footer {
+  margin-top: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.canvas-nav-dots {
+  display: flex; gap: 6px;
+}
+.canvas-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+.canvas-dot.active {
+  background: var(--accent);
+  width: 20px; border-radius: 4px;
+}
+
+/* Selection handles on canvas */
+.selection-box {
+  position: absolute; top: 80px; left: 40px;
+  width: 420px; height: 100px;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.selection-handle {
+  position: absolute; width: 7px; height: 7px;
+  background: var(--accent); border-radius: 1px;
+}
+.handle-tl { top: -4px; left: -4px; }
+.handle-tr { top: -4px; right: -4px; }
+.handle-bl { bottom: -4px; left: -4px; }
+.handle-br { bottom: -4px; right: -4px; }
+
+/* ═══════ RIGHT PANEL ═══════ */
+.right-panel {
+  width: var(--panel-right);
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.right-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.right-tab {
+  flex: 1; padding: 8px 0;
+  text-align: center; font-size: 11px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+.right-tab:hover { color: var(--text-secondary); }
+.right-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.right-content {
+  flex: 1; overflow-y: auto; padding: 12px;
+}
+.right-content::-webkit-scrollbar { width: 4px; }
+.right-content::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 4px; }
+
+/* Property groups */
+.prop-group {
+  margin-bottom: 16px;
+}
+.prop-group-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.prop-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+}
+.prop-label {
+  font-size: 12px; color: var(--text-secondary);
+  min-width: 72px; flex-shrink: 0;
+}
+.prop-input {
+  flex: 1; height: 28px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.prop-input:focus { border-color: var(--accent); }
+
+.prop-select {
+  flex: 1; height: 28px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Color row */
+.prop-colors {
+  display: flex; gap: 4px; flex: 1;
+}
+.prop-color {
+  width: 24px; height: 24px;
+  border-radius: 4px; cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+}
+.prop-color.active { border-color: var(--text-primary); }
+
+/* Toggle */
+.prop-toggle {
+  width: 36px; height: 20px;
+  background: var(--bg-elevated);
+  border-radius: 10px;
+  position: relative; cursor: pointer;
+  transition: background 0.15s ease;
+}
+.prop-toggle.on { background: var(--accent); }
+.prop-toggle::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: white; border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+.prop-toggle.on::after { transform: translateX(16px); }
+
+/* AI Assistant section */
+.ai-section {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 8px;
+}
+.ai-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.ai-icon {
+  width: 24px; height: 24px;
+  background: linear-gradient(135deg, #8B5CF6, #6366F1);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.ai-title {
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
+}
+.ai-prompt {
+  width: 100%; height: 56px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  color: var(--text-primary);
+  font-size: 12px;
+  resize: none; outline: none;
+}
+.ai-prompt:focus { border-color: #8B5CF6; }
+.ai-actions {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+
+/* ═══════ STATUS BAR ═══════ */
+.status-bar {
+  height: var(--statusbar-h);
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 12px; gap: 12px;
+  font-size: 11px; color: var(--text-muted);
+}
+.status-item { display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-dot.green { background: var(--success); }
+.status-dot.amber { background: var(--accent); }
+.status-spacer { flex: 1; }
+
+/* ═══════ TOOLTIP (Unified - Shadcn Style) ═══════ */
+.tooltip {
+  position: absolute;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 100;
+}
+
+/* ═══════ ANIMATIONS (CSS only, unified 0.2s) ═══════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.2s ease; }
+
+@keyframes pulseAccent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(251,191,36,0); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════ SVG ICON HELPERS ═══════ */
+.icon { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ═══════ SIDEBAR (Icon Rail) ═══════ -->
+  <div class="sidebar">
+    <div class="sidebar-logo">S</div>
+    
+    <div class="sidebar-nav">
+      <div class="sidebar-item" title="Dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div class="sidebar-item" title="Dokumen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="sidebar-item" title="Konten">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      </div>
+      <div class="sidebar-item active" title="Canva">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      </div>
+      <div class="sidebar-item" title="Auto-Generate">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"/><circle cx="12" cy="12" r="4"/></svg>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-item" title="Projects">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      </div>
+      <div class="sidebar-item" title="Toggle Theme" id="themeToggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MAIN AREA ═══════ -->
+  <div class="main-area">
+
+    <!-- ═══════ TOOLBAR (Decomposed) ═══════ -->
+    <div class="toolbar">
+      <!-- Nav Group -->
+      <div class="toolbar-group">
+        <button class="tool-btn-icon" title="Undo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        </button>
+        <button class="tool-btn-icon" title="Redo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.13-9.36L23 10"/></svg>
+        </button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <!-- Mode Switch -->
+      <div class="mode-pills">
+        <div class="mode-pill active">Edit</div>
+        <div class="mode-pill">Preview</div>
+        <div class="mode-pill">Present</div>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <!-- Page Nav -->
+      <div class="toolbar-group">
+        <button class="tool-btn-icon" title="Halaman sebelumnya">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="page-indicator">
+          <span class="current">2</span> / <span>5</span>
+        </div>
+        <button class="tool-btn-icon" title="Halaman berikutnya">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <!-- Zoom -->
+      <div class="toolbar-group">
+        <button class="tool-btn-icon" title="Zoom Out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <span style="font-size:11px;color:var(--text-secondary);min-width:36px;text-align:center;">75%</span>
+        <button class="tool-btn-icon" title="Zoom In">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="tool-btn-icon" title="Fit to Screen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+        </button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <!-- Save + Export -->
+      <div class="toolbar-group">
+        <button class="tool-btn" title="Simpan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan
+        </button>
+        <button class="tool-btn primary" title="Export">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════ CONTENT: 3-Panel ═══════ -->
+    <div class="content-area">
+
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+        <div class="panel-header">
+          <span class="panel-title">Skenario</span>
+          <div class="panel-action" title="Tambah halaman">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </div>
+
+        <div class="scene-list">
+          <div class="scene-item">
+            <div class="scene-thumb">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </div>
+            <div class="scene-info">
+              <div class="scene-name">Cover</div>
+              <div class="scene-meta">3 blok</div>
+            </div>
+            <div class="scene-delete">×</div>
+          </div>
+
+          <div class="scene-item active">
+            <div class="scene-thumb">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+            </div>
+            <div class="scene-info">
+              <div class="scene-name">Tujuan Pembelajaran</div>
+              <div class="scene-meta">4 blok</div>
+            </div>
+            <div class="scene-delete">×</div>
+          </div>
+
+          <div class="scene-item">
+            <div class="scene-thumb">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            </div>
+            <div class="scene-info">
+              <div class="scene-name">Materi Utama</div>
+              <div class="scene-meta">6 blok</div>
+            </div>
+            <div class="scene-delete">×</div>
+          </div>
+
+          <div class="scene-item">
+            <div class="scene-thumb">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <div class="scene-info">
+              <div class="scene-name">Kuis Interaktif</div>
+              <div class="scene-meta">3 blok</div>
+            </div>
+            <div class="scene-delete">×</div>
+          </div>
+
+          <div class="scene-item">
+            <div class="scene-thumb">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </div>
+            <div class="scene-info">
+              <div class="scene-name">Penutup</div>
+              <div class="scene-meta">2 blok</div>
+            </div>
+            <div class="scene-delete">×</div>
+          </div>
+        </div>
+
+        <div class="add-scene-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Halaman
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <!-- Block Quick-Insert -->
+        <div class="block-section">
+          <div class="panel-header" style="padding:0 0 6px 0;">
+            <span class="panel-title">Blok</span>
+          </div>
+          <div class="block-grid">
+            <div class="block-item">
+              <div class="block-item-icon" style="background:rgba(96,165,250,0.12);color:#60A5FA;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <span class="block-item-label">Teks</span>
+            </div>
+            <div class="block-item">
+              <div class="block-item-icon" style="background:rgba(52,211,153,0.12);color:#34D399;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <span class="block-item-label">Gambar</span>
+            </div>
+            <div class="block-item">
+              <div class="block-item-icon" style="background:rgba(251,191,36,0.12);color:#FBBF24;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <span class="block-item-label">Kuis</span>
+            </div>
+            <div class="block-item">
+              <div class="block-item-icon" style="background:rgba(139,92,246,0.12);color:#8B5CF6;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <span class="block-item-label">Drag</span>
+            </div>
+            <div class="block-item">
+              <div class="block-item-icon" style="background:rgba(248,113,113,0.12);color:#F87171;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <span class="block-item-label">Video</span>
+            </div>
+            <div class="block-item">
+              <div class="block-item-icon" style="background:rgba(6,182,212,0.12);color:#06B6D4;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </div>
+              <span class="block-item-label">Embed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE -->
+      <div class="stage-area">
+        <div class="canvas-frame">
+          <div class="canvas-content">
+            <div class="canvas-header-bar">
+              <div class="canvas-badge" style="background:rgba(251,191,36,0.15);color:#FBBF24;">Halaman 2</div>
+              <div class="canvas-title" style="font-family:'Fredoka',sans-serif;">Tujuan Pembelajaran</div>
+            </div>
+            <div class="canvas-body">
+              <div class="canvas-card">
+                <div class="canvas-card-title" style="color:#60A5FA;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Kompetensi Dasar
+                </div>
+                <div class="canvas-card-text">Memahami konsep sistem peredaran darah manusia dan dapat menjelaskan fungsi organ-organ terkait</div>
+              </div>
+              <div class="canvas-card">
+                <div class="canvas-card-title" style="color:#34D399;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Tujuan Pembelajaran
+                </div>
+                <div class="canvas-card-text">Peserta didik mampu mengidentifikasi bagian-bagian jantung dan menjelaskan proses peredaran darah</div>
+              </div>
+            </div>
+            <div class="canvas-footer">
+              <div class="canvas-nav-dots">
+                <div class="canvas-dot"></div>
+                <div class="canvas-dot active"></div>
+                <div class="canvas-dot"></div>
+                <div class="canvas-dot"></div>
+                <div class="canvas-dot"></div>
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.3);">1280 × 720</div>
+            </div>
+          </div>
+          <!-- Selection box mockup -->
+          <div class="selection-box">
+            <div class="selection-handle handle-tl"></div>
+            <div class="selection-handle handle-tr"></div>
+            <div class="selection-handle handle-bl"></div>
+            <div class="selection-handle handle-br"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+        <div class="right-tabs">
+          <div class="right-tab active">Properti</div>
+          <div class="right-tab">AI</div>
+          <div class="right-tab">Layer</div>
+        </div>
+
+        <div class="right-content">
+          <!-- Properties -->
+          <div class="prop-group">
+            <div class="prop-group-title">Blok Terpilih</div>
+            <div class="prop-row">
+              <span class="prop-label">Tipe</span>
+              <div class="prop-select" style="display:flex;align-items:center;gap:6px;padding-left:8px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Kompetensi Dasar</span>
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">Varian</span>
+              <div class="prop-select" style="display:flex;align-items:center;padding-left:8px;">Klasik</div>
+            </div>
+          </div>
+
+          <div class="prop-group">
+            <div class="prop-group-title">Posisi & Ukuran</div>
+            <div class="prop-row">
+              <span class="prop-label">X</span>
+              <input class="prop-input" value="40" style="width:60px;flex:none;"/>
+              <span class="prop-label" style="min-width:16px;">Y</span>
+              <input class="prop-input" value="80" style="width:60px;flex:none;"/>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">W</span>
+              <input class="prop-input" value="420" style="width:60px;flex:none;"/>
+              <span class="prop-label" style="min-width:16px;">H</span>
+              <input class="prop-input" value="100" style="width:60px;flex:none;"/>
+            </div>
+          </div>
+
+          <div class="prop-group">
+            <div class="prop-group-title">Tampilan</div>
+            <div class="prop-row">
+              <span class="prop-label">Background</span>
+              <div class="prop-colors">
+                <div class="prop-color" style="background:#1a1a2e;"></div>
+                <div class="prop-color active" style="background:rgba(96,165,250,0.08);border-color:var(--text-primary);"></div>
+                <div class="prop-color" style="background:rgba(52,211,153,0.08);"></div>
+                <div class="prop-color" style="background:rgba(251,191,36,0.08);"></div>
+                <div class="prop-color" style="background:rgba(139,92,246,0.08);"></div>
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">Border</span>
+              <div class="prop-toggle on"></div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">Kompresi</span>
+              <div class="prop-toggle"></div>
+            </div>
+          </div>
+
+          <div class="prop-group">
+            <div class="prop-group-title">Isi Konten</div>
+            <div class="prop-row">
+              <span class="prop-label">Judul</span>
+              <input class="prop-input" value="Kompetensi Dasar"/>
+            </div>
+            <div class="prop-row" style="align-items:flex-start;">
+              <span class="prop-label" style="margin-top:6px;">Teks</span>
+              <textarea class="prop-input" style="height:64px;padding:6px 8px;resize:vertical;">Memahami konsep sistem peredaran darah manusia dan dapat menjelaskan fungsi organ-organ terkait</textarea>
+            </div>
+          </div>
+
+          <!-- AI Section -->
+          <div class="ai-section">
+            <div class="ai-header">
+              <div class="ai-icon">✦</div>
+              <div class="ai-title">AI Asisten</div>
+            </div>
+            <textarea class="ai-prompt" placeholder="Perbaiki teks, singkat, atau ubah gaya bahasa..."></textarea>
+            <div class="ai-actions">
+              <button class="tool-btn" style="flex:1;justify-content:center;border-color:var(--border);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+                Perbaiki
+              </button>
+              <button class="tool-btn" style="flex:1;justify-content:center;border-color:var(--border);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Singkat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════ STATUS BAR ═══════ -->
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-dot green"></div>
+        Tersimpan
+      </div>
+      <div class="status-item">5 halaman</div>
+      <div class="status-spacer"></div>
+      <div class="status-item">1280 × 720</div>
+      <div class="status-item">75%</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
