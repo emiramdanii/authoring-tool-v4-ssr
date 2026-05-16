@@ -30,9 +30,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useCanvaStore } from '../../../store/canva-store';
-import type { SchemaBlock, ContainerRef } from '../../../core/schema/types';
+import type { SchemaBlock } from '../../../core/schema/types';
 import { SCENE_MAX_HEIGHT } from '../../../core/schema/transaction';
-import { getBlockCapabilities } from '../../../core/schema/capability-registry';
+import { BlockCapabilityRegistry, isCompositeBlockType } from '../../../core/schema/capability-registry';
 import { BlockPreview } from './BlockPreview';
 import { BlockEditor } from './BlockEditor';
 
@@ -50,10 +50,10 @@ function SortableBlock({
   onStopEdit: () => void;
   onContextMenu?: (e: React.MouseEvent, block: SchemaBlock) => void;
 }) {
-  const { session, selectBlock } = useCanvaStore();
-  const isSelected = session.selectedBlockId === block.id;
+  const { selectedBlockId, selectBlock } = useCanvaStore();
+  const isSelected = selectedBlockId === block.id;
   const isEditing = editingBlockId === block.id;
-  const caps = getBlockCapabilities(block.type);
+  const caps = BlockCapabilityRegistry.get(block.type);
 
   const {
     attributes,
@@ -63,7 +63,7 @@ function SortableBlock({
     transition,
     isDragging,
   } = useSortable({
-    id: block.id,
+    id: block.id ?? '',
     data: { type: 'block', block },
     // Disable drag while editing
     disabled: isEditing,
@@ -81,8 +81,8 @@ function SortableBlock({
     <div
       ref={setNodeRef}
       style={style}
-      onClick={() => { if (!isEditing) selectBlock(block.id); }}
-      onDoubleClick={() => onDoubleClick(block.id)}
+      onClick={() => { if (!isEditing && block.id) selectBlock(block.id); }}
+      onDoubleClick={() => { if (block.id) onDoubleClick(block.id); }}
       onContextMenu={e => { e.preventDefault(); onContextMenu?.(e, block); }}
       className={`rounded-md cursor-pointer transition-all group relative ${
         isSelected ? 'ring-2 ring-indigo-500 ring-offset-1' : 'hover:ring-1 hover:ring-slate-300'
@@ -95,7 +95,7 @@ function SortableBlock({
         <div className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <div className="flex items-center gap-0.5 bg-white/80 rounded px-1 py-0.5 shadow-sm border border-slate-200">
             <span className="text-[7px] text-slate-400 cursor-grab">⠿</span>
-            {caps.isInteractive && <span className="text-[7px] text-indigo-500">✦</span>}
+            {caps.derived.interactive && <span className="text-[7px] text-indigo-500">✦</span>}
           </div>
         </div>
       )}
@@ -112,17 +112,21 @@ function SortableBlock({
       />
 
       {/* Nested children (compact preview, also double-click to edit) */}
-      {(block.children ?? block.items ?? block.tabs)?.map(child => (
-        <div key={child.id} className="mx-2 mt-0.5">
-          <NestedBlockPreview
-            block={child}
-            editingBlockId={editingBlockId}
-            onDoubleClick={onDoubleClick}
-            onStopEdit={onStopEdit}
-            onContextMenu={onContextMenu}
-          />
-        </div>
-      ))}
+      {(() => {
+        const blockAny = block as Record<string, unknown>;
+        const nestedChildren = block.children ?? (blockAny.items as SchemaBlock[] | undefined) ?? (blockAny.tabs as SchemaBlock[] | undefined);
+        return nestedChildren?.map(child => (
+          <div key={child.id} className="mx-2 mt-0.5">
+            <NestedBlockPreview
+              block={child}
+              editingBlockId={editingBlockId}
+              onDoubleClick={onDoubleClick}
+              onStopEdit={onStopEdit}
+              onContextMenu={onContextMenu}
+            />
+          </div>
+        ));
+      })()}
     </div>
   );
 }
@@ -141,14 +145,14 @@ function NestedBlockPreview({
   onStopEdit: () => void;
   onContextMenu?: (e: React.MouseEvent, block: SchemaBlock) => void;
 }) {
-  const { session, selectBlock } = useCanvaStore();
-  const isSelected = session.selectedBlockId === block.id;
+  const { selectedBlockId, selectBlock } = useCanvaStore();
+  const isSelected = selectedBlockId === block.id;
   const isEditing = editingBlockId === block.id;
 
   return (
     <div
-      onClick={(e) => { e.stopPropagation(); if (!isEditing) selectBlock(block.id); }}
-      onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(block.id); }}
+      onClick={(e) => { e.stopPropagation(); if (!isEditing && block.id) selectBlock(block.id); }}
+      onDoubleClick={(e) => { e.stopPropagation(); if (block.id) onDoubleClick(block.id); }}
       onContextMenu={e => { e.preventDefault(); e.stopPropagation(); onContextMenu?.(e, block); }}
       className={`rounded border p-1 cursor-pointer transition-all text-[10px] ${
         isSelected ? 'ring-2 ring-indigo-500 ring-offset-1' : 'hover:bg-white/60'
@@ -181,7 +185,7 @@ export function SortableCanvas({
 }: {
   onBlockContextMenu?: (e: React.MouseEvent, block: SchemaBlock) => void;
 }) {
-  const { pages, currentPageIndex, currentLayout, session, recomputeLayout, moveBlock } = useCanvaStore();
+  const { pages, currentPageIndex, reorderSchemaBlocks, zoom } = useCanvaStore();
   const page = pages[currentPageIndex];
 
   // Inline editing state
@@ -204,7 +208,7 @@ export function SortableCanvas({
   // Block IDs for SortableContext
   const blockIds = useMemo(() => {
     if (!page?.schema) return [];
-    return page.schema.blocks.map(b => b.id);
+    return page.schema.blocks.map(b => b.id ?? '');
   }, [page?.schema?.blocks]);
 
   // Find a block by ID
@@ -246,22 +250,13 @@ export function SortableCanvas({
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const from: ContainerRef = { type: 'root' };
-    const to: ContainerRef = { type: 'root' };
-
-    moveBlock(page.schema.blocks[oldIndex].id, from, to, newIndex);
-  }, [page?.schema, moveBlock]);
+    reorderSchemaBlocks(oldIndex, newIndex);
+  }, [page?.schema, reorderSchemaBlocks]);
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
     setActiveBlock(null);
   }, []);
-
-  // ─── Layout ─────────────────────────────────────────────────────────
-
-  React.useEffect(() => {
-    recomputeLayout();
-  }, [currentPageIndex, pages, recomputeLayout]);
 
   // ─── Render ─────────────────────────────────────────────────────────
 
@@ -273,8 +268,7 @@ export function SortableCanvas({
     );
   }
 
-  const overflow = currentLayout?.overflow;
-  const totalHeight = currentLayout?.totalHeight ?? 0;
+  const totalHeight = page.schema.blocks.reduce((sum, b) => sum + 120, 0); // rough estimate
   const usedPercent = Math.min(100, Math.round((totalHeight / SCENE_MAX_HEIGHT) * 100));
 
   return (
@@ -283,7 +277,7 @@ export function SortableCanvas({
       <div className="bg-white rounded-lg shadow-lg flex flex-col" style={{ width: 720 * 0.6, height: 405 * 0.6 }}>
         {/* Header bar */}
         <div className="h-2.5 bg-indigo-50 rounded-t-lg flex items-center justify-between px-2">
-          <span className="text-[6px] text-indigo-400 font-medium">{page.schema.meta?.title ?? 'Untitled'}</span>
+          <span className="text-[6px] text-indigo-400 font-medium">{page.schema.id ?? 'Untitled'}</span>
           <div className="flex items-center gap-1">
             <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden">
               <div
@@ -310,7 +304,7 @@ export function SortableCanvas({
               <div className="space-y-1">
                 {page.schema.blocks.map(block => (
                   <SortableBlock
-                    key={block.id}
+                    key={block.id ?? block.type}
                     block={block}
                     editingBlockId={editingBlockId}
                     onDoubleClick={handleDoubleClick}
@@ -336,15 +330,9 @@ export function SortableCanvas({
         </div>
 
         {/* Footer */}
-        {overflow?.hasOverflow ? (
-          <div className="h-4 bg-red-500/90 flex items-center justify-center text-[7px] text-white rounded-b-lg">
-            Overflow! {totalHeight}px / {SCENE_MAX_HEIGHT}px
-          </div>
-        ) : (
-          <div className="h-3 bg-slate-50 rounded-b-lg flex items-center justify-center">
-            <span className="text-[6px] text-slate-300">{totalHeight} / {SCENE_MAX_HEIGHT}px</span>
-          </div>
-        )}
+        <div className="h-3 bg-slate-50 rounded-b-lg flex items-center justify-center">
+          <span className="text-[6px] text-slate-300">{totalHeight} / {SCENE_MAX_HEIGHT}px</span>
+        </div>
       </div>
 
       {/* Page counter */}
@@ -354,7 +342,7 @@ export function SortableCanvas({
 
       {/* Zoom indicator */}
       <div className="absolute bottom-2 right-2 bg-white rounded px-2 py-0.5 border border-slate-200 text-[10px] text-slate-500">
-        {Math.round(session.zoom * 100)}%
+        {Math.round((zoom === -1 ? 0.5 : zoom) * 100)}%
       </div>
 
       {/* Edit mode hint */}

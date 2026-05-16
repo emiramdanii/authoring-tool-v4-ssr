@@ -28,7 +28,7 @@ export function OverflowDialog({
   pendingBlockHeight,
   onClose,
 }: OverflowDialogProps) {
-  const { changeVariant, splitCurrentScene, pages, currentPageIndex } = useCanvaStore();
+  const { batchSetVariant, splitPageAtBlock, pages, currentPageIndex } = useCanvaStore();
 
   const currentPage = pages[currentPageIndex];
   const schema = currentPage?.schema;
@@ -39,7 +39,7 @@ export function OverflowDialog({
     return schema.blocks
       .filter(b => b.variant === 'A' || b.variant === 'B')
       .map(b => ({
-        id: b.id,
+        id: b.id ?? '',
         type: b.type,
         currentVariant: b.variant ?? 'A',
         currentHeight: estimateBlockHeight(b),
@@ -68,14 +68,18 @@ export function OverflowDialog({
     const best = compactableBlocks[0];
     if (best) {
       const newVariant = best.currentVariant === 'A' ? 'B' as const : 'C' as const;
-      changeVariant(best.id, newVariant);
+      batchSetVariant([best.id], newVariant);
     }
     onClose();
   };
 
   const handleSplit = () => {
-    if (splitIndex > 0) {
-      splitCurrentScene(splitIndex);
+    if (splitIndex > 0 && schema) {
+      // Find the block at the split index and split after it
+      const splitBlockId = schema.blocks[splitIndex - 1]?.id;
+      if (splitBlockId) {
+        splitPageAtBlock(splitBlockId);
+      }
     }
     onClose();
   };

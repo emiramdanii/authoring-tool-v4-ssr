@@ -38,6 +38,15 @@ import type { ScreenSchema, SchemaBlock } from './types';
 import { validateSchema, type ValidationResult } from './validation';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
 
+// ── Purity Violation ───────────────────────────────────────────
+
+export interface PurityViolation {
+  blockId: string;
+  blockType: string;
+  fieldName: string;
+  fieldValue: unknown;
+}
+
 // ── Document State ─────────────────────────────────────────────
 
 /**
@@ -152,13 +161,16 @@ export function createSessionState(): SessionInteractionState {
  *
  * Returns true if the document is pure.
  */
-export function isDocumentPure(doc: DocumentState): { pure: boolean; violations: string[] } {
-  const violations: string[] = [];
+export function isDocumentPure(doc: DocumentState): { pure: boolean; violations: PurityViolation[]; violationStrings: string[] } {
+  const violations: PurityViolation[] = [];
+  const violationStrings: string[] = [];
 
   // Standard validation (pure serializable check)
   const result: ValidationResult = validateSchema(doc);
   if (!result.valid) {
-    violations.push(...result.errors.map(e => `${e.path}: ${e.message}`));
+    for (const e of result.errors) {
+      violationStrings.push(`${e.path}: ${e.message}`);
+    }
   }
 
   // Check for known runtime state field names in blocks
@@ -172,40 +184,44 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
     '_compressedHeight', // Derived by rebalance transaction — must NOT persist
   ]);
 
-  for (let i = 0; i < doc.blocks.length; i++) {
-    const block = doc.blocks[i];
+  function checkBlock(block: SchemaBlock, path: string): void {
     const blockKeys = Object.keys(block);
 
     for (const key of blockKeys) {
       if (RUNTIME_STATE_FIELDS.has(key)) {
-        violations.push(`blocks[${i}].${key}: Runtime state field "${key}" must NOT be in document schema`);
+        violations.push({
+          blockId: block.id ?? '',
+          blockType: block.type,
+          fieldName: key,
+          fieldValue: (block as Record<string, unknown>)[key],
+        });
+        violationStrings.push(`${path}.${key}: Runtime state field "${key}" must NOT be in document schema`);
       }
     }
 
     // Check nested runtime fields inside compression object
-    // (e.g., compression._compressedHeight — derived value that must NOT persist)
     if (block.compression && typeof block.compression === 'object') {
       for (const compKey of Object.keys(block.compression)) {
         if (RUNTIME_STATE_FIELDS.has(compKey)) {
-          violations.push(`blocks[${i}].compression.${compKey}: Runtime state field "${compKey}" must NOT be in document schema`);
+          violations.push({
+            blockId: block.id ?? '',
+            blockType: block.type,
+            fieldName: `compression.${compKey}`,
+            fieldValue: (block.compression as unknown as Record<string, unknown>)[compKey],
+          });
+          violationStrings.push(`${path}.compression.${compKey}: Runtime state field "${compKey}" must NOT be in document schema`);
         }
       }
     }
 
     // Check nested blocks in composite blocks using container descriptor
-    // (single source of truth — no hardcoded type checks)
     if (isCompositeBlockType(block.type)) {
       const descriptor = getCompositeContainerDescriptor(block.type);
       if (descriptor) {
         if (descriptor.structure === 'direct') {
           const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
           for (let j = 0; j < (children?.length || 0); j++) {
-            const child = children![j];
-            for (const key of Object.keys(child)) {
-              if (RUNTIME_STATE_FIELDS.has(key)) {
-                violations.push(`blocks[${i}].${descriptor.accessor}[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
-              }
-            }
+            checkBlock(children![j], `${path}.${descriptor.accessor}[${j}]`);
           }
         }
         if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
@@ -214,12 +230,7 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
             const tab = tabs![t];
             const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
             for (let j = 0; j < (content?.length || 0); j++) {
-              const child = content![j];
-              for (const key of Object.keys(child)) {
-                if (RUNTIME_STATE_FIELDS.has(key)) {
-                  violations.push(`blocks[${i}].${descriptor.accessor}[${t}].${descriptor.tabContentKey}[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
-                }
-              }
+              checkBlock(content![j], `${path}.${descriptor.accessor}[${t}].${descriptor.tabContentKey}[${j}]`);
             }
           }
         }
@@ -229,29 +240,29 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
     // Check children
     if (block.children) {
       for (let j = 0; j < block.children.length; j++) {
-        const child = block.children[j];
-        for (const key of Object.keys(child)) {
-          if (RUNTIME_STATE_FIELDS.has(key)) {
-            violations.push(`blocks[${i}].children[${j}].${key}: Runtime state field "${key}" must NOT be in document schema`);
-          }
-        }
+        checkBlock(block.children[j], `${path}.children[${j}]`);
       }
     }
   }
 
-  return { pure: violations.length === 0, violations };
+  for (let i = 0; i < doc.blocks.length; i++) {
+    checkBlock(doc.blocks[i], `blocks[${i}]`);
+  }
+
+  return { pure: violations.length === 0, violations, violationStrings };
 }
 
 /**
  * Assert that a document is pure.
  * Throws in dev mode if any runtime state is found in the document.
  * Logs in production.
+ * Returns the purity check result so callers can inspect violations.
  */
-export function assertDocumentPurity(doc: DocumentState, source?: string): void {
-  const { pure, violations } = isDocumentPure(doc);
-  if (!pure) {
+export function assertDocumentPurity(doc: DocumentState, source?: string): { pure: boolean; violations: PurityViolation[]; violationStrings: string[] } {
+  const result = isDocumentPure(doc);
+  if (!result.pure) {
     const src = source ? ` (${source})` : '';
-    const msg = `Document purity violation${src}:\n  ${violations.join('\n  ')}`;
+    const msg = `Document purity violation${src}:\n  ${result.violationStrings.join('\n  ')}`;
 
     if (process.env.NODE_ENV === 'production') {
       console.error('[DOCUMENT-PURITY]', msg);
@@ -259,6 +270,7 @@ export function assertDocumentPurity(doc: DocumentState, source?: string): void 
       throw new Error(msg);
     }
   }
+  return result;
 }
 
 // ── Compressed Height Cache ────────────────────────────────────

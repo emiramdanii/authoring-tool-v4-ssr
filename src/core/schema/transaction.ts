@@ -23,7 +23,7 @@ import type {
 } from './types';
 import { validateSchema, type ValidationResult } from './validation';
 import { assertDocumentPurity, type PurityViolation } from './session-state';
-import { blockCapabilityRegistry } from './capability-registry';
+import { BlockCapabilityRegistry, isCompositeBlockType } from './capability-registry';
 
 // ─── Transaction State ─────────────────────────────────────────────────
 type TxnState = 'open' | 'committed' | 'rolled-back';
@@ -80,13 +80,14 @@ export const SCENE_MAX_HEIGHT = 636; // 720 - 42px header - 42px footer
 export function estimateBlockHeight(block: SchemaBlock): number {
   const base = BASE_HEIGHT_MAP[block.type] ?? 120;
   const multiplier = block.variant ? VARIANT_HEIGHT_MULTIPLIER[block.variant] : 1.0;
-  const caps = blockCapabilityRegistry.getCapabilities(block.type);
+  const caps = BlockCapabilityRegistry.get(block.type);
 
   let height = base * multiplier;
 
   // Composite blocks: add children heights
-  if (caps.isComposite) {
-    const children = block.children ?? block.items ?? block.tabs ?? [];
+  if (isCompositeBlockType(block.type)) {
+    const blockAny = block as Record<string, unknown>;
+    const children = (block.children ?? (blockAny.items as SchemaBlock[] | undefined) ?? (blockAny.tabs as SchemaBlock[] | undefined)) ?? [];
     for (const child of children) {
       height += estimateBlockHeight(child);
     }
@@ -120,7 +121,7 @@ export class Transaction {
       const parent = this.resolveContainer(draft, container);
       if (parent) {
         const idx = index ?? parent.length;
-        parent.splice(idx, 0, { ...block, container });
+        parent.splice(idx, 0, { ...block });
       }
     });
     this.steps.push({ operation: { type: 'insert-block', block, container, index }, snapshot });
@@ -150,7 +151,7 @@ export class Transaction {
         const target = this.resolveContainer(draft, to);
         if (target) {
           const idx = index ?? target.length;
-          target.splice(idx, 0, { ...removed, container: to });
+          target.splice(idx, 0, { ...removed });
         }
       }
     });
@@ -180,9 +181,6 @@ export class Transaction {
       const source = this.findBlockInTree(draft.blocks, blockId);
       if (source) {
         const clone = this.deepCloneWithNewIds(source);
-        if (container) {
-          clone.container = container;
-        }
         // Insert right after the source block at root level
         const sourceIdx = draft.blocks.findIndex(b => b.id === blockId);
         if (sourceIdx >= 0) {
@@ -220,7 +218,7 @@ export class Transaction {
     for (const block of this.workingSchema.blocks) {
       const h = estimateBlockHeight(block);
       totalHeight += h;
-      blockHeights.push({ blockId: block.id, type: block.type, estimatedHeight: h });
+      blockHeights.push({ blockId: block.id ?? '', type: block.type, estimatedHeight: h });
     }
 
     return {
@@ -282,20 +280,16 @@ export class Transaction {
 
     // Dev-mode purity guard: check for forbidden runtime fields
     if (process.env.NODE_ENV === 'development') {
-      const purityViolations = assertDocumentPurity(this.workingSchema);
-      if (purityViolations.length > 0) {
+      const { pure, violations } = assertDocumentPurity(this.workingSchema);
+      if (!pure && violations.length > 0) {
         console.group('🚫 Transaction Purity Violations');
-        for (const v of purityViolations) {
+        for (const v of violations) {
           console.warn(
             `  Block "${v.blockType}" (${v.blockId}) has forbidden field "${v.fieldName}":`,
             v.fieldValue
           );
         }
         console.groupEnd();
-
-        // Strip forbidden fields before committing (defensive)
-        this.stripForbiddenFields(this.workingSchema.blocks, purityViolations);
-        console.info('  → Forbidden fields stripped automatically. Fix the source of the leak.');
       }
     }
 
@@ -315,7 +309,7 @@ export class Transaction {
       return {
         success: false,
         schema: this.workingSchema,
-        errors: [...validation.errors, 'Transaction rolled back due to validation failure'],
+        errors: [...validation.errors.map(e => `${e.path}: ${e.message}`), 'Transaction rolled back due to validation failure'],
         warnings: validation.warnings,
       };
     }
@@ -382,8 +376,12 @@ export class Transaction {
       case 'children': {
         const parent = this.findBlockInTree(draft.blocks, ref.id ?? '');
         if (!parent) return null;
-        if (ref.type === 'ftab' && parent.tabs) {
-          return parent.tabs[ref.tabIndex]?.children ?? null;
+        if (ref.type === 'ftab') {
+          const blockAny = parent as Record<string, unknown>;
+          const tabs = blockAny.tabs as Array<Record<string, unknown>> | undefined;
+          if (tabs && ref.tabIndex != null) {
+            return tabs[ref.tabIndex]?.content as SchemaBlock[] | null ?? null;
+          }
         }
         return parent.children ?? null;
       }
@@ -395,11 +393,24 @@ export class Transaction {
   private findBlockInTree(blocks: SchemaBlock[], id: string): SchemaBlock | null {
     for (const block of blocks) {
       if (block.id === id) return block;
-      const found =
-        (block.children && this.findBlockInTree(block.children, id)) ||
-        (block.items && this.findBlockInTree(block.items, id)) ||
-        (block.tabs && this.findBlockInTree(block.tabs, id));
-      if (found) return found;
+      if (block.children) {
+        const found = this.findBlockInTree(block.children, id);
+        if (found) return found;
+      }
+      // Also search in composite containers
+      const blockAny = block as Record<string, unknown>;
+      if (blockAny.items && Array.isArray(blockAny.items)) {
+        const found = this.findBlockInTree(blockAny.items as SchemaBlock[], id);
+        if (found) return found;
+      }
+      if (blockAny.tabs && Array.isArray(blockAny.tabs)) {
+        for (const tab of blockAny.tabs as Array<Record<string, unknown>>) {
+          if (tab.content && Array.isArray(tab.content)) {
+            const found = this.findBlockInTree(tab.content as SchemaBlock[], id);
+            if (found) return found;
+          }
+        }
+      }
     }
     return null;
   }
@@ -409,31 +420,49 @@ export class Transaction {
       if (blocks[i].id === id) {
         return blocks.splice(i, 1) as [SchemaBlock];
       }
-      const found =
-        (blocks[i].children && this.removeBlockFromTree(blocks[i].children!, id)) ||
-        (blocks[i].items && this.removeBlockFromTree(blocks[i].items!, id)) ||
-        (blocks[i].tabs && this.removeBlockFromTree(blocks[i].tabs!, id));
-      if (found) return found;
+      if (blocks[i].children) {
+        const found = this.removeBlockFromTree(blocks[i].children!, id);
+        if (found) return found;
+      }
+      // Also search in composite containers
+      const blockAny = blocks[i] as Record<string, unknown>;
+      if (blockAny.items && Array.isArray(blockAny.items)) {
+        const found = this.removeBlockFromTree(blockAny.items as SchemaBlock[], id);
+        if (found) return found;
+      }
+      if (blockAny.tabs && Array.isArray(blockAny.tabs)) {
+        for (const tab of blockAny.tabs as Array<Record<string, unknown>>) {
+          if (tab.content && Array.isArray(tab.content)) {
+            const found = this.removeBlockFromTree(tab.content as SchemaBlock[], id);
+            if (found) return found;
+          }
+        }
+      }
     }
     return null;
   }
 
   private deepCloneWithNewIds(block: SchemaBlock): SchemaBlock {
-    // nanoid is imported at the top of the file
     const clone: SchemaBlock = {
       ...block,
       id: nanoid(10),
-      container: block.container ? { ...block.container } : undefined,
     };
 
     if (clone.children) {
       clone.children = clone.children.map(child => this.deepCloneWithNewIds(child));
     }
-    if (clone.items) {
-      clone.items = clone.items.map(item => this.deepCloneWithNewIds(item));
+    // Also clone composite container children
+    const cloneAny = clone as Record<string, unknown>;
+    if (cloneAny.items && Array.isArray(cloneAny.items)) {
+      cloneAny.items = (cloneAny.items as SchemaBlock[]).map(item => this.deepCloneWithNewIds(item));
     }
-    if (clone.tabs) {
-      clone.tabs = clone.tabs.map(tab => this.deepCloneWithNewIds(tab));
+    if (cloneAny.tabs && Array.isArray(cloneAny.tabs)) {
+      cloneAny.tabs = (cloneAny.tabs as Array<Record<string, unknown>>).map(tab => {
+        if (tab.content && Array.isArray(tab.content)) {
+          return { ...tab, content: (tab.content as SchemaBlock[]).map((c: SchemaBlock) => this.deepCloneWithNewIds(c)) };
+        }
+        return tab;
+      });
     }
 
     return clone;
@@ -443,16 +472,25 @@ export class Transaction {
    * Strip forbidden runtime fields from blocks.
    * Dev-mode defensive measure — the source of the leak should still be fixed.
    */
-  private stripForbiddenFields(blocks: SchemaBlock[], violations: PurityViolation[]): void {
-    const forbiddenFields = new Set(violations.map(v => v.fieldName));
+  private stripForbiddenFields(blocks: SchemaBlock[], forbiddenFields: Set<string>): void {
     for (const block of blocks) {
       const record = block as unknown as Record<string, unknown>;
       for (const field of forbiddenFields) {
         delete record[field];
       }
-      if (block.children) this.stripForbiddenFields(block.children, violations);
-      if (block.items) this.stripForbiddenFields(block.items, violations);
-      if (block.tabs) this.stripForbiddenFields(block.tabs, violations);
+      if (block.children) this.stripForbiddenFields(block.children, forbiddenFields);
+      // Also strip from composite containers
+      const blockAny = block as Record<string, unknown>;
+      if (blockAny.items && Array.isArray(blockAny.items)) {
+        this.stripForbiddenFields(blockAny.items as SchemaBlock[], forbiddenFields);
+      }
+      if (blockAny.tabs && Array.isArray(blockAny.tabs)) {
+        for (const tab of blockAny.tabs as Array<Record<string, unknown>>) {
+          if (tab.content && Array.isArray(tab.content)) {
+            this.stripForbiddenFields(tab.content as SchemaBlock[], forbiddenFields);
+          }
+        }
+      }
     }
   }
 }

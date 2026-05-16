@@ -20,22 +20,23 @@ interface BlockContextMenuProps {
 }
 
 export function BlockContextMenu({ block, position, onClose }: BlockContextMenuProps) {
-  const { removeBlock, duplicateBlock, changeVariant } = useCanvaStore();
+  const { deleteBlock, duplicateBlock, batchSetVariant } = useCanvaStore();
+  const blockId = block.id ?? '';
 
   const handleDuplicate = useCallback(() => {
-    duplicateBlock(block.id);
+    if (blockId) duplicateBlock(blockId);
     onClose();
-  }, [block.id, duplicateBlock, onClose]);
+  }, [blockId, duplicateBlock, onClose]);
 
   const handleDelete = useCallback(() => {
-    removeBlock(block.id);
+    if (blockId) deleteBlock(blockId);
     onClose();
-  }, [block.id, removeBlock, onClose]);
+  }, [blockId, deleteBlock, onClose]);
 
   const handleVariant = useCallback((variant: BlockVariant) => {
-    changeVariant(block.id, variant);
+    if (blockId) batchSetVariant([blockId], variant);
     onClose();
-  }, [block.id, changeVariant, onClose]);
+  }, [blockId, batchSetVariant, onClose]);
 
   const variantOptions: Array<{ value: BlockVariant; label: string; height: number }> = [
     { value: 'A', label: 'Normal', height: estimateBlockHeight({ ...block, variant: 'A' }) },

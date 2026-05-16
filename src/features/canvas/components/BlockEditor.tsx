@@ -103,11 +103,11 @@ interface BlockEditorProps {
  * Only visible when isEditing is true.
  */
 export function BlockEditor({ block, isEditing, onStartEdit, onStopEdit }: BlockEditorProps) {
-  const { updateBlock } = useCanvaStore();
+  const { updateSchemaBlock } = useCanvaStore();
 
   const handleUpdate = useCallback((field: string, value: string) => {
-    updateBlock(block.id, { [field]: value });
-  }, [block.id, updateBlock]);
+    if (block.id) updateSchemaBlock(block.id, { [field]: value });
+  }, [block.id, updateSchemaBlock]);
 
   if (!isEditing) return null;
 

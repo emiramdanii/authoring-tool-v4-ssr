@@ -13,7 +13,8 @@
  * - Each entry stores metadata: timestamp, operation type, description
  */
 
-import type { ScreenSchema, SchemaOperation } from './types';
+import type { ScreenSchema } from './types';
+import type { SchemaOperation } from './types';
 import { validateSchema, type ValidationResult } from './validation';
 
 // ─── History Entry ─────────────────────────────────────────────────────

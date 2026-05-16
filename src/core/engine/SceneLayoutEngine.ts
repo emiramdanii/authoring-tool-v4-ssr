@@ -6,7 +6,7 @@
 
 import type { ScreenSchema, SchemaBlock } from '../schema/types';
 import { estimateBlockHeight, SCENE_MAX_HEIGHT, type OverflowCheckResult } from '../schema/transaction';
-import { blockCapabilityRegistry } from '../schema/capability-registry';
+import { BlockCapabilityRegistry, isCompositeBlockType } from '../schema/capability-registry';
 
 // ─── Layout Constants ──────────────────────────────────────────────────
 export const SCENE_WIDTH = 1280;
@@ -94,12 +94,11 @@ export class SceneLayoutEngine {
     y: number,
     availableWidth: number
   ): BlockLayout {
-    const caps = blockCapabilityRegistry.getCapabilities(block.type);
     const height = estimateBlockHeight(block);
     const isOverflowing = y + height > SCENE_HEIGHT;
 
     const layout: BlockLayout = {
-      blockId: block.id,
+      blockId: block.id ?? '',
       blockType: block.type,
       x,
       y,
@@ -110,8 +109,9 @@ export class SceneLayoutEngine {
     };
 
     // Layout children of composite blocks
-    if (caps.isComposite) {
-      const children = block.children ?? block.items ?? block.tabs ?? [];
+    if (isCompositeBlockType(block.type)) {
+      const blockAny = block as Record<string, unknown>;
+      const children = (block.children ?? (blockAny.items as SchemaBlock[] | undefined) ?? (blockAny.tabs as SchemaBlock[] | undefined)) ?? [];
       if (children.length > 0) {
         layout.children = [];
         let childY = y;
@@ -136,7 +136,7 @@ export class SceneLayoutEngine {
     for (const block of schema.blocks) {
       const h = estimateBlockHeight(block);
       totalHeight += h;
-      blockHeights.push({ blockId: block.id, type: block.type, estimatedHeight: h });
+      blockHeights.push({ blockId: block.id ?? '', type: block.type, estimatedHeight: h });
     }
 
     return {

@@ -8,9 +8,16 @@
  */
 
 import type { StateCreator } from 'zustand';
-import type { CanvaPage, ScreenSchema } from '../core/schema/types';
-import type { ApplyResult } from '../core/schema/schema-apply';
-import { blockCapabilityRegistry } from '../core/schema/capability-registry';
+import type { ScreenSchema } from '../core/schema/types';
+import type { CanvaPage } from '../components/canva/types';
+import { BlockCapabilityRegistry } from '../core/schema/capability-registry';
+
+// ─── Apply Result ──────────────────────────────────────────────────
+export interface ApplyResult {
+  success: boolean;
+  schema: ScreenSchema;
+  errors: string[];
+}
 
 // ─── Sync Slice State ──────────────────────────────────────────────────
 export interface SyncSlice {

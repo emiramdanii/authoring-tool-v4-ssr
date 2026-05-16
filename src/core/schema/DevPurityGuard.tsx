@@ -10,7 +10,7 @@
 
 import React, { useEffect, useState } from 'react';
 import type { ScreenSchema } from './types';
-import { assertDocumentPurity, type PurityViolation } from './session-state';
+import { isDocumentPure, type PurityViolation } from './session-state';
 
 interface DevPurityGuardProps {
   schema: ScreenSchema | null;
@@ -32,13 +32,13 @@ export function DevPurityGuard({ schema, children }: DevPurityGuardProps) {
       return;
     }
 
-    const found = assertDocumentPurity(schema);
-    setViolations(found);
+    const result = isDocumentPure(schema);
+    setViolations(result.violations);
 
-    if (found.length > 0) {
+    if (result.violations.length > 0) {
       console.warn(
-        `[DevPurityGuard] ${found.length} purity violation(s) detected in schema "${schema.id}"`,
-        found
+        `[DevPurityGuard] ${result.violations.length} purity violation(s) detected in schema "${schema.id}"`,
+        result.violations
       );
     }
   }, [schema]);

@@ -617,6 +617,41 @@ export interface RangkumanBlock extends BaseBlock {
 
 export type HeroBlock = Omit<CoverBlock, 'type'> & { type: 'hero' };
 
+// ── Block Variant Type ──────────────────────────────────────────
+
+export type BlockVariant = 'A' | 'B' | 'C';
+
+// ── Container Reference ─────────────────────────────────────────
+// Used by transaction system to reference where a block lives.
+
+export interface ContainerRef {
+  type: 'root' | 'materi-section' | 'ftab' | 'children';
+  id?: string;
+  tabIndex?: number;
+}
+
+// ── Schema Operation ────────────────────────────────────────────
+// Describes a single mutation step in a transaction.
+
+export type SchemaOperation =
+  | { type: 'insert-block'; block: SchemaBlock; container: ContainerRef; index?: number }
+  | { type: 'remove-block'; blockId: string }
+  | { type: 'move-block'; blockId: string; from: ContainerRef; to: ContainerRef; index?: number }
+  | { type: 'update-block'; blockId: string; changes: Partial<SchemaBlock> }
+  | { type: 'duplicate-block'; blockId: string; container?: ContainerRef }
+  | { type: 'change-variant'; blockId: string; variant: BlockVariant }
+  | { type: 'split-scene'; splitIndex: number }
+  | { type: 'merge-scene'; sourcePageId: string };
+
+// ── Transaction Result ──────────────────────────────────────────
+
+export interface TransactionResult {
+  success: boolean;
+  schema: ScreenSchema;
+  errors: string[];
+  warnings: import('./validation').ValidationError[];
+}
+
 // ── Union Type ─────────────────────────────────────────────────
 
 export type SchemaBlock =

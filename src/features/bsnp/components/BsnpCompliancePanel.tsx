@@ -8,7 +8,7 @@
 
 import React, { useMemo } from 'react';
 import type { ScreenSchema, SchemaBlock } from '../../../core/schema/types';
-import { getBlockCapabilities } from '../../../core/schema/capability-registry';
+import { BlockCapabilityRegistry } from '../../../core/schema/capability-registry';
 import { estimateBlockHeight, SCENE_MAX_HEIGHT } from '../../../core/schema/transaction';
 
 // ─── BSNP Criteria ─────────────────────────────────────────────────────
@@ -53,8 +53,8 @@ const BSNP_CRITERIA: BSNPCriterion[] = [
     description: 'Materi interaktif harus memiliki elemen interaktif',
     check: (schema) => {
       const hasInteractive = schema.blocks.some(b => {
-        const caps = getBlockCapabilities(b.type);
-        return caps.isInteractive;
+        const caps = BlockCapabilityRegistry.get(b.type);
+        return caps.derived.interactive;
       });
       return { met: hasInteractive, detail: hasInteractive ? 'Elemen interaktif ada' : 'Belum ada elemen interaktif' };
     },
@@ -79,8 +79,8 @@ const BSNP_CRITERIA: BSNPCriterion[] = [
     check: (schema) => {
       const hasPetunjuk = schema.blocks.some(b => b.type === 'petunjuk');
       const hasInteractive = schema.blocks.some(b => {
-        const caps = getBlockCapabilities(b.type);
-        return caps.isInteractive;
+        const caps = BlockCapabilityRegistry.get(b.type);
+        return caps.derived.interactive;
       });
       if (!hasInteractive) return { met: true, detail: 'Tidak ada elemen interaktif (tidak perlu petunjuk)' };
       return { met: hasPetunjuk, detail: hasPetunjuk ? 'Petunjuk tersedia' : 'Tambahkan petunjuk untuk elemen interaktif' };

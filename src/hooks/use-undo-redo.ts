@@ -22,11 +22,12 @@ export function useKeyboardShortcuts() {
     redo,
     canUndo,
     canRedo,
-    removeBlock,
+    deleteBlock,
     duplicateBlock,
     selectBlock,
-    setActiveDrawer,
-    session,
+    selectedBlockId,
+    editingBlockId,
+    stopEditing,
     pages,
     currentPageIndex,
   } = useCanvaStore();
@@ -63,29 +64,29 @@ export function useKeyboardShortcuts() {
       }
 
       // ─── Delete: Delete / Backspace ───────────────────────────────
-      if ((e.key === 'Delete' || e.key === 'Backspace') && session.selectedBlockId) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBlockId) {
         // Only if not focused on an input/textarea
         const target = e.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
           return;
         }
         e.preventDefault();
-        removeBlock(session.selectedBlockId);
+        deleteBlock(selectedBlockId);
         return;
       }
 
       // ─── Duplicate: Ctrl+D / Cmd+D ───────────────────────────────
-      if (isCtrlOrCmd && e.key === 'd' && session.selectedBlockId) {
+      if (isCtrlOrCmd && e.key === 'd' && selectedBlockId) {
         e.preventDefault();
-        duplicateBlock(session.selectedBlockId);
+        duplicateBlock(selectedBlockId);
         return;
       }
 
-      // ─── Escape: Deselect / close drawers ─────────────────────────
+      // ─── Escape: Deselect / close editing ─────────────────────────
       if (e.key === 'Escape') {
-        if (session.activeDrawer) {
-          setActiveDrawer(null);
-        } else if (session.selectedBlockId) {
+        if (editingBlockId) {
+          stopEditing();
+        } else if (selectedBlockId) {
           selectBlock(null);
         }
         return;
@@ -94,5 +95,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, canUndo, canRedo, removeBlock, duplicateBlock, selectBlock, setActiveDrawer, session.selectedBlockId, session.activeDrawer, pages, currentPageIndex]);
+  }, [undo, redo, canUndo, canRedo, deleteBlock, duplicateBlock, selectBlock, selectedBlockId, editingBlockId, stopEditing, pages, currentPageIndex]);
 }
