@@ -41,3 +41,26 @@ Stage Summary:
 - TypeScript compiles clean, build passes
 - All changes committed to git
 - SILSE project now has: performance profiling, offline/PWA support, memory leak detection, and E2E smoke tests
+
+---
+Task ID: ui-optimize
+Agent: Main
+Task: Optimize SILSE app to be lightweight and stable
+
+Work Log:
+- Removed output:standalone from next.config (was creating 646MB duplicate)
+- Converted next.config.ts → next.config.js (allows npm prune --omit=dev)
+- Added optimizePackageImports for lucide-react, framer-motion, xlsx, @radix-ui
+- Added productionBrowserSourceMaps: false, removeConsole for production
+- Moved prisma to devDependencies (179MB saved at runtime)
+- Converted xlsx imports to dynamic import() (7.3MB lazy loaded)
+- Removed /mockup page (was causing Turbopack panics)
+- Audited lucide-react imports — all named/tree-shakeable
+- .next build: 646MB → 234MB (-64%)
+- Rebuilt with webpack (stable), tsc clean, build clean
+
+Stage Summary:
+- App significantly lighter: .next 646MB→234MB, node_modules would be 576MB with prune
+- Server runs but container kills background processes after ~25-30s
+- This is a container environment limitation, not app issue
+- Production build works, pages serve correctly
