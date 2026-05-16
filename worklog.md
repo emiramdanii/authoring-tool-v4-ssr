@@ -23,3 +23,21 @@ Stage Summary:
 - Phase F.2 (AI-assisted content): Already had AITemplateGenerator — no additional changes needed
 - Build: ✅ clean
 - Git: 4006aa2 pushed to origin/main
+
+---
+Task ID: G-phase
+Agent: Main
+Task: Phase G — Performance, Offline/PWA, Memory Leak Audit, E2E Tests
+
+Work Log:
+- G.1: Created PerformanceMonitor component (dev-only floating panel), React.Profiler wrappers in CanvaBuilder, lazy-loaded 8 heavy components (games, AI panels, template gallery, command palette), @next/bundle-analyzer integration, Zustand performance middleware (slow update detection, action storm detection), performance utility library
+- G.3: PWA with @ducanh2912/next-pwa, manifest.json with SVG icons, service worker registration hook, OfflineIndicator component, offline-sync queue system (localStorage-based, auto-flush on reconnect), Indonesian UX toasts for online/offline transitions
+- G.4: Memory leak detector (periodic heap sampling, >1MB/min leak flagging), SubscriptionManager singleton for Zustand subscriptions, useCleanup hook, schema-gc helpers (estimateSchemaSize, findOrphanedRefs, compactSchema), history queue trim (>5MB auto-trim), PerformanceMonitor Memory tab enhanced with leak status indicators
+- G.5: Playwright setup (chromium-only, 1280×720, id-ID locale), 6 smoke test suites (27 tests), data-testid attributes on 6 components, shared test helpers, CI script, npm scripts (test:e2e, test:e2e:ui, test:e2e:debug)
+
+Stage Summary:
+- Phase G COMPLETE — all 4 sub-phases (G.1, G.3, G.4, G.5) implemented
+- G.2 (Export Pipeline) removed per user request
+- TypeScript compiles clean, build passes
+- All changes committed to git
+- SILSE project now has: performance profiling, offline/PWA support, memory leak detection, and E2E smoke tests
