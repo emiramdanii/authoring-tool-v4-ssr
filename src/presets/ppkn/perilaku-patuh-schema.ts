@@ -1,0 +1,744 @@
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
+
+export const PERILAKU_PATUH_LESSON: LessonSchema = {
+  id: 'perilaku-patuh',
+  version: 1,
+  title: 'Perilaku Patuh Norma',
+  mapel: 'PPKn',
+  kelas: 'VII',
+  themeId: 'perilaku-patuh',
+  navbar: {
+    logoText: '🛡️ Perilaku Patuh',
+    logoColor: 'g',
+    progressGradient: ['g', 'y'],
+  },
+  screens: [
+    // ──────────────────────── COVER ────────────────────────
+    {
+      id: 's-cover',
+      templateType: 'cover',
+      background: {
+        type: 'radial',
+        color1: 'g',
+        color2: 'bg',
+      },
+      blocks: [
+        {
+          type: 'cover',
+          icon: '🛡️',
+          title: 'Perilaku Patuh Norma',
+          subtitle: 'Bab 3 — Pertemuan 3',
+          badges: [
+            { icon: '🏠', text: 'Keluarga', color: 'y' },
+            { icon: '🏫', text: 'Sekolah', color: 'c' },
+            { icon: '🌏', text: 'Masyarakat', color: 'g' },
+            { icon: '📝', text: 'Kuis + Refleksi', color: 'p' },
+          ],
+          meta: {
+            durasi: '80 Menit',
+            fase: 'Fase D',
+            elemen: 'Pancasila · Keadilan',
+          },
+          cta: {
+            label: '▶ Mulai Pembelajaran',
+            action: 's-review',
+          },
+          background: {
+            type: 'gradient',
+            color1: 'g',
+            color2: 'bg',
+          },
+        } as SchemaBlock,
+      ],
+      nav: { next: 's-review', nextLabel: 'Review' },
+    },
+
+    // ──────────────────────── PETUNJUK ────────────────────────
+    {
+      id: 's-petunjuk',
+      templateType: 'petunjuk',
+      sectionLabel: '📌 Petunjuk Penggunaan',
+      sectionColor: 'g',
+      blocks: [
+        {
+          type: 'petunjuk',
+          title: 'Cara Belajar',
+          titleHighlight: 'Hari Ini',
+          items: [
+            { icon: '🏠', title: '3 Lingkungan', body: 'Pelajari penerapan norma di keluarga, sekolah, dan masyarakat melalui kartu kilat.' },
+            { icon: '🎭', title: 'Skenario Interaktif', body: 'Hadapi dilema nyata dan pilih tindakanmu. Lihat konsekuensi dari setiap pilihan.' },
+            { icon: '❓', title: 'Kuis Bab 3', body: '10 soal campuran dari 3 pertemuan. Jawab dengan benar untuk skor tertinggi!' },
+            { icon: '📝', title: 'Refleksi & Kometmen', body: 'Tulis komitmen nyata yang akan kamu lakukan mulai minggu ini.' },
+          ],
+          tips: 'Skenario interaktif tidak ada jawaban mutlak — yang penting kamu berpikir kritis tentang konsekuensi setiap pilihan. Diskusikan dengan kelompokmu!',
+          tipsColor: 'g',
+        },
+      ],
+      nav: { prev: 's-cover', next: 's-review', nextLabel: 'Review' },
+    },
+
+    // ──────────────────────── REVIEW P1+P2 ────────────────────────
+    {
+      id: 's-review',
+      templateType: 'review',
+      sectionLabel: '🔄 Review · ±5 Menit',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'nc-grid',
+          cards: [
+            {
+              icon: '📜',
+              title: 'Pertemuan 1',
+              body: 'Hakikat Norma — manusia makhluk sosial, pengertian norma, 5 fungsi norma',
+              color: 'y',
+            },
+            {
+              icon: '⚖️',
+              title: 'Pertemuan 2',
+              body: 'Macam-Macam Norma — 4 jenis norma (agama, kesusilaan, kesopanan, hukum), sumber & sanksi, hubungan antarnorma',
+              color: 'c',
+            },
+            {
+              icon: '🛡️',
+              title: 'Hari Ini',
+              body: 'Perilaku Patuh Norma — penerapan di keluarga, sekolah, masyarakat + dampak pelanggaran + kuis bab',
+              color: 'g',
+            },
+          ],
+        },
+        {
+          type: 'diskusi',
+          title: 'Pemanasan!',
+          intro: 'Sebelum masuk materi baru, ingat kembali pelajaran sebelumnya.',
+          questions: [
+            {
+              label: 'Diskusi Kelas · ±3 Menit',
+              icon: '💬',
+              teks: 'Sebutkan 1 contoh perilaku patuh norma yang kamu lakukan HARI INI sejak bangun tidur. Norma apa yang kamu taati?',
+              petunjuk: 'Tuliskan jawabanmu… (akan muncul lagi di Refleksi)',
+              color: 'y',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-cover', next: 's-tp', nextLabel: 'Tujuan Pembelajaran' },
+    },
+
+    // ──────────────────────── TP ────────────────────────
+    {
+      id: 's-tp',
+      templateType: 'tp',
+      sectionLabel: '🎯 Tujuan Pembelajaran',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'tp',
+          title: 'Yang Akan Kamu',
+          titleHighlight: 'Kuasai Hari Ini',
+          items: [
+            {
+              num: 4,
+              verb: 'Memberikan contoh',
+              desc: 'penerapan norma di lingkungan keluarga, sekolah, dan masyarakat dalam kehidupan sehari-hari',
+              color: 'g',
+            },
+            {
+              num: 5,
+              verb: 'Menerapkan',
+              desc: 'perilaku patuh terhadap norma sebagai wujud kesadaran hukum dan tanggung jawab sebagai warga negara yang baik',
+              color: 'p',
+            },
+          ],
+          profil: '🔗 Profil Pelajar Pancasila: Beriman & Bertakwa · Bergotong Royong · Bernalar Kritis',
+          profilColor: 'g',
+        },
+        {
+          type: 'alur',
+          title: '⏱️ Alur Kegiatan 80 Menit',
+          totalDurasi: '80',
+          steps: [
+            {
+              dot: 'y',
+              durasi: '±5\'',
+              judul: 'Review P1+P2',
+              deskripsi: 'Diskusi pemanasan, contoh perilaku patuh hari ini',
+            },
+            {
+              dot: 'g',
+              durasi: '±20\'',
+              judul: 'Patuh di 3 Lingkungan',
+              deskripsi: 'Kartu keluarga + kartu sekolah + kartu masyarakat',
+            },
+            {
+              dot: 'r',
+              durasi: '±15\'',
+              judul: 'Dampak Pelanggaran',
+              deskripsi: 'Skenario konsekuensi + analisis dampak berantai',
+            },
+            {
+              dot: 'c',
+              durasi: '±15\'',
+              judul: 'Kuis Bab 3',
+              deskripsi: '10 soal campuran dari 3 pertemuan',
+            },
+            {
+              dot: 'p',
+              durasi: '±10\'',
+              judul: 'Refleksi & Penutup',
+              deskripsi: 'Portofolio + komitmen + penugasan',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-review', next: 's-keluarga', nextLabel: 'Mulai Materi' },
+    },
+
+    // ──────────────────────── MATERI: KELUARGA ────────────────────────
+    {
+      id: 's-keluarga',
+      templateType: 'materi',
+      sectionLabel: '🏠 Keluarga · ±8 Menit',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'def-box',
+          borderColor: 'y',
+          content: '<strong>Keluarga</strong> adalah lingkungan pertama dan utama di mana norma ditanamkan. Di dalam keluarga, kita belajar menghormati orang tua, jujur, saling membantu, dan menjaga keharmonisan.',
+        },
+        {
+          type: 'nc-grid',
+          cards: [
+            {
+              icon: '🙏',
+              title: 'Norma Agama',
+              body: 'Berdoa sebelum makan dan tidur, mengikuti ibadah keluarga, menghormati hari suci',
+              color: 'y',
+            },
+            {
+              icon: '❤️',
+              title: 'Norma Kesusilaan',
+              body: 'Jujur kepada orang tua, tidak menyembunyikan kesalahan, bertanggung jawab atas tugas rumah',
+              color: 'r',
+            },
+            {
+              icon: '🤝',
+              title: 'Norma Kesopanan',
+              body: 'Mengucap salam, minta maaf jika salah, tidak berteriak di rumah, makan dengan tertib',
+              color: 'c',
+            },
+            {
+              icon: '⚖️',
+              title: 'Norma Hukum',
+              body: 'Orang tua wajib membiayai pendidikan anak (UU No.35/2014), anak berhak mendapat perlindungan',
+              color: 'p',
+            },
+          ],
+        },
+        {
+          type: 'flashcard-set',
+          cards: [
+            {
+              q: 'Mengapa keluarga disebut lingkungan pertama pembentuk norma?',
+              a: 'Karena sejak lahir, anak belajar aturan dari orang tua dan keluarga — makan harus pakai tangan kanan, minta izin sebelum keluar rumah, dan lain-lain.',
+            },
+            {
+              q: 'Berikan contoh norma agama yang diterapkan di keluarga!',
+              a: 'Berdoa bersama sebelum makan, mengikuti ibadah di tempat ibadah, menghormati hari suci keagamaan.',
+            },
+            {
+              q: 'Apa kewajiban orang tua menurut UU No.35/2014?',
+              a: 'Memelihara dan membiayai pendidikan anak, memberikan kasih sayang, dan melindungi anak dari kekerasan.',
+            },
+          ],
+        },
+        {
+          type: 'diskusi',
+          title: '💬 Sharing Kelompok',
+          questions: [
+            {
+              label: 'Diskusi · ±3 Menit',
+              icon: '👥',
+              teks: 'Norma mana yang paling sering diterapkan di keluargamu? Apa konsekuensi jika kamu melanggar?',
+              petunjuk: 'Ceritakan pengalamanmu… (akan muncul lagi di Refleksi)',
+              color: 'y',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-tp', next: 's-sekolah', nextLabel: 'Lanjut: Sekolah' },
+    },
+
+    // ──────────────────────── MATERI: SEKOLAH ────────────────────────
+    {
+      id: 's-sekolah',
+      templateType: 'materi',
+      sectionLabel: '🏫 Sekolah · ±7 Menit',
+      sectionColor: 'c',
+      blocks: [
+        {
+          type: 'def-box',
+          borderColor: 'c',
+          content: '<strong>Sekolah</strong> adalah lingkungan kedua di mana norma diperluas dan diperkuat. Tata tertib sekolah adalah bentuk konkret norma hukum di lingkungan pendidikan.',
+        },
+        {
+          type: 'nc-grid',
+          cards: [
+            {
+              icon: '🙏',
+              title: 'Norma Agama',
+              body: 'Ikut kegiatan keagamaan sekolah, menghormati teman yang berbeda keyakinan',
+              color: 'y',
+            },
+            {
+              icon: '❤️',
+              title: 'Norma Kesusilaan',
+              body: 'Tidak menyontek, jujur saat ujian, tidak membully teman, mengakui kesalahan',
+              color: 'r',
+            },
+            {
+              icon: '🤝',
+              title: 'Norma Kesopanan',
+              body: 'Bersalam dengan guru, berpakaian rapi, tidak berisik di kelas, antre di kantin',
+              color: 'c',
+            },
+            {
+              icon: '⚖️',
+              title: 'Norma Hukum',
+              body: 'Mematuhi tata tertib, hadir tepat waktu, tidak merusak fasilitas sekolah, melaporkan tindak kekerasan',
+              color: 'p',
+            },
+          ],
+        },
+        {
+          type: 'flashcard-set',
+          cards: [
+            {
+              q: 'Apa perbedaan norma di keluarga dan di sekolah?',
+              a: 'Di keluarga norma lebih bersifat kekeluargaan dan sanksinya ringan. Di sekolah norma tertulis dalam tata tertib dan sanksinya lebih formal — bisa berupa teguran tertulis hingga skorsing.',
+            },
+            {
+              q: 'Mengapa tata tertib sekolah termasuk norma hukum?',
+              a: 'Karena tertulis, mengikat seluruh warga sekolah, dan ada sanksi resmi dari pihak sekolah — ciri-ciri norma hukum.',
+            },
+            {
+              q: 'Apa yang harus kamu lakukan jika melihat teman dibully?',
+              a: 'Melaporkan ke guru BK atau wali kelas — diam berarti membiarkan pelanggaran norma kesusilaan dan hukum terus berlangsung.',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-keluarga', next: 's-masyarakat', nextLabel: 'Lanjut: Masyarakat' },
+    },
+
+    // ──────────────────────── MATERI: MASYARAKAT ────────────────────────
+    {
+      id: 's-masyarakat',
+      templateType: 'materi',
+      sectionLabel: '🌏 Masyarakat · ±5 Menit',
+      sectionColor: 'g',
+      blocks: [
+        {
+          type: 'def-box',
+          borderColor: 'g',
+          content: '<strong>Masyarakat</strong> adalah lingkungan terluas di mana norma berlaku secara universal dan sanksinya bisa sangat berat — dari dikucilkan hingga diproses secara hukum.',
+        },
+        {
+          type: 'nc-grid',
+          cards: [
+            {
+              icon: '🙏',
+              title: 'Norma Agama',
+              body: 'Menghormati tempat ibadah semua agama, tidak menista agama orang lain',
+              color: 'y',
+            },
+            {
+              icon: '❤️',
+              title: 'Norma Kesusilaan',
+              body: 'Tidak mengambil barang orang lain, menolong korban kecelakaan, tidak menyebarkan hoaks',
+              color: 'r',
+            },
+            {
+              icon: '🤝',
+              title: 'Norma Kesopanan',
+              body: 'Gotong royong, bersilahturahmi, menjaga kebersihan lingkungan, tidak memutar musik keras',
+              color: 'c',
+            },
+            {
+              icon: '⚖️',
+              title: 'Norma Hukum',
+              body: 'Membayar pajak, patuh lalu lintas, tidak korupsi, mematuhi UU ITE',
+              color: 'p',
+            },
+          ],
+        },
+        {
+          type: 'def-box',
+          borderColor: 'g',
+          content: '💡 <strong>Pola yang sama!</strong> Keempat norma berlaku di SETIAP lingkungan — yang berbeda adalah bentuk penerapan dan tingkat sanksinya. Semakin luas lingkungan, semakin formal sanksinya.',
+        },
+        {
+          type: 'flashcard-set',
+          cards: [
+            {
+              q: 'Mengapa sanksi di masyarakat lebih berat dibanding keluarga?',
+              a: 'Karena masyarakat lebih luas dan beragam — tanpa sanksi yang tegas, ketertiban sulit terjaga di antara orang-orang yang tidak saling mengenal.',
+            },
+            {
+              q: 'Apa hubungan antara norma di keluarga, sekolah, dan masyarakat?',
+              a: 'Norma yang sama berlaku di tiga lingkungan — yang berbeda adalah bentuk dan sanksinya. Patuh di keluarga melatih patuh di sekolah dan masyarakat.',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-sekolah', next: 's-dampak', nextLabel: 'Dampak Pelanggaran' },
+    },
+
+    // ──────────────────────── DAMPAK PELANGGARAN ────────────────────────
+    {
+      id: 's-dampak',
+      templateType: 'materi',
+      sectionLabel: '⚠️ Dampak Pelanggaran · ±15 Menit',
+      sectionColor: 'r',
+      blocks: [
+        {
+          type: 'def-box',
+          borderColor: 'r',
+          content: '<strong>Pelanggaran norma</strong> tidak hanya merugikan diri sendiri, tetapi menimbulkan <strong>dampak berantai</strong> terhadap orang lain, masyarakat, dan kehidupan berbangsa.',
+        },
+        {
+          type: 'skenario',
+          title: 'Konsekuensi Nyata!',
+          chapters: [
+            // ── Chapter 1: Bullying ──
+            {
+              id: 'ch1',
+              charEmoji: '😢',
+              title: '🗣️ Cyberbullying di Grup Kelas',
+              setup: [
+                { speaker: 'NARRATOR', text: 'Rani menemukan foto teman sekelasnya yang jatuh di koridor. Teman-temannya membuat meme dan menyebarkannya di grup WhatsApp kelas.' },
+                { speaker: 'NARRATOR', text: 'Kamu adalah anggota grup. Foto itu sedang viral dan korban belum tahu.' },
+              ],
+              choicePrompt: 'Apa yang kamu lakukan?',
+              choices: [
+                {
+                  icon: '🛑',
+                  label: 'Hapus foto & tegur pengirim',
+                  detail: 'Langsung hapus foto jika bisa, dan tegur teman yang menyebarkan',
+                  good: true,
+                  pts: 20,
+                  level: 'good',
+                  resultTitle: 'Pilihan Terbaik! 🌟',
+                  resultBody: 'Melindungi teman dari penghinaan adalah wujud patuh norma kesusilaan dan hukum (UU ITE pasal tentang cyberbullying).',
+                  norma: 'Norma Kesusilaan + Norma Hukum (UU ITE)',
+                  consequences: [
+                    { icon: '✅', text: 'Korban terlindungi dari penghinaan publik' },
+                    { icon: '✅', text: 'Kamu menegakkan norma kesusilaan: menghargai martabat orang lain' },
+                    { icon: '✅', text: 'Cyberbullying bisa dilaporkan ke polisi — kamu mencegah pelanggaran hukum' },
+                  ],
+                  nextChapter: 1,
+                },
+                {
+                  icon: '🤫',
+                  label: 'Diam saja, bukan urusanku',
+                  detail: 'Tidak ikut menyebarkan tapi juga tidak mencegah',
+                  good: false,
+                  pts: 5,
+                  level: 'bad',
+                  resultTitle: 'Kurang Tepat ⚠️',
+                  resultBody: 'Diam terhadap pelanggaran norma berarti membiarkan kerusakan terus terjadi. Dampak berantai: korban bisa depresi.',
+                  norma: 'Pelanggaran Norma Kesusilaan (tidak peduli)',
+                  consequences: [
+                    { icon: '❌', text: 'Korban mungkin mengalami depresi dan trauma berkepanjangan' },
+                    { icon: '❌', text: 'Pelaku merasa perbuatannya wajar karena tidak ada yang menegur' },
+                    { icon: '⚠️', text: 'Dampak berantai: budaya bullying menyebar karena dibiarkan' },
+                  ],
+                  nextChapter: 1,
+                },
+                {
+                  icon: '👨‍🏫',
+                  label: 'Screenshot & lapor ke guru',
+                  detail: 'Abadikan bukti, lalu laporkan ke guru BK atau wali kelas',
+                  good: true,
+                  pts: 15,
+                  level: 'good',
+                  resultTitle: 'Langkah Bijak! 👍',
+                  resultBody: 'Melapor melalui jalur resmi menegakkan norma hukum sekolah dan melindungi korban secara sistematis.',
+                  norma: 'Norma Hukum (tata tertib) + Norma Kesusilaan',
+                  consequences: [
+                    { icon: '✅', text: 'Sekolah bisa menindak pelaku sesuai tata tertib' },
+                    { icon: '✅', text: 'Korban mendapat perlindungan dari pihak berwenang' },
+                    { icon: '💡', text: 'Idealnya tegur langsung dulu, lalu lapor jika tidak berhenti' },
+                  ],
+                  nextChapter: 1,
+                },
+              ],
+            },
+            // ── Chapter 2: Pelanggaran Lalu Lintas ──
+            {
+              id: 'ch2',
+              charEmoji: '🚦',
+              title: '🏍️ Teman Naik Motor Tanpa Helm',
+              setup: [
+                { speaker: 'NARRATOR', text: 'Setiap pagi, teman sekelasmu Doni datang ke sekolah mengendarai motor tanpa helm. Jarak rumahnya 3 km dan jalannya ramai.' },
+                { speaker: 'NARRATOR', text: 'Doni merasa "yang penting sampai sekolah, lagipula tidak ada polisi".' },
+              ],
+              choicePrompt: 'Apa yang kamu lakukan?',
+              choices: [
+                {
+                  icon: '💬',
+                  label: 'Ingatkan Doni tentang bahayanya',
+                  detail: 'Jelaskan risiko kecelakaan dan sanksi hukum kepada Doni',
+                  good: true,
+                  pts: 20,
+                  level: 'good',
+                  resultTitle: 'Pilihan Terbaik! 🌟',
+                  resultBody: 'Mengingatkan teman adalah wujud kepedulian (norma kesusilaan) sekaligus menegakkan norma hukum (UU No.22/2009).',
+                  norma: 'Norma Kesusilaan + Norma Hukum',
+                  consequences: [
+                    { icon: '✅', text: 'Doni mungkin sadar dan mulai memakai helm — nyawanya terselamatkan' },
+                    { icon: '✅', text: 'Kamu menunjukkan kepedulian nyata terhadap keselamatan teman' },
+                    { icon: '✅', text: 'Patuh hukum lalu lintas = melindungi hak hidup setiap orang' },
+                  ],
+                  nextChapter: 2,
+                },
+                {
+                  icon: '🏫',
+                  label: 'Lapor ke guru agar ditindak',
+                  detail: 'Biar guru yang menegur Doni karena melanggar tata tertib',
+                  good: true,
+                  pts: 12,
+                  level: 'good',
+                  resultTitle: 'Langkah Tepat 👍',
+                  resultBody: 'Melaporkan pelanggaran ke pihak berwenang menegakkan norma hukum. Tapi mengingatkan langsung lebih baik dulu.',
+                  norma: 'Norma Hukum (tata tertib + UU Lalu Lintas)',
+                  consequences: [
+                    { icon: '✅', text: 'Sekolah bisa memanggil orang tua Doni dan menegur' },
+                    { icon: '💡', text: 'Lebih baik ingatkan Doni dulu secara pribadi — barakah nasihat teman sebaya' },
+                    { icon: '✅', text: 'Pelanggaran hukum lalu lintas berpotensi kecelakaan fatal' },
+                  ],
+                  nextChapter: 2,
+                },
+                {
+                  icon: '😏',
+                  label: 'Biar saja, urusannya sendiri',
+                  detail: 'Doni dewasa, bisa bertanggung jawab atas pilihannya sendiri',
+                  good: false,
+                  pts: 3,
+                  level: 'bad',
+                  resultTitle: 'Kurang Tepat 😬',
+                  resultBody: 'Membiarkan pelanggaran hukum = ikut bertanggung jawab atas dampaknya. Kecelakaan bisa merugikan banyak pihak.',
+                  norma: 'Pelanggaran Norma Kesusilaan (tidak peduli)',
+                  consequences: [
+                    { icon: '❌', text: 'Doni bisa kecelakaan dan cidera parah atau meninggal' },
+                    { icon: '❌', text: 'Keluarga Doni menderita — dampak berantai dari satu pelanggaran' },
+                    { icon: '⚠️', text: 'Budaya melanggar hukum menyebar jika dibiarkan' },
+                  ],
+                  nextChapter: 2,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'nc-grid',
+          cards: [
+            {
+              icon: '👤',
+              title: 'Dampak bagi Diri Sendiri',
+              body: 'Sanksi sosial, sanksi hukum, rasa bersalah, reputasi rusak, kehilangan kepercayaan orang lain',
+              color: 'r',
+            },
+            {
+              icon: '👨‍👩‍👧',
+              title: 'Dampak bagi Keluarga',
+              body: 'Malu, beban finansial (denda/biaya hukum), nama baik keluarga ternoda, hubungan keluarga retak',
+              color: 'o',
+            },
+            {
+              icon: '🏫',
+              title: 'Dampak bagi Sekolah',
+              body: 'Lingkungan tidak kondusif, budaya pelanggaran menular, keamanan menurun, performa akademik turun',
+              color: 'c',
+            },
+            {
+              icon: '🌏',
+              title: 'Dampak bagi Masyarakat',
+              body: 'Ketidakadilan, korupsi merajalela, keamanan menurun, hilangnya kepercayaan sosial, bangsa terbelakang',
+              color: 'p',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-masyarakat', next: 's-kuis', nextLabel: 'Kuis Bab 3 🎮' },
+    },
+
+    // ──────────────────────── KUIS BAB 3 ────────────────────────
+    {
+      id: 's-kuis',
+      templateType: 'game',
+      sectionLabel: '🎮 Kuis Bab 3 · ±15 Menit',
+      sectionColor: 'c',
+      blocks: [
+        {
+          type: 'kuis',
+          title: 'Kuis Bab 3: Norma!',
+          questions: [
+            {
+              q: 'Rina selalu mengucap salam saat masuk rumah. Ini penerapan norma di lingkungan...',
+              opts: ['Keluarga', 'Sekolah', 'Masyarakat', 'Negara'],
+              ans: 0,
+              ex: 'Mengucap salam saat masuk rumah adalah penerapan norma kesopanan di lingkungan keluarga.',
+            },
+            {
+              q: 'Tata tertib sekolah termasuk jenis norma...',
+              opts: ['Norma Agama', 'Norma Kesusilaan', 'Norma Kesopanan', 'Norma Hukum'],
+              ans: 3,
+              ex: 'Tata tertib sekolah tertulis, mengikat seluruh warga sekolah, dan ada sanksi resmi — ciri norma hukum.',
+            },
+            {
+              q: 'Berikut yang BUKAN dampak pelanggaran norma bagi diri sendiri...',
+              opts: ['Reputasi rusak', 'Rasa bersalah', 'Mendapat penghargaan', 'Kehilangan kepercayaan'],
+              ans: 2,
+              ex: 'Pelanggaran norma tidak pernah menghasilkan penghargaan — dampaknya selalu negatif bagi diri sendiri.',
+            },
+            {
+              q: 'Gotong royong membersihkan desa adalah penerapan norma...',
+              opts: ['Di keluarga saja', 'Di sekolah saja', 'Di masyarakat', 'Di rumah'],
+              ans: 2,
+              ex: 'Gotong royong adalah kegiatan masyarakat — penerapan norma kesopanan dan solidaritas di lingkungan masyarakat.',
+            },
+            {
+              q: 'Orang tua wajib membiayai pendidikan anak. Ini diatur oleh...',
+              opts: ['Norma Kesopanan', 'Norma Kesusilaan', 'Norma Agama', 'Norma Hukum (UU No.35/2014)'],
+              ans: 3,
+              ex: 'Kewajiban orang tua terhadap anak diatur dalam UU No.35 Tahun 2014 tentang Perlindungan Anak — norma hukum.',
+            },
+            {
+              q: 'Siswa yang menyontek saat ujian melanggar norma...',
+              opts: ['Hanya norma hukum', 'Hanya norma kesusilaan', 'Norma kesusilaan dan hukum', 'Tidak melanggar norma'],
+              ans: 2,
+              ex: 'Menyontek = tidak jujur (melanggar norma kesusilaan) + melanggar tata tertib sekolah (melanggar norma hukum).',
+            },
+            {
+              q: 'Dampak berantai pelanggaran norma bagi masyarakat adalah...',
+              opts: ['Masyarakat lebih sejahtera', 'Hilangnya kepercayaan sosial', 'Hukum menjadi lebih kuat', 'Masyarakat lebih kreatif'],
+              ans: 1,
+              ex: 'Pelanggaran norma secara berantai mengikis kepercayaan sosial — masyarakat menjadi curiga dan tidak harmonis.',
+            },
+            {
+              q: 'Norma mana yang paling ditekankan di lingkungan sekolah melalui tata tertib?',
+              opts: ['Norma Agama', 'Norma Kesusilaan', 'Norma Kesopanan', 'Norma Hukum'],
+              ans: 3,
+              ex: 'Tata tertib sekolah adalah bentuk konkret norma hukum di lingkungan pendidikan — tertulis, mengikat, ada sanksi resmi.',
+            },
+            {
+              q: 'Fungsi norma sebagai "pedoman tingkah laku" berarti norma...',
+              opts: ['Menghukum pelanggar', 'Memberi petunjuk cara bertindak yang benar', 'Menciptakan ketertiban saja', 'Menghubungkan agama dan hukum'],
+              ans: 1,
+              ex: 'Norma sebagai pedoman berarti memberi petunjuk: ini yang boleh, ini yang tidak boleh, ini yang harus dilakukan.',
+            },
+            {
+              q: 'Apa hubungan perilaku patuh norma di keluarga dengan di masyarakat?',
+              opts: ['Tidak ada hubungan', 'Patuh di keluarga melatih patuh di masyarakat', 'Norma di masyarakat lebih mudah', 'Hanya norma hukum yang berlaku'],
+              ans: 1,
+              ex: 'Keluarga adalah tempat pertama belajar norma — kebiasaan patuh di rumah menjadi fondasi patuh di masyarakat.',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-dampak', next: 's-hasil', nextLabel: 'Lihat Hasil 🏆' },
+    },
+
+    // ──────────────────────── HASIL ────────────────────────
+    {
+      id: 's-hasil',
+      templateType: 'hasil',
+      sectionLabel: '🏆 Hasil',
+      sectionColor: 'g',
+      background: {
+        type: 'radial',
+        color1: 'g',
+        color2: 'bg',
+      },
+      blocks: [
+        {
+          type: 'hasil',
+          title: 'Bab 3',
+          subtitle: 'Selesai! 🎉',
+        },
+      ],
+      nav: { prev: 's-kuis', next: 's-refleksi', nextLabel: 'Refleksi Diri 📝' },
+    },
+
+    // ──────────────────────── REFLEKSI ────────────────────────
+    {
+      id: 's-refleksi',
+      templateType: 'refleksi',
+      sectionLabel: '📝 Refleksi · ±10 Menit',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'refleksi',
+          title: 'Refleksi Diri',
+          intro: 'Jawaban jujurmu lebih berharga dari jawaban yang sempurna.',
+          questions: [
+            {
+              teks: 'Dari 3 lingkungan (keluarga, sekolah, masyarakat), di mana kamu paling sering patuh norma? Mengapa?',
+              petunjuk: 'Jelaskan dengan contoh konkret…',
+              warna: 'y',
+              icon: '🏠',
+            },
+            {
+              teks: 'Ceritakan satu pengalamanmu melanggar norma. Apa konsekuensinya? Apa yang kamu pelajari?',
+              petunjuk: 'Jujur saja — semua orang pernah salah…',
+              warna: 'c',
+              icon: '💭',
+            },
+            {
+              teks: 'Satu komitmen nyata yang akan kamu lakukan mulai MINGGU INI sebagai wujud patuh norma:',
+              petunjuk: 'Contoh: Saya akan selalu memakai helm saat naik motor…',
+              warna: 'g',
+              icon: '🛡️',
+            },
+          ],
+          penugasan: {
+            judul: '📝 Penugasan untuk Pertemuan Berikutnya',
+            isi: 'Buat tabel 3 kolis: Keluarga | Sekolah | Masyarakat. Isi masing-masing dengan 5 contoh perilaku patuh norma yang kamu lakukan selama 1 minggu. Tandai ✓ setelah melakukannya!',
+            contoh: 'Keluarga: Berdoa sebelum makan ✓ | Sekolah: Antre di kantin ✓ | Masyarakat: Membuang sampah pada tempatnya ✓',
+          },
+        },
+      ],
+      nav: { prev: 's-hasil', next: 's-penutup', nextLabel: 'Penutup' },
+    },
+
+    // ──────────────────────── PENUTUP ────────────────────────
+    {
+      id: 's-penutup',
+      templateType: 'penutup',
+      sectionLabel: '🎯 Penutup',
+      sectionColor: 'g',
+      blocks: [
+        {
+          type: 'penutup',
+          title: 'Bab 3: Norma',
+          subtitle: 'Selesai! 🎉',
+          preview: [
+            { icon: '📜', judul: 'Hakikat Norma', isi: 'Pengertian, fungsi, dan pentingnya norma', warna: 'y' },
+            { icon: '⚖️', judul: 'Macam-Macam Norma', isi: '4 jenis norma, sumber, sanksi, hubungan antarnorma', warna: 'c' },
+            { icon: '🛡️', judul: 'Perilaku Patuh', isi: 'Penerapan di keluarga, sekolah, masyarakat + dampak pelanggaran', warna: 'g' },
+          ],
+          nextPertemuan: {
+            judul: 'Bab 4: Keadilan',
+            deskripsi: 'Pertemuan selanjutnya: Memahami makna keadilan dan penerapannya',
+            items: [
+              { icon: '⚖️', judul: 'Pengertian Keadilan', isi: 'Konsep dasar keadilan', warna: 'p' },
+              { icon: '🏗️', judul: 'Keadilan Sosial', isi: 'Pancasila sila ke-5', warna: 'y' },
+            ],
+          },
+        },
+      ],
+      nav: { prev: 's-refleksi' },
+    },
+  ],
+};
