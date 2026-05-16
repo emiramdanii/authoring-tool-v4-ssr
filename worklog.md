@@ -101,3 +101,28 @@ Stage Summary:
 - Auto-save and crash recovery hardened
 - Parser improved for real Indonesian PPKn academic text
 - Build clean, pushed to GitHub (commit 9f20cc0)
+---
+Task ID: 2
+Agent: Main (Senior Dev)
+Task: Wire Transaction System + Session State + Schema Operations (Tasks #2-#4)
+
+Work Log:
+- Read and analyzed full codebase state: scene-transaction.ts, schema-apply.ts, immutable.ts, session-state.ts, ui-slice.ts, session-slice.ts, schema-helpers.ts, persistence-slice.ts, reset-canvas.ts
+- Assessed that the transaction system was already partially wired (merge, rebalance, promote) but split and nested operations bypassed it
+- Added 3 new step types to SceneTransaction: insertBlockNested, moveBlockNested, duplicateBlock
+- Added 3 new fluent API methods: tx.insertNested(), tx.moveNested(), tx.duplicate()
+- Added execution handlers for all new steps using immutable.ts tree-aware functions (insertBlockNested, moveBlockNested, duplicateBlock)
+- Converted splitPageAtBlock from manual validation to createTransaction + tx.splitAt() with auto-rollback
+- Added clearCompressedHeightCache() to reset-canvas.ts (was missing)
+- Added 3 new transaction wrappers to schema-apply.ts: transactionInsertNested(), transactionMoveNested(), transactionDuplicateBlock()
+- Exported ContainerRef type from schema-apply.ts
+- Verified tsc clean and Next.js production build clean
+- Committed and pushed to GitHub
+
+Stage Summary:
+- SceneTransaction now supports nested block operations with full atomicity guarantees
+- All schema mutation paths now go through validation pipeline (commitSchemaUpdate or SceneTransaction.commit)
+- splitPageAtBlock uses transaction for atomic validation + rollback
+- reset-canvas properly clears compressed height cache
+- 3 new high-level transaction wrappers available in schema-apply.ts for UI components
+- Build: tsc ✅, Next.js production ✅
