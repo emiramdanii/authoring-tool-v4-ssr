@@ -221,6 +221,12 @@ export interface CanvaState {
   addSchemaBlockToContainer: (blockType: string, container: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
   /** Batch set variant on multiple blocks */
   batchSetVariant: (blockIds: string[], variant: 'A' | 'B' | 'C') => void;
+  /** Batch duplicate multiple blocks by IDs — clones each and inserts after original */
+  batchDuplicateBlocks: (blockIds: string[]) => void;
+  /** Batch move blocks up/down by delta positions */
+  batchMoveBlocks: (blockIds: string[], delta: 1 | -1) => void;
+  /** Batch toggle compression priority (high ↔ low) on selected blocks */
+  batchToggleCompression: (blockIds: string[], priority: 'high' | 'medium' | 'low') => void;
 
   // ── Scene Transaction Actions ──────────────────────────────────
   /** Rebalance the current page's compression/layout using transaction */

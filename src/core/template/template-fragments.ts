@@ -34,6 +34,9 @@ export interface TemplateFragment {
   category: 'konten' | 'interaktif' | 'evaluasi' | 'penutup';
 }
 
+/** Category type alias for fragment grouping */
+export type TemplateFragmentCategory = TemplateFragment['category'];
+
 export const TEMPLATE_FRAGMENTS: TemplateFragment[] = [
   // ── Konten ──
   {

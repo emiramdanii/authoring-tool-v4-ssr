@@ -17,6 +17,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, Blocks, ArrowDownToLine, Zap } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { toast } from 'sonner';
 import {
   getAllBlockDefinitions,
   getBlockDefinition,
@@ -34,8 +35,11 @@ import {
 } from '@/core/i18n/teacher-terminology';
 import {
   getAllFragments,
+  getFragmentsByCategory,
   getFragment,
   FRAGMENT_CATEGORIES,
+  type TemplateFragment,
+  type TemplateFragmentCategory,
 } from '@/core/template/template-fragments';
 
 export default function AddBlockPanel() {
@@ -148,20 +152,29 @@ export default function AddBlockPanel() {
     );
   }
 
+  // ── Fragment state ──
+  const [fragmentFilter, setFragmentFilter] = useState<TemplateFragmentCategory | 'all'>('all');
+
   // ── Quick insert fragment handler ──
   const handleInsertFragment = useCallback((fragmentId: string) => {
     const fragment = getFragment(fragmentId);
     if (!fragment) return;
-    // Insert the first block type from the fragment
+    // Insert each block type from the fragment
     for (const blockType of fragment.blockTypes) {
       addSchemaBlock(blockType, insertAfterIndex);
     }
     announceToScreenReader(`Fragment ${fragment.title} ditambahkan`);
+    toast.success(`"${fragment.title}" ditambahkan`);
   }, [addSchemaBlock, insertAfterIndex]);
 
-  // Get fragments
-  const fragments = useMemo(() => getAllFragments(), []);
+  // Get fragments grouped by category
+  const allFragments = useMemo(() => getAllFragments(), []);
+  const filteredFragments = useMemo(() => {
+    if (fragmentFilter === 'all') return allFragments;
+    return getFragmentsByCategory(fragmentFilter);
+  }, [allFragments, fragmentFilter]);
   const fragmentCategories = useMemo(() => FRAGMENT_CATEGORIES, []);
+  const fragmentCategoryKeys = useMemo(() => Object.keys(fragmentCategories) as TemplateFragmentCategory[], [fragmentCategories]);
 
   return (
     <div className="space-y-3">
@@ -172,30 +185,83 @@ export default function AddBlockPanel() {
         <span className="text-app-muted">({allBlocks.length})</span>
       </div>
 
-      {/* Quick Insert Fragments */}
-      <div className="space-y-1.5">
+      {/* Quick Insert Fragments — Phase F.4 */}
+      <div className="space-y-2">
         <div className="text-[8px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
           <Zap size={8} />
           {isSederhana ? 'Sisipkan Cepat' : 'Quick Insert'}
+          <span className="text-app-muted">({filteredFragments.length})</span>
         </div>
+
+        {/* Category filter chips */}
         <div className="flex flex-wrap gap-1">
-          {fragments.slice(0, 8).map(fragment => (
-            <button
-              key={fragment.id}
-              onClick={() => handleInsertFragment(fragment.id)}
-              className="inline-flex items-center gap-1 px-1.5 py-1 rounded-lg text-[8px] font-semibold border border-app-border/20 bg-app-elevated/30 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all active:scale-95"
-              title={fragment.description}
-            >
-              <span className="text-[9px]">{fragment.icon}</span>
-              {fragment.title}
-            </button>
-          ))}
-          {fragments.length > 8 && (
-            <span className="text-[8px] text-app-muted px-1.5 py-1">
-              +{fragments.length - 8} lagi
-            </span>
-          )}
+          <button
+            onClick={() => setFragmentFilter('all')}
+            className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-all ${
+              fragmentFilter === 'all'
+                ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
+            }`}
+          >
+            Semua
+          </button>
+          {fragmentCategoryKeys.map(catKey => {
+            const cat = fragmentCategories[catKey];
+            return (
+              <button
+                key={catKey}
+                onClick={() => setFragmentFilter(catKey)}
+                className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-all flex items-center gap-0.5 ${
+                  fragmentFilter === catKey
+                    ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                    : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
+                }`}
+              >
+                <span className="text-[8px]">{cat.icon}</span>
+                {cat.label.split(' ')[0]}
+              </button>
+            );
+          })}
         </div>
+
+        {/* Fragment cards */}
+        <div className="space-y-1">
+          {filteredFragments.map(fragment => {
+            const cat = fragmentCategories[fragment.category];
+            return (
+              <button
+                key={fragment.id}
+                onClick={() => handleInsertFragment(fragment.id)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border/15 bg-app-elevated/20 hover:bg-app-elevated/40 hover:border-app-accent/25 text-left transition-all active:scale-[0.98] group"
+                title={fragment.description}
+              >
+                <span className="text-base flex-shrink-0 group-hover:scale-110 transition-transform">{fragment.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[9px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
+                    {fragment.title}
+                  </div>
+                  <div className="text-[7px] text-app-muted truncate">
+                    {fragment.description}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                  <span className="text-[6px] px-1 py-0 rounded bg-app-elevated/40 text-app-muted border border-app-border/15">
+                    {cat?.label.split(' ')[0] || fragment.category}
+                  </span>
+                  <span className="text-[6px] text-app-muted">
+                    {fragment.blockCount} block
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {filteredFragments.length === 0 && (
+          <div className="text-[8px] text-app-muted text-center py-2">
+            Tidak ada fragment untuk kategori ini
+          </div>
+        )}
       </div>
 
       {/* Insertion point indicator — shows when a block is selected */}

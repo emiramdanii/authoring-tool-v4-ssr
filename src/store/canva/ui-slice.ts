@@ -39,7 +39,7 @@ export type UISlice = Pick<
   | 'nudgeSchemaBlocks' | 'deleteSchemaBlocks' | 'reorderSchemaBlocks'
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | 'moveBlockToContainer' | 'addSchemaBlockToContainer'
-  | 'batchSetVariant'
+  | 'batchSetVariant' | 'batchDuplicateBlocks' | 'batchMoveBlocks' | 'batchToggleCompression'
   | 'rebalanceCurrentPage' | 'promoteSceneSplit' | 'mergeWithAdjacentPage'
 >;
 
@@ -1571,6 +1571,165 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     set({ pages: newPages });
 
     toast.success(`${blockIds.length} block diubah ke Variant ${variant}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Batch Duplicate Blocks ───────────────────────────────────────
+  // Clones each selected block with a new ID and inserts after original.
+  batchDuplicateBlocks: (blockIds) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || blockIds.length === 0) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    get()._pushHistory();
+
+    const { generateBlockId } = require('@/core/schema/ensure-schema') as typeof import('@/core/schema/ensure-schema');
+    const newBlocks = [...schema.blocks];
+
+    // Process in reverse order so insertion indices stay stable
+    const indices = blockIds
+      .map(id => newBlocks.findIndex(b => b.id === id))
+      .filter(i => i !== -1)
+      .sort((a, b) => b - a);
+
+    for (const idx of indices) {
+      const original = newBlocks[idx];
+      const clone = JSON.parse(JSON.stringify(original)) as SchemaBlock;
+      clone.id = generateBlockId();
+      // Mark as duplicate in title if available
+      if ('title' in clone && typeof (clone as Record<string, unknown>).title === 'string') {
+        (clone as Record<string, unknown>).title = `${(clone as Record<string, unknown>).title} (salinan)`;
+      }
+      newBlocks.splice(idx + 1, 0, clone);
+    }
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, newBlocks),
+    };
+
+    // Select the last duplicated block
+    const lastOriginalIdx = indices[indices.length - 1];
+    if (lastOriginalIdx !== undefined) {
+      const duplicatedBlock = newBlocks[lastOriginalIdx + 1];
+      if (duplicatedBlock) {
+        set({
+          pages: newPages,
+          selectedBlockId: duplicatedBlock.id || null,
+          selectedBlockType: duplicatedBlock.type,
+        });
+      }
+    } else {
+      set({ pages: newPages });
+    }
+
+    toast.success(`${blockIds.length} block diduplikasi`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Batch Move Blocks Up/Down ─────────────────────────────────────
+  // Moves all selected blocks by delta positions (1 = down, -1 = up).
+  // Only moves blocks that can actually move in the requested direction.
+  batchMoveBlocks: (blockIds, delta) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || blockIds.length === 0) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    get()._pushHistory();
+
+    const blocks = [...schema.blocks];
+
+    // Sort block IDs by their current position
+    // If moving up (delta=-1), process from top to bottom
+    // If moving down (delta=1), process from bottom to top
+    const indices = blockIds
+      .map(id => blocks.findIndex(b => b.id === id))
+      .filter(i => i !== -1)
+      .sort((a, b) => delta === -1 ? a - b : b - a);
+
+    for (const idx of indices) {
+      const newIdx = idx + delta;
+      if (newIdx < 0 || newIdx >= blocks.length) continue;
+      // Don't swap with another selected block
+      if (blockIds.includes(blocks[newIdx].id || '')) continue;
+      const temp = blocks[idx];
+      blocks[idx] = blocks[newIdx];
+      blocks[newIdx] = temp;
+    }
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, blocks),
+    };
+
+    set({ pages: newPages });
+
+    const direction = delta === -1 ? 'atas' : 'bawah';
+    toast.success(`${blockIds.length} block dipindah ke ${direction}`, {
+      action: {
+        label: 'Undo',
+        onClick: () => { get().undo(); },
+      },
+      duration: 4000,
+    });
+  },
+
+  // ── Batch Toggle Compression Priority ─────────────────────────────
+  // Sets compression priority on multiple blocks at once.
+  batchToggleCompression: (blockIds, priority) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page || blockIds.length === 0) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    get()._pushHistory();
+
+    const newBlocks = schema.blocks.map(block => {
+      if (block.id && blockIds.includes(block.id)) {
+        const existingCompression = block.compression || { strategy: 'none' as const, priority: 'medium' as const };
+        return {
+          ...block,
+          compression: {
+            strategy: existingCompression.strategy || 'none' as const,
+            splittable: existingCompression.splittable,
+            minFragmentHeight: existingCompression.minFragmentHeight,
+            priority,
+          },
+        };
+      }
+      return block;
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]),
+    };
+
+    set({ pages: newPages });
+
+    const priorityLabel = priority === 'high' ? 'Tinggi' : priority === 'medium' ? 'Sedang' : 'Rendah';
+    toast.success(`${blockIds.length} block: prioritas kompresi = ${priorityLabel}`, {
       action: {
         label: 'Undo',
         onClick: () => { get().undo(); },
