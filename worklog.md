@@ -1,3 +1,22 @@
+---
+Task ID: F.1a
+Agent: Senior Dev Subagent
+Task: Template Gallery Data + UI + Integration
+
+Work Log:
+- Read existing codebase: ParseResult type, CanvaState, teacher-terminology, LeftPanel.tsx, AddBlockPanel.tsx, store slices, generators, CourseTemplateRegistry
+- Created src/core/template/template-gallery.ts with LessonTemplate interface, 6 SMP templates (PPKn Budaya Demokrasi, IPA Fotosintesis, MTK Persamaan Linear, B.Indonesia Teks Deskripsi, IPS Kerajaan Hindu-Buddha, Seni Seni Rupa), createMockParseResult(), instantiateTemplate() using existing generators
+- Created src/components/canva/left-panel/TemplateGalleryPanel.tsx with filterable/searchable grid, color-coded cards, teacher mode support, "Gunakan" button with loading state
+- Integrated TemplateGalleryPanel into LeftPanel.tsx as collapsible section between AddSceneButton and TambahBlockSection
+- Build verified: tsc --noEmit clean, eslint on new files clean
+
+Stage Summary:
+- Template Gallery data layer: 6 templates with contextual mock ParseResult data per subject
+- Template Gallery UI: filterable grid with mapel chips, search, subject-colored cards
+- Integration: collapsible "Pilih Template" / "Template Gallery" section in left panel
+- Teacher mode: simplified terminology in sederhana mode
+- Build: tsc + eslint pass
+
 # Work Log — Phase E.6: Real Content Testing with Actual PPKn Material
 
 **Date**: 2025-03-04

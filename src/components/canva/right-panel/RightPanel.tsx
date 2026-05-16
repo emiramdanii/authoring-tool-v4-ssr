@@ -8,6 +8,7 @@ import NavigationSection from './NavigationSection';
 import PageSettingsSection from './PageSettingsSection';
 import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AIAssistantSection from './AIAssistantSection';
+import AIRefineSection from '../ai-assistant/AIRefineSection';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import { Layers, Zap, Box, Sparkles } from 'lucide-react';
@@ -80,6 +81,7 @@ export default function RightPanel() {
         /* ── Single block selected: Content-first properties ── */
         <>
           <BlockPropertiesPanel />
+          <AIRefineSection />
           <AIAssistantSection />
         </>
       ) : (

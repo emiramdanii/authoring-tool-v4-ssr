@@ -203,7 +203,19 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
       ? [{ type: 'item' as const, label: teacherMode ? 'Pisahkan ke Halaman Baru' : 'Promosi Scene ke Halaman', action: () => handleAction(() => promoteSceneSplit(1)) }]
       : []),
     { type: 'divider' },
-    // AI generate
+    // AI actions submenu
+    {
+      type: 'submenu' as const,
+      label: teacherMode ? 'Sempurnakan dengan AI' : 'AI Refine',
+      items: [
+        { label: 'Lebih Menarik', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'menarik', blockId } })); onClose(); } },
+        { label: 'Lebih Detail', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'detail', blockId } })); onClose(); } },
+        { label: 'Lebih Sederhana', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'sederhana', blockId } })); onClose(); } },
+        { label: 'Tambah Contoh', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'contoh', blockId } })); onClose(); } },
+        { label: 'BSNP Compliance', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'bsnp', blockId } })); onClose(); } },
+      ],
+    },
+    // AI generate (full panel)
     {
       type: 'item',
       label: 'AI Generate Konten',

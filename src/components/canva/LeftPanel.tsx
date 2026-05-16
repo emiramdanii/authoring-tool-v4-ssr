@@ -29,6 +29,7 @@ import { COLORS } from '@/lib/color-palette';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import AddBlockPanel from './left-panel/AddBlockPanel';
+import TemplateGalleryPanel from './left-panel/TemplateGalleryPanel';
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
@@ -60,6 +61,7 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), { ssr: false })
 
 export default function LeftPanel() {
   const [addBlockOpen, setAddBlockOpen] = useState(true);
+  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [presetDropdownOpen, setPresetDropdownOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
 
@@ -80,6 +82,9 @@ export default function LeftPanel() {
 
           {/* Add scene button + template dropdown */}
           <AddSceneButton onOpenWizard={() => setWizardOpen(true)} />
+
+          {/* Collapsible: Template Gallery */}
+          <TemplateGallerySection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
 
           {/* Collapsible: Tambah Block / Konten */}
           <TambahBlockSection addBlockOpen={addBlockOpen} onToggle={() => setAddBlockOpen(!addBlockOpen)} />
@@ -434,6 +439,39 @@ function TambahBlockSection({ addBlockOpen, onToggle }: {
       {addBlockOpen && (
         <div className="p-2 border-t border-app-border/20">
           <AddBlockPanel />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TEMPLATE GALLERY SECTION — Collapsible template browser
+   ══════════════════════════════════════════════════════════════════ */
+
+function TemplateGallerySection({ galleryOpen, onToggle }: {
+  galleryOpen: boolean;
+  onToggle: () => void;
+}) {
+  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const isSederhana = teacherMode === 'sederhana';
+  const sectionLabel = isSederhana ? 'Pilih Template' : 'Template Gallery';
+
+  return (
+    <div className="border border-app-border/30 rounded-xl overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/5 hover:bg-amber-500/10 transition-colors"
+      >
+        <span className="flex items-center gap-1.5">
+          <Sparkles size={10} />
+          {sectionLabel}
+        </span>
+        {galleryOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+      </button>
+      {galleryOpen && (
+        <div className="p-2 border-t border-app-border/20">
+          <TemplateGalleryPanel />
         </div>
       )}
     </div>
