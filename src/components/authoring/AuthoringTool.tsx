@@ -145,12 +145,15 @@ function AuthoringToolInner() {
     clearDirtyExitFlag();
   }, [loadFromStorage]);
 
-  // ── Dirty exit flag: set on beforeunload if unsaved changes ──
+  // ── Dirty exit flag + browser confirmation: set on beforeunload if unsaved changes ──
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const isDirty = useAuthoringStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
       if (isDirty) {
         setDirtyExitFlag();
+        // Show browser confirmation dialog to prevent accidental data loss
+        e.preventDefault();
+        e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);

@@ -289,6 +289,24 @@ export class PatchHistory {
   }
 
   /**
+   * Get the description of the next undo entry.
+   * Used by the UI to show what will be undone.
+   */
+  peekUndoDescription(): string | undefined {
+    if (!this.canUndo()) return undefined;
+    return this.entries[this.currentIndex]?.description;
+  }
+
+  /**
+   * Get the description of the next redo entry.
+   * Used by the UI to show what will be redone.
+   */
+  peekRedoDescription(): string | undefined {
+    if (!this.canRedo()) return undefined;
+    return this.entries[this.currentIndex + 1]?.description;
+  }
+
+  /**
    * Get the pageIndex of the next redo entry.
    * Used by history-slice to apply patches to the correct page.
    */

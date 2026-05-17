@@ -160,14 +160,28 @@ export default function StatusBar() {
 
       <div className="section-divider h-3 w-px mx-1" />
 
-      {/* Unified save indicator */}
+      {/* Unified save indicator — always shows status + relative time */}
       <span className={`flex items-center gap-1 ${saveConfig.className}`}>
         {saveConfig.icon}
         <span className="hidden sm:inline">{saveConfig.label}</span>
-        {saveStatus === 'saved' && lastSavedLabel && (
+        {lastSavedLabel && saveStatus !== 'error' && (
           <span className="text-[8px] opacity-60 ml-0.5">• {lastSavedLabel}</span>
         )}
       </span>
+
+      {/* Error retry — one-click retry when save fails */}
+      {saveStatus === 'error' && (
+        <button
+          onClick={() => {
+            // Force re-save by triggering the auto-save hook
+            useCanvaStore.getState().saveToStorage();
+          }}
+          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-app-error/10 text-app-error hover:bg-app-error/20 transition-colors"
+          title="Coba simpan lagi"
+        >
+          Coba Lagi
+        </button>
+      )}
 
       {/* Right side: Teacher mode badge + Theme + Zoom */}
       <div className="flex items-center gap-1.5 ml-auto">

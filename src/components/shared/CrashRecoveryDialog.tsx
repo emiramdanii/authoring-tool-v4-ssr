@@ -87,9 +87,9 @@ export function getPreviousSessionTimestamp(): number | null {
  * Returns true if the data was saved within the last 30 minutes.
  */
 function isRecoveryDataRecent(): boolean {
-  // Check canva store timestamp
+  // Check canva store timestamp — uses correct storage key
   try {
-    const canvaSaved = localStorage.getItem('silse_canva_v1');
+    const canvaSaved = localStorage.getItem('canva_state_v2');
     if (canvaSaved) {
       const parsed = JSON.parse(canvaSaved);
       if (parsed?._lastSavedAt) {
@@ -126,8 +126,8 @@ function isRecoveryDataRecent(): boolean {
  */
 function hasRecoverableData(): boolean {
   try {
-    // Check canva store
-    const canvaSaved = localStorage.getItem('silse_canva_v1');
+    // Check canva store — uses correct storage key
+    const canvaSaved = localStorage.getItem('canva_state_v2');
     if (canvaSaved) {
       const parsed = JSON.parse(canvaSaved);
       if (parsed?.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
@@ -195,7 +195,7 @@ export default function CrashRecoveryDialog() {
 
     // Set up beforeunload handler
     const handleBeforeUnload = () => {
-      const canvaStore = localStorage.getItem('silse_canva_v1');
+      const canvaStore = localStorage.getItem('canva_state_v2');
       const authStore = localStorage.getItem('at_state_v1');
       if (canvaStore || authStore) {
         // Mark as dirty exit (will be cleared by clean exit logic if applicable)

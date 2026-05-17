@@ -25,12 +25,40 @@ import { MAX_HISTORY } from './constants';
 import { patchHistory } from '@/core/editor/patch-history';
 import type { SchemaBlock } from '@/core/schema/types';
 import { showUndoRedoToast } from '@/components/shared/StatusToast';
+import { getBlockDefinition } from '@/core/registry/SceneRegistry';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 export type HistorySlice = Pick<
   CanvaState,
   | '_history' | '_historyIdx' | '_skipHistory'
   | 'undo' | 'redo' | 'canUndo' | 'canRedo' | '_pushHistory' | 'timeTravel'
 >;
+
+// ── Descriptive undo/redo toast messages ─────────────────────────
+// The patch history entries have descriptions like "hero-block.abc123"
+// We extract the block type and convert to teacher-friendly labels.
+
+function formatUndoMessage(description?: string): string {
+  if (!description) return 'Kembalikan';
+  const blockType = description.split('.')[0];
+  const def = getBlockDefinition(blockType);
+  if (def) {
+    const name = teacherTerm(def.name, true);
+    return `Kembalikan · ${name}`;
+  }
+  return `Kembalikan`;
+}
+
+function formatRedoMessage(description?: string): string {
+  if (!description) return 'Ulangi';
+  const blockType = description.split('.')[0];
+  const def = getBlockDefinition(blockType);
+  if (def) {
+    const name = teacherTerm(def.name, true);
+    return `Ulangi · ${name}`;
+  }
+  return `Ulangi`;
+}
 
 // ── [G.4] Memory estimation constants ──────────────────────────
 /** Maximum estimated total history size in bytes before trimming */
@@ -129,6 +157,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
     if (patchHistory.canUndo()) {
       // Peek at the pageIndex BEFORE consuming the entry
       const targetPageIndex = patchHistory.peekUndoPageIndex();
+      const undoDescription = patchHistory.peekUndoDescription(); // Capture before undo consumes
       const inversePatches = patchHistory.undo();
       if (inversePatches && inversePatches.length > 0) {
         const { pages, currentPageIndex } = get();
@@ -156,7 +185,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
-            showUndoRedoToast('Kembalikan');
+            showUndoRedoToast(formatUndoMessage(undoDescription));
             return;
           } catch {
             // Patch application failed (state diverged) — fall through to snapshot undo
@@ -183,7 +212,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       editingBlockId: null,
     });
     _set({ _skipHistory: false });
-    showUndoRedoToast('Kembalikan');
+    showUndoRedoToast('Kembalikan'); // Snapshot fallback
   },
 
   redo: () => {
@@ -191,6 +220,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
     if (patchHistory.canRedo()) {
       // Peek at the pageIndex BEFORE consuming the entry
       const targetPageIndex = patchHistory.peekRedoPageIndex();
+      const redoDescription = patchHistory.peekRedoDescription(); // Capture before redo consumes
       const forwardPatches = patchHistory.redo();
       if (forwardPatches && forwardPatches.length > 0) {
         const { pages, currentPageIndex } = get();
@@ -216,7 +246,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
-            showUndoRedoToast('Ulangi');
+            showUndoRedoToast(formatRedoMessage(redoDescription));
             return;
           } catch {
             console.warn('[History] Patch-based redo failed, falling back to snapshot redo');
@@ -237,7 +267,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       selectedElId: null,
     });
     _set({ _skipHistory: false });
-    showUndoRedoToast('Ulangi');
+    showUndoRedoToast('Ulangi'); // Snapshot fallback
   },
 
   canUndo: () => get()._historyIdx > 0 || patchHistory.canUndo(),
