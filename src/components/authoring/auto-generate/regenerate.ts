@@ -296,6 +296,29 @@ export function regenerateSingleRefleksiQuestion(
   return pick;
 }
 
+/**
+ * Regenerate a single materi blok.
+ * Returns a new MateriBlok to replace the one at `index`, or null.
+ */
+export function regenerateSingleMateriBlok(
+  index: number,
+  meta: { judulPertemuan: string; namaBab: string },
+): MateriBlok | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const fullSet = genMateri(parsed, meta);
+  if (fullSet.length === 0) return null;
+
+  // Pick a random blok (prefer one different from index)
+  const candidates = fullSet.filter((_, i) => i !== index % fullSet.length);
+  const pick = candidates.length > 0
+    ? candidates[Math.floor(Math.random() * candidates.length)]
+    : fullSet[Math.floor(Math.random() * fullSet.length)];
+
+  return pick;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // CONVENIENCE: Regenerate ALL sections via schema-first pipeline
 // ═══════════════════════════════════════════════════════════════════

@@ -611,3 +611,40 @@ Stage Summary:
 - Konten editor edits now flow to canvas in real-time (Projection → Schema write-back)
 - Key new files: ItemRegenerateButton.tsx, sync-projection.ts
 - Key modified files: regenerate.ts, schema-apply.ts, KuisTab.tsx, DiskusiTab.tsx, RefleksiTab.tsx
+
+---
+Task ID: phase-18.3-completion
+Agent: main
+Task: Phase 18.3 Completion — MateriTab live sync, MateriBlok per-item regenerate, Diskusi/Refleksi deep partial schema updates
+
+Work Log:
+- Discovered Phase 17.2 (Pertemuan Tag) and Phase 18.2 (Generators) were already fully implemented in previous sessions
+- Identified 3 gaps in Phase 18.3:
+  1. HIGH: No syncMateriToSchema() — MateriTab edits didn't live-sync to canvas
+  2. MEDIUM: No regenerateSingleMateriBlok() — individual materi bloks couldn't be regenerated
+  3. LOW: No replaceDiskusiQuestionInSchema()/replaceRefleksiQuestionInSchema() — inconsistent with Kuis pattern
+- Added syncMateriToSchema() to sync-projection.ts:
+  - Converts MateriBlok[] → SchemaBlock[] via materiBloksToSchemaBlocks() helper
+  - Maps 8 MateriBlok types to SchemaBlock types: teks→def-box(c), definisi→def-box(y), poin→nc-grid, highlight→def-box(c/y), compare→nc-grid, infobox→def-box(g), kutipan→def-box(g), default→def-box(y)
+  - Updates materi-section block's content in the schema tree
+- Added useEffect projection live sync to MateriTab.tsx:
+  - Same pattern as DiskusiTab/RefleksiTab
+  - Watches materi changes → syncMateriToSchema(materi)
+- Added regenerateSingleMateriBlok() to regenerate.ts:
+  - Same pattern as regenerateSingleKuisItem/DiskusiQuestion/RefleksiQuestion
+  - Generates full set from stored text, picks random different blok
+- Added Regen button to BlokCard in MateriTab:
+  - RefreshCw icon + "Regen" label next to Delete button
+  - Calls regenerateSingleMateriBlok and replaces blok at index
+- Added replaceDiskusiQuestionInSchema() and replaceRefleksiQuestionInSchema() to schema-apply.ts:
+  - Deep partial update pattern matching replaceKuisQuestionInSchema()
+  - Updates single question inside DiskusiBlock/RefleksiBlock without touching other blocks
+- Imported generateBlockId in sync-projection.ts (was using require() initially, fixed to ES import)
+- Build verified: npx next build successful, 0 TypeScript errors
+
+Stage Summary:
+- All Phase 18.3 gaps closed
+- MateriTab now has live sync to canvas (edits reflect immediately)
+- Materi bloks have per-item regenerate button
+- Diskusi/Refleksi have deep partial schema updates for consistency
+- Files modified: sync-projection.ts, MateriTab.tsx, regenerate.ts, schema-apply.ts

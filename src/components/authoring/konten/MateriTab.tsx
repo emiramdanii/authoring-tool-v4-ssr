@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
-import { Trash2, FileEdit, BookOpen, Zap } from 'lucide-react';
+import { Trash2, FileEdit, BookOpen, Zap, RefreshCw } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
-import { regenerateMateri, regenerateMateriSchema } from '../auto-generate/regenerate';
+import { regenerateMateri, regenerateMateriSchema, regenerateSingleMateriBlok } from '../auto-generate/regenerate';
+import { syncMateriToSchema } from '@/core/schema/sync-projection';
 import { toast } from 'sonner';
 
 // ── Blok Card ──────────────────────────────────────────────────
@@ -18,6 +19,7 @@ function BlokCard({
   onMoveUp,
   onMoveDown,
   onRemove,
+  onRegenerate,
 }: {
   blok: MateriBlok;
   idx: number;
@@ -25,6 +27,7 @@ function BlokCard({
   onMoveUp: () => void;
   onMoveDown: () => void;
   onRemove: () => void;
+  onRegenerate: () => void;
 }) {
   const [open, setOpen] = useState(true);
   const info = blockTypeInfo(blok.tipe);
@@ -72,6 +75,13 @@ function BlokCard({
             </button>
             <div className="flex-1" />
             <button
+              onClick={onRegenerate}
+              className="px-2 py-1 text-xs text-app-muted hover:text-cyan-400 rounded-md hover:bg-cyan-500/10 transition-colors"
+              title="Regenerate blok ini"
+            >
+              <RefreshCw size={12} className="inline" /> Regen
+            </button>
+            <button
               onClick={onRemove}
               className="px-2 py-1 text-xs text-app-muted hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors"
               title="Hapus blok"
@@ -96,6 +106,15 @@ export function MateriTab() {
   const removeMateriBlok = useAuthoringStore((s) => s.removeMateriBlok);
   const moveMateriBlok = useAuthoringStore((s) => s.moveMateriBlok);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // ── Phase 18.3d: Projection Live Sync ──────────────────────────
+  const prevMateriRef = useRef(materi);
+  useEffect(() => {
+    if (materi !== prevMateriRef.current && materi.blok.length > 0) {
+      syncMateriToSchema(materi);
+    }
+    prevMateriRef.current = materi;
+  }, [materi]);
 
   const handleAdd = useCallback(
     (tipe: string) => {
@@ -177,6 +196,20 @@ export function MateriTab() {
               onMoveUp={() => moveMateriBlok(i, i - 1)}
               onMoveDown={() => moveMateriBlok(i, i + 1)}
               onRemove={() => removeMateriBlok(i)}
+              onRegenerate={() => {
+                const newBlok = regenerateSingleMateriBlok(i, {
+                  judulPertemuan: meta.judulPertemuan,
+                  namaBab: meta.namaBab,
+                });
+                if (newBlok) {
+                  const newBloks = [...materi.blok];
+                  newBloks[i] = newBlok as MateriBlok;
+                  useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
+                  toast.success(`🔄 Blok materi ${i + 1} berhasil digenerate ulang`);
+                } else {
+                  toast.error('Gagal regenerate — tidak ada teks sumber.');
+                }
+              }}
             />
           ))}
         </div>

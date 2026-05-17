@@ -24,11 +24,12 @@
 //     (the projection still has the data, it just won't show on canvas)
 // ═══════════════════════════════════════════════════════════════════
 
-import type { KuisItem, DiskusiData, RefleksiData } from '@/store/authoring-store';
+import type { KuisItem, DiskusiData, RefleksiData, MateriState } from '@/store/authoring-store';
 import type { SchemaBlock, ScreenSchema } from './types';
 import type { CanvaPage } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva/store';
 import { assertDocumentPurity } from './session-state';
+import { generateBlockId } from './ensure-schema';
 
 // ── Helper: Find and update a block in a page's schema ──────────
 
@@ -124,6 +125,114 @@ export function syncRefleksiToSchema(refleksi: RefleksiData): boolean {
       contoh: refleksi.penugasan.contoh,
     } : undefined,
   }) as SchemaBlock);
+}
+
+/**
+ * Sync MateriState from projection to the materi-section block in the schema.
+ * Converts MateriBlok[] → SchemaBlock[] for the materi-section's content.
+ *
+ * This is the most complex sync because MateriBlok has varied types
+ * (teks, definisi, poin, highlight, compare, infobox, etc.) that each
+ * map to different SchemaBlock types (def-box, nc-grid, etc.).
+ */
+export function syncMateriToSchema(materi: MateriState): boolean {
+  return updateSchemaBlock('materi', 'materi-section', (block) => {
+    const contentBlocks = materiBloksToSchemaBlocks(materi.blok);
+    return {
+      ...block,
+      content: contentBlocks,
+    } as SchemaBlock;
+  });
+}
+
+/**
+ * Convert MateriBlok[] from the authoring store to SchemaBlock[] for the canvas.
+ * Each MateriBlok.tipe maps to a specific SchemaBlock type.
+ */
+function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').MateriBlok[]): SchemaBlock[] {
+  return bloks.map((blok) => {
+    switch (blok.tipe) {
+      case 'teks':
+        return {
+          type: 'def-box' as const,
+          id: generateBlockId(),
+          borderColor: 'c',
+          content: blok.isi || '',
+          compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'definisi':
+        return {
+          type: 'def-box' as const,
+          id: generateBlockId(),
+          borderColor: 'y',
+          content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
+          compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'poin':
+        return {
+          type: 'nc-grid' as const,
+          id: generateBlockId(),
+          cards: (blok.butir || []).map((item, i) => ({
+            icon: ['📌', '📋', '🔑', '💡', '⭐', '📝'][i % 6],
+            title: item,
+            body: `Bagian dari ${blok.judul || 'materi'}`,
+            color: ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c'][i % 6],
+          })),
+          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'highlight':
+        return {
+          type: 'def-box' as const,
+          id: generateBlockId(),
+          borderColor: blok.warna === 'blue' ? 'c' : 'y',
+          content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
+          compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'compare':
+        return {
+          type: 'nc-grid' as const,
+          id: generateBlockId(),
+          cards: [
+            { icon: '🔥', title: 'Kiri', body: blok.kiri?.isi || blok.kiri?.judul || '', color: 'c' },
+            { icon: '⚡', title: 'Kanan', body: blok.kanan?.isi || blok.kanan?.judul || '', color: 'y' },
+          ],
+          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'infobox':
+        return {
+          type: 'def-box' as const,
+          id: generateBlockId(),
+          borderColor: 'g',
+          content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
+          compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'kutipan':
+        return {
+          type: 'def-box' as const,
+          id: generateBlockId(),
+          borderColor: 'g',
+          content: blok.isi ? `"${blok.isi}"` : '',
+          compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      default:
+        // Fallback: any unknown type → def-box
+        return {
+          type: 'def-box' as const,
+          id: generateBlockId(),
+          borderColor: 'y',
+          content: blok.isi || blok.judul || `Blok ${blok.tipe}`,
+          compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+    }
+  });
 }
 
 /**

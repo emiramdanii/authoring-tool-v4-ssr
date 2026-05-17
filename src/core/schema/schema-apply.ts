@@ -448,6 +448,120 @@ export function replaceKuisQuestionInSchema(
 }
 
 /**
+ * Update a specific question within a DiskusiBlock in a page's schema.
+ * Deep partial update — modifies one question inside a block.
+ *
+ * @param pageId - The page to update
+ * @param blockId - The DiskusiBlock's ID
+ * @param questionIndex - The index of the question to replace
+ * @param newQuestion - The replacement question object
+ * @returns true if the block was found and question replaced
+ */
+export function replaceDiskusiQuestionInSchema(
+  pageId: string,
+  blockId: string,
+  questionIndex: number,
+  newQuestion: { label: string; icon: string; teks: string; petunjuk: string; color?: string },
+): boolean {
+  const store = useCanvaStore.getState();
+  const pages = [...store.pages];
+  const idx = pages.findIndex(p => p.id === pageId);
+
+  if (idx < 0 || !pages[idx].schema) return false;
+
+  const schema = pages[idx].schema!;
+  const blockIdx = schema.blocks.findIndex(b => b.id === blockId);
+
+  if (blockIdx < 0) return false;
+
+  const block = schema.blocks[blockIdx];
+  if (block.type !== 'diskusi') return false;
+
+  const diskusiBlock = block as { questions: unknown[] };
+  if (questionIndex < 0 || questionIndex >= diskusiBlock.questions.length) return false;
+
+  // Replace only the target question
+  const newQuestions = [...diskusiBlock.questions];
+  newQuestions[questionIndex] = newQuestion;
+
+  const newBlock: SchemaBlock = {
+    ...block,
+    questions: newQuestions,
+  } as SchemaBlock;
+
+  const newBlocks = [...schema.blocks];
+  newBlocks[blockIdx] = newBlock;
+
+  const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+  assertDocumentPurity(newSchema, 'replaceDiskusiQuestionInSchema');
+
+  pages[idx] = {
+    ...pages[idx],
+    schema: newSchema,
+  };
+
+  useCanvaStore.setState({ pages });
+  return true;
+}
+
+/**
+ * Update a specific question within a RefleksiBlock in a page's schema.
+ * Deep partial update — modifies one question inside a block.
+ *
+ * @param pageId - The page to update
+ * @param blockId - The RefleksiBlock's ID
+ * @param questionIndex - The index of the question to replace
+ * @param newQuestion - The replacement question object
+ * @returns true if the block was found and question replaced
+ */
+export function replaceRefleksiQuestionInSchema(
+  pageId: string,
+  blockId: string,
+  questionIndex: number,
+  newQuestion: { teks: string; petunjuk: string; warna?: string; icon?: string },
+): boolean {
+  const store = useCanvaStore.getState();
+  const pages = [...store.pages];
+  const idx = pages.findIndex(p => p.id === pageId);
+
+  if (idx < 0 || !pages[idx].schema) return false;
+
+  const schema = pages[idx].schema!;
+  const blockIdx = schema.blocks.findIndex(b => b.id === blockId);
+
+  if (blockIdx < 0) return false;
+
+  const block = schema.blocks[blockIdx];
+  if (block.type !== 'refleksi') return false;
+
+  const refleksiBlock = block as { questions: unknown[] };
+  if (questionIndex < 0 || questionIndex >= refleksiBlock.questions.length) return false;
+
+  // Replace only the target question
+  const newQuestions = [...refleksiBlock.questions];
+  newQuestions[questionIndex] = newQuestion;
+
+  const newBlock: SchemaBlock = {
+    ...block,
+    questions: newQuestions,
+  } as SchemaBlock;
+
+  const newBlocks = [...schema.blocks];
+  newBlocks[blockIdx] = newBlock;
+
+  const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+  assertDocumentPurity(newSchema, 'replaceRefleksiQuestionInSchema');
+
+  pages[idx] = {
+    ...pages[idx],
+    schema: newSchema,
+  };
+
+  useCanvaStore.setState({ pages });
+  return true;
+}
+
+/**
  * Find all page IDs matching a template type.
  */
 export function findPageIdsByType(templateType: string): string[] {
