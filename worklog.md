@@ -648,3 +648,66 @@ Stage Summary:
 - Materi bloks have per-item regenerate button
 - Diskusi/Refleksi have deep partial schema updates for consistency
 - Files modified: sync-projection.ts, MateriTab.tsx, regenerate.ts, schema-apply.ts
+---
+Task ID: phase-19
+Agent: main
+Task: Phase 19 — Auto-Generate Per Pertemuan
+
+Work Log:
+- Added `perPertemuan: boolean` to `PageTypeBlueprint` interface in page-types.ts
+- Added `perPertemuan` toggle option to `full-interaktif` page type (default: false)
+- Added `perPertemuan: false` to all other page type generators for type safety
+- Added `pertemuan?: number` field to `MateriBlok` interface in types.ts
+- Updated `genMateriSchema()` with `pertemuanOpts` param for per-pertemuan content filtering
+  - Added `forPertemuan<T>()` helper to distribute items across pertemuan
+  - Added pertemuan-aware section title ("Materi — Pertemuan 2")
+- Rewrote `generateFromPageType()` in auto-generate.ts:
+  - Replaced flat page creation with 3-phase structure: GLOBAL → PER-PERTEMUAN → CLOSING
+  - Added `addPage()` helper for cleaner page creation with label + schema
+  - Per-pertemuan loop generates: Motivasi, Skenario, Materi (filtered), Kuis (filtered), Game, Diskusi, Refleksi, Rangkuman
+  - Page labels include pertemuan suffix ("Materi — P1", "Kuis — P2")
+  - Kuis filtered by `pertemuan` field when perPertemuan is enabled
+  - Materi content distributed via `forPertemuan()` across pertemuan
+- Added pertemuan badge indicator to SceneList thumbnails
+  - Detects "— P{n}" pattern in page labels
+  - Shows amber "P1", "P2" badge next to template type badge
+- Updated ROADMAP-BSNP.md: marked Phase 19 + Phase 18.3 tasks as complete
+- Build verified: npx next build successful, 0 errors
+
+Stage Summary:
+- Phase 19 complete: Auto-generate per pertemuan now works
+- When "Per Pertemuan" toggle is ON and jumlahPertemuan > 1, generates separate page sets per pertemuan
+- Content is distributed: Materi bloks split evenly, Kuis filtered by pertemuan tag
+- Page labels clearly show pertemuan number ("Materi — P1", "Kuis — P2")
+- SceneList shows pertemuan badges on thumbnails
+- 5 files modified: page-types.ts, types.ts, generators.ts, auto-generate.ts, SceneList.tsx
+
+---
+Task ID: phase-19-20-21
+Agent: main
+Task: Phase 19 (Auto-Generate Per Pertemuan) + Phase 20 (BSNP Template) + Phase 21 (Interaktivitas Ringan)
+
+Work Log:
+- Phase 19: Auto-Generate Per Pertemuan
+  - Added `perPertemuan: boolean` to PageTypeBlueprint + toggle option in "Full Interaktif" page type
+  - Rewrote generateFromPageType() with 3-phase page structure: GLOBAL → PER-PERTEMUAN → CLOSING
+  - Added `pertemuan?: number` to MateriBlok type
+  - Updated genMateriSchema() with `pertemuanOpts` param for content filtering per pertemuan
+  - Added `forPertemuan<T>()` helper to distribute definitions, enumerations, functions, causes
+  - Added pertemuan badges on SceneList thumbnails (detects "— P{n}" in page labels)
+  - Added pertemuan dropdown in MateriTab (same pattern as KuisTab)
+- Phase 20: BSNP Template Baru — all 3 already existed
+  - TujuanDisplayRenderer: 3 variants (Klasik, Checklist, Peta Konsep)
+  - MotivasiRenderer: 3 variants (Klasik, Kartu Hook, Kutipan)
+  - RangkumanRenderer: 3 variants (Klasik, Kreatif, Ringkas)
+- Phase 21: Interaktivitas Ringan — key items already existed
+  - Checkbox "Sudah Paham" → TujuanVariantB "Checklist" with progress bar + confetti
+  - Accordion per blok → MateriVariantKlasik with accordion compression strategy
+- Build verified: npx next build successful, 0 errors
+- ROADMAP-BSNP.md updated: Phase 18.3, 19, 20, 21 all marked complete
+
+Stage Summary:
+- Phase 19 complete: Per-pertemuan auto-generation works end-to-end
+- Phase 20 already done: All BSNP templates exist with 3 variants each
+- Phase 21 partially done: Checkboxes and accordion exist, score badges deferred
+- 7 files modified total across all phases

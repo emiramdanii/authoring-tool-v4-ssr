@@ -20,6 +20,8 @@ function BlokCard({
   onMoveDown,
   onRemove,
   onRegenerate,
+  onUpdatePertemuan,
+  jumlahPertemuan,
 }: {
   blok: MateriBlok;
   idx: number;
@@ -28,6 +30,8 @@ function BlokCard({
   onMoveDown: () => void;
   onRemove: () => void;
   onRegenerate: () => void;
+  onUpdatePertemuan: (val: number | undefined) => void;
+  jumlahPertemuan: number;
 }) {
   const [open, setOpen] = useState(true);
   const info = blockTypeInfo(blok.tipe);
@@ -92,6 +96,23 @@ function BlokCard({
 
           {/* Editor form */}
           <BlockEditor blok={blok} idx={idx} />
+
+          {/* Pertemuan tag — same pattern as KuisTab */}
+          {jumlahPertemuan > 1 && (
+            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-app-border/40">
+              <label className="text-xs font-medium text-app-secondary">Pertemuan</label>
+              <select
+                value={blok.pertemuan ?? ''}
+                onChange={(e) => onUpdatePertemuan(e.target.value ? Number(e.target.value) : undefined)}
+                className="bg-app-elevated border border-app-border rounded-lg px-2 py-1 text-xs text-app-primary focus:outline-none focus:ring-2 focus:ring-app-accent/50"
+              >
+                <option value="">— Semua —</option>
+                {Array.from({ length: jumlahPertemuan }, (_, n) => n + 1).map(n => (
+                  <option key={n} value={n}>Pertemuan {n}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -102,10 +123,12 @@ function BlokCard({
 export function MateriTab() {
   const materi = useAuthoringStore((s) => s.materi);
   const meta = useAuthoringStore((s) => s.meta);
+  const atp = useAuthoringStore((s) => s.atp);
   const addMateriBlok = useAuthoringStore((s) => s.addMateriBlok);
   const removeMateriBlok = useAuthoringStore((s) => s.removeMateriBlok);
   const moveMateriBlok = useAuthoringStore((s) => s.moveMateriBlok);
   const listRef = useRef<HTMLDivElement>(null);
+  const jumlahPertemuan = atp.jumlahPertemuan || 1;
 
   // ── Phase 18.3d: Projection Live Sync ──────────────────────────
   const prevMateriRef = useRef(materi);
@@ -210,6 +233,12 @@ export function MateriTab() {
                   toast.error('Gagal regenerate — tidak ada teks sumber.');
                 }
               }}
+              onUpdatePertemuan={(val) => {
+                const newBloks = [...materi.blok];
+                newBloks[i] = { ...newBloks[i], pertemuan: val };
+                useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
+              }}
+              jumlahPertemuan={jumlahPertemuan}
             />
           ))}
         </div>

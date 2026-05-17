@@ -148,6 +148,7 @@ export interface MateriBlok {
   situasi?: string;
   pertanyaan?: string;
   pesan?: string;
+  pertemuan?: number; // Pertemuan ke berapa (1-based), undefined = semua pertemuan
 }
 
 export interface MateriState {

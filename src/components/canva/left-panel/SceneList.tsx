@@ -96,10 +96,15 @@ export function SceneList() {
                   {isSchemaDriven && <Zap size={10} className="text-app-success inline" />}
                   <span className="truncate">{p.label}</span>
                 </div>
-                <div className="text-[8px] mt-0.5">
+                <div className="text-[8px] mt-0.5 flex items-center gap-1">
                   <span className={`inline-flex items-center px-1.5 py-0 rounded text-[7px] font-bold uppercase tracking-wider border ${badgeColor}`}>
                     {badge.name}
                   </span>
+                  {p.label?.includes('— P') && (
+                    <span className="inline-flex items-center px-1 py-0 rounded text-[6px] font-bold bg-app-accent/15 text-app-accent border border-app-accent/20">
+                      {p.label.match(/— P(\d+)/)?.[1] ? `P${p.label.match(/— P(\d+)/)![1]}` : ''}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

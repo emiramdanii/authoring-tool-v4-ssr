@@ -291,11 +291,22 @@ export function genAlurSchema(
 export function genMateriSchema(
   parsed: ParseResult,
   meta: { judulPertemuan: string; namaBab: string },
+  pertemuanOpts?: { pertemuan?: number; jumlahPertemuan?: number },
 ): SchemaBlock[] {
   const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
   const blocks: SchemaBlock[] = [];
   const contentBlocks: SchemaBlock[] = [];
   const topic = meta.namaBab || topWords[0] || 'materi';
+  const jumlahPertemuan = pertemuanOpts?.jumlahPertemuan || 1;
+  const pertemuan = pertemuanOpts?.pertemuan; // if specified, only generate content for this pertemuan
+
+  /** Distribute items across pertemuan. Returns items for current pertemuan. */
+  const forPertemuan = <T>(items: T[]): T[] => {
+    if (!pertemuan || jumlahPertemuan <= 1) return items; // no filtering
+    const perPert = Math.ceil(items.length / jumlahPertemuan);
+    const start = (pertemuan - 1) * perPert;
+    return items.slice(start, start + perPert);
+  };
 
   // ── Intro text from first sentences ──────────────────────────
   const introText = sentences.slice(0, 2).join(' ');
@@ -311,7 +322,7 @@ export function genMateriSchema(
   }
 
   // ── Definitions → def-box blocks (yellow = formal definition) ──
-  for (const def of definitions) {
+  for (const def of forPertemuan(definitions)) {
     contentBlocks.push({
       type: 'def-box',
       id: generateBlockId(),
@@ -323,7 +334,7 @@ export function genMateriSchema(
   }
 
   // ── Enumerations → nc-grid or tabel-accord ──────────────────
-  for (const en of enumerations) {
+  for (const en of forPertemuan(enumerations)) {
     if (en.items.length <= 3) {
       // Short enumeration → card grid
       contentBlocks.push({
@@ -359,12 +370,13 @@ export function genMateriSchema(
   }
 
   // ── Functions → ftab (if 3+) or def-box ─────────────────────
-  if (functions.length >= 3) {
+  const filteredFunctions = forPertemuan(functions);
+  if (filteredFunctions.length >= 3) {
     // Group 3+ functions into tabbed view — compact and organized
     contentBlocks.push({
       type: 'ftab',
       id: generateBlockId(),
-      tabs: functions.slice(0, 5).map((fn, i) => ({
+      tabs: filteredFunctions.slice(0, 5).map((fn, i) => ({
         icon: ['⚙️', '🔧', '🔩', '🏭', '🏗️'][i % 5],
         label: fn.subject.length > 20 ? fn.subject.slice(0, 18) + '...' : fn.subject,
         content: [{
@@ -381,7 +393,7 @@ export function genMateriSchema(
     } as FtabBlock);
   } else {
     // 1-2 functions → simple def-box
-    for (const fn of functions) {
+    for (const fn of filteredFunctions) {
       contentBlocks.push({
         type: 'def-box',
         id: generateBlockId(),
@@ -394,7 +406,7 @@ export function genMateriSchema(
   }
 
   // ── Causes → nc-grid sebab-akibat or ftab compare ────────────
-  for (const c of causes) {
+  for (const c of forPertemuan(causes)) {
     contentBlocks.push({
       type: 'nc-grid',
       id: generateBlockId(),
@@ -407,12 +419,17 @@ export function genMateriSchema(
     } as NcGridBlock);
   }
 
+  // ── Pertemuan-aware title ──────────────────────────────────
+  const sectionTitle = pertemuan && jumlahPertemuan > 1
+    ? `${meta.judulPertemuan || 'Materi Pembelajaran'} — Pertemuan ${pertemuan}`
+    : meta.judulPertemuan || 'Materi Pembelajaran';
+
   // ── Wrap in materi-section with BSNP badge ──────────────────
   if (contentBlocks.length > 0) {
     blocks.push({
       type: 'materi-section',
       id: generateBlockId(),
-      title: meta.judulPertemuan || 'Materi Pembelajaran',
+      title: sectionTitle,
       subtitle: meta.namaBab || undefined,
       bsnpRequired: true,
       icon: '📖',

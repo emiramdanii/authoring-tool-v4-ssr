@@ -147,6 +147,7 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     const authStore = useAuthoringStore.getState();
     const kuis = authStore.kuis.filter((k: { q: string }) => k.q.trim());
     const jumlahPertemuan = authStore.atp.jumlahPertemuan || 1;
+    const perPertemuan = blueprint.perPertemuan && jumlahPertemuan > 1;
     let games = authStore.modules.filter((m: Module) =>
       (GAME_TYPES as readonly string[]).includes(m.type)
     );
@@ -186,172 +187,137 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     }
 
     // Step 2: Build pages using createPageFromPreset (FASE 3 — schema-native)
-    // All pages now get page.schema from creation via deriveSchema().
-    // One-way data flow: Authoring → deriveSchema() → page.schema → Renderer
-    //
-    // FASE 5: After creation, populate page.schema.blocks with REAL content
-    // from schema generators (not placeholder from ensurePageSchema).
-    // Schema-first: ParseResult → genXxxSchema() → SchemaBlock[] → page.schema
     const newPages: CanvaPage[] = [];
-
-    // Try to get stored auto-gen text for schema generation
     const storedParsed = parseStoredText();
 
-    if (blueprint.includeCover) {
-      const page = createPageFromPreset('cover', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genCoverSchema(authStore.meta)];
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER: Create a page with schema content + optional label override
+    // ═══════════════════════════════════════════════════════════════
+    const addPage = (presetId: import('@/components/canva/types').PageTemplateType, label?: string, schemaBlocks?: SchemaBlock[]) => {
+      const page = createPageFromPreset(presetId, newPages.length);
+      if (label) page.label = label;
+      if (page.schema && schemaBlocks && schemaBlocks.length > 0) {
+        page.schema.blocks = schemaBlocks;
       }
       newPages.push(page);
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // GLOBAL PAGES (before per-pertemuan loop)
+    // ═══════════════════════════════════════════════════════════════
+
+    if (blueprint.includeCover) {
+      addPage('cover', undefined, storedParsed ? [genCoverSchema(authStore.meta)] : undefined);
     }
 
     if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
-      const page = createPageFromPreset('petunjuk', newPages.length);
-      if (page.schema) {
-        page.schema.blocks = [genPetunjukSchema(authStore.petunjuk.langkah, authStore.petunjuk.tips)];
-      }
-      newPages.push(page);
+      addPage('petunjuk', undefined, [genPetunjukSchema(authStore.petunjuk.langkah, authStore.petunjuk.tips)]);
     }
 
     if (blueprint.includeDokumen && (authStore.cp.capaianFase || authStore.tp.length > 0)) {
-      const page = createPageFromPreset('dokumen', newPages.length);
-      if (page.schema && storedParsed) {
+      if (storedParsed) {
         const blocks: SchemaBlock[] = [];
-        blocks.push(genTpSchema(storedParsed, { pertemuan: authStore.atp.jumlahPertemuan || 1, bloomMax: 6 }));
-        blocks.push(genAlurSchema(storedParsed, { pertemuan: authStore.atp.jumlahPertemuan || 1, bloomMax: 6 }, authStore.meta));
-        page.schema.blocks = blocks;
+        blocks.push(genTpSchema(storedParsed, { pertemuan: jumlahPertemuan, bloomMax: 6 }));
+        blocks.push(genAlurSchema(storedParsed, { pertemuan: jumlahPertemuan, bloomMax: 6 }, authStore.meta));
+        addPage('dokumen', undefined, blocks);
+      } else {
+        addPage('dokumen');
       }
-      newPages.push(page);
     }
 
     if (blueprint.includeTujuan && authStore.tp.length > 0) {
-      const page = createPageFromPreset('tujuan', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genTujuanDisplaySchema(storedParsed, { pertemuan: authStore.atp.jumlahPertemuan || 1, bloomMax: 6 })];
-      }
-      newPages.push(page);
+      addPage('tujuan', undefined, storedParsed ? [genTujuanDisplaySchema(storedParsed, { pertemuan: jumlahPertemuan, bloomMax: 6 })] : undefined);
     }
 
-    if (blueprint.includeMotivasi) {
-      const page = createPageFromPreset('motivasi', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genMotivasiSchema(storedParsed, authStore.meta)];
-      }
-      newPages.push(page);
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // PER-PERTEMUAN PAGES (or single pass if not per-pertemuan)
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // When perPertemuan is enabled, content sections (Materi, Kuis,
+    // Diskusi, Refleksi, Rangkuman) are generated once per pertemuan
+    // with filtered content. Page labels include pertemuan number.
+    //
+    // When perPertemuan is disabled, single pass (original behavior).
 
-    if (blueprint.includeSkenario && authStore.skenario.length > 0) {
-      const page = createPageFromPreset('skenario', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genSkenarioSchema(storedParsed, authStore.meta)];
-      }
-      newPages.push(page);
-    }
+    const pertemuanRange = perPertemuan ? jumlahPertemuan : 1;
 
-    if (blueprint.includeMateri && (materiModules.length > 0 || authStore.materi.blok.length > 0)) {
-      const page = createPageFromPreset('materi', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = genMateriSchema(storedParsed, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab });
-      }
-      newPages.push(page);
-    }
+    for (let pert = 1; pert <= pertemuanRange; pert++) {
+      const pLabel = perPertemuan ? ` — P${pert}` : '';
 
-    // Kuis pages — split by soalPerHalaman, with optional pertemuan filtering
-    if (blueprint.includeKuis && kuis.length > 0) {
-      const perPage = blueprint.soalPerHalaman || 5;
-      if (jumlahPertemuan <= 1) {
-        // Single pertemuan — original behavior
-        if (kuis.length <= perPage) {
-          const page = createPageFromPreset('kuis', newPages.length);
-          if (page.schema && storedParsed) {
-            page.schema.blocks = [genKuisSchema(storedParsed, kuis.length, 1)];
-          }
-          newPages.push(page);
-        } else {
-          const totalPages = Math.ceil(kuis.length / perPage);
-          for (let p = 0; p < totalPages; p++) {
-            const page = createPageFromPreset('kuis', newPages.length);
-            if (page.schema && storedParsed) {
-              page.schema.blocks = [genKuisSchema(storedParsed, perPage, 1)];
-            }
-            newPages.push(page);
-          }
-        }
-      } else {
-        // Per-pertemuan kuis pages
-        for (let pert = 1; pert <= jumlahPertemuan; pert++) {
-          // Include items tagged for this pertemuan, plus untagged items (pertemuan === undefined)
-          const kuisForPert = kuis.filter((k: { q: string; pertemuan?: number }) =>
-            k.pertemuan === pert || k.pertemuan === undefined
+      if (blueprint.includeMotivasi) {
+        addPage('motivasi', `Motivasi${pLabel}`, storedParsed ? [genMotivasiSchema(storedParsed, authStore.meta)] : undefined);
+      }
+
+      if (blueprint.includeSkenario && authStore.skenario.length > 0) {
+        addPage('skenario', `Skenario${pLabel}`, storedParsed ? [genSkenarioSchema(storedParsed, authStore.meta)] : undefined);
+      }
+
+      if (blueprint.includeMateri && (materiModules.length > 0 || authStore.materi.blok.length > 0)) {
+        if (storedParsed) {
+          const materiBlocks = genMateriSchema(
+            storedParsed,
+            { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab },
+            perPertemuan ? { pertemuan: pert, jumlahPertemuan } : undefined,
           );
-          if (kuisForPert.length === 0) continue;
+          addPage('materi', `Materi${pLabel}`, materiBlocks);
+        } else {
+          addPage('materi', `Materi${pLabel}`);
+        }
+      }
+
+      // Kuis pages — split by soalPerHalaman, with pertemuan filtering
+      if (blueprint.includeKuis && kuis.length > 0) {
+        const perPage = blueprint.soalPerHalaman || 5;
+
+        // Filter kuis by pertemuan when perPertemuan is enabled
+        const kuisForPert = perPertemuan
+          ? kuis.filter((k: { q: string; pertemuan?: number }) =>
+              k.pertemuan === pert || k.pertemuan === undefined
+            )
+          : (jumlahPertemuan > 1
+              ? kuis // old behavior: don't filter in non-perPertemuan mode
+              : kuis);
+
+        if (kuisForPert.length > 0) {
           if (kuisForPert.length <= perPage) {
-            const page = createPageFromPreset('kuis', newPages.length);
-            if (page.schema && storedParsed) {
-              page.schema.blocks = [genKuisSchema(storedParsed, kuisForPert.length, jumlahPertemuan)];
-            }
-            newPages.push(page);
+            addPage('kuis', `Kuis${pLabel}`, storedParsed ? [genKuisSchema(storedParsed, kuisForPert.length, jumlahPertemuan)] : undefined);
           } else {
             const totalPages = Math.ceil(kuisForPert.length / perPage);
             for (let p = 0; p < totalPages; p++) {
-              const page = createPageFromPreset('kuis', newPages.length);
-              if (page.schema && storedParsed) {
-                page.schema.blocks = [genKuisSchema(storedParsed, perPage, jumlahPertemuan)];
-              }
-              newPages.push(page);
+              const pageLabel = totalPages > 1 ? `Kuis${pLabel} (${p + 1}/${totalPages})` : `Kuis${pLabel}`;
+              addPage('kuis', pageLabel, storedParsed ? [genKuisSchema(storedParsed, perPage, jumlahPertemuan)] : undefined);
             }
           }
         }
       }
+
+      if (blueprint.includeGame && games.length > 0) {
+        addPage('game', `Game${pLabel}`);
+      }
+
+      if (blueprint.includeDiskusi && authStore.diskusi.pertanyaan.length > 0) {
+        addPage('diskusi', `Diskusi${pLabel}`, storedParsed ? [genDiskusiSchema(storedParsed, authStore.tp, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab })] : undefined);
+      }
+
+      if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
+        addPage('refleksi', `Refleksi${pLabel}`, storedParsed ? [genRefleksiSchema(storedParsed, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab })] : undefined);
+      }
+
+      if (blueprint.includeRangkuman && authStore.materi.blok.length > 0) {
+        addPage('rangkuman', `Rangkuman${pLabel}`, storedParsed ? [genRangkumanSchema(storedParsed, authStore.meta)] : undefined);
+      }
     }
 
-    if (blueprint.includeGame && games.length > 0) {
-      newPages.push(createPageFromPreset('game', newPages.length));
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // GLOBAL CLOSING PAGES (after per-pertemuan loop)
+    // ═══════════════════════════════════════════════════════════════
 
     if (blueprint.includeHasil) {
-      const page = createPageFromPreset('hasil', newPages.length);
-      if (page.schema) {
-        page.schema.blocks = [genHasilSchema()];
-      }
-      newPages.push(page);
-    }
-
-    // Petunjuk at end (repeated)
-    if (blueprint.includePetunjuk && authStore.petunjuk.langkah.length > 0) {
-      newPages.push(createPageFromPreset('petunjuk', newPages.length));
-    }
-
-    if (blueprint.includeDiskusi && authStore.diskusi.pertanyaan.length > 0) {
-      const page = createPageFromPreset('diskusi', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genDiskusiSchema(storedParsed, authStore.tp, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab })];
-      }
-      newPages.push(page);
-    }
-
-    if (blueprint.includeRefleksi && authStore.refleksi.pertanyaan.length > 0) {
-      const page = createPageFromPreset('refleksi', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genRefleksiSchema(storedParsed, { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab })];
-      }
-      newPages.push(page);
-    }
-
-    if (blueprint.includeRangkuman && authStore.materi.blok.length > 0) {
-      const page = createPageFromPreset('rangkuman', newPages.length);
-      if (page.schema && storedParsed) {
-        page.schema.blocks = [genRangkumanSchema(storedParsed, authStore.meta)];
-      }
-      newPages.push(page);
+      addPage('hasil', undefined, [genHasilSchema()]);
     }
 
     if (blueprint.includePenutup && authStore.penutup.preview.length > 0) {
-      const page = createPageFromPreset('penutup', newPages.length);
-      if (page.schema) {
-        page.schema.blocks = [genPenutupSchema(authStore.meta)];
-      }
-      newPages.push(page);
+      addPage('penutup', undefined, [genPenutupSchema(authStore.meta)]);
     }
 
     // FASE 3: Store navbar/timer config in page.schema.nav instead of templateData
@@ -396,7 +362,7 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     get()._pushHistory();
     set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success(
-      `⚡ ${pageType.name}: ${newPages.length} halaman dibuat${blueprint.autoGenerateModules ? ' + modul auto-generated' : ''}`
+      `⚡ ${pageType.name}: ${newPages.length} halaman dibuat${perPertemuan ? ` (${jumlahPertemuan} pertemuan)` : ''}${blueprint.autoGenerateModules ? ' + modul auto-generated' : ''}`
     );
   },
 });

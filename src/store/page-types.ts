@@ -34,6 +34,7 @@ export interface PageTypeBlueprint {
   timer: boolean;
   navbar: boolean;
   autoGenerateModules: boolean;
+  perPertemuan: boolean; // Split content pages per pertemuan (requires jumlahPertemuan > 1)
 }
 
 // ── Page type definition (the "recipe") ───────────────────────
@@ -80,6 +81,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     description: 'Cover + Dokumen + Materi + Kuis + Game + Hasil — semua halaman lengkap',
     options: [
       { id: 'soalPerHalaman', type: 'number', label: 'Soal per Halaman', default: 5, min: 1, max: 20 },
+      { id: 'perPertemuan', type: 'toggle', label: 'Per Pertemuan', default: false },
       { id: 'timer', type: 'toggle', label: 'Timer Kuis', default: false },
       { id: 'navbar', type: 'toggle', label: 'Navbar Navigasi', default: true },
       { id: 'autoGenerateModules', type: 'toggle', label: 'Auto-Generate Modul dari Data', default: true },
@@ -103,6 +105,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: boolOr(config, 'timer', false),
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
+      perPertemuan: boolOr(config, 'perPertemuan', false),
     }),
   },
   {
@@ -135,6 +138,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: false,
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
+      perPertemuan: false,
     }),
   },
   {
@@ -169,6 +173,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: true,
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: false,
+      perPertemuan: false,
     }),
   },
   {
@@ -201,6 +206,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: false,
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
+      perPertemuan: false,
     }),
   },
   {
@@ -233,6 +239,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: false,
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
+      perPertemuan: false,
     }),
   },
   {
@@ -262,6 +269,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: false,
       navbar: false,
       autoGenerateModules: false,
+      perPertemuan: false,
     }),
   },
 ];

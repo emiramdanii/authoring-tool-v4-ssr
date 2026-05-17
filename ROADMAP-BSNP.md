@@ -194,10 +194,10 @@ Dengan generator, guru bisa re-generate yang gak cocok.
 Bisa langsung dari tab yang sedang dikerjakan.
 
 **Task**:
-- [ ] Tambah tombol "⚡ Re-generate" di MateriTab
-- [ ] Tambah tombol "⚡ Re-generate" di tab Diskusi (kalau ada)
-- [ ] Tambah tombol "⚡ Re-generate" di tab Refleksi (kalau ada)
-- [ ] Alur: klik → pakai parsed data terakhir → generate → replace di store
+- [x] Tambah tombol "⚡ Re-generate" di MateriTab
+- [x] Tambah tombol "⚡ Re-generate" di tab Diskusi (kalau ada)
+- [x] Tambah tombol "⚡ Re-generate" di tab Refleksi (kalau ada)
+- [x] Alur: klik → pakai parsed data terakhir → generate → replace di store
 
 ---
 
@@ -218,12 +218,12 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 ```
 
 **Task**:
-- [ ] Tambah `perPertemuan` config di `PageTypeBlueprint`
-- [ ] Update `generateFromPageType()` — repeat template set per pertemuan
-- [ ] Filter kuis by `pertemuan` di `buildTemplateData('kuis')`
-- [ ] Filter materi blok by `pertemuan` (tambah field di MateriBlok)
-- [ ] UI: toggle "Per Pertemuan" + jumlah pertemuan di PageTypeCreator
-- [ ] Tambah label pertemuan di page thumbnails
+- [x] Tambah `perPertemuan` config di `PageTypeBlueprint`
+- [x] Update `generateFromPageType()` — repeat template set per pertemuan
+- [x] Filter kuis by `pertemuan` di `buildTemplateData('kuis')`
+- [x] Filter materi blok by `pertemuan` (tambah field di MateriBlok)
+- [x] UI: toggle "Per Pertemuan" + jumlah pertemuan di PageTypeCreator
+- [x] Tambah label pertemuan di page thumbnails
 
 ---
 
@@ -233,19 +233,22 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 > Prioritas berdasarkan kebutuhan nyata, bukan checklist lengkap.
 
 ### 20.1 TujuanTemplate — TP ke Siswa (P1)
-- [ ] Buat `TujuanTemplate.tsx` — tampilkan TP + Profil Pelajar Pancasila
+- [x] Buat `TujuanDisplayRenderer.tsx` — tampilkan TP + Profil Pelajar Pancasila
 - Data: `authoringStore.tp` + `cp.profil` (SUDAH ADA)
-- [ ] Tambah ke `PageTemplateType`, `PageTemplate.tsx`, `buildTemplateData`, dll
+- 3 variants: Klasik (card list), Checklist (interactive checkboxes), Peta Konsep (mind map)
+- [x] Tambah ke `PageTemplateType`, `SceneRegistry`, `genTujuanDisplaySchema`
 
 ### 20.2 MotivasiTemplate — Apersepsi (P2)
-- [ ] Buat `MotivasiTemplate.tsx` — pertanyaan pemicu + koneksi
-- Data: baru (pertanyaanPemicu, koneksi)
-- [ ] Tambah slice di authoring store + form di panel
+- [x] Buat `MotivasiRenderer.tsx` — pertanyaan pemicu + koneksi
+- Data: `genMotivasiSchema()` generates hookQuestion + connections + transition
+- 3 variants: Klasik (full card), Kartu Hook (hero + pills), Kutipan (quote style)
+- [x] Tambah ke `SceneRegistry`, `genMotivasiSchema`
 
 ### 20.3 RangkumanTemplate — Penegasan (P2)
-- [ ] Buat `RangkumanTemplate.tsx` — poin penting + tips
-- Data: baru (poin[], tips) atau auto-extract dari materi
-- [ ] Tambah slice + form
+- [x] Buat `RangkumanRenderer.tsx` — poin penting + tips
+- Data: `genRangkumanSchema()` generates concept cards with BSNP badge
+- 3 variants: Klasik (card grid), Kreatif (timeline stepper), Ringkas (accordion)
+- [x] Tambah ke `SceneRegistry`, `genRangkumanSchema`
 
 ---
 
@@ -254,8 +257,8 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 > Tambahan kecil yang bikin media lebih engaging.
 > Hanya jika ada waktu, bukan prioritas utama.
 
-- [ ] Checkbox "Sudah Paham" per TP di DokumenTemplate
-- [ ] Accordion per blok di MateriTemplate (interactive mode)
+- [x] Checkbox "Sudah Paham" per TP di DokumenTemplate — Variant B "Checklist" di TujuanDisplayRenderer
+- [x] Accordion per blok di MateriTemplate (interactive mode) — Variant A "Klasik" dengan accordion compression
 - [ ] Badge visual di PenutupTemplate berdasarkan skor
 - [ ] HasilTemplate — tampilkan skor per aktivitas (bukan hanya total)
 
