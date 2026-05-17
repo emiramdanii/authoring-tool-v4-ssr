@@ -39,7 +39,7 @@ import {
 
 export type PresetSlice = Pick<AuthoringState,
   | 'activePreset' | 'pendingCanvasGenerate' | 'games'
-  | 'petunjuk' | 'diskusi' | 'refleksi' | 'motivasi' | 'rangkuman' | 'penutup' | 'suara'
+  | 'petunjuk' | 'motivasi' | 'rangkuman' | 'penutup' | 'suara'
   | 'applyFullPreset' | 'applyKuisPreset' | 'applyTpPreset'
   | 'applyCpPreset' | 'applyAtpPreset' | 'applyAlurPreset'
   | 'applyMetaPreset' | 'newProject'
@@ -50,8 +50,6 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
   pendingCanvasGenerate: null as string | null,
   games: [],
   petunjuk: { ...DEFAULT_PETUNJUK },
-  diskusi: { ...DEFAULT_DISKUSI },
-  refleksi: { ...DEFAULT_REFLEKSI },
   motivasi: { ...DEFAULT_MOTIVASI },
   rangkuman: { ...DEFAULT_RANGKUMAN },
   penutup: { ...DEFAULT_PENUTUP },

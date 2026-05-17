@@ -1,7 +1,7 @@
 'use client';
 
 // ── Sub-tab type ─────────────────────────────────────────────────
-export type KontenTab = 'materi' | 'skenario' | 'modules' | 'kuis';
+export type KontenTab = 'materi' | 'diskusi' | 'refleksi' | 'skenario' | 'modules' | 'kuis';
 
 // ── Block type definitions ──────────────────────────────────────
 export const BLOCK_TYPES = [

@@ -4,10 +4,12 @@ import { useState } from 'react';
 import Skenario from './Skenario';
 import { type KontenTab } from './konten/shared';
 import { MateriTab } from './konten/MateriTab';
+import { DiskusiTab } from './konten/DiskusiTab';
+import { RefleksiTab } from './konten/RefleksiTab';
 import { ModulesTab } from './konten/ModulesTab';
 import { KuisTab } from './konten/KuisTab';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { FileEdit, Puzzle, HelpCircle, BookOpen, Theater, ArrowRight, Gamepad2, ClipboardList } from 'lucide-react';
+import { FileEdit, Puzzle, HelpCircle, BookOpen, Theater, ArrowRight, Gamepad2, ClipboardList, MessageSquare, NotebookPen } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ── Main Konten Panel ──────────────────────────────────────────
@@ -21,12 +23,15 @@ export default function Konten() {
   const tabs: { id: KontenTab; icon: React.ReactNode; label: string; desc: string }[] = isSederhana
     ? [
         { id: 'materi', icon: <BookOpen size={14} />, label: 'Materi', desc: 'Teks dan materi pembelajaran' },
-        // Skenario/Cerita hidden in sederhana — too complex for most SMP teachers
+        { id: 'diskusi', icon: <MessageSquare size={14} />, label: 'Diskusi', desc: 'Pertanyaan diskusi kelompok' },
+        { id: 'refleksi', icon: <NotebookPen size={14} />, label: 'Refleksi', desc: 'Refleksi dan penugasan pribadi' },
         { id: 'modules', icon: <Gamepad2 size={14} />, label: 'Game & Aktivitas', desc: 'Modul interaktif dan permainan' },
         { id: 'kuis', icon: <ClipboardList size={14} />, label: 'Soal Evaluasi', desc: 'Kuis dan soal pilihan ganda' },
       ]
     : [
         { id: 'materi', icon: <FileEdit size={14} />, label: 'Materi', desc: 'Materi, aktivitas/modul, dan evaluasi siswa dalam satu panel.' },
+        { id: 'diskusi', icon: <MessageSquare size={14} />, label: 'Diskusi', desc: 'Pertanyaan diskusi kelompok untuk pendalaman materi' },
+        { id: 'refleksi', icon: <NotebookPen size={14} />, label: 'Refleksi', desc: 'Refleksi metakognitif dan penugasan pribadi' },
         { id: 'skenario', icon: <Theater size={14} />, label: 'Skenario', desc: 'Skenario interaktif dengan pilihan dan konsekuensi' },
         { id: 'modules', icon: <Puzzle size={14} />, label: 'Modul & Game', desc: 'Modul interaktif dan game edukasi' },
         { id: 'kuis', icon: <HelpCircle size={14} />, label: 'Evaluasi', desc: 'Kuis dan soal evaluasi siswa' },
@@ -70,6 +75,8 @@ export default function Konten() {
       {/* Tab Content — flex-1 fills remaining space, min-h-0 allows shrink, overflow handles scroll */}
       <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 custom-scrollbar">
         {activeTab === 'materi' && <MateriTab />}
+        {activeTab === 'diskusi' && <DiskusiTab />}
+        {activeTab === 'refleksi' && <RefleksiTab />}
         {activeTab === 'skenario' && <Skenario />}
         {activeTab === 'modules' && <ModulesTab />}
         {activeTab === 'kuis' && <KuisTab />}

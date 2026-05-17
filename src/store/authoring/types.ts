@@ -390,6 +390,18 @@ export interface AuthoringState {
   removeSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number) => void;
   updateSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => void;
 
+  // Diskusi actions
+  updateDiskusi: (data: Partial<DiskusiData>) => void;
+  addDiskusiPertanyaan: () => void;
+  removeDiskusiPertanyaan: (index: number) => void;
+  updateDiskusiPertanyaan: (index: number, data: Partial<DiskusiPertanyaan>) => void;
+
+  // Refleksi actions
+  updateRefleksi: (data: Partial<RefleksiData>) => void;
+  addRefleksiPertanyaan: () => void;
+  removeRefleksiPertanyaan: (index: number) => void;
+  updateRefleksiPertanyaan: (index: number, data: Partial<RefleksiPertanyaan>) => void;
+
   // Motivasi actions
   updateMotivasi: (data: Partial<MotivasiData>) => void;
 

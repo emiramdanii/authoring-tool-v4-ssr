@@ -532,3 +532,31 @@ Stage Summary:
 - 5 files changed, 384 insertions, 126 deletions
 - Generator → SchemaBlock[] architecture verified correct
 - Both pipelines (schema-first PRIMARY + old SECONDARY) updated in sync
+
+---
+Task ID: 18.2-ui
+Agent: main
+Task: Phase 18.2 — DiskusiTab + RefleksiTab UI with RegenerateButton wiring
+
+Work Log:
+- Phase 17.2: Verified already complete — pertemuan field exists on KuisItem, KuisTab has dropdown, auto-tag works
+- Created diskusi-refleksi-slice.ts — new Zustand slice with updateDiskusi, updateRefleksi, add/remove/update per pertanyaan
+- Updated types.ts — added 8 new actions to AuthoringState interface
+- Updated store index.ts — composed createDiskusiRefleksiSlice into the store
+- Cleaned preset-slice.ts — removed diskusi/refleksi from Pick type (now owned by diskusi-refleksi-slice), kept imports for applyFullPreset/newProject
+- Created DiskusiTab.tsx — full editor UI with icon selector, label, question text, petunjuk, RegenerateButton
+- Created RefleksiTab.tsx — full editor UI with icon/color selectors, question text, petunjuk, penugasan section, RegenerateButton
+- Updated shared.tsx — added 'diskusi' | 'refleksi' to KontenTab type
+- Updated Konten.tsx — added Diskusi and Refleksi tabs in both sederhana and lengkap modes
+- Updated konten/index.ts — exported DiskusiTab and RefleksiTab
+- Fixed lucide-react icon: Mirror → NotebookPen (Mirror doesn't exist)
+- Fixed RefleksiTab penugasan onChange — safe spread without ! assertion
+- Build passes cleanly: npx next build successful
+
+Stage Summary:
+- Teachers can now edit Diskusi and Refleksi content from Konten panel
+- Both tabs have RegenerateButton that uses schema-first pipeline (SchemaBlock[] → canvas)
+- Both tabs update authoring store for backward compat with canvas auto-generate
+- Sederhana mode: 5 tabs (Materi, Diskusi, Refleksi, Game & Aktivitas, Soal Evaluasi)
+- Lengkap mode: 6 tabs (Materi, Diskusi, Refleksi, Skenario, Modul & Game, Evaluasi)
+- Store architecture: clean slice separation (diskusi-refleksi-slice owns data + actions)

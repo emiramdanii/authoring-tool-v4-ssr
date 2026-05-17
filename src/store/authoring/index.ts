@@ -18,6 +18,7 @@ import { createMateriSlice } from './materi-slice';
 import { createModuleSlice } from './module-slice';
 import { createSkenarioSlice } from './skenario-slice';
 import { createMotivasiRangkumanSlice } from './motivasi-rangkuman-slice';
+import { createDiskusiRefleksiSlice } from './diskusi-refleksi-slice';
 import { createSystemSlice } from './system-slice';
 import { createPresetSlice } from './preset-slice';
 
@@ -33,6 +34,7 @@ export const useAuthoringStore = create<AuthoringState>()(devtools((...a) => ({
   ...createModuleSlice(...a),
   ...createSkenarioSlice(...a),
   ...createMotivasiRangkumanSlice(...a),
+  ...createDiskusiRefleksiSlice(...a),
   ...createSystemSlice(...a),
   ...createPresetSlice(...a),
 }), { name: 'AuthoringStore', enabled: process.env.NODE_ENV === 'development' }));
