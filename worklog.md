@@ -502,3 +502,33 @@ Stage Summary:
 - AutoSaveIndicator shows timestamp of last save
 - useUnsavedGuard consolidates all data-loss prevention (beforeunload, heartbeat, quota)
 - OfflineIndicator uses teacher-friendly language in sederhana mode
+
+---
+Task ID: sprint-a
+Agent: main
+Task: Sprint A — Phase 17.2 (Pertemuan Tag) + Phase 18.2 (Enhanced Generators)
+
+Work Log:
+- Phase 17.2: Added pertemuan field to KuisBlock.questions in schema/types.ts
+- Phase 17.2: Updated genKuisSchema() to auto-tag pertemuan per question using tagPertemuan() helper
+- Phase 17.2: Made KuisTab dropdown dynamic from atp.jumlahPertemuan (was hardcoded 1-8)
+- Phase 18.2: Enhanced genMateriSchema with richer block type selection
+  - Enumerations: nc-grid (≤3 items) vs tabel-accord (>3 items)
+  - Functions: ftab tabbed view (3+ functions) vs def-box (1-2)
+  - Added FtabBlock and TabelAccordionBlock imports
+- Phase 18.2: Enhanced genDiskusiSchema with 6 Bloom-diverse question patterns
+  - C1/C2: definitions + enumerations (Menyebutkan/Menjelaskan)
+  - C4: functions + causes (Menganalisis)
+  - C3-C5: TP-based + setuju/tidak (Mengevaluasi)
+- Phase 18.2: Enhanced genRefleksiSchema with metacognitive depth
+  - 6 question patterns: recall, transfer, commitment, monitoring, self-regulation, teach-back
+  - Dynamic content from definitions, functions, causes (not just topWords)
+- Updated old pipeline generators (genDiskusi, genRefleksi) to match quality
+- Updated ROADMAP-BSNP.md: marked 17.2 and 18.2 tasks as completed
+- Build passes, git pushed (commit 9a728e5)
+
+Stage Summary:
+- Sprint A complete: metadata infrastructure (pertemuan tag) + enhanced generators
+- 5 files changed, 384 insertions, 126 deletions
+- Generator → SchemaBlock[] architecture verified correct
+- Both pipelines (schema-first PRIMARY + old SECONDARY) updated in sync
