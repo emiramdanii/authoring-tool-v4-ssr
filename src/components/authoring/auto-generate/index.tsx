@@ -111,6 +111,8 @@ export default function AutoGenerate() {
     handleApply,
     handleGenerateAll,
     handleApplyAll,
+    handleGenerateFullLesson,
+    fullLessonLoading,
     parsedStats,
     appliedCount,
   } = useAutoGenerate();
@@ -130,7 +132,7 @@ export default function AutoGenerate() {
             <Zap size={18} className="text-app-accent" /> Auto-Generate
           </h2>
           <p className="text-sm text-app-secondary mt-1">
-            Paste teks materi sekali → generate bertahap per section.
+            Paste teks materi → Generate Full Lesson BSNP dalam 1 klik.
           </p>
         </div>
       </div>
@@ -308,6 +310,36 @@ export default function AutoGenerate() {
 
           {/* Divider before generate section */}
           <div className="border-t border-app-border/60" />
+        </div>
+      )}
+
+      {/* ── FULL LESSON GENERATE — Primary CTA ──────────────── */}
+      {parsed && (
+        <div className="bg-gradient-to-br from-app-accent/8 via-app-accent/4 to-transparent border-2 border-app-accent/30 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-bold text-app-accent flex items-center gap-2">
+                <Zap size={16} className="flex-shrink-0" />
+                Generate Full Lesson BSNP
+              </h3>
+              <p className="text-xs text-app-secondary mt-1">
+                Cover → Petunjuk → TP → Motivasi → Materi → Diskusi → Kuis → Refleksi → Rangkuman → Penutup
+              </p>
+            </div>
+            <button
+              onClick={handleGenerateFullLesson}
+              disabled={fullLessonLoading || loading.size > 0}
+              className="flex-shrink-0 px-5 py-2.5 bg-app-accent hover:bg-app-accent-hover disabled:bg-app-elevated disabled:text-app-muted text-app-inverse font-bold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg disabled:shadow-none"
+            >
+              {fullLessonLoading ? <Spinner /> : <Sparkles size={16} />}
+              {fullLessonLoading ? 'Generating...' : '⚡ Generate Full Lesson'}
+            </button>
+          </div>
+          <div className="flex items-center gap-4 text-[0.65rem] text-app-muted">
+            <span className="flex items-center gap-1">{settings.pertemuan} pertemuan</span>
+            <span className="flex items-center gap-1">{settings.jumlahKuis} soal kuis</span>
+            <span className="flex items-center gap-1">Bloom C1-C{settings.bloomMax}</span>
+          </div>
         </div>
       )}
 

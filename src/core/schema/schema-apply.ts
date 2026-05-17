@@ -21,6 +21,7 @@
 
 import type { SchemaBlock, ScreenSchema } from './types';
 import type { CanvaPage } from '@/components/canva/types';
+import type { FullLessonSchema } from './generators';
 import { useCanvaStore } from '@/store/canva/store';
 import { generateBlockId, generatePageId } from './ensure-schema';
 import { assertValidBlocks, assertValidSchema } from './validation';
@@ -956,4 +957,247 @@ export function transactionDuplicateBlock(
   tx.duplicate(blockId, newId);
 
   return commitSceneTransaction(pageId, tx);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ENSURE LESSON PAGES — Create/reuse BSNP pages from FullLessonSchema
+// ═══════════════════════════════════════════════════════════════════
+// Converts a FullLessonSchema into a set of canvas pages following
+// the BSNP (Badan Standar Nasional Pendidikan) lesson structure.
+//
+// For each page in the BSNP structure:
+//   1. If a page with that templateType already exists → reuse it
+//   2. If not → create a new CanvaPage with that templateType
+//   3. Remove any old lesson pages not in the BSNP structure
+//   4. Apply the corresponding blocks from FullLessonSchema
+//
+// This function is idempotent — calling it multiple times with the
+// same schema produces the same result (reusing existing pages).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * BSNP lesson page structure — defines the canonical page order
+ * and template types for a full BSNP-compliant lesson.
+ *
+ * Each entry maps to a section of the FullLessonSchema:
+ *   cover    → schema.cover
+ *   petunjuk → schema.petunjuk (optional)
+ *   dokumen  → schema.tp + schema.alur (combined CP/TP/ATP)
+ *   tujuan   → schema.tp (student-facing learning objectives)
+ *   motivasi → schema.motivasi
+ *   materi   → schema.materi (may be multiple blocks)
+ *   diskusi  → schema.diskusi
+ *   kuis     → schema.kuis
+ *   refleksi → schema.refleksi
+ *   rangkuman → schema.rangkuman (optional)
+ *   penutup  → schema.hasil + schema.penutup
+ */
+const BSNP_PAGE_STRUCTURE = [
+  { templateType: 'cover', label: 'Cover' },
+  { templateType: 'petunjuk', label: 'Petunjuk' },
+  { templateType: 'dokumen', label: 'Tujuan & Alur' },  // TP + Alur combined
+  { templateType: 'tujuan', label: 'Tujuan Pembelajaran' },
+  { templateType: 'motivasi', label: 'Motivasi' },
+  { templateType: 'materi', label: 'Materi' },
+  { templateType: 'diskusi', label: 'Diskusi' },
+  { templateType: 'kuis', label: 'Kuis' },
+  { templateType: 'refleksi', label: 'Refleksi' },
+  { templateType: 'rangkuman', label: 'Rangkuman' },
+  { templateType: 'penutup', label: 'Penutup' },
+] as const;
+
+/** All template types that belong to the BSNP lesson structure */
+const BSNP_TEMPLATE_TYPES = new Set<string>(BSNP_PAGE_STRUCTURE.map(p => p.templateType));
+
+/**
+ * Resolve the blocks for a given templateType from a FullLessonSchema.
+ *
+ * Mapping:
+ *   cover    → [schema.cover]
+ *   petunjuk → [schema.petunjuk] (optional — returns [] if missing)
+ *   dokumen  → [schema.tp, schema.alur?] (TP + Alur combined)
+ *   tujuan   → [schema.tp] (student-facing TP display)
+ *   motivasi → [schema.motivasi] (optional — returns [] if missing)
+ *   materi   → schema.materi (may be multiple blocks)
+ *   diskusi  → [schema.diskusi]
+ *   kuis     → [schema.kuis]
+ *   refleksi → [schema.refleksi]
+ *   rangkuman → [schema.rangkuman] (optional — returns [] if missing)
+ *   penutup  → [schema.hasil, schema.penutup]
+ */
+function resolveBlocksForTemplate(
+  schema: FullLessonSchema,
+  templateType: string,
+): SchemaBlock[] {
+  switch (templateType) {
+    case 'cover':
+      return [schema.cover];
+    case 'petunjuk':
+      return schema.petunjuk ? [schema.petunjuk] : [];
+    case 'dokumen': {
+      const blocks: SchemaBlock[] = [schema.tp];
+      if (schema.alur) blocks.push(schema.alur);
+      return blocks;
+    }
+    case 'tujuan':
+      return [schema.tp];
+    case 'motivasi':
+      return schema.motivasi ? [schema.motivasi] : [];
+    case 'materi':
+      return schema.materi;
+    case 'diskusi':
+      return [schema.diskusi];
+    case 'kuis':
+      return [schema.kuis];
+    case 'refleksi':
+      return [schema.refleksi];
+    case 'rangkuman':
+      return schema.rangkuman ? [schema.rangkuman] : [];
+    case 'penutup': {
+      const blocks: SchemaBlock[] = [schema.hasil];
+      blocks.push(schema.penutup);
+      return blocks;
+    }
+    default:
+      return [];
+  }
+}
+
+/**
+ * Ensure that the canvas has the correct BSNP lesson pages for a given schema.
+ *
+ * This function:
+ *   1. Checks existing pages in the canva store
+ *   2. For each templateType in the BSNP structure: if a page with that
+ *      templateType exists, reuses it; if not, creates a new CanvaPage
+ *   3. Removes any old lesson pages (pages with templateTypes in the
+ *      BSNP structure) that aren't needed
+ *   4. Applies the corresponding blocks from FullLessonSchema to each page
+ *   5. Returns the updated page count
+ *
+ * Idempotent: calling multiple times with the same schema produces
+ * the same result. Existing pages are reused when possible.
+ *
+ * @param lessonSchema - The full lesson schema to apply
+ * @returns The total number of pages after the operation
+ */
+export function ensureLessonPages(lessonSchema: FullLessonSchema): number {
+  const store = useCanvaStore.getState();
+  const existingPages = [...store.pages];
+
+  // ── Step 1: Determine which template types are needed ──────────
+  // A template type is needed if it has content (non-empty blocks).
+  // Optional sections (petunjuk, motivasi, rangkuman) are skipped
+  // when the schema has no content for them.
+  const neededTypes = new Set<string>();
+  for (const { templateType } of BSNP_PAGE_STRUCTURE) {
+    const blocks = resolveBlocksForTemplate(lessonSchema, templateType);
+    if (blocks.length > 0) {
+      neededTypes.add(templateType);
+    }
+  }
+
+  // ── Step 2: Build index of existing pages by templateType ──────
+  // Track which existing pages match BSNP template types so we can
+  // reuse them. We only reuse the FIRST matching page per type.
+  const usedPageIds = new Set<string>();
+  const pageByType = new Map<string, CanvaPage>();
+  for (const page of existingPages) {
+    if (BSNP_TEMPLATE_TYPES.has(page.templateType) && !pageByType.has(page.templateType)) {
+      pageByType.set(page.templateType, page);
+      usedPageIds.add(page.id);
+    }
+  }
+
+  // ── Step 3: Build the new page list ───────────────────────────
+  // Preserve non-BSNP pages in their original order.
+  // BSNP pages are placed in the BSNP structure order, inserted
+  // at the position of the first existing BSNP page.
+  const nonBsnpPages = existingPages.filter(p => !BSNP_TEMPLATE_TYPES.has(p.templateType));
+
+  // Find insertion point: position of the first BSNP page in the
+  // original page list, or end of list if none exist yet.
+  let insertIdx = existingPages.findIndex(p => BSNP_TEMPLATE_TYPES.has(p.templateType));
+  if (insertIdx < 0) insertIdx = existingPages.length;
+
+  // Build BSNP pages in order
+  const bsnpPages: CanvaPage[] = [];
+  for (const { templateType, label } of BSNP_PAGE_STRUCTURE) {
+    if (!neededTypes.has(templateType)) continue;
+
+    const blocks = resolveBlocksForTemplate(lessonSchema, templateType);
+    if (blocks.length === 0) continue;
+
+    // Ensure all blocks have stable IDs
+    const blocksWithIds = blocks.map(b => ({
+      ...b,
+      id: b.id || generateBlockId(),
+    }));
+
+    // Validate blocks before writing (dev-mode guard)
+    assertValidBlocks(blocksWithIds, `ensureLessonPages:${templateType}`);
+
+    const existingPage = pageByType.get(templateType);
+
+    if (existingPage) {
+      // ── Reuse existing page ────────────────────────────────
+      const newSchema: ScreenSchema = {
+        id: existingPage.id,
+        version: 1,
+        templateType,
+        blocks: blocksWithIds,
+      };
+      // Dev-mode purity guard
+      assertDocumentPurity(newSchema, `ensureLessonPages:reuse:${templateType}`);
+
+      bsnpPages.push({
+        ...existingPage,
+        schema: newSchema,
+        pageMode: 'schema',
+        elements: [],
+      });
+    } else {
+      // ── Create new page ────────────────────────────────────
+      const newPageId = generatePageId();
+      const newSchema: ScreenSchema = {
+        id: newPageId,
+        version: 1,
+        templateType,
+        blocks: blocksWithIds,
+      };
+      // Dev-mode purity guard
+      assertDocumentPurity(newSchema, `ensureLessonPages:new:${templateType}`);
+
+      const newPage: CanvaPage = {
+        id: newPageId,
+        label,
+        bgDataUrl: null,
+        bgColor: '#ffffff',
+        overlay: 0,
+        templateType,
+        colorPalette: null,
+        navConfig: { showNavbar: false, showPrevNext: false, showScore: false, showProgress: false, navbarStyle: 'minimal' as const },
+        pageMode: 'schema',
+        elements: [],
+        schema: newSchema,
+        templateData: {},
+      };
+
+      bsnpPages.push(newPage);
+    }
+  }
+
+  // ── Step 4: Compose final page list ───────────────────────────
+  // Insert BSNP pages at the insertion point, preserving non-BSNP
+  // pages in their original order around them.
+  const finalPages: CanvaPage[] = [
+    ...nonBsnpPages.slice(0, insertIdx),
+    ...bsnpPages,
+    ...nonBsnpPages.slice(insertIdx),
+  ];
+
+  // ── Step 5: Write to store ────────────────────────────────────
+  useCanvaStore.setState({ pages: finalPages });
+
+  return finalPages.length;
 }

@@ -46,8 +46,9 @@ import {
   genHasilSchema,
   genPenutupSchema,
   genCoverSchema,
+  genFullLessonSchema,
 } from '@/core/schema/generators';
-import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
+import { applyBlocksToPages, applyBlockToPages, ensureLessonPages } from '@/core/schema/schema-apply';
 import type { SchemaBlock } from '@/core/schema/types';
 import { useCanvaStore } from '@/store/canva-store';
 
@@ -72,6 +73,7 @@ export function useAutoGenerate() {
   const [previews, setPreviews] = useState<PreviewData[]>([]);
   const [activePreview, setActivePreview] = useState<PreviewData | null>(null);
   const [appliedCount, setAppliedCount] = useState(0);
+  const [fullLessonLoading, setFullLessonLoading] = useState(false);
 
   // ── Persist text to localStorage ────────────────────────────
   useEffect(() => {
@@ -595,6 +597,114 @@ export function useAutoGenerate() {
     });
   }, [previews, handleApply]);
 
+  // ═══════════════════════════════════════════════════════════════════
+  // ONE-CLICK FULL LESSON GENERATION
+  // ═══════════════════════════════════════════════════════════════════
+  // Pipeline: Paste → Parse → genFullLessonSchema() → ensureLessonPages()
+  //   → Navigate to canvas
+  //
+  // This is the PRIMARY teacher flow — one click produces a complete
+  // BSNP-ready lesson with all pages: Cover → Petunjuk → TP → Alur
+  //   → Motivasi → Materi → Diskusi → Kuis → Refleksi → Rangkuman → Penutup
+  //
+  // Also writes projections to authoring store for Konten panel compat.
+  // ═══════════════════════════════════════════════════════════════════
+
+  const handleGenerateFullLesson = useCallback(() => {
+    if (!parsed) {
+      toast.error('Parse teks terlebih dahulu sebelum generate full lesson.');
+      return;
+    }
+
+    setFullLessonLoading(true);
+    toast.info('⚡ Generating full lesson BSNP...');
+
+    // Simulate brief delay for UX feedback
+    setTimeout(() => {
+      try {
+        const authState = store.getState();
+
+        // 1. Generate the FULL lesson schema — all blocks at once
+        const lessonSchema = genFullLessonSchema(
+          parsed,
+          meta,
+          settings,
+          // Default petunjuk langkah
+          [
+            { icon: '📖', judul: 'Baca Materi', isi: 'Pelajari materi yang disajikan di setiap halaman.' },
+            { icon: '💬', judul: 'Diskusi Kelompok', isi: 'Diskusikan pertanyaan bersama teman sekelompok.' },
+            { icon: '✍️', judul: 'Jawab Soal', isi: 'Kerjakan kuis untuk menguji pemahamanmu.' },
+            { icon: '🪞', judul: 'Refleksi', isi: 'Renungkan apa yang sudah dipelajari.' },
+          ],
+          authState.tp,
+        );
+
+        // 2. Create/reuse BSNP pages and apply schema blocks
+        const pageCount = ensureLessonPages(lessonSchema);
+
+        // 3. Write projections to authoring store for Konten panel compat
+        // TP
+        const tpData = genTP(parsed, settings);
+        store.setState({ tp: tpData, dirty: true });
+
+        // ATP
+        const atpData = genATP(tpData, meta, settings.pertemuan);
+        store.setState({
+          atp: {
+            namaBab: atpData.namaBab,
+            jumlahPertemuan: atpData.jumlahPertemuan,
+            pertemuan: atpData.pertemuan as import('@/store/authoring-store').AtpPertemuan[],
+          },
+        });
+
+        // Kuis
+        const kuisData = genKuis(parsed, settings.jumlahKuis, settings.pertemuan);
+        store.setState({ kuis: kuisData });
+
+        // Materi
+        const materiData = genMateri(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+        store.setState({ materi: { blok: materiData } });
+
+        // Diskusi
+        const diskusiData = genDiskusi(parsed, authState.tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+        store.setState({ diskusi: diskusiData });
+
+        // Refleksi
+        const refleksiData = genRefleksi(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+        store.setState({ refleksi: refleksiData });
+
+        // Alur
+        const alurData = genAlur(tpData, meta);
+        store.setState({ alur: alurData });
+
+        // 4. Navigate to canvas — first page with schema content
+        const canvaPages = useCanvaStore.getState().pages;
+        const targetIdx = canvaPages.findIndex(
+          (p) => p.schema && p.schema.blocks.length > 0
+        );
+        useAuthoringStore.getState().setActivePanel('canva');
+        useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
+
+        setAppliedCount((c) => c + 1);
+        toast.success(`✅ Full lesson berhasil! ${pageCount} halaman BSNP siap.`, {
+          duration: 6000,
+          action: {
+            label: 'Lihat di Canva',
+            onClick: () => {
+              useAuthoringStore.getState().setActivePanel('canva');
+              useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
+            },
+          },
+        });
+      } catch (err) {
+        logger.error('AutoGenerate:fullLesson', err);
+        toast.error(`Gagal generate full lesson: ${(err as Error).message}`);
+      } finally {
+        setFullLessonLoading(false);
+      }
+    }, 500 + Math.random() * 300);
+  }, [parsed, meta, settings]);
+
   // ── Parsed stats ────────────────────────────────────────────
   const parsedStats = useMemo(() => {
     if (!parsed) return null;
@@ -626,6 +736,8 @@ export function useAutoGenerate() {
     handleApply,
     handleGenerateAll,
     handleApplyAll,
+    handleGenerateFullLesson,
+    fullLessonLoading,
     parsedStats,
     appliedCount,
   };
