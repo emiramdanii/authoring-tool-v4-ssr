@@ -18,12 +18,19 @@ import { startAutoSync, stopAutoSync } from './sync-slice';
 import { connectHistoryToEditBus } from '@/core/editor/patch-history';
 import { setCanvaStoreRef, startInteractiveCanvaSync, stopInteractiveCanvaSync } from '@/store/interactive-store';
 import { subscriptionManager } from './subscription-manager';
+import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
+import { useAuthoringStore } from '@/store/authoring-store';
 
 let _initialized = false;
 
 // ── Auto-save debounce state ──────────────────────────────────
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 const AUTO_SAVE_DELAY = 1000; // 1 second debounce
+
+// ── Projection sync debounce state ────────────────────────────
+let projectionTimer: ReturnType<typeof setTimeout> | null = null;
+const PROJECTION_SYNC_DELAY = 300; // 300ms debounce — faster than save
+let _projectionSyncing = false; // Guard against sync loops
 
 /**
  * Start debounced auto-save to localStorage.
@@ -59,6 +66,63 @@ function startAutoSave() {
 }
 
 /**
+ * Start reactive Schema → Projection sync.
+ *
+ * When page schemas change (user edits in canvas), this debounced
+ * subscription re-derives the projection and pushes it to the
+ * authoring store. This keeps the Konten panel in sync with
+ * schema edits made via the canvas.
+ *
+ * Debounced at 300ms to coalesce rapid edits (e.g., typing) while
+ * still being fast enough to feel responsive in the Konten panel.
+ */
+function startProjectionSync() {
+  const unsub = useCanvaStore.subscribe(
+    (state) => ({ pages: state.pages }),
+    () => {
+      // Debounced projection derivation — coalesces rapid schema edits
+      if (projectionTimer) clearTimeout(projectionTimer);
+      projectionTimer = setTimeout(() => {
+        // Guard: prevent sync loop (projection → authoring → autoSync → pages → projection)
+        if (_projectionSyncing) {
+          projectionTimer = null;
+          return;
+        }
+        _projectionSyncing = true;
+        try {
+          const pages = useCanvaStore.getState().pages;
+          const projection = deriveProjectionFromPages(pages);
+          // Only update fields that have values in the projection
+          // This preserves authoring-only fields (CP, ATP, petunjuk, etc.)
+          const updates: Record<string, unknown> = {};
+          if (projection.meta) updates.meta = projection.meta;
+          if (projection.tp) updates.tp = projection.tp;
+          if (projection.alur) updates.alur = projection.alur;
+          if (projection.kuis) updates.kuis = projection.kuis;
+          if (projection.materi) updates.materi = projection.materi;
+          if (projection.diskusi) updates.diskusi = projection.diskusi;
+          if (projection.refleksi) updates.refleksi = projection.refleksi;
+          if (projection.skenario) updates.skenario = projection.skenario;
+          if (projection.motivasi) updates.motivasi = projection.motivasi;
+          if (projection.rangkuman) updates.rangkuman = projection.rangkuman;
+
+          if (Object.keys(updates).length > 0) {
+            useAuthoringStore.setState(updates);
+          }
+        } catch (err) {
+          console.warn('[ProjectionSync] Failed to derive projection:', err);
+        }
+        _projectionSyncing = false;
+        projectionTimer = null;
+      }, PROJECTION_SYNC_DELAY);
+    },
+    { equalityFn: (a, b) => a.pages === b.pages }
+  );
+
+  subscriptionManager.registerSubscription('projection-sync', unsub);
+}
+
+/**
  * Initialize canva store subscriptions.
  * Must be called once after the app mounts (client-side only).
  *
@@ -68,6 +132,7 @@ function startAutoSave() {
  *   3. Canva store ref → interactive store (breaks circular dep)
  *   4. Canva store pages → interactive store totalPages sync
  *   5. Canva store pages/ratioId → debounced auto-save to localStorage
+ *   6. Canva store pages → Schema→Projection sync (keeps Konten panel live)
  */
 export function initCanvaStoreSubscriptions() {
   if (_initialized) return;
@@ -95,6 +160,9 @@ export function initCanvaStoreSubscriptions() {
 
   // Auto-save: debounce pages/ratioId changes → localStorage
   startAutoSave();
+
+  // Schema → Projection sync: keeps Konten panel in sync with canvas edits
+  startProjectionSync();
 }
 
 /**
@@ -116,6 +184,12 @@ export function cleanupCanvaStoreSubscriptions() {
   if (saveTimer) {
     clearTimeout(saveTimer);
     saveTimer = null;
+  }
+
+  // Clear any pending projection sync timer
+  if (projectionTimer) {
+    clearTimeout(projectionTimer);
+    projectionTimer = null;
   }
 
   _initialized = false;
