@@ -112,6 +112,7 @@ export default function AutoGenerate() {
     handleGenerateAll,
     handleApplyAll,
     handleGenerateFullLesson,
+    handleGeneratePertemuan,
     fullLessonLoading,
     parsedStats,
     appliedCount,
@@ -340,6 +341,22 @@ export default function AutoGenerate() {
             <span className="flex items-center gap-1">{settings.jumlahKuis} soal kuis</span>
             <span className="flex items-center gap-1">Bloom C1-C{settings.bloomMax}</span>
           </div>
+          {/* Per-Pertemuan quick generate buttons */}
+          {settings.pertemuan > 1 && (
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-[0.65rem] text-app-muted">Generate per pertemuan:</span>
+              {Array.from({ length: settings.pertemuan }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  onClick={() => handleGeneratePertemuan(n)}
+                  disabled={fullLessonLoading || loading.size > 0}
+                  className="px-3 py-1 bg-app-accent/15 hover:bg-app-accent/25 text-app-accent text-xs font-semibold rounded-lg transition-all duration-200 border border-app-accent/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Pertemuan {n}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

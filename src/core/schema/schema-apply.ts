@@ -21,7 +21,7 @@
 
 import type { SchemaBlock, ScreenSchema } from './types';
 import type { CanvaPage } from '@/components/canva/types';
-import type { FullLessonSchema } from './generators';
+import type { FullLessonSchema, PertemuanLessonSchema } from './generators';
 import { useCanvaStore } from '@/store/canva/store';
 import { generateBlockId, generatePageId } from './ensure-schema';
 import { assertValidBlocks, assertValidSchema } from './validation';
@@ -1308,4 +1308,77 @@ export function ensureLessonPages(lessonSchema: FullLessonSchema): number {
   useCanvaStore.setState({ pages: finalPages });
 
   return finalPages.length;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ENSURE PERTEMUAN PAGES — Create canvas pages for a specific pertemuan
+// ═══════════════════════════════════════════════════════════════════
+// Phase 19: Teachers can generate content for one pertemuan at a time.
+// Creates Materi + Diskusi + Kuis(filtered) + Refleksi pages
+// with section labels like "Pertemuan 1: Materi", etc.
+// ═══════════════════════════════════════════════════════════════════
+
+export function ensurePertemuanPages(pertemuanSchema: PertemuanLessonSchema): number {
+  const store = useCanvaStore.getState();
+  const existingPages = [...store.pages];
+  const n = pertemuanSchema.nomor;
+
+  // Page structure for each pertemuan: materi → diskusi → kuis → refleksi
+  const pertemuanPages = [
+    { templateType: 'materi', label: `Pertemuan ${n}: Materi`, blocks: pertemuanSchema.materi },
+    { templateType: 'diskusi', label: `Pertemuan ${n}: Diskusi`, blocks: [pertemuanSchema.diskusi] },
+    { templateType: 'kuis', label: `Pertemuan ${n}: Kuis`, blocks: [pertemuanSchema.kuis] },
+    { templateType: 'refleksi', label: `Pertemuan ${n}: Refleksi`, blocks: [pertemuanSchema.refleksi] },
+  ] as const;
+
+  const pertemuanLabel = `Pertemuan ${n}:`;
+  const newPages: CanvaPage[] = [];
+
+  for (const { templateType, label, blocks } of pertemuanPages) {
+    const blocksWithIds = blocks.map(b => ({ ...b, id: b.id || generateBlockId() }));
+    assertValidBlocks(blocksWithIds, `ensurePertemuanPages:${label}`);
+
+    // Find existing page for this pertemuan+type
+    const existingIdx = existingPages.findIndex(p => p.label === label);
+
+    if (existingIdx >= 0) {
+      const existing = existingPages[existingIdx];
+      const newSchema: ScreenSchema = existing.schema
+        ? { ...existing.schema, blocks: blocksWithIds }
+        : { id: existing.id, version: 1, templateType, blocks: blocksWithIds };
+      assertDocumentPurity(newSchema, `ensurePertemuanPages:${label}`);
+      newPages.push({ ...existing, label, schema: newSchema, pageMode: 'schema', elements: [] });
+      existingPages.splice(existingIdx, 1);
+    } else {
+      const newPageId = generatePageId();
+      const newSchema: ScreenSchema = {
+        id: newPageId, version: 1, templateType, blocks: blocksWithIds,
+        sectionLabel: `Pertemuan ${n}`, sectionColor: 'p',
+      };
+      assertDocumentPurity(newSchema, `ensurePertemuanPages:new:${label}`);
+      newPages.push({
+        id: newPageId, label, bgDataUrl: null, bgColor: '#ffffff', overlay: 0,
+        templateType, colorPalette: null,
+        navConfig: { showNavbar: false, showPrevNext: false, showScore: false, showProgress: false, navbarStyle: 'minimal' as const },
+        pageMode: 'schema', elements: [], schema: newSchema, templateData: {},
+      });
+    }
+  }
+
+  // Remove any old pertemuan pages with same number
+  const finalExisting = existingPages.filter(p => !p.label?.startsWith(pertemuanLabel));
+
+  // Insert after shared pages (cover, petunjuk, etc.)
+  const sharedTypes = ['cover', 'petunjuk', 'dokumen', 'tujuan', 'motivasi'];
+  let insertIdx = finalExisting.findLastIndex(p => sharedTypes.includes(p.templateType));
+  if (insertIdx < 0) insertIdx = 0;
+
+  const finalPages = [
+    ...finalExisting.slice(0, insertIdx + 1),
+    ...newPages,
+    ...finalExisting.slice(insertIdx + 1),
+  ];
+
+  useCanvaStore.setState({ pages: finalPages });
+  return newPages.length;
 }

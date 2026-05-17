@@ -1062,6 +1062,75 @@ export function genPenutupSchema(
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// PER-PERTEMUAN LESSON — Generate schema blocks for ONE pertemuan
+// ═══════════════════════════════════════════════════════════════════
+// When a lesson has multiple pertemuan, each pertemuan gets its own
+// set of pages: Materi + Diskusi + Kuis(filtered) + Refleksi.
+// Shared pages (Cover, Petunjuk, TP, Alur) are generated once.
+//
+// This enables teachers to generate per-pertemuan, edit independently,
+// and navigate by pertemuan in the canvas.
+
+export interface PertemuanLessonSchema {
+  /** Pertemuan number (1-based) */
+  nomor: number;
+  /** Materi blocks for this pertemuan */
+  materi: SchemaBlock[];
+  /** Diskusi block for this pertemuan */
+  diskusi: DiskusiBlock;
+  /** Kuis block — only questions tagged for this pertemuan (or untagged) */
+  kuis: KuisBlock;
+  /** Refleksi block for this pertemuan */
+  refleksi: RefleksiBlock;
+}
+
+/**
+ * Generate schema blocks for a specific pertemuan.
+ * Kuis questions are filtered: only those tagged with this pertemuan
+ * or untagged (pertemuan === undefined) are included.
+ */
+export function genPertemuanSchema(
+  parsed: ParseResult,
+  tp: Array<{ desc: string }>,
+  meta: { judulPertemuan: string; namaBab: string },
+  nomor: number,
+  totalPertemuan: number,
+  jumlahKuisPerPertemuan: number = 5,
+): PertemuanLessonSchema {
+  // Generate materi — same content for all pertemuan (teacher can customize later)
+  const materi = genMateriSchema(parsed, {
+    judulPertemuan: `Pertemuan ${nomor}: ${meta.judulPertemuan}`,
+    namaBab: meta.namaBab,
+  });
+
+  // Generate diskusi — same questions for all pertemuan
+  const diskusi = genDiskusiSchema(parsed, tp, {
+    judulPertemuan: `Pertemuan ${nomor}: ${meta.judulPertemuan}`,
+    namaBab: meta.namaBab,
+  });
+
+  // Generate kuis — full set then filter by pertemuan tag
+  const fullKuis = genKuisSchema(parsed, jumlahKuisPerPertemuan * totalPertemuan, totalPertemuan);
+  const filteredQuestions = fullKuis.questions.filter(
+    q => q.pertemuan === nomor || q.pertemuan === undefined
+  );
+  const kuis: KuisBlock = {
+    ...fullKuis,
+    id: generateBlockId(),
+    title: `Kuis Pertemuan ${nomor}`,
+    questions: filteredQuestions.length > 0 ? filteredQuestions : fullKuis.questions.slice(0, jumlahKuisPerPertemuan),
+  };
+
+  // Generate refleksi — same for all pertemuan
+  const refleksi = genRefleksiSchema(parsed, {
+    judulPertemuan: `Pertemuan ${nomor}: ${meta.judulPertemuan}`,
+    namaBab: meta.namaBab,
+  });
+
+  return { nomor, materi, diskusi, kuis, refleksi };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // FULL LESSON — Generate all schema blocks for a complete lesson
 // ═══════════════════════════════════════════════════════════════════
 

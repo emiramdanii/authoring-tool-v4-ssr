@@ -47,8 +47,9 @@ import {
   genPenutupSchema,
   genCoverSchema,
   genFullLessonSchema,
+  genPertemuanSchema,
 } from '@/core/schema/generators';
-import { applyBlocksToPages, applyBlockToPages, ensureLessonPages } from '@/core/schema/schema-apply';
+import { applyBlocksToPages, applyBlockToPages, ensureLessonPages, ensurePertemuanPages } from '@/core/schema/schema-apply';
 import type { SchemaBlock } from '@/core/schema/types';
 import { useCanvaStore } from '@/store/canva-store';
 
@@ -719,6 +720,67 @@ export function useAutoGenerate() {
     ];
   }, [parsed]);
 
+  // ── Per-Pertemuan Generation ──────────────────────────────────
+  const handleGeneratePertemuan = useCallback(
+    (nomor: number) => {
+      if (!parsed) {
+        toast.error('Parse teks terlebih dahulu sebelum generate pertemuan.');
+        return;
+      }
+
+      toast.info(`⚡ Generating Pertemuan ${nomor}...`);
+
+      setTimeout(() => {
+        try {
+          const authState = store.getState();
+
+          // 1. Generate pertemuan schema
+          const pertemuanSchema = genPertemuanSchema(
+            parsed,
+            authState.tp,
+            { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab },
+            nomor,
+            settings.pertemuan,
+            Math.ceil(settings.jumlahKuis / settings.pertemuan),
+          );
+
+          // 2. Create/update canvas pages
+          const pageCount = ensurePertemuanPages(pertemuanSchema);
+
+          // 3. Write projections to authoring store for Konten panel
+          // Materi
+          const materiData = genMateri(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+          store.setState({ materi: { blok: materiData } });
+
+          // Diskusi
+          const diskusiData = genDiskusi(parsed, authState.tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+          store.setState({ diskusi: diskusiData });
+
+          // Kuis (tagged for this pertemuan)
+          const allKuis = genKuis(parsed, settings.jumlahKuis, settings.pertemuan);
+          store.setState({ kuis: allKuis });
+
+          // Refleksi
+          const refleksiData = genRefleksi(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+          store.setState({ refleksi: refleksiData, dirty: true });
+
+          // 4. Navigate to canvas
+          useAuthoringStore.getState().setActivePanel('canva');
+          const canvaPages = useCanvaStore.getState().pages;
+          const targetIdx = canvaPages.findIndex(p => p.label?.startsWith(`Pertemuan ${nomor}`));
+          useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
+
+          setAppliedCount((c) => c + 1);
+          toast.success(`✅ Pertemuan ${nomor} berhasil! ${pageCount} halaman dibuat.`);
+        } catch (err) {
+          logger.error('AutoGenerate:pertemuan', err);
+          toast.error(`Gagal generate Pertemuan ${nomor}: ${(err as Error).message}`);
+        }
+      }, 400 + Math.random() * 200);
+    },
+    [parsed, meta, settings],
+  );
+
   return {
     text,
     setText,
@@ -737,6 +799,7 @@ export function useAutoGenerate() {
     handleGenerateAll,
     handleApplyAll,
     handleGenerateFullLesson,
+    handleGeneratePertemuan,
     fullLessonLoading,
     parsedStats,
     appliedCount,
