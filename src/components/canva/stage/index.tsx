@@ -375,7 +375,7 @@ export default function Stage() {
       className="flex-1 w-full bg-app-surface overflow-hidden flex items-center justify-center"
       style={{
         cursor: cursorStyle,
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+        backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)',
         backgroundSize: '20px 20px',
       }}
       onMouseMove={(e) => {
@@ -481,7 +481,7 @@ export default function Stage() {
           {/* Grid Overlay */}
           {showGrid && !canvasPreview && (
             <div className="absolute inset-0 pointer-events-none" style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(rgba(0,0,0,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.06) 1px, transparent 1px)`,
               backgroundSize: `${gridSize}% ${gridSize}%`,
             }} />
           )}

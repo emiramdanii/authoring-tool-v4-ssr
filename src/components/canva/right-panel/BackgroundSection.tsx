@@ -271,7 +271,7 @@ export default function BackgroundSection() {
         <div className="flex items-center gap-2">
           <input
             type="color"
-            value={page?.bgColor?.startsWith('#') ? page.bgColor : '#1e293b'}
+            value={page?.bgColor?.startsWith('#') ? page.bgColor : '#ffffff'}
             onChange={e => setBgColor(e.target.value)}
             className="w-full h-7 rounded-lg border border-app-border cursor-pointer bg-app-elevated flex-1"
           />

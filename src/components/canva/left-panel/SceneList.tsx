@@ -51,7 +51,7 @@ export function SceneList() {
           ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
           : p.bgColor?.includes('gradient')
             ? { background: p.bgColor }
-            : { background: p.bgColor || '#1e293b' };
+            : { background: p.bgColor || '#ffffff' };
 
         const isSchemaDriven = !!p.schema;
         const badgeColor = BADGE_COLOR_MAP[p.templateType || 'custom'] || BADGE_COLOR_MAP.custom;

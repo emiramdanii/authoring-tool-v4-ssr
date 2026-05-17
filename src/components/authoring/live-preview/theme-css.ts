@@ -36,10 +36,10 @@ export const THEME_CSS: Record<LayoutTheme, string> = {
 .sk-shell{border-color:rgba(139,92,246,.3)!important;box-shadow:0 0 30px rgba(139,92,246,.1)!important;}
 </style>`,
   glass: `<style>
-:root{--bg:#1e293b;--bg2:#263548;--card:rgba(255,255,255,.06);--border:rgba(255,255,255,.1);
+:root{--bg:#ffffff;--bg2:#f8fafc;--card:rgba(0,0,0,.04);--border:rgba(0,0,0,.08);
   --y:#fbbf24;--c:#22d3ee;--r:#f87171;--p:#a78bfa;--g:#34d399;--o:#fb923c;
   --text:#f1f5f9;--muted:#94a3b8;}
-body{background:linear-gradient(135deg,#1e293b,#0f172a)!important;}
+body{background:linear-gradient(135deg,#ffffff,#f8fafc)!important;}
 .card{background:rgba(255,255,255,.05)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 8px 32px rgba(0,0,0,.2)!important;}
 .btn-y{background:rgba(251,191,36,.9)!important;backdrop-filter:blur(8px)!important;box-shadow:0 4px 20px rgba(251,191,36,.2)!important;}
 .btn-c{background:rgba(34,211,238,.9)!important;backdrop-filter:blur(8px)!important;}

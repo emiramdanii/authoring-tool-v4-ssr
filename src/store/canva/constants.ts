@@ -19,7 +19,7 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
     id: pageId,
     label,
     bgDataUrl: null,
-    bgColor: templateType === 'custom' ? '#1e293b' : '#0f172a',
+    bgColor: '#ffffff',
     overlay: 20,
     elements: [],
     templateType,

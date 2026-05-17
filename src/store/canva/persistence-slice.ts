@@ -294,7 +294,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             id: p.id,
             label: p.label || `Halaman ${p.pageIndex + 1}`,
             bgDataUrl: p.bgImage || null,
-            bgColor: p.bgColor || '#0f172a',
+            bgColor: p.bgColor || '#ffffff',
             overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
             elements: [], // Always empty — schema is the source of truth
             templateType: (p.templateType as CanvaPage['templateType']) || 'custom',

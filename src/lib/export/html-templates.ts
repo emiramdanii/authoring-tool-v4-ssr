@@ -33,14 +33,14 @@ export function renderPageHtml(page: CanvaPage, pageIdx: number, _totalPages: nu
 
   // Background style
   const bg = schema?.background;
-  let bgStyle = 'background: linear-gradient(135deg, #0e1c2f, #13243a);';
+  let bgStyle = 'background: linear-gradient(135deg, #ffffff, #f8fafc);';
   if (bg) {
     if (bg.type === 'gradient' && bg.color1) {
       bgStyle = `background: linear-gradient(135deg, ${bg.color1}, ${bg.color2 || bg.color1});`;
     } else if (bg.type === 'solid' && bg.color1) {
       bgStyle = `background: ${bg.color1};`;
     } else if (bg.type === 'radial' && bg.color1) {
-      bgStyle = `background: radial-gradient(circle at 50% 40%, ${bg.color1}, ${bg.color2 || '#0e1c2f'});`;
+      bgStyle = `background: radial-gradient(circle at 50% 40%, ${bg.color1}, ${bg.color2 || '#ffffff'});`;
     }
   } else if (page.bgColor) {
     bgStyle = `background: ${page.bgColor};`;

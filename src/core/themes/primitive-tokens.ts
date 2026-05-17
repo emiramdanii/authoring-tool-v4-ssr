@@ -43,10 +43,10 @@ export const PRIMITIVES = {
     errorDark: '#dc2626',
     info: '#3b82f6',
 
-    // Canvas background (dark navy from DesignTokens)
-    canvasBg: '#0e1c2f',
-    canvasBg2: '#13243a',
-    canvasCard: '#182d45',
+    // Canvas background (white — SMP teachers need visible canvas)
+    canvasBg: '#ffffff',
+    canvasBg2: '#f8fafc',
+    canvasCard: '#ffffff',
   },
   spacing: {
     0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64,

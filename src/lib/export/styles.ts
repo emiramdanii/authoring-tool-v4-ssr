@@ -200,7 +200,7 @@ export function getCss(ratioW: number, ratioH: number): string {
       border-radius: 50%;
       font-size: 0.7rem;
       font-weight: 800;
-      color: #0e1c2f;
+      color: #1e293b;
     }
     .tp-verb { font-weight: 700; font-size: 0.82rem; }
     .tp-desc { font-size: 0.78rem; color: #6e90b5; }
@@ -314,7 +314,7 @@ export function getCss(ratioW: number, ratioH: number): string {
       padding: 12px;
       text-align: center;
     }
-    .flashcard-front { background: #182d45; border: 1px solid rgba(255,255,255,0.08); }
+    .flashcard-front { background: #ffffff; border: 1px solid rgba(0,0,0,0.08); }
     .flashcard-back {
       background: #34d39922;
       border: 1px solid #34d39944;
@@ -355,7 +355,7 @@ export function getCss(ratioW: number, ratioH: number): string {
       font-size: 0.6rem;
       font-weight: 800;
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: #0e1c2f;
+      color: #1e293b;
       letter-spacing: 0.05em;
     }
     .takeaways {

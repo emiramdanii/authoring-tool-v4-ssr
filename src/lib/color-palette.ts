@@ -57,9 +57,9 @@ export const COLORS = {
   choiceD: '#3ecfcf',
 
   // Background
-  bgDark: '#1e293b',
-  bgDarker: '#0f172a',
-  bgPlayer: '#0e1c2f',
+  bgDark: '#f8fafc',
+  bgDarker: '#e2e8f0',
+  bgPlayer: '#ffffff',
   bgCard: '#1a1a2e',
   bgVideo: '#0a0a0a',
 
@@ -172,11 +172,11 @@ function autoMapColors(colors: string[]): Record<string, string> {
 
   // Darkest → background (--bg)
   const darkest = [...colors].sort((a, b) => getLightness(a) - getLightness(b))[0];
-  mapping['--bg'] = darkest || '#1e293b';
+  mapping['--bg'] = darkest || '#f8fafc';
 
   // Lightest → card (--card)
   const lightest = [...colors].sort((a, b) => getLightness(b) - getLightness(a))[0];
-  mapping['--card'] = adjustLight(lightest, 0.15) || '#1e293b';
+  mapping['--card'] = adjustLight(lightest, 0.15) || '#f8fafc';
 
   return mapping;
 }

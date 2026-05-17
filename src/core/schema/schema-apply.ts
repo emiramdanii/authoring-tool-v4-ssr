@@ -608,7 +608,7 @@ export function promoteSceneSplitToPage(
     id: newPageId,
     label: `${page.label || 'Halaman'} (${sceneIndex + 1})`,
     bgDataUrl: page.bgDataUrl || null,
-    bgColor: page.bgColor || '#0f172a',
+    bgColor: page.bgColor || '#ffffff',
     overlay: page.overlay ?? 0,
     templateType: page.templateType || 'custom',
     colorPalette: page.colorPalette || null,

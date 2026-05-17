@@ -48,7 +48,7 @@ class ExportErrorBoundary extends React.Component<
       return (
         <div style={{
           minHeight: '100vh',
-          background: '#0e1c2f',
+          background: '#ffffff',
           color: '#e8f2ff',
           display: 'flex',
           alignItems: 'center',
@@ -70,7 +70,7 @@ class ExportErrorBoundary extends React.Component<
                 padding: '0.5rem 1.5rem',
                 borderRadius: 8,
                 background: '#f9c82e',
-                color: '#0e1c2f',
+                color: '#1e293b',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 border: 'none',

@@ -105,7 +105,7 @@ function reconstructPages(
       id: p.id,
       label: p.label || '',
       bgDataUrl: p.bgImage || null,
-      bgColor: p.bgColor || '#0f172a',
+      bgColor: p.bgColor || '#ffffff',
       overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
       elements,
       templateType: p.templateType || 'custom',

@@ -30,8 +30,8 @@ export const TOKEN_COLORS: Record<string, string> = {
   accent: '#f59e0b',
   success: '#22c55e',
   danger: '#ef4444',
-  bg: '#0f172a',
-  surface: '#1e293b',
+  bg: '#ffffff',
+  surface: '#f8fafc',
   text: '#f8fafc',
   muted: '#94a3b8',
 };
@@ -63,7 +63,7 @@ export function generateClientExportHtml(payload: ClientExportPayload): string {
     const blocks = (page.schema as { blocks?: Array<Record<string, unknown>> })?.blocks || [];
     const blocksHtml = blocks.map(renderBlockHtml).join('\n');
     const label = escapeHtml(String(page.label || ''));
-    const bgColor = String(page.bgColor || '#0f172a');
+    const bgColor = String(page.bgColor || '#ffffff');
 
     return `<div class="page" style="background:${bgColor}">
       ${label ? `<h2>${label}</h2>` : ''}
@@ -79,10 +79,10 @@ export function generateClientExportHtml(payload: ClientExportPayload): string {
   <title>${title}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #f8fafc; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #ffffff; color: #1e293b; }
     .page { max-width: 960px; margin: 0 auto 24px; padding: 32px; border-radius: 12px; }
     .page h2 { font-size: 1.2em; margin-bottom: 16px; color: #94a3b8; }
-    .block { margin: 16px 0; padding: 16px; border-radius: 8px; background: #1e293b; }
+    .block { margin: 16px 0; padding: 16px; border-radius: 8px; background: #f8fafc; }
     .block h3 { font-size: 1.1em; margin-bottom: 8px; color: #3b82f6; }
     .block p { line-height: 1.6; color: #cbd5e1; }
   </style>

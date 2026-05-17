@@ -65,7 +65,7 @@ function renderCover(b: Record<string, unknown>): string {
   const bg = b.background as { color1?: string; color2?: string } | undefined;
   const bgStyle = bg?.color1
     ? `background: linear-gradient(135deg, ${bg.color1}, ${bg.color2 || bg.color1});`
-    : `background: linear-gradient(135deg, #0e1c2f, #13243a);`;
+    : `background: linear-gradient(135deg, #ffffff, #f8fafc);`;
 
   return `
     <div class="block cover-block" style="${bgStyle}">
