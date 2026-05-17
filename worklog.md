@@ -316,3 +316,59 @@ Stage Summary:
 - All build + type checks pass
 - Server running on port 3000
 - Remaining items from audit: nudgeSchemaBlocks stale closure (analyzed — NOT actually a bug for nudge operations), deleteSchemaBlocks bulk nested delete (works correctly for typical use), undo/redo dual system (complex — deferred), RightPanel unstable selector (performance — deferred)
+---
+Task ID: ui-efficiency-1
+Agent: Main Agent
+Task: UI Efficiency Audit — Kill render storms, eliminate pages[] cascade, deduplicate Layer panel
+
+Work Log:
+- Audited all store subscribers that read full pages[] array
+- Right Panel: Changed CSS hidden → conditional rendering (only active tab mounted)
+- Stage: Changed s.pages → s.pages[s.currentPageIndex] (eliminates cascade)
+- LayerPanel: Same pages[] optimization as Stage
+- useSelectedBlock: Subscribe to current page only, not full pages[]
+- ToolbarNav: Subscribe to page label only, not full pages[]
+- StatusBar: Subscribe to current page + pages.length, not full pages[]
+- Properties tab: Added BackgroundSection + PageSettingsSection + PaletteSection when no block selected
+- Removed duplicate Layer panel from left panel (kept only in right panel)
+- Updated LeftTab type and TAB_MIGRATION map
+- Build passes, committed and pushed
+
+Stage Summary:
+- 10 files changed, 74 insertions, 82 deletions
+- Eliminated the pages[] cascade re-render problem
+- Reduced right panel mounted components from ~10 to ~3
+- Background editing now accessible from Properties tab (0 clicks vs 3 clicks)
+- Layer panel deduplicated (left panel → right panel only)
+---
+Task ID: interaction-feedback-1
+Agent: Main Agent
+Task: Interaction Feedback & Empty State System — undo/redo, history panel, entrance animation
+
+Work Log:
+- Added undo/redo buttons (Undo2/Redo2) to QuickActions in toolbar
+  - Disabled state (grayed out) when nothing to undo/redo
+  - Clear state visibility for teachers
+- Wired showUndoRedoToast() into history-slice undo/redo operations
+  - Was defined but never called — now shows toast after undo/redo
+- Added HistoryPanel to left panel as 'Riwayat' tab
+  - Was orphaned code (fully implemented but never rendered)
+  - IconRail now has 5 tabs: Pages, Add Block, Templates, History, Settings
+  - LeftTab type updated with 'history'
+- Improved Properties tab empty state when no block selected
+  - Was: tiny 10px text hint
+  - Now: proper empty state card with icon, headline, and guidance text
+- Added block entrance animation (CSS keyframe + tracking)
+  - blockEntrance keyframe: scale(0.92) → scale(1) + fade, 250ms
+  - Tracked via entranceBlockIds state in SchemaScreenRenderer
+  - Applied via className='block-entrance' on new blocks
+- Fixed 'Schema adapter needed' → 'Template ini belum didukung sepenuhnya'
+- Toolbar optimized: subscribe to page label only, not full pages[]
+- Build passes, committed and pushed
+
+Stage Summary:
+- 10 files changed, 98 insertions, 14 deletions
+- Undo/redo now visible in toolbar (not just keyboard shortcuts)
+- History panel now accessible from left panel
+- Block entrance animation gives visual confirmation
+- Properties tab has proper empty state with icon + guidance
