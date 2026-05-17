@@ -35,10 +35,8 @@ import {
   Target,
   Layers,
   ShieldAlert,
-  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuthoringStore as useAuth } from '@/store/authoring-store';
 
 // ── Constants ────────────────────────────────────────────────────────
 const DIRTY_EXIT_KEY = 'silse_dirty_exit';
@@ -264,20 +262,6 @@ function getTimeAgo(timestamp: number): string {
   return `${Math.floor(diff / 86_400_000)} hari lalu`;
 }
 
-// ── Sederhana-friendly labels for recovery data ────────────────────
-const SEDERHANA_LABELS: Record<string, string> = {
-  'Capaian Pembelajaran': 'Tujuan',
-  'Tujuan Pembelajaran': 'Tujuan',
-  'Alur Pembelajaran': 'Kegiatan',
-  'Modul Konten': 'Konten',
-  'Game Interaktif': 'Game',
-};
-
-function sederhanaLabel(label: string, mode: string): string {
-  if (mode !== 'sederhana') return label;
-  return SEDERHANA_LABELS[label] || label;
-}
-
 // ══════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ══════════════════════════════════════════════════════════════════════
@@ -290,7 +274,6 @@ export default function RecoveryDialog() {
 
   const loadCanvaFromStorage = useCanvaStore((s) => s.loadFromStorage);
   const loadAuthoringFromStorage = useAuthoringStore((s) => s.loadFromStorage);
-  const teacherMode = useAuth((s) => s.teacherMode);
 
   // ── Session marker setup ─────────────────────────────────────────
   useEffect(() => {
@@ -383,29 +366,28 @@ export default function RecoveryDialog() {
 
   const { reason, canva, authoring } = recoveryInfo;
 
-  // Determine header based on reason — mode-aware titles
-  const isSederhana = teacherMode === 'sederhana';
+  // Determine header based on reason
   const headerConfig = {
     emergency: {
       icon: <ShieldAlert size={20} className="text-red-400" />,
       bgClass: 'bg-red-500/10 border-red-500/20',
       iconBgClass: 'bg-red-500/20',
-      title: isSederhana ? 'Pulihkan Data Anda' : 'Pemulihan Darurat',
-      subtitle: isSederhana ? 'Data Anda disimpan otomatis sebelum error' : 'Data disimpan otomatis sebelum aplikasi error',
+      title: 'Pemulihan Darurat',
+      subtitle: 'Data disimpan otomatis sebelum aplikasi error',
     },
     crash: {
       icon: <AlertTriangle size={20} className="text-amber-400" />,
       bgClass: 'bg-amber-500/10 border-amber-500/20',
       iconBgClass: 'bg-amber-500/20',
-      title: isSederhana ? 'Ada Data Belum Disimpan' : 'Sesi Sebelumnya Terdeteksi',
-      subtitle: isSederhana ? 'Sepertinya Anda menutup aplikasi tanpa menyimpan' : 'Aplikasi kemungkinan ditutup tanpa menyimpan',
+      title: 'Sesi Sebelumnya Terdeteksi',
+      subtitle: 'Aplikasi kemungkinan ditutup tanpa menyimpan',
     },
     'auto-save': {
-      icon: isSederhana ? <Sparkles size={20} className="text-blue-400" /> : <AlertTriangle size={20} className="text-amber-400" />,
-      bgClass: isSederhana ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20',
-      iconBgClass: isSederhana ? 'bg-blue-500/20' : 'bg-amber-500/20',
-      title: isSederhana ? 'Lanjutkan Pekerjaan Anda?' : 'Data Tersimpan Ditemukan',
-      subtitle: isSederhana ? 'Ada pekerjaan yang tersimpan dari sebelumnya' : 'Ada data dari sesi sebelumnya',
+      icon: <AlertTriangle size={20} className="text-amber-400" />,
+      bgClass: 'bg-amber-500/10 border-amber-500/20',
+      iconBgClass: 'bg-amber-500/20',
+      title: 'Data Tersimpan Ditemukan',
+      subtitle: 'Ada data dari sesi sebelumnya',
     },
   };
 
@@ -413,20 +395,18 @@ export default function RecoveryDialog() {
   const timestamp = canva?.timestamp || authoring?.timestamp || Date.now();
   const timeAgo = getTimeAgo(timestamp);
 
-  // Build summary — mode-aware labels
+  // Build summary
   const summaryParts: string[] = [];
   if (canva) summaryParts.push(`${canva.pageCount} halaman`);
   if (authoring) {
-    // In sederhana: hide ATP entirely, simplify CP & Alur labels
-    if (authoring.hasCp) summaryParts.push(sederhanaLabel('capaian pembelajaran', teacherMode));
-    if (authoring.tpCount > 0) summaryParts.push(`${authoring.tpCount} ${sederhanaLabel('tujuan pembelajaran', teacherMode)}`);
-    if (authoring.moduleCount > 0) summaryParts.push(`${authoring.moduleCount} ${sederhanaLabel('modul', teacherMode)}`);
+    if (authoring.tpCount > 0) summaryParts.push(`${authoring.tpCount} tujuan pembelajaran`);
+    if (authoring.moduleCount > 0) summaryParts.push(`${authoring.moduleCount} modul`);
     if (authoring.gameCount > 0) summaryParts.push(`${authoring.gameCount} game`);
     if (authoring.kuisCount > 0) summaryParts.push(`${authoring.kuisCount} kuis`);
-    if (authoring.alurCount > 0 && !isSederhana) summaryParts.push(`${authoring.alurCount} alur`);
+    if (authoring.alurCount > 0) summaryParts.push(`${authoring.alurCount} alur`);
     if (authoring.materiCount > 0) summaryParts.push(`${authoring.materiCount} materi`);
-    // Hide ATP in sederhana — it's an advanced concept
-    if (authoring.hasAtp && !isSederhana) summaryParts.push('ATP');
+    if (authoring.hasCp) summaryParts.push('capaian pembelajaran');
+    if (authoring.hasAtp) summaryParts.push('ATP');
   }
 
   return (
@@ -451,9 +431,9 @@ export default function RecoveryDialog() {
         <div className="px-5 py-4 space-y-3">
           {/* Summary */}
           {summaryParts.length > 0 && (
-            <div className={`p-3 rounded-lg ${isSederhana ? 'bg-blue-500/5 border border-blue-500/15' : 'bg-amber-500/5 border border-amber-500/15'}`}>
-              <div className={`text-[10px] ${isSederhana ? 'text-blue-300' : 'text-amber-300'} font-semibold mb-1`}>
-                {isSederhana ? 'Pekerjaan Anda:' : 'Ditemukan data tersimpan:'}
+            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
+              <div className="text-[10px] text-amber-300 font-semibold mb-1">
+                Ditemukan data tersimpan:
               </div>
               <div className="text-[10px] text-app-secondary leading-relaxed">
                 {summaryParts.join(', ')}
@@ -471,7 +451,7 @@ export default function RecoveryDialog() {
             {canva && (
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-app-muted flex items-center gap-1">
-                  <FileText size={10} /> {isSederhana ? 'Halaman' : 'Halaman desain'}
+                  <FileText size={10} /> Halaman desain
                 </span>
                 <span className="text-[10px] text-app-secondary font-semibold">{canva.pageCount} halaman</span>
               </div>
@@ -482,7 +462,7 @@ export default function RecoveryDialog() {
                 {authoring.hasCp && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <BookOpen size={10} /> {sederhanaLabel('Capaian Pembelajaran', teacherMode)}
+                      <BookOpen size={10} /> Capaian Pembelajaran
                     </span>
                     <span className="text-[10px] text-emerald-400 font-semibold">&#10003;</span>
                   </div>
@@ -490,7 +470,7 @@ export default function RecoveryDialog() {
                 {authoring.tpCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Target size={10} /> {sederhanaLabel('Tujuan Pembelajaran', teacherMode)}
+                      <Target size={10} /> Tujuan Pembelajaran
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.tpCount} TP</span>
                   </div>
@@ -506,7 +486,7 @@ export default function RecoveryDialog() {
                 {authoring.moduleCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <BookOpen size={10} /> {sederhanaLabel('Modul Konten', teacherMode)}
+                      <BookOpen size={10} /> Modul Konten
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.moduleCount} modul</span>
                   </div>
@@ -514,15 +494,15 @@ export default function RecoveryDialog() {
                 {authoring.gameCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Gamepad2 size={10} /> {sederhanaLabel('Game Interaktif', teacherMode)}
+                      <Gamepad2 size={10} /> Game Interaktif
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.gameCount} game</span>
                   </div>
                 )}
-                {!isSederhana && authoring.alurCount > 0 && (
+                {authoring.alurCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Layers size={10} /> {sederhanaLabel('Alur Pembelajaran', teacherMode)}
+                      <Layers size={10} /> Alur Pembelajaran
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.alurCount} alur</span>
                   </div>
@@ -531,23 +511,16 @@ export default function RecoveryDialog() {
             )}
           </div>
 
-          {/* Warning / hint — mode-aware */}
+          {/* Warning */}
           <div className="p-3 rounded-lg bg-app-elevated/40 border border-app-border/20">
-            {isSederhana ? (
-              <p className="text-[10px] text-app-muted leading-relaxed">
-                Pilih <strong>&quot;Pulihkan&quot;</strong> untuk melanjutkan pekerjaan Anda,
-                atau <strong>&quot;Mulai Baru&quot;</strong> untuk menghapus dan memulai dari awal.
-              </p>
-            ) : (
-              <p className="text-[10px] text-app-muted leading-relaxed">
-                Pilih <strong>&quot;Pulihkan&quot;</strong> untuk melanjutkan sesi sebelumnya,
-                atau <strong>&quot;Mulai Baru&quot;</strong> untuk menghapus semua data tersimpan dan memulai dari awal.
-              </p>
-            )}
+            <p className="text-[10px] text-app-muted leading-relaxed">
+              Pilih <strong>&quot;Pulihkan&quot;</strong> untuk melanjutkan sesi sebelumnya,
+              atau <strong>&quot;Mulai Baru&quot;</strong> untuk menghapus semua data tersimpan dan memulai dari awal.
+            </p>
           </div>
         </div>
 
-        {/* Footer — mode-aware button labels */}
+        {/* Footer */}
         <div className="px-5 py-4 border-t border-app-border/20 flex items-center gap-3">
           <Button
             onClick={handleRecover}
@@ -555,7 +528,7 @@ export default function RecoveryDialog() {
             variant="outline"
           >
             <RotateCcw size={14} />
-            {isSederhana ? 'Lanjutkan' : 'Pulihkan'}
+            Pulihkan
           </Button>
           <Button
             onClick={handleStartFresh}

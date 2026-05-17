@@ -1,414 +1,475 @@
+# UI Rebuild Worklog — Task: ui-rebuild
+
+## Date: 2026-05-16
+
+## Summary
+Rebuilt SILSE UI following the Modern & Clean design direction with Slate-Indigo primary, Amber accent, 3-level surface elevation, icon rail sidebar, decomposed toolbar, and 3-tab right panel.
+
+## P1: Design Token Unification + Toolbar Decomposition
+
+### 1a. globals.css — Split and unify tokens
+- **Extracted print styles** from `src/app/globals.css` (695→1192 lines) to `src/app/print.css` (~240 lines) and imported it
+- **Updated semantic tokens**:
+  - `--semantic-panel-collapsed`: 60px → **56px** (per spec)
+  - `--semantic-panel-expanded`: 320px → **280px** (per spec)
+  - `--semantic-success`: #16a34a → **#34d399** (matches dark mode)
+  - `--semantic-info`: #3b82f6 → **#22d3ee** (matches accent-secondary)
+  - `--semantic-error`: #dc2626 → **#f87171** (matches dark mode)
+- **Added utility classes**: `.shadow-app-panel`, `.shadow-app-panel-left` for consistent panel borders
+
+### 1b. Toolbar Decomposition
+- **Broke monolith** `src/components/canva/Toolbar.tsx` (534 lines) into separate files:
+  - `toolbar/ModeSwitch.tsx` — [EDIT] [PREVIEW] [PRESENT] pill toggle with rounded-full design
+  - `toolbar/PageNavigation.tsx` — ◄ ► 1/5 with scene sub-counter
+  - `toolbar/ZoomControls.tsx` — Ratio badge + zoom in/out/fit using DropdownMenu (replaced manual mousedown listener)
+  - `toolbar/QuickActions.tsx` — Save, Export, Command palette
+  - `toolbar/ToolbarNavNew.tsx` — Project name + back button
+- **Toolbar height** now uses `var(--semantic-toolbar-height)` instead of fixed height
+- **Mode pills**: rounded-full, subtle bg when inactive, amber accent when active
+- **Replaced hardcoded colors**: `bg-cyan-500/10` → `text-app-info`, `bg-emerald-400` → `text-app-success`, etc.
+
+### 1c. Deleted dead toolbar files
+- Removed: `ToolbarActions.tsx`, `ToolbarViewControls.tsx`, `ToolbarNav.tsx`, `ToolbarPanelToggles.tsx`, `ToolbarHelp.tsx`, `BatchActionBar.tsx`
+- Kept: `ToolbarExport.tsx`, `use-export-actions.ts` (actively used)
+
+## P2: LeftPanel Icon Rail + Unified Shell
+
+### 2a. LeftPanel Rebuild
+- **Replaced** flat 240px panel with **56px icon rail + expandable panel**:
+  - `left-panel/IconRail.tsx` — Always visible vertical icon strip with 4 tabs (Pages, Add Block, Templates, Settings)
+  - `left-panel/SceneList.tsx` — Page thumbnails with drag reorder (semantic tokens only)
+  - `left-panel/AddBlockSection.tsx` — Collapsible add-block panel
+  - `left-panel/TemplateSection.tsx` — Collapsible template browser
+  - `left-panel/SettingsSection.tsx` — Ratio selector + Reset canvas
+- **Active tab** has amber accent indicator (left border + bg highlight)
+- **Smooth CSS-only transition**: `transition-[width] duration-200 ease-in-out`
+- **Replaced hardcoded badge colors** in SceneList with semantic tokens (bg-app-success, bg-app-info, etc.)
+- Clicking same tab toggles collapse/expand
+
+### 2b. CanvaBuilder Shell Update
+- **Panel widths** now use CSS variables:
+  - Left: `var(--semantic-panel-collapsed)` / `var(--semantic-panel-default)`
+  - Right: `var(--semantic-panel-expanded)`
+- **Removed hardcoded** `w-[240px]` / `w-[280px]`
+- **Removed inline shadow values** — replaced with `shadow-app-panel` / `shadow-app-panel-left`
+- **Smooth panel transitions**: `transition-[width] duration-200 ease-in-out`
+
+### 2c. AuthoringTool Sidebar
+- **Hidden sidebar** when `isCanva` mode is active — CanvaBuilder has its own icon rail
+- **Added floating "back to dashboard" button** in canva mode (fixed position, top-left)
+- Eliminates nested navigation conflict between AuthoringTool sidebar and CanvaBuilder panels
+
+## P3: Right Panel 3-Tab + Animation Cleanup
+
+### 3a. Right Panel with 3 Tabs
+- **3-tab header**: Properties | AI | Layer
+  - **Properties**: BlockPropertiesPanel, ElementProperties, AlignmentTools, BackgroundSection
+  - **AI**: AIAssistantSection, AIRefineSection
+  - **Layer**: PageInfo, NavigationSection, PageSettingsSection, PaletteSection
+- **Tab bar style**: minimal, subtle underline indicator, amber accent on active
+- **Width**: `var(--semantic-panel-expanded)` = 280px
+- **Smooth tab transitions**: CSS opacity + translate, 150ms
+
+### 3b. StatusBar Modernization
+- **Consistent typography**: text-xs only
+- **Moved `saveIndicatorConfig`** to module-level constant `SAVE_INDICATOR_CONFIG`
+- **Semantic tokens only**: `text-app-error`, `text-app-success`, `text-app-info`, etc.
+- **Height**: `var(--semantic-statusbar-height)` = 28px
+
+### 3c. Animation Cleanup
+- All transitions are CSS-only (no framer-motion added)
+- Panel open/close: `transition-[width] duration-200 ease-in-out`
+- Tab switches: `transition-opacity duration-150`
+- Reduced motion already handled in globals.css: `@media (prefers-reduced-motion: reduce)`
+
+## Build Verification
+- `npx next build` passes successfully
+- Server starts and returns 200
+- All store connections, hooks, and event handlers preserved
+
 ---
-Task ID: 1
-Agent: Main
-Task: Complete Phase 18.1 — Test semua 13 tipe blok + implement MateriBlokRenderer
+Task ID: ui-rebuild
+Agent: Main + full-stack-developer
+Task: Rebuild SILSE UI — Modern & Clean
 
 Work Log:
-- Explored full project architecture: 31 registered block types, SchemaBlock rendering pipeline
-- Discovered that 13 MateriBlok.tipe values (teks, definisi, poin, tabel, kutipan, gambar, timeline, highlight, compare, infobox, checklist, statistik, studi) had NO SchemaBlock renderer
-- Created `materi-blok` SchemaBlock type in types.ts with all 13 tipe fields
-- Created MateriBlokRenderer.tsx with 13 render pattern components
-- Registered in BlockDefinitionRegistry.ts and SceneRegistry.tsx
-- Added MATERIBLOK_PROPERTY_SCHEMA with 13 tipe select options
-- Updated schema-projection.ts to handle materi-blok child blocks
-- Build passed successfully
-- Committed and pushed to git (commit 259bf7a)
+- P1: Split globals.css (1192→759 lines), extracted print.css, unified design tokens
+- P1: Decomposed Toolbar (534 lines → 5 separate components + index)
+- P1: Deleted 6 dead toolbar files, added semantic status color tokens
+- P2: LeftPanel rebuilt with 56px icon rail + expandable content (4 tabs)
+- P2: CanvaBuilder uses CSS variables for panel widths
+- P2: AuthoringTool sidebar hidden in canva mode
+- P3: RightPanel 3-tab layout (Properties | AI | Layer) with amber indicator
+- P3: StatusBar modernized with module-level constants and semantic tokens
+- Rebuilt production, server stable on port 3000 → gateway port 81
 
 Stage Summary:
-- Phase 18.1 is now COMPLETE
-- All 13 MateriBlok.tipe values now have proper SchemaBlock renderers
-- The "BlokRenderer" approach from ROADMAP is implemented as MateriBlokRenderer
+- New files: ModeSwitch.tsx, PageNavigation.tsx, QuickActions.tsx, ToolbarNavNew.tsx, ZoomControls.tsx, IconRail.tsx, SceneList.tsx, AddBlockSection.tsx, TemplateSection.tsx, SettingsSection.tsx, print.css
+- Deleted files: ToolbarActions.tsx, ToolbarViewControls.tsx, ToolbarNav.tsx, ToolbarPanelToggles.tsx, ToolbarHelp.tsx, BatchActionBar.tsx (dead toolbar code)
+- Design: Slate-Indigo primary, Amber accent, 3-level surface elevation, CSS-only animations
+- Server: Running on port 3000, gateway on port 81, stable
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix canvas black screen — canvas toolbar appears but canvas is just black
+
+Work Log:
+- Investigated Stage component in src/components/canva/stage/index.tsx
+- Found root cause: isFitZoomReady state never becomes true due to Zustand batching race condition
+- storeSetFitZoom() triggers synchronous re-render via useSyncExternalStore, flushing React batch before setIsFitZoomReady(true) is applied
+- The visibility:hidden on transform layer prevents canvas from ever appearing
+- Applied fix: reordered state updates (setIsFitZoomReady(true) FIRST before storeSetFitZoom)
+- Replaced visibility:hidden → opacity:0 (smoother reveal, less fragile)
+- Added 500ms safety fallback timeout that forces isFitZoomReady=true even if ResizeObserver fails
+- Added subtle dot pattern to canvas workspace background for visibility
+- Built Next.js successfully (no TypeScript errors)
+- Restarted server with detached launcher, verified 200 OK on ports 3000 and 81
+- Git pushed fix to main
+
+Stage Summary:
+- Canvas black screen root cause: Zustand batching race condition with isFitZoomReady
+- Fix: opacity instead of visibility + safety timeout + reorder state updates
+- Server running on port 3000, gateway on port 81
+- Build clean, git pushed
 
 ---
 Task ID: 2
-Agent: Main
-Task: Verify Phase 17.2, 18.2, 18.3, 20, 21 completion status
+Agent: Main Agent
+Task: Fix wizard creation flow — "Saya coba ikutin flow wizard tapi gagal membuat"
 
 Work Log:
-- Phase 17.2: pertemuan field already in KuisItem, dropdown in KuisTab — COMPLETE
-- Phase 18.2: genMateri, genDiskusi, genRefleksi already in generators.ts, GEN_BUTTONS, useAutoGenerate — COMPLETE
-- Phase 18.3: RegenerateButton already in MateriTab — COMPLETE
-- Phase 20: tujuan-display, motivasi, rangkuman blocks already exist as SchemaBlock types — COMPLETE
-- Phase 21: Badge visual + per-activity scores already implemented in PenutupRenderer/HasilRenderer — COMPLETE
-- Updated ROADMAP-BSNP.md to reflect all completions
-- Pushed to git (commit d816973)
+- Investigated TemplateWizard.tsx, CourseTemplateRegistry.ts, PagePresetRegistry.ts
+- Found root cause: ensurePageSchema() returns deepFrozen schemas in dev mode
+- TemplateWizard.handleCreate() was mutating frozen page.schema and page.templateData in place
+- CourseTemplateRegistry.createProjectFromTemplate() was mutating frozen cover/penutup blocks
+- PagePresetRegistry.buildPresetWithCreate() was mutating frozen schema.id
+- All three caused TypeError: Cannot assign to read only property in dev mode
+- Fixed all three files to use immutable operations (spread + map) instead of in-place mutation
+- Build clean, TypeScript check passes, server running
+- Git pushed fix to main
 
 Stage Summary:
-- Phases 11, 17.1, 17.2, 18.1, 18.2, 18.3, 20, 21 are all COMPLETE
-- Phase 19 (Auto-Generate Per Pertemuan) is the next major phase to implement
-- Roadmap accurately reflects current state
+- Root cause: deepFreeze() in dev mode + mutable patterns = TypeError
+- Fix: immutable spread/map operations in 3 files
+- Wizard should now work: select subject → grade → template → info → create project
 
 ---
 Task ID: 3
-Agent: Main
-Task: Phase 19 assessment — Auto-Generate Per Pertemuan
-
-Work Log:
-- Reviewed Phase 19 tasks in ROADMAP
-- Requires changes to: PageTypeBlueprint, generateFromPageType(), kuis filtering, materi filtering, UI toggle, page labels
-- This is a significant multi-file feature that needs careful planning
-
-Stage Summary:
-- Phase 19 is NOT started yet
-- Requires: perPertemuan config, auto-split logic, filtering, UI changes
-- Next session should focus on Phase 19 implementation
-
----
-Task ID: 4
-Agent: Main
-Task: Complete Phase 18.1 remaining items + Phase 19, 20, 21
-
-Work Log:
-- Fixed critical bug: pageIndex was never passed from SchemaRenderer → BlockComponent (14+ interactive renderers affected)
-- Fixed Diskusi block registry: variants updated from ['A','B'] to ['A','B','C'] to match renderer
-- Fixed MateriBlokRenderer to accept common renderer props (mode, interactive, isEditing, compression, pageIndex)
-- Verified all 31 block renderers accept isCompact and interactive props correctly
-- B/C variant review: all variants are purposeful and distinct — no removal needed
-- Committed and pushed (commit e3450cf)
-- Phase 18.1: COMPLETE
-
-- Phase 19: Added perPertemuan toggle to materi-fokus and skenario-mode page types
-- Created JumlahPertemuanControl component with slider (1-8) in PageTypeCreator
-- Updated generateFromPageType to accept jumlahPertemuan from config
-- Most Phase 19 infrastructure already existed (per-pertemuan loop, kuis filtering, materi distribution, page labels)
-- Committed and pushed (commit 5e70b4c)
-- Phase 19: COMPLETE
-
-- Phase 21: Added 'Sudah Paham' interactive checkbox per TP item in TpRenderer
-  - Only visible in interactive/preview mode
-  - Shows celebration when all items checked
-  - Accordion per blok already handled by CompressionEngine
-- Included in commit 5e70b4c
-- Phase 21: COMPLETE
-
-- Phase 20: Created MotivasiTab.tsx and RangkumanTab.tsx authoring editor panels
-- Added 'motivasi' and 'rangkuman' to KontenTab union type
-- Integrated tabs into Konten panel (sederhana + lengkap modes)
-- Updated ROADMAP-BSNP.md: all phases 11-21 marked SELESAI
-- Committed and pushed (commit bafd950)
-- Phase 20: COMPLETE
-
-Stage Summary:
-- All ROADMAP-BSNP.md phases (11, 17.1, 17.2, 18.1, 18.2, 18.3, 19, 20, 21) are COMPLETE
-- Critical pageIndex bug fixed — interactive score reporting now works correctly
-- 4 commits pushed to main: e3450cf, 5e70b4c, bafd950
-- Build passes clean on all changes
-
----
-Task ID: 5
-Agent: Main
-Task: Post-roadmap quality improvements — TypeScript fixes, SCORM API, missing block registry, export renderers
-
-Work Log:
-- Fixed 10 TypeScript errors across 7 files:
-  - HasilRenderer: scores type → ScoreEntry[] (was { completed: boolean }[])
-  - MateriBlokBlock: style type → Record<string, string>, added infoboxStyle field
-  - property-schemas: 'checkbox' → 'boolean' type
-  - sync-projection: 'interact' → 'choose' interactionType, Record cast fixes
-  - schema-projection: materi-blok cast → unknown as Record<string, unknown>
-  - immutable.ts: patchBlock → explicit SchemaBlock cast
-- Added SCORM 1.2 LMS API wrapper to SCORM export HTML:
-  - findAPI() walks parent/opener windows looking for window.API
-  - LMSInitialize, LMSSetValue, LMSGetValue, LMSCommit, LMSFinish
-  - Exposes window.__SCORM with reportScore(), reportComplete(), finish()
-  - Reports cmi.core.lesson_status (incomplete/passed/failed/completed)
-  - Reports cmi.core.score.raw/max/min
-  - Auto-finish on beforeunload
-- Added SCORM score reporting in export scripts:
-  - Quiz answer tracking (kuisCorrect/kuisTotal) with per-answer LMS update
-  - Last-page completion reporting
-- Cleaned up derive-schema.ts: marked deprecated, simplified API
-- Registered 4 missing block types in BlockDefinitionRegistry + SceneRegistry:
-  - gambar (🖼️) — Image with title and caption
-  - timeline (📅) — Vertical step timeline
-  - compare (⚖️) — Two-column comparison
-  - reveal (🎁) — Interactive reveal/click-to-show content
-- Added barrel exports for new renderers in index.ts
-- Added export block renderers for 9 previously missing types:
-  - gambar, timeline, compare, reveal, materi-blok (all 13 tipe), hero, alur, skenario, kuis
-- Fixed PlayOverlay non-reactive completion dots:
-  - Subscribed to scores + isPageComplete via Zustand selectors (was getState())
-- Added missing export game check functions:
-  - checkSortir() — validates sorted items against categories
-  - checkTrueFalseScore() — displays final T/F score
-- Added infoboxStyle field to MateriBlok authoring type
-- Build passes clean, zero TypeScript errors
-- Committed and pushed (commit 5cf219f)
-
-Stage Summary:
-- 10 TypeScript errors eliminated
-- SCORM 1.2 export now communicates with LMS (score/completion reporting)
-- 4 previously invisible block types now registered and usable
-- Export pipeline covers 9 additional block types (was 18, now 27)
-- PlayOverlay progress dots now update reactively during interactive play
-- Export game functions complete (sortir + true/false score display)
-
----
-Task ID: 24
-Agent: Main
-Task: Phase 24 — Image Upload & Media Library
-
-Work Log:
-- Created `public/upload/images/.gitkeep` — ensure upload directory exists for static serving
-- Created `src/app/api/upload/route.ts`:
-  - POST: accepts multipart/form-data with file, validates type (JPG/PNG/GIF/WebP/SVG) and size (max 5MB)
-  - Generates unique filename: `img-{timestamp}-{random6char}.ext`
-  - Saves to `public/upload/images/` so Next.js serves them automatically
-  - Returns `{ success, url, filename, size }`
-  - GET: lists all uploaded images with metadata (url, filename, size, lastModified)
-  - Supports `?search=` query param for filename filtering
-  - DELETE: removes file by filename (with path traversal protection)
-- Created `src/components/authoring/konten/ImageUploader.tsx`:
-  - Drag & drop zone + file picker button
-  - Preview thumbnail after upload
-  - Animated progress bar during upload
-  - Indonesian labels: "Seret gambar ke sini", "Pilih File", "Mengunggah..."
-  - Dark theme styling (bg-app-surface, border-app-border, etc.)
-  - Replace/clear actions on hover over existing image
-  - Client-side validation before upload
-- Created `src/components/authoring/konten/MediaLibrary.tsx`:
-  - Modal overlay with image grid (2-4 columns responsive)
-  - Click image to insert URL into active field
-  - Search/filter by filename with debounce
-  - Delete button per image (with loading state)
-  - Refresh button to reload library
-  - Indonesian labels and helpful footer hint
-- Modified `src/components/authoring/konten/block-editors.tsx`:
-  - Replaced plain URL input in GambarEditor with ImageUploader component
-  - Added MediaLibrary button/link above uploader
-  - Kept URL input as fallback (with "(opsional, jika tidak unggah)" hint)
-  - Retained preview thumbnail when URL is set
-  - Added useState for MediaLibrary visibility toggle
-- Updated `shared.tsx`: changed block type label from "Gambar dari URL" to "Gambar / Upload"
-- Updated `ROADMAP-BSNP.md`: marked Phase 24 tasks as [x] and SELESAI
-- TypeScript check: passes with no errors
-- ESLint: passes (only pre-existing warnings in public/ JS files)
-- No sharp dependency added — images saved as-is
-
-Stage Summary:
-- Phase 24 is COMPLETE
-- Teachers can now upload images directly from their computer
-- Full workflow: drag/drop upload → ImageUploader → API → static file → preview
-- Media Library allows browsing, searching, and deleting uploaded images
-- URL input remains as fallback for external image URLs
-- File validation: JPG, PNG, GIF, WebP, SVG only, max 5MB
----
-Task ID: 6
-Agent: Main
-Task: Quality fixes, Phase 22-25 implementation
-
-Work Log:
-- Fixed block-registry test: EXPECTED_BLOCK_TYPES 31→40 (adds materi-blok, gambar, timeline, compare, reveal, tabel, checklist, statistik, studi)
-- Registered 4 orphaned renderers (tabel, checklist, statistik, studi) as standalone block types
-- Added TabelRenderer, ChecklistRenderer, StatistikRenderer, StudiRenderer to SceneRegistry
-- Added barrel exports for 4 newly registered renderers
-- Removed duplicate src/lib/client-export.ts (superseded by src/lib/export/index.ts)
-- Updated use-vite-export.ts to import from @/lib/export
-- Updated MASTERPLAN.md: marked F-1/F-2/F-3/F-4 all ✅
-- Added Phase 22 (Quality & Polish), 23 (Project Persistence), 24 (Image Upload), 25 (Template Marketplace) to ROADMAP-BSNP.md
-- Phase 23 already implemented (Prisma schema, API routes, ProjectProvider, Projects.tsx)
-- Phase 24: Created POST/GET/DELETE /api/upload, ImageUploader.tsx, MediaLibrary.tsx, updated GambarEditor
-- Phase 25: Created IPA preset (Sistem Pernapasan Manusia), MTK preset (Persamaan Linear Satu Variabel)
-- Registered 10 presets in PRESET_MAP (8 PPKn + 1 IPA + 1 MTK) with lazy-loading
-- All builds pass, zero TypeScript errors
-
-Stage Summary:
-- 40 block types now registered (was 31 before, added 9)
-- All roadmap phases 11-25 are COMPLETE
-- 3 commits pushed: e4b4fe3, 596bc11, c62e43b, 135c772
-- 401 tests pass, zero TypeScript errors, build clean
----
-Task ID: fix-blocks-not-rendering
-Agent: main
-Task: Fix critical bug — blocks don't appear on canvas after being added + cover overflow
-
-Work Log:
-- Investigated rendering pipeline: AddBlockPanel → addSchemaBlock → ensurePageSchema → produceWithPatches → commitSchemaUpdate → set({ pages })
-- Root Cause #1: `deepFreeze(page.schema)` in ensurePageSchema freezes the Zustand store object in place. When addSchemaBlock uses `produceWithPatches(blocks, ...)`, Immer may fail silently on frozen arrays
-- Root Cause #2: `assertDocumentPurity()` throws in dev mode (no try-catch) — cascading crash blocks addSchemaBlock silently
-- Root Cause #3: `materi-blok` missing from REGISTERED_BLOCK_TYPES in validation.ts
-- Fix 1: Changed ensurePageSchema to use `deepFreeze(deepClone(page.schema))` instead of `deepFreeze(page.schema)` — clone before freezing prevents store mutation
-- Fix 2: Wrapped all assertDocumentPurity and assertValidSchema calls in try-catch in ensurePageSchema + commitSchemaUpdate — dev-mode checks no longer crash the app
-- Fix 3: Added 'materi-blok' to REGISTERED_BLOCK_TYPES set in validation.ts
-- Fix 4: Added try-catch wrapper around entire addSchemaBlock body with error toast
-- Fix 5: Added missing keyframe definitions in globals.css: blockStaggerIn, coverReveal, gradientBorderRotate, breathe
-- Build verified: TypeScript + Next.js build passes without errors
-- Cover overflow: Investigated PageFrame, SchemaScreenRenderer, CoverRenderer, SceneLayoutEngine — all positioning looks correct (cover at y=0, height=720, overflow:hidden). Needs manual visual testing to diagnose further.
-
-Stage Summary:
-- Critical fix: Blocks should now appear on canvas after being added (deepFreeze was corrupting Zustand store)
-- Defensive fix: assertDocumentPurity no longer crashes the app in dev mode
-- Build passes cleanly
-- Cover overflow needs manual testing to diagnose
-
----
-Task ID: 1
 Agent: Main Agent
-Task: Fix "Halaman Kosong" dialog not disappearing when blocks are added on canvas
+Task: Fix all issues — "Perbaiki semua senior sampai bisa dipake"
 
 Work Log:
-- Investigated rendering pipeline: Stage → PageRenderer → SchemaScreenRenderer
-- Identified ROOT CAUSE #1: `enablePatches()` from Immer was never called in production code, only in test files. Without it, `produceWithPatches()` throws error and ALL block CRUD operations fail silently.
-- Identified ROOT CAUSE #2: `use-auto-save.ts` hook missing `shallow` equality function on `subscribeWithSelector`, causing infinite loop → stack overflow → corrupted localStorage
-- Identified ROOT CAUSE #3: Dialog condition in `stage/index.tsx` had potential operator precedence ambiguity with `&&` and `||`
+- Investigated full wizard flow: TemplateWizard → CourseTemplateRegistry → PagePresetRegistry → CanvaStore → AuthoringStore
+- Found CRITICAL: Wizard does NOT persist to database — only stores in Zustand memory, project lost on refresh
+- Found CRITICAL: Only 3 course templates (PPKn VII, IPA VIII, Template Kosong) — most subjects show no templates
+- Found CRITICAL: getCourseTemplatesFiltered() bug — template-kosong filtered out when subject doesn't match 'Lainnya'
+- Found: TemplateWizard doesn't call useProjectManager().createProject() for DB persistence
+- Fixed CourseTemplateRegistry.ts:
+  - Expanded from 3 templates to 16 templates covering all 8 subjects (PPKn, IPA, MTK, B.Indonesia, B.Inggris, Seni, PJOK + universal empty)
+  - Each subject gets 2 templates (VII and VIII) with appropriate learning flows
+  - Changed template-kosong to use subject='*' and grade='*' (universal wildcard)
+  - Fixed getCourseTemplatesFiltered() to match wildcard '*' in both subject and grade filters
+  - Now template-kosong ALWAYS appears at the end regardless of subject/grade selection
+- Fixed TemplateWizard.tsx:
+  - Added useProjectManager() import for DB persistence
+  - After setting up Zustand store, calls createProject() to persist to database
+  - Falls back to localStorage save if DB save fails
+  - Project now survives page refresh
+- Build clean (0 TypeScript errors), npx next build successful
+- API routes tested: POST /api/projects works, PUT /api/projects/[id]/save works, GET /api/projects works
+- Server running on port 3000
+
+Stage Summary:
+- Root causes: (1) No DB persistence in wizard, (2) Only 3 templates for 2 subjects, (3) Filter bug hides empty template
+- Fixes: 16 templates for all subjects, wildcard matching in filter, DB persistence via ProjectManager
+- Wizard flow now complete: select subject → grade → template → info → create project → persist to DB → navigate to canva
+- Server stable on port 3000
+---
+Task ID: fix-buttons
+Agent: Main Agent
+Task: Fix all non-functional buttons in the SILSE app
+
+Work Log:
+- Identified 6 major broken/non-functional areas from code review:
+  1. No right panel toggle button in toolbar
+  2. LayerPanel component existed but was never rendered anywhere
+  3. Right Panel "Layer" tab showed page settings instead of actual block layer list
+  4. No "Layer" tab in left panel IconRail
+  5. SCORM export route (/api/export/scorm) didn't exist
+  6. archiver package not installed for ZIP creation
 
 Fixes applied:
-1. Added `enablePatches()` at top of `src/store/canva/store.ts` before store creation
-2. Added `{ equalityFn: shallow }` to `use-auto-save.ts` subscribe call to prevent infinite loop
-3. Rewrote dialog condition in `stage/index.tsx` using explicit ternary + null-safe access
-4. Added fallback in `addSchemaBlock` when `produceWithPatches` fails (simple immutable splice)
-5. Added `factoryReset()` method to persistence slice for recovering from corrupted data
-6. Made `saveToStorage` robust against stack overflow (auto-clears corrupted localStorage on RangeError)
-7. Wrapped `assertDocumentPurity` in `loadFromStorage` with try/catch to prevent crash on corrupted data
+1. Added right panel toggle button (PanelRightOpen/Close icons) to QuickActions.tsx
+2. Added LayerPanel import and rendering to RightPanel.tsx "Layer" tab
+3. Added "layer" tab type to IconRail.tsx (5 tabs now: pages, add-block, templates, layer, settings)
+4. Added LayerPanel rendering to LeftPanel.tsx when layer tab is active
+5. Created /api/export/scorm/route.ts with SCORM 1.2 ZIP generation using archiver
+6. Installed archiver + @types/archiver packages
+
+Build: npx next build passes successfully
+Server: Running on dev mode (port 3000) with working API routes
 
 Stage Summary:
-- 3 root causes identified and fixed
-- 6 files modified: store.ts, ui-slice.ts, stage/index.tsx, persistence-slice.ts, types.ts, use-auto-save.ts
-- Block addition now works: "Tambah Block" → select block type → block appears on canvas → "Halaman Kosong" dialog disappears
-- Auto-save no longer causes infinite loop/stack overflow
-
----
-Task ID: post-migration-recovery
-Agent: Main Agent
-Task: Post-migration systematic recovery — Fix core features, create feature flags, disable advanced features
-
-Work Log:
-- Audited entire project: 40+ block types, 3 Zustand stores, 12 API routes, 4 rendering modes
-- Identified 4 root causes for Cover Overflow P0 bug:
-  1. `compactFactor (0.8)` applied to full-page blocks in `estimateBlockHeight()` → cover height = 576px instead of 720px
-  2. Missing `layout` property on cover/hero `createDefault()` → blocks treated as flow instead of absolute
-  3. `height: 100%` chain breaks in CoverRenderer → inner div resolves to auto height
-  4. BlockSelectionOverlay badge at `-top-6` overflows scene boundary at y=0
-- Fixed all 4 cover overflow root causes:
-  1. SceneLayoutEngine.ts: Skip compactFactor for full-page blocks, return full scene height
-  2. BlockDefinitionRegistry.ts: Added `layout: { position: 'absolute', x: 0, y: 0, width: 100, height: 100 }` to cover and hero createDefault()
-  3. CoverRenderer.tsx: Changed inner div from `height: 100%` to `position: absolute; inset: 0`
-  4. BlockSelectionOverlay.tsx: Changed badge position from `-top-6` class to inline `style={{ top: -24 }}`
-  5. SceneLayoutEngine.ts: Added safety check in flow block filter — full-page blocks without layout are treated as absolute
-- Created Feature Flag system at `/src/config/feature-flags.ts`:
-  - 12 core features (always enabled)
-  - 4 AI features (disabled)
-  - 3 export features (disabled)
-  - 6 advanced features (disabled)
-  - 3 dev-only features (disabled)
-  - Helper functions: isEnabled(), getFlagsByCategory(), setFlag()
-- Applied feature flags to 15+ components:
-  - AI: AITemplateGenerator, AIGenerateLessonPanel, AIRefinePanel, AIAssistantPanel, AIAssistantSection, RegenerateButton, ItemRegenerateButton
-  - Sound: sounds.ts (playSound, preloadSounds)
-  - CommandPalette: CanvaBuilder.tsx
-  - BSNP: BsnpCompliancePanel (both authoring and features)
-  - Teacher Mode: TeacherModeToggle
-  - Mobile Guard: MobileGuard (passthrough children when disabled)
-  - SCORM: ToolbarExport.tsx
-  - Excel: import-export-component.tsx
-  - Performance: PerformanceMonitor
-  - RightPanel: AI tab conditional on aiAssistant flag
-  - Keyboard shortcuts: AI assistant shortcut gated by flag
-- Build verification: TypeScript ✅ zero errors, Next.js build ✅ success
-
-Stage Summary:
-- Cover Overflow P0 bug FIXED (4 root causes addressed)
-- Feature Flag system created with 28 flags across 5 categories
-- Advanced features temporarily disabled (AI, SCORM, BSNP, sounds, command palette, teacher mode, mobile guard, PWA, dev tools)
-- Core features fully active: canvas editor, schema renderer, block CRUD, page management, undo/redo, auto-save, 4 modes, authoring, themes, block selection, property panel, backgrounds
-- Build passes clean — ready for core feature testing
-
----
-Task ID: systematic-recovery-layer1-layer2
-Agent: Main Agent
-Task: Systematic recovery — Fix Layer 1 (Code Integrity) and Layer 2 (Core Canvas) issues after migration
-
-Work Log:
-- Audited full codebase: 40+ block types, 3 Zustand stores, 40+ renderers
-- Identified 3 layers of problems: Code Integrity → Core Canvas → Advanced Features
-- Layer 1: Fixed 15 Rules-of-Hooks violations across 4 files:
-  1. AddBlockPanel.tsx: Moved 8 hooks (useState, useMemo, useCallback) before early return
-  2. BatchActionsBar.tsx: Moved 4 useCallback hooks before early return
-  3. RightPanel.tsx: Moved useCanvaStore + useEffect before early return
-  4. RichText.tsx: Moved useMemo out of conditional branch
-- Layer 1: Fixed 8 hoisting/immutability violations:
-  1. LivePreview.tsx: Moved navigatePrevPage/navigateNextPage declarations before keyboard useEffect
-  2. AIRefineSection.tsx: Moved handleRefine declaration before custom event listener useEffect
-  3-7. FillBlankGameRenderer, MatchingGameRenderer, MemoryGameRenderer, TeamBuzzerGameRenderer, TrueFalseGameRenderer: Moved useGameA11y() hook before score guard useEffect that uses a11y
-- Layer 2: Fixed Cover Overflow P0 bug (5th root cause):
-  1. PremiumBlockWrapper had no position:relative/overflow:hidden → child div[absolute inset:0] collapsed to 0 height
-  2. CoverRenderer inner div had no overflow:hidden
-  3. Added position:relative + overflow:hidden to PremiumBlockWrapper
-  4. Added width:100% + height:100% to CoverRenderer's PremiumBlockWrapper
-  5. Added overflow:hidden to CoverRenderer's inner absolute div
-- Layer 2: Fixed empty schema page warning:
-  1. Invariant check was testing schema.blocks.length > 0 but new pages have empty schema.blocks=[]
-  2. Split hasSchema into hasSchema (object exists) and hasSchemaBlocks (has content)
-  3. DUAL-RENDER check now uses hasSchemaBlocks; pageMode check uses hasSchema
-- TypeScript: zero errors
-- Build: passes clean
-
-Stage Summary:
-- 23 ESLint-critical violations fixed (15 Rules-of-Hooks + 8 hoisting/immutability)
-- Cover Overflow P0 fully resolved (5 root causes total across sessions)
-- Empty schema page warning resolved
-- Core features stable: canvas rendering, block insertion, cover rendering, page navigation
-- Ready for Layer 3: progressive re-enablement of advanced features
-
----
-Task ID: blocks-rendering-fix-session
-Agent: Main Agent
-Task: Fix P0 bugs — blocks don't appear on canvas + cover overflow to top (continued from previous session)
-
-Work Log:
-- Resumed from context where enablePatches() fix was confirmed but blocks still didn't render
-- Deep-investigated rendering pipeline: addSchemaBlock → produceWithPatches → commitSchemaUpdate → set({ pages }) → Stage → PageRenderer → SchemaScreenRenderer
-- Runtime testing via browser console revealed ROOT CAUSE of "blocks don't appear":
-  - Bug A (PRIMARY): Cover block zIndex:10 occludes flow blocks at zIndex:1 in SceneLayoutEngine
-  - Bug B: `hasCoverBlock` in SchemaScreenRenderer only true when exactly 1 block — doesn't handle mixed layouts
-  - Bug C: BlockSelectionOverlay collapses to 0px height (no h-full) — children with position:absolute can't fill
-- Fixed Bug A: SceneLayoutEngine.ts — Full-page blocks (cover/hero) now get zIndex:0 (background layer), non-full-page absolute blocks keep zIndex:10
-- Fixed Bug B: SchemaRenderer.tsx — Changed `hasCoverBlock` to detect ANY full-page block in schema; added `isPureCoverPage` for cases where ONLY one full-page block exists
-- Fixed Bug C: BlockSelectionOverlay.tsx — Added `h-full` class to prevent height collapse
-- Added auto-split logic in addSchemaBlock: when adding a non-full-page block to a page that already has a full-page block, auto-creates a new page for the block
-- Fixed Cover Overflow P0: BlockMeasurer.tsx — Changed `minHeight: '100%'` to `height: '100%', minHeight: '100%'` so CSS percentage height resolution works correctly for children (h-full)
-- All fixes verified via runtime testing:
-  - Blocks appear correctly on canvas ✅
-  - Cover content contained within canvas (no overflow above) ✅
-  - Auto-split creates new page when adding blocks after cover ✅
-  - AddBlockPanel opens from UI button ✅
-- TypeScript: zero errors
-
-Stage Summary:
-- Both P0 bugs FIXED and verified:
-  1. Blocks now appear on canvas after being added (zIndex fix + auto-split)
-  2. Cover no longer overflows above canvas (BlockMeasurer height fix)
-- 5 files modified: SceneLayoutEngine.ts, SchemaRenderer.tsx, BlockSelectionOverlay.tsx, BlockMeasurer.tsx, ui-slice.ts
-- Core features stable: canvas rendering, block insertion, cover rendering, page management
-- Next: Progressive re-enablement of advanced features
+- Right panel toggle: FIXED - toggle button in toolbar
+- Layer panel: FIXED - accessible from both left panel IconRail AND right panel Layer tab
+- SCORM export: FIXED - new API route with archiver ZIP generation
+- All store actions (selectBlock, hoverBlock, startEditing, etc.) verified working
+- TemplateWizard flow: previously fixed (deepFreeze issue)
+- Export with fallback: client-side fallback already implemented
 ---
 Task ID: 1
-Agent: Main Agent (Senior Dev)
-Task: Fix P0 bugs: blocks not appearing on canvas + cover overflow to top
+Agent: Main Agent
+Task: Fix "Tambah Block tidak fungsi" - Make add block work for all pages, fix tab sync, fix non-functional buttons
 
 Work Log:
-- Traced complete block insertion pipeline: AddBlockPanel → addSchemaBlock → ensurePageSchema → produceWithPatches → commitSchemaUpdate → store.set() → PageRenderer → SchemaScreenRenderer → resolveSceneLayout
-- Identified 3 root causes for blocks not appearing:
-  1. `structuredClone()` in addSchemaBlock/history-slice throws on non-cloneable values → entire add operation fails silently
-  2. Frozen blocks from `ensurePageSchema(deepFreeze(deepClone()))` can cause produceWithPatches edge-case failures
-  3. `elements[]` not cleared when adding blocks to schema-driven pages → potential dual-render
-- Identified 3 root causes for cover overflow:
-  1. Cover blocks without `layout` property silently dropped by resolveSceneLayout (excluded from both flow and absolute phases)
-  2. TemplateAdapter.convertCover() and genCoverSchema() don't include `layout`
-  3. No migration for existing cover blocks lacking `layout`
-- Applied fixes:
-  1. ui-slice.ts: Wrapped structuredClone in try-catch with JSON fallback
-  2. ui-slice.ts: Added thaw step for frozen blocks before produceWithPatches
-  3. ui-slice.ts: Always clear elements[] when adding blocks to schema pages
-  4. history-slice.ts: Wrapped all structuredClone calls in try-catch with fallback
-  5. sync-slice.ts: Wrapped structuredClone in try-catch with fallback
-  6. SceneLayoutEngine.ts: Added Phase 3 for legacy full-page blocks without layout
-  7. generators.ts: Added layout property to genCoverSchema()
-  8. TemplateAdapter.ts: Added layout property to convertCover()
-  9. schema-migration.ts: Added v1→v2 migration for cover/hero blocks lacking layout
-  10. validation.ts: Bumped SCHEMA_VERSION to 2
+- Audited entire add block flow: AddBlockPanel → addSchemaBlock → ensurePageSchema → store
+- Found ROOT CAUSE: Custom/blank pages have no schema, ensurePageSchema returns null, addSchemaBlock fails with toast warning
+- Found LEFT TAB DISCONNECT: LeftPanel uses local useState<LeftPanelTab> while store uses LeftTab with different values
+- Found Stage empty state button calling setLeftTab('halaman') which is no-op
+- Found CommandPalette tab-switch commands using old tab names (no-op)
+
+Fixes Applied:
+1. **addSchemaBlock auto-creates empty schema for custom pages** (ui-slice.ts)
+   - When page has no schema, creates empty ScreenSchema with version 1
+   - Sets pageMode='schema' and clears elements[] on conversion
+   - Users can now add blocks to ANY page including blank pages
+
+2. **createPage gives blank pages an empty schema** (constants.ts)
+   - All new pages start with pageMode='schema' and an empty schema.blocks=[]
+   - schema.id matches page.id for consistency
+
+3. **Unified LeftTab type** (types.ts)
+   - Changed from 'halaman'|'layer'|'sisipkan'|'halamanBaru'|'riwayat' 
+   - To 'pages'|'add-block'|'templates'|'layer'|'settings' (matches LeftPanelTab)
+
+4. **LeftPanel syncs with store leftTab** (LeftPanel.tsx)
+   - Added useEffect to react to store leftTab changes
+   - handleTabChange also writes to store via setLeftTab()
+   - Other components (Stage, CommandPalette) can now control LeftPanel tabs
+
+5. **Fixed Stage empty state button** (stage/index.tsx)
+   - Changed from setLeftTab('halaman') to setLeftTab('add-block') + open panel
+
+6. **Fixed CommandPalette tab commands** (CommandPalette.tsx)
+   - 'sisipkan' → 'add-block', 'halamanBaru' → 'pages'
+   - Uses toggleLeftPanel() instead of raw setState
+
+7. **Updated TAB_MIGRATION map** (persistence-slice.ts)
+   - All legacy tab names map to new unified names
+   - Default leftTab changed from 'halaman' to 'pages'
+
+8. **Fixed setTemplateType for custom pages** (page-slice.ts)
+   - Custom pages now get empty schema instead of deleting schema
+
+9. **Updated tests** (store-slices.test.ts)
+   - Changed old tab names to new ones
 
 Stage Summary:
-- Both P0 bugs fixed with defensive coding + root cause fixes
-- Build passes cleanly (TypeScript + Next.js build)
-- Previous fixes (enablePatches, deepClone-before-freeze) still intact
+- Build: ✅ Compiled successfully (no TypeScript errors)
+- Server: ✅ Running on port 3000 (dev mode via start-server.mjs)
+- All add block flows should now work: AddBlockPanel, CommandPalette, fragments
+- Tab navigation now synced between store and LeftPanel
+- Custom/blank pages now support schema blocks immediately
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix "tambah blok masih gak fungsi" - deeper fix for add block rendering pipeline
+
+Work Log:
+- Investigated deeper: found AddBlockPanel.canAddBlocks still blocked custom pages without schema
+- Found migrateAllPages() didn't assign schemas to empty custom pages on load
+- Found PageRenderer useMemo dependency missing page.pageMode
+- Applied fixes from subagent:
+  1. migrateAllPages() Step 1b: auto-assign empty schema to custom pages with no elements
+  2. AddBlockPanel.canAddBlocks: allow custom pages without schema if elements is empty
+  3. PageRenderer adaptedSchema useMemo: added page.pageMode to dependency array
+
+Stage Summary:
+- Build: ✅ Compiled successfully
+- Server: ✅ Running on port 3000 (dev mode via start-server.mjs)
+- Custom pages loaded from localStorage now get empty schema via migrateAllPages
+- AddBlockPanel now shows block palette for custom pages without schema
+- Rendering pipeline correctly picks up new schema via pageMode change
+---
+Task ID: interaction-audit-1
+Agent: main
+Task: Interaction Integrity Audit — systematically test all user flows and fix bugs
+
+Work Log:
+- Ran comprehensive audit of all interaction flows via two parallel subagents
+- Agent 1: Full interaction flow audit — found 10+ issues including clearStage broken, duplicatePage nested ID bug, alignment dead for schema, undo/redo dual system
+- Agent 2: Button handler audit — found 1 no-op button (PenutupRenderer "Lanjut ke Pertemuan Berikutnya"), all other 350+ buttons properly wired
+- Fixed clearStage to check BOTH elements[] and schema.blocks (was only checking elements, early returning for schema pages)
+- Fixed duplicatePage to use regenerateNestedIds() for ALL nested block IDs (was only changing top-level IDs)
+- Exported regenerateNestedIds() from immutable.ts for reuse
+- Added alignSchemaBlocks and distributeSchemaBlocks store actions for schema block alignment
+- Updated AlignmentTools component to show and work with schema block selections
+- Fixed PenutupRenderer navigation button — now calls goPage() instead of just playSound()
+- Added PageTransition wrapper to PreviewMode for smooth page switching
+- Removed duplicate PageTypeCreator from AddSceneButton (was appearing in both pages and templates tabs)
+- Build passes, TypeScript clean, all committed and pushed
+
+Stage Summary:
+- 6 critical bug fixes committed (hash: 1ce9944)
+- All build + type checks pass
+- Server running on port 3000
+- Remaining items from audit: nudgeSchemaBlocks stale closure (analyzed — NOT actually a bug for nudge operations), deleteSchemaBlocks bulk nested delete (works correctly for typical use), undo/redo dual system (complex — deferred), RightPanel unstable selector (performance — deferred)
+---
+Task ID: ui-efficiency-1
+Agent: Main Agent
+Task: UI Efficiency Audit — Kill render storms, eliminate pages[] cascade, deduplicate Layer panel
+
+Work Log:
+- Audited all store subscribers that read full pages[] array
+- Right Panel: Changed CSS hidden → conditional rendering (only active tab mounted)
+- Stage: Changed s.pages → s.pages[s.currentPageIndex] (eliminates cascade)
+- LayerPanel: Same pages[] optimization as Stage
+- useSelectedBlock: Subscribe to current page only, not full pages[]
+- ToolbarNav: Subscribe to page label only, not full pages[]
+- StatusBar: Subscribe to current page + pages.length, not full pages[]
+- Properties tab: Added BackgroundSection + PageSettingsSection + PaletteSection when no block selected
+- Removed duplicate Layer panel from left panel (kept only in right panel)
+- Updated LeftTab type and TAB_MIGRATION map
+- Build passes, committed and pushed
+
+Stage Summary:
+- 10 files changed, 74 insertions, 82 deletions
+- Eliminated the pages[] cascade re-render problem
+- Reduced right panel mounted components from ~10 to ~3
+- Background editing now accessible from Properties tab (0 clicks vs 3 clicks)
+- Layer panel deduplicated (left panel → right panel only)
+---
+Task ID: interaction-feedback-1
+Agent: Main Agent
+Task: Interaction Feedback & Empty State System — undo/redo, history panel, entrance animation
+
+Work Log:
+- Added undo/redo buttons (Undo2/Redo2) to QuickActions in toolbar
+  - Disabled state (grayed out) when nothing to undo/redo
+  - Clear state visibility for teachers
+- Wired showUndoRedoToast() into history-slice undo/redo operations
+  - Was defined but never called — now shows toast after undo/redo
+- Added HistoryPanel to left panel as 'Riwayat' tab
+  - Was orphaned code (fully implemented but never rendered)
+  - IconRail now has 5 tabs: Pages, Add Block, Templates, History, Settings
+  - LeftTab type updated with 'history'
+- Improved Properties tab empty state when no block selected
+  - Was: tiny 10px text hint
+  - Now: proper empty state card with icon, headline, and guidance text
+- Added block entrance animation (CSS keyframe + tracking)
+  - blockEntrance keyframe: scale(0.92) → scale(1) + fade, 250ms
+  - Tracked via entranceBlockIds state in SchemaScreenRenderer
+  - Applied via className='block-entrance' on new blocks
+- Fixed 'Schema adapter needed' → 'Template ini belum didukung sepenuhnya'
+- Toolbar optimized: subscribe to page label only, not full pages[]
+- Build passes, committed and pushed
+
+Stage Summary:
+- 10 files changed, 98 insertions, 14 deletions
+- Undo/redo now visible in toolbar (not just keyboard shortcuts)
+- History panel now accessible from left panel
+- Block entrance animation gives visual confirmation
+- Properties tab has proper empty state with icon + guidance
+
+---
+Task ID: teacher-flow-polish
+Agent: Main Agent
+Task: Teacher Flow Polish — Simplify UI for Indonesian SMP teachers in sederhana mode
+
+Work Log:
+- Created useTeacherMode() hook to unify dual-store sync (canva boolean + authoring string)
+- Updated TeacherModeToggle to use unified hook instead of manual dual-store sync
+- Sidebar: mode-aware navigation labels
+  - Sederhana: Beranda, Materi, Desain (3 primary items)
+  - Lengkap: Dashboard, Dokumen, Konten, Canva, Auto-Generate (5 items)
+- Sidebar: secondary items with "Lainnya" header in sederhana mode
+  - Sederhana: RPP, Buat AI, Proyek, Impor/Ekspor, Pratinjau, Versi
+  - Lengkap: Proyek, Import/Export, Live Preview, Riwayat
+- RightPanel: surfaced NavigationSection + PageInfo in Properties tab for teacher mode
+  - Previously hidden in Layer tab which was invisible in sederhana mode
+  - Now teachers can configure navbar style and page info without Layer concept
+- Konten panel: teacher-friendly tab labels in sederhana mode
+  - Skenario → Cerita, Modul & Game → Game & Aktivitas, Evaluasi → Soal Evaluasi
+  - Dynamic header description per tab
+  - Footer CTA: "Selanjutnya: Desain Visual" vs "Desain di Canva"
+- Dashboard: removed "Schema" technical term in sederhana mode
+  - Template badge: "Schema" → "Siap Pakai" 
+  - Auto-Generate → Buat AI
+  - Flow steps: "Isi Dokumen" → "Isi RPP", "Desain Canva" → "Desain Visual"
+  - Quick actions: mode-aware labels (Lihat Hasil, Desain Visual, etc.)
+  - Schema Preview → Pratinjau Interaktif
+- ModeSwitch: Indonesian labels in sederhana (Sunting/Pratinjau/Tayangkan)
+- ToolbarNav: mode-aware back button tooltip (Beranda vs Dashboard)
+- Created CanvaOrientationTooltip: first-time onboarding for teachers entering Canva
+  - Explains 3-panel layout (Left=Pages+Content, Center=Workspace, Right=Properties+AI)
+  - Shows only once per device (localStorage persistence)
+  - Only in sederhana mode
+- Updated AuthoringTool header buttons: Preview → Pratinjau, Canva → Desain in sederhana
+- Updated Canva back button: Dashboard → Beranda in sederhana
+- All 10 files modified, build clean, git pushed
+
+Stage Summary:
+- 10 files changed, 370 insertions, 75 deletions
+- New hook: useTeacherMode() — unified API for teacher mode state
+- New component: CanvaOrientationTooltip — first-time teacher onboarding
+- Sederhana mode now fully coherent across ALL panels (sidebar, dashboard, konten, canva)
+- Teachers no longer see technical terms (Schema, Block, Layer, Export, etc.)
+- Navigation simplified to 3 primary items (Beranda, Materi, Desain)
+- NavigationSection accessible in teacher mode (was hidden behind Layer tab)
+
+---
+Task ID: teacher-flow-polish
+Agent: main
+Task: Teacher Flow Polish — Simplify UI for Indonesian SMP teachers in sederhana mode
+
+Work Log:
+- Read and analyzed full codebase structure: AuthoringTool, Dashboard, Dokumen, Konten, CanvaBuilder, RightPanel, LeftPanel, WorkflowStepIndicator, TeacherModeToggle
+- Identified 6 key pain points in sederhana mode: dashboard overwhelming, surface-level mode changes, fragmented navigation, jarring Canva transition, disconnected WorkflowStepIndicator, no real "simple flow"
+- Implemented WorkflowStepIndicator: mode-aware labels (Materi/Buat AI/Desain/Pratinjau/Simpan), clickable navigation to panels
+- Implemented Dokumen Panel: hide ATP & Alur sections in sederhana mode, simplify Meta fields (hide ikon/kurikulum/namaBab), add helpful hint about Mode Lanjutan
+- Implemented Konten Panel: hide Skenario/Cerita tab in sederhana mode (3 tabs instead of 4)
+- Implemented Dashboard: hide BSNP Compliance panel in sederhana, hide Stats section, simplify Quick Actions to 3 items, mode-aware empty state hero text, simplify bottom toolbar (hide secondary icon buttons), mode-aware flow progress labels
+- Implemented Sidebar Navigation: collapsible "Lainnya" section in sederhana mode (collapsed by default), added ChevronDown toggle
+- Added ChevronDown import to AuthoringTool
+
+Stage Summary:
+- All 6 Teacher Flow Polish items implemented and tested
+- Build passes successfully
+- Key changes:
+  - WorkflowStepIndicator: now clickable + mode-aware labels
+  - Dokumen: 3 sections in sederhana (was 5), fewer meta fields
+  - Konten: 3 tabs in sederhana (was 4), no Skenario
+  - Dashboard: BSNP/Stats hidden, simpler quick actions, friendlier empty state
+  - Sidebar: collapsible "Lainnya" reduces cognitive load
+  - All changes are progressive disclosure — lengkap mode unchanged
+
+---
+Task ID: recovery-ux
+Agent: main
+Task: Recovery UX — Improve crash recovery, auto-save, and data loss prevention
+
+Work Log:
+- Explored all existing recovery systems: CrashRecoveryDialog, AutoSaveRecovery, AppErrorBoundary, useAutoSave, undo/redo, beforeunload handlers, offline sync
+- Identified 10 critical gaps: duplicate recovery dialogs, inconsistent beforeunload, emergency save not auto-restored, "Start Fresh" doesn't clear data, no max-wait auto-save, no confirmation for destructive actions
+- Created unified RecoveryDialog.tsx replacing both CrashRecoveryDialog + AutoSaveRecovery
+  - Priority system: emergency > crash > auto-save (only one dialog ever appears)
+  - Reads back AppErrorBoundary emergency data from silse_app_error_recovery key
+  - "Mulai Baru" now actually clears localStorage + resets stores (was broken before)
+  - Fixed beforeunload handler to only set dirty flag when there ARE unsaved changes
+- Updated AuthoringTool.tsx to use new RecoveryDialog instead of CrashRecoveryDialog
+- Fixed CanvaBuilder.tsx beforeunload handler to also call setDirtyExitFlag() (was missing)
+- Added max-wait auto-save (30s) to useAutoSave hook — ensures save at least every 30s during active editing
+- Added confirmation dialog to "Proyek Baru" button in Dashboard (was unprotected)
+- Added save status indicator text "Belum simpan" next to dirty dot in header
+
+Stage Summary:
+- Unified recovery: One dialog replaces two, fixes coordination issues
+- Emergency recovery: AppErrorBoundary data is now auto-restored on next session
+- Fixed "Mulai Baru" bug: Now actually clears localStorage and resets stores
+- Fixed beforeunload inconsistency: All 3 handlers now properly set dirty exit flag
+- Max-wait auto-save: 30s maximum interval prevents data loss during continuous editing
+- Confirmation dialogs: Destructive actions now have proper warnings
+- Save status: Header shows "Belum simpan" text when there are unsaved changes
+- Build verified: All changes compile successfully
