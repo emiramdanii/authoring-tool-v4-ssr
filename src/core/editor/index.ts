@@ -51,6 +51,8 @@ export {
   REFLEKSI_PROPERTY_SCHEMA,
   PENUTUP_PROPERTY_SCHEMA,
   TABELACCORD_PROPERTY_SCHEMA,
+  COMPARE_PROPERTY_SCHEMA,
+  REVEAL_PROPERTY_SCHEMA,
 } from './property-schemas';
 
 // Block selection overlay — reusable editing overlay for schema blocks

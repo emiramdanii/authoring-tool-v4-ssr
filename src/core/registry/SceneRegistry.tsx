@@ -93,6 +93,8 @@ import {
   ChecklistRenderer,
   StatistikRenderer,
   StudiRenderer,
+  CompareRenderer,
+  RevealRenderer,
 } from '../renderer/blocks';
 
 // ── Lazy imports (heavy game renderers — all games are lazy-loaded) ──
@@ -177,6 +179,8 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'drag-drop-game': DragDropGameRenderer,
   'crossword-game': CrosswordGameRenderer,
   'team-buzzer-game': TeamBuzzerGameRenderer,
+  'compare': CompareRenderer,
+  'reveal': RevealRenderer,
 };
 
 // ═══════════════════════════════════════════════════════════════════

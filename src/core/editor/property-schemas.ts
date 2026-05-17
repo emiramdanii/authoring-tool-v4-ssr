@@ -864,6 +864,48 @@ export const STUDI_PROPERTY_SCHEMA: PropertySchema = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
+// NEW BLOCK PROPERTY SCHEMAS (Phase 23)
+// ═══════════════════════════════════════════════════════════════════
+
+export const COMPARE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'compare',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'kiri', label: 'Sisi Kiri', icon: 'ArrowLeft' },
+    { key: 'kanan', label: 'Sisi Kanan', icon: 'ArrowRight' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'kiri.icon', type: 'icon', label: 'Icon', group: 'kiri', placeholder: '🔵' },
+    { key: 'kiri.judul', type: 'text', label: 'Judul', group: 'kiri', required: true },
+    { key: 'kiri.isi', type: 'textarea', label: 'Isi', group: 'kiri', rows: 3 },
+    { key: 'kanan.icon', type: 'icon', label: 'Icon', group: 'kanan', placeholder: '🔴' },
+    { key: 'kanan.judul', type: 'text', label: 'Judul', group: 'kanan', required: true },
+    { key: 'kanan.isi', type: 'textarea', label: 'Isi', group: 'kanan', rows: 3 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+export const REVEAL_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'reveal',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'cover', label: 'Sampul', icon: 'Eye' },
+    { key: 'reveal', label: 'Konten Tersembunyi', icon: 'Gift' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'coverIcon', type: 'icon', label: 'Icon Sampul', group: 'cover', placeholder: '🎁' },
+    { key: 'coverText', type: 'text', label: 'Teks Sampul', group: 'cover', placeholder: 'Ketuk untuk membuka!' },
+    { key: 'revealIcon', type: 'icon', label: 'Icon Konten', group: 'reveal', placeholder: '💡' },
+    { key: 'revealContent', type: 'textarea', label: 'Konten Tersembunyi', group: 'reveal', rows: 4, required: true },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'p' },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
 // PROPERTY SCHEMA LOOKUP — DELEGATED TO SCENE REGISTRY
 // ═══════════════════════════════════════════════════════════════════
 // FASE 2: The PROPERTY_SCHEMAS record has been REMOVED.

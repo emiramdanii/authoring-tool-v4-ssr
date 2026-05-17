@@ -32,6 +32,8 @@ export { TimelineRenderer } from './TimelineRenderer';
 export { ChecklistRenderer } from './ChecklistRenderer';
 export { StatistikRenderer } from './StatistikRenderer';
 export { StudiRenderer } from './StudiRenderer';
+export { CompareRenderer } from './CompareRenderer';
+export { RevealRenderer } from './RevealRenderer';
 export { MemoryGameRenderer } from './MemoryGameRenderer';
 export { MatchingGameRenderer } from './MatchingGameRenderer';
 export { FillBlankGameRenderer } from './FillBlankGameRenderer';

@@ -55,6 +55,7 @@ const REGISTERED_BLOCK_TYPES = new Set([
   'hasil', 'refleksi', 'penutup', 'tabel-accord',
   'tujuan-display', 'motivasi', 'rangkuman',
   'tabel', 'gambar', 'timeline', 'checklist', 'statistik', 'studi',
+  'compare', 'reveal',
 ]);
 
 // ── Validation Result ───────────────────────────────────────────

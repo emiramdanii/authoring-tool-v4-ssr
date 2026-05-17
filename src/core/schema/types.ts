@@ -726,6 +726,28 @@ export interface TransactionResult {
   warnings: import('./validation').ValidationError[];
 }
 
+// ── Compare Schema ────────────────────────────────────────────
+
+export interface CompareBlock extends BaseBlock {
+  type: 'compare';
+  title?: string;
+  kiri: { icon: string; judul: string; isi: string; };
+  kanan: { icon: string; judul: string; isi: string; };
+  accentColor?: string;
+}
+
+// ── Reveal Schema ────────────────────────────────────────────
+
+export interface RevealBlock extends BaseBlock {
+  type: 'reveal';
+  title?: string;
+  coverIcon: string;
+  coverText: string;
+  revealIcon: string;
+  revealContent: string;
+  accentColor?: string;
+}
+
 // ── Union Type ─────────────────────────────────────────────────
 
 export type SchemaBlock =
@@ -766,6 +788,8 @@ export type SchemaBlock =
   | RangkumanBlock
   | CrosswordGameBlock
   | TeamBuzzerGameBlock
+  | CompareBlock
+  | RevealBlock
   | BaseBlock;
 
 // ── Screen Schema ──────────────────────────────────────────────
