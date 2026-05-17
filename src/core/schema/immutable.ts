@@ -690,8 +690,11 @@ function insertAfterInNested(
  * Regenerate IDs for all nested children in a block to avoid duplicates.
  * Mutates the block in place (used on a deep-cloned block).
  * Uses container descriptor for composite block detection.
+ *
+ * Also exported for use in duplicatePage() — each cloned page needs
+ * fresh IDs for ALL nested blocks, not just top-level ones.
  */
-function regenerateNestedIds(block: SchemaBlock): void {
+export function regenerateNestedIds(block: SchemaBlock): void {
   // Composite blocks — use descriptor-driven traversal
   if (isCompositeBlockType(block.type)) {
     const descriptor = getCompositeContainerDescriptor(block.type);

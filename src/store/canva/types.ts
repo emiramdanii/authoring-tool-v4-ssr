@@ -239,6 +239,10 @@ export interface CanvaState {
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
   distributeSelected: (axis: 'horizontal' | 'vertical') => void;
+  /** Align selected schema blocks (absolute-positioned only) */
+  alignSchemaBlocks: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;
+  /** Distribute selected schema blocks (absolute-positioned only) */
+  distributeSchemaBlocks: (axis: 'horizontal' | 'vertical') => void;
 
   // ── Actions: Layout Presets ────────────────────────────────────
   applyLayoutPreset: (presetId: string) => void;

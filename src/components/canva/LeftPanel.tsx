@@ -268,8 +268,6 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
         <Sparkles size={10} className="inline" />
         Buat dari Template Wizard
       </button>
-
-      <PageTypeCreator />
     </div>
   );
 }

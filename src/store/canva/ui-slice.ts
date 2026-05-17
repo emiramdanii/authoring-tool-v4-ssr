@@ -32,6 +32,7 @@ export type UISlice = Pick<
   | 'applyLayoutPreset' | 'currentLayoutPreset'
   | 'setZoom' | 'setFitZoom' | 'zoomDelta' | 'zoomToFit' | 'setRatio' | 'nudgeSelected'
   | 'alignSelected' | 'distributeSelected'
+  | 'alignSchemaBlocks' | 'distributeSchemaBlocks'
   | 'clearStage' | 'updateSchemaBlock'
   | 'deleteBlock' | 'moveBlockUp' | 'moveBlockDown' | 'duplicateBlock'
   | 'addSchemaBlock'
@@ -290,10 +291,27 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   clearStage: () => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (page.elements.length === 0) return;
+    if (!page) return;
+
+    // Check BOTH legacy elements and schema blocks — most pages are schema-driven now
+    const hasLegacyElements = page.elements && page.elements.length > 0;
+    const hasSchemaBlocks = page.schema?.blocks && page.schema.blocks.length > 0;
+    if (!hasLegacyElements && !hasSchemaBlocks) return; // Nothing to clear
+
     get()._pushHistory();
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...page, elements: [] };
+    newPages[currentPageIndex] = {
+      ...page,
+      elements: [],
+      // Also clear schema blocks (the primary editing surface)
+      ...(hasSchemaBlocks ? {
+        schema: {
+          ...page.schema!,
+          blocks: [],
+          version: (page.schema!.version || 1) + 1,
+        },
+      } : {}),
+    };
     set({ pages: newPages, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success('Stage dibersihkan');
   },
@@ -400,6 +418,166 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       set({ pages: newPages });
     }
     toast.success(`Distribusi ${axis === 'horizontal' ? 'horizontal' : 'vertikal'} diterapkan`);
+  },
+
+  // ── Schema Block Alignment ──────────────────────────────────────
+  // Aligns absolute-positioned schema blocks. Flow blocks are skipped.
+  alignSchemaBlocks: (direction) => {
+    const { pages, currentPageIndex, selectedBlockIds, selectedBlockId } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+    const blocks = schema.blocks;
+
+    const ids = selectedBlockIds.length >= 2 ? selectedBlockIds : (selectedBlockId ? [selectedBlockId] : []);
+    if (ids.length < 2) {
+      toast.info('Pilih minimal 2 block absolute untuk alignment');
+      return;
+    }
+
+    // Collect absolute-positioned blocks from selection
+    const absoluteBlocks = ids
+      .map(id => ({ id, block: findBlockById(blocks, id) }))
+      .filter(({ block }) => block && block.layout?.position === 'absolute')
+      .map(({ id, block }) => ({ id, block: block! }));
+
+    if (absoluteBlocks.length < 2) {
+      toast.info('Alignment hanya untuk block dengan posisi absolute');
+      return;
+    }
+
+    get()._pushHistory();
+
+    const toNum = (v: number | string | undefined, fallback: number): number =>
+      typeof v === 'number' ? v : fallback;
+
+    // Compute alignment value
+    let alignValue: number;
+    switch (direction) {
+      case 'left': alignValue = Math.min(...absoluteBlocks.map(b => toNum(b.block.layout!.x, 0))); break;
+      case 'centerH': alignValue = absoluteBlocks.reduce((s, b) => s + toNum(b.block.layout!.x, 0) + toNum(b.block.layout!.width, 100) / 2, 0) / absoluteBlocks.length; break;
+      case 'right': alignValue = Math.max(...absoluteBlocks.map(b => toNum(b.block.layout!.x, 0) + toNum(b.block.layout!.width, 100))); break;
+      case 'top': alignValue = Math.min(...absoluteBlocks.map(b => toNum(b.block.layout!.y, 0))); break;
+      case 'centerV': alignValue = absoluteBlocks.reduce((s, b) => s + toNum(b.block.layout!.y, 0) + toNum(b.block.layout!.height, 100) / 2, 0) / absoluteBlocks.length; break;
+      case 'bottom': alignValue = Math.max(...absoluteBlocks.map(b => toNum(b.block.layout!.y, 0) + toNum(b.block.layout!.height, 100))); break;
+      default: return;
+    }
+
+    // Apply alignment via produceWithPatches
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      for (const { id } of absoluteBlocks) {
+        const block = draft.find(b => b.id === id);
+        if (!block?.layout || block.layout.position !== 'absolute') continue;
+        switch (direction) {
+          case 'left': block.layout.x = alignValue; break;
+          case 'centerH': block.layout.x = alignValue - toNum(block.layout.width, 100) / 2; break;
+          case 'right': block.layout.x = alignValue - toNum(block.layout.width, 100); break;
+          case 'top': block.layout.y = alignValue; break;
+          case 'centerV': block.layout.y = alignValue - toNum(block.layout.height, 100) / 2; break;
+          case 'bottom': block.layout.y = alignValue - toNum(block.layout.height, 100); break;
+        }
+      }
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: ids[0],
+        blockType: 'align',
+        pageIndex: currentPageIndex,
+        patch: { _aligned: true, direction },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
+    set({ pages: newPages });
+    toast.success(`Block align ${direction} diterapkan`);
+  },
+
+  // ── Schema Block Distribution ──────────────────────────────────
+  distributeSchemaBlocks: (axis) => {
+    const { pages, currentPageIndex, selectedBlockIds, selectedBlockId } = get();
+    const page = pages[currentPageIndex];
+    if (!page) return;
+
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+    const blocks = schema.blocks;
+
+    const ids = selectedBlockIds.length >= 3 ? selectedBlockIds : (selectedBlockId ? [selectedBlockId] : []);
+    if (ids.length < 3) {
+      toast.info('Pilih minimal 3 block absolute untuk distribusi');
+      return;
+    }
+
+    const absoluteBlocks = ids
+      .map(id => ({ id, block: findBlockById(blocks, id) }))
+      .filter(({ block }) => block && block.layout?.position === 'absolute')
+      .map(({ id, block }) => ({ id, block: block! }));
+
+    if (absoluteBlocks.length < 3) {
+      toast.info('Distribusi hanya untuk block dengan posisi absolute');
+      return;
+    }
+
+    get()._pushHistory();
+
+    const toNum = (v: number | string | undefined, fallback: number): number =>
+      typeof v === 'number' ? v : fallback;
+
+    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
+      if (axis === 'horizontal') {
+        const sorted = [...absoluteBlocks].sort((a, b) => toNum(a.block.layout!.x, 0) - toNum(b.block.layout!.x, 0));
+        const min = toNum(sorted[0].block.layout!.x, 0);
+        const maxBlock = sorted[sorted.length - 1];
+        const max = toNum(maxBlock.block.layout!.x, 0) + toNum(maxBlock.block.layout!.width, 100);
+        const totalW = sorted.reduce((s, b) => s + toNum(b.block.layout!.width, 100), 0);
+        const gap = (max - min - totalW) / (sorted.length - 1);
+        let current = min;
+        for (const { id } of sorted) {
+          const block = draft.find(b => b.id === id);
+          if (block?.layout) block.layout.x = current;
+          current += toNum(sorted.find(s => s.id === id)!.block.layout!.width, 100) + gap;
+        }
+      } else {
+        const sorted = [...absoluteBlocks].sort((a, b) => toNum(a.block.layout!.y, 0) - toNum(b.block.layout!.y, 0));
+        const min = toNum(sorted[0].block.layout!.y, 0);
+        const maxBlock = sorted[sorted.length - 1];
+        const max = toNum(maxBlock.block.layout!.y, 0) + toNum(maxBlock.block.layout!.height, 100);
+        const totalH = sorted.reduce((s, b) => s + toNum(b.block.layout!.height, 100), 0);
+        const gap = (max - min - totalH) / (sorted.length - 1);
+        let current = min;
+        for (const { id } of sorted) {
+          const block = draft.find(b => b.id === id);
+          if (block?.layout) block.layout.y = current;
+          current += toNum(sorted.find(s => s.id === id)!.block.layout!.height, 100) + gap;
+        }
+      }
+    });
+
+    editBus.emit({
+      type: 'patch',
+      patch: {
+        blockId: ids[0],
+        blockType: 'distribute',
+        pageIndex: currentPageIndex,
+        patch: { _distributed: true, axis },
+        timestamp: Date.now(),
+        source: 'user',
+        _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
+      },
+    });
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
+    set({ pages: newPages });
+    toast.success(`Block distribusi ${axis === 'horizontal' ? 'horizontal' : 'vertikal'} diterapkan`);
   },
 
   // ── Schema Block CRUD ───────────────────────────────────────────

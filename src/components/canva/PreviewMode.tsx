@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { PageTransition, type PageDirection } from '@/lib/transition';
 import { useCanvaStore } from '@/store/canva-store';
 import { PageRenderer } from './page-renderer';
 import { RATIOS } from './types';
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button';
 // Shows the stage viewport without editing chrome (no panels).
 // Floating nav bar at bottom with: Back to Edit, scene prev/next.
 // Keyboard: Esc → back to edit, Arrow keys → navigate scenes.
+// Page transitions for smooth navigation between pages.
 // ═══════════════════════════════════════════════════════════════
 
 export default function PreviewMode() {
@@ -31,9 +33,18 @@ export default function PreviewMode() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [direction, setDirection] = useState(0);
+  const prevIdxRef = useRef(currentPageIndex);
 
   const page = pages[currentPageIndex];
   const totalPages = pages.length;
+
+  // Track direction for page transition animation
+  useEffect(() => {
+    if (currentPageIndex > prevIdxRef.current) setDirection(1);
+    else if (currentPageIndex < prevIdxRef.current) setDirection(-1);
+    prevIdxRef.current = currentPageIndex;
+  }, [currentPageIndex]);
 
   // ResizeObserver for responsive scaling
   useEffect(() => {
@@ -141,8 +152,11 @@ export default function PreviewMode() {
             </div>
           </div>
         ) : (
-          /* Desktop — normal preview */
-          <div
+          /* Desktop — normal preview with page transition */
+          <PageTransition
+            pageKey={`preview-page-${currentPageIndex}`}
+            direction={direction as PageDirection}
+            duration={0.3}
             className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
             style={{
               width: ratio.w,
@@ -159,7 +173,7 @@ export default function PreviewMode() {
                 totalPages={totalPages}
               />
             </CanvasErrorBoundary>
-          </div>
+          </PageTransition>
         )}
       </div>
 

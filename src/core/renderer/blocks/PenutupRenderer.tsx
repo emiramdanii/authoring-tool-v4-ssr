@@ -7,6 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
+import { useCanvaStore } from '@/store/canva-store';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
@@ -146,10 +147,18 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             ))}
           </div>
 
-          {/* Call-to-action for next meeting */}
+          {/* Call-to-action for next meeting — navigates to next page */}
           {interactive && (
             <button className="w-full mt-3 py-2.5 rounded-xl font-extrabold transition-all hover:scale-[1.02]"
-              onClick={() => playSound('click')}
+              onClick={() => {
+                playSound('click');
+                // Navigate to next page if available
+                const store = useCanvaStore.getState();
+                const { currentPageIndex, pages } = store;
+                if (currentPageIndex < pages.length - 1) {
+                  store.goPage(currentPageIndex + 1);
+                }
+              }}
               style={{
                 fontSize: '13px',
                 background: 'linear-gradient(135deg, ' + tokens.color('g') + ', ' + tokens.color('c') + ')',

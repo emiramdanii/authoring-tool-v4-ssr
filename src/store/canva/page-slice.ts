@@ -13,6 +13,7 @@ import {
 import { createPage, createElId } from './constants';
 import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
+import { regenerateNestedIds } from '@/core/schema/immutable';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { patchHistory } from '@/core/editor/patch-history';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
@@ -70,13 +71,20 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     // would highlight the same-ID block in the other page).
     // Each block gets a fresh stable nanoid(10).
     if (clone.schema?.blocks) {
+      // ═══ Deep ID regeneration for ALL blocks (including nested) ═══
+      // Previously only top-level blocks got new IDs, causing selection
+      // conflicts when editing duplicated pages with composite blocks
+      // (ftab tabs, materi-section content, children).
+      // Now we regenerate IDs for EVERY block in the tree.
       clone.schema = {
         ...clone.schema,
         id: clone.id, // Update schema ID to match new page ID
-        blocks: clone.schema.blocks.map(block => ({
-          ...block,
-          id: generateBlockId(), // Fresh stable nanoid for each block
-        })),
+        blocks: clone.schema.blocks.map(block => {
+          // Deep clone already done by structuredClone — just re-ID
+          const reId = { ...block, id: generateBlockId() };
+          regenerateNestedIds(reId as any); // Regenerate nested child IDs
+          return reId;
+        }),
       };
     }
     const newPages = [...pages];
