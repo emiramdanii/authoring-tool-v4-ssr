@@ -19,6 +19,7 @@ export function QuickActions() {
   const redo = useCanvaStore((s) => s.redo);
   const canUndo = useCanvaStore((s) => s.canUndo);
   const canRedo = useCanvaStore((s) => s.canRedo);
+  const teacherMode = useCanvaStore((s) => s.teacherMode);
 
   return (
     <div className="flex items-center gap-1">
@@ -53,8 +54,8 @@ export function QuickActions() {
       {/* Teacher Mode Toggle */}
       <TeacherModeToggle />
 
-      {/* Auto-save indicator */}
-      <AutoSaveIndicator />
+      {/* Auto-save indicator — hidden in teacher mode (shown in StatusBar instead) */}
+      {!teacherMode && <AutoSaveIndicator />}
       <SaveNowButton />
 
       <div className="section-divider h-5 w-px mx-1" />
@@ -83,8 +84,8 @@ export function QuickActions() {
         <span className="hidden sm:inline">Export</span>
       </button>
 
-      {/* Export (advanced options dropdown) */}
-      <ToolbarExport />
+      {/* Export (advanced options dropdown) — only in advanced mode */}
+      {!teacherMode && <ToolbarExport />}
     </div>
   );
 }

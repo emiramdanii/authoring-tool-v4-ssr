@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import ElementProperties from './ElementProperties';
 import BackgroundSection from './BackgroundSection';
@@ -37,12 +37,16 @@ const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'),
 });
 
 // ═══════════════════════════════════════════════════════════════
-// RIGHT PANEL v6 — 3-Tab Layout
+// RIGHT PANEL v7 — Teacher-Mode-Aware Tab Layout
 // ═══════════════════════════════════════════════════════════════
-// Tabs:
-//   Properties → Block/Eleent props, Alignment, Background
+// Tabs (sederhana / teacher mode):
+//   Properti → Block props, Background (no Layer tab clutter)
+//   AI       → AI Assistant, AI Refine
+//
+// Tabs (lengkap / advanced mode):
+//   Properties → Block/Element props, Alignment, Background
 //   AI         → AI Assistant, AI Refine
-//   Layer ⚙    → PageInfo, Navigation, PageSettings, Palette
+//   Layer      → LayerPanel, Navigation, PageInfo
 // ═══════════════════════════════════════════════════════════════
 
 type RightPanelTab = 'properties' | 'ai' | 'layer';
@@ -58,11 +62,14 @@ export default function RightPanel() {
 
   const [activeTab, setActiveTab] = useState<RightPanelTab>('properties');
 
-  // Teacher-mode aware tab labels
+  // Teacher-mode aware tab configuration
+  // Sederhana mode: only Properti + AI (Layer is hidden — reduces cognitive load)
+  // Lengkap mode: all 3 tabs including Layer for advanced block ordering
   const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
     { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
     { id: 'ai', label: 'AI', icon: <Sparkles size={12} /> },
-    { id: 'layer', label: teacherMode ? 'Lapisan' : 'Layer', icon: <Layers size={12} /> },
+    // Layer tab only in advanced mode — teachers don't need block ordering concept
+    ...(!teacherMode ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={12} /> }] : []),
   ];
 
   if (!rightPanelOpen) return null;
@@ -74,8 +81,12 @@ export default function RightPanel() {
   const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const isSchemaDriven = !!page?.schema;
 
-  // Auto-switch to AI tab when a block is selected and AI tab is relevant
-  // But let user manually switch tabs
+  // Auto-correct: if teacher mode is on and layer tab was active, switch to properties
+  useEffect(() => {
+    if (teacherMode && activeTab === 'layer') {
+      setActiveTab('properties');
+    }
+  }, [teacherMode, activeTab]);
 
   return (
     <div className="w-full flex flex-col bg-app-surface overflow-hidden" style={{ width: 'var(--semantic-panel-expanded)' }}>

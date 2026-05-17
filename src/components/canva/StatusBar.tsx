@@ -3,7 +3,7 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { RATIOS } from '@/components/canva/types';
-import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap } from 'lucide-react';
+import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap, GraduationCap } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
@@ -117,10 +117,10 @@ export default function StatusBar() {
         <span className="font-mono">{ratio.w}×{ratio.h}</span>
       </span>
 
-      {/* Element count */}
+      {/* Element count — teacher-friendly label */}
       <span className="flex items-center gap-1.5">
         <Box size={11} className="text-app-muted" />
-        <span>{totalElements} elemen</span>
+        <span>{totalElements} {teacherMode ? 'konten' : 'elemen'}</span>
       </span>
 
       {/* Page info with template type */}
@@ -169,20 +169,30 @@ export default function StatusBar() {
         )}
       </span>
 
-      {/* Right side: Theme preset + Theme toggle + Zoom slider */}
+      {/* Right side: Teacher mode badge + Theme + Zoom */}
       <div className="flex items-center gap-1.5 ml-auto">
+        {/* Teacher mode badge — always visible so teachers know their mode */}
+        {teacherMode && (
+          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-[8px] font-bold text-emerald-400">
+            <GraduationCap size={8} />
+            Mode Guru
+          </span>
+        )}
         <ThemePresetPicker />
         <ThemeToggle />
         <Layers size={10} className="text-app-muted" />
-        <input
-          type="range"
-          min={10}
-          max={300}
-          step={5}
-          value={zoomPercent}
-          onChange={e => setZoom(parseInt(e.target.value) / 100)}
-          className="w-16 h-1 accent-app-accent"
-        />
+        {/* Zoom slider — hidden in teacher mode (simpler), show only fit button + percentage */}
+        {!teacherMode && (
+          <input
+            type="range"
+            min={10}
+            max={300}
+            step={5}
+            value={zoomPercent}
+            onChange={e => setZoom(parseInt(e.target.value) / 100)}
+            className="w-16 h-1 accent-app-accent"
+          />
+        )}
         <button
           onClick={zoomToFit}
           className="font-mono text-[9px] text-app-muted hover:text-app-accent transition-colors w-12 text-right"

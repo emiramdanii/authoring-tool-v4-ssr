@@ -11,6 +11,7 @@
 import { useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import type { SchemaBlock } from '@/core/schema/types';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 
 const VARIANTS = ['A', 'B', 'C'] as const;
 
@@ -18,6 +19,13 @@ const VARIANT_LABELS: Record<string, string> = {
   A: 'Default',
   B: 'Compact',
   C: 'Expanded',
+};
+
+// Teacher-friendly variant labels — Indonesian, descriptive
+const VARIANT_TEACHER_LABELS: Record<string, string> = {
+  A: 'Standar',
+  B: 'Ringkas',
+  C: 'Lebar',
 };
 
 const VARIANT_COLORS: Record<string, string> = {
@@ -33,6 +41,7 @@ interface BlockVariantSwitcherProps {
 export function BlockVariantSwitcher({ block }: BlockVariantSwitcherProps) {
   const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
+  const teacherMode = useCanvaStore((s) => s.teacherMode);
 
   const currentVariant = (block as unknown as Record<string, unknown>).variant as string || 'A';
 
@@ -42,10 +51,14 @@ export function BlockVariantSwitcher({ block }: BlockVariantSwitcherProps) {
     updateSchemaBlock(selectedBlockId, { variant });
   }, [selectedBlockId, currentVariant, updateSchemaBlock]);
 
+  // In teacher mode, show descriptive Indonesian labels instead of A/B/C
+  const displayLabels = teacherMode ? VARIANT_TEACHER_LABELS : VARIANT_LABELS;
+  const sectionLabel = teacherMode ? 'Gaya' : 'Varian';
+
   return (
     <div className="flex items-center gap-2">
       <span className="text-[9px] text-app-muted font-bold uppercase tracking-wider w-12">
-        Varian
+        {sectionLabel}
       </span>
       <div className="flex items-center gap-1">
         {VARIANTS.map((v) => {
@@ -59,16 +72,18 @@ export function BlockVariantSwitcher({ block }: BlockVariantSwitcherProps) {
                   ? VARIANT_COLORS[v]
                   : 'bg-app-elevated/40 text-app-muted border-app-border/20 hover:bg-app-elevated/60 hover:text-app-secondary'
               }`}
-              title={VARIANT_LABELS[v]}
+              title={displayLabels[v]}
             >
-              {v}
+              {teacherMode ? displayLabels[v] : v}
             </button>
           );
         })}
       </div>
-      <span className="text-[8px] text-app-muted ml-1">
-        {VARIANT_LABELS[currentVariant] || 'Custom'}
-      </span>
+      {!teacherMode && (
+        <span className="text-[8px] text-app-muted ml-1">
+          {VARIANT_LABELS[currentVariant] || 'Custom'}
+        </span>
+      )}
     </div>
   );
 }
