@@ -13,6 +13,7 @@ import {
 import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
 
 // Lazy-load TemplateWizard — it's a modal that's not always visible
@@ -70,6 +71,7 @@ export default function Dashboard() {
   const newProject = useAuthoringStore((s) => s.newProject);
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const { saveProject, currentProjectId } = useProjectManager();
+  const { isSederhana } = useTeacherMode();
 
   // Get canva pages length for adaptive guidance
   const pagesLength = useCanvaStore((s) => s.pages.length);
@@ -159,13 +161,13 @@ export default function Dashboard() {
     slate: 'text-app-muted bg-app-elevated/30',
   };
 
-  // ── Flow Steps ─────────────────────────────────────────────────
+  // ── Flow Steps (mode-aware labels) ──────────────────────────
   const flowSteps = [
     { num: 1, label: 'Pilih Template', icon: Layout, active: true },
-    { num: 2, label: 'Isi Dokumen', icon: FileEdit, active: completeness >= 10 },
-    { num: 3, label: 'Tambah Konten', icon: Puzzle, active: completeness >= 40 },
-    { num: 4, label: 'Desain Canva', icon: Palette, active: completeness >= 60 },
-    { num: 5, label: 'Preview & Export', icon: Play, active: completeness >= 80 },
+    { num: 2, label: isSederhana ? 'Isi RPP' : 'Isi Dokumen', icon: FileEdit, active: completeness >= 10 },
+    { num: 3, label: 'Tambah Materi', icon: Puzzle, active: completeness >= 40 },
+    { num: 4, label: isSederhana ? 'Desain Visual' : 'Desain Canva', icon: Palette, active: completeness >= 60 },
+    { num: 5, label: isSederhana ? 'Pratinjau' : 'Preview & Export', icon: Play, active: completeness >= 80 },
   ];
 
   const currentStep = flowSteps.findIndex((s) => !s.active);
@@ -173,28 +175,28 @@ export default function Dashboard() {
   // ── Quick actions data ─────────────────────────────────────────
   const quickActions = [
     {
-      label: 'Isi Dokumen',
+      label: isSederhana ? 'Isi RPP' : 'Isi Dokumen',
       desc: 'CP, TP, ATP, Alur Pembelajaran',
       icon: FileEdit,
       color: 'app-accent',
       action: () => setActivePanel('dokumen'),
     },
     {
-      label: 'Tambah Konten',
+      label: isSederhana ? 'Tambah Materi' : 'Tambah Konten',
       desc: 'Kuis, modul interaktif, materi',
       icon: Puzzle,
       color: 'cyan-500',
       action: () => setActivePanel('konten'),
     },
     {
-      label: 'Preview Siswa',
-      desc: 'Lihat tampilan lengkap siswa',
+      label: isSederhana ? 'Lihat Hasil' : 'Preview Siswa',
+      desc: isSederhana ? 'Pratinjau tampilan siswa' : 'Lihat tampilan lengkap siswa',
       icon: Smartphone,
       color: 'emerald-500',
       action: () => setActivePanel('preview'),
     },
     {
-      label: 'Desain Canva',
+      label: isSederhana ? 'Desain Visual' : 'Desain Canva',
       desc: 'Layout & visual slide',
       icon: Palette,
       color: 'purple-500',
@@ -242,7 +244,7 @@ export default function Dashboard() {
       {/* ══ HEADER ════════════════════════════════════════════════ */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-app-primary tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-app-primary tracking-tight">{isSederhana ? 'Beranda' : 'Dashboard'}</h1>
           <p className="text-sm text-app-secondary mt-1">Buat media pembelajaran interaktif dalam 5 langkah.</p>
         </div>
         {isPresetMode && (
@@ -319,7 +321,7 @@ export default function Dashboard() {
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/15 transition-colors">
                 <Sparkles className="h-5 w-5 text-purple-400" />
               </div>
-              <span className="text-sm font-medium text-app-primary">Auto-Generate</span>
+              <span className="text-sm font-medium text-app-primary">{isSederhana ? 'Buat AI' : 'Auto-Generate'}</span>
               <span className="text-xs text-app-muted">AI buatkan untuk Anda</span>
             </button>
             <button
@@ -359,8 +361,11 @@ export default function Dashboard() {
                     </div>
                     <div className="text-xs font-medium text-app-primary">{p.label}</div>
                     <div className="text-[0.65rem] text-app-muted mt-0.5">{p.sub}</div>
-                    {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
+                    {SCHEMA_DRIVEN_PRESETS.has(p.key) && !isSederhana && (
                       <div className="text-[0.6rem] text-app-accent/70 font-medium mt-1.5 flex items-center justify-center gap-0.5"><Zap size={9} /> Schema</div>
+                    )}
+                    {SCHEMA_DRIVEN_PRESETS.has(p.key) && isSederhana && (
+                      <div className="text-[0.6rem] text-app-accent/70 font-medium mt-1.5 flex items-center justify-center gap-0.5"><Zap size={9} /> Siap Pakai</div>
                     )}
                     {isCurrentPreset && (
                       <div className="text-[0.6rem] text-app-accent font-medium mt-1.5">AKTIF</div>
@@ -416,8 +421,11 @@ export default function Dashboard() {
                   </div>
                   <div className="text-xs font-medium text-app-primary">{p.label}</div>
                   <div className="text-[0.65rem] text-app-muted mt-0.5">{p.sub}</div>
-                  {SCHEMA_DRIVEN_PRESETS.has(p.key) && (
+                  {SCHEMA_DRIVEN_PRESETS.has(p.key) && !isSederhana && (
                     <div className="text-[0.6rem] text-app-accent/70 font-medium mt-1.5 flex items-center justify-center gap-0.5"><Zap size={9} /> Schema</div>
+                  )}
+                  {SCHEMA_DRIVEN_PRESETS.has(p.key) && isSederhana && (
+                    <div className="text-[0.6rem] text-app-accent/70 font-medium mt-1.5 flex items-center justify-center gap-0.5"><Zap size={9} /> Siap Pakai</div>
                   )}
                   {isCurrentPreset && (
                     <div className="text-[0.6rem] text-app-accent font-medium mt-1.5">AKTIF</div>
@@ -501,8 +509,8 @@ export default function Dashboard() {
                 <Zap size={16} />
               </div>
               <div>
-                <div className="text-sm font-medium text-app-primary">Schema Preview</div>
-                <div className="text-xs text-app-muted">JSON-driven rendering + 7 tema</div>
+                <div className="text-sm font-medium text-app-primary">{isSederhana ? 'Pratinjau Interaktif' : 'Schema Preview'}</div>
+                <div className="text-xs text-app-muted">{isSederhana ? 'Lihat tampilan media pembelajaran' : 'JSON-driven rendering + 7 tema'}</div>
               </div>
             </button>
           )}
@@ -553,7 +561,7 @@ export default function Dashboard() {
           className="px-3 py-1.5 text-xs text-app-accent hover:text-app-accent/80 bg-app-accent/5 hover:bg-app-accent/10 rounded-lg border border-app-accent/15 transition-colors flex items-center gap-1.5"
         >
           <Wand2 size={12} />
-          Auto-Generate
+          {isSederhana ? 'Buat AI' : 'Auto-Generate'}
         </button>
 
         <div className="w-px h-5 bg-app-border mx-1" />

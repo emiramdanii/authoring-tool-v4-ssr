@@ -24,6 +24,7 @@ import CanvaTour from '@/components/shared/CanvaTour';
 import { MobileGuard } from '@/components/shared/MobileGuard';
 import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
 import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
+import { CanvaOrientationTooltip } from '@/components/shared/CanvaOrientationTooltip';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
@@ -211,6 +212,9 @@ export default function CanvaBuilder() {
 
         {/* Offline Indicator */}
         <OfflineIndicator />
+
+        {/* Teacher Orientation Tooltip */}
+        <CanvaOrientationTooltip />
 
         {/* Export Success Dialog */}
         <ExportSuccessDialog open={showExportSuccess} onClose={() => setShowExportSuccess(false)} />

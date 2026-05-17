@@ -12,7 +12,7 @@ import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import LayerPanel from '../left-panel/LayerPanel';
 import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand } from 'lucide-react';
-import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
 
 // Lazy-loaded: AI sections are heavy (API calls, complex UI, code editors)
@@ -57,8 +57,8 @@ export default function RightPanel() {
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const selectedElId = useCanvaStore(s => s.selectedElId);
   const selectedElIds = useCanvaStore(s => s.selectedElIds);
-  const teacherMode = useCanvaStore(s => s.teacherMode);
-  const blockLabel = teacherMode ? 'Konten' : 'Block';
+  const { isSederhana } = useTeacherMode();
+  const blockLabel = isSederhana ? 'Konten' : 'Block';
 
   const [activeTab, setActiveTab] = useState<RightPanelTab>('properties');
 
@@ -68,8 +68,8 @@ export default function RightPanel() {
   const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
     { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
     { id: 'ai', label: 'AI', icon: <Sparkles size={12} /> },
-    // Layer tab only in advanced mode — teachers don't need block ordering concept
-    ...(!teacherMode ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={12} /> }] : []),
+    // Layer tab only in advanced mode — teachers get NavigationSection in Properties tab instead
+    ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={12} /> }] : []),
   ];
 
   if (!rightPanelOpen) return null;
@@ -83,10 +83,10 @@ export default function RightPanel() {
 
   // Auto-correct: if teacher mode is on and layer tab was active, switch to properties
   useEffect(() => {
-    if (teacherMode && activeTab === 'layer') {
+    if (isSederhana && activeTab === 'layer') {
       setActiveTab('properties');
     }
-  }, [teacherMode, activeTab]);
+  }, [isSederhana, activeTab]);
 
   return (
     <div className="w-full flex flex-col bg-app-surface overflow-hidden" style={{ width: 'var(--semantic-panel-expanded)' }}>
@@ -137,6 +137,15 @@ export default function RightPanel() {
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />
+                {/* ── Teacher mode: Show NavigationSection + PageInfo here ── */}
+                {/* (These are normally in the Layer tab, but Layer is hidden in sederhana mode) */}
+                {isSederhana && (
+                  <>
+                    <div className="border-t border-app-border/30 mx-2" />
+                    <NavigationSection />
+                    <PageInfo />
+                  </>
+                )}
                 <div className="mx-3 mt-3 mb-4 rounded-xl border border-dashed border-app-accent/25 bg-app-accent/5 overflow-hidden">
                   {/* Header with accent stripe */}
                   <div className="px-4 pt-4 pb-3 text-center">

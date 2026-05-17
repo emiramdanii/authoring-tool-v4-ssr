@@ -23,6 +23,7 @@ import {
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { Button } from '@/components/ui/button';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
@@ -55,7 +56,17 @@ interface NavItem {
   label: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
+// ═══ Navigation items — mode-aware labels ══════════════════
+// In sederhana mode, labels are teacher-friendly (Indonesian SMP teachers)
+// In lengkap mode, labels are technical/standard
+
+const NAV_ITEMS_SEDERHANA: NavItem[] = [
+  { id: 'dashboard', icon: Home, label: 'Beranda' },
+  { id: 'konten', icon: BookOpen, label: 'Materi' },
+  { id: 'canva', icon: Palette, label: 'Desain' },
+];
+
+const NAV_ITEMS_LENGKAP: NavItem[] = [
   { id: 'dashboard', icon: Home, label: 'Dashboard' },
   { id: 'dokumen', icon: FileText, label: 'Dokumen' },
   { id: 'konten', icon: BookOpen, label: 'Konten' },
@@ -63,14 +74,36 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'autogen', icon: Sparkles, label: 'Auto-Generate' },
 ];
 
-const NAV_ITEMS_2: NavItem[] = [
+const NAV_ITEMS_2_SEDERHANA: NavItem[] = [
+  { id: 'dokumen', icon: FileText, label: 'RPP' },
+  { id: 'autogen', icon: Sparkles, label: 'Buat AI' },
+  { id: 'projects', icon: FolderOpen, label: 'Proyek' },
+  { id: 'import', icon: ArrowLeftRight, label: 'Impor/Ekspor' },
+  { id: 'preview', icon: Eye, label: 'Pratinjau' },
+  { id: 'versions', icon: Clock, label: 'Versi' },
+];
+
+const NAV_ITEMS_2_LENGKAP: NavItem[] = [
   { id: 'projects', icon: FolderOpen, label: 'Proyek' },
   { id: 'import', icon: ArrowLeftRight, label: 'Import/Export' },
   { id: 'preview', icon: Eye, label: 'Live Preview' },
   { id: 'versions', icon: Clock, label: 'Riwayat' },
 ];
 
-const PANEL_TITLES: Record<PanelId, string> = {
+// Panel titles — mode-aware
+const PANEL_TITLES_SEDERHANA: Record<PanelId, string> = {
+  dashboard: 'Beranda',
+  dokumen: 'RPP & Dokumen',
+  konten: 'Materi Pembelajaran',
+  canva: 'Desain Visual',
+  autogen: 'Buat dengan AI',
+  projects: 'Kelola Proyek',
+  import: 'Impor / Ekspor',
+  preview: 'Pratinjau',
+  versions: 'Versi',
+};
+
+const PANEL_TITLES_LENGKAP: Record<PanelId, string> = {
   dashboard: 'Dashboard',
   dokumen: 'Dokumen',
   konten: 'Konten Pembelajaran',
@@ -135,6 +168,12 @@ function AuthoringToolInner() {
   const meta = useAuthoringStore((s) => s.meta);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
   const { saveProject, currentProjectId, saving } = useProjectManager();
+  const { isSederhana, toggle: toggleTeacherMode } = useTeacherMode();
+
+  // Mode-aware navigation items
+  const navItems = isSederhana ? NAV_ITEMS_SEDERHANA : NAV_ITEMS_LENGKAP;
+  const navItems2 = isSederhana ? NAV_ITEMS_2_SEDERHANA : NAV_ITEMS_2_LENGKAP;
+  const panelTitles = isSederhana ? PANEL_TITLES_SEDERHANA : PANEL_TITLES_LENGKAP;
 
   // Load from storage on mount (authoring + canva)
   useEffect(() => {
@@ -313,7 +352,8 @@ function AuthoringToolInner() {
 
         {/* Navigation */}
         <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          {NAV_ITEMS.map((item) => {
+          {/* ── Primary navigation (mode-aware) ── */}
+          {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <button
@@ -337,7 +377,14 @@ function AuthoringToolInner() {
           {/* Divider */}
           <div className="section-divider my-3" />
 
-          {NAV_ITEMS_2.map((item) => {
+          {/* ── Secondary navigation (mode-aware) ── */}
+          {/* In sederhana mode, these are "Lainnya" items */}
+          {isSederhana && sidebarOpen && (
+            <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider px-3 mb-1">
+              Lainnya
+            </div>
+          )}
+          {navItems2.map((item) => {
             const Icon = item.icon;
             return (
               <button
@@ -383,11 +430,9 @@ function AuthoringToolInner() {
           <div className="px-2 py-3 space-y-2 flex flex-col items-center">
             <div className="section-divider w-full mb-2" />
             <button
-              onClick={() => useAuthoringStore.getState().setTeacherMode(
-                useAuthoringStore.getState().teacherMode === 'sederhana' ? 'lengkap' : 'sederhana'
-              )}
+              onClick={toggleTeacherMode}
               className="tooltip-trigger focus-ring"
-              data-tip={useAuthoringStore.getState().teacherMode === 'sederhana' ? 'Mode Sederhana' : 'Mode Lengkap'}
+              data-tip={isSederhana ? 'Mode Guru' : 'Mode Lanjutan'}
             >
               <GraduationCap size={16} className="text-emerald-400" />
             </button>
@@ -421,7 +466,7 @@ function AuthoringToolInner() {
             className="bg-app-surface/90 border border-app-border shadow-sm text-app-secondary hover:text-app-primary gap-1.5 backdrop-blur-sm"
           >
             <ArrowLeft size={14} />
-            Dashboard
+            {isSederhana ? 'Beranda' : 'Dashboard'}
           </Button>
         </div>
       )}
@@ -441,7 +486,7 @@ function AuthoringToolInner() {
             </Button>
 
             <div className="text-sm font-medium text-app-primary">
-              {PANEL_TITLES[activePanel]}
+              {panelTitles[activePanel]}
               <span className="text-app-muted font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
@@ -464,7 +509,7 @@ function AuthoringToolInner() {
                 className="text-app-success border-app-border hover:bg-app-elevated/50 hover:text-app-success"
               >
                 <Eye size={14} />
-                Preview
+                {isSederhana ? 'Pratinjau' : 'Preview'}
               </Button>
               <Button
                 variant="ghost"
@@ -473,7 +518,7 @@ function AuthoringToolInner() {
                 className="text-app-secondary"
               >
                 <Palette size={14} />
-                Canva
+                {isSederhana ? 'Desain' : 'Canva'}
               </Button>
               <Button
                 variant="ghost"
