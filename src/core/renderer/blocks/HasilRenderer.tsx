@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Trophy, Star, Target, RotateCcw, Sparkles, CheckCircle2, Zap, Award, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { HasilBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { useCanvaStore } from '@/store/canva-store';
+import { useCanvaStore } from '../../../store/canva/store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 
@@ -712,11 +712,13 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
   }[tier];
   const tierColor = tierConfig.color;
 
-  // ── Variant state ───────────────────────────────────────────
-  const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
-    (block.variant as 'A' | 'B' | 'C') || 'A'
-  );
-  const variant = currentVariant;
+  // ── Variant state (persisted to store) ────────────────────────
+  const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
+
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   // Play completion sound when results are shown in interactive mode
   React.useEffect(() => {
@@ -766,7 +768,7 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
       {/* Variant selector overlay — only when editing */}
       {isEditing && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} />
+          <VariantSelector active={variant} onChange={handleVariantChange} />
         </div>
       )}
 

@@ -20,8 +20,8 @@ import type { CompressionDecision } from '../../layout/CompressionEngine';
 // All text/labels in Indonesian (Bahasa Indonesia).
 // ═══════════════════════════════════════════════════════════════════
 
-export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, tokens, isCompact, isEditing, compression }: {
-  block: ChecklistBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
+export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, tokens, isCompact, interactive, isEditing, compression }: {
+  block: ChecklistBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
@@ -123,19 +123,19 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                         ? accentAlpha(0.1)
                         : tokens.color('card'),
                       border: `1px solid ${isChecked ? accentAlpha(0.25) : accentAlpha(0.1)}`,
-                      cursor: 'pointer',
+                      cursor: interactive ? 'pointer' : 'default',
                       opacity: isChecked ? 0.85 : 1,
                     }}
-                    onClick={() => handleToggle(i)}
-                    role="checkbox"
-                    aria-checked={isChecked}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
+                    onClick={() => interactive && handleToggle(i)}
+                    role={interactive ? 'checkbox' : 'listitem'}
+                    aria-checked={interactive ? isChecked : undefined}
+                    tabIndex={interactive ? 0 : undefined}
+                    onKeyDown={interactive ? ((e: React.KeyboardEvent) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         handleToggle(i);
                       }
-                    }}
+                    }) : undefined}
                   >
                     {/* Checkbox circle */}
                     <div

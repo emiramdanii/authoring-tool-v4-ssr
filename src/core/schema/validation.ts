@@ -54,6 +54,7 @@ const REGISTERED_BLOCK_TYPES = new Set([
   'drag-drop-game', 'crossword-game', 'team-buzzer-game',
   'hasil', 'refleksi', 'penutup', 'tabel-accord',
   'tujuan-display', 'motivasi', 'rangkuman',
+  'tabel', 'gambar', 'timeline', 'checklist', 'statistik', 'studi',
 ]);
 
 // ── Validation Result ───────────────────────────────────────────

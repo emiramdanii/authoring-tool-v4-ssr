@@ -7,7 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
-import { useCanvaStore } from '@/store/canva-store';
+import { useCanvaStore } from '../../../store/canva/store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';

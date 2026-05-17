@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 import type { GambarBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
@@ -38,6 +38,8 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
 
   const [hasError, setHasError] = useState(false);
+  // Reset error state when URL changes so new URL gets a chance to load
+  useEffect(() => { setHasError(false); }, [block.url]);
   const showImage = isValidUrl(block.url) && !hasError;
 
   return (
