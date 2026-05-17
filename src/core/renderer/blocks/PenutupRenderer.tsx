@@ -1,14 +1,15 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { CheckCircle2, ArrowRight, BookOpen, Sparkles, Trophy, Star, Target, Zap } from 'lucide-react';
 import type { PenutupBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
 import { useCanvaStore } from '@/store/canva-store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay } from './PremiumBlockEffects';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
@@ -28,6 +29,22 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
     value: block.subtitle ?? '',
     tag: 'span',
   });
+
+  // ── Score-based badge (Phase 21) ───────────────────────────────
+  const scores = useInteractiveStore(s => s.scores);
+  const totalScore = useInteractiveStore(s => s.totalScore());
+  const totalMax = useInteractiveStore(s => s.totalMax());
+  const totalPct = useInteractiveStore(s => s.totalPct());
+  const allComplete = useInteractiveStore(s => s.allPagesComplete());
+  const hasScores = scores.length > 0;
+
+  const tier = totalPct >= 90 ? 'excellent' : totalPct >= 75 ? 'good' : totalPct >= 50 ? 'fair' : 'needs-practice';
+  const tierConfig = hasScores ? {
+    'excellent': { label: 'Luar Biasa!', color: 'y', emoji: '🏆', icon: <Trophy size={16} /> },
+    'good': { label: 'Hebat!', color: 'g', emoji: '⭐', icon: <Star size={16} /> },
+    'fair': { label: 'Cukup Baik', color: 'c', emoji: '🎯', icon: <Target size={16} /> },
+    'needs-practice': { label: 'Terus Berlatih!', color: 'o', emoji: '💪', icon: <Zap size={16} /> },
+  }[tier] : null;
 
   const isCompressed = compression?.isCompressed ?? false;
 
@@ -77,6 +94,58 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
           }} />
         ))}
       </div>
+
+      {/* ── Score-based badge (Phase 21) — shown when scores exist ── */}
+      {hasScores && tierConfig && !isCompressed && (
+        <div className="mb-4 p-3.5 rounded-2xl premium-card-glow"
+          style={{
+            background: `linear-gradient(135deg, ${tokens.colorAlpha(tierConfig.color, 0.12)}, ${tokens.colorAlpha(tierConfig.color, 0.04)})`,
+            border: `1px solid ${tokens.colorAlpha(tierConfig.color, 0.3)}`,
+            boxShadow: `0 2px 16px ${tokens.colorAlpha(tierConfig.color, 0.1)}`,
+          }}>
+          <div className="flex items-center gap-3">
+            {/* Tier emoji circle */}
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: tokens.colorAlpha(tierConfig.color, 0.2),
+                border: `1px solid ${tokens.colorAlpha(tierConfig.color, 0.4)}`,
+                boxShadow: `0 0 20px ${tokens.colorAlpha(tierConfig.color, 0.15)}`,
+              }}>
+              <span style={{ fontSize: isCompact ? '18px' : '22px' }}>{tierConfig.emoji}</span>
+            </div>
+            {/* Tier info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <PremiumBadge tokens={tokens} accent={tierConfig.color} variant="gradient" isCompact={isCompact}>
+                  {tierConfig.icon}
+                  <span>{tierConfig.label}</span>
+                </PremiumBadge>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="font-black text-lg" style={{ color: tokens.color(tierConfig.color) }}>
+                  {totalPct}%
+                </span>
+                <span className="text-[11px] font-bold" style={{ color: tokens.muted(0.6) }}>
+                  {totalScore}/{totalMax} poin
+                </span>
+                <span className="text-[10px] font-bold" style={{ color: tokens.muted(0.5) }}>
+                  {scores.filter(s => s.completed).length} aktivitas
+                </span>
+              </div>
+              {/* Mini progress bar */}
+              <div className="mt-1.5 w-full h-1.5 rounded-full overflow-hidden"
+                style={{ background: tokens.colorAlpha(tierConfig.color, 0.1) }}>
+                <div className="h-full rounded-full transition-all duration-1000 ease-out"
+                  style={{
+                    width: `${totalPct}%`,
+                    background: `linear-gradient(90deg, ${tokens.color(tierConfig.color)}, ${tokens.colorAlpha(tierConfig.color, 0.7)})`,
+                    boxShadow: `0 0 8px ${tokens.colorAlpha(tierConfig.color, 0.3)}`,
+                  }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Preview items - improved with card styling */}
       {previewItems.length > 0 && (

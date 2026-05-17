@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Trophy, Star, Target, RotateCcw, Sparkles, CheckCircle2, Zap, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Star, Target, RotateCcw, Sparkles, CheckCircle2, Zap, Award, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { HasilBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { playSound } from '@/lib/sounds';
 import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 
@@ -244,6 +245,11 @@ function VariantAKlasik({
         </PremiumBadge>
       </div>
 
+      {/* ── Per-activity score breakdown (Phase 21) ────────────────── */}
+      {scores.length > 0 && (
+        <ActivityBreakdown tokens={tokens} isCompact={isCompact} tierColor={tierColor} scores={scores} />
+      )}
+
       {/* ── Reset button — premium spring ─────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-5">
@@ -419,6 +425,11 @@ function VariantBMajalah({
         </div>
       </div>
 
+      {/* ── Per-activity score breakdown (Phase 21) ────────────────── */}
+      {scores.length > 0 && (
+        <ActivityBreakdown tokens={tokens} isCompact={isCompact} tierColor={tierColor} scores={scores} />
+      )}
+
       {/* ── Reset button ──────────────────────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-4 flex justify-end">
@@ -538,6 +549,11 @@ function VariantCRingkas({
         {motivationalText}
       </div>
 
+      {/* ── Per-activity score breakdown (Phase 21) ────────────────── */}
+      {scores.length > 0 && (
+        <ActivityBreakdown tokens={tokens} isCompact={isCompact} tierColor={tierColor} scores={scores} />
+      )}
+
       {/* ── Reset button (compact) ────────────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-2">
@@ -555,6 +571,112 @@ function VariantCRingkas({
             }}>
             <RotateCcw size={10} className="inline" /> Ulangi
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PER-ACTIVITY SCORE BREAKDOWN (Phase 21)
+// ═══════════════════════════════════════════════════════════════════
+function ActivityBreakdown({
+  tokens, isCompact, tierColor, scores,
+}: {
+  tokens: TokenResolver; isCompact: boolean; tierColor: string;
+  scores: Array<{ elementId: string; pageIndex: number; score: number; maxScore: number; completed: boolean }>;
+}) {
+  const [expanded, setExpanded] = React.useState(true);
+
+  // Group scores by pageIndex
+  const pages = useCanvaStore(s => s.pages);
+  const pageMap = new Map<number, { label: string; score: number; maxScore: number; completed: boolean; pct: number }>();
+
+  for (const s of scores) {
+    const existing = pageMap.get(s.pageIndex);
+    if (existing) {
+      existing.score += s.score;
+      existing.maxScore += s.maxScore;
+      existing.completed = existing.completed && s.completed;
+    } else {
+      pageMap.set(s.pageIndex, {
+        label: pages[s.pageIndex]?.label || `Aktivitas ${s.pageIndex + 1}`,
+        score: s.score,
+        maxScore: s.maxScore,
+        completed: s.completed,
+        pct: s.maxScore > 0 ? Math.round((s.score / s.maxScore) * 100) : 0,
+      });
+    }
+  }
+
+  // Recalculate pct after aggregation
+  for (const [, entry] of pageMap) {
+    entry.pct = entry.maxScore > 0 ? Math.round((entry.score / entry.maxScore) * 100) : 0;
+  }
+
+  const activities = Array.from(pageMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([, v]) => v);
+
+  if (activities.length === 0) return null;
+
+  const getBarColor = (pct: number) => pct >= 90 ? 'y' : pct >= 75 ? 'g' : pct >= 50 ? 'c' : 'o';
+
+  return (
+    <div className="mt-4 w-full max-w-[320px]">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-2 w-full mb-2 cursor-pointer"
+        type="button"
+      >
+        <span className="font-extrabold text-[11px] uppercase tracking-wider" style={{ color: tokens.color(tierColor) }}>
+          Skor Per Aktivitas
+        </span>
+        {expanded
+          ? <ChevronUp size={12} style={{ color: tokens.muted(0.5) }} />
+          : <ChevronDown size={12} style={{ color: tokens.muted(0.5) }} />
+        }
+      </button>
+
+      {expanded && (
+        <div className="space-y-1.5">
+          {activities.map((act, i) => {
+            const barColor = getBarColor(act.pct);
+            return (
+              <div key={`act-${i}`} className="flex items-center gap-2.5 p-2 rounded-lg transition-all hover:-translate-y-0.5"
+                style={{
+                  background: tokens.colorAlpha(barColor, 0.06),
+                  border: `1px solid ${tokens.colorAlpha(barColor, 0.15)}`,
+                }}>
+                {/* Completion indicator */}
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: act.completed ? tokens.colorAlpha(barColor, 0.2) : tokens.colorAlpha('p', 0.1),
+                  }}>
+                  {act.completed
+                    ? <CheckCircle2 size={10} style={{ color: tokens.color(barColor) }} />
+                    : <div className="w-1.5 h-1.5 rounded-full" style={{ background: tokens.muted(0.3) }} />
+                  }
+                </div>
+                {/* Label + bar */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[10px] font-bold truncate" style={{ color: tokens.color('text'), maxWidth: '140px' }}>{act.label}</span>
+                    <span className="text-[10px] font-black flex-shrink-0" style={{ color: tokens.color(barColor) }}>{act.pct}%</span>
+                  </div>
+                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: tokens.colorAlpha(barColor, 0.08) }}>
+                    <div className="h-full rounded-full transition-all duration-700 ease-out" style={{
+                      width: `${act.pct}%`,
+                      background: tokens.color(barColor),
+                      boxShadow: `0 0 6px ${tokens.colorAlpha(barColor, 0.25)}`,
+                    }} />
+                  </div>
+                </div>
+                {/* Score */}
+                <span className="text-[9px] font-bold flex-shrink-0" style={{ color: tokens.muted(0.5) }}>{act.score}/{act.maxScore}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
