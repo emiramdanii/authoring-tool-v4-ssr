@@ -450,8 +450,8 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
             {/* Compression indicator (canvas mode only) */}
             {resolved.compression && isCompact && (
               <div
-                className="absolute -top-0.5 left-1 text-[7px] font-bold px-1.5 rounded-b flex items-center gap-0.5"
-                style={{ zIndex: 100, background: 'rgba(52, 211, 153, 0.8)', color: '#000' }}
+                className="absolute -top-0.5 left-1 text-[7px] font-bold px-1.5 py-0.5 rounded-b-md flex items-center gap-0.5 shadow-sm"
+                style={{ zIndex: 100, background: 'rgba(245, 158, 11, 0.85)', color: '#000' }}
               >
                 {resolved.compression.strategy === 'accordion' ? '⊞' : resolved.compression.strategy === 'reveal-set' ? '⋯' : resolved.compression.strategy === 'step-reveal' ? '▸' : '▾'}
                 {' '}{resolved.compression.strategy}
@@ -497,14 +497,14 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
             zIndex: 999,
           }}
         >
-          <div className="w-full h-full rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+          <div className="w-full h-full rounded-full bg-app-accent shadow-[0_0_10px_rgba(245,158,11,0.5)] drop-indicator-pulse" />
         </div>
       )}
 
       {/* ══ GHOST BADGE — follows cursor during canvas drag ═════ */}
       {ghostInfo && isCompact && (
         <div
-          className="absolute pointer-events-none px-2 py-0.5 rounded bg-blue-500/90 text-white text-[9px] font-bold whitespace-nowrap shadow-lg z-[1000]"
+          className="absolute pointer-events-none px-2 py-0.5 rounded bg-app-accent/90 text-black text-[9px] font-bold whitespace-nowrap shadow-lg z-[1000]"
           style={{
             left: ghostInfo.x,
             top: ghostInfo.y,

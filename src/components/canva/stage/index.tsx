@@ -426,22 +426,22 @@ export default function Stage() {
           </CanvasErrorBoundary>
 
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}
-          {/* Professional empty state with action buttons */}
+          {/* Professional empty state with action buttons + keyboard hints */}
           {!canvasPreview && !isTemplateMode && (
             (isSchemaDriven && page.schema && page.schema.blocks.length === 0) ||
             (!isSchemaDriven && page.elements.length === 0)
           ) && (
             <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: Z.CANVAS_OVERLAY }}>
-              <div className="bg-app-surface/90 backdrop-blur-sm border border-app-border/50 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center">
-                <div className="w-12 h-12 rounded-xl bg-app-elevated/60 flex items-center justify-center">
-                  <Layout size={22} className="text-app-muted/50" />
+              <div className="bg-app-surface/90 backdrop-blur-sm border border-app-accent/20 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center shadow-lg">
+                <div className="w-14 h-14 rounded-2xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
+                  <Layout size={24} className="text-app-accent/60" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-app-primary/70 mb-1">
-                    Halaman kosong
+                  <p className="text-sm font-bold text-app-primary/80 mb-1">
+                    Halaman Kosong
                   </p>
-                  <p className="text-xs text-app-muted/60">
-                    Tambahkan konten atau generate otomatis
+                  <p className="text-xs text-app-muted/70">
+                    Mulai tambahkan konten atau generate otomatis dengan AI
                   </p>
                 </div>
                 <div className="flex items-center gap-2 w-full">
@@ -450,16 +450,27 @@ export default function Stage() {
                       useCanvaStore.getState().setLeftTab('add-block');
                       if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
                     }}
-                    className="flex-1 px-3 py-2 bg-app-accent/10 hover:bg-app-accent/20 border border-app-accent/20 text-app-accent text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 px-3 py-2.5 bg-app-accent/10 hover:bg-app-accent/20 border border-app-accent/25 text-app-accent text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
                   >
                     <Plus size={13} /> Tambah Block
                   </button>
                   <button
                     onClick={() => useAuthoringStore.getState().setActivePanel('autogen')}
-                    className="flex-1 px-3 py-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 px-3 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-purple-400 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
                   >
                     <Sparkles size={13} /> Auto-Generate
                   </button>
+                </div>
+                {/* Keyboard shortcuts hint */}
+                <div className="w-full border-t border-app-border/20 pt-3 space-y-1">
+                  <div className="flex items-center gap-2 text-[8px] text-app-muted">
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 border border-app-border/30 font-mono text-[7px] font-bold">Ctrl+Z</kbd>
+                    <span>Undo</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[8px] text-app-muted">
+                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 border border-app-border/30 font-mono text-[7px] font-bold">Del</kbd>
+                    <span>Hapus block terpilih</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -543,7 +554,7 @@ export default function Stage() {
 
           {/* Multi-select info badge (elements) */}
           {selectedElIds.length > 1 && !selectedBlockId && (
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-app-accent/20 text-app-accent border border-app-accent/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
               {selectedElIds.length} elemen terpilih • Shift+klik untuk tambah • Del untuk hapus
             </div>
           )}

@@ -477,6 +477,48 @@
   animation: blockEntrance 0.25s ease-out;
 }
 
+/* ── Selection glow — subtle pulse for selected blocks ── */
+@keyframes selectionGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  50% { box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.15); }
+}
+
+.selection-glow {
+  animation: selectionGlow 2.5s ease-in-out infinite;
+}
+
+/* ── Editing glow — green pulse for inline editing mode ── */
+@keyframes editingGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  50% { box-shadow: 0 0 14px 2px rgba(52, 211, 153, 0.2); }
+}
+
+.editing-glow {
+  animation: editingGlow 2s ease-in-out infinite;
+}
+
+/* ── Drop indicator pulse — for drag target clarity ── */
+@keyframes dropIndicatorPulse {
+  0%, 100% { opacity: 0.7; transform: scaleX(1); }
+  50% { opacity: 1; transform: scaleX(1.02); }
+}
+
+.drop-indicator-pulse {
+  animation: dropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* ── Drop zone highlight — for drag target area ── */
+@keyframes dropZoneShimmer {
+  0%, 100% { background-color: rgba(245, 158, 11, 0.03); }
+  50% { background-color: rgba(245, 158, 11, 0.08); }
+}
+
+.drop-zone-highlight {
+  animation: dropZoneShimmer 1.2s ease-in-out infinite;
+  border: 2px dashed rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    UTILITY CLASSES — Composed from semantic tokens
    ═══════════════════════════════════════════════════════════════════ */

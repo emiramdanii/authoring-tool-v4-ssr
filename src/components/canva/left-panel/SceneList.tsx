@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Trash2, Zap } from 'lucide-react';
+import { Copy, Trash2, Zap, Plus } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
@@ -36,6 +36,7 @@ export function SceneList() {
   const duplicatePage = useCanvaStore(s => s.duplicatePage);
   const deletePage = useCanvaStore(s => s.deletePage);
   const reorderPage = useCanvaStore(s => s.reorderPage);
+  const addPage = useCanvaStore(s => s.addPage);
   const ratio = useCanvaStore(s => s.currentRatio());
   const teacherMode = useAuthoringStore(s => s.teacherMode);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -121,6 +122,21 @@ export function SceneList() {
           >
             <Trash2 size={10} /> Hapus
           </Button>
+        </div>
+      )}
+
+      {/* Add page button */}
+      <button
+        onClick={() => addPage()}
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-app-border/40 hover:border-app-accent/40 bg-app-elevated/20 hover:bg-app-accent/5 text-app-muted hover:text-app-accent text-[10px] font-medium transition-all active:scale-[0.97]"
+      >
+        <Plus size={12} /> Tambah Halaman
+      </button>
+
+      {/* Drag hint */}
+      {pages.length > 1 && (
+        <div className="text-[7px] text-app-muted/50 text-center pt-0.5">
+          Drag halaman untuk mengubah urutan
         </div>
       )}
     </div>

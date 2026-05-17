@@ -179,12 +179,16 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
   }, [isCompact, isSelected]);
 
   // ── Selection ring class ──────────────────────────────────────
+  // Uses amber accent to match app design language (not generic blue)
+  // Selected: prominent ring + pulse glow animation
+  // Multi-selected: lighter ring variant
+  // Hovered: subtle accent ring for discoverability
   const ringClass = isSelected && isMultiSelected
-    ? 'ring-2 ring-blue-300 ring-offset-1 ring-offset-transparent rounded-lg'
+    ? 'ring-2 ring-amber-400/70 ring-offset-1 ring-offset-transparent rounded-lg'
     : isSelected
-      ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent rounded-lg'
+      ? 'ring-2 ring-app-accent ring-offset-2 ring-offset-transparent rounded-lg selection-glow'
       : isHovered
-        ? 'ring-1 ring-blue-400/30 ring-offset-1 ring-offset-transparent rounded-lg'
+        ? 'ring-1 ring-app-accent/30 ring-offset-1 ring-offset-transparent rounded-lg'
         : '';
 
   // ── Render ────────────────────────────────────────────────────
@@ -194,7 +198,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
     <div
       data-block-id={blockId}
       data-block-type={blockType}
-      className={`relative group ${ringClass} ${isBeingDraggedClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg' : ''}`}
+      className={`relative group ${ringClass} ${isBeingDraggedClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg editing-glow' : ''}`}
       onClick={handleClick}
       onMouseDown={handleDragStart}
       onMouseEnter={handleMouseEnter}
@@ -210,7 +214,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
       {isSelected && isCompact && (
         <div className="absolute -top-6 left-0 flex items-center gap-0.5 z-30 pointer-events-auto">
           {/* Block type badge */}
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-t-md bg-blue-500 text-[9px] font-bold text-white whitespace-nowrap">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-t-md bg-app-accent text-[9px] font-bold text-black whitespace-nowrap">
             <span>{blockIcon}</span>
             <span>{blockName}</span>
           </div>
@@ -218,7 +222,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
           {onDragHandleDown && blockIndex !== undefined && (
             <button
               onPointerDown={handleDragGripDown}
-              className="px-1 py-0.5 bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-bold rounded-t-md cursor-grab active:cursor-grabbing transition-colors select-none"
+              className="px-1 py-0.5 bg-app-accent hover:bg-amber-600 text-black text-[9px] font-bold rounded-t-md cursor-grab active:cursor-grabbing transition-colors select-none"
               title="Drag untuk reorder"
               aria-label="Pegang untuk menggeser urutan block"
             >
@@ -229,7 +233,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
           {onMoveUp && (
             <button
               onClick={handleMoveUp}
-              className="px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-bold rounded-t-md transition-colors"
+              className="px-1.5 py-0.5 bg-app-accent hover:bg-amber-600 text-black text-[9px] font-bold rounded-t-md transition-colors"
               title="Pindah atas"
             >
               ▲
@@ -239,7 +243,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
           {onMoveDown && (
             <button
               onClick={handleMoveDown}
-              className="px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-bold rounded-t-md transition-colors"
+              className="px-1.5 py-0.5 bg-app-accent hover:bg-amber-600 text-black text-[9px] font-bold rounded-t-md transition-colors"
               title="Pindah bawah"
             >
               ▼
@@ -249,7 +253,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
           {onDuplicate && capabilities.autoGeneratable && (
             <button
               onClick={handleDuplicate}
-              className="px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-bold rounded-t-md transition-colors"
+              className="px-1.5 py-0.5 bg-app-accent hover:bg-amber-600 text-black text-[9px] font-bold rounded-t-md transition-colors"
               title="Duplikat"
             >
               ⧉
@@ -259,7 +263,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
           {onDelete && (
             <button
               onClick={handleDelete}
-              className="px-1.5 py-0.5 bg-blue-500 hover:bg-red-600 text-white text-[9px] font-bold rounded-t-md transition-colors"
+              className="px-1.5 py-0.5 bg-app-accent hover:bg-red-500 text-black hover:text-white text-[9px] font-bold rounded-t-md transition-colors"
               title="Hapus block"
             >
               ✕
@@ -270,7 +274,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
 
       {/* ── Hover highlight (canvas mode, not selected) ────────── */}
       {!isSelected && isCompact && (
-        <div className="absolute inset-0 rounded-lg border border-transparent group-hover:border-blue-400/30 pointer-events-none transition-all" />
+        <div className="absolute inset-0 rounded-lg border border-transparent group-hover:border-app-accent/30 pointer-events-none transition-all" />
       )}
 
       {/* ── Editing indicator (canvas mode, editing) ───────────── */}

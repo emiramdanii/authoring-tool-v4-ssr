@@ -66,9 +66,9 @@ export const StageElement = memo(function StageElement({
   const resizeHandles = RESIZE_HANDLES;
 
   const ringClass = isMultiSelected
-    ? 'ring-2 ring-blue-400 ring-offset-0 z-10'
+    ? 'ring-2 ring-amber-400/70 ring-offset-0 z-10'
     : isSelected && !isInteractiveMode
-      ? 'ring-2 ring-app-accent ring-offset-0 z-10'
+      ? 'ring-2 ring-app-accent ring-offset-0 z-10 selection-glow'
       : 'z-0';
 
   return (
@@ -89,7 +89,7 @@ export const StageElement = memo(function StageElement({
         className={`absolute left-0 right-0 flex items-center justify-between px-1 rounded-t text-[9px] font-bold z-20 transition-all ${
           isSelected
             ? isMultiSelected
-              ? '-top-5 bg-blue-500/90 text-blue-950'
+              ? '-top-5 bg-amber-400/90 text-amber-950'
               : '-top-5 bg-app-accent/90 text-app-inverse'
             : '-top-4 bg-black/60 text-white/80 opacity-0 group-hover:opacity-100'
         }`}

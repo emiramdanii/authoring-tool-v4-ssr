@@ -11,7 +11,7 @@ import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2 } from 'lucide-react';
+import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand } from 'lucide-react';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import dynamic from 'next/dynamic';
 
@@ -124,15 +124,33 @@ export default function RightPanel() {
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />
-                <div className="mx-3 mt-3 mb-4 px-4 py-6 rounded-xl border border-dashed border-app-border/40 bg-app-elevated/20 text-center">
-                  <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-app-accent/10 flex items-center justify-center">
-                    <Box size={18} className="text-app-accent/60" />
+                <div className="mx-3 mt-3 mb-4 rounded-xl border border-dashed border-app-accent/25 bg-app-accent/5 overflow-hidden">
+                  {/* Header with accent stripe */}
+                  <div className="px-4 pt-4 pb-3 text-center">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
+                      <MousePointer2 size={20} className="text-app-accent/60" />
+                    </div>
+                    <div className="text-[11px] font-bold text-app-primary/80 mb-1">
+                      Pilih Block untuk Edit
+                    </div>
+                    <div className="text-[9px] text-app-muted leading-relaxed">
+                      Klik block di canvas untuk mengedit properti,<br/>teks, warna, dan kompresinya
+                    </div>
                   </div>
-                  <div className="text-[11px] font-bold text-app-secondary/70 mb-1">
-                    Tidak ada block terpilih
-                  </div>
-                  <div className="text-[9px] text-app-muted leading-relaxed">
-                    Klik block di canvas untuk mengedit<br />properti, teks, dan warnanya
+                  {/* Quick action hints */}
+                  <div className="border-t border-app-border/20 px-3 py-2.5 space-y-1.5 bg-app-elevated/20">
+                    <div className="flex items-center gap-2 text-[8px] text-app-muted">
+                      <span className="px-1 py-0.5 rounded bg-app-accent/15 text-app-accent font-bold text-[7px]">1x Klik</span>
+                      <span>Pilih block</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[8px] text-app-muted">
+                      <span className="px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[7px]">2x Klik</span>
+                      <span>Edit teks langsung</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[8px] text-app-muted">
+                      <span className="px-1 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold text-[7px]">Shift+Klik</span>
+                      <span>Pilih banyak block</span>
+                    </div>
                   </div>
                 </div>
               </>
