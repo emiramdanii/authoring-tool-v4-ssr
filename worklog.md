@@ -418,3 +418,29 @@ Stage Summary:
 - Teachers no longer see technical terms (Schema, Block, Layer, Export, etc.)
 - Navigation simplified to 3 primary items (Beranda, Materi, Desain)
 - NavigationSection accessible in teacher mode (was hidden behind Layer tab)
+
+---
+Task ID: teacher-flow-polish
+Agent: main
+Task: Teacher Flow Polish — Simplify UI for Indonesian SMP teachers in sederhana mode
+
+Work Log:
+- Read and analyzed full codebase structure: AuthoringTool, Dashboard, Dokumen, Konten, CanvaBuilder, RightPanel, LeftPanel, WorkflowStepIndicator, TeacherModeToggle
+- Identified 6 key pain points in sederhana mode: dashboard overwhelming, surface-level mode changes, fragmented navigation, jarring Canva transition, disconnected WorkflowStepIndicator, no real "simple flow"
+- Implemented WorkflowStepIndicator: mode-aware labels (Materi/Buat AI/Desain/Pratinjau/Simpan), clickable navigation to panels
+- Implemented Dokumen Panel: hide ATP & Alur sections in sederhana mode, simplify Meta fields (hide ikon/kurikulum/namaBab), add helpful hint about Mode Lanjutan
+- Implemented Konten Panel: hide Skenario/Cerita tab in sederhana mode (3 tabs instead of 4)
+- Implemented Dashboard: hide BSNP Compliance panel in sederhana, hide Stats section, simplify Quick Actions to 3 items, mode-aware empty state hero text, simplify bottom toolbar (hide secondary icon buttons), mode-aware flow progress labels
+- Implemented Sidebar Navigation: collapsible "Lainnya" section in sederhana mode (collapsed by default), added ChevronDown toggle
+- Added ChevronDown import to AuthoringTool
+
+Stage Summary:
+- All 6 Teacher Flow Polish items implemented and tested
+- Build passes successfully
+- Key changes:
+  - WorkflowStepIndicator: now clickable + mode-aware labels
+  - Dokumen: 3 sections in sederhana (was 5), fewer meta fields
+  - Konten: 3 tabs in sederhana (was 4), no Skenario
+  - Dashboard: BSNP/Stats hidden, simpler quick actions, friendlier empty state
+  - Sidebar: collapsible "Lainnya" reduces cognitive load
+  - All changes are progressive disclosure — lengkap mode unchanged

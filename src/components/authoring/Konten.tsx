@@ -16,12 +16,12 @@ export default function Konten() {
   const { isSederhana } = useTeacherMode();
 
   // Mode-aware tab configuration
-  // Sederhana: simple teacher-friendly labels and descriptions
-  // Lengkap: technical/standard labels
+  // Sederhana: simple teacher-friendly labels, hide Skenario (too complex for SMP teachers)
+  // Lengkap: technical/standard labels, all tabs visible
   const tabs: { id: KontenTab; icon: React.ReactNode; label: string; desc: string }[] = isSederhana
     ? [
         { id: 'materi', icon: <BookOpen size={14} />, label: 'Materi', desc: 'Teks dan materi pembelajaran' },
-        { id: 'skenario', icon: <Theater size={14} />, label: 'Cerita', desc: 'Skenario pilihan ganda' },
+        // Skenario/Cerita hidden in sederhana — too complex for most SMP teachers
         { id: 'modules', icon: <Gamepad2 size={14} />, label: 'Game & Aktivitas', desc: 'Modul interaktif dan permainan' },
         { id: 'kuis', icon: <ClipboardList size={14} />, label: 'Soal Evaluasi', desc: 'Kuis dan soal pilihan ganda' },
       ]

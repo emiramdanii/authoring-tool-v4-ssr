@@ -173,44 +173,70 @@ export default function Dashboard() {
   const currentStep = flowSteps.findIndex((s) => !s.active);
 
   // ── Quick actions data ─────────────────────────────────────────
-  const quickActions = [
-    {
-      label: isSederhana ? 'Isi RPP' : 'Isi Dokumen',
-      desc: 'CP, TP, ATP, Alur Pembelajaran',
-      icon: FileEdit,
-      color: 'app-accent',
-      action: () => setActivePanel('dokumen'),
-    },
-    {
-      label: isSederhana ? 'Tambah Materi' : 'Tambah Konten',
-      desc: 'Kuis, modul interaktif, materi',
-      icon: Puzzle,
-      color: 'cyan-500',
-      action: () => setActivePanel('konten'),
-    },
-    {
-      label: isSederhana ? 'Lihat Hasil' : 'Preview Siswa',
-      desc: isSederhana ? 'Pratinjau tampilan siswa' : 'Lihat tampilan lengkap siswa',
-      icon: Smartphone,
-      color: 'emerald-500',
-      action: () => setActivePanel('preview'),
-    },
-    {
-      label: isSederhana ? 'Desain Visual' : 'Desain Canva',
-      desc: 'Layout & visual slide',
-      icon: Palette,
-      color: 'purple-500',
-      action: () => {
-        const currentPreset = useAuthoringStore.getState().activePreset;
-        if (SCHEMA_DRIVEN_PRESETS.has(currentPreset || '')) {
-          setActivePanel('canva');
-        } else {
-          useCanvaStore.getState().resetCanvas();
-          setActivePanel('canva');
-        }
-      },
-    },
-  ];
+  const quickActions = isSederhana
+    ? [
+        // Sederhana: only 3 most essential actions
+        {
+          label: 'Isi RPP',
+          desc: 'Identitas, Capaian, Tujuan Pembelajaran',
+          icon: FileEdit,
+          color: 'app-accent',
+          action: () => setActivePanel('dokumen'),
+        },
+        {
+          label: 'Tambah Materi',
+          desc: 'Materi, game, kuis',
+          icon: Puzzle,
+          color: 'cyan-500',
+          action: () => setActivePanel('konten'),
+        },
+        {
+          label: 'Lihat Hasil',
+          desc: 'Pratinjau tampilan siswa',
+          icon: Smartphone,
+          color: 'emerald-500',
+          action: () => setActivePanel('preview'),
+        },
+      ]
+    : [
+        // Lengkap: full set of quick actions
+        {
+          label: 'Isi Dokumen',
+          desc: 'CP, TP, ATP, Alur Pembelajaran',
+          icon: FileEdit,
+          color: 'app-accent',
+          action: () => setActivePanel('dokumen'),
+        },
+        {
+          label: 'Tambah Konten',
+          desc: 'Kuis, modul interaktif, materi',
+          icon: Puzzle,
+          color: 'cyan-500',
+          action: () => setActivePanel('konten'),
+        },
+        {
+          label: 'Preview Siswa',
+          desc: 'Lihat tampilan lengkap siswa',
+          icon: Smartphone,
+          color: 'emerald-500',
+          action: () => setActivePanel('preview'),
+        },
+        {
+          label: 'Desain Canva',
+          desc: 'Layout & visual slide',
+          icon: Palette,
+          color: 'purple-500',
+          action: () => {
+            const currentPreset = useAuthoringStore.getState().activePreset;
+            if (SCHEMA_DRIVEN_PRESETS.has(currentPreset || '')) {
+              setActivePanel('canva');
+            } else {
+              useCanvaStore.getState().resetCanvas();
+              setActivePanel('canva');
+            }
+          },
+        },
+      ];
 
   // ── Helper for quick action color classes ──────────────────────
   const getActionColorClasses = (color: string) => {
@@ -291,19 +317,24 @@ export default function Dashboard() {
       {/* ══ EMPTY STATE HERO (consolidated with template selection) ══ */}
       {!hasData && (
         <div className="bg-app-surface border border-app-border rounded-2xl overflow-hidden">
-          {/* Hero top */}
+          {/* Hero top — mode-aware messaging */}
           <div className="text-center pt-10 pb-8 px-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-app-accent/10 mb-5">
               <Rocket className="h-7 w-7 text-app-accent" />
             </div>
-            <h2 className="text-xl font-semibold mb-1.5 text-app-primary">Mulai dari mana?</h2>
+            <h2 className="text-xl font-semibold mb-1.5 text-app-primary">
+              {isSederhana ? 'Buat Media Pembelajaran' : 'Mulai dari mana?'}
+            </h2>
             <p className="text-sm text-app-secondary max-w-md mx-auto">
-              Pilih template siap pakai, generate otomatis, atau buat manual dari nol.
+              {isSederhana
+                ? 'Pilih template siap pakai atau buat dari nol. Semua langkah mudah!'
+                : 'Pilih template siap pakai, generate otomatis, atau buat manual dari nol.'
+              }
             </p>
           </div>
 
-          {/* Quick-start buttons row */}
-          <div className="grid grid-cols-3 gap-3 px-6 pb-6">
+          {/* Quick-start buttons row — sederhana: 2 options, lengkap: 3 options */}
+          <div className={`grid gap-3 px-6 pb-6 ${isSederhana ? 'grid-cols-2' : 'grid-cols-3'}`}>
             <button
               onClick={() => setWizardOpen(true)}
               className="flex flex-col items-center gap-2.5 p-5 rounded-xl border border-app-border bg-app-elevated/30 hover:border-app-accent/30 hover:bg-app-accent/5 transition-colors cursor-pointer group"
@@ -311,8 +342,8 @@ export default function Dashboard() {
               <div className="w-10 h-10 rounded-xl bg-app-accent/10 flex items-center justify-center group-hover:bg-app-accent/15 transition-colors">
                 <FileText className="h-5 w-5 text-app-accent" />
               </div>
-              <span className="text-sm font-medium text-app-primary">Dari Template</span>
-              <span className="text-xs text-app-muted">Template siap pakai</span>
+              <span className="text-sm font-medium text-app-primary">{isSederhana ? 'Template Siap Pakai' : 'Dari Template'}</span>
+              <span className="text-xs text-app-muted">{isSederhana ? 'Pilih & langsung edit' : 'Template siap pakai'}</span>
             </button>
             <button
               onClick={() => setActivePanel('autogen')}
@@ -321,22 +352,24 @@ export default function Dashboard() {
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/15 transition-colors">
                 <Sparkles className="h-5 w-5 text-purple-400" />
               </div>
-              <span className="text-sm font-medium text-app-primary">{isSederhana ? 'Buat AI' : 'Auto-Generate'}</span>
+              <span className="text-sm font-medium text-app-primary">{isSederhana ? 'Buat dengan AI' : 'Auto-Generate'}</span>
               <span className="text-xs text-app-muted">AI buatkan untuk Anda</span>
             </button>
-            <button
-              onClick={() => {
-                useCanvaStore.getState().resetCanvas();
-                setActivePanel('canva');
-              }}
-              className="flex flex-col items-center gap-2.5 p-5 rounded-xl border border-app-border bg-app-elevated/30 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-colors cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/15 transition-colors">
-                <Pencil className="h-5 w-5 text-cyan-400" />
-              </div>
-              <span className="text-sm font-medium text-app-primary">Manual</span>
-              <span className="text-xs text-app-muted">Buat dari nol</span>
-            </button>
+            {!isSederhana && (
+              <button
+                onClick={() => {
+                  useCanvaStore.getState().resetCanvas();
+                  setActivePanel('canva');
+                }}
+                className="flex flex-col items-center gap-2.5 p-5 rounded-xl border border-app-border bg-app-elevated/30 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-colors cursor-pointer group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/15 transition-colors">
+                  <Pencil className="h-5 w-5 text-cyan-400" />
+                </div>
+                <span className="text-sm font-medium text-app-primary">Manual</span>
+                <span className="text-xs text-app-muted">Buat dari nol</span>
+              </button>
+            )}
           </div>
 
           {/* Template cards (inline in hero for empty state) */}
@@ -437,9 +470,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ══ FLOW PROGRESS — Clean horizontal stepper ═════════════ */}
+      {/* ══ FLOW PROGRESS — Clean horizontal stepper (sederhana: simpler labels) ═════════════ */}
       <div className="bg-app-surface border border-app-border rounded-xl p-5">
-        <h2 className="text-sm font-medium text-app-primary mb-5">Alur Kerja</h2>
+        <h2 className="text-sm font-medium text-app-primary mb-5">{isSederhana ? 'Langkah-Langkah' : 'Alur Kerja'}</h2>
         <div className="flex items-start">
           {flowSteps.map((step, i) => {
             const isActive = step.active;
@@ -473,12 +506,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ══ BSNP COMPLIANCE ═══════════════════════════════════════ */}
-      <BsnpCompliancePanel />
+      {/* ══ BSNP COMPLIANCE — only in lengkap (advanced) mode ══ */}
+      {!isSederhana && <BsnpCompliancePanel />}
 
       {/* ══ QUICK ACTIONS ════════════════════════════════════════ */}
       <div>
-        <h2 className="text-sm font-medium text-app-primary mb-3">Aksi Cepat</h2>
+        <h2 className="text-sm font-medium text-app-primary mb-3">{isSederhana ? 'Mulai dari sini' : 'Aksi Cepat'}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {quickActions.map((action) => {
             const colorClasses = getActionColorClasses(action.color);
@@ -517,8 +550,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ══ Kelenkapan (collapsible — compact stats) ═════════════ */}
-      {hasData && (
+      {/* ══ Kelenkapan (collapsible — compact stats) — only in lengkap mode ══ */}
+      {hasData && !isSederhana && (
         <details className="group bg-app-surface border border-app-border rounded-xl">
           <summary className="px-4 py-2.5 cursor-pointer flex items-center justify-between text-sm font-medium text-app-secondary hover:text-app-primary transition-colors">
             <span>Statistik Proyek</span>
@@ -546,7 +579,7 @@ export default function Dashboard() {
         </details>
       )}
 
-      {/* ══ BOTTOM TOOLBAR — Simplified with primary + icon-only secondary ══ */}
+      {/* ══ BOTTOM TOOLBAR — Sederhana: only 2 primary actions; Lengkap: full toolbar ══ */}
       <div className="flex items-center gap-2 pt-4 border-t border-app-border">
         {/* Primary actions */}
         <button
@@ -554,7 +587,7 @@ export default function Dashboard() {
           className="px-3 py-1.5 text-xs text-white bg-app-success hover:bg-app-success/90 rounded-lg font-medium transition-colors flex items-center gap-1.5"
         >
           <Plus size={12} />
-          Buat Baru
+          {isSederhana ? 'Isi RPP' : 'Buat Baru'}
         </button>
         <button
           onClick={() => setActivePanel('autogen')}
@@ -564,41 +597,45 @@ export default function Dashboard() {
           {isSederhana ? 'Buat AI' : 'Auto-Generate'}
         </button>
 
-        <div className="w-px h-5 bg-app-border mx-1" />
+        {/* Secondary — only in lengkap mode */}
+        {!isSederhana && (
+          <>
+            <div className="w-px h-5 bg-app-border mx-1" />
 
-        {/* Secondary — icon-only */}
-        <button
-          onClick={() => newProject()}
-          className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
-          title="Proyek Baru"
-        >
-          <FileText size={15} />
-        </button>
-        <button
-          onClick={() => setActivePanel('projects')}
-          className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
-          title="Buka Proyek"
-        >
-          <FolderOpen size={15} />
-        </button>
-        <button
-          onClick={() => setActivePanel('import')}
-          className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
-          title="Import"
-        >
-          <Upload size={15} />
-        </button>
-        <button
-          onClick={exportJSON}
-          className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
-          title="Export JSON"
-        >
-          <Download size={15} />
-        </button>
+            <button
+              onClick={() => newProject()}
+              className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
+              title="Proyek Baru"
+            >
+              <FileText size={15} />
+            </button>
+            <button
+              onClick={() => setActivePanel('projects')}
+              className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
+              title="Buka Proyek"
+            >
+              <FolderOpen size={15} />
+            </button>
+            <button
+              onClick={() => setActivePanel('import')}
+              className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
+              title="Import"
+            >
+              <Upload size={15} />
+            </button>
+            <button
+              onClick={exportJSON}
+              className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
+              title="Export JSON"
+            >
+              <Download size={15} />
+            </button>
+          </>
+        )}
 
         <div className="flex-1" />
 
-        {/* Save */}
+        {/* Save — always visible */}
         <button
           onClick={() => currentProjectId ? saveProject() : saveToStorage()}
           className="px-3 py-1.5 text-xs text-app-secondary hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors flex items-center gap-1.5"

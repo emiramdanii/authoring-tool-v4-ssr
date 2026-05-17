@@ -19,6 +19,7 @@ import {
   Eye,
   MapPin,
   GraduationCap,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
@@ -157,6 +158,7 @@ const TOUR_STEPS = [
 // ── Inner Component (needs ProjectProvider context) ─────────────
 function AuthoringToolInner() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showMoreNav, setShowMoreNav] = useState(false); // Collapsible "Lainnya" section
   const [showTour, setShowTour] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('at_tour_done') === null;
@@ -378,31 +380,76 @@ function AuthoringToolInner() {
           <div className="section-divider my-3" />
 
           {/* ── Secondary navigation (mode-aware) ── */}
-          {/* In sederhana mode, these are "Lainnya" items */}
-          {isSederhana && sidebarOpen && (
-            <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider px-3 mb-1">
-              Lainnya
-            </div>
-          )}
-          {navItems2.map((item) => {
-            const Icon = item.icon;
-            return (
+          {/* In sederhana mode, these are collapsible under "Lainnya" */}
+          {isSederhana && sidebarOpen ? (
+            <>
               <button
-                key={item.id}
-                onClick={() => setActivePanel(item.id)}
-                onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
-                  activePanel === item.id
-                    ? 'nav-active font-medium'
-                    : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
-                }`}
-                title={item.label}
+                onClick={() => setShowMoreNav(!showMoreNav)}
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[9px] font-bold text-app-muted uppercase tracking-wider hover:text-app-secondary transition-colors"
               >
-                <Icon size={18} className="flex-shrink-0" />
-                {sidebarOpen && <span>{item.label}</span>}
+                <span>Lainnya</span>
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform duration-200 ${showMoreNav ? 'rotate-180' : ''}`}
+                />
               </button>
-            );
-          })}
+              {/* Collapsible secondary nav items */}
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  showMoreNav ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="space-y-1">
+                  {navItems2.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActivePanel(item.id)}
+                        onMouseEnter={() => handleNavHover(item.id)}
+                        className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
+                          activePanel === item.id
+                            ? 'nav-active font-medium'
+                            : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
+                        }`}
+                        title={item.label}
+                      >
+                        <Icon size={18} className="flex-shrink-0" />
+                        {sidebarOpen && <span>{item.label}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {isSederhana && !sidebarOpen ? null : (
+                <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider px-3 mb-1">
+                  Lainnya
+                </div>
+              )}
+              {navItems2.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActivePanel(item.id)}
+                    onMouseEnter={() => handleNavHover(item.id)}
+                    className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
+                      activePanel === item.id
+                        ? 'nav-active font-medium'
+                        : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
+                    }`}
+                    title={item.label}
+                  >
+                    <Icon size={18} className="flex-shrink-0" />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </button>
+                );
+              })}
+            </>
+          )}
         </nav>
 
         {/* Bottom Actions */}

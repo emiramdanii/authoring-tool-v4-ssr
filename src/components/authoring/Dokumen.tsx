@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { Target, ClipboardList, Trash2, Tag, Map, Ruler, Calendar, GripVertical, ChevronDown } from 'lucide-react';
 import { Collapse } from '@/lib/transition';
 import { COLORS } from '@/lib/color-palette';
@@ -55,17 +56,25 @@ const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-l
 function MetaSection() {
   const meta = useAuthoringStore((s) => s.meta);
   const updateMeta = useAuthoringStore((s) => s.updateMeta);
+  const { isSederhana } = useTeacherMode();
 
-  const fields: { key: keyof typeof meta; label: string; placeholder: string; type?: string; maxLength?: number }[] = [
+  // In sederhana mode, show only essential fields (no ikon, kurikulum, namaBab)
+  const allFields: { key: keyof typeof meta; label: string; placeholder: string; type?: string; maxLength?: number; sederhanaOnly?: boolean; lengkapOnly?: boolean }[] = [
     { key: 'judulPertemuan', label: 'Judul Pertemuan', placeholder: 'Pertemuan 1 – Hakikat Norma' },
     { key: 'subjudul', label: 'Subjudul / Pertanyaan Pemantik', placeholder: 'Mengapa manusia membutuhkan norma?' },
-    { key: 'ikon', label: 'Ikon Cover (emoji)', placeholder: '🧑‍🤝‍🧑', maxLength: 8 },
+    { key: 'ikon', label: 'Ikon Cover (emoji)', placeholder: '🧑‍🤝‍🧑', maxLength: 8, lengkapOnly: true },
     { key: 'durasi', label: 'Durasi', placeholder: '2 × 40 menit' },
     { key: 'mapel', label: 'Mata Pelajaran', placeholder: 'PPKn' },
     { key: 'kelas', label: 'Kelas', placeholder: 'VII' },
-    { key: 'kurikulum', label: 'Kurikulum', placeholder: 'Kurikulum Merdeka' },
-    { key: 'namaBab', label: 'Nama Bab (navbar)', placeholder: 'Hakikat Norma' },
+    { key: 'kurikulum', label: 'Kurikulum', placeholder: 'Kurikulum Merdeka', lengkapOnly: true },
+    { key: 'namaBab', label: 'Nama Bab (navbar)', placeholder: 'Hakikat Norma', lengkapOnly: true },
   ];
+
+  const fields = allFields.filter(f => {
+    if (isSederhana && f.lengkapOnly) return false;
+    if (!isSederhana && f.sederhanaOnly) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-3">
@@ -559,19 +568,24 @@ function AlurSection() {
 
 // ── Main Dokumen Panel ──────────────────────────────────────────
 export default function Dokumen() {
+  const { isSederhana } = useTeacherMode();
+
   return (
     <div className="p-6 space-y-5 max-w-4xl">
       <div>
         <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-          <Ruler size={18} /> Dokumen Pembelajaran
+          <Ruler size={18} /> {isSederhana ? 'RPP & Dokumen' : 'Dokumen Pembelajaran'}
         </h2>
         <p className="text-sm text-app-secondary mt-1">
-          Lengkapi semua dokumen perencanaan pembelajaran dalam satu halaman.
+          {isSederhana
+            ? 'Isi informasi dasar dan tujuan pembelajaran.'
+            : 'Lengkapi semua dokumen perencanaan pembelajaran dalam satu halaman.'
+          }
         </p>
       </div>
 
       <div className="space-y-3">
-        <AccordionSection icon={<Tag size={16} className="inline" />} title="Identitas Media" defaultOpen>
+        <AccordionSection icon={<Tag size={16} className="inline" />} title={isSederhana ? 'Identitas' : 'Identitas Media'} defaultOpen>
           <MetaSection />
         </AccordionSection>
 
@@ -583,21 +597,40 @@ export default function Dokumen() {
           <TpSection />
         </AccordionSection>
 
-        <AccordionSection icon={<Calendar size={16} className="inline" />} title="Alur Tujuan Pembelajaran">
-          <AtpSection />
-        </AccordionSection>
+        {/* ATP & Alur — only shown in lengkap (advanced) mode */}
+        {!isSederhana && (
+          <AccordionSection icon={<Calendar size={16} className="inline" />} title="Alur Tujuan Pembelajaran">
+            <AtpSection />
+          </AccordionSection>
+        )}
 
-        <AccordionSection icon={<Map size={16} className="inline" />} title="Alur Kegiatan">
-          <AlurSection />
-        </AccordionSection>
+        {!isSederhana && (
+          <AccordionSection icon={<Map size={16} className="inline" />} title="Alur Kegiatan">
+            <AlurSection />
+          </AccordionSection>
+        )}
       </div>
+
+      {/* Helpful hint in sederhana mode */}
+      {isSederhana && (
+        <div className="bg-app-info/5 border border-app-info/15 rounded-xl p-3.5 flex items-center gap-3">
+          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-info/10 flex items-center justify-center text-app-info text-sm">
+            💡
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-app-secondary leading-relaxed">
+              Bagian Alur Tujuan Pembelajaran & Alur Kegiatan tersedia di <strong>Mode Lanjutan</strong>. Sebagian besar guru SMP cukup mengisi Identitas, Capaian, dan Tujuan Pembelajaran.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 pt-4 border-t border-app-border flex justify-end">
         <button
           onClick={() => useAuthoringStore.getState().setActivePanel('konten')}
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
         >
-          Selanjutnya: Tambah Konten →
+          {isSederhana ? 'Selanjutnya: Tambah Materi →' : 'Selanjutnya: Tambah Konten →'}
         </button>
       </div>
     </div>

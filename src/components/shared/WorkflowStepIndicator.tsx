@@ -4,6 +4,7 @@ import React, { useEffect, useCallback } from 'react';
 import { Check, ArrowRight } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
 // WORKFLOW STEP INDICATOR — Compact progress bar for authoring
@@ -13,6 +14,9 @@ import type { PanelId } from '@/store/authoring-store';
 //
 // Steps are "completed" once the user has visited them.
 // Completion state is tracked in localStorage.
+//
+// Mode-aware: In sederhana mode, uses teacher-friendly labels
+// and each step is clickable for quick navigation.
 // ═══════════════════════════════════════════════════════════════
 
 const STORAGE_KEY = 'silse_workflow_completed_steps';
@@ -20,15 +24,17 @@ const STORAGE_KEY = 'silse_workflow_completed_steps';
 interface StepDef {
   id: string;
   label: string;
+  labelSederhana: string;
   panelIds: PanelId[];
+  navigateTo: PanelId;
 }
 
 const STEPS: StepDef[] = [
-  { id: 'materi', label: 'Materi', panelIds: ['dokumen', 'konten'] },
-  { id: 'generate', label: 'Generate', panelIds: ['autogen'] },
-  { id: 'edit', label: 'Edit', panelIds: ['canva'] },
-  { id: 'preview', label: 'Preview', panelIds: ['preview'] },
-  { id: 'export', label: 'Export', panelIds: ['import'] },
+  { id: 'materi', label: 'Materi', labelSederhana: 'Materi', panelIds: ['dokumen', 'konten'], navigateTo: 'konten' },
+  { id: 'generate', label: 'Generate', labelSederhana: 'Buat AI', panelIds: ['autogen'], navigateTo: 'autogen' },
+  { id: 'edit', label: 'Edit', labelSederhana: 'Desain', panelIds: ['canva'], navigateTo: 'canva' },
+  { id: 'preview', label: 'Preview', labelSederhana: 'Pratinjau', panelIds: ['preview'], navigateTo: 'preview' },
+  { id: 'export', label: 'Export', labelSederhana: 'Simpan', panelIds: ['import'], navigateTo: 'import' },
 ];
 
 function getCompletedSteps(): Set<string> {
@@ -61,7 +67,9 @@ function getCurrentStepIndex(activePanel: PanelId): number {
 
 export default function WorkflowStepIndicator() {
   const activePanel = useAuthoringStore((s) => s.activePanel);
+  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const currentStepIndex = getCurrentStepIndex(activePanel);
+  const { isSederhana } = useTeacherMode();
 
   // Track completed steps — mark all steps up to and including current as visited
   const markStepCompleted = useCallback((stepId: string) => {
@@ -90,11 +98,16 @@ export default function WorkflowStepIndicator() {
         const isCompleted = completedSteps.has(step.id);
         const isCurrent = i === currentStepIndex;
         const isPast = i < currentStepIndex;
+        const stepLabel = isSederhana ? step.labelSederhana : step.label;
 
         return (
           <React.Fragment key={step.id}>
-            {/* Step circle + label */}
-            <div className="flex items-center gap-1">
+            {/* Step circle + label — clickable for navigation */}
+            <button
+              onClick={() => setActivePanel(step.navigateTo)}
+              className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer focus-ring rounded-sm"
+              title={`Ke ${stepLabel}`}
+            >
               <div
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-all ${
                   isCompleted && !isCurrent
@@ -103,7 +116,6 @@ export default function WorkflowStepIndicator() {
                       ? 'bg-app-accent/10 text-app-accent border border-app-accent/30 ring-2 ring-app-accent/20'
                       : 'bg-app-elevated/50 text-app-muted border border-app-border/40'
                 }`}
-                title={step.label}
               >
                 {isCompleted && !isCurrent ? (
                   <Check size={10} />
@@ -116,9 +128,9 @@ export default function WorkflowStepIndicator() {
                   isCurrent ? 'text-app-primary' : isPast ? 'text-app-secondary' : 'text-app-muted'
                 }`}
               >
-                {step.label}
+                {stepLabel}
               </span>
-            </div>
+            </button>
 
             {/* Connector arrow */}
             {i < STEPS.length - 1 && (
