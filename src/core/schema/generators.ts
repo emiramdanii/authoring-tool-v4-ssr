@@ -29,6 +29,8 @@ import type {
   DefBoxBlock,
   NcGridBlock,
   FlashcardSetBlock,
+  FtabBlock,
+  TabelAccordionBlock,
   DiskusiBlock,
   KuisBlock,
   RefleksiBlock,
@@ -271,8 +273,20 @@ export function genAlurSchema(
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// MATERI — Content blocks (def-box, nc-grid, flashcard-set, materi-section)
+// MATERI — Content blocks (def-box, nc-grid, ftab, tabel-accord, materi-section)
 // ═══════════════════════════════════════════════════════════════════
+//
+// GENERATOR DESIGN:
+//   materi mentah → semantic parsing → block type selection → SchemaBlock[]
+//
+// Block type selection rules:
+//   definitions  → def-box (yellow border)
+//   enumerations → nc-grid (card grid) or tabel-accord (if items have details)
+//   functions    → def-box (cyan border) or ftab (if 3+ functions)
+//   causes       → nc-grid (sebab-akibat cards) or ftab (2-tab compare)
+//   sentences    → def-box (intro text, blue border)
+//
+// The materi-section wrapper adds BSNP badge, takeaways, and self-check.
 
 export function genMateriSchema(
   parsed: ParseResult,
@@ -280,11 +294,10 @@ export function genMateriSchema(
 ): SchemaBlock[] {
   const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
   const blocks: SchemaBlock[] = [];
-
-  // Materi section wrapper with BSNP badge
   const contentBlocks: SchemaBlock[] = [];
+  const topic = meta.namaBab || topWords[0] || 'materi';
 
-  // Intro text
+  // ── Intro text from first sentences ──────────────────────────
   const introText = sentences.slice(0, 2).join(' ');
   if (introText) {
     contentBlocks.push({
@@ -293,11 +306,11 @@ export function genMateriSchema(
       borderColor: 'c',
       content: introText,
       compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
-      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      semantic: { topic, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
-  // Definitions → def-box blocks
+  // ── Definitions → def-box blocks (yellow = formal definition) ──
   for (const def of definitions) {
     contentBlocks.push({
       type: 'def-box',
@@ -305,39 +318,82 @@ export function genMateriSchema(
       borderColor: 'y',
       content: `<strong>${def.term}</strong> — ${def.meaning}`,
       compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
-      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      semantic: { topic: def.term, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
-  // Enumerations → nc-grid blocks
+  // ── Enumerations → nc-grid or tabel-accord ──────────────────
   for (const en of enumerations) {
+    if (en.items.length <= 3) {
+      // Short enumeration → card grid
+      contentBlocks.push({
+        type: 'nc-grid',
+        id: generateBlockId(),
+        cards: en.items.slice(0, 6).map((item, i) => ({
+          icon: ['📌', '📋', '🔑', '💡', '⭐', '📝'][i % 6],
+          title: item,
+          body: `Bagian dari ${en.subject}`,
+          color: COLOR_PALETTE[i % COLOR_PALETTE.length],
+        })),
+        compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+        semantic: { topic: en.subject, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      } as NcGridBlock);
+    } else {
+      // Long enumeration → tabel-accordion (more structured)
+      contentBlocks.push({
+        type: 'tabel-accord',
+        id: generateBlockId(),
+        rows: en.items.slice(0, 8).map((item, i) => ({
+          icon: ['📌', '📋', '🔑', '💡', '⭐', '📝', '🎯', '🏷️'][i % 8],
+          title: item,
+          color: COLOR_PALETTE[i % COLOR_PALETTE.length],
+          details: [
+            { label: 'Kategori', value: en.subject },
+            { label: 'Nomor', value: `${i + 1} dari ${en.items.length}` },
+          ],
+        })),
+        compression: { priority: 'medium', strategy: 'accordion' } satisfies CompressionHints,
+        semantic: { topic: en.subject, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      } as TabelAccordionBlock);
+    }
+  }
+
+  // ── Functions → ftab (if 3+) or def-box ─────────────────────
+  if (functions.length >= 3) {
+    // Group 3+ functions into tabbed view — compact and organized
     contentBlocks.push({
-      type: 'nc-grid',
+      type: 'ftab',
       id: generateBlockId(),
-      cards: en.items.slice(0, 6).map((item, i) => ({
-        icon: ['📌', '📋', '🔑', '💡', '⭐', '📝'][i % 6],
-        title: item,
-        body: `Bagian dari ${en.subject}`,
-        color: COLOR_PALETTE[i % COLOR_PALETTE.length],
+      tabs: functions.slice(0, 5).map((fn, i) => ({
+        icon: ['⚙️', '🔧', '🔩', '🏭', '🏗️'][i % 5],
+        label: fn.subject.length > 20 ? fn.subject.slice(0, 18) + '...' : fn.subject,
+        content: [{
+          type: 'def-box',
+          id: generateBlockId(),
+          borderColor: 'c',
+          content: `<strong>Fungsi ${fn.subject}</strong> — ${fn.desc}`,
+          compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+          semantic: { topic: fn.subject, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+        } as DefBoxBlock],
       })),
-      compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
-      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
-    } as NcGridBlock);
-  }
-
-  // Functions → def-box with highlight style
-  for (const fn of functions) {
-    contentBlocks.push({
-      type: 'def-box',
-      id: generateBlockId(),
-      borderColor: 'c',
-      content: `<strong>Fungsi ${fn.subject}</strong> — ${fn.desc}`,
       compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
-      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
-    } as DefBoxBlock);
+      semantic: { topic, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+    } as FtabBlock);
+  } else {
+    // 1-2 functions → simple def-box
+    for (const fn of functions) {
+      contentBlocks.push({
+        type: 'def-box',
+        id: generateBlockId(),
+        borderColor: 'c',
+        content: `<strong>Fungsi ${fn.subject}</strong> — ${fn.desc}`,
+        compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
+        semantic: { topic: fn.subject, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      } as DefBoxBlock);
+    }
   }
 
-  // Causes → nc-grid with cause/effect
+  // ── Causes → nc-grid sebab-akibat or ftab compare ────────────
   for (const c of causes) {
     contentBlocks.push({
       type: 'nc-grid',
@@ -347,11 +403,11 @@ export function genMateriSchema(
         { icon: '⚡', title: 'Akibat', body: c.effect, color: 'y' },
       ],
       compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
-      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      semantic: { topic, learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as NcGridBlock);
   }
 
-  // Wrap in materi-section if we have content blocks
+  // ── Wrap in materi-section with BSNP badge ──────────────────
   if (contentBlocks.length > 0) {
     blocks.push({
       type: 'materi-section',
@@ -363,7 +419,7 @@ export function genMateriSchema(
       accentColor: 'p',
       content: contentBlocks,
       takeaways: topWords.slice(0, 5),
-      selfCheck: `Apa yang sudah kamu pelajari tentang ${topWords[0] || 'materi ini'}?`,
+      selfCheck: `Apa yang sudah kamu pelajari tentang ${topWords[0] || topic}?`,
       compression: { priority: 'high', strategy: 'accordion', splittable: true, minFragmentHeight: 200 } satisfies CompressionHints,
       semantic: { bsnpRelevant: true, learningPhase: 'inti', importance: 0.95, topic: meta.namaBab } satisfies SemanticHints,
     } as MateriSectionBlock);
@@ -375,7 +431,7 @@ export function genMateriSchema(
       borderColor: 'y',
       content: `Materi tentang ${meta.namaBab || topWords[0] || 'pembelajaran'}.`,
       compression: { priority: 'high', strategy: 'accordion' } satisfies CompressionHints,
-      semantic: { topic: meta.namaBab || topWords[0], learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
+      semantic: { topic: topWords[0] || 'materi', learningPhase: 'inti', interactionType: 'read' } satisfies SemanticHints,
     } as DefBoxBlock);
   }
 
@@ -491,7 +547,9 @@ export function genKuisSchema(
   jumlahPertemuan: number = 1,
 ): KuisBlock {
   const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
-  const questions: Array<{ q: string; opts: string[]; ans: number; ex: string }> = [];
+  const questions: Array<{ q: string; opts: string[]; ans: number; ex: string; pertemuan?: number }> = [];
+  // Distribute soal evenly across pertemuan
+  const soalPerPertemuan = Math.ceil(jumlah / jumlahPertemuan);
 
   const makeWrongOpts = (correct: string, exclude: string[] = []): string[] => {
     const pool = topWords.filter(
@@ -514,12 +572,18 @@ export function genKuisSchema(
     return { opts, ans };
   };
 
+  /** Assign pertemuan tag based on question index */
+  const tagPertemuan = (idx: number): number | undefined => {
+    if (jumlahPertemuan <= 1) return undefined; // no tag needed for single pertemuan
+    return Math.min(Math.floor(idx / soalPerPertemuan) + 1, jumlahPertemuan);
+  };
+
   // From definitions
   for (const def of definitions) {
     if (questions.length >= jumlah) break;
     const wrongs = makeWrongOpts(def.meaning, [def.term]);
     const { opts, ans } = shuffleInsert(def.meaning, wrongs);
-    questions.push({ q: `${def.term} adalah ...`, opts, ans, ex: `${def.term} ${def.meaning}.` });
+    questions.push({ q: `${def.term} adalah ...`, opts, ans, ex: `${def.term} ${def.meaning}.`, pertemuan: tagPertemuan(questions.length) });
   }
 
   // From enumerations
@@ -532,6 +596,7 @@ export function genKuisSchema(
       q: `Berikut ini yang termasuk ${en.subject.toLowerCase()} adalah ...`,
       opts, ans,
       ex: `${en.subject} terdiri dari ${en.items.join(', ')}.`,
+      pertemuan: tagPertemuan(questions.length),
     });
   }
 
@@ -544,6 +609,7 @@ export function genKuisSchema(
       q: `${fn.subject} berfungsi untuk ...`,
       opts, ans,
       ex: `${fn.subject} berfungsi ${fn.desc}.`,
+      pertemuan: tagPertemuan(questions.length),
     });
   }
 
@@ -556,6 +622,7 @@ export function genKuisSchema(
       q: `Apa yang terjadi karena ${c.cause.toLowerCase().slice(0, 40)} ...`,
       opts, ans,
       ex: `${c.cause} menyebabkan ${c.effect}.`,
+      pertemuan: tagPertemuan(questions.length),
     });
   }
 
@@ -570,6 +637,7 @@ export function genKuisSchema(
     questions.push({
       q: `Pernyataan yang benar mengenai ${keyWord} adalah ...`,
       opts, ans, ex: correct,
+      pertemuan: tagPertemuan(questions.length),
     });
   }
 
@@ -583,13 +651,14 @@ export function genKuisSchema(
       q: `Manakah pernyataan berikut yang benar tentang ${topic}?`,
       opts, ans,
       ex: `Jawaban yang benar berkaitan dengan konsep ${topic}.`,
+      pertemuan: tagPertemuan(questions.length),
     });
   }
 
   return {
     type: 'kuis',
     id: generateBlockId(),
-    title: 'Kuis Pilihan Ganda',
+    title: jumlahPertemuan > 1 ? `Kuis Pilihan Ganda (${jumlahPertemuan} Pertemuan)` : 'Kuis Pilihan Ganda',
     questions: questions.slice(0, jumlah),
     compression: { priority: 'high', strategy: 'scroll', splittable: true } satisfies CompressionHints,
     semantic: { topic: topWords[0], learningPhase: 'inti', interactionType: 'choose', importance: 0.9 } satisfies SemanticHints,
@@ -628,111 +697,220 @@ export function genFlashcardSchema(
 // ═══════════════════════════════════════════════════════════════════
 // DISKUSI — Discussion questions
 // ═══════════════════════════════════════════════════════════════════
+//
+// Question generation patterns:
+//   1. Definitions → "Jelaskan apa yang dimaksud..." (C2: Menjelaskan)
+//   2. Enumerations → "Sebutkan dan diskusikan..." (C1: Menyebutkan)
+//   3. Functions → "Mengapa X berfungsi untuk Y? Bagaimana jika..." (C4: Menganalisis)
+//   4. Causes → "Apa yang terjadi jika...? Diskusikan sebab-akibat" (C4: Menganalisis)
+//   5. TP → "Bagaimana [tujuan pembelajaran]?" (C3-C5: Menerapkan/Menganalisis)
+//   6. Sentences → "Setuju atau tidak? Mengapa?" (C5: Mengevaluasi)
+//
+// Max 5 questions with diverse Bloom levels.
 
 export function genDiskusiSchema(
   parsed: ParseResult,
   tp: Array<{ desc: string }>,
   meta: { judulPertemuan: string; namaBab: string },
 ): DiskusiBlock {
-  const { definitions, enumerations } = parsed;
+  const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
+  const topic = meta.namaBab || topWords[0] || 'materi';
   const questions: Array<{ label: string; icon: string; teks: string; petunjuk: string; color?: string }> = [];
   const icons = ['💭', '🤔', '🗣️', '👥', '✋'];
   const colors = ['c', 'y', 'g', 'p', 'r'];
 
-  for (const def of definitions) {
+  // Pattern 1: From definitions (C2 — Menjelaskan)
+  for (const def of definitions.slice(0, 2)) {
     if (questions.length >= 5) break;
     questions.push({
       label: `Pertanyaan ${questions.length + 1}`,
       icon: icons[questions.length % icons.length],
-      teks: `Jelaskan apa yang dimaksud dengan ${def.term}! Berikan contoh dalam kehidupan sehari-hari.`,
-      petunjuk: `Gunakan definisi ${def.term} sebagai dasar jawabanmu.`,
+      teks: `Jelaskan apa yang dimaksud dengan ${def.term}! Berikan contoh penerapannya dalam kehidupan sehari-hari.`,
+      petunjuk: `Gunakan definisi "${def.term}" sebagai dasar jawaban, lalu hubungkan dengan pengalamanmu sendiri.`,
       color: colors[questions.length % colors.length],
     });
   }
 
-  for (const en of enumerations) {
+  // Pattern 2: From enumerations (C1 — Menyebutkan + C2 — Menjelaskan)
+  for (const en of enumerations.slice(0, 1)) {
     if (questions.length >= 5) break;
     questions.push({
       label: `Pertanyaan ${questions.length + 1}`,
       icon: icons[questions.length % icons.length],
-      teks: `Sebutkan dan diskusikan ${en.subject}! Mana yang paling relevan?`,
-      petunjuk: `Pertimbangkan masing-masing poin dan pilih yang paling relevan.`,
+      teks: `Sebutkan dan diskusikan ${en.subject}! Mana yang paling relevan dengan kehidupan kalian? Mengapa?`,
+      petunjuk: `Pertimbangkan masing-masing poin, pilih yang paling relevan, dan berikan alasan.`,
       color: colors[questions.length % colors.length],
     });
   }
 
-  for (const t of tp) {
+  // Pattern 3: From functions (C4 — Menganalisis)
+  for (const fn of functions.slice(0, 1)) {
     if (questions.length >= 5) break;
     questions.push({
       label: `Pertanyaan ${questions.length + 1}`,
       icon: icons[questions.length % icons.length],
-      teks: `Bagaimana ${t.desc}? Diskusikan dengan teman sekelasmu!`,
-      petunjuk: 'Hubungkan dengan pengalaman pribadimu.',
+      teks: `Mengapa ${fn.subject} berfungsi untuk ${fn.desc.toLowerCase()}? Apa yang terjadi jika fungsi tersebut tidak berjalan?`,
+      petunjuk: `Analisis peran ${fn.subject} dan bayangkan konsekuensi tanpa fungsi tersebut.`,
       color: colors[questions.length % colors.length],
+    });
+  }
+
+  // Pattern 4: From causes (C4 — Menganalisis sebab-akibat)
+  for (const c of causes.slice(0, 1)) {
+    if (questions.length >= 5) break;
+    questions.push({
+      label: `Pertanyaan ${questions.length + 1}`,
+      icon: icons[questions.length % icons.length],
+      teks: `Diskusikan hubungan sebab-akibat: "${c.cause}" menyebabkan "${c.effect}". Apa bisa terjadi sebaliknya?`,
+      petunjuk: `Pikirkan apakah hubungan ini selalu satu arah, atau bisa berlaku dua arah.`,
+      color: colors[questions.length % colors.length],
+    });
+  }
+
+  // Pattern 5: From TP (C3-C5 — Menerapkan/Menganalisis/Mengevaluasi)
+  for (const t of tp.slice(0, 1)) {
+    if (questions.length >= 5) break;
+    questions.push({
+      label: `Pertanyaan ${questions.length + 1}`,
+      icon: icons[questions.length % icons.length],
+      teks: `Bagaimana ${t.desc}? Diskusikan dengan teman sekelasmu dan berikan contoh konkret!`,
+      petunjuk: `Hubungkan dengan pengalaman pribadimu dan lingkungan sekitarmu.`,
+      color: colors[questions.length % colors.length],
+    });
+  }
+
+  // Pattern 6: Setuju/tidak from sentences (C5 — Mengevaluasi)
+  if (questions.length < 5 && sentences.length > 0) {
+    const keySentence = sentences.find(s => s.length > 30 && s.length < 120);
+    if (keySentence) {
+      questions.push({
+        label: `Pertanyaan ${questions.length + 1}`,
+        icon: icons[questions.length % icons.length],
+        teks: `Setuju atau tidak dengan pernyataan berikut? Mengapa? "${keySentence}"`,
+        petunjuk: `Berikan argumen yang logis untuk mendukung posisimu, baik setuju maupun tidak.`,
+        color: colors[questions.length % colors.length],
+      });
+    }
+  }
+
+  // Fallback: at least 2 questions
+  if (questions.length < 2) {
+    questions.push({
+      label: 'Pertanyaan 1',
+      icon: '💭',
+      teks: `Apa hal terpenting yang kamu ketahui tentang ${topic}? Diskusikan!`,
+      petunjuk: `Tuliskan pemahamanmu dan bandingkan dengan teman.`,
+      color: 'c',
+    });
+    questions.push({
+      label: 'Pertanyaan 2',
+      icon: '🤔',
+      teks: `Mengapa ${topic} penting dalam kehidupan sehari-hari?`,
+      petunjuk: `Hubungkan dengan contoh nyata dari lingkunganmu.`,
+      color: 'y',
     });
   }
 
   return {
     type: 'diskusi',
     id: generateBlockId(),
-    title: `Diskusi ${meta.namaBab}`,
+    title: `Diskusi ${topic}`,
     intro: 'Diskusikan pertanyaan berikut dengan teman sekelompokmu!',
     questions,
     compression: { priority: 'high', strategy: 'scroll' } satisfies CompressionHints,
-    semantic: { topic: meta.namaBab, learningPhase: 'inti', interactionType: 'discuss', importance: 0.85 } satisfies SemanticHints,
+    semantic: { topic, learningPhase: 'inti', interactionType: 'discuss', importance: 0.85 } satisfies SemanticHints,
   };
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// REFLEKSI — Self-reflection questions
+// REFLEKSI — Self-reflection questions (metacognition)
 // ═══════════════════════════════════════════════════════════════════
+//
+// Metacognitive question patterns (Bloom C6 — Menciptakan + self-regulation):
+//   1. "Hal baru apa yang kamu pelajari tentang X?" — Recall + awareness
+//   2. "Bagaimana kamu akan menerapkan X?" — Transfer + application
+//   3. "Tulis komitmen pribadimu..." — Commitment + agency
+//   4. "Bagian mana yang paling menantang?" — Metacognitive monitoring
+//   5. "Apa yang akan kamu lakukan berbeda?" — Self-regulation
+//   6. "Jelaskan X kepada temanmu" — Teach-back (deepest understanding)
+//
+// Dynamic content: questions reference definitions, functions, and topWords
+// from the parsed material, not just generic placeholders.
 
 export function genRefleksiSchema(
   parsed: ParseResult,
   meta: { judulPertemuan: string; namaBab: string },
 ): RefleksiBlock {
-  const { topWords } = parsed;
+  const { definitions, functions, causes, topWords } = parsed;
   const topic = topWords[0] || meta.namaBab || 'materi';
   const questions: Array<{ teks: string; petunjuk: string; warna?: string; icon?: string }> = [];
 
+  // Q1: Recall + awareness — what did you learn?
+  const defTerm = definitions[0]?.term || topic;
   questions.push({
-    teks: `Hal baru apa yang kamu pelajari tentang ${topic}?`,
-    petunjuk: 'Tuliskan minimal 2 hal baru yang kamu pelajari.',
+    teks: `Hal baru apa yang kamu pelajari tentang ${defTerm}? Tuliskan minimal 2 hal yang paling berkesan.`,
+    petunjuk: `Fokus pada pemahaman baru yang kamu dapat, bukan sekadar mengulang definisi.`,
     warna: 'c',
     icon: '🪞',
   });
 
+  // Q2: Transfer + application — how will you apply it?
+  const fnSubject = functions[0]?.subject || topic;
   questions.push({
-    teks: `Bagaimana kamu akan menerapkan pemahaman tentang ${topic} dalam kehidupan sehari-hari?`,
-    petunjuk: 'Berikan contoh konkret penerapannya.',
+    teks: `Bagaimana kamu akan menerapkan pemahaman tentang ${fnSubject} dalam kehidupan sehari-hari?`,
+    petunjuk: `Berikan contoh konkret — di rumah, di sekolah, atau di masyarakat.`,
     warna: 'g',
     icon: '💭',
   });
 
+  // Q3: Commitment + agency — personal pledge
   questions.push({
     teks: 'Tulis komitmen pribadimu untuk menerapkan nilai-nilai yang dipelajari!',
-    petunjuk: 'Gunakan kalimat "Saya berkomitmen untuk..."',
+    petunjuk: 'Gunakan kalimat "Saya berkomitmen untuk..." dan tuliskan langkah nyata yang akan kamu lakukan.',
     warna: 'y',
     icon: '🎯',
   });
 
+  // Q4: Metacognitive monitoring — what was challenging?
+  const challengeTopic = definitions.length > 1 ? definitions[definitions.length > 2 ? 2 : 1].term : topic;
   questions.push({
-    teks: 'Bagian mana dari materi ini yang paling menantang? Mengapa?',
-    petunjuk: 'Jelaskan kesulitan yang kamu hadapi dan bagaimana mengatasinya.',
+    teks: `Bagian mana dari materi ${challengeTopic} yang paling menantang? Mengapa?`,
+    petunjuk: `Jelaskan kesulitan yang kamu hadapi dan bagaimana kamu mengatasinya (atau rencananya).`,
     warna: 'p',
     icon: '📝',
   });
 
+  // Q5: Self-regulation — what would you do differently? (only if content is rich enough)
+  if (causes.length > 0 || functions.length > 1) {
+    questions.push({
+      teks: `Jika kamu bisa mempelajari materi ini lagi dari awal, apa yang akan kamu lakukan berbeda?`,
+      petunjuk: `Pikirkan strategi belajar yang lebih efektif untuk pemahaman yang lebih dalam.`,
+      warna: 'r',
+      icon: '🔄',
+    });
+  }
+
+  // Q6: Teach-back — explain to a friend (deepest Bloom level)
+  if (definitions.length > 0) {
+    const teachTerm = definitions[definitions.length > 1 ? 1 : 0].term;
+    questions.push({
+      teks: `Jelaskan ${teachTerm} dengan kata-katamu sendiri seolah-olah kamu mengajarkan kepada teman yang belum memahami!`,
+      petunjuk: `Gunakan analogi, contoh, atau ilustrasi sederhana agar temanmu bisa memahami.`,
+      warna: 'g',
+      icon: '👩‍🏫',
+    });
+  }
+
   return {
     type: 'refleksi',
     id: generateBlockId(),
-    title: `Refleksi ${meta.namaBab}`,
+    title: `Refleksi ${topic}`,
     intro: 'Renungkan pertanyaan berikut untuk memperdalam pemahamanmu!',
-    questions,
+    questions: questions.slice(0, 5), // cap at 5 for canvas space
     penugasan: {
       judul: 'Tugas Refleksi',
-      isi: 'Tulis refleksi pribadimu tentang materi yang baru dipelajari.',
-      contoh: 'Saya belajar bahwa norma... Saya akan menerapkannya dengan...',
+      isi: `Tulis refleksi pribadimu tentang ${topic} — apa yang kamu pelajari, mengapa penting, dan bagaimana kamu akan menerapkannya.`,
+      contoh: `Saya belajar bahwa ${definitions[0]?.term || topic} adalah... Saya akan menerapkannya dengan...`,
     },
     compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
     semantic: { topic: meta.namaBab, learningPhase: 'penutup', interactionType: 'reflect', importance: 0.8 } satisfies SemanticHints,

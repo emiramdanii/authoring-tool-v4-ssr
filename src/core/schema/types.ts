@@ -349,6 +349,8 @@ export interface KuisBlock extends BaseBlock {
     opts: string[];
     ans: number;
     ex: string;
+    /** Pertemuan ke berapa (1-based), undefined = tanpa tag / semua pertemuan */
+    pertemuan?: number;
   }>;
 }
 

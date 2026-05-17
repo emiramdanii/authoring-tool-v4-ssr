@@ -568,105 +568,163 @@ export function genMateri(parsed: ParseResult, meta: { judulPertemuan: string; n
 }
 
 export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { judulPertemuan: string; namaBab: string }): DiskusiData {
-  const { definitions, enumerations } = parsed;
+  const { definitions, enumerations, functions, causes, topWords, sentences } = parsed;
   const pertanyaan: DiskusiPertanyaan[] = [];
   const labels = ['Pertanyaan 1', 'Pertanyaan 2', 'Pertanyaan 3', 'Pertanyaan 4', 'Pertanyaan 5'];
   const icons = ['💭', '🤔', '🗣️', '👥', '✋'];
+  const topic = meta.namaBab || topWords[0] || 'materi';
 
-  // From definitions
-  for (const def of definitions) {
+  // Pattern 1: From definitions (C2 — Menjelaskan)
+  for (const def of definitions.slice(0, 2)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
       label: labels[pertanyaan.length],
       icon: icons[pertanyaan.length],
-      teks: `Jelaskan apa yang dimaksud dengan ${def.term}! Berikan contoh dalam kehidupan sehari-hari.`,
-      petunjuk: `Gunakan definisi ${def.term} sebagai dasar jawabanmu.`,
+      teks: `Jelaskan apa yang dimaksud dengan ${def.term}! Berikan contoh penerapannya dalam kehidupan sehari-hari.`,
+      petunjuk: `Gunakan definisi "${def.term}" sebagai dasar jawaban, lalu hubungkan dengan pengalamanmu sendiri.`,
     });
   }
 
-  // From enumerations
-  for (const en of enumerations) {
+  // Pattern 2: From enumerations (C1 + C2)
+  for (const en of enumerations.slice(0, 1)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
       label: labels[pertanyaan.length],
       icon: icons[pertanyaan.length],
-      teks: `Sebutkan dan diskusikan ${en.subject}! Mana yang paling relevan?`,
-      petunjuk: `Pertimbangkan masing-masing poin dan pilih yang paling relevan.`,
+      teks: `Sebutkan dan diskusikan ${en.subject}! Mana yang paling relevan dengan kehidupan kalian? Mengapa?`,
+      petunjuk: `Pertimbangkan masing-masing poin, pilih yang paling relevan, dan berikan alasan.`,
     });
   }
 
-  // From TP (Tujuan Pembelajaran)
-  for (const t of tp) {
+  // Pattern 3: From functions (C4 — Menganalisis)
+  for (const fn of functions.slice(0, 1)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
       label: labels[pertanyaan.length],
       icon: icons[pertanyaan.length],
-      teks: `Bagaimana ${t.desc}? Diskusikan dengan teman sekelasmu!`,
-      petunjuk: `Hubungkan dengan pengalaman pribadimu.`,
+      teks: `Mengapa ${fn.subject} berfungsi untuk ${fn.desc.toLowerCase()}? Apa yang terjadi jika fungsi tersebut tidak berjalan?`,
+      petunjuk: `Analisis peran ${fn.subject} dan bayangkan konsekuensi tanpa fungsi tersebut.`,
+    });
+  }
+
+  // Pattern 4: From causes (C4 — Menganalisis sebab-akibat)
+  for (const c of causes.slice(0, 1)) {
+    if (pertanyaan.length >= 5) break;
+    pertanyaan.push({
+      label: labels[pertanyaan.length],
+      icon: icons[pertanyaan.length],
+      teks: `Diskusikan hubungan sebab-akibat: "${c.cause}" menyebabkan "${c.effect}". Apa bisa terjadi sebaliknya?`,
+      petunjuk: `Pikirkan apakah hubungan ini selalu satu arah, atau bisa berlaku dua arah.`,
+    });
+  }
+
+  // Pattern 5: From TP
+  for (const t of tp.slice(0, 1)) {
+    if (pertanyaan.length >= 5) break;
+    pertanyaan.push({
+      label: labels[pertanyaan.length],
+      icon: icons[pertanyaan.length],
+      teks: `Bagaimana ${t.desc}? Diskusikan dengan teman sekelasmu dan berikan contoh konkret!`,
+      petunjuk: `Hubungkan dengan pengalaman pribadimu dan lingkungan sekitarmu.`,
+    });
+  }
+
+  // Pattern 6: Setuju/tidak (C5 — Mengevaluasi)
+  if (pertanyaan.length < 5 && sentences.length > 0) {
+    const keySentence = sentences.find(s => s.length > 30 && s.length < 120);
+    if (keySentence) {
+      pertanyaan.push({
+        label: labels[pertanyaan.length],
+        icon: icons[pertanyaan.length],
+        teks: `Setuju atau tidak dengan pernyataan berikut? Mengapa? "${keySentence}"`,
+        petunjuk: `Berikan argumen yang logis untuk mendukung posisimu, baik setuju maupun tidak.`,
+      });
+    }
+  }
+
+  // Fallback
+  if (pertanyaan.length < 2) {
+    pertanyaan.push({
+      label: 'Pertanyaan 1',
+      icon: '💭',
+      teks: `Apa hal terpenting yang kamu ketahui tentang ${topic}? Diskusikan!`,
+      petunjuk: `Tuliskan pemahamanmu dan bandingkan dengan teman.`,
+    });
+    pertanyaan.push({
+      label: 'Pertanyaan 2',
+      icon: '🤔',
+      teks: `Mengapa ${topic} penting dalam kehidupan sehari-hari?`,
+      petunjuk: `Hubungkan dengan contoh nyata dari lingkunganmu.`,
     });
   }
 
   return {
-    title: `Diskusi ${meta.namaBab}`,
+    title: `Diskusi ${topic}`,
     intro: 'Diskusikan pertanyaan berikut dengan teman sekelompokmu!',
     pertanyaan,
   };
 }
 
 export function genRefleksi(parsed: ParseResult, meta: { judulPertemuan: string; namaBab: string }): RefleksiData {
-  const { topWords } = parsed;
+  const { definitions, functions, causes, topWords } = parsed;
   const pertanyaan: RefleksiPertanyaan[] = [];
-  const colors = ['blue', 'green', 'amber', 'purple'];
-  const icons = ['🪞', '💭', '🎯', '📝'];
+  const colors = ['blue', 'green', 'amber', 'purple', 'red'];
+  const icons = ['🪞', '💭', '🎯', '📝', '🔄'];
   const topic = topWords[0] || meta.namaBab || 'materi';
 
-  // General reflection from top words
-  const topWord = topWords[0] || 'materi ini';
+  // Q1: Recall + awareness
+  const defTerm = definitions[0]?.term || topic;
   pertanyaan.push({
-    teks: `Hal baru apa yang kamu pelajari tentang ${topWord}?`,
-    petunjuk: 'Tuliskan minimal 2 hal baru yang kamu pelajari.',
+    teks: `Hal baru apa yang kamu pelajari tentang ${defTerm}? Tuliskan minimal 2 hal yang paling berkesan.`,
+    petunjuk: `Fokus pada pemahaman baru yang kamu dapat, bukan sekadar mengulang definisi.`,
     warna: colors[0],
     icon: icons[0],
   });
 
-  // Application
-  if (pertanyaan.length < 4) {
-    pertanyaan.push({
-      teks: `Bagaimana kamu akan menerapkan pemahaman tentang ${topic} dalam kehidupan sehari-hari?`,
-      petunjuk: 'Berikan contoh konkret penerapannya.',
-      warna: colors[1],
-      icon: icons[1],
-    });
-  }
+  // Q2: Transfer + application
+  const fnSubject = functions[0]?.subject || topic;
+  pertanyaan.push({
+    teks: `Bagaimana kamu akan menerapkan pemahaman tentang ${fnSubject} dalam kehidupan sehari-hari?`,
+    petunjuk: `Berikan contoh konkret — di rumah, di sekolah, atau di masyarakat.`,
+    warna: colors[1],
+    icon: icons[1],
+  });
 
-  // Commitment
-  if (pertanyaan.length < 4) {
-    pertanyaan.push({
-      teks: 'Tulis komitmen pribadimu untuk menerapkan nilai-nilai yang dipelajari!',
-      petunjuk: 'Gunakan kalimat "Saya berkomitmen untuk..."',
-      warna: colors[2],
-      icon: icons[2],
-    });
-  }
+  // Q3: Commitment + agency
+  pertanyaan.push({
+    teks: 'Tulis komitmen pribadimu untuk menerapkan nilai-nilai yang dipelajari!',
+    petunjuk: 'Gunakan kalimat "Saya berkomitmen untuk..." dan tuliskan langkah nyata yang akan kamu lakukan.',
+    warna: colors[2],
+    icon: icons[2],
+  });
 
-  // Metacognition
-  if (pertanyaan.length < 4) {
+  // Q4: Metacognitive monitoring — what was challenging?
+  const challengeTopic = definitions.length > 1 ? definitions[1].term : topic;
+  pertanyaan.push({
+    teks: `Bagian mana dari materi ${challengeTopic} yang paling menantang? Mengapa?`,
+    petunjuk: `Jelaskan kesulitan yang kamu hadapi dan bagaimana kamu mengatasinya.`,
+    warna: colors[3],
+    icon: icons[3],
+  });
+
+  // Q5: Self-regulation (if content is rich)
+  if (causes.length > 0 || functions.length > 1) {
     pertanyaan.push({
-      teks: 'Bagian mana dari materi ini yang paling menantang? Mengapa?',
-      petunjuk: 'Jelaskan kesulitan yang kamu hadapi dan bagaimana mengatasinya.',
-      warna: colors[3],
-      icon: icons[3],
+      teks: 'Jika kamu bisa mempelajari materi ini lagi dari awal, apa yang akan kamu lakukan berbeda?',
+      petunjuk: 'Pikirkan strategi belajar yang lebih efektif untuk pemahaman yang lebih dalam.',
+      warna: colors[4],
+      icon: icons[4],
     });
   }
 
   return {
-    title: `Refleksi ${meta.namaBab}`,
+    title: `Refleksi ${topic}`,
     intro: 'Renungkan pertanyaan berikut untuk memperdalam pemahamanmu!',
     pertanyaan,
     penugasan: {
       judul: 'Tugas Refleksi',
-      isi: 'Tulis refleksi pribadimu tentang materi yang baru dipelajari.',
-      contoh: 'Saya belajar bahwa norma...Saya akan menerapkannya dengan...',
+      isi: `Tulis refleksi pribadimu tentang ${topic} — apa yang kamu pelajari, mengapa penting, dan bagaimana kamu akan menerapkannya.`,
+      contoh: `Saya belajar bahwa ${definitions[0]?.term || topic} adalah... Saya akan menerapkannya dengan...`,
     },
   };
 }

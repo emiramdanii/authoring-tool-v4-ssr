@@ -201,7 +201,7 @@ export function KuisTab() {
                 />
               </div>
 
-              {/* Pertemuan tag */}
+              {/* Pertemuan tag — dynamic dari ATP jumlahPertemuan */}
               <div className="flex items-center gap-2">
                 <label className="text-xs font-medium text-app-secondary">Pertemuan</label>
                 <select
@@ -210,7 +210,7 @@ export function KuisTab() {
                   className="bg-app-elevated border border-app-border rounded-lg px-2 py-1 text-xs text-app-primary focus:outline-none focus:ring-2 focus:ring-app-accent/50"
                 >
                   <option value="">— Semua —</option>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+                  {Array.from({ length: atp.jumlahPertemuan || 8 }, (_, n) => n + 1).map(n => (
                     <option key={n} value={n}>Pertemuan {n}</option>
                   ))}
                 </select>

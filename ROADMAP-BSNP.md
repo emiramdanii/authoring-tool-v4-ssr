@@ -108,11 +108,12 @@ interface KuisItem {
 ```
 
 **Task**:
-- [ ] Tambah `pertemuan` field ke `KuisItem` di types.ts
-- [ ] Update `addKuis()` default — pertemuan: undefined (backward compatible)
-- [ ] Update KuisTab form — tambah dropdown pertemuan (1-8, opsional)
-- [ ] Update `genKuis()` — auto-tag pertemuan berdasarkan settings
-- [ ] Update `buildTemplateData('kuis')` — support filter by pertemuan (opsional)
+- [x] Tambah `pertemuan` field ke `KuisItem` di types.ts
+- [x] Update `addKuis()` default — pertemuan: undefined (backward compatible)
+- [x] Update KuisTab form — tambah dropdown pertemuan (dinamis dari ATP, opsional)
+- [x] Update `genKuis()` — auto-tag pertemuan berdasarkan settings
+- [x] Update `genKuisSchema()` — auto-tag pertemuan di KuisBlock.questions
+- [x] Tambah `pertemuan` field ke KuisBlock.questions di schema/types.ts
 
 ---
 
@@ -155,18 +156,37 @@ interface KuisItem {
 **Alasan**: 5 section tidak punya generator, guru harus isi manual.
 Dengan generator, guru bisa re-generate yang gak cocok.
 
+**Enhanced (Sprint A)**: Generator sekarang menghasilkan SchemaBlock[] yang lebih beragam:
+- genMateriSchema: def-box, nc-grid, ftab (3+ functions), tabel-accord (long enumerations)
+- genDiskusiSchema: 6 pola pertanyaan (Bloom C1-C5, sebab-akibat, setuju/tidak)
+- genRefleksiSchema: 5-6 pertanyaan metakognisi (recall, transfer, commitment, monitoring, self-regulation, teach-back)
+
 **Task**:
-- [ ] Buat `genMateri(parsed)` — deteksi struktur → assign tipe per blok
-  - Definisi → `definisi` blok
-  - Enumerasi → `poin` blok
-  - Langkah → `timeline` blok
-  - Perbandingan → `compare` blok
-  - Sisanya → `teks` blok
-- [ ] Buat `genDiskusi(parsed, tp)` — buat pertanyaan dari konten + TP
-- [ ] Buat `genRefleksi(parsed)` — buat pertanyaan refleksi metakognisi
-- [ ] Tambah ke GEN_BUTTONS di constants.ts
-- [ ] Tambah ke useAutoGenerate hook (generate + apply)
-- [ ] Tambah preview komponen
+- [x] Buat `genMateri(parsed)` — deteksi struktur → assign tipe per blok → SchemaBlock[]
+  - Definisi → `def-box` (yellow border)
+  - Enumerasi (≤3) → `nc-grid` (card grid)
+  - Enumerasi (>3) → `tabel-accord` (accordion table)
+  - Functions (3+) → `ftab` (tabbed view)
+  - Functions (1-2) → `def-box` (cyan border)
+  - Causes → `nc-grid` (sebab-akibat cards)
+  - Semua dibungkus `materi-section` dengan BSNP badge + takeaways
+- [x] Buat `genDiskusi(parsed, tp)` — 6 pola pertanyaan dari konten + TP
+  - Definitions → "Jelaskan apa yang dimaksud..." (C2)
+  - Enumerations → "Sebutkan dan diskusikan..." (C1)
+  - Functions → "Mengapa X berfungsi...?" (C4)
+  - Causes → "Diskusikan sebab-akibat..." (C4)
+  - TP → "Bagaimana [tujuan]?" (C3-C5)
+  - Sentences → "Setuju atau tidak? Mengapa?" (C5)
+- [x] Buat `genRefleksi(parsed)` — pertanyaan metakognisi dinamis
+  - Q1: Recall + awareness (defTerm-based)
+  - Q2: Transfer + application (fnSubject-based)
+  - Q3: Commitment + agency
+  - Q4: Metacognitive monitoring (challengeTopic-based)
+  - Q5: Self-regulation (if causes/functions rich)
+  - Q6: Teach-back (deepest Bloom level)
+- [x] Tambah ke GEN_BUTTONS di constants.ts
+- [x] Tambah ke useAutoGenerate hook (generate + apply)
+- [x] Tambah preview komponen
 
 ### 18.3 Tombol Re-generate di Panel Konten
 
