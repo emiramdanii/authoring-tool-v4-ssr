@@ -5,19 +5,51 @@ import { useExportActions } from './use-export-actions';
 import { AutoSaveIndicator, SaveNowButton } from '@/components/shared/StatusToast';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import { ToolbarExport } from './ToolbarExport';
-import { Download, Loader2, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { Download, Loader2, PanelRightOpen, PanelRightClose, Undo2, Redo2 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
-// QUICK ACTIONS — Save, Export, Command palette button
+// QUICK ACTIONS — Undo/Redo, Save, Export, Command palette button
 // ═══════════════════════════════════════════════════════════════
 
 export function QuickActions() {
   const { exportHtml, isExporting } = useExportActions();
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const toggleRightPanel = useCanvaStore((s) => s.toggleRightPanel);
+  const undo = useCanvaStore((s) => s.undo);
+  const redo = useCanvaStore((s) => s.redo);
+  const canUndo = useCanvaStore((s) => s.canUndo);
+  const canRedo = useCanvaStore((s) => s.canRedo);
 
   return (
     <div className="flex items-center gap-1">
+      {/* Undo / Redo — always visible, disabled when nothing to undo/redo */}
+      <button
+        onClick={undo}
+        disabled={!canUndo()}
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-all ${
+          canUndo()
+            ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated/50'
+            : 'text-app-muted/30 cursor-not-allowed'
+        }`}
+        title="Undo (Ctrl+Z)"
+      >
+        <Undo2 size={14} />
+      </button>
+      <button
+        onClick={redo}
+        disabled={!canRedo()}
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-all ${
+          canRedo()
+            ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated/50'
+            : 'text-app-muted/30 cursor-not-allowed'
+        }`}
+        title="Redo (Ctrl+Y)"
+      >
+        <Redo2 size={14} />
+      </button>
+
+      <div className="section-divider h-5 w-px mx-0.5" />
+
       {/* Teacher Mode Toggle */}
       <TeacherModeToggle />
 

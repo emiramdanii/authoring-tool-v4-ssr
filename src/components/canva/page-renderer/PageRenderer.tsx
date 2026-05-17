@@ -226,12 +226,12 @@ export function PageRenderer({
         />
       )}
 
-      {/* Template without schema data — minimal placeholder */}
+      {/* Template without schema data — user-friendly placeholder */}
       {isTemplate && !useSchemaRenderer && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white/30 text-sm">
           <div className="text-2xl mb-2">📄</div>
           <div>Template: {templateType}</div>
-          <div className="text-[10px] mt-1">Schema adapter needed</div>
+          <div className="text-[10px] mt-1">Template ini belum didukung sepenuhnya</div>
         </div>
       )}
     </>

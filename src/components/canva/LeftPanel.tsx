@@ -34,6 +34,7 @@ import { AddBlockSection } from './left-panel/AddBlockSection';
 import { TemplateSection } from './left-panel/TemplateSection';
 import { SettingsSection } from './left-panel/SettingsSection';
 
+import HistoryPanel from './left-panel/HistoryPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import dynamic from 'next/dynamic';
 
@@ -115,6 +116,7 @@ export default function LeftPanel() {
               {activeTab === 'pages' && 'Halaman'}
               {activeTab === 'add-block' && 'Tambah Block'}
               {activeTab === 'templates' && 'Template'}
+              {activeTab === 'history' && 'Riwayat'}
               {activeTab === 'settings' && 'Pengaturan'}
             </div>
           </div>
@@ -138,6 +140,10 @@ export default function LeftPanel() {
                   <TemplateSection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
                   <PageTypeCreator />
                 </>
+              )}
+
+              {activeTab === 'history' && (
+                <HistoryPanel />
               )}
 
               {activeTab === 'settings' && (

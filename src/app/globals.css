@@ -467,6 +467,16 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* ── Block entrance animation — subtle scale + fade for newly added blocks ── */
+@keyframes blockEntrance {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.block-entrance {
+  animation: blockEntrance 0.25s ease-out;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    UTILITY CLASSES — Composed from semantic tokens
    ═══════════════════════════════════════════════════════════════════ */

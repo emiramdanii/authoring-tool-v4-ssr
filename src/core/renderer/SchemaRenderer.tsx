@@ -141,6 +141,28 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   const isCompact = mode === 'canvas';
   const hasCoverBlock = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
 
+  // ═══ BLOCK ENTRANCE ANIMATION ═════════════════════════════════
+  // Track newly added blocks to apply entrance animation.
+  // When a new block ID appears that wasn't in the previous render,
+  // we apply a CSS animation class that auto-removes after 250ms.
+  const prevBlockIdsRef = useRef<Set<string>>(new Set());
+  const [entranceBlockIds, setEntranceBlockIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const currentIds = new Set(screen.blocks.map(b => b.id || b.type));
+    const newIds = new Set<string>();
+    currentIds.forEach(id => {
+      if (!prevBlockIdsRef.current.has(id)) newIds.add(id);
+    });
+    prevBlockIdsRef.current = currentIds;
+
+    if (newIds.size > 0) {
+      setEntranceBlockIds(newIds);
+      const timer = setTimeout(() => setEntranceBlockIds(new Set()), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [screen.blocks]);
+
   // ═══ MEASUREMENT COMMIT QUEUE ═════════════════════════════════
   // Instead of re-rendering on every single measurement, we batch
   // measurements and commit once after they settle.
@@ -389,6 +411,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
 
         // Drag state for this block
         const isBeingDragged = schemaBlockIndex >= 0 && dragHandlers.isBlockDragged(schemaBlockIndex);
+        const isEntrance = entranceBlockIds.has(blockId);
 
         return (
           <div
@@ -398,6 +421,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 dragHandlers.registerBlockRef(schemaBlockIndex, el);
               }
             }}
+            className={isEntrance ? 'block-entrance' : undefined}
             style={{
               ...positionStyle,
               pointerEvents,

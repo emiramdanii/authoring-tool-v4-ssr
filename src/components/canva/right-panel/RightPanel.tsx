@@ -120,12 +120,19 @@ export default function RightPanel() {
               <BlockPropertiesPanel />
             ) : isSchemaDriven ? (
               <>
+                {/* Page-level settings when no block selected */}
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />
-                <div className="px-3 py-4 text-center">
-                  <div className="text-[10px] text-app-muted">
-                    Klik block di canvas untuk mengedit propertinya
+                <div className="mx-3 mt-3 mb-4 px-4 py-6 rounded-xl border border-dashed border-app-border/40 bg-app-elevated/20 text-center">
+                  <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-app-accent/10 flex items-center justify-center">
+                    <Box size={18} className="text-app-accent/60" />
+                  </div>
+                  <div className="text-[11px] font-bold text-app-secondary/70 mb-1">
+                    Tidak ada block terpilih
+                  </div>
+                  <div className="text-[9px] text-app-muted leading-relaxed">
+                    Klik block di canvas untuk mengedit<br />properti, teks, dan warnanya
                   </div>
                 </div>
               </>

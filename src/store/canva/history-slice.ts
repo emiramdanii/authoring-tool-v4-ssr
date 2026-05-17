@@ -24,6 +24,7 @@ import type { Snapshot } from './types';
 import { MAX_HISTORY } from './constants';
 import { patchHistory } from '@/core/editor/patch-history';
 import type { SchemaBlock } from '@/core/schema/types';
+import { showUndoRedoToast } from '@/components/shared/StatusToast';
 
 export type HistorySlice = Pick<
   CanvaState,
@@ -155,6 +156,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
+            showUndoRedoToast('Undo');
             return;
           } catch {
             // Patch application failed (state diverged) — fall through to snapshot undo
@@ -181,6 +183,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       editingBlockId: null,
     });
     _set({ _skipHistory: false });
+    showUndoRedoToast('Undo');
   },
 
   redo: () => {
@@ -213,6 +216,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
+            showUndoRedoToast('Redo');
             return;
           } catch {
             console.warn('[History] Patch-based redo failed, falling back to snapshot redo');
@@ -233,6 +237,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       selectedElId: null,
     });
     _set({ _skipHistory: false });
+    showUndoRedoToast('Redo');
   },
 
   canUndo: () => get()._historyIdx > 0 || patchHistory.canUndo(),

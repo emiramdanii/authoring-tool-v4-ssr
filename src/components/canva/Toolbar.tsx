@@ -23,13 +23,12 @@ export default function Toolbar() {
   const mode = useInteractiveStore((s) => s.mode);
   const closePlay = useInteractiveStore((s) => s.closePlay);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
-  const pages = useCanvaStore((s) => s.pages);
+  const label = useCanvaStore((s) => s.pages[s.currentPageIndex]?.label || 'Untitled');
+  const pagesLength = useCanvaStore((s) => s.pages.length);
   const appMode = useCanvaStore((s) => s.appMode);
   const setAppMode = useCanvaStore((s) => s.setAppMode);
 
   const isInteractive = mode === 'interactive';
-  const page = pages[currentPageIndex];
-  const label = page?.label || 'Untitled';
 
   // ── Interactive mode toolbar (minimal) ──────────────────
   if (isInteractive) {
@@ -85,7 +84,7 @@ export default function Toolbar() {
           {label}
         </span>
         <span className="text-[10px] text-app-muted">
-          {currentPageIndex + 1}/{pages.length}
+          {currentPageIndex + 1}/{pagesLength}
         </span>
         <div className="flex-1" />
         <Eye size={12} className="text-app-info" />
