@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, Plus, Sparkles, Settings, Layers } from 'lucide-react';
+import { FileText, Plus, Sparkles, Settings } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import {
   Tooltip,
@@ -15,7 +15,7 @@ import {
 // tab content. Active tab has amber accent indicator.
 // ═══════════════════════════════════════════════════════════════
 
-export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'layer' | 'settings';
+export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'settings';
 
 interface IconRailProps {
   activeTab: LeftPanelTab;
@@ -27,7 +27,6 @@ const RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number;
   { id: 'pages', icon: FileText, label: 'Halaman' },
   { id: 'add-block', icon: Plus, label: 'Tambah Block' },
   { id: 'templates', icon: Sparkles, label: 'Template' },
-  { id: 'layer', icon: Layers, label: 'Layer Block' },
   { id: 'settings', icon: Settings, label: 'Pengaturan' },
 ];
 

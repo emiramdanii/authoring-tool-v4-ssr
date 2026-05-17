@@ -33,7 +33,7 @@ import { SceneList } from './left-panel/SceneList';
 import { AddBlockSection } from './left-panel/AddBlockSection';
 import { TemplateSection } from './left-panel/TemplateSection';
 import { SettingsSection } from './left-panel/SettingsSection';
-import LayerPanel from './left-panel/LayerPanel';
+
 import AddBlockPanel from './left-panel/AddBlockPanel';
 import dynamic from 'next/dynamic';
 
@@ -115,7 +115,6 @@ export default function LeftPanel() {
               {activeTab === 'pages' && 'Halaman'}
               {activeTab === 'add-block' && 'Tambah Block'}
               {activeTab === 'templates' && 'Template'}
-              {activeTab === 'layer' && 'Layer Block'}
               {activeTab === 'settings' && 'Pengaturan'}
             </div>
           </div>
@@ -139,10 +138,6 @@ export default function LeftPanel() {
                   <TemplateSection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
                   <PageTypeCreator />
                 </>
-              )}
-
-              {activeTab === 'layer' && (
-                <LayerPanel />
               )}
 
               {activeTab === 'settings' && (

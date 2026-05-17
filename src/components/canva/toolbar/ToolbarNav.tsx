@@ -10,11 +10,10 @@ import { ChevronLeft } from 'lucide-react';
 // ═══════════════════════════════════════════════════════════════
 
 export function ToolbarNav() {
-  const pages = useCanvaStore((s) => s.pages);
+  // PERF: Subscribe to only the current page label, not the full pages[] array
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
+  const label = useCanvaStore((s) => s.pages[s.currentPageIndex]?.label || 'Untitled');
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
-  const page = pages[currentPageIndex];
-  const label = page?.label || 'Untitled';
 
   return (
     <div className="flex items-center gap-1.5">

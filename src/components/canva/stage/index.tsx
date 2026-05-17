@@ -57,8 +57,10 @@ import { useAuthoringStore } from '@/store/authoring-store';
 
 export default function Stage() {
   // ── Targeted selectors to avoid unnecessary re-renders ──────────
-  const pages = useCanvaStore(s => s.pages);
+  // PERF: Subscribe to only the current page, not the full pages[] array
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
+  const pagesLength = useCanvaStore(s => s.pages.length);
   const storeZoom = useCanvaStore(s => s.zoom);
   const tool = useCanvaStore(s => s.tool);
   const selectedElId = useCanvaStore(s => s.selectedElId);
@@ -96,7 +98,6 @@ export default function Stage() {
   // NOTE: Removed unused `storeFitZoom` subscription — was causing unnecessary
   // re-renders. The local `fitZoom` state is used instead for `effectiveZoom`.
 
-  const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
@@ -361,7 +362,7 @@ export default function Stage() {
   const isMultiSelected = (elId: string) => selectedElIds.includes(elId) && selectedElIds.length > 1;
 
   // ── Empty state: no pages at all ──────────────────────────────────
-  if (pages.length === 0) return <CanvasEmptyState />;
+  if (pagesLength === 0) return <CanvasEmptyState />;
   if (!page) return null;
 
   // Cursor style
@@ -418,7 +419,7 @@ export default function Stage() {
                 mode={canvasPreview ? 'preview' : 'canvas'}
                 page={page}
                 currentPageIndex={currentPageIndex}
-                totalPages={pages.length}
+                totalPages={pagesLength}
                 isTemplateSelected={!canvasPreview}
               />
             </PageTransition>

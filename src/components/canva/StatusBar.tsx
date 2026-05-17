@@ -46,13 +46,14 @@ const SAVE_INDICATOR_CONFIG: Record<SaveStatus, { icon: React.ReactNode; label: 
 };
 
 export default function StatusBar() {
-  const pages = useCanvaStore(s => s.pages);
+  // PERF: Subscribe to only what's needed, not the full pages[] array
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const pagesLength = useCanvaStore(s => s.pages.length);
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const storeZoom = useCanvaStore(s => s.zoom);
   const storeFitZoom = useCanvaStore(s => s.fitZoom);
   const setZoom = useCanvaStore(s => s.setZoom);
   const zoomToFit = useCanvaStore(s => s.zoomToFit);
-  const page = pages[currentPageIndex];
   const ratio = useCanvaStore(s => {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
@@ -112,7 +113,7 @@ export default function StatusBar() {
       {/* Page info with template type */}
       <span className="flex items-center gap-1.5">
         <FileText size={11} className="text-app-muted" />
-        <span>{currentPageIndex + 1}/{pages.length}</span>
+        <span>{currentPageIndex + 1}/{pagesLength}</span>
         <span className="text-[8px] text-app-muted">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>

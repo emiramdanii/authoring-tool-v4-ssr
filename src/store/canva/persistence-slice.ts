@@ -31,15 +31,15 @@ const TAB_MIGRATION: Record<string, LeftTab> = {
   elems: 'add-block',
   ratio: 'pages',
   pages: 'pages',
-  layers: 'layer',
+  layers: 'settings',
   rakit: 'add-block',
-  layer: 'layer',
+  layer: 'settings',
   tambah: 'add-block',
   // Legacy tab names → new unified names
   halaman: 'pages',
   sisipkan: 'add-block',
   halamanBaru: 'pages',
-  riwayat: 'layer',
+  riwayat: 'settings',
 };
 
 export type PersistenceSlice = Pick<

@@ -8,16 +8,18 @@ import { useMemo } from 'react';
 /**
  * Find the selected block in the page's schema.
  *
+ * PERF: Subscribes to only the current page (not the full pages[] array),
+ * preventing cascade re-renders when other pages change.
+ *
  * Works with both:
  *   - Schema preset pages (schemaScreen in templateData)
  *   - Legacy adapted pages (converted via TemplateAdapter on-the-fly)
  */
 export function useSelectedBlock(): { block: SchemaBlock | null; schema: ScreenSchema | null } {
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
-  const pages = useCanvaStore(s => s.pages);
+  // PERF: Subscribe to only the current page, not the full pages[] array
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
-
-  const page = pages[currentPageIndex];
+  const page = useCanvaStore(s => s.pages[currentPageIndex]);
 
   const schema = useMemo<ScreenSchema | null>(() => {
     if (!page || !selectedBlockId) return null;

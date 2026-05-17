@@ -20,8 +20,9 @@ import { announceToScreenReader } from '@/lib/a11y';
 import BatchActionsBar from './BatchActionsBar';
 
 export default function LayerPanel() {
-  const pages = useCanvaStore(s => s.pages);
+  // PERF: Subscribe to only the current page, not the full pages[] array
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const hoveredBlockId = useCanvaStore(s => s.hoveredBlockId);
@@ -35,8 +36,6 @@ export default function LayerPanel() {
   const moveBlockDown = useCanvaStore(s => s.moveBlockDown);
   const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
   const reorderSchemaBlocks = useCanvaStore(s => s.reorderSchemaBlocks);
-
-  const page = pages[currentPageIndex];
 
   // Resolve the schema for the current page — schema-first
   const schema = useMemo<ScreenSchema | null>(() => {

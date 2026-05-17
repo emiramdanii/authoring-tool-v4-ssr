@@ -105,67 +105,63 @@ export default function RightPanel() {
       </div>
 
       {/* ── Tab Content ──────────────────────────────────────── */}
+      {/* PERF: Conditional rendering instead of CSS hidden — only mounts the active tab's components, */}
+      {/* reducing store subscriptions and re-renders from ~10 mounted components down to ~3. */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {/* Properties Tab */}
-        <div
-          className={`transition-opacity duration-150 ${activeTab === 'properties' ? 'opacity-100' : 'hidden'}`}
-          role="tabpanel"
-          aria-label="Properti"
-        >
-          {hasMultiBlockSelection ? (
-            <>
-              <AlignmentTools />
+        {activeTab === 'properties' && (
+          <div role="tabpanel" aria-label="Properti">
+            {hasMultiBlockSelection ? (
+              <>
+                <AlignmentTools />
+                <BlockPropertiesPanel />
+              </>
+            ) : hasBlockSelection ? (
               <BlockPropertiesPanel />
-            </>
-          ) : hasBlockSelection ? (
-            <BlockPropertiesPanel />
-          ) : isSchemaDriven ? (
-            <>
-              <BackgroundSection />
-              <div className="px-3 py-6 text-center">
-                <div className="text-[10px] text-app-muted">
-                  Klik block di canvas untuk mengedit propertinya
+            ) : isSchemaDriven ? (
+              <>
+                <BackgroundSection />
+                <PageSettingsSection />
+                <PaletteSection />
+                <div className="px-3 py-4 text-center">
+                  <div className="text-[10px] text-app-muted">
+                    Klik block di canvas untuk mengedit propertinya
+                  </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <ElementProperties />
-              <AlignmentTools />
-              <BackgroundSection />
-            </>
-          )}
-        </div>
+              </>
+            ) : (
+              <>
+                <ElementProperties />
+                <AlignmentTools />
+                <BackgroundSection />
+              </>
+            )}
+          </div>
+        )}
 
         {/* AI Tab */}
-        <div
-          className={`transition-opacity duration-150 ${activeTab === 'ai' ? 'opacity-100' : 'hidden'}`}
-          role="tabpanel"
-          aria-label="AI"
-        >
-          {hasBlockSelection ? (
-            <>
-              <AIRefineSection />
+        {activeTab === 'ai' && (
+          <div role="tabpanel" aria-label="AI">
+            {hasBlockSelection ? (
+              <>
+                <AIRefineSection />
+                <AIAssistantSection />
+              </>
+            ) : (
               <AIAssistantSection />
-            </>
-          ) : (
-            <AIAssistantSection />
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        {/* Layer Tab — Block layer list + page settings */}
-        <div
-          className={`transition-opacity duration-150 ${activeTab === 'layer' ? 'opacity-100' : 'hidden'}`}
-          role="tabpanel"
-          aria-label="Layer"
-        >
-          <LayerPanel />
-          <div className="border-t border-app-border/30 mx-2" />
-          <NavigationSection />
-          <PageSettingsSection />
-          <PaletteSection />
-          <PageInfo />
-        </div>
+        {/* Layer Tab — Block layer list + page navigation */}
+        {activeTab === 'layer' && (
+          <div role="tabpanel" aria-label="Layer">
+            <LayerPanel />
+            <div className="border-t border-app-border/30 mx-2" />
+            <NavigationSection />
+            <PageInfo />
+          </div>
+        )}
       </div>
     </div>
   );
