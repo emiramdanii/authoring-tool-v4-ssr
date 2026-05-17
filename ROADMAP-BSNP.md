@@ -284,13 +284,35 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 **Audit Results**:
 | Aspect | Status |
 |--------|--------|
-| SceneRegistry coverage | All 37 types registered |
-| Schema types | All 37 types have TypeScript interfaces |
-| BlockDefinitionRegistry | All 37 types have metadata |
-| PremiumBlockWrapper | All renderers use premium effects |
-| React.memo | All renderers wrapped |
-| TokenResolver | Consistent usage |
-| Build | Clean (0 errors) |
+| SceneRegistry coverage | All 39 types registered |
+| Schema types | All 39 types have TypeScript interfaces |
+
+---
+
+## Phase 23: Missing Blocks — Compare + Reveal
+
+> Dua block type dari MASTERPLAN yang belum ada sebagai first-class SchemaBlock.
+> Compare sebelumnya hanya MateriBlok.tipe (lossy → nc-grid).
+> Reveal sama sekali belum ada.
+
+### 23.1 Compare Block (⚖️ Perbandingan)
+- [x] Buat `CompareRenderer.tsx` — 2 kolom kiri-kanan + VS badge
+- [x] Tambah `CompareBlock` type definition di schema/types.ts
+- [x] Tambah `COMPARE_PROPERTY_SCHEMA` di property-schemas.ts
+- [x] Register di BlockDefinitionRegistry, SceneRegistry, validation.ts
+- personality: `discussion` | usedInTemplates: `['materi', 'diskusi']`
+
+### 23.2 Reveal Block (🎁 Konten Tersembunyi)
+- [x] Buat `RevealRenderer.tsx` — cover state + revealed state + confetti + sound
+- [x] Tambah `RevealBlock` type definition di schema/types.ts
+- [x] Tambah `REVEAL_PROPERTY_SCHEMA` di property-schemas.ts
+- [x] Register di BlockDefinitionRegistry, SceneRegistry, validation.ts
+- personality: `activation` | interactive: true | usedInTemplates: `['materi', 'game']`
+
+### 23.3 Full Integration
+- [x] SchemaBlock union type updated
+- [x] Barrel exports updated (blocks/index.ts, editor/index.ts)
+- [x] Build clean (0 errors)
 
 ---
 
