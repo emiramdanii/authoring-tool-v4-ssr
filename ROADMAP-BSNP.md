@@ -4,7 +4,7 @@
 > Flow searah, remedial serahkan ke guru.
 > Lean & praktis — hindari over-engineering.
 >
-> **Dibuat**: 9 Mei 2026 | **Update**: 10 Mei 2026
+> **Dibuat**: 9 Mei 2026 | **Update**: 18 Mei 2026
 
 ---
 
@@ -261,6 +261,36 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 - [x] Accordion per blok di MateriTemplate (interactive mode) — Variant A "Klasik" dengan accordion compression
 - [x] Badge visual di PenutupTemplate berdasarkan skor
 - [x] HasilTemplate — tampilkan skor per aktivitas (bukan hanya total)
+
+---
+
+## Phase 22: Block Renderer Audit & Bug Fix
+
+> Full audit 37 block renderers. Fix critical & moderate bugs.
+
+**Critical Fixes (P0)**:
+- [x] Add 6 missing block types to validation registry (`tabel`, `gambar`, `timeline`, `checklist`, `statistik`, `studi`)
+- [x] Fix `handlesCompression` mismatch: 4 renderers declared `true` but didn't implement `useBlockCompression` → set to `false`
+
+**Bug Fixes (P1)**:
+- [x] Fix `ChecklistRenderer` — accept & respect `interactive` prop (was always interactive even in preview/export mode)
+- [x] Fix `GambarRenderer` — reset `hasError` state when URL changes via `useEffect`
+
+**Improvements (P2)**:
+- [x] Update variant declarations in registry: `diskusi` now `['A','B','C']`, `hasil` now `['A','B','C']`
+- [x] Fix `HasilRenderer` — persist variant to store via `updateSchemaBlock` (was using local `useState`)
+- [x] Normalize store imports — all renderers now use consistent `../../../store/canva/store` path
+
+**Audit Results**:
+| Aspect | Status |
+|--------|--------|
+| SceneRegistry coverage | All 37 types registered |
+| Schema types | All 37 types have TypeScript interfaces |
+| BlockDefinitionRegistry | All 37 types have metadata |
+| PremiumBlockWrapper | All renderers use premium effects |
+| React.memo | All renderers wrapped |
+| TokenResolver | Consistent usage |
+| Build | Clean (0 errors) |
 
 ---
 
