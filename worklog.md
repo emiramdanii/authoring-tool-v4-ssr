@@ -444,3 +444,32 @@ Stage Summary:
   - Dashboard: BSNP/Stats hidden, simpler quick actions, friendlier empty state
   - Sidebar: collapsible "Lainnya" reduces cognitive load
   - All changes are progressive disclosure — lengkap mode unchanged
+
+---
+Task ID: recovery-ux
+Agent: main
+Task: Recovery UX — Improve crash recovery, auto-save, and data loss prevention
+
+Work Log:
+- Explored all existing recovery systems: CrashRecoveryDialog, AutoSaveRecovery, AppErrorBoundary, useAutoSave, undo/redo, beforeunload handlers, offline sync
+- Identified 10 critical gaps: duplicate recovery dialogs, inconsistent beforeunload, emergency save not auto-restored, "Start Fresh" doesn't clear data, no max-wait auto-save, no confirmation for destructive actions
+- Created unified RecoveryDialog.tsx replacing both CrashRecoveryDialog + AutoSaveRecovery
+  - Priority system: emergency > crash > auto-save (only one dialog ever appears)
+  - Reads back AppErrorBoundary emergency data from silse_app_error_recovery key
+  - "Mulai Baru" now actually clears localStorage + resets stores (was broken before)
+  - Fixed beforeunload handler to only set dirty flag when there ARE unsaved changes
+- Updated AuthoringTool.tsx to use new RecoveryDialog instead of CrashRecoveryDialog
+- Fixed CanvaBuilder.tsx beforeunload handler to also call setDirtyExitFlag() (was missing)
+- Added max-wait auto-save (30s) to useAutoSave hook — ensures save at least every 30s during active editing
+- Added confirmation dialog to "Proyek Baru" button in Dashboard (was unprotected)
+- Added save status indicator text "Belum simpan" next to dirty dot in header
+
+Stage Summary:
+- Unified recovery: One dialog replaces two, fixes coordination issues
+- Emergency recovery: AppErrorBoundary data is now auto-restored on next session
+- Fixed "Mulai Baru" bug: Now actually clears localStorage and resets stores
+- Fixed beforeunload inconsistency: All 3 handlers now properly set dirty exit flag
+- Max-wait auto-save: 30s maximum interval prevents data loss during continuous editing
+- Confirmation dialogs: Destructive actions now have proper warnings
+- Save status: Header shows "Belum simpan" text when there are unsaved changes
+- Build verified: All changes compile successfully

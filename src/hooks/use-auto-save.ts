@@ -31,6 +31,7 @@ import { canvaPagesToSavePages } from '@/lib/save-utils';
  */
 
 const DEBOUNCE_MS = 2000;
+const MAX_WAIT_MS = 30000; // Force-save at least every 30 seconds during active editing
 const HIDE_SAVED_MS = 3000;
 
 export function useAutoSave(projectId?: string | null, saveProject?: () => Promise<void>) {
@@ -123,6 +124,8 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
   // ── Subscribe to both stores for change detection ────────────────
   useEffect(() => {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let maxWaitTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastSaveTime = Date.now();
 
     const scheduleSave = () => {
       // Mark as "unsaved" immediately so UI responds
@@ -133,9 +136,27 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
 
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
+        lastSaveTime = Date.now();
         saveNow();
+        // Reset max-wait timer after each save
+        if (maxWaitTimer) clearTimeout(maxWaitTimer);
+        maxWaitTimer = setTimeout(() => {
+          const currentStatus = useCanvaStore.getState()._saveStatus;
+          if (currentStatus === 'unsaved') {
+            lastSaveTime = Date.now();
+            saveNow();
+          }
+        }, MAX_WAIT_MS);
       }, DEBOUNCE_MS);
     };
+
+    // Start the initial max-wait timer
+    maxWaitTimer = setTimeout(() => {
+      const currentStatus = useCanvaStore.getState()._saveStatus;
+      if (currentStatus === 'unsaved') {
+        saveNow();
+      }
+    }, MAX_WAIT_MS);
 
     // Subscribe to canva store — uses subscribeWithSelector so we can
     // watch only the slices that represent meaningful edits.
@@ -164,6 +185,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
       unsubscribeCanva();
       unsubscribeAuth();
       if (debounceTimer) clearTimeout(debounceTimer);
+      if (maxWaitTimer) clearTimeout(maxWaitTimer);
     };
   }, [saveNow]);
 

@@ -7,6 +7,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { getCanvaShortcuts } from '@/core/shortcuts';
+import { setDirtyExitFlag } from '@/components/shared/RecoveryDialog';
 import { CanvaAutoSaveSync } from './CanvaAutoSaveSync';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
@@ -75,6 +76,7 @@ export default function CanvaBuilder() {
       const authDirty = useAuthoringStore.getState().dirty;
       const canvaUnsaved = useCanvaStore.getState()._saveStatus === 'unsaved';
       if (authDirty || canvaUnsaved) {
+        setDirtyExitFlag(); // Set flag so RecoveryDialog can detect dirty exit
         e.preventDefault();
         e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
       }

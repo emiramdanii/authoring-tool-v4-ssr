@@ -603,7 +603,10 @@ export default function Dashboard() {
             <div className="w-px h-5 bg-app-border mx-1" />
 
             <button
-              onClick={() => newProject()}
+              onClick={() => {
+                if (hasData && !confirm('Buat proyek baru? Data yang belum disimpan akan hilang.')) return;
+                newProject();
+              }}
               className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
               title="Proyek Baru"
             >

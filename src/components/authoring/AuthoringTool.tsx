@@ -31,7 +31,7 @@ import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
 import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager';
 import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
-import CrashRecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/CrashRecoveryDialog';
+import RecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/RecoveryDialog';
 import PerformanceMonitor from '@/components/shared/PerformanceMonitor';
 
 // Lazy-load panels — each panel is only loaded when first rendered
@@ -537,13 +537,18 @@ function AuthoringToolInner() {
               <span className="text-app-muted font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
-            {/* Dirty indicator */}
-            <div
-              className={`w-2 h-2 rounded-full flex-shrink-0 bg-app-accent transition-opacity duration-300 ${
-                dirty ? 'pulse-dot opacity-100' : 'opacity-0'
-              }`}
-              title="Perubahan belum disimpan"
-            />
+            {/* Dirty indicator + save status */}
+            <div className="flex items-center gap-1.5">
+              <div
+                className={`w-2 h-2 rounded-full flex-shrink-0 transition-opacity duration-300 ${
+                  dirty ? 'bg-app-accent pulse-dot opacity-100' : 'bg-app-success/50 opacity-0'
+                }`}
+                title={dirty ? 'Perubahan belum disimpan' : 'Tersimpan'}
+              />
+              {dirty && (
+                <span className="text-[9px] text-app-muted font-medium">Belum simpan</span>
+              )}
+            </div>
 
             {/* Workflow step indicator — compact progress */}
             <WorkflowStepIndicator />
@@ -604,8 +609,8 @@ function AuthoringToolInner() {
       {/* ── Dev Performance Monitor (only in development) ── */}
       <PerformanceMonitor />
 
-      {/* ── Crash Recovery Dialog ─────────────────────────── */}
-      <CrashRecoveryDialog />
+      {/* ── Unified Recovery Dialog ─────────────────────────── */}
+      <RecoveryDialog />
 
       {/* ── Guided Tour Overlay ────────────────────────────── */}
       {showTour && activePanel === 'dashboard' && (
