@@ -473,3 +473,32 @@ Stage Summary:
 - Confirmation dialogs: Destructive actions now have proper warnings
 - Save status: Header shows "Belum simpan" text when there are unsaved changes
 - Build verified: All changes compile successfully
+
+---
+Task ID: recovery-ux-polish
+Agent: main
+Task: Recovery UX Polish — Mode-aware recovery, undo/redo buttons, unsaved guard, error boundary improvements
+
+Work Log:
+- Made RecoveryDialog mode-aware: sederhana shows simpler language ("Lanjutkan Pekerjaan Anda?" instead of "Data Tersimpan Ditemukan"), hides ATP/Alur, simplifies CP/TP labels
+- Added Sparkles icon for auto-save recovery in sederhana mode (friendlier than warning triangle)
+- Button label "Pulihkan" → "Lanjutkan" in sederhana mode
+- Enhanced AutoSaveIndicator: added _lastSavedAt timestamp display (Clock icon + "Baru saja"/"5m lalu"), pulse animation on unsaved dot, mode-aware label ("Belum simpan" vs "Belum tersimpan")
+- Created UndoRedoButtons component: visual undo/redo buttons in toolbar with keyboard shortcut hints in tooltip
+- Integrated UndoRedoButtons + AutoSaveIndicator into AuthoringTool header, replacing old dirty dot indicator
+- Created use-unsaved-guard.ts hook: consolidated beforeunload, session heartbeat, storage quota monitoring, visibility change tracking
+- Replaced scattered beforeunload logic in AuthoringTool with useUnsavedGuard hook
+- Made AppErrorBoundary mode-aware: sederhana shows "Ada Masalah" instead of "Terjadi Kesalahan", hides technical details/error message preview
+- Made CanvasErrorBoundary mode-aware: sederhana shows "Ada Masalah" instead of component error, hides error message
+- Made BlockErrorBoundary mode-aware: sederhana shows "Ada Masalah" instead of "Blok Error", hides block type/ID/technical details
+- Made OfflineIndicator mode-aware: sederhana shows "Tidak Ada Internet" instead of "Offline", "menunggu" instead of "tertunda"
+- Removed unused `dirty` selector from AuthoringTool (replaced by AutoSaveIndicator)
+- Build verified: all changes compile successfully
+
+Stage Summary:
+- All 3 error boundaries are now mode-aware (sederhana = simpler, non-technical messages)
+- RecoveryDialog is mode-aware (friendly language, hidden advanced terms)
+- New UndoRedoButtons component in toolbar for easy access
+- AutoSaveIndicator shows timestamp of last save
+- useUnsavedGuard consolidates all data-loss prevention (beforeunload, heartbeat, quota)
+- OfflineIndicator uses teacher-friendly language in sederhana mode

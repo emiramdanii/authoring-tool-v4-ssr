@@ -107,6 +107,16 @@ export class AppErrorBoundary extends React.Component<
     const errorMessage = error?.message || 'Unknown error';
     const componentStack = errorInfo?.componentStack || '';
 
+    // Mode-aware: check teacher mode from localStorage (store may be broken)
+    let isSederhana = false;
+    try {
+      const raw = localStorage.getItem('at_state_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        isSederhana = parsed.teacherMode === 'sederhana';
+      }
+    } catch { /* ignore */ }
+
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md">
@@ -119,23 +129,27 @@ export class AppErrorBoundary extends React.Component<
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg font-bold text-foreground">
-                  Terjadi Kesalahan
+                  {isSederhana ? 'Ada Masalah' : 'Terjadi Kesalahan'}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  Aplikasi mengalami kesalahan yang tidak terduga. Data Anda mungkin
-                  belum tersimpan. Gunakan tombol di bawah untuk memulihkan.
+                  {isSederhana
+                    ? 'Aplikasi mengalami gangguan. Data Anda bisa disimpan dengan tombol di bawah.'
+                    : 'Aplikasi mengalami kesalahan yang tidak terduga. Data Anda mungkin belum tersimpan. Gunakan tombol di bawah untuk memulihkan.'
+                  }
                 </p>
               </div>
             </div>
 
-            {/* Error message preview */}
-            <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-3 mb-4">
-              <p className="text-xs text-red-400 font-mono break-words leading-relaxed">
-                {errorMessage.length > 200
-                  ? `${errorMessage.slice(0, 200)}...`
-                  : errorMessage}
-              </p>
-            </div>
+            {/* Error message preview — hide in sederhana */}
+            {!isSederhana && (
+              <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-3 mb-4">
+                <p className="text-xs text-red-400 font-mono break-words leading-relaxed">
+                  {errorMessage.length > 200
+                    ? `${errorMessage.slice(0, 200)}...`
+                    : errorMessage}
+                </p>
+              </div>
+            )}
 
             {/* Action buttons */}
             <div className="flex flex-col gap-2 mb-4">
@@ -145,7 +159,7 @@ export class AppErrorBoundary extends React.Component<
                 className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" aria-hidden="true" />
-                {saving ? 'Menyimpan...' : 'Simpan & Muat Ulang'}
+                {saving ? 'Menyimpan...' : isSederhana ? 'Simpan & Muat Ulang' : 'Simpan & Muat Ulang'}
               </button>
               <button
                 onClick={this.handleReload}
@@ -156,58 +170,61 @@ export class AppErrorBoundary extends React.Component<
               </button>
             </div>
 
-            {/* Help text */}
+            {/* Help text — mode-aware */}
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
-              <strong>Simpan & Muat Ulang</strong> akan menyimpan data saat ini ke
-              penyimpanan lokal sebelum memuat ulang halaman. Jika masalah berlanjut,
-              coba muat ulang tanpa menyimpan.
+              {isSederhana
+                ? <> <strong>Simpan & Muat Ulang</strong> akan menyimpan data Anda lalu memuat ulang halaman. </>
+                : <> <strong>Simpan & Muat Ulang</strong> akan menyimpan data saat ini ke penyimpanan lokal sebelum memuat ulang halaman. Jika masalah berlanjut, coba muat ulang tanpa menyimpan. </>
+              }
             </p>
 
-            {/* Collapsible error details */}
-            <div className="mt-4 border-t border-border pt-3">
-              <button
-                onClick={this.toggleDetails}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                aria-expanded={showDetails}
-              >
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`}
-                  aria-hidden="true"
-                />
-                Detail Teknis (untuk debugging)
-              </button>
+            {/* Collapsible error details — only in lengkap mode */}
+            {!isSederhana && (
+              <div className="mt-4 border-t border-border pt-3">
+                <button
+                  onClick={this.toggleDetails}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  aria-expanded={showDetails}
+                >
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
+                  />
+                  Detail Teknis (untuk debugging)
+                </button>
 
-              {showDetails && (
-                <div className="mt-2 space-y-2">
-                  {/* Error name + message */}
-                  <div>
-                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                      Error
-                    </div>
-                    <pre className="text-[10px] text-red-400/80 bg-red-500/5 rounded-md p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-32 overflow-y-auto">
-                      {error?.stack || errorMessage}
-                    </pre>
-                  </div>
-
-                  {/* Component stack */}
-                  {componentStack && (
+                {showDetails && (
+                  <div className="mt-2 space-y-2">
+                    {/* Error name + message */}
                     <div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                        Component Stack
+                        Error
                       </div>
-                      <pre className="text-[10px] text-muted-foreground/60 bg-muted/50 rounded-md p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
-                        {componentStack}
+                      <pre className="text-[10px] text-red-400/80 bg-red-500/5 rounded-md p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-32 overflow-y-auto">
+                        {error?.stack || errorMessage}
                       </pre>
                     </div>
-                  )}
 
-                  {/* Timestamp */}
-                  <div className="text-[9px] text-muted-foreground/40 font-mono">
-                    {new Date().toISOString()}
+                    {/* Component stack */}
+                    {componentStack && (
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                          Component Stack
+                        </div>
+                        <pre className="text-[10px] text-muted-foreground/60 bg-muted/50 rounded-md p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
+                          {componentStack}
+                        </pre>
+                      </div>
+                    )}
+
+                    {/* Timestamp */}
+                    <div className="text-[9px] text-muted-foreground/40 font-mono">
+                      {new Date().toISOString()}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Footer branding */}

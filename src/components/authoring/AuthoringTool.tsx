@@ -32,6 +32,8 @@ import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager'
 import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import RecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/RecoveryDialog';
+import { AutoSaveIndicator, UndoRedoButtons } from '@/components/shared/StatusToast';
+import { useUnsavedGuard } from '@/hooks/use-unsaved-guard';
 import PerformanceMonitor from '@/components/shared/PerformanceMonitor';
 
 // Lazy-load panels — each panel is only loaded when first rendered
@@ -166,7 +168,6 @@ function AuthoringToolInner() {
   const [tourStep, setTourStep] = useState(0);
   const activePanel = useAuthoringStore((s) => s.activePanel);
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
-  const dirty = useAuthoringStore((s) => s.dirty);
   const meta = useAuthoringStore((s) => s.meta);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
   const { saveProject, currentProjectId, saving } = useProjectManager();
@@ -186,20 +187,8 @@ function AuthoringToolInner() {
     clearDirtyExitFlag();
   }, [loadFromStorage]);
 
-  // ── Dirty exit flag + browser confirmation: set on beforeunload if unsaved changes ──
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const isDirty = useAuthoringStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
-      if (isDirty) {
-        setDirtyExitFlag();
-        // Show browser confirmation dialog to prevent accidental data loss
-        e.preventDefault();
-        e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
+  // ── Unsaved changes guard (beforeunload, heartbeat, storage quota) ──
+  useUnsavedGuard();
 
   // ── Tour: dismiss / advance ────────────────────────────────
   const dismissTour = useCallback(() => {
@@ -537,17 +526,10 @@ function AuthoringToolInner() {
               <span className="text-app-muted font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
-            {/* Dirty indicator + save status */}
-            <div className="flex items-center gap-1.5">
-              <div
-                className={`w-2 h-2 rounded-full flex-shrink-0 transition-opacity duration-300 ${
-                  dirty ? 'bg-app-accent pulse-dot opacity-100' : 'bg-app-success/50 opacity-0'
-                }`}
-                title={dirty ? 'Perubahan belum disimpan' : 'Tersimpan'}
-              />
-              {dirty && (
-                <span className="text-[9px] text-app-muted font-medium">Belum simpan</span>
-              )}
+            {/* Auto-save indicator + Undo/Redo buttons */}
+            <div className="flex items-center gap-2">
+              <UndoRedoButtons />
+              <AutoSaveIndicator />
             </div>
 
             {/* Workflow step indicator — compact progress */}

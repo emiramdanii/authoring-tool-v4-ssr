@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { WifiOff, Wifi, CloudOff, RefreshCw } from 'lucide-react';
 import { useServiceWorker } from '@/hooks/use-service-worker';
 import { getQueueStatus, type SyncQueueStatus } from '@/lib/offline-sync';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { cn } from '@/lib/utils';
 
 /**
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
  *   - Online/offline icon
  *   - Sync queue count (pending changes to sync)
  *   - Syncing animation when flushing queue
+ *   - Mode-aware: simpler labels in sederhana mode
  *
  * When online, the indicator is hidden (or shows a subtle online dot).
  */
@@ -22,6 +24,8 @@ export function OfflineIndicator() {
   const { isOnline } = useServiceWorker();
   const [queueStatus, setQueueStatus] = useState<SyncQueueStatus>({ pending: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
+  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const isSederhana = teacherMode === 'sederhana';
 
   // Poll queue status periodically when offline
   useEffect(() => {
@@ -76,7 +80,7 @@ export function OfflineIndicator() {
           {queueStatus.pending > 0 ? (
             <span className="flex items-center gap-1.5">
               <RefreshCw className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin')} />
-              Menyinkronkan ({queueStatus.pending})
+              {isSederhana ? `Menyinkronkan (${queueStatus.pending})` : `Menyinkronkan (${queueStatus.pending})`}
             </span>
           ) : (
             <span>Online</span>
@@ -85,11 +89,11 @@ export function OfflineIndicator() {
       ) : (
         <>
           <WifiOff className="h-4 w-4" />
-          <span>Offline</span>
+          <span>{isSederhana ? 'Tidak Ada Internet' : 'Offline'}</span>
           {queueStatus.pending > 0 && (
             <span className="flex items-center gap-1 ml-1 text-xs opacity-80">
               <CloudOff className="h-3 w-3" />
-              {queueStatus.pending} tertunda
+              {isSederhana ? `${queueStatus.pending} menunggu` : `${queueStatus.pending} tertunda`}
             </span>
           )}
         </>

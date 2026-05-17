@@ -55,6 +55,16 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
       const { blockType, blockId } = this.props;
       const errorMessage = this.state.error?.message || 'Unknown error';
 
+      // Check teacher mode from localStorage (store may be broken)
+      let isSederhana = false;
+      try {
+        const raw = localStorage.getItem('at_state_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          isSederhana = parsed.teacherMode === 'sederhana';
+        }
+      } catch { /* ignore */ }
+
       return (
         <div
           className="rounded-lg border border-red-500/30 bg-red-500/5 p-4 my-2"
@@ -66,23 +76,30 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
-                  Blok Error
+                  {isSederhana ? 'Ada Masalah' : 'Blok Error'}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400/80 font-mono">
-                  {blockType}
-                </span>
+                {!isSederhana && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400/80 font-mono">
+                    {blockType}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-red-300/80 mb-2 leading-relaxed">
-                Terjadi kesalahan saat menampilkan blok ini. Blok lain tidak terpengaruh.
+                {isSederhana
+                  ? 'Bagian ini tidak bisa ditampilkan. Bagian lain tetap normal.'
+                  : 'Terjadi kesalahan saat menampilkan blok ini. Blok lain tidak terpengaruh.'
+                }
               </p>
-              <details className="text-[10px] text-red-400/50 mb-3">
-                <summary className="cursor-pointer hover:text-red-400/70 transition-colors">
-                  Detail teknis
-                </summary>
-                <pre className="mt-1 p-2 rounded bg-black/20 overflow-x-auto whitespace-pre-wrap break-all">
-                  {errorMessage}
-                </pre>
-              </details>
+              {!isSederhana && (
+                <details className="text-[10px] text-red-400/50 mb-3">
+                  <summary className="cursor-pointer hover:text-red-400/70 transition-colors">
+                    Detail teknis
+                  </summary>
+                  <pre className="mt-1 p-2 rounded bg-black/20 overflow-x-auto whitespace-pre-wrap break-all">
+                    {errorMessage}
+                  </pre>
+                </details>
+              )}
               <div className="flex items-center gap-2">
                 <button
                   onClick={this.handleRetry}
@@ -90,9 +107,11 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
                 >
                   Coba Lagi
                 </button>
-                <span className="text-[9px] text-red-400/40 font-mono">
-                  id: {blockId}
-                </span>
+                {!isSederhana && (
+                  <span className="text-[9px] text-red-400/40 font-mono">
+                    id: {blockId}
+                  </span>
+                )}
               </div>
             </div>
           </div>

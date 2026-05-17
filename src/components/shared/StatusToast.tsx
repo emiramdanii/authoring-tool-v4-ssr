@@ -17,7 +17,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { Save, Check, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
+import { Save, Check, AlertCircle, Loader2, RotateCcw, Undo2, Redo2, Clock } from 'lucide-react';
 
 // ── Undo/Redo Toast ─────────────────────────────────────────────
 
@@ -77,6 +77,8 @@ type SaveStatus = 'unsaved' | 'saving' | 'saved' | 'error';
 export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator() {
   const canvaStatus = useCanvaStore(s => s._saveStatus as SaveStatus | undefined);
   const authoringDirty = useAuthoringStore(s => s.dirty);
+  const lastSavedAt = useCanvaStore(s => s._lastSavedAt);
+  const teacherMode = useAuthoringStore(s => s.teacherMode);
 
   // Combine status: if authoring is dirty and canva is saved, still show unsaved
   const status: SaveStatus = (() => {
@@ -87,6 +89,18 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     if (cs === 'error') return 'error';
     return cs;
   })();
+
+  const isSederhana = teacherMode === 'sederhana';
+
+  // Format timestamp for display
+  const timeLabel = useCallback((): string | null => {
+    if (!lastSavedAt || status === 'unsaved') return null;
+    const diff = Date.now() - lastSavedAt;
+    if (diff < 60_000) return 'Baru saja';
+    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m lalu`;
+    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}j lalu`;
+    return `${Math.floor(diff / 86_400_000)}h lalu`;
+  }, [lastSavedAt, status]);
 
   // Auto-hide "saved" indicator after 3 seconds
   const [showSaved, setShowSaved] = useState(false);
@@ -117,8 +131,8 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
 
   const config: Record<SaveStatus, { icon: React.ReactNode; label: string; bgColor: string; textColor: string; borderColor: string }> = {
     unsaved: {
-      icon: <span className="inline-block w-2 h-2 rounded-full bg-red-400" />,
-      label: 'Belum tersimpan',
+      icon: <span className="inline-block w-2 h-2 rounded-full bg-red-400 animate-pulse" />,
+      label: isSederhana ? 'Belum simpan' : 'Belum tersimpan',
       bgColor: 'rgba(248,113,113,0.08)',
       textColor: '#f87171',
       borderColor: 'rgba(248,113,113,0.2)',
@@ -132,14 +146,14 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     },
     saved: {
       icon: <Check size={12} />,
-      label: 'Tersimpan',
+      label: isSederhana ? 'Tersimpan' : 'Tersimpan',
       bgColor: 'rgba(52,211,153,0.08)',
       textColor: '#34d399',
       borderColor: 'rgba(52,211,153,0.2)',
     },
     error: {
       icon: <AlertCircle size={12} />,
-      label: 'Gagal simpan',
+      label: isSederhana ? 'Gagal simpan' : 'Gagal simpan',
       bgColor: 'rgba(248,113,113,0.08)',
       textColor: '#f87171',
       borderColor: 'rgba(248,113,113,0.2)',
@@ -147,6 +161,7 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
   };
 
   const { icon, label, bgColor, textColor, borderColor } = config[status];
+  const savedTime = timeLabel();
 
   return (
     <div
@@ -162,6 +177,12 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     >
       {icon}
       <span>{label}</span>
+      {savedTime && status === 'saved' && (
+        <span className="text-[8px] opacity-60 flex items-center gap-0.5 ml-0.5">
+          <Clock size={8} />
+          {savedTime}
+        </span>
+      )}
       {status === 'error' && (
         <button
           onClick={handleRetry}
@@ -206,5 +227,40 @@ export const SaveNowButton: React.FC = React.memo(function SaveNowButton() {
       )}
       <span className="hidden sm:inline">Simpan</span>
     </button>
+  );
+});
+
+// ── Undo/Redo Toolbar Buttons ─────────────────────────────────────
+// Visual undo/redo buttons for the toolbar — clickable with keyboard
+// shortcut hint. Especially useful in sederhana mode where users may
+// not know Ctrl+Z / Ctrl+Shift+Z.
+
+export const UndoRedoButtons: React.FC = React.memo(function UndoRedoButtons() {
+  const undo = useCanvaStore(s => s.undo);
+  const redo = useCanvaStore(s => s.redo);
+  const canUndo = useCanvaStore(s => s.canUndo);
+  const canRedo = useCanvaStore(s => s.canRedo);
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <button
+        onClick={() => { if (canUndo()) undo(); }}
+        disabled={!canUndo()}
+        className="p-1.5 rounded-md text-app-muted hover:text-app-secondary hover:bg-app-elevated/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+        title="Kembalikan (Ctrl+Z)"
+        aria-label="Kembalikan"
+      >
+        <Undo2 size={14} />
+      </button>
+      <button
+        onClick={() => { if (canRedo()) redo(); }}
+        disabled={!canRedo()}
+        className="p-1.5 rounded-md text-app-muted hover:text-app-secondary hover:bg-app-elevated/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+        title="Ulangi (Ctrl+Shift+Z)"
+        aria-label="Ulangi"
+      >
+        <Redo2 size={14} />
+      </button>
+    </div>
   );
 });
