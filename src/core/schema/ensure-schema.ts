@@ -326,6 +326,30 @@ export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
       }
     }
 
+    // Step 1b: Migrate empty custom pages to schema-driven mode
+    // Custom pages with no schema AND no elements should get an empty
+    // schema so users can immediately add blocks via AddBlockPanel.
+    // Without this, ensurePageSchema() returns null (Path 4) and
+    // canAddBlocks is false — the user sees "Tidak dapat menambah Block"
+    // even on an empty page.
+    // We only do this for truly empty pages (no elements) to avoid
+    // silently clearing user content on element-based custom pages.
+    if (!updated.schema && updated.templateType === 'custom' &&
+        (!updated.elements || updated.elements.length === 0)) {
+      updated = {
+        ...updated,
+        schema: {
+          id: updated.id,
+          version: 1,
+          templateType: 'custom',
+          blocks: [],
+        },
+        elements: [],
+        pageMode: 'schema',
+      };
+      anyMigrated = true;
+    }
+
     // Step 2: Clear elements[] for ANY page that has schema
     // This fixes the dual-render bug at the data level:
     // Schema-driven pages must NOT have elements[] populated,

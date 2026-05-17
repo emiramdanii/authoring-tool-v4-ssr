@@ -271,3 +271,24 @@ Stage Summary:
 - All add block flows should now work: AddBlockPanel, CommandPalette, fragments
 - Tab navigation now synced between store and LeftPanel
 - Custom/blank pages now support schema blocks immediately
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix "tambah blok masih gak fungsi" - deeper fix for add block rendering pipeline
+
+Work Log:
+- Investigated deeper: found AddBlockPanel.canAddBlocks still blocked custom pages without schema
+- Found migrateAllPages() didn't assign schemas to empty custom pages on load
+- Found PageRenderer useMemo dependency missing page.pageMode
+- Applied fixes from subagent:
+  1. migrateAllPages() Step 1b: auto-assign empty schema to custom pages with no elements
+  2. AddBlockPanel.canAddBlocks: allow custom pages without schema if elements is empty
+  3. PageRenderer adaptedSchema useMemo: added page.pageMode to dependency array
+
+Stage Summary:
+- Build: ✅ Compiled successfully
+- Server: ✅ Running on port 3000 (dev mode via start-server.mjs)
+- Custom pages loaded from localStorage now get empty schema via migrateAllPages
+- AddBlockPanel now shows block palette for custom pages without schema
+- Rendering pipeline correctly picks up new schema via pageMode change

@@ -59,10 +59,21 @@ export default function AddBlockPanel() {
   const blockLabel = isSederhana ? 'Konten' : 'Block';
 
   // Check if current page can accept schema blocks
+  // ALL pages can accept schema blocks — addSchemaBlock() auto-creates
+  // an empty schema for custom/blank pages that don't have one yet.
+  // Previously, this returned false for custom pages without schema,
+  // showing "Tidak dapat menambah Block" even on empty pages.
+  // Custom pages with existing elements are excluded to prevent
+  // silent data loss (addSchemaBlock clears elements when converting).
   const canAddBlocks = useMemo(() => {
     if (!page) return false;
+    // Schema-driven pages always accept blocks
     const schema = ensurePageSchema(page);
-    return !!schema;
+    if (schema) return true;
+    // Custom pages without schema can also accept blocks IF they
+    // have no existing elements — addSchemaBlock() will auto-create
+    // an empty schema. Pages with elements would lose their content.
+    return page.templateType === 'custom' && (!page.elements || page.elements.length === 0);
   }, [page]);
 
   // ── Compute insertion index from selected block ─────────────
@@ -144,11 +155,13 @@ export default function AddBlockPanel() {
         </div>
         <div className="text-[8px] text-app-muted mt-1">
           {isSederhana
-            ? 'Konten hanya bisa ditambahkan ke halaman yang sudah ada'
-            : 'Block hanya bisa ditambahkan ke halaman template/schema'}
+            ? 'Konten hanya bisa ditambahkan ke halaman kosong atau template'
+            : 'Block hanya bisa ditambahkan ke halaman kosong atau template/schema'}
         </div>
         <div className="text-[8px] text-app-muted mt-0.5">
-          Gunakan tab Halaman untuk menambah template terlebih dahulu
+          {page && page.templateType === 'custom' && page.elements && page.elements.length > 0
+            ? 'Halaman ini memiliki elemen legacy — hapus elemen terlebih dahulu'
+            : 'Gunakan tab Halaman untuk menambah template terlebih dahulu'}
         </div>
       </div>
     );
