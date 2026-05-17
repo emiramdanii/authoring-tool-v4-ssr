@@ -534,6 +534,78 @@ export interface PenutupBlock extends BaseBlock {
   };
 }
 
+// ── Tabel Schema ───────────────────────────────────────────────
+
+export interface TabelBlock extends BaseBlock {
+  type: 'tabel';
+  title?: string;
+  headers: string[];
+  rows: string[][];
+  accentColor?: string;
+}
+
+// ── Gambar Schema ──────────────────────────────────────────────
+
+export interface GambarBlock extends BaseBlock {
+  type: 'gambar';
+  title?: string;
+  url: string;
+  caption?: string;
+  accentColor?: string;
+}
+
+// ── Timeline Schema ────────────────────────────────────────────
+
+export interface TimelineBlock extends BaseBlock {
+  type: 'timeline';
+  title?: string;
+  steps: Array<{
+    icon: string;
+    label: string;
+    description: string;
+    color: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Checklist Schema ───────────────────────────────────────────
+
+export interface ChecklistBlock extends BaseBlock {
+  type: 'checklist';
+  title?: string;
+  items: Array<{
+    text: string;
+    checked?: boolean;
+  }>;
+  accentColor?: string;
+}
+
+// ── Statistik Schema ───────────────────────────────────────────
+
+export interface StatistikBlock extends BaseBlock {
+  type: 'statistik';
+  title?: string;
+  items: Array<{
+    angka: string;
+    satuan?: string;
+    label: string;
+    warna: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Studi Schema ───────────────────────────────────────────────
+
+export interface StudiBlock extends BaseBlock {
+  type: 'studi';
+  title?: string;
+  karakter?: string;
+  situasi: string;
+  pertanyaan: string;
+  pesan?: string;
+  accentColor?: string;
+}
+
 // ── Tabel Accordion Schema ─────────────────────────────────────
 
 export interface TabelAccordionBlock extends BaseBlock {
@@ -682,6 +754,12 @@ export type SchemaBlock =
   | HasilBlock
   | RefleksiBlock
   | PenutupBlock
+  | TabelBlock
+  | GambarBlock
+  | TimelineBlock
+  | ChecklistBlock
+  | StatistikBlock
+  | StudiBlock
   | TabelAccordionBlock
   | TujuanDisplayBlock
   | MotivasiBlock

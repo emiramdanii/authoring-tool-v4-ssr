@@ -87,6 +87,12 @@ import {
   TujuanDisplayRenderer,
   MotivasiRenderer,
   RangkumanRenderer,
+  TabelRenderer,
+  GambarRenderer,
+  TimelineRenderer,
+  ChecklistRenderer,
+  StatistikRenderer,
+  StudiRenderer,
 } from '../renderer/blocks';
 
 // ── Lazy imports (heavy game renderers — all games are lazy-loaded) ──
@@ -157,6 +163,12 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'tujuan-display': TujuanDisplayRenderer,
   'motivasi': MotivasiRenderer,
   'rangkuman': RangkumanRenderer,
+  'tabel': TabelRenderer,
+  'gambar': GambarRenderer,
+  'timeline': TimelineRenderer,
+  'checklist': ChecklistRenderer,
+  'statistik': StatistikRenderer,
+  'studi': StudiRenderer,
   'memory-game': MemoryGameRenderer,
   'matching-game': MatchingGameRenderer,
   'fill-blank-game': FillBlankGameRenderer,

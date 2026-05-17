@@ -764,6 +764,105 @@ export const TEAMBUZZERGAME_PROPERTY_SCHEMA: PropertySchema = {
 // BlockDefinitionRegistry produces the correct string[] shape.
 // ═══════════════════════════════════════════════════════════════════
 
+// ── Materi Content Block Property Schemas (Phase 18.1) ──────────
+
+export const TABEL_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'tabel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'headers', type: 'array', label: 'Header', group: 'content', fields: [
+      { key: 'text', label: 'Kolom', type: 'text' },
+    ]},
+    { key: 'rows', type: 'array', label: 'Baris', group: 'content', fields: [
+      { key: 'cells', label: 'Sel', type: 'array', fields: [
+        { key: 'text', label: 'Isi', type: 'text' },
+      ]},
+    ]},
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+export const GAMBAR_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'gambar',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'url', type: 'text', label: 'URL Gambar', group: 'content', required: true },
+    { key: 'caption', type: 'text', label: 'Keterangan', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content', defaultValue: 'c' },
+  ],
+};
+
+export const TIMELINE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'timeline',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'steps', type: 'array', label: 'Langkah', group: 'content', fields: [
+      { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📌' },
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'description', label: 'Deskripsi', type: 'textarea' },
+      { key: 'color', label: 'Warna', type: 'color' },
+    ]},
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content', defaultValue: 'c' },
+  ],
+};
+
+export const CHECKLIST_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'checklist',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'items', type: 'array', label: 'Item', group: 'content', fields: [
+      { key: 'text', label: 'Teks', type: 'text' },
+      { key: 'checked', label: 'Tercentang', type: 'checkbox' },
+    ]},
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content', defaultValue: 'g' },
+  ],
+};
+
+export const STATISTIK_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'statistik',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'items', type: 'array', label: 'Statistik', group: 'content', fields: [
+      { key: 'angka', label: 'Angka', type: 'text' },
+      { key: 'satuan', label: 'Satuan', type: 'text' },
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'warna', label: 'Warna', type: 'color' },
+    ]},
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content', defaultValue: 'c' },
+  ],
+};
+
+export const STUDI_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'studi',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'karakter', type: 'text', label: 'Karakter', group: 'content' },
+    { key: 'situasi', type: 'textarea', label: 'Situasi', group: 'content', rows: 3 },
+    { key: 'pertanyaan', type: 'textarea', label: 'Pertanyaan', group: 'content', rows: 2 },
+    { key: 'pesan', type: 'textarea', label: 'Pesan', group: 'content', rows: 2 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content', defaultValue: 'y' },
+  ],
+};
+
 // ═══════════════════════════════════════════════════════════════════
 // PROPERTY SCHEMA LOOKUP — DELEGATED TO SCENE REGISTRY
 // ═══════════════════════════════════════════════════════════════════

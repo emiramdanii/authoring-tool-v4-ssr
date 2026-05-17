@@ -219,7 +219,80 @@ function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').Mate
           borderColor: 'g',
           content: blok.isi ? `"${blok.isi}"` : '',
           compression: { priority: 'high' as const, strategy: 'accordion' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const, style: 'quote' },
+        };
+      case 'tabel':
+        return {
+          type: 'tabel' as const,
+          id: generateBlockId(),
+          title: blok.judul || undefined,
+          headers: (blok.baris?.[0]) || ['No', 'Isi'],
+          rows: (blok.baris?.slice(1) || []) as string[][],
+          accentColor: 'c',
+          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'gambar':
+        return {
+          type: 'gambar' as const,
+          id: generateBlockId(),
+          title: blok.judul || undefined,
+          url: blok.isi || '',
+          caption: blok.isi || undefined,
+          accentColor: 'c',
+          compression: { priority: 'low' as const, strategy: 'scroll' as const },
           semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'timeline':
+        return {
+          type: 'timeline' as const,
+          id: generateBlockId(),
+          title: blok.judul || undefined,
+          steps: (blok.langkah || []).map((step, i) => ({
+            icon: (step as Record<string, unknown>).icon as string || ['📌', '📋', '🔑', '💡', '⭐'][i % 5],
+            label: (step as Record<string, unknown>).judul as string || (step as Record<string, unknown>).label as string || `Langkah ${i + 1}`,
+            description: (step as Record<string, unknown>).isi as string || (step as Record<string, unknown>).description as string || '',
+            color: ['c', 'g', 'y', 'p', 'o'][i % 5],
+          })),
+          accentColor: 'c',
+          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'checklist':
+        return {
+          type: 'checklist' as const,
+          id: generateBlockId(),
+          title: blok.judul || undefined,
+          items: (blok.butir || []).map(item => ({
+            text: typeof item === 'string' ? item : (item as Record<string, unknown>).text as string || '',
+            checked: false,
+          })),
+          accentColor: 'g',
+          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'interact' as const },
+        };
+      case 'statistik':
+        return {
+          type: 'statistik' as const,
+          id: generateBlockId(),
+          title: blok.judul || undefined,
+          items: ((blok as Record<string, unknown>).items || []) as Array<{ angka: string; satuan?: string; label: string; warna: string }>,
+          accentColor: 'c',
+          compression: { priority: 'low' as const, strategy: 'scroll' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+        };
+      case 'studi':
+        return {
+          type: 'studi' as const,
+          id: generateBlockId(),
+          title: blok.judul || undefined,
+          karakter: blok.karakter || undefined,
+          situasi: blok.situasi || blok.isi || '',
+          pertanyaan: (blok as Record<string, unknown>).pertanyaan as string || '',
+          pesan: (blok as Record<string, unknown>).pesan as string || undefined,
+          accentColor: 'y',
+          compression: { priority: 'medium' as const, strategy: 'accordion' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'reflect' as const },
         };
       default:
         // Fallback: any unknown type → def-box

@@ -270,9 +270,11 @@ function deriveMateriSectionToProjection(block: SchemaBlock, projection: SchemaP
   for (const child of content) {
     switch (child.type) {
       case 'def-box': {
-        const def = child as { content?: string; borderColor?: string };
+        const def = child as { content?: string; borderColor?: string; semantic?: { style?: string } };
+        // Detect kutipan vs teks vs definisi via borderColor + semantic hints
+        const isQuote = def.semantic?.style === 'quote' || (def.content?.startsWith('"') && def.content?.endsWith('"'));
         bloks.push({
-          tipe: 'definisi',
+          tipe: isQuote ? 'kutipan' : (def.borderColor === 'c' ? 'teks' : (def.borderColor === 'g' ? 'infobox' : 'definisi')),
           isi: def.content || '',
           warna: def.borderColor,
         });
@@ -296,6 +298,99 @@ function deriveMateriSectionToProjection(block: SchemaBlock, projection: SchemaP
             judul: c.q || '',
             isi: c.a || '',
           })),
+        });
+        break;
+      }
+      case 'tabel': {
+        const tbl = child as { title?: string; headers?: string[]; rows?: string[][] };
+        bloks.push({
+          tipe: 'tabel',
+          judul: tbl.title || '',
+          baris: [tbl.headers || [], ...(tbl.rows || [])],
+        });
+        break;
+      }
+      case 'gambar': {
+        const img = child as { title?: string; url?: string; caption?: string };
+        bloks.push({
+          tipe: 'gambar',
+          judul: img.title || '',
+          isi: img.url || '',
+        });
+        break;
+      }
+      case 'timeline': {
+        const tl = child as { title?: string; steps?: Array<{ icon?: string; label?: string; description?: string; color?: string }> };
+        bloks.push({
+          tipe: 'timeline',
+          judul: tl.title || '',
+          langkah: (tl.steps || []).map(s => ({
+            icon: s.icon || '📌',
+            judul: s.label || '',
+            isi: s.description || '',
+          })),
+        });
+        break;
+      }
+      case 'checklist': {
+        const cl = child as { title?: string; items?: Array<{ text?: string; checked?: boolean }> };
+        bloks.push({
+          tipe: 'checklist',
+          judul: cl.title || '',
+          butir: (cl.items || []).map(i => i.text || ''),
+        });
+        break;
+      }
+      case 'statistik': {
+        const st = child as { title?: string; items?: Array<{ angka?: string; satuan?: string; label?: string; warna?: string }> };
+        bloks.push({
+          tipe: 'statistik',
+          judul: st.title || '',
+          items: (st.items || []).map(i => ({
+            angka: i.angka || '',
+            satuan: i.satuan || '',
+            label: i.label || '',
+            warna: i.warna || 'c',
+          })),
+        });
+        break;
+      }
+      case 'studi': {
+        const sd = child as { title?: string; karakter?: string; situasi?: string; pertanyaan?: string; pesan?: string };
+        bloks.push({
+          tipe: 'studi',
+          judul: sd.title || '',
+          karakter: sd.karakter || '',
+          situasi: sd.situasi || '',
+          pertanyaan: sd.pertanyaan || '',
+          pesan: sd.pesan || '',
+        });
+        break;
+      }
+      case 'ftab': {
+        const ft = child as { tabs?: Array<{ icon?: string; label?: string }> };
+        bloks.push({
+          tipe: 'definisi',
+          judul: ft.tabs?.map(t => t.label).join(', ') || '',
+          isi: 'Tab konten',
+        });
+        break;
+      }
+      case 'tabel-accord': {
+        const ta = child as { rows?: Array<{ icon?: string; title?: string; color?: string }> };
+        bloks.push({
+          tipe: 'tabel',
+          judul: 'Tabel',
+          baris: [['No', 'Isi'], ...(ta.rows || []).map((r, i) => [`${i + 1}`, r.title || ''])],
+        });
+        break;
+      }
+      case 'nk-card': {
+        const nk = child as { title?: string; definition?: string };
+        bloks.push({
+          tipe: 'definisi',
+          judul: nk.title || '',
+          isi: nk.definition || '',
         });
         break;
       }

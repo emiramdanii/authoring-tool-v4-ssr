@@ -148,8 +148,8 @@ interface KuisItem {
 **Task**:
 - [x] Refactor MateriTemplate — switch render per `blok.tipe`
 - [x] Buat helper `renderBlok(blok)` dengan 13 pola render (BlokRenderer.tsx)
-- [ ] Test semua 13 tipe blok di design mode + interactive mode
-- [ ] Hapus variant B/C yang tidak diperlukan lagi (opsional)
+- [x] Test semua 13 tipe blok di design mode + interactive mode
+- [x] Hapus variant B/C yang tidak diperlukan lagi (opsional — diputuskan tetap dipertahankan)
 
 ### 18.2 Generator: Materi + Diskusi + Refleksi
 
