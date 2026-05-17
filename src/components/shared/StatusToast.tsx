@@ -57,12 +57,13 @@ export const UndoRedoToast: React.FC = React.memo(function UndoRedoToast() {
       role="status"
       aria-live="polite"
     >
-      <div className="px-4 py-2 rounded-lg text-xs font-bold shadow-lg border animate-in fade-in slide-in-from-top-2 duration-200"
+      <div className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-lg border animate-in fade-in slide-in-from-top-2 duration-200"
         style={{
-          background: 'var(--background, #182d45)',
-          color: 'var(--foreground, #e8f2ff)',
-          borderColor: 'rgba(255,255,255,0.1)',
+          background: 'var(--semantic-bg-elevated, #1c1c1f)',
+          color: 'var(--semantic-accent, #f59e0b)',
+          borderColor: 'var(--semantic-accent, #f59e0b)33',
         }}>
+        <RotateCcw size={12} />
         {toast.message}
       </div>
     </div>

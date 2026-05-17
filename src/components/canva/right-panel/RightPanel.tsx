@@ -47,12 +47,6 @@ const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'),
 
 type RightPanelTab = 'properties' | 'ai' | 'layer';
 
-const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
-  { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
-  { id: 'ai', label: 'AI', icon: <Sparkles size={12} /> },
-  { id: 'layer', label: 'Layer', icon: <Layers size={12} /> },
-];
-
 export default function RightPanel() {
   const rightPanelOpen = useCanvaStore(s => s.rightPanelOpen);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
@@ -60,8 +54,16 @@ export default function RightPanel() {
   const selectedElId = useCanvaStore(s => s.selectedElId);
   const selectedElIds = useCanvaStore(s => s.selectedElIds);
   const teacherMode = useCanvaStore(s => s.teacherMode);
+  const blockLabel = teacherMode ? 'Konten' : 'Block';
 
   const [activeTab, setActiveTab] = useState<RightPanelTab>('properties');
+
+  // Teacher-mode aware tab labels
+  const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
+    { id: 'ai', label: 'AI', icon: <Sparkles size={12} /> },
+    { id: 'layer', label: teacherMode ? 'Lapisan' : 'Layer', icon: <Layers size={12} /> },
+  ];
 
   if (!rightPanelOpen) return null;
 
@@ -131,17 +133,17 @@ export default function RightPanel() {
                       <MousePointer2 size={20} className="text-app-accent/60" />
                     </div>
                     <div className="text-[11px] font-bold text-app-primary/80 mb-1">
-                      Pilih Block untuk Edit
+                      Pilih {blockLabel} untuk Edit
                     </div>
                     <div className="text-[9px] text-app-muted leading-relaxed">
-                      Klik block di canvas untuk mengedit properti,<br/>teks, warna, dan kompresinya
+                      Klik {blockLabel.toLowerCase()} di canvas untuk mengedit properti,<br/>teks, warna, dan kompresinya
                     </div>
                   </div>
                   {/* Quick action hints */}
                   <div className="border-t border-app-border/20 px-3 py-2.5 space-y-1.5 bg-app-elevated/20">
                     <div className="flex items-center gap-2 text-[8px] text-app-muted">
                       <span className="px-1 py-0.5 rounded bg-app-accent/15 text-app-accent font-bold text-[7px]">1x Klik</span>
-                      <span>Pilih block</span>
+                      <span>Pilih {blockLabel.toLowerCase()}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[8px] text-app-muted">
                       <span className="px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[7px]">2x Klik</span>
@@ -149,7 +151,7 @@ export default function RightPanel() {
                     </div>
                     <div className="flex items-center gap-2 text-[8px] text-app-muted">
                       <span className="px-1 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold text-[7px]">Shift+Klik</span>
-                      <span>Pilih banyak block</span>
+                      <span>Pilih banyak {blockLabel.toLowerCase()}</span>
                     </div>
                   </div>
                 </div>

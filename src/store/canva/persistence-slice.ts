@@ -116,7 +116,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         _lastSavedAt: Date.now(),
         _migrationVersion: STORAGE_MIGRATION_VERSION,
       }));
-      set({ _saveStatus: 'saved' });
+      set({ _saveStatus: 'saved', _lastSavedAt: Date.now() });
     } catch (err) {
       // Storage full or unavailable
       console.warn('[CanvaStore] Failed to save to localStorage:', err);

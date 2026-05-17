@@ -80,6 +80,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     leftPanelOpen: true,
     rightPanelOpen: true,
     _saveStatus: 'unsaved',
+    _lastSavedAt: 0,
     showGrid: false,
     gridSize: 5,
     snapEnabled: true,

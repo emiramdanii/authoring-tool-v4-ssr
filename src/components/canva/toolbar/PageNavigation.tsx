@@ -40,7 +40,7 @@ export function PageNavigation() {
       {/* Scene sub-counter (if multi-scene page) */}
       {showSceneNav && (
         <span className="text-[10px] text-app-success/70 font-medium ml-0.5">
-          • {teacherMode ? 'Bagian' : 'Scene'} {sceneIndex + 1}/{sceneTotal}
+          • {teacherMode ? 'Halaman' : 'Scene'} {sceneIndex + 1}/{sceneTotal}
         </span>
       )}
 

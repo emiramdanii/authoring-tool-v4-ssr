@@ -87,6 +87,8 @@ export interface CanvaState {
   toggleRightPanel: () => void;
   // Save status — centralized indicator for auto-save
   _saveStatus: 'saved' | 'saving' | 'unsaved' | 'error';
+  // Last successful save timestamp (epoch ms) — for UI display
+  _lastSavedAt: number;
   // Nudge debounce: timestamp of last nudge to avoid history spam
   _lastNudgeTime?: number;
   // Grid & Snap

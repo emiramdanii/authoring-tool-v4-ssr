@@ -75,6 +75,8 @@ export default function LeftPanel() {
   // Sync expanded state with store's leftPanelOpen
   const expanded = useCanvaStore(s => s.leftPanelOpen);
   const toggleLeftPanel = useCanvaStore(s => s.toggleLeftPanel);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
+  const blockLabel = teacherMode ? 'Konten' : 'Block';
 
   // When store leftTab changes (e.g., from CommandPalette or Stage buttons),
   // sync local activeTab and open the panel if needed
@@ -114,7 +116,7 @@ export default function LeftPanel() {
           <div className="px-3 py-2 border-b border-app-border bg-app-surface/50 flex-shrink-0">
             <div className="text-[10px] font-bold text-app-secondary uppercase tracking-wider">
               {activeTab === 'pages' && 'Halaman'}
-              {activeTab === 'add-block' && 'Tambah Block'}
+              {activeTab === 'add-block' && `Tambah ${blockLabel}`}
               {activeTab === 'templates' && 'Template'}
               {activeTab === 'history' && 'Riwayat'}
               {activeTab === 'settings' && 'Pengaturan'}

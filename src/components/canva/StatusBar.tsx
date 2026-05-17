@@ -75,6 +75,7 @@ export default function StatusBar() {
 
   // ── Unified save indicator ────────────────────────────────────
   const canvaStatus = useCanvaStore((s) => s._saveStatus as SaveStatus | undefined);
+  const canvaLastSaved = useCanvaStore((s) => s._lastSavedAt);
   const authoringDirty = useAuthoringStore((s) => s.dirty);
 
   const saveStatus: SaveStatus = (() => {
@@ -82,6 +83,18 @@ export default function StatusBar() {
     if (cs === 'saved' && authoringDirty) return 'unsaved';
     if (cs === 'error') return 'error';
     return cs;
+  })();
+
+  // Format last saved time as relative (e.g., "2 menit lalu")
+  const lastSavedLabel = (() => {
+    if (!canvaLastSaved || canvaLastSaved === 0) return '';
+    const diffSec = Math.floor((Date.now() - canvaLastSaved) / 1000);
+    if (diffSec < 5) return 'Baru saja';
+    if (diffSec < 60) return `${diffSec} dtk lalu`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} menit lalu`;
+    const diffHr = Math.floor(diffMin / 60);
+    return `${diffHr} jam lalu`;
   })();
 
   const totalElements = page?.elements.length || 0;
@@ -123,12 +136,12 @@ export default function StatusBar() {
       {sceneTotal > 1 && (
         <span className="flex items-center gap-1">
           <Layers size={11} className="text-app-success/60" />
-          <span className="text-app-success/70 font-medium">{teacherMode ? 'Bagian' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
+          <span className="text-app-success/70 font-medium">{teacherMode ? 'Halaman' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
         </span>
       )}
 
-      {/* Block selection feedback */}
-      {selectedBlockId && selectedBlockType && !teacherMode && (
+      {/* Block selection feedback — shown in both modes */}
+      {selectedBlockId && selectedBlockType && (
         <span className="flex items-center gap-1">
           <Zap size={11} className="text-app-accent/60" />
           <span className="text-app-accent/70 font-medium">
@@ -151,6 +164,9 @@ export default function StatusBar() {
       <span className={`flex items-center gap-1 ${saveConfig.className}`}>
         {saveConfig.icon}
         <span className="hidden sm:inline">{saveConfig.label}</span>
+        {saveStatus === 'saved' && lastSavedLabel && (
+          <span className="text-[8px] opacity-60 ml-0.5">• {lastSavedLabel}</span>
+        )}
       </span>
 
       {/* Right side: Theme preset + Theme toggle + Zoom slider */}

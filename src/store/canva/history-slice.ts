@@ -156,7 +156,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
-            showUndoRedoToast('Undo');
+            showUndoRedoToast('Kembalikan');
             return;
           } catch {
             // Patch application failed (state diverged) — fall through to snapshot undo
@@ -183,7 +183,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       editingBlockId: null,
     });
     _set({ _skipHistory: false });
-    showUndoRedoToast('Undo');
+    showUndoRedoToast('Kembalikan');
   },
 
   redo: () => {
@@ -216,7 +216,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
-            showUndoRedoToast('Redo');
+            showUndoRedoToast('Ulangi');
             return;
           } catch {
             console.warn('[History] Patch-based redo failed, falling back to snapshot redo');
@@ -237,7 +237,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       selectedElId: null,
     });
     _set({ _skipHistory: false });
-    showUndoRedoToast('Redo');
+    showUndoRedoToast('Ulangi');
   },
 
   canUndo: () => get()._historyIdx > 0 || patchHistory.canUndo(),

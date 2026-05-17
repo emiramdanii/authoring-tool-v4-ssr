@@ -2,6 +2,7 @@
 
 import { FileText, Plus, Sparkles, History, Settings } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import {
   Tooltip,
   TooltipTrigger,
@@ -13,6 +14,7 @@ import {
 // ═══════════════════════════════════════════════════════════════
 // Clicking an icon expands the panel and shows the corresponding
 // tab content. Active tab has amber accent indicator.
+// Teacher-mode aware: labels adapt for sederhana mode.
 // ═══════════════════════════════════════════════════════════════
 
 export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings';
@@ -23,15 +25,18 @@ interface IconRailProps {
   expanded: boolean;
 }
 
-const RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; label: string }[] = [
-  { id: 'pages', icon: FileText, label: 'Halaman' },
-  { id: 'add-block', icon: Plus, label: 'Tambah Block' },
-  { id: 'templates', icon: Sparkles, label: 'Template' },
-  { id: 'history', icon: History, label: 'Riwayat' },
-  { id: 'settings', icon: Settings, label: 'Pengaturan' },
+// Base labels — will be transformed by teacherTerm at render time
+const RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }[] = [
+  { id: 'pages', icon: FileText, labelKey: 'Halaman' },
+  { id: 'add-block', icon: Plus, labelKey: 'Block' },
+  { id: 'templates', icon: Sparkles, labelKey: 'Template' },
+  { id: 'history', icon: History, labelKey: 'Riwayat' },
+  { id: 'settings', icon: Settings, labelKey: 'Pengaturan' },
 ];
 
 export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
+  const teacherMode = useCanvaStore(s => s.teacherMode);
+
   return (
     <div
       className="flex flex-col items-center py-2 gap-1 border-r border-app-border bg-app-surface flex-shrink-0"
@@ -40,6 +45,10 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
       {RAIL_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
+        // "Tambah Block" → "Tambah Konten" in sederhana mode
+        const label = item.id === 'add-block'
+          ? `Tambah ${teacherTerm(item.labelKey, teacherMode)}`
+          : item.labelKey;
         return (
           <Tooltip key={item.id}>
             <TooltipTrigger asChild>
@@ -50,7 +59,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
                     ? 'bg-app-accent/10 text-app-accent'
                     : 'text-app-muted hover:text-app-secondary hover:bg-app-elevated/50'
                 }`}
-                aria-label={item.label}
+                aria-label={label}
                 aria-pressed={isActive}
               >
                 {/* Amber accent indicator on left */}
@@ -61,7 +70,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-[10px]">
-              {item.label}
+              {label}
             </TooltipContent>
           </Tooltip>
         );
