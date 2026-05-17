@@ -174,6 +174,11 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       _historyIdx: _historyIdx - 1,
       _skipHistory: true,
       selectedElId: null,
+      selectedElIds: [],
+      selectedBlockId: null,
+      selectedBlockType: null,
+      selectedBlockIds: [],
+      editingBlockId: null,
     });
     _set({ _skipHistory: false });
   },

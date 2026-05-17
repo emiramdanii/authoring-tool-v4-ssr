@@ -242,8 +242,12 @@ function buildPresetWithCreate(def: Omit<PagePreset, 'create'>): PagePreset {
       // Schema-first: use ensurePageSchema to create or migrate schema.
       // derive-schema.ts was removed — presets rely on ensurePageSchema()
       // which uses TemplateAdapter for legacy pages or returns existing schema.
+      // IMPORTANT: createPage() now always sets an empty schema (for blank pages).
+      // For template pages, we must clear the auto-generated empty schema
+      // so ensurePageSchema() goes through the TemplateAdapter path (Path 3)
+      // which generates the correct blocks for each template type.
       const basePage = createPage(ctx.label, def.id as PageTemplateType);
-      const schema = ensurePageSchema({ ...basePage, id: ctx.pageId, templateVariant: ctx.variant });
+      const schema = ensurePageSchema({ ...basePage, id: ctx.pageId, templateVariant: ctx.variant, schema: undefined });
       // IMPORTANT: ensurePageSchema may return a deepFrozen schema in dev mode.
       // We must create a new object to set the ID instead of mutating.
       if (schema) {

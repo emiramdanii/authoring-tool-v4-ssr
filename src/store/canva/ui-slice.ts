@@ -805,7 +805,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     const nudgeBlock = (block: SchemaBlock): SchemaBlock => {
       const layout = block.layout || { position: 'flow' as const };
-      if (layout.position !== 'absolute') return block; // Can't nudge flow blocks
+      if (layout.position !== 'absolute') return block; // Can't nudge flow blocks — by design
 
       const toNum = (v: number | string | undefined, fallback: number): number =>
         typeof v === 'number' ? v : fallback;

@@ -69,6 +69,8 @@ export default function RightPanel() {
   const hasBlockSelection = selectedBlockId != null;
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
+  const isSchemaDriven = !!page?.schema;
 
   // Auto-switch to AI tab when a block is selected and AI tab is relevant
   // But let user manually switch tabs
@@ -117,6 +119,15 @@ export default function RightPanel() {
             </>
           ) : hasBlockSelection ? (
             <BlockPropertiesPanel />
+          ) : isSchemaDriven ? (
+            <>
+              <BackgroundSection />
+              <div className="px-3 py-6 text-center">
+                <div className="text-[10px] text-app-muted">
+                  Klik block di canvas untuk mengedit propertinya
+                </div>
+              </div>
+            </>
           ) : (
             <>
               <ElementProperties />

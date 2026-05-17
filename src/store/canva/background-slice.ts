@@ -18,6 +18,7 @@ export type BackgroundSlice = Pick<
 export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundSlice> = (set, get) => ({
   // ── Background actions ───────────────────────────────────────
   setBgColor: (hex) => {
+    get()._pushHistory();
     const { pages, currentPageIndex } = get();
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], bgColor: hex };
@@ -60,6 +61,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   },
 
   setOverlay: (val) => {
+    get()._pushHistory();
     const { pages, currentPageIndex } = get();
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], overlay: val };
@@ -93,6 +95,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
 
   // ── Nav Config actions ───────────────────────────────────────
   updateNavConfig: (updates) => {
+    get()._pushHistory();
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
@@ -108,6 +111,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   // Update the screen.schema.background for schema-driven pages.
   // This is the canonical way to set background on schema pages.
   updateScreenBackground: (updates) => {
+    get()._pushHistory();
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page?.schema) return;
@@ -130,6 +134,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   // Changes the theme preset for the current page.
   // Stored in page.templateData.schemaThemeId for backward compat.
   setSchemaThemeId: (themeId: string) => {
+    get()._pushHistory();
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;

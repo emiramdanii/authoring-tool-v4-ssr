@@ -68,11 +68,12 @@ export default function CanvaBuilder() {
     useInteractiveStore.getState().setTotalPages(useCanvaStore.getState().pages.length);
   }, [useCanvaStore((s) => s.pages.length)]);
 
-  // ── Warn before unload if authoring data is dirty ────────────
+  // ── Warn before unload if unsaved changes exist ────────────
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const authDirty = useAuthoringStore.getState().dirty;
-      if (authDirty) {
+      const canvaUnsaved = useCanvaStore.getState()._saveStatus === 'unsaved';
+      if (authDirty || canvaUnsaved) {
         e.preventDefault();
         e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
       }
