@@ -259,8 +259,8 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 
 - [x] Checkbox "Sudah Paham" per TP di DokumenTemplate — Variant B "Checklist" di TujuanDisplayRenderer
 - [x] Accordion per blok di MateriTemplate (interactive mode) — Variant A "Klasik" dengan accordion compression
-- [ ] Badge visual di PenutupTemplate berdasarkan skor
-- [ ] HasilTemplate — tampilkan skor per aktivitas (bukan hanya total)
+- [x] Badge visual di PenutupTemplate berdasarkan skor
+- [x] HasilTemplate — tampilkan skor per aktivitas (bukan hanya total)
 
 ---
 
