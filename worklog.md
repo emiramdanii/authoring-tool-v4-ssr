@@ -292,3 +292,27 @@ Stage Summary:
 - Custom pages loaded from localStorage now get empty schema via migrateAllPages
 - AddBlockPanel now shows block palette for custom pages without schema
 - Rendering pipeline correctly picks up new schema via pageMode change
+---
+Task ID: interaction-audit-1
+Agent: main
+Task: Interaction Integrity Audit — systematically test all user flows and fix bugs
+
+Work Log:
+- Ran comprehensive audit of all interaction flows via two parallel subagents
+- Agent 1: Full interaction flow audit — found 10+ issues including clearStage broken, duplicatePage nested ID bug, alignment dead for schema, undo/redo dual system
+- Agent 2: Button handler audit — found 1 no-op button (PenutupRenderer "Lanjut ke Pertemuan Berikutnya"), all other 350+ buttons properly wired
+- Fixed clearStage to check BOTH elements[] and schema.blocks (was only checking elements, early returning for schema pages)
+- Fixed duplicatePage to use regenerateNestedIds() for ALL nested block IDs (was only changing top-level IDs)
+- Exported regenerateNestedIds() from immutable.ts for reuse
+- Added alignSchemaBlocks and distributeSchemaBlocks store actions for schema block alignment
+- Updated AlignmentTools component to show and work with schema block selections
+- Fixed PenutupRenderer navigation button — now calls goPage() instead of just playSound()
+- Added PageTransition wrapper to PreviewMode for smooth page switching
+- Removed duplicate PageTypeCreator from AddSceneButton (was appearing in both pages and templates tabs)
+- Build passes, TypeScript clean, all committed and pushed
+
+Stage Summary:
+- 6 critical bug fixes committed (hash: 1ce9944)
+- All build + type checks pass
+- Server running on port 3000
+- Remaining items from audit: nudgeSchemaBlocks stale closure (analyzed — NOT actually a bug for nudge operations), deleteSchemaBlocks bulk nested delete (works correctly for typical use), undo/redo dual system (complex — deferred), RightPanel unstable selector (performance — deferred)
