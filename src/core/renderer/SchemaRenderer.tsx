@@ -161,6 +161,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       const timer = setTimeout(() => setEntranceBlockIds(new Set()), 300);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [screen.blocks]);
 
   // ═══ MEASUREMENT COMMIT QUEUE ═════════════════════════════════

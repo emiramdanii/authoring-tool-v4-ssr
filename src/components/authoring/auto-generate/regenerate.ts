@@ -17,7 +17,7 @@
 import { parse } from './parser';
 import type { ParseResult } from './types';
 import { genMateri, genDiskusi, genRefleksi, genSkenario, genKuis } from './generators';
-import type { MateriBlok, DiskusiData, RefleksiData, KuisItem } from '@/store/authoring-store';
+import type { MateriBlok, DiskusiData, DiskusiPertanyaan, RefleksiData, RefleksiPertanyaan, KuisItem } from '@/store/authoring-store';
 import type { SkenarioChapter as AutoGenSkenarioChapter } from './types';
 import {
   genMateriSchema,
@@ -205,6 +205,95 @@ export function regenerateRefleksiSchema(
   const refleksiBlock = genRefleksiSchema(parsed, meta);
   applyBlocksToPages('refleksi', [refleksiBlock]);
   return refleksiBlock;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PARTIAL SCOPED REGENERATE — Regenerate a SINGLE item, not full page
+// ═══════════════════════════════════════════════════════════════════
+// Phase 18.3: Teacher can regenerate just one question/block instead
+// of replacing the entire section. This is the "partial scoped"
+// regenerate — only the targeted item changes, everything else stays.
+//
+// Strategy:
+//   1. Parse stored source text
+//   2. Generate a full set of items
+//   3. Pick a random item that's DIFFERENT from the current one
+//   4. Return the new item for the caller to replace in the array
+//
+// The caller (Konten tab) is responsible for:
+//   - Replacing the item at the target index in the projection (authoring store)
+//   - Updating the corresponding schema block (canvas)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Regenerate a single kuis question.
+ * Returns a new KuisItem to replace the one at `index`, or null.
+ */
+export function regenerateSingleKuisItem(
+  index: number,
+  jumlahPertemuan: number = 1,
+): KuisItem | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  // Generate a fresh full set
+  const fullSet = genKuis(parsed, 10, jumlahPertemuan);
+  if (fullSet.length === 0) return null;
+
+  // Pick a random item (prefer one different from index)
+  const candidates = fullSet.filter((_, i) => i !== index % fullSet.length);
+  const pick = candidates.length > 0
+    ? candidates[Math.floor(Math.random() * candidates.length)]
+    : fullSet[Math.floor(Math.random() * fullSet.length)];
+
+  return pick;
+}
+
+/**
+ * Regenerate a single diskusi question.
+ * Returns a new DiskusiPertanyaan to replace the one at `index`, or null.
+ */
+export function regenerateSingleDiskusiQuestion(
+  index: number,
+  tp: Array<{ desc: string }>,
+  meta: { judulPertemuan: string; namaBab: string },
+): DiskusiPertanyaan | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const fullData = genDiskusi(parsed, tp, meta);
+  if (fullData.pertanyaan.length === 0) return null;
+
+  // Pick a random question (prefer one different from index)
+  const candidates = fullData.pertanyaan.filter((_, i) => i !== index % fullData.pertanyaan.length);
+  const pick = candidates.length > 0
+    ? candidates[Math.floor(Math.random() * candidates.length)]
+    : fullData.pertanyaan[Math.floor(Math.random() * fullData.pertanyaan.length)];
+
+  return pick;
+}
+
+/**
+ * Regenerate a single refleksi question.
+ * Returns a new RefleksiPertanyaan to replace the one at `index`, or null.
+ */
+export function regenerateSingleRefleksiQuestion(
+  index: number,
+  meta: { judulPertemuan: string; namaBab: string },
+): RefleksiPertanyaan | null {
+  const parsed = parseStoredText();
+  if (!parsed) return null;
+
+  const fullData = genRefleksi(parsed, meta);
+  if (fullData.pertanyaan.length === 0) return null;
+
+  // Pick a random question (prefer one different from index)
+  const candidates = fullData.pertanyaan.filter((_, i) => i !== index % fullData.pertanyaan.length);
+  const pick = candidates.length > 0
+    ? candidates[Math.floor(Math.random() * candidates.length)]
+    : fullData.pertanyaan[Math.floor(Math.random() * fullData.pertanyaan.length)];
+
+  return pick;
 }
 
 // ═══════════════════════════════════════════════════════════════════

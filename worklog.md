@@ -560,3 +560,54 @@ Stage Summary:
 - Sederhana mode: 5 tabs (Materi, Diskusi, Refleksi, Game & Aktivitas, Soal Evaluasi)
 - Lengkap mode: 6 tabs (Materi, Diskusi, Refleksi, Skenario, Modul & Game, Evaluasi)
 - Store architecture: clean slice separation (diskusi-refleksi-slice owns data + actions)
+---
+Task ID: phase-17.2-fix
+Agent: main
+Task: Phase 17.2 fix — Preserve pertemuan in schema projection + fix pre-existing TS error
+
+Work Log:
+- Found deriveKuisToProjection() in schema-projection.ts was DROPPING pertemuan field when projecting KuisBlock → KuisItem
+- Fixed: added pertemuan to the projection mapping using spread pattern `...(q.pertemuan != null ? { pertemuan: q.pertemuan } : {})`
+- Fixed pre-existing TS7030 error in SchemaRenderer.tsx: useEffect not returning on all code paths — added `return undefined` for the else branch
+- Build verified: 0 TypeScript errors
+
+Stage Summary:
+- deriveKuisToProjection now preserves pertemuan tag correctly
+- SchemaRenderer useEffect fix eliminates TS7030 compiler error
+- Phase 17.2 fully complete: pertemuan field, KuisTab dropdown, auto-tag, projection preservation
+
+---
+Task ID: phase-18.3
+Agent: main
+Task: Phase 18.3 — Partial Scoped Regenerate + Projection Live Sync
+
+Work Log:
+- Added 3 single-item regenerate functions to regenerate.ts:
+  - regenerateSingleKuisItem(index, jumlahPertemuan) — regenerate one quiz question
+  - regenerateSingleDiskusiQuestion(index, tp, meta) — regenerate one discussion question
+  - regenerateSingleRefleksiQuestion(index, meta) — regenerate one reflection question
+- Added 2 scoped schema update functions to schema-apply.ts:
+  - replaceBlockById(pageId, blockId, newBlock) — replace a single block in a page's schema
+  - replaceKuisQuestionInSchema(pageId, blockId, questionIndex, newQuestion) — deep partial update for one question inside a KuisBlock
+- Created ItemRegenerateButton component — small per-item regenerate button for Konten tabs
+- Added per-item regenerate buttons to KuisTab, DiskusiTab, RefleksiTab
+  - KuisTab: per-question regenerate with scoped schema update (replaceKuisQuestionInSchema)
+  - DiskusiTab: per-question regenerate via updateDiskusiPertanyaan
+  - RefleksiTab: per-question regenerate via updateRefleksiPertanyaan
+- Created sync-projection.ts — Projection Live Sync module
+  - syncKuisToSchema(kuis) — writes KuisItem[] back to KuisBlock in canvas schema
+  - syncDiskusiToSchema(diskusi) — writes DiskusiData back to DiskusiBlock
+  - syncRefleksiToSchema(refleksi) — writes RefleksiData back to RefleksiBlock
+  - hasSchemaBlock(templateType, blockType) — check if sync target exists
+- Integrated Projection Live Sync into all 3 Konten tabs via useEffect
+  - KuisTab: useEffect watches kuis changes → syncKuisToSchema
+  - DiskusiTab: useEffect watches diskusi changes → syncDiskusiToSchema
+  - RefleksiTab: useEffect watches refleksi changes → syncRefleksiToSchema
+- Build verified: 0 TypeScript errors, npx next build successful
+
+Stage Summary:
+- Phase 18.3 complete: partial scoped regenerate + projection live sync
+- Teachers can now regenerate individual questions/blocks without replacing entire sections
+- Konten editor edits now flow to canvas in real-time (Projection → Schema write-back)
+- Key new files: ItemRegenerateButton.tsx, sync-projection.ts
+- Key modified files: regenerate.ts, schema-apply.ts, KuisTab.tsx, DiskusiTab.tsx, RefleksiTab.tsx

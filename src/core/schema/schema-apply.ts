@@ -340,6 +340,114 @@ export function findPageIdByType(templateType: string): string | null {
 }
 
 /**
+ * Replace a single block in a page's schema by block ID.
+ * This is the PARTIAL SCOPED update — only the targeted block changes,
+ * everything else in the schema stays intact.
+ *
+ * Phase 18.3: Used by per-item regenerate to update only one block
+ * without replacing the entire page's content.
+ *
+ * @param pageId - The page to update
+ * @param blockId - The ID of the block to replace
+ * @param newBlock - The replacement block (keeps the same ID if not specified)
+ * @returns true if the block was found and replaced
+ */
+export function replaceBlockById(
+  pageId: string,
+  blockId: string,
+  newBlock: SchemaBlock,
+): boolean {
+  const store = useCanvaStore.getState();
+  const pages = [...store.pages];
+  const idx = pages.findIndex(p => p.id === pageId);
+
+  if (idx < 0 || !pages[idx].schema) return false;
+
+  const schema = pages[idx].schema!;
+  const blockIdx = schema.blocks.findIndex(b => b.id === blockId);
+
+  if (blockIdx < 0) return false;
+
+  // Preserve the original block ID unless the new block explicitly provides one
+  const replacement: SchemaBlock = {
+    ...newBlock,
+    id: newBlock.id || blockId,
+  };
+
+  const newBlocks = [...schema.blocks];
+  newBlocks[blockIdx] = replacement;
+
+  const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+  assertDocumentPurity(newSchema, 'replaceBlockById');
+
+  pages[idx] = {
+    ...pages[idx],
+    schema: newSchema,
+  };
+
+  useCanvaStore.setState({ pages });
+  return true;
+}
+
+/**
+ * Update a specific question within a KuisBlock in a page's schema.
+ * This is a DEEP partial update — modifies one question inside a block
+ * without touching anything else.
+ *
+ * @param pageId - The page to update
+ * @param blockId - The KuisBlock's ID
+ * @param questionIndex - The index of the question to replace
+ * @param newQuestion - The replacement question object
+ * @returns true if the block was found and question replaced
+ */
+export function replaceKuisQuestionInSchema(
+  pageId: string,
+  blockId: string,
+  questionIndex: number,
+  newQuestion: { q: string; opts: string[]; ans: number; ex: string; pertemuan?: number },
+): boolean {
+  const store = useCanvaStore.getState();
+  const pages = [...store.pages];
+  const idx = pages.findIndex(p => p.id === pageId);
+
+  if (idx < 0 || !pages[idx].schema) return false;
+
+  const schema = pages[idx].schema!;
+  const blockIdx = schema.blocks.findIndex(b => b.id === blockId);
+
+  if (blockIdx < 0) return false;
+
+  const block = schema.blocks[blockIdx];
+  if (block.type !== 'kuis') return false;
+
+  const kuisBlock = block as { questions: unknown[] };
+  if (questionIndex < 0 || questionIndex >= kuisBlock.questions.length) return false;
+
+  // Replace only the target question
+  const newQuestions = [...kuisBlock.questions];
+  newQuestions[questionIndex] = newQuestion;
+
+  const newBlock: SchemaBlock = {
+    ...block,
+    questions: newQuestions,
+  } as SchemaBlock;
+
+  const newBlocks = [...schema.blocks];
+  newBlocks[blockIdx] = newBlock;
+
+  const newSchema: ScreenSchema = { ...schema, blocks: newBlocks };
+  assertDocumentPurity(newSchema, 'replaceKuisQuestionInSchema');
+
+  pages[idx] = {
+    ...pages[idx],
+    schema: newSchema,
+  };
+
+  useCanvaStore.setState({ pages });
+  return true;
+}
+
+/**
  * Find all page IDs matching a template type.
  */
 export function findPageIdsByType(templateType: string): string[] {

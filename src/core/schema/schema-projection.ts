@@ -189,7 +189,7 @@ function deriveAlurToProjection(block: SchemaBlock, projection: SchemaProjection
 
 function deriveKuisToProjection(block: SchemaBlock, projection: SchemaProjection): void {
   const kuis = block as {
-    questions?: Array<{ q?: string; opts?: string[]; ans?: number; ex?: string }>;
+    questions?: Array<{ q?: string; opts?: string[]; ans?: number; ex?: string; pertemuan?: number }>;
   };
 
   if (!kuis.questions?.length) return;
@@ -203,6 +203,7 @@ function deriveKuisToProjection(block: SchemaBlock, projection: SchemaProjection
       opts: q.opts || [],
       ans: q.ans ?? 0,
       ex: q.ex || '',
+      ...(q.pertemuan != null ? { pertemuan: q.pertemuan } : {}),
     })),
   ];
 }

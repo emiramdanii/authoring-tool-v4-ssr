@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { RefleksiData, RefleksiPertanyaan } from '@/store/authoring-store';
 import { RegenerateButton } from './RegenerateButton';
-import { regenerateRefleksi, regenerateRefleksiSchema } from '../auto-generate/regenerate';
+import { ItemRegenerateButton } from './ItemRegenerateButton';
+import { regenerateRefleksi, regenerateRefleksiSchema, regenerateSingleRefleksiQuestion } from '../auto-generate/regenerate';
+import { syncRefleksiToSchema } from '@/core/schema/sync-projection';
 import { Zap, NotebookPen, Trash2, Plus } from 'lucide-react';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
@@ -18,6 +20,15 @@ export function RefleksiTab() {
   const removeRefleksiPertanyaan = useAuthoringStore((s) => s.removeRefleksiPertanyaan);
   const updateRefleksiPertanyaan = useAuthoringStore((s) => s.updateRefleksiPertanyaan);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // ── Phase 18.3d: Projection Live Sync ──────────────────────────
+  const prevRefleksiRef = useRef(refleksi);
+  useEffect(() => {
+    if (refleksi !== prevRefleksiRef.current && refleksi.pertanyaan.length > 0) {
+      syncRefleksiToSchema(refleksi);
+    }
+    prevRefleksiRef.current = refleksi;
+  }, [refleksi]);
 
   const handleRegenerateRefleksi = async () => {
     // Schema-first: regenerate SchemaBlocks and apply to canvas directly
@@ -125,12 +136,29 @@ export function RefleksiTab() {
               <div className="flex items-center gap-2">
                 <span className="text-lg">{q.icon || '🪞'}</span>
                 <span className="text-sm font-medium text-app-primary">Refleksi {i + 1}</span>
-                <button
-                  onClick={() => removeRefleksiPertanyaan(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
-                >
-                  <Trash2 size={14} className="inline" />
-                </button>
+                <div className="ml-auto flex items-center gap-1">
+                  <ItemRegenerateButton
+                    title="Regenerate pertanyaan ini"
+                    onRegenerate={async () => {
+                      const newQ = regenerateSingleRefleksiQuestion(i, {
+                        judulPertemuan: meta.judulPertemuan,
+                        namaBab: meta.namaBab,
+                      });
+                      if (newQ) {
+                        updateRefleksiPertanyaan(i, newQ);
+                        toast.success(`🔄 Pertanyaan refleksi ${i + 1} berhasil digenerate ulang`);
+                      } else {
+                        toast.error('Gagal regenerate — tidak ada teks sumber.');
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => removeRefleksiPertanyaan(i)}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
 
               {/* Icon selector */}

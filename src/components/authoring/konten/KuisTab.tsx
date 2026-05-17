@@ -1,13 +1,17 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { KuisItem } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
-import { regenerateKuis, regenerateKuisSchema } from '../auto-generate/regenerate';
+import { ItemRegenerateButton } from './ItemRegenerateButton';
+import { regenerateKuis, regenerateKuisSchema, regenerateSingleKuisItem } from '../auto-generate/regenerate';
+import { replaceKuisQuestionInSchema, findPageIdByType } from '@/core/schema/schema-apply';
+import { useCanvaStore } from '@/store/canva-store';
+import { syncKuisToSchema } from '@/core/schema/sync-projection';
 
 // ── Kuis Tab (Fully Functional) ────────────────────────────────
 export function KuisTab() {
@@ -21,6 +25,18 @@ export function KuisTab() {
   const reorderKuis = useAuthoringStore((s) => s.reorderKuis);
   const listRef = useRef<HTMLDivElement>(null);
   const letters = ['A', 'B', 'C', 'D'];
+
+  // ── Phase 18.3d: Projection Live Sync ──────────────────────────
+  // When kuis changes in the authoring store (projection), sync it
+  // to the schema tree so the canvas reflects the edits.
+  const prevKuisRef = useRef(kuis);
+  useEffect(() => {
+    // Only sync if kuis actually changed AND there's data
+    if (kuis !== prevKuisRef.current && kuis.length > 0) {
+      syncKuisToSchema(kuis);
+    }
+    prevKuisRef.current = kuis;
+  }, [kuis]);
 
   const handleReorder = useCallback((newItems: KuisItem[]) => {
     const fromIndex = kuis.findIndex((item, i) => newItems[i] !== item);
@@ -136,12 +152,48 @@ export function KuisTab() {
                   {i + 1}
                 </div>
                 <span className="text-sm font-medium text-app-primary">Soal {i + 1}</span>
-                <button
-                  onClick={() => deleteKuis(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
-                >
-                  <Trash2 size={14} className="inline" />
-                </button>
+                <div className="ml-auto flex items-center gap-1">
+                  <ItemRegenerateButton
+                    title="Regenerate soal ini"
+                    onRegenerate={async () => {
+                      const jumlahPertemuan = atp.jumlahPertemuan || 1;
+                      const newItem = regenerateSingleKuisItem(i, jumlahPertemuan);
+                      if (newItem) {
+                        // Update projection (authoring store)
+                        const newKuis = [...kuis];
+                        newKuis[i] = { ...newItem, _id: kuis[i]._id || newItem._id };
+                        useAuthoringStore.setState({ kuis: newKuis, dirty: true });
+                        // Update schema (canvas) — scoped, not full page
+                        const kuisPageId = findPageIdByType('kuis');
+                        if (kuisPageId) {
+                          const canvaPages = useCanvaStore.getState().pages;
+                          const page = canvaPages.find(p => p.id === kuisPageId);
+                          if (page?.schema) {
+                            const kuisBlock = page.schema.blocks.find(b => b.type === 'kuis');
+                            if (kuisBlock?.id) {
+                              replaceKuisQuestionInSchema(kuisPageId, kuisBlock.id, i, {
+                                q: newItem.q,
+                                opts: newItem.opts,
+                                ans: newItem.ans,
+                                ex: newItem.ex,
+                                ...(newItem.pertemuan != null ? { pertemuan: newItem.pertemuan } : {}),
+                              });
+                            }
+                          }
+                        }
+                        toast.success(`🔄 Soal ${i + 1} berhasil digenerate ulang`);
+                      } else {
+                        toast.error('Gagal regenerate — tidak ada teks sumber.');
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => deleteKuis(i)}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
 
               {/* Question */}

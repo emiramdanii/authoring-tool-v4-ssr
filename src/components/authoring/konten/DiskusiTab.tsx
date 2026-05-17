@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { DiskusiData, DiskusiPertanyaan } from '@/store/authoring-store';
 import { RegenerateButton } from './RegenerateButton';
-import { regenerateDiskusi, regenerateDiskusiSchema } from '../auto-generate/regenerate';
+import { ItemRegenerateButton } from './ItemRegenerateButton';
+import { regenerateDiskusi, regenerateDiskusiSchema, regenerateSingleDiskusiQuestion } from '../auto-generate/regenerate';
+import { syncDiskusiToSchema } from '@/core/schema/sync-projection';
 import { Zap, MessageSquare, Trash2, Plus } from 'lucide-react';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
@@ -19,6 +21,15 @@ export function DiskusiTab() {
   const removeDiskusiPertanyaan = useAuthoringStore((s) => s.removeDiskusiPertanyaan);
   const updateDiskusiPertanyaan = useAuthoringStore((s) => s.updateDiskusiPertanyaan);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // ── Phase 18.3d: Projection Live Sync ──────────────────────────
+  const prevDiskusiRef = useRef(diskusi);
+  useEffect(() => {
+    if (diskusi !== prevDiskusiRef.current && diskusi.pertanyaan.length > 0) {
+      syncDiskusiToSchema(diskusi);
+    }
+    prevDiskusiRef.current = diskusi;
+  }, [diskusi]);
 
   const handleRegenerateDiskusi = async () => {
     // Schema-first: regenerate SchemaBlocks and apply to canvas directly
@@ -119,12 +130,29 @@ export function DiskusiTab() {
               <div className="flex items-center gap-2">
                 <span className="text-lg">{q.icon || '💭'}</span>
                 <span className="text-sm font-medium text-app-primary">Pertanyaan {i + 1}</span>
-                <button
-                  onClick={() => removeDiskusiPertanyaan(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
-                >
-                  <Trash2 size={14} className="inline" />
-                </button>
+                <div className="ml-auto flex items-center gap-1">
+                  <ItemRegenerateButton
+                    title="Regenerate pertanyaan ini"
+                    onRegenerate={async () => {
+                      const newQ = regenerateSingleDiskusiQuestion(i, tp, {
+                        judulPertemuan: meta.judulPertemuan,
+                        namaBab: meta.namaBab,
+                      });
+                      if (newQ) {
+                        updateDiskusiPertanyaan(i, newQ);
+                        toast.success(`🔄 Pertanyaan diskusi ${i + 1} berhasil digenerate ulang`);
+                      } else {
+                        toast.error('Gagal regenerate — tidak ada teks sumber.');
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => removeDiskusiPertanyaan(i)}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
 
               {/* Icon selector */}
