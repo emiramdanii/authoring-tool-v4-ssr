@@ -372,3 +372,49 @@ Stage Summary:
 - History panel now accessible from left panel
 - Block entrance animation gives visual confirmation
 - Properties tab has proper empty state with icon + guidance
+
+---
+Task ID: teacher-flow-polish
+Agent: Main Agent
+Task: Teacher Flow Polish — Simplify UI for Indonesian SMP teachers in sederhana mode
+
+Work Log:
+- Created useTeacherMode() hook to unify dual-store sync (canva boolean + authoring string)
+- Updated TeacherModeToggle to use unified hook instead of manual dual-store sync
+- Sidebar: mode-aware navigation labels
+  - Sederhana: Beranda, Materi, Desain (3 primary items)
+  - Lengkap: Dashboard, Dokumen, Konten, Canva, Auto-Generate (5 items)
+- Sidebar: secondary items with "Lainnya" header in sederhana mode
+  - Sederhana: RPP, Buat AI, Proyek, Impor/Ekspor, Pratinjau, Versi
+  - Lengkap: Proyek, Import/Export, Live Preview, Riwayat
+- RightPanel: surfaced NavigationSection + PageInfo in Properties tab for teacher mode
+  - Previously hidden in Layer tab which was invisible in sederhana mode
+  - Now teachers can configure navbar style and page info without Layer concept
+- Konten panel: teacher-friendly tab labels in sederhana mode
+  - Skenario → Cerita, Modul & Game → Game & Aktivitas, Evaluasi → Soal Evaluasi
+  - Dynamic header description per tab
+  - Footer CTA: "Selanjutnya: Desain Visual" vs "Desain di Canva"
+- Dashboard: removed "Schema" technical term in sederhana mode
+  - Template badge: "Schema" → "Siap Pakai" 
+  - Auto-Generate → Buat AI
+  - Flow steps: "Isi Dokumen" → "Isi RPP", "Desain Canva" → "Desain Visual"
+  - Quick actions: mode-aware labels (Lihat Hasil, Desain Visual, etc.)
+  - Schema Preview → Pratinjau Interaktif
+- ModeSwitch: Indonesian labels in sederhana (Sunting/Pratinjau/Tayangkan)
+- ToolbarNav: mode-aware back button tooltip (Beranda vs Dashboard)
+- Created CanvaOrientationTooltip: first-time onboarding for teachers entering Canva
+  - Explains 3-panel layout (Left=Pages+Content, Center=Workspace, Right=Properties+AI)
+  - Shows only once per device (localStorage persistence)
+  - Only in sederhana mode
+- Updated AuthoringTool header buttons: Preview → Pratinjau, Canva → Desain in sederhana
+- Updated Canva back button: Dashboard → Beranda in sederhana
+- All 10 files modified, build clean, git pushed
+
+Stage Summary:
+- 10 files changed, 370 insertions, 75 deletions
+- New hook: useTeacherMode() — unified API for teacher mode state
+- New component: CanvaOrientationTooltip — first-time teacher onboarding
+- Sederhana mode now fully coherent across ALL panels (sidebar, dashboard, konten, canva)
+- Teachers no longer see technical terms (Schema, Block, Layer, Export, etc.)
+- Navigation simplified to 3 primary items (Beranda, Materi, Desain)
+- NavigationSection accessible in teacher mode (was hidden behind Layer tab)
