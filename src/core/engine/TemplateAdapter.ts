@@ -229,6 +229,10 @@ function convertCover(td: Record<string, unknown>, variant: 'A' | 'B' | 'C'): Co
   return {
     type: 'cover',
     variant,
+    // FIX: Add layout property so resolveSceneLayout Phase 2 picks it up.
+    // Without this, cover blocks are excluded from both flow and absolute
+    // phases, causing them to be silently dropped from rendering.
+    layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
     icon: String(td.icon || '📚'),
     title: String(td.title || ''),
     subtitle: String(td.subtitle || ''),

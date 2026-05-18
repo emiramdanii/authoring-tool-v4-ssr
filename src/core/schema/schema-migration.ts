@@ -90,15 +90,34 @@ export const MIGRATION_CHAIN: SchemaMigration[] = [
     },
   },
 
-  // ── Future migrations go here ─────────────────────────────────
-  // {
-  //   fromVersion: 1,
-  //   toVersion: 2,
-  //   description: 'Add interaction tracking fields',
-  //   migrate(schema: ScreenSchema): ScreenSchema {
-  //     // ... migration logic
-  //   },
-  // },
+  // ── v1 → v2 ─────────────────────────────────────────────────
+  // Add layout property to cover/hero blocks that lack it.
+  // Without layout, resolveSceneLayout() silently drops these blocks
+  // (excluded from flow AND absolute phases), causing "cover doesn't
+  // appear" and "cover overflow to top" bugs.
+  {
+    fromVersion: 1,
+    toVersion: 2,
+    description: 'Add layout property to cover/hero blocks',
+    migrate(schema: ScreenSchema): ScreenSchema {
+      const FULL_PAGE_TYPES = new Set(['cover', 'hero']);
+      const blocks = schema.blocks.map(block => {
+        if (FULL_PAGE_TYPES.has(block.type) && !block.layout) {
+          return {
+            ...block,
+            layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
+          };
+        }
+        return block;
+      });
+
+      return {
+        ...schema,
+        version: 2,
+        blocks,
+      };
+    },
+  },
 ];
 
 // ── Main Migration Function ─────────────────────────────────────

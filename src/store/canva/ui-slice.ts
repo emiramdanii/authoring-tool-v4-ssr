@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { produce, produceWithPatches } from 'immer';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
-import type { CanvaElement } from '@/components/canva/types';
+import type { CanvaElement, CanvaPage } from '@/components/canva/types';
 import { LAYOUT_PRESETS } from '@/components/canva/types';
 import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
@@ -988,6 +988,15 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // ═══ PATCH-BASED ADD via produceWithPatches ══════════════
     const insertAt = insertAfterIndex != null ? insertAfterIndex + 1 : blocks.length;
 
+    // FIX: Thaw frozen blocks before passing to produceWithPatches.
+    // ensurePageSchema() returns deepFreeze(deepClone(...)), which creates
+    // deeply frozen arrays. While Immer CAN handle frozen inputs, deeply
+    // frozen nested objects can cause edge-case failures. Thawing via
+    // deepClone creates an unfrozen mutable copy that Immer can proxy safely.
+    const thawedBlocks = (Array.isArray(blocks) && Object.isFrozen(blocks))
+      ? JSON.parse(JSON.stringify(blocks)) as SchemaBlock[]
+      : blocks as SchemaBlock[];
+
     // FIX: Try produceWithPatches first (for undo/redo patches).
     // If it fails (e.g., stack overflow from corrupted schema),
     // fall back to simple immutable splice (no undo patches, but block is added).
@@ -996,7 +1005,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     let inversePatches: import('immer').Patch[] | undefined;
 
     try {
-      const result = produceWithPatches(blocks, draft => {
+      const result = produceWithPatches(thawedBlocks, draft => {
         draft.splice(insertAt, 0, newBlock as unknown as SchemaBlock);
       });
       newBlocks = result[0];
@@ -1005,7 +1014,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     } catch (immerErr) {
       // Fallback: simple immutable splice without patches
       console.warn('[addSchemaBlock] produceWithPatches failed, using fallback:', immerErr);
-      newBlocks = [...blocks.slice(0, insertAt), newBlock as unknown as SchemaBlock, ...blocks.slice(insertAt)];
+      newBlocks = [...thawedBlocks.slice(0, insertAt), newBlock as unknown as SchemaBlock, ...thawedBlocks.slice(insertAt)];
     }
 
     // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
@@ -1017,15 +1026,29 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       schema: updatedSchema,
       // Ensure pageMode is schema-driven when adding blocks
       pageMode: 'schema',
-      // Clear legacy elements when converting to schema-driven page
-      ...(needsSchemaInit ? { elements: [] } : {}),
+      // FIX: ALWAYS clear legacy elements when a page has schema blocks.
+      // Previously only cleared when needsSchemaInit=true, but ANY page
+      // with schema must have elements=[] to prevent dual-render bug
+      // (SchemaScreenRenderer + legacy BlockRenderer overlay).
+      elements: [],
     };
     // ═══ ATOMIC STATE UPDATE ════════════════════════════════════
     // Merge _pushHistory state with page update to prevent intermediate
     // renders that could see stale data. This avoids the race condition
     // where _pushHistory's set() triggers a re-render before pages are updated.
     const { _history, _historyIdx } = get();
-    const snapshot = { pages: structuredClone(get().pages), currentPageIndex, ratioId: get().ratioId };
+    // FIX: Wrap structuredClone in try-catch with JSON fallback.
+    // structuredClone throws on non-cloneable values (functions, Symbols, DOM nodes).
+    // If existing pages data has such values (e.g., from a broken migration or
+    // localStorage corruption), the entire addSchemaBlock function would fail
+    // silently — the root cause of "blocks don't appear on canvas".
+    let snapshot: { pages: CanvaPage[]; currentPageIndex: number; ratioId: string };
+    try {
+      snapshot = { pages: structuredClone(get().pages), currentPageIndex, ratioId: get().ratioId };
+    } catch (cloneErr) {
+      console.warn('[addSchemaBlock] structuredClone failed for history, using JSON fallback:', cloneErr);
+      snapshot = { pages: JSON.parse(JSON.stringify(get().pages)), currentPageIndex, ratioId: get().ratioId };
+    }
     const newHistory = _history.slice(0, _historyIdx + 1);
     newHistory.push(snapshot);
     if (newHistory.length > 50) newHistory.shift();

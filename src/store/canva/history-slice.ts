@@ -24,6 +24,7 @@ import type { Snapshot } from './types';
 import { MAX_HISTORY } from './constants';
 import { patchHistory } from '@/core/editor/patch-history';
 import type { SchemaBlock } from '@/core/schema/types';
+import type { CanvaPage } from '@/components/canva/types';
 import { showUndoRedoToast } from '@/components/shared/StatusToast';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
@@ -129,7 +130,16 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
   _pushHistory: () => {
     const { pages, currentPageIndex, ratioId, _history, _historyIdx, _skipHistory } = get();
     if (_skipHistory) return;
-    const snapshot: Snapshot = { pages: structuredClone(pages), currentPageIndex, ratioId };
+    // FIX: Wrap structuredClone in try-catch with JSON fallback.
+    // structuredClone can throw on non-cloneable values, which would
+    // silently kill the entire _pushHistory operation.
+    let snapshotPages: CanvaPage[];
+    try {
+      snapshotPages = structuredClone(pages);
+    } catch {
+      snapshotPages = JSON.parse(JSON.stringify(pages));
+    }
+    const snapshot: Snapshot = { pages: snapshotPages, currentPageIndex, ratioId };
     const newHistory = _history.slice(0, _historyIdx + 1);
     newHistory.push(snapshot);
 
@@ -201,7 +211,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
     const prev = _history[_historyIdx - 1];
     if (!prev) return;
     _set({
-      ...structuredClone(prev),
+      // FIX: structuredClone with JSON fallback
+      ...((() => { try { return structuredClone(prev); } catch { return JSON.parse(JSON.stringify(prev)); } })()),
       _historyIdx: _historyIdx - 1,
       _skipHistory: true,
       selectedElId: null,
@@ -261,7 +272,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
     const next = _history[_historyIdx + 1];
     if (!next) return;
     _set({
-      ...structuredClone(next),
+      // FIX: structuredClone with JSON fallback
+      ...((() => { try { return structuredClone(next); } catch { return JSON.parse(JSON.stringify(next)); } })()),
       _historyIdx: _historyIdx + 1,
       _skipHistory: true,
       selectedElId: null,

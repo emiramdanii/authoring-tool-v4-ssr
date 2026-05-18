@@ -381,3 +381,34 @@ Stage Summary:
 - 5 files modified: SceneLayoutEngine.ts, SchemaRenderer.tsx, BlockSelectionOverlay.tsx, BlockMeasurer.tsx, ui-slice.ts
 - Core features stable: canvas rendering, block insertion, cover rendering, page management
 - Next: Progressive re-enablement of advanced features
+---
+Task ID: 1
+Agent: Main Agent (Senior Dev)
+Task: Fix P0 bugs: blocks not appearing on canvas + cover overflow to top
+
+Work Log:
+- Traced complete block insertion pipeline: AddBlockPanel → addSchemaBlock → ensurePageSchema → produceWithPatches → commitSchemaUpdate → store.set() → PageRenderer → SchemaScreenRenderer → resolveSceneLayout
+- Identified 3 root causes for blocks not appearing:
+  1. `structuredClone()` in addSchemaBlock/history-slice throws on non-cloneable values → entire add operation fails silently
+  2. Frozen blocks from `ensurePageSchema(deepFreeze(deepClone()))` can cause produceWithPatches edge-case failures
+  3. `elements[]` not cleared when adding blocks to schema-driven pages → potential dual-render
+- Identified 3 root causes for cover overflow:
+  1. Cover blocks without `layout` property silently dropped by resolveSceneLayout (excluded from both flow and absolute phases)
+  2. TemplateAdapter.convertCover() and genCoverSchema() don't include `layout`
+  3. No migration for existing cover blocks lacking `layout`
+- Applied fixes:
+  1. ui-slice.ts: Wrapped structuredClone in try-catch with JSON fallback
+  2. ui-slice.ts: Added thaw step for frozen blocks before produceWithPatches
+  3. ui-slice.ts: Always clear elements[] when adding blocks to schema pages
+  4. history-slice.ts: Wrapped all structuredClone calls in try-catch with fallback
+  5. sync-slice.ts: Wrapped structuredClone in try-catch with fallback
+  6. SceneLayoutEngine.ts: Added Phase 3 for legacy full-page blocks without layout
+  7. generators.ts: Added layout property to genCoverSchema()
+  8. TemplateAdapter.ts: Added layout property to convertCover()
+  9. schema-migration.ts: Added v1→v2 migration for cover/hero blocks lacking layout
+  10. validation.ts: Bumped SCHEMA_VERSION to 2
+
+Stage Summary:
+- Both P0 bugs fixed with defensive coding + root cause fixes
+- Build passes cleanly (TypeScript + Next.js build)
+- Previous fixes (enablePatches, deepClone-before-freeze) still intact

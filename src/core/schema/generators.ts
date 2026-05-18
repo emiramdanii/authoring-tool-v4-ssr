@@ -65,6 +65,10 @@ export function genCoverSchema(
   return {
     type: 'cover',
     id: generateBlockId(),
+    // FIX: Add layout property so resolveSceneLayout Phase 2 picks it up.
+    // Without this, cover blocks are excluded from both flow (Phase 1) and
+    // absolute (Phase 2), causing them to be silently dropped.
+    layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
     icon: meta.ikon || '📚',
     title: meta.judulPertemuan || meta.namaBab || 'Materi Pembelajaran',
     subtitle: meta.mapel || '',

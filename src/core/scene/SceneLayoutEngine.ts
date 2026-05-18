@@ -623,6 +623,37 @@ export function resolveSceneLayout(
     });
   }
 
+  // ── Phase 3: Legacy full-page blocks WITHOUT layout property ──
+  // FIX: Cover/hero blocks created by TemplateAdapter or genCoverSchema()
+  // may lack the `layout` property entirely. Phase 1 excludes them from flow
+  // (because they're full-page), and Phase 2 only picks blocks with
+  // `layout.position === 'absolute'`. Without this phase, they're silently
+  // dropped — never rendered — which is the root cause of "cover overflow
+  // to top" and "cover block doesn't appear on canvas" bugs.
+  const resolvedBlockIds = new Set(resolved.map(r => r.block.id).filter(Boolean));
+  const legacyFullPageBlocks = blocks.filter(b =>
+    isFullPageBlockType(b.type)
+    && !b.layout
+    && !resolvedBlockIds.has(b.id)
+  );
+
+  for (let i = 0; i < legacyFullPageBlocks.length; i++) {
+    const block = legacyFullPageBlocks[i];
+    resolved.push({
+      block,
+      x: 0,
+      y: 0,
+      width: scene.w,
+      height: scene.h,
+      position: 'absolute',
+      overflow: 'clip' as const,
+      zIndex: 0,
+      rotation: 0,
+      key: block.id || `legacy-fp-${block.type}-${i}`,
+      isOverflowing: false,
+    });
+  }
+
   return resolved;
 }
 

@@ -117,7 +117,8 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
         const updatedHistory = [..._history];
         updatedHistory[_historyIdx] = {
           ...updatedHistory[_historyIdx],
-          pages: structuredClone(newPages),
+          // FIX: structuredClone with JSON fallback
+          pages: (() => { try { return structuredClone(newPages); } catch { return JSON.parse(JSON.stringify(newPages)); } })(),
         };
         set({ pages: newPages, _history: updatedHistory });
       } else {

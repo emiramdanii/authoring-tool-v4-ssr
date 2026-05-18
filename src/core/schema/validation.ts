@@ -543,7 +543,7 @@ export function assertValidBlocks(blocks: SchemaBlock[], source?: string): void 
 // ── Schema Version Validation ───────────────────────────────────
 
 /** Current schema version — increment when breaking changes are made */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /**
  * Check if a schema version is compatible with the current runtime.
