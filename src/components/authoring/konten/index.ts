@@ -6,3 +6,5 @@ export { DiskusiTab } from './DiskusiTab';
 export { RefleksiTab } from './RefleksiTab';
 export { ModulesTab } from './ModulesTab';
 export { KuisTab } from './KuisTab';
+export { MotivasiTab } from './MotivasiTab';
+export { RangkumanTab } from './RangkumanTab';

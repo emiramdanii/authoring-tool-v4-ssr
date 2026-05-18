@@ -148,7 +148,7 @@ interface KuisItem {
 - [x] Refactor MateriTemplate — switch render per `blok.tipe`
 - [x] Buat helper `renderBlok(blok)` dengan 13 pola render (BlokRenderer.tsx)
 - [x] Test semua 13 tipe blok di design mode + interactive mode
-- [ ] Hapus variant B/C yang tidak diperlukan lagi (opsional)
+- [x] Hapus variant B/C yang tidak diperlukan lagi (opsional) — Semua variant B/C dipertahankan karena masing-masing memiliki tujuan visual yang berbeda
 
 ### 18.2 Generator: Materi + Diskusi + Refleksi
 
@@ -181,7 +181,7 @@ Bisa langsung dari tab yang sedang dikerjakan.
 
 ---
 
-## Phase 19: Auto-Generate Per Pertemuan
+## Phase 19: Auto-Generate Per Pertemuan (SELESAI)
 
 > Prasyarat: Phase 17.2 (pertemuan tag) sudah selesai.
 > Baru setelah itu bisa implementasi auto-split per pertemuan.
@@ -198,46 +198,47 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 ```
 
 **Task**:
-- [ ] Tambah `perPertemuan` config di `PageTypeBlueprint`
-- [ ] Update `generateFromPageType()` — repeat template set per pertemuan
-- [ ] Filter kuis by `pertemuan` di `buildTemplateData('kuis')`
-- [ ] Filter materi blok by `pertemuan` (tambah field di MateriBlok)
-- [ ] UI: toggle "Per Pertemuan" + jumlah pertemuan di PageTypeCreator
-- [ ] Tambah label pertemuan di page thumbnails
+- [x] Tambah `perPertemuan` config di `PageTypeBlueprint`
+- [x] Update `generateFromPageType()` — repeat template set per pertemuan
+- [x] Filter kuis by `pertemuan` di `buildTemplateData('kuis')`
+- [x] Filter materi blok by `pertemuan` (tambah field di MateriBlok)
+- [x] UI: toggle "Per Pertemuan" + jumlah pertemuan di PageTypeCreator
+- [x] Tambah label pertemuan di page thumbnails
 
 ---
 
-## Phase 20: BSNP Template Baru
+## Phase 20: BSNP Template Baru (SELESAI)
 
 > Template yang belum ada tapi BSNP sarankan.
 > Prioritas berdasarkan kebutuhan nyata, bukan checklist lengkap.
 
 ### 20.1 TujuanTemplate — TP ke Siswa (P1)
-- [ ] Buat `TujuanTemplate.tsx` — tampilkan TP + Profil Pelajar Pancasila
-- Data: `authoringStore.tp` + `cp.profil` (SUDAH ADA)
-- [ ] Tambah ke `PageTemplateType`, `PageTemplate.tsx`, `buildTemplateData`, dll
+- [x] Buat `TujuanTemplate.tsx` — tampilkan TP + Profil Pelajar Pancasila
+  → Diimplementasi sebagai SchemaBlock `tujuan-display` dengan TujuanDisplayRenderer (3 varian)
+- [x] Tambah ke `PageTemplateType`, `PageTemplate.tsx`, `buildTemplateData`, dll
 
 ### 20.2 MotivasiTemplate — Apersepsi (P2)
-- [ ] Buat `MotivasiTemplate.tsx` — pertanyaan pemicu + koneksi
-- Data: baru (pertanyaanPemicu, koneksi)
-- [ ] Tambah slice di authoring store + form di panel
+- [x] Buat `MotivasiTemplate.tsx` — pertanyaan pemicu + koneksi
+  → Diimplementasi sebagai SchemaBlock `motivasi` dengan MotivasiRenderer (3 varian)
+- [x] Tambah slice di authoring store + form di panel
+  → motivasi-rangkuman-slice.ts + MotivasiTab.tsx di panel Konten
 
 ### 20.3 RangkumanTemplate — Penegasan (P2)
-- [ ] Buat `RangkumanTemplate.tsx` — poin penting + tips
-- Data: baru (poin[], tips) atau auto-extract dari materi
-- [ ] Tambah slice + form
+- [x] Buat `RangkumanTemplate.tsx` — poin penting + tips
+  → Diimplementasi sebagai SchemaBlock `rangkuman` dengan RangkumanRenderer (3 varian)
+- [x] Tambah slice + form
+  → motivasi-rangkuman-slice.ts + RangkumanTab.tsx di panel Konten
 
 ---
 
-## Phase 21: Interaktivitas Ringan (Opsional)
+## Phase 21: Interaktivitas Ringan (SELESAI)
 
 > Tambahan kecil yang bikin media lebih engaging.
-> Hanya jika ada waktu, bukan prioritas utama.
 
-- [ ] Checkbox "Sudah Paham" per TP di DokumenTemplate
-- [ ] Accordion per blok di MateriTemplate (interactive mode)
-- [ ] Badge visual di PenutupTemplate berdasarkan skor
-- [ ] HasilTemplate — tampilkan skor per aktivitas (bukan hanya total)
+- [x] Checkbox "Sudah Paham" per TP di DokumenTemplate → TpRenderer interactive mode
+- [x] Accordion per blok di MateriTemplate (interactive mode) → CompressionEngine accordion strategy
+- [x] Badge visual di PenutupTemplate berdasarkan skor → PenutupRenderer score badges
+- [x] HasilTemplate — tampilkan skor per aktivitas → HasilRenderer ActivityBreakdown
 
 ---
 
