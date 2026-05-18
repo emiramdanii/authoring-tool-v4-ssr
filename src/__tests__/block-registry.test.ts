@@ -19,7 +19,7 @@ import {
 import type { BlockDefinitionMeta, BlockCapabilities } from '@/core/registry/BlockDefinitionRegistry';
 
 // ═══════════════════════════════════════════════════════════════════
-// EXPECTED BLOCK TYPES — All 31 block types that should be registered
+// EXPECTED BLOCK TYPES — All 40 block types that should be registered
 // ═══════════════════════════════════════════════════════════════════
 
 const EXPECTED_BLOCK_TYPES = [
@@ -31,6 +31,8 @@ const EXPECTED_BLOCK_TYPES = [
   'memory-game', 'matching-game', 'fill-blank-game',
   'word-search-game', 'true-false-game', 'drag-drop-game',
   'crossword-game', 'team-buzzer-game',
+  'materi-blok', 'gambar', 'timeline', 'compare', 'reveal',
+  'tabel', 'checklist', 'statistik', 'studi',
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -38,9 +40,9 @@ const EXPECTED_BLOCK_TYPES = [
 // ═══════════════════════════════════════════════════════════════════
 
 describe('Block Registry — Registration Completeness', () => {
-  it('should have exactly 31 block types registered', () => {
+  it('should have exactly 40 block types registered', () => {
     const registeredTypes = Object.keys(BLOCK_DEFINITIONS);
-    expect(registeredTypes.length, `Expected 31 block types, got ${registeredTypes.length}`).toBe(31);
+    expect(registeredTypes.length, `Expected 40 block types, got ${registeredTypes.length}`).toBe(40);
   });
 
   it('should register all expected block types', () => {

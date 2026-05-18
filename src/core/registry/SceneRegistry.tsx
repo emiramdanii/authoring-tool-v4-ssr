@@ -92,6 +92,10 @@ import {
   TimelineRenderer,
   CompareRenderer,
   RevealRenderer,
+  TabelRenderer,
+  ChecklistRenderer,
+  StatistikRenderer,
+  StudiRenderer,
 } from '../renderer/blocks';
 
 // ── Lazy imports (heavy game renderers — all games are lazy-loaded) ──
@@ -167,6 +171,10 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'timeline': TimelineRenderer,
   'compare': CompareRenderer,
   'reveal': RevealRenderer,
+  'tabel': TabelRenderer,
+  'checklist': ChecklistRenderer,
+  'statistik': StatistikRenderer,
+  'studi': StudiRenderer,
   'memory-game': MemoryGameRenderer,
   'matching-game': MatchingGameRenderer,
   'fill-blank-game': FillBlankGameRenderer,

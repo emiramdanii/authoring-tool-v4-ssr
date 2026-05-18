@@ -17,7 +17,7 @@ import {
   generateClientExportHtml,
   generateExportFilename,
   type ClientExportPayload,
-} from '@/lib/client-export';
+} from '@/lib/export';
 import { logger } from '@/core/utils/logger';
 
 /**
