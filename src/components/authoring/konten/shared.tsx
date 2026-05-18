@@ -10,7 +10,7 @@ export const BLOCK_TYPES = [
   { id: 'poin',      icon: '•',  label: 'Poin-Poin',        color: '#3ecfcf' },
   { id: 'tabel',     icon: '📊', label: 'Tabel',            color: '#a78bfa' },
   { id: 'kutipan',   icon: '💬', label: 'Kutipan / Quote',  color: '#34d399' },
-  { id: 'gambar',    icon: '🖼️', label: 'Gambar dari URL',  color: '#fb923c' },
+  { id: 'gambar',    icon: '🖼️', label: 'Gambar / Upload',  color: '#fb923c' },
   { id: 'timeline',  icon: '🔄', label: 'Timeline / Alur',  color: '#3ecfcf' },
   { id: 'highlight', icon: '⚡', label: 'Highlight Card',   color: '#f9c82e' },
   { id: 'compare',   icon: '⚖️', label: 'Perbandingan',     color: '#a78bfa' },

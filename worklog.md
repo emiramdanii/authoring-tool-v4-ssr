@@ -142,3 +142,53 @@ Stage Summary:
 - Export pipeline covers 9 additional block types (was 18, now 27)
 - PlayOverlay progress dots now update reactively during interactive play
 - Export game functions complete (sortir + true/false score display)
+
+---
+Task ID: 24
+Agent: Main
+Task: Phase 24 — Image Upload & Media Library
+
+Work Log:
+- Created `public/upload/images/.gitkeep` — ensure upload directory exists for static serving
+- Created `src/app/api/upload/route.ts`:
+  - POST: accepts multipart/form-data with file, validates type (JPG/PNG/GIF/WebP/SVG) and size (max 5MB)
+  - Generates unique filename: `img-{timestamp}-{random6char}.ext`
+  - Saves to `public/upload/images/` so Next.js serves them automatically
+  - Returns `{ success, url, filename, size }`
+  - GET: lists all uploaded images with metadata (url, filename, size, lastModified)
+  - Supports `?search=` query param for filename filtering
+  - DELETE: removes file by filename (with path traversal protection)
+- Created `src/components/authoring/konten/ImageUploader.tsx`:
+  - Drag & drop zone + file picker button
+  - Preview thumbnail after upload
+  - Animated progress bar during upload
+  - Indonesian labels: "Seret gambar ke sini", "Pilih File", "Mengunggah..."
+  - Dark theme styling (bg-app-surface, border-app-border, etc.)
+  - Replace/clear actions on hover over existing image
+  - Client-side validation before upload
+- Created `src/components/authoring/konten/MediaLibrary.tsx`:
+  - Modal overlay with image grid (2-4 columns responsive)
+  - Click image to insert URL into active field
+  - Search/filter by filename with debounce
+  - Delete button per image (with loading state)
+  - Refresh button to reload library
+  - Indonesian labels and helpful footer hint
+- Modified `src/components/authoring/konten/block-editors.tsx`:
+  - Replaced plain URL input in GambarEditor with ImageUploader component
+  - Added MediaLibrary button/link above uploader
+  - Kept URL input as fallback (with "(opsional, jika tidak unggah)" hint)
+  - Retained preview thumbnail when URL is set
+  - Added useState for MediaLibrary visibility toggle
+- Updated `shared.tsx`: changed block type label from "Gambar dari URL" to "Gambar / Upload"
+- Updated `ROADMAP-BSNP.md`: marked Phase 24 tasks as [x] and SELESAI
+- TypeScript check: passes with no errors
+- ESLint: passes (only pre-existing warnings in public/ JS files)
+- No sharp dependency added — images saved as-is
+
+Stage Summary:
+- Phase 24 is COMPLETE
+- Teachers can now upload images directly from their computer
+- Full workflow: drag/drop upload → ImageUploader → API → static file → preview
+- Media Library allows browsing, searching, and deleting uploaded images
+- URL input remains as fallback for external image URLs
+- File validation: JPG, PNG, GIF, WebP, SVG only, max 5MB

@@ -1,9 +1,12 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { MateriBlok } from '@/store/authoring-store';
 import { FieldLabel, INPUT_CLS, TEXTAREA_CLS, CompareSideForm } from './shared';
+import { ImageUploader } from './ImageUploader';
+import { MediaLibrary } from './MediaLibrary';
+import { FolderOpen } from 'lucide-react';
 
 // ── Block Editor Forms ─────────────────────────────────────────
 
@@ -199,20 +202,53 @@ function KutipanEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
   );
 }
 
-/** 6. gambar – Image URL */
+/** 6. gambar – Image with upload support */
 function GambarEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
   const update = useAuthoringStore((s) => s.updateMateriBlok);
   const url = blok.isi || '';
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+
   return (
     <div className="space-y-3">
       <div>
         <FieldLabel>Judul Gambar (opsional)</FieldLabel>
         <input className={INPUT_CLS} placeholder="Judul gambar…" value={blok.judul || ''} onChange={(e) => update(idx, 'judul', e.target.value)} />
       </div>
+
+      {/* Image Uploader — drag & drop + file picker */}
       <div>
-        <FieldLabel>URL Gambar</FieldLabel>
-        <input className={INPUT_CLS} placeholder="https://contoh.com/gambar.png" value={url} onChange={(e) => update(idx, 'isi', e.target.value)} />
+        <div className="flex items-center justify-between mb-1.5">
+          <FieldLabel>Unggah Gambar</FieldLabel>
+          <button
+            onClick={() => setShowMediaLibrary(true)}
+            className="flex items-center gap-1 text-xs text-app-accent hover:text-app-accent/80 transition-colors"
+            title="Buka Pustaka Media"
+          >
+            <FolderOpen size={12} /> Pustaka Media
+          </button>
+        </div>
+        <ImageUploader
+          value={url}
+          onUpload={(uploadedUrl) => update(idx, 'isi', uploadedUrl)}
+          onClear={() => update(idx, 'isi', '')}
+        />
       </div>
+
+      {/* URL input as fallback */}
+      <div>
+        <div className="flex items-center gap-2 mb-1.5">
+          <FieldLabel>URL Gambar</FieldLabel>
+          <span className="text-[0.6rem] text-app-muted">(opsional, jika tidak unggah)</span>
+        </div>
+        <input
+          className={INPUT_CLS}
+          placeholder="https://contoh.com/gambar.png"
+          value={url}
+          onChange={(e) => update(idx, 'isi', e.target.value)}
+        />
+      </div>
+
+      {/* Preview thumbnail */}
       {url && (
         <div className="rounded-lg border border-app-border overflow-hidden bg-app-elevated/50">
           <img
@@ -228,6 +264,13 @@ function GambarEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
           />
         </div>
       )}
+
+      {/* Media Library overlay */}
+      <MediaLibrary
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onSelect={(selectedUrl) => update(idx, 'isi', selectedUrl)}
+      />
     </div>
   );
 }

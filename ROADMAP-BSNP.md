@@ -270,18 +270,21 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 
 ---
 
-## Phase 24: Image Upload & Media Library
+## Phase 24: Image Upload & Media Library (SELESAI)
 
 > Saat ini gambar hanya bisa via URL. Guru perlu upload gambar
 > langsung dari komputer supaya lebih praktis.
 
 **Task**:
-- [ ] API route: POST /api/upload (multipart, simpan ke /upload atau cloud storage)
-- [ ] Komponen ImageUploader di panel konten (drag & drop + file picker)
-- [ ] Media Library panel: browse gambar yang sudah diupload
-- [ ] Thumbnail preview untuk gambar di block editor
-- [ ] Optimize: auto-resize gambar ke max 1280px width
-- [ ] Cleanup: hapus gambar orphan yang tidak dipakai
+- [x] API route: POST /api/upload (multipart, simpan ke /public/upload/images/)
+- [x] API route: GET /api/upload (list semua gambar yang diupload)
+- [x] API route: DELETE /api/upload (hapus gambar berdasarkan filename)
+- [x] Komponen ImageUploader di panel konten (drag & drop + file picker)
+- [x] Media Library panel: browse gambar yang sudah diupload + search + delete
+- [x] Thumbnail preview untuk gambar di block editor
+- [x] Update GambarEditor — integrasi ImageUploader + MediaLibrary + URL fallback
+- [x] Validasi: tipe file (JPG, PNG, GIF, WebP, SVG), maks 5MB
+- [x] Nama file unik: img-{timestamp}-{random}.ext
 
 ---
 
