@@ -1,0 +1,397 @@
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
+
+export const SISTEM_PERNAPASAN_LESSON: LessonSchema = {
+  id: 'sistem-pernapasan',
+  version: 1,
+  title: 'Sistem Pernapasan Manusia',
+  mapel: 'IPA',
+  kelas: 'VIII',
+  themeId: 'sistem-pernapasan',
+  navbar: {
+    logoText: '🫁 Sistem Pernapasan',
+    logoColor: 'g',
+    progressGradient: ['g', 'c'],
+  },
+  screens: [
+    // ──────────────────────── COVER ────────────────────────
+    {
+      id: 's-cover',
+      templateType: 'cover',
+      background: {
+        type: 'radial',
+        color1: 'g',
+        color2: 'bg',
+      },
+      blocks: [
+        {
+          type: 'cover',
+          icon: '🫁',
+          title: 'Sistem Pernapasan Manusia',
+          subtitle: 'IPA Kelas VIII — Pertemuan 1',
+          badges: [
+            { icon: '📋', text: 'TP 3', color: 'g' },
+            { icon: '📖', text: '5 Materi', color: 'c' },
+            { icon: '🎮', text: 'Kuis 5 Soal', color: 'y' },
+            { icon: '📝', text: 'Refleksi', color: 'p' },
+          ],
+          meta: {
+            durasi: '80 Menit',
+            fase: 'Fase D',
+            elemen: 'Sains & Teknologi',
+          },
+          cta: {
+            label: '▶ Mulai Pembelajaran',
+            action: 's-petunjuk',
+          },
+          background: {
+            type: 'gradient',
+            color1: 'g',
+            color2: 'bg',
+          },
+        } as SchemaBlock,
+      ],
+      nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
+    },
+
+    // ──────────────────────── PETUNJUK ────────────────────────
+    {
+      id: 's-petunjuk',
+      templateType: 'petunjuk',
+      sectionLabel: '📌 Petunjuk',
+      sectionColor: 'c',
+      blocks: [
+        {
+          type: 'petunjuk',
+          title: 'Cara Menggunakan',
+          titleHighlight: 'Media Ini',
+          items: [
+            {
+              icon: '📖',
+              title: 'Pelajari Materi',
+              body: 'Baca setiap blok materi dengan teliti. Mulai dari definisi organ pernapasan hingga mekanisme bernapas!',
+            },
+            {
+              icon: '🔬',
+              title: 'Amati & Analisis',
+              body: 'Perhatikan tabel perbandingan dan diagram sistem pernapasan. Bandingkan pernapasan dada dan perut!',
+            },
+            {
+              icon: '💬',
+              title: 'Diskusi & Tulis',
+              body: 'Jawab pertanyaan diskusi — jawabanmu otomatis tersimpan dan akan tampil lagi di Refleksi sebagai portofoliomu',
+            },
+            {
+              icon: '🎮',
+              title: 'Kuis Pilihan Ganda',
+              body: 'Uji pemahamanmu dengan 5 soal tentang sistem pernapasan. Setiap jawaban benar memberi penjelasan mendalam!',
+            },
+          ],
+          tips: '💡 Ikuti alur dari awal sampai akhir. Jawab semua pertanyaan diskusi — jawabanmu akan muncul di Refleksi sebagai portofolio belajarmu hari ini!',
+          tipsColor: 'g',
+        },
+      ],
+      nav: { prev: 's-cover', next: 's-tp', nextLabel: 'Tujuan Pembelajaran' },
+    },
+
+    // ──────────────────────── TP ────────────────────────
+    {
+      id: 's-tp',
+      templateType: 'tp',
+      sectionLabel: '🎯 Tujuan Pembelajaran',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'tp',
+          title: 'Yang Akan Kamu',
+          titleHighlight: 'Kuasai Hari Ini',
+          items: [
+            {
+              num: 1,
+              verb: 'Menjelaskan',
+              desc: 'organ-organ pada sistem pernapasan manusia dan fungsinya masing-masing',
+              color: 'g',
+            },
+            {
+              num: 2,
+              verb: 'Menganalisis',
+              desc: 'mekanisme inspirasi dan ekspirasi serta perbedaan pernapasan dada dan pernapasan perut',
+              color: 'c',
+            },
+            {
+              num: 3,
+              verb: 'Mengidentifikasi',
+              desc: 'gangguan pada sistem pernapasan manusia seperti asma, TBC, dan pneumonia serta upaya pencegahannya',
+              color: 'y',
+            },
+          ],
+          profil: '🔗 Profil Pelajar Pancasila: Bernalar Kritis · Mandiri · Gotong Royong',
+          profilColor: 'g',
+        },
+      ],
+      nav: { prev: 's-petunjuk', next: 's-materi', nextLabel: 'Mulai Materi' },
+    },
+
+    // ──────────────────────── MATERI ────────────────────────
+    {
+      id: 's-materi',
+      templateType: 'materi',
+      sectionLabel: '📖 Materi · ±30 Menit',
+      sectionColor: 'g',
+      blocks: [
+        // Blok 1: Definisi organ pernapasan
+        {
+          type: 'materi-blok',
+          tipe: 'definisi',
+          judul: 'Organ Pernapasan Manusia',
+          icon: '🫁',
+          warna: 'g',
+          isi: 'Sistem pernapasan manusia terdiri dari organ-organ yang berfungsi mengambil oksigen (O₂) dari udara dan mengeluarkan karbon dioksida (CO₂). Udara masuk melalui hidung, melewati faring, laring, trakea, bronkus, dan akhirnya sampai di paru-paru.',
+          butir: [
+            'Hidung (cavum nasi): menyaring, menghangatkan, dan melembapkan udara',
+            'Faring (tekak): saluran penghubung antara rongga hidung dan laring',
+            'Laring (kotak suara): menghasilkan suara dan melindungi trakea',
+            'Trakea (batang tenggorok): saluran udara utama yang bercabang menjadi bronkus',
+            'Bronkus: cabang trakea ke paru-paru kanan dan kiri',
+            'Paru-paru: organ utama pertukaran O₂ dan CO₂ dalam alveolus',
+          ],
+        } as SchemaBlock,
+
+        // Blok 2: Mekanisme inspirasi dan ekspirasi
+        {
+          type: 'materi-blok',
+          tipe: 'poin',
+          judul: 'Mekanisme Inspirasi dan Ekspirasi',
+          icon: '💨',
+          warna: 'c',
+          butir: [
+            'Inspirasi (menarik napas): otot diafragma berkontraksi dan turun, otot antariga berkontraksi sehingga rongga dada membesar, tekanan paru-paru menurun, udara masuk ke paru-paru',
+            'Ekspirasi (menghembuskan napas): otot diafragma berelaksasi dan naik, otot antariga berelaksasi sehingga rongga dada mengecil, tekanan paru-paru meningkat, udara keluar dari paru-paru',
+            'Pertukaran gas terjadi di alveolus: O₂ berdifusi dari alveolus ke kapiler darah, CO₂ berdifusi dari kapiler darah ke alveolus',
+            'Hemoglobin dalam sel darah merah berperan mengikat dan mengangkut O₂ ke seluruh tubuh',
+          ],
+        } as SchemaBlock,
+
+        // Blok 3: Tabel perbandingan pernapasan dada dan perut
+        {
+          type: 'materi-blok',
+          tipe: 'tabel',
+          judul: 'Perbandingan Pernapasan Dada dan Pernapasan Perut',
+          icon: '📊',
+          warna: 'c',
+          baris: [
+            ['Aspek', 'Pernapasan Dada', 'Pernapasan Perut'],
+            ['Otot utama', 'Otot antariga (interkostal)', 'Otot diafragma'],
+            ['Mekanisme', 'Rongga dada membesar/mengecil', 'Diafragma turun/naik'],
+            ['Insprirasi', 'Otot antariga kontraksi, dada terangkat', 'Diafragma kontraksi, turun ke bawah'],
+            ['Ekspirasi', 'Otot antariga relaksasi, dada turun', 'Diafragma relaksasi, naik ke atas'],
+            ['Volume', 'Perubahan volume rongga dada', 'Perubahan volume rongga perut'],
+          ],
+        } as SchemaBlock,
+
+        // Blok 4: Gambar diagram sistem pernapasan
+        {
+          type: 'materi-blok',
+          tipe: 'gambar',
+          judul: 'Diagram Sistem Pernapasan',
+          icon: '🖼️',
+          warna: 'g',
+          isi: 'Perhatikan diagram organ-organ sistem pernapasan manusia dari hidung hingga alveolus di paru-paru.',
+          style: { url: '/placeholders/sistem-pernapasan-diagram.png' },
+        } as SchemaBlock,
+
+        // Blok 5: Studi kasus gangguan pernapasan
+        {
+          type: 'materi-blok',
+          tipe: 'studi',
+          judul: 'Kasus: Gangguan Sistem Pernapasan',
+          icon: '🏥',
+          warna: 'y',
+          situasi: 'Andi (13 tahun) sering mengalami sesak napas terutama saat malam hari dan pagi hari saat udara dingin. Ibu Andi membawanya ke dokter dan didiagnosis menderita asma. Dokter menjelaskan bahwa asma terjadi karena penyempitan saluran pernapasan (bronkus) akibat peradangan dan kejang otot bronkus.',
+          pertanyaan: 'Berdasarkan kasus di atas, jelaskan mengapa Andi mengalami sesak napas dan bagaimana hubungannya dengan mekanisme pernapasan yang sudah dipelajari!',
+          pesan: 'Asma, TBC, dan pneumonia adalah contoh gangguan pernapasan yang umum. Asma menyebabkan penyempitan bronkus, TBC disebabkan bakteri Mycobacterium tuberculosis yang menyerang paru-paru, sedangkan pneumonia adalah infeksi yang meradangkan alveolus sehingga pertukaran gas terganggu.',
+        } as SchemaBlock,
+      ],
+      nav: { prev: 's-tp', next: 's-diskusi', nextLabel: 'Lanjut ke Diskusi' },
+    },
+
+    // ──────────────────────── DISKUSI ────────────────────────
+    {
+      id: 's-diskusi',
+      templateType: 'diskusi',
+      sectionLabel: '💬 Diskusi · ±15 Menit',
+      sectionColor: 'c',
+      blocks: [
+        {
+          type: 'diskusi',
+          title: 'Diskusi Sistem Pernapasan',
+          intro: 'Berpikirlah kritis dan gunakan pengetahuanmu!',
+          questions: [
+            {
+              label: 'Pertanyaan 1',
+              icon: '🤔',
+              teks: 'Mengapa kita tidak bisa menahan napas dalam waktu yang lama? Jelaskan kaitannya dengan proses pertukaran gas di alveolus!',
+              petunjuk: 'Tuliskan pendapatmu di sini… (jawabanmu akan tampil lagi di Refleksi)',
+              color: 'g',
+            },
+            {
+              label: 'Pertanyaan 2',
+              icon: '💡',
+              teks: 'Jika seseorang mengalami kerusakan pada alveolus, apa dampaknya terhadap proses pernapasan? Berikan analisismu!',
+              petunjuk: 'Jelaskan dengan mengacu pada fungsi alveolus dalam pertukaran gas…',
+              color: 'c',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-materi', next: 's-kuis', nextLabel: 'Lanjut ke Kuis' },
+    },
+
+    // ──────────────────────── KUIS ────────────────────────
+    {
+      id: 's-kuis',
+      templateType: 'game',
+      sectionLabel: '🎮 Kuis · ±10 Menit',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'kuis',
+          title: 'Kuis Sistem Pernapasan!',
+          questions: [
+            {
+              q: 'Organ pernapasan yang berfungsi menyaring, menghangatkan, dan melembapkan udara adalah...',
+              opts: ['Faring', 'Laring', 'Hidung', 'Trakea'],
+              ans: 2,
+              ex: 'Hidung (cavum nasi) memiliki bulu hidung dan mukosa yang menyaring debu, menghangatkan, dan melembapkan udara sebelum masuk ke paru-paru.',
+            },
+            {
+              q: 'Saat inspirasi berlangsung, otot diafragma akan...',
+              opts: ['Berelaksasi dan naik', 'Berelaksasi dan turun', 'Berkontraksi dan naik', 'Berkontraksi dan turun'],
+              ans: 3,
+              ex: 'Saat inspirasi, otot diafragma berkontraksi dan bergerak turun sehingga volume rongga dada membesar dan tekanan paru-paru menurun, udara pun masuk.',
+            },
+            {
+              q: 'Pertukaran gas O₂ dan CO₂ dalam paru-paru terjadi di...',
+              opts: ['Bronkus', 'Trakea', 'Alveolus', 'Bronkiolus'],
+              ans: 2,
+              ex: 'Alveolus adalah kantong udara kecil di ujung bronkiolus yang dikelilingi kapiler darah. Di sinilah O₂ berdifusi ke darah dan CO₂ berdifusi keluar.',
+            },
+            {
+              q: 'Pernapasan yang terjadi akibat kontraksi dan relaksasi otot antariga disebut pernapasan...',
+              opts: ['Perut', 'Dada', 'Sel', 'Kulit'],
+              ans: 1,
+              ex: 'Pernapasan dada melibatkan otot antariga (interkostal). Saat kontraksi, tulang rusuk terangkat dan rongga dada membesar sehingga udara masuk.',
+            },
+            {
+              q: 'Penyakit yang disebabkan oleh bakteri Mycobacterium tuberculosis dan menyerang paru-paru adalah...',
+              opts: ['Asma', 'Pneumonia', 'TBC', 'Bronkitis'],
+              ans: 2,
+              ex: 'Tuberkulosis (TBC) disebabkan oleh bakteri Mycobacterium tuberculosis. Bakteri ini menyerang jaringan paru-paru dan menyebabkan kerusakan pada alveolus.',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-diskusi', next: 's-hasil', nextLabel: 'Lihat Hasil' },
+    },
+
+    // ──────────────────────── HASIL ────────────────────────
+    {
+      id: 's-hasil',
+      templateType: 'hasil',
+      sectionLabel: '🏆 Hasil',
+      sectionColor: 'g',
+      background: {
+        type: 'radial',
+        color1: 'g',
+        color2: 'bg',
+      },
+      blocks: [
+        {
+          type: 'hasil',
+          title: 'Pertemuan 1',
+          subtitle: 'Selesai!',
+        },
+      ],
+      nav: { prev: 's-kuis', next: 's-refleksi', nextLabel: 'Refleksi Diri' },
+    },
+
+    // ──────────────────────── REFLEKSI ────────────────────────
+    {
+      id: 's-refleksi',
+      templateType: 'refleksi',
+      sectionLabel: '📝 Refleksi · ±8 Menit',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'refleksi',
+          title: 'Refleksi Diri',
+          intro: 'Jawaban jujurmu lebih berharga dari jawaban yang sempurna.',
+          questions: [
+            {
+              teks: 'Hal baru apa yang kamu pelajari hari ini tentang sistem pernapasan manusia?',
+              petunjuk: 'Tuliskan 1–2 hal yang benar-benar baru bagimu…',
+              warna: 'g',
+              icon: '🌟',
+            },
+            {
+              teks: 'Bagaimana pemahamanmu tentang pernapasan dada dan perut sekarang? Apa perbedaan paling mencolok menurutmu?',
+              petunjuk: 'Jelaskan dengan kata-katamu sendiri…',
+              warna: 'c',
+              icon: '🔍',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-hasil', next: 's-penutup', nextLabel: 'Selesai' },
+    },
+
+    // ──────────────────────── PENUTUP ────────────────────────
+    {
+      id: 's-penutup',
+      templateType: 'penutup',
+      background: {
+        type: 'radial',
+        color1: 'g',
+        color2: 'bg',
+      },
+      blocks: [
+        {
+          type: 'penutup',
+          title: 'Pertemuan 1',
+          subtitle: 'Berhasil Diselesaikan!',
+          preview: [
+            {
+              icon: '🫁',
+              judul: 'Pertemuan 1',
+              isi: 'Sistem Pernapasan Manusia',
+              warna: 'g',
+            },
+            {
+              icon: '🔬',
+              judul: 'Pertemuan 2',
+              isi: 'Sistem Pencernaan Manusia',
+              warna: 'c',
+            },
+          ],
+          nextPertemuan: {
+            judul: 'Pertemuan 2 — Apa yang Akan Kamu Pelajari?',
+            deskripsi: 'Kamu sudah paham sistem pernapasan. Sekarang saatnya mempelajari sistem pencernaan manusia — dari mulut hingga usus besar!',
+            items: [
+              {
+                icon: '🦷',
+                judul: 'Organ Pencernaan',
+                isi: 'Struktur dan fungsi organ pencernaan',
+                warna: 'c',
+              },
+              {
+                icon: '⚗️',
+                judul: 'Enzim Pencernaan',
+                isi: 'Peran enzim dalam proses pencernaan',
+                warna: 'y',
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
