@@ -2,6 +2,15 @@
 // CANVA STORE — Main store (composes all slices)
 // ═══════════════════════════════════════════════════════════════
 
+// ═══ CRITICAL: Enable Immer Patches plugin BEFORE any store creation ═══
+// Without this call, produceWithPatches() and applyPatches() throw:
+//   "[Immer] The plugin for 'Patches' has not been loaded into Immer."
+// This caused ALL block CRUD operations (add/delete/duplicate/reorder)
+// to fail silently — the root cause of "blocks don't appear on canvas"
+// and "Halaman Kosong dialog doesn't disappear" bugs.
+import { enablePatches } from 'immer';
+enablePatches();
+
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { RATIOS } from '@/components/canva/types';

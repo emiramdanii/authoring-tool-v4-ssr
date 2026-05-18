@@ -428,9 +428,11 @@ export default function Stage() {
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}
           {/* Professional empty state with action buttons + keyboard hints */}
           {/* Shows for ANY page that has no blocks — not just custom pages */}
+          {/* FIX: Explicit boolean expression to avoid && / || precedence ambiguity */}
           {!canvasPreview && (
-            (isSchemaDriven && page.schema && page.schema.blocks.length === 0) ||
-            (!isSchemaDriven && page.elements.length === 0)
+            isSchemaDriven
+              ? (page.schema?.blocks?.length ?? 0) === 0
+              : page.elements.length === 0
           ) && (
             <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: Z.CANVAS_OVERLAY }}>
               <div className="bg-app-surface/90 backdrop-blur-sm border border-app-accent/20 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center shadow-lg">

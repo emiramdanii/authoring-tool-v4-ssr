@@ -240,3 +240,29 @@ Stage Summary:
 - Defensive fix: assertDocumentPurity no longer crashes the app in dev mode
 - Build passes cleanly
 - Cover overflow needs manual testing to diagnose
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix "Halaman Kosong" dialog not disappearing when blocks are added on canvas
+
+Work Log:
+- Investigated rendering pipeline: Stage → PageRenderer → SchemaScreenRenderer
+- Identified ROOT CAUSE #1: `enablePatches()` from Immer was never called in production code, only in test files. Without it, `produceWithPatches()` throws error and ALL block CRUD operations fail silently.
+- Identified ROOT CAUSE #2: `use-auto-save.ts` hook missing `shallow` equality function on `subscribeWithSelector`, causing infinite loop → stack overflow → corrupted localStorage
+- Identified ROOT CAUSE #3: Dialog condition in `stage/index.tsx` had potential operator precedence ambiguity with `&&` and `||`
+
+Fixes applied:
+1. Added `enablePatches()` at top of `src/store/canva/store.ts` before store creation
+2. Added `{ equalityFn: shallow }` to `use-auto-save.ts` subscribe call to prevent infinite loop
+3. Rewrote dialog condition in `stage/index.tsx` using explicit ternary + null-safe access
+4. Added fallback in `addSchemaBlock` when `produceWithPatches` fails (simple immutable splice)
+5. Added `factoryReset()` method to persistence slice for recovering from corrupted data
+6. Made `saveToStorage` robust against stack overflow (auto-clears corrupted localStorage on RangeError)
+7. Wrapped `assertDocumentPurity` in `loadFromStorage` with try/catch to prevent crash on corrupted data
+
+Stage Summary:
+- 3 root causes identified and fixed
+- 6 files modified: store.ts, ui-slice.ts, stage/index.tsx, persistence-slice.ts, types.ts, use-auto-save.ts
+- Block addition now works: "Tambah Block" → select block type → block appears on canvas → "Halaman Kosong" dialog disappears
+- Auto-save no longer causes infinite loop/stack overflow

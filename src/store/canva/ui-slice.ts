@@ -913,26 +913,45 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
 
     // ═══ PATCH-BASED ADD via produceWithPatches ══════════════
     const insertAt = insertAfterIndex != null ? insertAfterIndex + 1 : blocks.length;
-    const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
-      draft.splice(insertAt, 0, newBlock as unknown as SchemaBlock);
-    });
 
-    editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId: newBlock.id as string,
-        blockType,
-        pageIndex: currentPageIndex,
-        patch: { _added: true },
-        timestamp: Date.now(),
-        source: 'user',
-        _immerPatches: {
-          forward: forwardPatches,
-          inverse: inversePatches,
+    // FIX: Try produceWithPatches first (for undo/redo patches).
+    // If it fails (e.g., stack overflow from corrupted schema),
+    // fall back to simple immutable splice (no undo patches, but block is added).
+    let newBlocks: SchemaBlock[];
+    let forwardPatches: import('immer').Patch[] | undefined;
+    let inversePatches: import('immer').Patch[] | undefined;
+
+    try {
+      const result = produceWithPatches(blocks, draft => {
+        draft.splice(insertAt, 0, newBlock as unknown as SchemaBlock);
+      });
+      newBlocks = result[0];
+      forwardPatches = result[1];
+      inversePatches = result[2];
+    } catch (immerErr) {
+      // Fallback: simple immutable splice without patches
+      console.warn('[addSchemaBlock] produceWithPatches failed, using fallback:', immerErr);
+      newBlocks = [...blocks.slice(0, insertAt), newBlock as unknown as SchemaBlock, ...blocks.slice(insertAt)];
+    }
+
+    if (forwardPatches && inversePatches) {
+      editBus.emit({
+        type: 'patch',
+        patch: {
+          blockId: newBlock.id as string,
+          blockType,
           pageIndex: currentPageIndex,
+          patch: { _added: true },
+          timestamp: Date.now(),
+          source: 'user',
+          _immerPatches: {
+            forward: forwardPatches,
+            inverse: inversePatches,
+            pageIndex: currentPageIndex,
+          },
         },
-      },
-    });
+      });
+    }
 
     // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
     const newPages = [...pages];

@@ -295,6 +295,9 @@ export interface CanvaState {
   saveToStorage: () => void;
   loadFromStorage: () => boolean;
   loadFromDB: (data: DBProjectData) => void;
+  /** Factory reset — clear all localStorage and reset to default state.
+   *  Use when corrupted data causes stack overflow or rendering failures. */
+  factoryReset: () => void;
 
   // ── Teacher Mode ─────────────────────────────────────────────
   /** true = simple/teacher mode (default), false = advanced/technical mode */

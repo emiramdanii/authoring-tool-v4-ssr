@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+import { shallow } from 'zustand/shallow';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { logger } from '@/core/utils/logger';
@@ -160,6 +161,10 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
 
     // Subscribe to canva store — uses subscribeWithSelector so we can
     // watch only the slices that represent meaningful edits.
+    // CRITICAL: shallow equality is required because the selector returns
+    // a new object each time. Without it, Object.is always returns false
+    // for different object references, causing setState({ _saveStatus })
+    // → listener → scheduleSave → setState → infinite loop → stack overflow.
     const unsubscribeCanva = useCanvaStore.subscribe(
       (state) => ({
         pages: state.pages,
@@ -168,6 +173,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
       () => {
         scheduleSave();
       },
+      { equalityFn: shallow },
     );
 
     // Subscribe to authoring store — no subscribeWithSelector middleware,

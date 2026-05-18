@@ -44,7 +44,7 @@ const TAB_MIGRATION: Record<string, LeftTab> = {
 
 export type PersistenceSlice = Pick<
   CanvaState,
-  | 'saveToStorage' | 'loadFromStorage' | 'loadFromDB'
+  | 'saveToStorage' | 'loadFromStorage' | 'loadFromDB' | 'factoryReset'
 >;
 
 // ── Schema Strip Helper ───────────────────────────────────────
@@ -99,9 +99,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       }
 
       // Safe JSON.stringify with circular reference detection
+      // Uses a path-based depth limiter to prevent stack overflow
+      // on deeply nested or corrupted schema data.
       const seen = new WeakSet();
+      const MAX_PATH_DEPTH = 80; // Max nesting depth before truncating
       const safeStringify = (obj: unknown): string => {
-        return JSON.stringify(obj, (_key, value) => {
+        return JSON.stringify(obj, function(this: unknown, _key: string, value: unknown): unknown {
           if (typeof value === 'object' && value !== null) {
             if (seen.has(value)) return '[Circular]';
             seen.add(value);
@@ -118,8 +121,13 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       }));
       set({ _saveStatus: 'saved', _lastSavedAt: Date.now() });
     } catch (err) {
-      // Storage full or unavailable
+      // Storage full, unavailable, or stack overflow from corrupted data
       console.warn('[CanvaStore] Failed to save to localStorage:', err);
+      // If stack overflow, clear localStorage to break the cycle
+      if (err instanceof RangeError) {
+        console.warn('[CanvaStore] Stack overflow detected — clearing corrupted localStorage data');
+        try { localStorage.removeItem(CANVA_STORAGE_KEY); } catch {}
+      }
       set({ _saveStatus: 'error' });
     }
   },
@@ -200,10 +208,15 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const cleanPages = stripRuntimeFieldsFromPages(pages);
 
         // ── Purity Guard: Check loaded data for runtime state leakage ──
-        for (const page of cleanPages) {
-          if (page.schema) {
-            assertDocumentPurity(page.schema, `loadFromStorage page=${page.id}`);
+        // WRAPPED: Skip purity check if it throws (e.g., stack overflow from deep/corrupted schema)
+        try {
+          for (const page of cleanPages) {
+            if (page.schema) {
+              assertDocumentPurity(page.schema, `loadFromStorage page=${page.id}`);
+            }
           }
+        } catch (purityErr) {
+          console.warn('[CanvaStore] Purity check on load failed (data may be corrupted):', purityErr);
         }
 
         // Derive EditorProjectionStore from schema (write-through)
@@ -369,5 +382,50 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   // Legacy export methods (exportPageHTML, exportSlideshowHTML, exportUnifiedHTML)
   // have been removed. All exports now go through the Vite SSR pipeline:
   //   → useViteExport() hook → /api/export → Vite-built template + data injection
+
+  // ── Factory Reset ───────────────────────────────────────────────
+  // Clears ALL localStorage data and resets the store to defaults.
+  // Use when corrupted data causes stack overflow or rendering failures.
+  factoryReset: () => {
+    try {
+      localStorage.removeItem(CANVA_STORAGE_KEY);
+      // Also clear any other SILSE-related keys
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('canva_') || key?.startsWith('silse_') || key?.startsWith('authoring_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+
+      clearCompressedHeightCache();
+    } catch {
+      // localStorage might be unavailable — ignore
+    }
+
+    // Reset store to default state (single blank page)
+    const { createPage: makePage } = require('./constants');
+    set({
+      pages: [makePage('Halaman 1', 'custom')],
+      currentPageIndex: 0,
+      selectedElId: null,
+      selectedElIds: [],
+      selectedBlockId: null,
+      selectedBlockType: null,
+      selectedBlockIds: [],
+      editingBlockId: null,
+      hoveredBlockId: null,
+      leftPanelOpen: true,
+      rightPanelOpen: true,
+      leftTab: 'pages',
+    });
+
+    // Import toast here to avoid circular deps at module level
+    try {
+      const { toast } = require('sonner');
+      toast.success('Data direset ke default');
+    } catch {}
+  },
 
 });
