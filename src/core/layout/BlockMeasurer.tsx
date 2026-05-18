@@ -170,7 +170,7 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
     <div
       ref={ref}
       data-measured-block={blockId}
-      style={{ width: '100%' }}
+      style={{ width: '100%', minHeight: '100%' }}
     >
       {children}
     </div>

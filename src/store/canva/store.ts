@@ -120,7 +120,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
   };
 }), { name: 'CanvaStore', enabled: process.env.NODE_ENV === 'development' }));
 
-// NOTE: Auto-sync and edit-bus wiring have been moved to
-// @/store/canva/init.ts to avoid circular dependency issues.
-// The init code must be called once from the app entry point.
-// See initCanvaStoreSubscriptions() in @/store/canva/init.
+// ═══ DEBUG BRIDGE — Expose store for runtime debugging ════════
+if (typeof window !== 'undefined') {
+  (window as any).__useCanvaStore = useCanvaStore;
+}
