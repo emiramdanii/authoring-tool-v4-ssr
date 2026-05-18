@@ -108,11 +108,11 @@ interface KuisItem {
 ```
 
 **Task**:
-- [ ] Tambah `pertemuan` field ke `KuisItem` di types.ts
-- [ ] Update `addKuis()` default — pertemuan: undefined (backward compatible)
-- [ ] Update KuisTab form — tambah dropdown pertemuan (1-8, opsional)
-- [ ] Update `genKuis()` — auto-tag pertemuan berdasarkan settings
-- [ ] Update `buildTemplateData('kuis')` — support filter by pertemuan (opsional)
+- [x] Tambah `pertemuan` field ke `KuisItem` di types.ts
+- [x] Update `addKuis()` default — pertemuan: undefined (backward compatible)
+- [x] Update KuisTab form — tambah dropdown pertemuan (1-8, opsional)
+- [x] Update `genKuis()` — auto-tag pertemuan berdasarkan settings
+- [x] Update `buildTemplateData('kuis')` — support filter by pertemuan (opsional)
 
 ---
 
@@ -156,17 +156,17 @@ interface KuisItem {
 Dengan generator, guru bisa re-generate yang gak cocok.
 
 **Task**:
-- [ ] Buat `genMateri(parsed)` — deteksi struktur → assign tipe per blok
+- [x] Buat `genMateri(parsed)` — deteksi struktur → assign tipe per blok
   - Definisi → `definisi` blok
   - Enumerasi → `poin` blok
   - Langkah → `timeline` blok
   - Perbandingan → `compare` blok
   - Sisanya → `teks` blok
-- [ ] Buat `genDiskusi(parsed, tp)` — buat pertanyaan dari konten + TP
-- [ ] Buat `genRefleksi(parsed)` — buat pertanyaan refleksi metakognisi
-- [ ] Tambah ke GEN_BUTTONS di constants.ts
-- [ ] Tambah ke useAutoGenerate hook (generate + apply)
-- [ ] Tambah preview komponen
+- [x] Buat `genDiskusi(parsed, tp)` — buat pertanyaan dari konten + TP
+- [x] Buat `genRefleksi(parsed)` — buat pertanyaan refleksi metakognisi
+- [x] Tambah ke GEN_BUTTONS di constants.ts
+- [x] Tambah ke useAutoGenerate hook (generate + apply)
+- [x] Tambah preview komponen
 
 ### 18.3 Tombol Re-generate di Panel Konten
 
@@ -174,10 +174,10 @@ Dengan generator, guru bisa re-generate yang gak cocok.
 Bisa langsung dari tab yang sedang dikerjakan.
 
 **Task**:
-- [ ] Tambah tombol "⚡ Re-generate" di MateriTab
-- [ ] Tambah tombol "⚡ Re-generate" di tab Diskusi (kalau ada)
-- [ ] Tambah tombol "⚡ Re-generate" di tab Refleksi (kalau ada)
-- [ ] Alur: klik → pakai parsed data terakhir → generate → replace di store
+- [x] Tambah tombol "⚡ Re-generate" di MateriTab
+- [x] Tambah tombol "⚡ Re-generate" di tab Diskusi (kalau ada)
+- [x] Tambah tombol "⚡ Re-generate" di tab Refleksi (kalau ada)
+- [x] Alur: klik → pakai parsed data terakhir → generate → replace di store
 
 ---
 
