@@ -426,10 +426,20 @@ const TIPE_RENDERERS: Record<MateriBlokTipe, React.ComponentType<{ block: Materi
 };
 
 // ── Main Component ───────────────────────────────────────────────
-export const MateriBlokRenderer = React.memo(function MateriBlokRenderer({ block, tokens, isCompact }: {
+export const MateriBlokRenderer = React.memo(function MateriBlokRenderer({ block, tokens, isCompact, mode, interactive, isEditing, compression, pageIndex }: {
   block: MateriBlokBlock;
   tokens: TokenResolver;
   isCompact?: boolean;
+  /** Render mode — accepted for interface compatibility, not used by MateriBlok */
+  mode?: import('../types').SchemaRenderMode;
+  /** Interactive mode — accepted for interface compatibility, not used by MateriBlok */
+  interactive?: boolean;
+  /** Editing mode — accepted for interface compatibility, not used by MateriBlok */
+  isEditing?: boolean;
+  /** Compression decision — accepted for interface compatibility, not used by MateriBlok */
+  compression?: import('../../layout/CompressionEngine').CompressionDecision;
+  /** Page index — accepted for interface compatibility, not used by MateriBlok */
+  pageIndex?: number;
 }) {
   const tipe = block.tipe || 'teks';
   const meta = TIPE_META[tipe];

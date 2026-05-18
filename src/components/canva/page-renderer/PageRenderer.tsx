@@ -223,6 +223,7 @@ export function PageRenderer({
           ratioId={ratioId}
           showTopNav={showTopNav}
           showBottomNav={showBottomNav}
+          pageIndex={currentPageIndex}
         />
       )}
 

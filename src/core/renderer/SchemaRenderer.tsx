@@ -113,6 +113,8 @@ export interface ScreenRendererProps {
   showTopNav?: boolean;
   /** Whether bottom navbar is shown (affects safe area) */
   showBottomNav?: boolean;
+  /** Page index (0-based) — forwarded to interactive renderers for score tracking */
+  pageIndex?: number;
 }
 
 export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
@@ -137,6 +139,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   ratioId = '16:9',
   showTopNav = false,
   showBottomNav = false,
+  pageIndex = 0,
 }: ScreenRendererProps) {
   const isCompact = mode === 'canvas';
   const hasCoverBlock = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
@@ -469,6 +472,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 interactive={interactive}
                 compression={resolved.compression}
                 blockIndex={schemaBlockIndex}
+                pageIndex={pageIndex}
                 isBeingDragged={isBeingDragged}
                 isSelected={resolved.block.id ? resolved.block.id === selectedBlockId : (resolved.block.type === selectedBlockId)}
                 isMultiSelected={resolved.block.id ? Array.isArray(selectedBlockIds) && selectedBlockIds.includes(resolved.block.id) && selectedBlockIds.length > 1 : false}
@@ -554,6 +558,8 @@ export interface BlockRenderProps {
   compression?: import('../layout/CompressionEngine').CompressionDecision;
   /** Block index in screen.blocks (for canvas drag-reorder) */
   blockIndex?: number;
+  /** Page index (0-based) — forwarded to interactive renderers for score tracking */
+  pageIndex?: number;
   /** Whether this block is currently being drag-reordered on canvas */
   isBeingDragged?: boolean;
   /** Whether this block is selected in the canvas editor */
@@ -582,7 +588,7 @@ export interface BlockRenderProps {
   onDragHandleDown?: (e: React.PointerEvent, blockIndex: number) => void;
 }
 
-export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, blockIndex, isBeingDragged, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate, onDragHandleDown }: BlockRenderProps) {
+export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, blockIndex, pageIndex, isBeingDragged, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate, onDragHandleDown }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   const blockId = block.id || block.type;
 
@@ -617,7 +623,7 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   const blockContent = (
     <BlockErrorBoundary blockType={block.type} blockId={blockId}>
       <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} />
+        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} pageIndex={pageIndex} />
       </React.Suspense>
     </BlockErrorBoundary>
   );

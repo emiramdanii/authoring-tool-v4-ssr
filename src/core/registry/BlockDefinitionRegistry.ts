@@ -434,11 +434,11 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     category: 'interactive',
     personality: 'discussion',
     description: 'Pertanyaan diskusi dengan area jawaban',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'], handlesCompression: true },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B', 'C'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['diskusi'],
     propertySchema: DISKUSI_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 300, B: 280, C: 280 },
+    estimatedHeight: { A: 300, B: 320, C: 260 },
     createDefault: () => ({
       title: 'Diskusi',
       questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban', color: 'c' }],
