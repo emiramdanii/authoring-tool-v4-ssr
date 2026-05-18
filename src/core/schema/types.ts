@@ -685,6 +685,49 @@ export interface RangkumanBlock extends BaseBlock {
   accentColor?: string;
 }
 
+// ── Materi Blok Schema — 13 content patterns for MateriSection ─
+// This is the SchemaBlock equivalent of the authoring store's MateriBlok.
+// A single block type with a `tipe` field that selects one of 13 render patterns.
+// This is the "BlokRenderer" approach from ROADMAP Phase 18.1.
+
+export type MateriBlokTipe =
+  | 'teks' | 'definisi' | 'poin' | 'tabel' | 'kutipan'
+  | 'gambar' | 'timeline' | 'highlight' | 'compare' | 'infobox'
+  | 'checklist' | 'statistik' | 'studi';
+
+export interface MateriBlokBlock extends BaseBlock {
+  type: 'materi-blok';
+  /** Which of the 13 render patterns to use */
+  tipe: MateriBlokTipe;
+  /** Title / heading */
+  judul?: string;
+  /** Main text content */
+  isi?: string;
+  /** Icon emoji */
+  icon?: string;
+  /** Color token or hex */
+  warna?: string;
+  /** Bullet items (poin, checklist) */
+  butir?: string[];
+  /** Table rows (tabel) */
+  baris?: string[][];
+  /** Timeline steps (timeline) */
+  langkah?: Array<{ icon: string; judul: string; isi: string }>;
+  /** Compare sides (compare) */
+  kiri?: { icon?: string; judul?: string; isi?: string };
+  kanan?: { icon?: string; judul?: string; isi?: string };
+  /** Stat items (statistik) */
+  items?: Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }>;
+  /** Style variant (infobox: 'info' | 'tip' | 'warning') */
+  style?: string;
+  /** Quote attribution (kutipan) */
+  karakter?: string;
+  /** Case study fields (studi) */
+  situasi?: string;
+  pertanyaan?: string;
+  pesan?: string;
+}
+
 // ── Hero Schema ───────────────────────────────────────────────
 // Hero uses the same data model as Cover but with type: 'hero'.
 // This enables separate BlockDefinitionRegistry entry + variant support.
@@ -763,6 +806,7 @@ export type SchemaBlock =
   | FtabBlock
   | NormaKartuBlock
   | MateriSectionBlock
+  | MateriBlokBlock
   | DiskusiBlock
   | KuisBlock
   | SortirGameBlock

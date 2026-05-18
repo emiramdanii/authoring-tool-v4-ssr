@@ -757,6 +757,41 @@ export const TEAMBUZZERGAME_PROPERTY_SCHEMA: PropertySchema = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
+// MATERI BLOK PROPERTY SCHEMA — 13 tipe content patterns
+// ═══════════════════════════════════════════════════════════════════
+
+export const MATERIBLOK_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'materi-blok',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'tipe', type: 'select', label: 'Tipe Konten', group: 'content', required: true,
+      options: [
+        { label: '📝 Paragraf Teks', value: 'teks' },
+        { label: '📌 Kotak Definisi', value: 'definisi' },
+        { label: '• Poin-Poin', value: 'poin' },
+        { label: '📊 Tabel', value: 'tabel' },
+        { label: '💬 Kutipan / Quote', value: 'kutipan' },
+        { label: '🖼️ Gambar dari URL', value: 'gambar' },
+        { label: '🔄 Timeline / Alur', value: 'timeline' },
+        { label: '⚡ Highlight Card', value: 'highlight' },
+        { label: '⚖️ Perbandingan', value: 'compare' },
+        { label: '💡 Info / Tips Box', value: 'infobox' },
+        { label: '✅ Checklist', value: 'checklist' },
+        { label: '📈 Statistik Angka', value: 'statistik' },
+        { label: '📖 Studi Kasus', value: 'studi' },
+      ],
+    },
+    { key: 'judul', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'isi', type: 'textarea', label: 'Isi', group: 'content', rows: 4 },
+    { key: 'icon', type: 'icon', label: 'Icon', group: 'style' },
+    { key: 'warna', type: 'color', label: 'Warna', group: 'style' },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
 // NOTE: The takeaways field in MATERISECTION_PROPERTY_SCHEMA uses a
 // simplified schema with a single 'text' field. At runtime, the
 // MateriSectionBlock.takeaways is a string[] — the array schema here

@@ -87,14 +87,7 @@ import {
   TujuanDisplayRenderer,
   MotivasiRenderer,
   RangkumanRenderer,
-  TabelRenderer,
-  GambarRenderer,
-  TimelineRenderer,
-  ChecklistRenderer,
-  StatistikRenderer,
-  StudiRenderer,
-  CompareRenderer,
-  RevealRenderer,
+  MateriBlokRenderer,
 } from '../renderer/blocks';
 
 // ── Lazy imports (heavy game renderers — all games are lazy-loaded) ──
@@ -165,12 +158,7 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'tujuan-display': TujuanDisplayRenderer,
   'motivasi': MotivasiRenderer,
   'rangkuman': RangkumanRenderer,
-  'tabel': TabelRenderer,
-  'gambar': GambarRenderer,
-  'timeline': TimelineRenderer,
-  'checklist': ChecklistRenderer,
-  'statistik': StatistikRenderer,
-  'studi': StudiRenderer,
+  'materi-blok': MateriBlokRenderer,
   'memory-game': MemoryGameRenderer,
   'matching-game': MatchingGameRenderer,
   'fill-blank-game': FillBlankGameRenderer,
@@ -179,8 +167,6 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'drag-drop-game': DragDropGameRenderer,
   'crossword-game': CrosswordGameRenderer,
   'team-buzzer-game': TeamBuzzerGameRenderer,
-  'compare': CompareRenderer,
-  'reveal': RevealRenderer,
 };
 
 // ═══════════════════════════════════════════════════════════════════

@@ -269,6 +269,29 @@ function deriveMateriSectionToProjection(block: SchemaBlock, projection: SchemaP
 
   for (const child of content) {
     switch (child.type) {
+      case 'materi-blok': {
+        // Direct mapping: materi-blok already has all MateriBlok fields
+        const mb = child as Record<string, unknown>;
+        bloks.push({
+          tipe: (mb.tipe as string) || 'teks',
+          judul: mb.judul as string | undefined,
+          isi: mb.isi as string | undefined,
+          icon: mb.icon as string | undefined,
+          warna: mb.warna as string | undefined,
+          butir: mb.butir as string[] | undefined,
+          baris: mb.baris as string[][] | undefined,
+          langkah: mb.langkah as Array<{ icon: string; judul: string; isi: string }> | undefined,
+          kiri: mb.kiri as { icon?: string; judul?: string; isi?: string } | undefined,
+          kanan: mb.kanan as { icon?: string; judul?: string; isi?: string } | undefined,
+          items: mb.items as Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }> | undefined,
+          style: mb.style as string | undefined,
+          karakter: mb.karakter as string | undefined,
+          situasi: mb.situasi as string | undefined,
+          pertanyaan: mb.pertanyaan as string | undefined,
+          pesan: mb.pesan as string | undefined,
+        });
+        break;
+      }
       case 'def-box': {
         const def = child as { content?: string; borderColor?: string; semantic?: { style?: string } };
         // Detect kutipan vs teks vs definisi via borderColor + semantic hints
