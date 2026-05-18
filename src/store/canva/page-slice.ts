@@ -126,12 +126,14 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPage = { ...page, templateType, templateVariant: 'A' as const, templateData: {} as Record<string, unknown> };
     Object.assign(newPage, getTemplateExtraProps(templateType));
 
-    // ═══ Schema-first: use ensurePageSchema for migration ═══
-    // derive-schema.ts was removed — schemas come from presets or
-    // lazy migration via ensurePageSchema(). One-way: Schema → Canvas.
+    // ═══ Schema-first: regenerate schema for new template type ═══
+    // CRITICAL: Must clear schema BEFORE calling ensurePageSchema,
+    // otherwise Path 1 returns the OLD schema (from the previous type)
+    // and the page shows wrong content (e.g., CoverBlock on a materi page).
     if (isTemplate) {
-      // Ensure the page gets a schema (via preset or TemplateAdapter)
-      const schema = ensurePageSchema({ ...newPage, templateType });
+      // Ensure the page gets a FRESH schema for the new templateType
+      // by explicitly clearing schema so ensurePageSchema goes through Path 3
+      const schema = ensurePageSchema({ ...newPage, templateType, schema: undefined });
       if (schema) {
         newPage.schema = { ...schema, id: newPage.id };
         newPage.elements = [];
