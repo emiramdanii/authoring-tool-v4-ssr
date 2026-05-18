@@ -116,6 +116,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     color: '#a78bfa',
     description: 'Cover + Materi + Hasil — tanpa kuis/game, fokus penyampaian materi',
     options: [
+      { id: 'perPertemuan', type: 'toggle', label: 'Per Pertemuan', default: false },
       { id: 'navbar', type: 'toggle', label: 'Navbar Navigasi', default: true },
       { id: 'autoGenerateModules', type: 'toggle', label: 'Auto-Generate Modul dari Data', default: true },
     ],
@@ -138,7 +139,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: false,
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
-      perPertemuan: false,
+      perPertemuan: boolOr(config, 'perPertemuan', false),
     }),
   },
   {
@@ -217,6 +218,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
     color: '#ff6b6b',
     description: 'Cover + Skenario + Materi + Hasil — pembelajaran bercabang',
     options: [
+      { id: 'perPertemuan', type: 'toggle', label: 'Per Pertemuan', default: false },
       { id: 'navbar', type: 'toggle', label: 'Navbar Navigasi', default: true },
       { id: 'autoGenerateModules', type: 'toggle', label: 'Auto-Generate Modul', default: true },
     ],
@@ -239,7 +241,7 @@ export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
       timer: false,
       navbar: boolOr(config, 'navbar', true),
       autoGenerateModules: boolOr(config, 'autoGenerateModules', true),
-      perPertemuan: false,
+      perPertemuan: boolOr(config, 'perPertemuan', false),
     }),
   },
   {

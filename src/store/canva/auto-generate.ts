@@ -146,7 +146,7 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     const blueprint = pageType.generate(config);
     const authStore = useAuthoringStore.getState();
     const kuis = authStore.kuis.filter((k: { q: string }) => k.q.trim());
-    const jumlahPertemuan = authStore.atp.jumlahPertemuan || 1;
+    const jumlahPertemuan = (typeof config.jumlahPertemuan === 'number' ? config.jumlahPertemuan : authStore.atp.jumlahPertemuan) || 1;
     const perPertemuan = blueprint.perPertemuan && jumlahPertemuan > 1;
     let games = authStore.modules.filter((m: Module) =>
       (GAME_TYPES as readonly string[]).includes(m.type)

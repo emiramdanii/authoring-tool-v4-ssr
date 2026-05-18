@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Zap, ChevronDown, ChevronUp, X, Sparkles } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { Button } from '@/components/ui/button';
 import { ALL_PAGE_TYPES, PAGE_TYPE_CATEGORIES, type PageTypeDefinition, type PageTypeOption } from '@/store/page-types';
 import { createFocusTrap } from '@/lib/a11y';
@@ -74,6 +75,11 @@ function ConfigPanel({
         </div>
       )}
 
+      {/* Jumlah Pertemuan — shown when perPertemuan is enabled */}
+      {config.perPertemuan && (
+        <JumlahPertemuanControl config={config} updateConfig={updateConfig} />
+      )}
+
       {/* Generate button */}
       <Button
         onClick={handleGenerate}
@@ -92,6 +98,62 @@ function ConfigPanel({
           </>
         )}
       </Button>
+    </div>
+  );
+}
+
+// ── Jumlah Pertemuan control — shown when perPertemuan toggle is ON ──
+function JumlahPertemuanControl({
+  config,
+  updateConfig,
+}: {
+  config: Record<string, number | string | boolean>;
+  updateConfig: (id: string, v: number | string | boolean) => void;
+}) {
+  const atpPertemuan = useAuthoringStore((s) => s.atp.jumlahPertemuan);
+  const [jumlah, setJumlah] = useState(atpPertemuan || 3);
+
+  const handleChange = (val: number) => {
+    setJumlah(val);
+    updateConfig('jumlahPertemuan', val);
+  };
+
+  // Sync with ATP config when it changes
+  useEffect(() => {
+    if (atpPertemuan && atpPertemuan !== jumlah) {
+      setJumlah(atpPertemuan);
+    }
+  }, [atpPertemuan]);
+
+  return (
+    <div
+      className="p-2.5 rounded-lg bg-app-accent/8 border border-app-accent/15 space-y-2 animate-in slide-in-from-top-1 duration-200"
+      role="group"
+      aria-label="Pengaturan Pertemuan"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold text-app-accent">Jumlah Pertemuan</span>
+        <span className="text-[12px] font-black text-app-accent">{jumlah}</span>
+      </div>
+      <input
+        type="range"
+        min={1}
+        max={8}
+        step={1}
+        value={jumlah}
+        onChange={(e) => handleChange(Number(e.target.value))}
+        aria-label="Jumlah Pertemuan"
+        className="w-full h-1.5 bg-app-elevated rounded-lg appearance-none cursor-pointer accent-app-accent"
+      />
+      <div className="flex justify-between text-[8px] text-app-muted">
+        <span>1</span>
+        <span>8</span>
+      </div>
+      {atpPertemuan > 0 && (
+        <div className="text-[8px] text-app-muted italic">
+          Dari ATP: {atpPertemuan} pertemuan
+        </div>
+      )}
     </div>
   );
 }

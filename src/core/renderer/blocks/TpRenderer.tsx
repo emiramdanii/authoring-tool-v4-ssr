@@ -11,8 +11,8 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 
-export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isCompact, isEditing, compression }: {
-  block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
+export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
+  block: TpBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   // ── Inline editing hooks ─────────────────────────────────────
   const titleEditor = useInlineEditor({
@@ -29,6 +29,17 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
   });
 
   const allItems = block.items || [];
+
+  // ── "Sudah Paham" tracking (interactive mode only) ──────────
+  const [understood, setUnderstood] = React.useState<Set<number>>(new Set());
+  const toggleUnderstood = (idx: number) => {
+    setUnderstood(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
+  };
+  const allUnderstood = allItems.length > 0 && allItems.every((_, i) => understood.has(i));
 
   // ── Compression-aware item visibility ──────────────────────
   const { visibleCount, hasMore, hiddenCount, showMore, isCompressed } = useBlockCompression({
@@ -65,6 +76,22 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
         </h2>
       </div>
 
+      {/* All understood indicator — interactive mode */}
+      {interactive && allUnderstood && !isCompact && allItems.length > 0 && (
+        <MicroInteraction tokens={tokens} accent="g" effect="bounce">
+          <div className="mb-3 px-3 py-2 rounded-lg flex items-center gap-2"
+            style={{
+              background: tokens.colorAlpha('g', 0.1),
+              border: `1px solid ${tokens.colorAlpha('g', 0.25)}`,
+              fontSize: '12px',
+              color: tokens.color('g'),
+              fontWeight: 700,
+            }}>
+            🎉 Semua tujuan sudah dipahami!
+          </div>
+        </MicroInteraction>
+      )}
+
       {/* Decorative line */}
       <div className="flex gap-1.5 mb-4">
         {['y', 'c', 'g'].map((color, i) => (
@@ -98,10 +125,28 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
                   }}>
                   {item.num}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="font-extrabold" style={{ color: tokens.color(item.color), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.verb}</div>
                   <div className={`leading-relaxed mt-0.5 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.85), fontSize: isCompact ? '12px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
                 </div>
+                {/* "Sudah Paham" checkbox — interactive/preview mode only */}
+                {interactive && !isCompact && (
+                  <button
+                    onClick={() => toggleUnderstood(i)}
+                    className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
+                    style={{
+                      background: understood.has(i) ? tokens.colorAlpha('g', 0.15) : tokens.colorAlpha('c', 0.06),
+                      border: `1px solid ${understood.has(i) ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('c', 0.15)}`,
+                      fontSize: '10px',
+                      color: understood.has(i) ? tokens.color('g') : tokens.muted(0.6),
+                      cursor: 'pointer',
+                    }}
+                    aria-label={understood.has(i) ? 'Tandai belum paham' : 'Tandai sudah paham'}
+                    aria-pressed={understood.has(i)}
+                  >
+                    {understood.has(i) ? '✅' : '○'} Sudah Paham
+                  </button>
+                )}
               </div>
               {/* Connector dot between items */}
               {connector && (
