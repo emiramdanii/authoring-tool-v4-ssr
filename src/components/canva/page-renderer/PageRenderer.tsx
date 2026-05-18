@@ -90,15 +90,36 @@ export function PageRenderer({
 
   // Use ensurePageSchema() — the schema-first gateway
   // This lazily migrates legacy pages on first read.
-  // After save, migrated pages become native schema pages.
+  // After migration, page.schema is the single source of truth.
+  //
+  // MIGRATION WRITEBACK: When ensurePageSchema runs a migration (e.g., v1→v2),
+  // the migrated schema is returned but NOT written back to the store.
+  // This caused repeated migration warnings on every render.
+  // Fix: Write back the migrated schema to the store on first detection.
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
     // Schema-first: page.schema is the canonical source
     const schema = ensurePageSchema(page);
-    console.log('[PageRenderer] ensurePageSchema result:', { pageId: page.id, hasSchema: !!schema, blocksLen: schema?.blocks?.length, pageSchemaBlocks: page.schema?.blocks?.length });
-    if (schema) return schema;
+    if (schema) {
+      // Write back migrated schema to store if version was upgraded
+      // This prevents repeated migration on every render
+      if (page.schema && schema.version > page.schema.version) {
+        // Schedule writeback outside of render cycle to avoid setState-in-render
+        queueMicrotask(() => {
+          const store = useCanvaStore.getState();
+          const pages = store.pages;
+          const idx = currentPageIndex;
+          if (pages[idx] && pages[idx].schema === page.schema) {
+            const newPages = [...pages];
+            newPages[idx] = { ...pages[idx], schema };
+            useCanvaStore.setState({ pages: newPages });
+          }
+        });
+      }
+      return schema;
+    }
     // Custom pages have no schema — return null
     return null;
-  }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType]);
+  }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType, currentPageIndex]);
 
   // Resolve tokens, applying palette overrides for legacy pages
   const tokens = React.useMemo(() => {

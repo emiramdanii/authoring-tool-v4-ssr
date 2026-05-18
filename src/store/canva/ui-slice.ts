@@ -865,7 +865,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const page = pages[currentPageIndex];
     if (!page) { console.warn('[addSchemaBlock] No page at index', currentPageIndex); return; }
 
-    console.log('[addSchemaBlock] START', { blockType, insertAfterIndex, pageId: page.id, hasSchema: !!page.schema, schemaBlocks: page.schema?.blocks?.length ?? 0 });
     try {
     // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
     // If the page has no schema (e.g., custom/blank page), auto-create one
@@ -884,7 +883,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     }
 
     const blocks = schema.blocks;
-    console.log('[addSchemaBlock] After ensurePageSchema', { needsSchemaInit, blocksLen: blocks.length, schemaFrozen: Object.isFrozen(blocks) });
+
 
     // ═══ AUTO-SPLIT: Full-page blocks should be the only block on a page ═══
     // If the current page has a full-page block (cover/hero) and the user
@@ -1020,7 +1019,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
     const newPages = [...pages];
     const updatedSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
-    console.log('[addSchemaBlock] After commitSchemaUpdate', { updatedBlocksLen: updatedSchema.blocks.length, updatedVersion: updatedSchema.version });
+
     newPages[currentPageIndex] = {
       ...page,
       schema: updatedSchema,
@@ -1053,7 +1052,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     newHistory.push(snapshot);
     if (newHistory.length > 50) newHistory.shift();
 
-    console.log('[addSchemaBlock] BEFORE set', { newPageSchemaBlocks: newPages[currentPageIndex].schema?.blocks?.length, pageMode: newPages[currentPageIndex].pageMode });
+
     set({
       pages: newPages,
       // Inline _pushHistory state update (atomic with pages update)
@@ -1067,7 +1066,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       selectedElId: null,
       selectedElIds: [],
     });
-    console.log('[addSchemaBlock] AFTER set — store state:', { storePagesBlocks: get().pages[currentPageIndex]?.schema?.blocks?.length });
+
 
     // Emit editBus event for PatchHistory (now that state is consistent)
     if (forwardPatches && inversePatches) {

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "test -f export-output/index.html || vite build --config vite.export.config.ts; NODE_OPTIONS='--max-old-space-size=512' next dev -p 3000 2>&1 | tee dev.log",
-    "build": "vite build --config vite.export.config.ts && NODE_OPTIONS='--max-old-space-size=768' next build",
+    "build": "vite build --config vite.export.config.ts && NODE_OPTIONS='--max-old-space-size=768' next build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
     "start": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=512' node node_modules/.bin/next start -p 8080",
     "test:light": "NODE_OPTIONS='--max-old-space-size=512' next dev -p 3000 --turbopack",
     "lint": "eslint .",
