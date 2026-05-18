@@ -249,7 +249,8 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     // Cover/hero pages: safe area is 0 (they fill the entire scene)
     const effectiveSafeArea = hasCoverBlock ? DEFAULT_SAFE_AREA : safeArea;
     // Use effectiveSchema (derived for current scene) instead of full screen
-    return resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
+    const resolved = resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
+    return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveSchema, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
 

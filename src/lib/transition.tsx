@@ -203,48 +203,42 @@ export function PageTransition({
   style,
   duration = 0.22,
 }: PageTransitionProps) {
-  const [currentKey, setCurrentKey] = useState(pageKey);
-  const [phase, setPhase] = useState<'enter' | 'visible'>('enter');
-  const [displayChildren, setDisplayChildren] = useState(children);
   const prevKeyRef = useRef(pageKey);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [phase, setPhase] = useState<'enter' | 'visible'>('enter');
 
   useEffect(() => {
     if (pageKey !== prevKeyRef.current) {
-      // Key changed: trigger exit then enter
-      setCurrentKey(pageKey);
-      setDisplayChildren(children);
+      // Page changed: trigger enter animation
+      setIsTransitioning(true);
       setPhase('enter');
 
       // After animation duration, set to visible
-      const timer = setTimeout(() => setPhase('visible'), duration * 1000 + 50);
+      const timer = setTimeout(() => {
+        setPhase('visible');
+        setIsTransitioning(false);
+      }, duration * 1000 + 50);
       prevKeyRef.current = pageKey;
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [pageKey, children, duration]);
-
-  // On mount, immediately go to visible after enter animation
-  useEffect(() => {
-    const timer = setTimeout(() => setPhase('visible'), duration * 1000 + 50);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pageKey, duration]);
 
   const animClass =
-    phase === 'enter'
+    phase === 'enter' && isTransitioning
       ? getPageTransitionClass(direction, 'enter')
       : '';
 
   return (
     <div
-      key={currentKey}
+      key={pageKey}
       className={`absolute inset-0 ${className} ${animClass}`}
       style={{
         ...style,
         animationDuration: `${duration}s`,
       }}
     >
-      {displayChildren}
+      {children}
     </div>
   );
 }
