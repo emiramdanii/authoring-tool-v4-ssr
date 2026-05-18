@@ -860,7 +860,7 @@ export const CHECKLIST_PROPERTY_SCHEMA: PropertySchema = {
     { key: 'title', type: 'text', label: 'Judul', group: 'content' },
     { key: 'items', type: 'array', label: 'Item', group: 'content', fields: [
       { key: 'text', label: 'Teks', type: 'text' },
-      { key: 'checked', label: 'Tercentang', type: 'checkbox' },
+      { key: 'checked', label: 'Tercentang', type: 'boolean' },
     ]},
     { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content', defaultValue: 'g' },
   ],

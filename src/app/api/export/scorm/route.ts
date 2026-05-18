@@ -129,14 +129,74 @@ export async function POST(request: NextRequest) {
     const title = `${meta?.judulPertemuan || 'Media Pembelajaran Interaktif'}`;
     const safeTitle = title.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+    // SCORM 1.2 API wrapper — bridges exported app scoring to LMS
+    const scormWrapperScript = `<script>
+// SCORM 1.2 API Wrapper for SILSE Export
+(function(){
+  var api = null;
+  function findAPI(win){
+    var tries = 0;
+    while(win && !win.API && win.parent !== win && tries < 10){
+      tries++; win = win.parent;
+    }
+    return win ? win.API : null;
+  }
+  function initAPI(){
+    try { api = findAPI(window); } catch(e){}
+    if(!api){
+      try { api = findAPI(window.opener); } catch(e){}
+    }
+    if(api){
+      try { api.LMSInitialize(""); } catch(e){}
+    }
+  }
+  function setValue(key,val){
+    if(api){ try{ api.LMSSetValue(key, String(val)); api.LMSCommit(""); }catch(e){} }
+  }
+  function getValue(key){
+    if(api){ try{ return api.LMSGetValue(key); }catch(e){} }
+    return "";
+  }
+  function finish(){
+    if(api){ try{ api.LMSFinish(""); }catch(e){} }
+  }
+  initAPI();
+  if(api){
+    setValue("cmi.core.lesson_status","incomplete");
+    setValue("cmi.core.score.min","0");
+  }
+  // Expose SCORM helpers globally for the export app
+  window.__SCORM = {
+    reportScore: function(score, maxScore){
+      if(!api) return;
+      var pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+      setValue("cmi.core.score.raw", score);
+      setValue("cmi.core.score.max", maxScore);
+      setValue("cmi.core.lesson_status", pct >= 70 ? "passed" : "failed");
+    },
+    reportComplete: function(){
+      if(!api) return;
+      var status = getValue("cmi.core.lesson_status");
+      if(status !== "passed" && status !== "failed"){
+        setValue("cmi.core.lesson_status","completed");
+      }
+    },
+    finish: finish,
+    hasAPI: !!api
+  };
+  // Auto-finish on page unload
+  window.addEventListener("beforeunload", function(){ finish(); });
+})();
+</script>\n`;
+
     const bodyCloseIdx = templateStr.lastIndexOf('</body>');
     let htmlContent: string;
     if (bodyCloseIdx !== -1) {
       const before = templateStr.substring(0, bodyCloseIdx).replace(/<title>.*?<\/title>/, `<title>${safeTitle}</title>`);
       const after = templateStr.substring(bodyCloseIdx);
-      htmlContent = before + dataScript + after;
+      htmlContent = before + scormWrapperScript + dataScript + after;
     } else {
-      htmlContent = templateStr.replace(/<title>.*?<\/title>/, `<title>${safeTitle}</title>`) + dataScript;
+      htmlContent = templateStr.replace(/<title>.*?<\/title>/, `<title>${safeTitle}</title>`) + scormWrapperScript + dataScript;
     }
 
     // Generate SCORM manifest

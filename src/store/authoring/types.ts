@@ -144,6 +144,8 @@ export interface MateriBlok {
   kanan?: { icon?: string; judul?: string; isi?: string };
   items?: Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }>;
   style?: string;
+  /** Infobox style variant: info / tip / warning */
+  infoboxStyle?: string;
   karakter?: string;
   situasi?: string;
   pertanyaan?: string;

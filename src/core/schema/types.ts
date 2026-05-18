@@ -719,7 +719,9 @@ export interface MateriBlokBlock extends BaseBlock {
   /** Stat items (statistik) */
   items?: Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }>;
   /** Style variant (infobox: 'info' | 'tip' | 'warning') */
-  style?: string;
+  style?: Record<string, string>;
+  /** Infobox style variant: info / tip / warning */
+  infoboxStyle?: string;
   /** Quote attribution (kutipan) */
   karakter?: string;
   /** Case study fields (studi) */

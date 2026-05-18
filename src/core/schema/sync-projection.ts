@@ -269,14 +269,14 @@ function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').Mate
           })),
           accentColor: 'g',
           compression: { priority: 'medium' as const, strategy: 'scroll' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'interact' as const },
+          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'choose' as const },
         };
       case 'statistik':
         return {
           type: 'statistik' as const,
           id: generateBlockId(),
           title: blok.judul || undefined,
-          items: ((blok as Record<string, unknown>).items || []) as Array<{ angka: string; satuan?: string; label: string; warna: string }>,
+          items: ((blok as unknown as Record<string, unknown>).items || []) as Array<{ angka: string; satuan?: string; label: string; warna: string }>,
           accentColor: 'c',
           compression: { priority: 'low' as const, strategy: 'scroll' as const },
           semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
@@ -288,8 +288,8 @@ function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').Mate
           title: blok.judul || undefined,
           karakter: blok.karakter || undefined,
           situasi: blok.situasi || blok.isi || '',
-          pertanyaan: (blok as Record<string, unknown>).pertanyaan as string || '',
-          pesan: (blok as Record<string, unknown>).pesan as string || undefined,
+          pertanyaan: (blok as unknown as Record<string, unknown>).pertanyaan as string || '',
+          pesan: (blok as unknown as Record<string, unknown>).pesan as string || undefined,
           accentColor: 'y',
           compression: { priority: 'medium' as const, strategy: 'accordion' as const },
           semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'reflect' as const },
@@ -305,7 +305,7 @@ function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').Mate
           semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
         };
     }
-  });
+  }) as SchemaBlock[];
 }
 
 /**

@@ -281,7 +281,7 @@ function RenderCompare({ block, tokens, isCompact }: { block: MateriBlokBlock; t
 
 // ── 10. INFOBOX — Info box biru ──────────────────────────────────
 function RenderInfobox({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
-  const styleKey = block.style || 'info';
+  const styleKey = block.infoboxStyle || 'info';
   const colorMap: Record<string, string> = { info: 'c', tip: 'g', warning: 'y' };
   const colorKey = colorMap[styleKey] || 'c';
   return (

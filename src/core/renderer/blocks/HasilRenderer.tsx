@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { Trophy, Star, Target, RotateCcw, Sparkles, CheckCircle2, Zap, Award, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { HasilBlock } from '../../schema/types';
+import type { ScoreEntry } from '@/store/interactive-store';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
@@ -71,7 +72,7 @@ function VariantAKlasik({
   allComplete: boolean; interactive?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
-  scores: Array<{ completed: boolean }>;
+  scores: ScoreEntry[];
   resetAllScores: () => void;
 }) {
   return (
@@ -287,7 +288,7 @@ function VariantBMajalah({
   allComplete: boolean; interactive?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
-  scores: Array<{ completed: boolean }>;
+  scores: ScoreEntry[];
   resetAllScores: () => void;
 }) {
   const motivationalText = displayPct >= 90
@@ -467,7 +468,7 @@ function VariantCRingkas({
   allComplete: boolean; interactive?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
-  scores: Array<{ completed: boolean }>;
+  scores: ScoreEntry[];
   resetAllScores: () => void;
 }) {
   const motivationalText = displayPct >= 90
@@ -584,7 +585,7 @@ function ActivityBreakdown({
   tokens, isCompact, tierColor, scores,
 }: {
   tokens: TokenResolver; isCompact: boolean; tierColor: string;
-  scores: Array<{ elementId: string; pageIndex: number; score: number; maxScore: number; completed: boolean }>;
+  scores: ScoreEntry[];
 }) {
   const [expanded, setExpanded] = React.useState(true);
 

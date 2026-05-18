@@ -36,6 +36,15 @@ export function renderContentBlock(
     case 'refleksi': return renderRefleksi(b);
     case 'penutup': return renderPenutup(b);
     case 'tabel-accord': return renderTabelAccord(b);
+    case 'gambar': return renderGambar(b);
+    case 'timeline': return renderTimeline(b);
+    case 'compare': return renderCompare(b);
+    case 'reveal': return renderReveal(b);
+    case 'materi-blok': return renderMateriBlok(b);
+    case 'hero': return renderCover(b); // Hero shares Cover data model
+    case 'alur': return renderAlur(b);
+    case 'skenario': return renderSkenario(b);
+    case 'kuis': return renderKuisExport(b);
     default: return null;
   }
 }
@@ -447,6 +456,207 @@ function renderTabelAccord(b: Record<string, unknown>): string {
           <div class="accord-body">
             ${r.details.map(d => `<div class="accord-detail"><strong>${escapeHtml(d.label)}:</strong> ${escapeHtml(d.value)}</div>`).join('')}
           </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderGambar(b: Record<string, unknown>): string {
+  const title = b.title as string || '';
+  const url = b.url as string || '';
+  const caption = b.caption as string || '';
+  const accentColor = resolveColor(b.accentColor as string, '#3ecfcf');
+  return `
+    <div class="block gambar-block" style="border-left: 3px solid ${accentColor};">
+      ${title ? `<div class="block-header"><span class="block-icon">🖼️</span><h2>${escapeHtml(title)}</h2></div>` : ''}
+      ${url ? `<div class="gambar-container" style="text-align: center; margin: 8px 0;"><img src="${escapeHtml(url)}" alt="${escapeHtml(caption || title)}" style="max-width: 100%; border-radius: 10px; border: 1px solid #334155;" /></div>` : '<div style="text-align:center;padding:20px;color:#94a3b8;">🖼️ Gambar belum ditambahkan</div>'}
+      ${caption ? `<p style="text-align: center; font-size: 11px; color: #94a3b8; font-style: italic;">${escapeHtml(caption)}</p>` : ''}
+    </div>`;
+}
+
+function renderTimeline(b: Record<string, unknown>): string {
+  const title = b.title as string || '';
+  const steps = (b.steps as Array<{ icon: string; label: string; description: string; color: string }>) || [];
+  const accentColor = resolveColor(b.accentColor as string, '#3ecfcf');
+  return `
+    <div class="block timeline-block" style="border-left: 3px solid ${accentColor};">
+      ${title ? `<div class="block-header"><span class="block-icon">📅</span><h2>${escapeHtml(title)}</h2></div>` : ''}
+      <div class="timeline-steps" style="display: flex; flex-direction: column; gap: 8px;">
+        ${steps.map((s, i) => `
+          <div class="timeline-step" style="display: flex; align-items: flex-start; gap: 10px; padding: 8px; background: ${resolveColor(s.color, accentColor)}0d; border-radius: 8px; border-left: 3px solid ${resolveColor(s.color, accentColor)};">
+            <span style="font-size: 18px;">${s.icon || '📌'}</span>
+            <div>
+              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; color: ${resolveColor(s.color, accentColor)}; letter-spacing: 0.06em;">Langkah ${i + 1}</div>
+              <strong style="font-size: 13px; color: #f1f5f9;">${escapeHtml(s.label)}</strong>
+              <p style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${escapeHtml(s.description)}</p>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCompare(b: Record<string, unknown>): string {
+  const title = b.title as string || '';
+  const kiri = b.kiri as { icon: string; judul: string; isi: string } | undefined;
+  const kanan = b.kanan as { icon: string; judul: string; isi: string } | undefined;
+  const accentColor = resolveColor(b.accentColor as string, '#3ecfcf');
+  return `
+    <div class="block compare-block" style="border-left: 3px solid ${accentColor};">
+      ${title ? `<div class="block-header"><span class="block-icon">⚖️</span><h2>${escapeHtml(title)}</h2></div>` : ''}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="background: #3ecfcf0d; border: 1px solid #3ecfcf20; border-radius: 10px; padding: 12px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">${kiri?.icon || '🔵'}</span>
+            <strong style="color: #3ecfcf; font-size: 13px;">${escapeHtml(kiri?.judul || 'Kiri')}</strong>
+          </div>
+          <p style="font-size: 11px; color: #94a3b8;">${escapeHtml(kiri?.isi || '')}</p>
+        </div>
+        <div style="background: #fbbf240d; border: 1px solid #fbbf2420; border-radius: 10px; padding: 12px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">${kanan?.icon || '🔴'}</span>
+            <strong style="color: #fbbf24; font-size: 13px;">${escapeHtml(kanan?.judul || 'Kanan')}</strong>
+          </div>
+          <p style="font-size: 11px; color: #94a3b8;">${escapeHtml(kanan?.isi || '')}</p>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderReveal(b: Record<string, unknown>): string {
+  const title = b.title as string || '';
+  const coverIcon = b.coverIcon as string || '🎁';
+  const coverText = b.coverText as string || 'Ketuk untuk membuka!';
+  const revealIcon = b.revealIcon as string || '💡';
+  const revealContent = b.revealContent as string || '';
+  const accentColor = resolveColor(b.accentColor as string, '#a855f7');
+  const revealId = 'reveal-' + Math.random().toString(36).slice(2, 8);
+  return `
+    <div class="block reveal-block" style="border-left: 3px solid ${accentColor};">
+      ${title ? `<div class="block-header"><span class="block-icon">🎁</span><h2>${escapeHtml(title)}</h2></div>` : ''}
+      <div id="${revealId}" onclick="this.classList.toggle('revealed')" style="cursor: pointer; border-radius: 12px; overflow: hidden;">
+        <div class="reveal-cover" style="background: linear-gradient(135deg, ${accentColor}1a, ${accentColor}0d); border: 2px dashed ${accentColor}40; border-radius: 12px; padding: 20px; text-align: center;">
+          <span style="font-size: 28px;">${coverIcon}</span>
+          <p style="font-size: 13px; font-weight: 700; color: ${accentColor}; margin-top: 8px;">${escapeHtml(coverText)}</p>
+        </div>
+        <div class="reveal-content" style="display: none; padding: 16px; background: ${accentColor}0d; border: 1px solid ${accentColor}20; border-radius: 12px; margin-top: 8px;">
+          <span style="font-size: 20px;">${revealIcon}</span>
+          <p style="font-size: 12px; color: #f1f5f9; margin-top: 6px;">${escapeHtml(revealContent)}</p>
+        </div>
+      </div>
+      <style>#${revealId}.revealed .reveal-cover{display:none}#${revealId}.revealed .reveal-content{display:block}</style>
+    </div>`;
+}
+
+function renderMateriBlok(b: Record<string, unknown>): string {
+  const tipe = b.tipe as string || 'teks';
+  const judul = b.judul as string || '';
+  const isi = b.isi as string || '';
+  const icon = b.icon as string || '';
+  const warna = b.warna as string || '';
+  const butir = b.butir as string[] || [];
+  const baris = b.baris as string[][] || [];
+  const langkah = b.langkah as Array<{ icon: string; judul: string; isi: string }> || [];
+  const kiri = b.kiri as { icon?: string; judul?: string; isi?: string } | undefined;
+  const kanan = b.kanan as { icon?: string; judul?: string; isi?: string } | undefined;
+  const karakter = b.karakter as string || '';
+  const situasi = b.situasi as string || '';
+  const pertanyaan = b.pertanyaan as string || '';
+  const infoboxStyle = b.infoboxStyle as string || 'info';
+  const items = b.items as Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string }> || [];
+
+  switch (tipe) {
+    case 'teks':
+      return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px; background: #3ecfcf0d; border-radius: 10px;">${judul ? `<h3 style="color: #3ecfcf; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+    case 'definisi':
+      return `<div class="block materi-blok" style="border-left: 4px solid #fbbf24; padding: 12px; background: #fbbf240d; border-radius: 10px;">${judul ? `<h3 style="color: #fbbf24; font-size: 13px;">📖 ${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+    case 'poin':
+      return `<div class="block materi-blok" style="border-left: 3px solid #34d399; padding: 12px; background: #34d3990d; border-radius: 10px;">${judul ? `<h3 style="color: #34d399; font-size: 13px;">📋 ${escapeHtml(judul)}</h3>` : ''}<ul style="margin: 6px 0; padding-left: 16px;">${butir.map(b => `<li style="font-size: 11px; color: #94a3b8;">${escapeHtml(b)}</li>`).join('')}</ul></div>`;
+    case 'tabel':
+      return `<div class="block materi-blok" style="border-left: 3px solid #a78bfa; padding: 12px; background: #a78bfa0d; border-radius: 10px;">${judul ? `<h3 style="color: #a78bfa; font-size: 13px;">📊 ${escapeHtml(judul)}</h3>` : ''}${baris.length > 0 ? `<table style="width:100%;border-collapse:collapse;font-size:11px;"><tbody>${baris.map((r, ri) => `<tr>${r.map(c => `<td style="padding:6px 8px;border:1px solid #334155;${ri === 0 ? 'font-weight:700;background:#1e293b;' : 'color:#94a3b8;'}">${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}</div>`;
+    case 'kutipan':
+      return `<div class="block materi-blok" style="border-left: 4px solid #34d399; padding: 16px; background: #34d3990d; border-radius: 10px; font-style: italic;">${isi ? `<p style="font-size: 13px; color: #f1f5f9;">"${escapeHtml(isi)}"</p>` : ''}${karakter ? `<p style="font-size: 11px; color: #34d399; margin-top: 6px;">— ${escapeHtml(karakter)}</p>` : ''}</div>`;
+    case 'highlight':
+      return `<div class="block materi-blok" style="border-left: 4px solid ${warna || '#fbbf24'}; padding: 12px; background: ${warna || '#fbbf24'}0d; border-radius: 10px;">${icon ? `<span style="font-size: 16px;">${icon}</span>` : ''}${judul ? `<h3 style="color: ${warna || '#fbbf24'}; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+    case 'compare':
+      return renderCompare({ title: judul, kiri, kanan, accentColor: 'c' });
+    case 'infobox': {
+      const ic = infoboxStyle === 'warning' ? '#fbbf24' : infoboxStyle === 'tip' ? '#34d399' : '#3ecfcf';
+      return `<div class="block materi-blok" style="border-left: 4px solid ${ic}; padding: 12px; background: ${ic}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${ic}; font-size: 13px;">ℹ️ ${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+    }
+    case 'checklist':
+      return `<div class="block materi-blok" style="border-left: 3px solid #34d399; padding: 12px; background: #34d3990d; border-radius: 10px;">${judul ? `<h3 style="color: #34d399; font-size: 13px;">✅ ${escapeHtml(judul)}</h3>` : ''}${butir.map(b => `<div style="font-size: 11px; color: #94a3b8;"><input type="checkbox" disabled /> ${escapeHtml(b)}</div>`).join('')}</div>`;
+    case 'statistik':
+      return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px; background: #3ecfcf0d; border-radius: 10px;">${judul ? `<h3 style="color: #3ecfcf; font-size: 13px;">📈 ${escapeHtml(judul)}</h3>` : ''}<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px;">${items.map(it => `<div style="text-align: center; padding: 8px; background: ${it.warna || '#3ecfcf'}1a; border-radius: 8px;"><div style="font-size: 18px; font-weight: 900; color: ${it.warna || '#3ecfcf'};">${escapeHtml(it.angka || '0')}</div>${it.satuan ? `<div style="font-size: 8px; color: #64748b;">${escapeHtml(it.satuan)}</div>` : ''}<div style="font-size: 9px; color: #94a3b8;">${escapeHtml(it.label || '')}</div></div>`).join('')}</div></div>`;
+    case 'studi':
+      return `<div class="block materi-blok" style="border-left: 4px solid #fbbf24; padding: 12px; background: #fbbf240d; border-radius: 10px;">${judul ? `<h3 style="color: #fbbf24; font-size: 13px;">📑 ${escapeHtml(judul)}</h3>` : ''}${situasi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(situasi)}</p>` : ''}${pertanyaan ? `<p style="font-size: 11px; color: #fbbf24; margin-top: 6px;">❓ ${escapeHtml(pertanyaan)}</p>` : ''}</div>`;
+    case 'timeline':
+      return renderTimeline({ title: judul, steps: langkah.map(s => ({ icon: s.icon, label: s.judul, description: s.isi, color: 'c' })), accentColor: 'c' });
+    case 'gambar':
+      return renderGambar({ title: judul, url: isi, caption: '', accentColor: 'c' });
+    default:
+      return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px;">${judul ? `<h3>${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+  }
+}
+
+function renderAlur(b: Record<string, unknown>): string {
+  const title = b.title as string || 'Alur Kegiatan';
+  const steps = (b.steps as Array<{ dot: string; durasi: string; judul: string; deskripsi: string }>) || [];
+  return `
+    <div class="block alur-block">
+      <div class="block-header">
+        <span class="block-icon">⏱️</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      <div class="timeline-steps" style="display: flex; flex-direction: column; gap: 8px;">
+        ${steps.map((s, i) => `
+          <div class="timeline-step" style="display: flex; align-items: flex-start; gap: 10px; padding: 8px; background: ${resolveColor(s.dot, '#3ecfcf')}0d; border-radius: 8px; border-left: 3px solid ${resolveColor(s.dot, '#3ecfcf')};">
+            <div style="font-size: 10px; font-weight: 800; color: ${resolveColor(s.dot, '#3ecfcf')};">${s.durasi || ''}</div>
+            <div>
+              <strong style="font-size: 13px; color: #f1f5f9;">${escapeHtml(s.judul)}</strong>
+              <p style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${escapeHtml(s.deskripsi)}</p>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderSkenario(b: Record<string, unknown>): string {
+  const title = b.title as string || 'Skenario';
+  const chapters = (b.chapters as Array<{ title: string; charEmoji: string; choices: Array<{ icon: string; label: string; detail: string; good: boolean; pts: number }> }>) || [];
+  return `
+    <div class="block skenario-block">
+      <div class="block-header">
+        <span class="block-icon">🎭</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      ${chapters.map((ch, ci) => `
+        <div class="skenario-chapter" style="margin-bottom: 12px; padding: 12px; background: #1e293b; border-radius: 10px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;"><span style="font-size: 20px;">${ch.charEmoji || '🎭'}</span><strong style="color: #f1f5f9;">${escapeHtml(ch.title)}</strong></div>
+          ${ch.choices.map(c => `
+            <div style="padding: 8px; margin: 4px 0; border-left: 3px solid ${c.good ? '#34d399' : '#ff6b6b'}; background: ${c.good ? '#34d3990d' : '#ff6b6b0d'}; border-radius: 6px;">
+              <span>${c.icon}</span> <strong style="font-size: 12px; color: #f1f5f9;">${escapeHtml(c.label)}</strong>
+              ${c.detail ? `<p style="font-size: 10px; color: #94a3b8; margin-top: 2px;">${escapeHtml(c.detail)}</p>` : ''}
+            </div>`).join('')}
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderKuisExport(b: Record<string, unknown>): string {
+  const title = b.title as string || 'Kuis';
+  const questions = (b.questions as Array<{ q: string; opts: string[]; ans: number; ex: string }>) || [];
+  return `
+    <div class="block kuis-block">
+      <div class="block-header">
+        <span class="block-icon">❓</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      ${questions.map((q, qi) => `
+        <div class="kuis-question" style="margin-bottom: 12px; padding: 12px; background: #1e293b; border-radius: 10px;">
+          <p style="font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px;">${qi + 1}. ${escapeHtml(q.q)}</p>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            ${q.opts.map((opt, oi) => `
+              <button class="q-opt" onclick="checkAnswer(this,${qi},${oi},${q.ans})" style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 12px; text-align: left; cursor: pointer;">${String.fromCharCode(65 + oi)}. ${escapeHtml(opt)}</button>`).join('')}
+          </div>
+          <div id="qfb-${qi}" style="margin-top: 6px; font-size: 11px;"></div>
         </div>`).join('')}
     </div>`;
 }

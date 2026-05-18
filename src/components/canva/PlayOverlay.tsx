@@ -138,6 +138,9 @@ function PlayOverlayHeader() {
 function PlayCanvas() {
   const pages = useCanvaStore((s) => s.pages);
   const interactivePageIdx = useInteractiveStore((s) => s.interactivePageIdx);
+  // Subscribe to scores reactively so completion dots update
+  const scores = useInteractiveStore((s) => s.scores);
+  const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
   const ratio = useCanvaStore((s) => {
     const r = RATIOS.find(r => r.id === s.ratioId);
     return r || RATIOS[0];
@@ -327,7 +330,7 @@ function PlayCanvas() {
               {/* Progress dots */}
               <div className="flex items-center gap-1 overflow-x-auto max-w-[300px] px-1">
                 {pages.map((_, i) => {
-                  const isComplete = useInteractiveStore.getState().isPageComplete(i);
+                  const isComplete = isPageComplete(i);
                   return (
                     <button
                       key={`play-dot-${i}`}

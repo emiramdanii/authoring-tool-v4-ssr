@@ -73,6 +73,11 @@ export function getJs(): string {
       if (currentPage === totalPages - 1) {
         launchConfetti();
       }
+
+      // SCORM: Report completion when reaching last page
+      if (currentPage === totalPages - 1 && window.__SCORM) {
+        window.__SCORM.reportComplete();
+      }
     }
 
     function nextPage() { goPage(currentPage + 1); }
@@ -128,6 +133,9 @@ export function getJs(): string {
     }
 
     // ── Kuis answer check ──
+    var kuisCorrect = 0;
+    var kuisTotal = 0;
+
     function checkAnswer(btn, qi, oi, ans) {
       const question = btn.closest('.kuis-question') || btn.closest('.roda-question');
       if (!question) return;
@@ -137,7 +145,9 @@ export function getJs(): string {
       allBtns.forEach(function(b) { b.classList.add('disabled'); });
 
       // Mark correct/wrong
+      kuisTotal++;
       if (oi === ans) {
+        kuisCorrect++;
         btn.classList.add('correct');
         const fb = document.getElementById('qfb-' + qi);
         if (fb) fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
@@ -146,6 +156,10 @@ export function getJs(): string {
         allBtns[ans]?.classList.add('correct');
         const fb = document.getElementById('qfb-' + qi);
         if (fb) fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban benar: ' + String.fromCharCode(65 + ans) + '</span>';
+      }
+      // SCORM: Report score after each quiz answer
+      if (window.__SCORM && kuisTotal > 0) {
+        window.__SCORM.reportScore(kuisCorrect, kuisTotal);
       }
     }
 
@@ -463,6 +477,49 @@ export function getJs(): string {
     function skipQuestion(tbId, qIdx) {
       var qEl = document.getElementById('tb-q-' + tbId + '-' + qIdx);
       if (qEl) qEl.classList.add('answered');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: Sortir (Drag-to-category)
+    // ═══════════════════════════════════════════════════════════════════
+    function checkSortir(sortirId) {
+      var koloms = document.querySelectorAll('.sortir-kolom[data-game="' + sortirId + '"]');
+      var correct = 0;
+      var total = 0;
+      koloms.forEach(function(kolom) {
+        var kid = kolom.dataset.kid;
+        var items = kolom.querySelectorAll('.sortir-item');
+        items.forEach(function(item) {
+          total++;
+          if (item.dataset.category === kid) {
+            item.classList.add('correct');
+            correct++;
+          } else {
+            item.classList.add('wrong');
+          }
+        });
+      });
+      // Also check pool for unsorted items
+      var poolItems = document.querySelectorAll('.sortir-pool[data-game="' + sortirId + '"] .sortir-item');
+      poolItems.forEach(function(item) { total++; item.classList.add('wrong'); });
+      if (correct === total && total > 0) launchConfetti();
+      var scoreEl = document.getElementById('sortir-score-' + sortirId);
+      if (scoreEl) scoreEl.textContent = correct + '/' + total + ' benar';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GAME: True/False — Final score display
+    // ═══════════════════════════════════════════════════════════════════
+    function checkTrueFalseScore(tfId) {
+      var questions = document.querySelectorAll('.tf-question[data-game="' + tfId + '"]');
+      var correct = 0;
+      var total = questions.length;
+      questions.forEach(function(q) {
+        if (q.querySelector('.correct-answer')) correct++;
+      });
+      var scoreEl = document.getElementById('tf-score-' + tfId);
+      if (scoreEl) scoreEl.textContent = correct + '/' + total + ' benar';
+      if (correct >= total * 0.8 && total > 0) launchConfetti();
     }
   `;
 }

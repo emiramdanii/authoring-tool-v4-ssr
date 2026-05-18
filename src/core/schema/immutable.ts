@@ -216,7 +216,7 @@ export function patchBlock(
   blockId: string,
   patch: Partial<SchemaBlock>,
 ): SchemaBlock[] {
-  return replaceBlock(blocks, blockId, block => ({ ...block, ...patch }));
+  return replaceBlock(blocks, blockId, block => ({ ...block, ...patch } as SchemaBlock));
 }
 
 /**

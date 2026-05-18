@@ -271,7 +271,7 @@ function deriveMateriSectionToProjection(block: SchemaBlock, projection: SchemaP
     switch (child.type) {
       case 'materi-blok': {
         // Direct mapping: materi-blok already has all MateriBlok fields
-        const mb = child as Record<string, unknown>;
+        const mb = child as unknown as Record<string, unknown>;
         bloks.push({
           tipe: (mb.tipe as string) || 'teks',
           judul: mb.judul as string | undefined,
@@ -285,6 +285,7 @@ function deriveMateriSectionToProjection(block: SchemaBlock, projection: SchemaP
           kanan: mb.kanan as { icon?: string; judul?: string; isi?: string } | undefined,
           items: mb.items as Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }> | undefined,
           style: mb.style as string | undefined,
+          infoboxStyle: mb.infoboxStyle as string | undefined,
           karakter: mb.karakter as string | undefined,
           situasi: mb.situasi as string | undefined,
           pertanyaan: mb.pertanyaan as string | undefined,
