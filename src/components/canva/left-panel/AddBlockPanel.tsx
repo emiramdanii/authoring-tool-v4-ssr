@@ -59,18 +59,12 @@ export default function AddBlockPanel() {
   const blockLabel = isSederhana ? 'Konten' : 'Block';
 
   // Check if current page can accept schema blocks
-  // All pages can accept blocks — addSchemaBlock() auto-creates
-  // an empty schema for pages that don't have one yet.
-  // With migrateAllPages + createPage always assigning schema,
-  // this should always be true, but we keep the guard as safety net.
+  // addSchemaBlock() auto-creates an empty schema for pages that
+  // don't have one yet, so ANY page can accept blocks.
+  // The only case where we can't add is when there's no page at all.
   const canAddBlocks = useMemo(() => {
     if (!page) return false;
-    const schema = ensurePageSchema(page);
-    // Schema exists → can add blocks
-    if (schema) return true;
-    // No schema but custom page → addSchemaBlock will auto-create one
-    // (This is a safety net — all pages should have schema after migration)
-    return page.templateType === 'custom';
+    return true;
   }, [page]);
 
   // ── Compute insertion index from selected block ─────────────

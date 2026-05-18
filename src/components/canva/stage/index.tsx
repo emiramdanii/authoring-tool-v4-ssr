@@ -427,7 +427,8 @@ export default function Stage() {
 
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}
           {/* Professional empty state with action buttons + keyboard hints */}
-          {!canvasPreview && !isTemplateMode && (
+          {/* Shows for ANY page that has no blocks — not just custom pages */}
+          {!canvasPreview && (
             (isSchemaDriven && page.schema && page.schema.blocks.length === 0) ||
             (!isSchemaDriven && page.elements.length === 0)
           ) && (

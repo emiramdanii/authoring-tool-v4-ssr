@@ -32,7 +32,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
-// TemplateMarketplace removed in R-1 cleanup
 
 // ═══════════════════════════════════════════════════════════════════
 // TOOLBAR EXPORT — Bagikan & Export dropdown
@@ -55,8 +54,6 @@ export function ToolbarExport() {
 
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const soundOn = useAuthoringStore((s) => Object.values(s.suara).some(Boolean));
-
-  // marketplaceOpen removed — TemplateMarketplace deleted
 
   return (
     <>
@@ -196,8 +193,6 @@ export function ToolbarExport() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Template Marketplace Overlay */}
-      {/* TemplateMarketplace removed in R-1 */}
     </>
   );
 }

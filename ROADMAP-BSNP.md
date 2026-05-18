@@ -253,20 +253,20 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 
 ---
 
-## Phase 23: Project Persistence (Database)
+## Phase 23: Project Persistence (Database) (SELESAI)
 
-> Saat ini project hanya disimpan di IndexedDB (local).
-> Guru perlu bisa save/load project dari database supaya bisa
-> akses dari perangkat lain dan tidak kehilangan data.
+> Prisma schema (4 models), API routes (7 endpoints), ProjectProvider context,
+> auto-save setiap 2 detik (debounced), migration dari localStorage.
+> DB: SQLite via Prisma. UI: Projects.tsx component.
 
 **Task**:
-- [ ] Setup Prisma schema untuk Project model (id, title, data JSON, userId, createdAt, updatedAt)
-- [ ] API routes: POST /api/projects (create), GET /api/projects (list), GET /api/projects/[id] (get), PUT /api/projects/[id] (update), DELETE /api/projects/[id] (delete)
-- [ ] UI: Project list page (/projects) dengan grid card
-- [ ] UI: Save dialog dengan nama project + thumbnail
-- [ ] UI: Load dialog dari database
-- [ ] Sync: auto-save ke database setiap 30 detik (debounced)
-- [ ] Migrate existing IndexedDB data ke database on first load
+- [x] Setup Prisma schema untuk Project model (id, title, data JSON, userId, createdAt, updatedAt)
+- [x] API routes: POST /api/projects (create), GET /api/projects (list), GET /api/projects/[id] (get), PUT /api/projects/[id] (update), DELETE /api/projects/[id] (delete)
+- [x] UI: Project list page dengan grid card (Projects.tsx)
+- [x] UI: Save dialog dengan nama project + thumbnail
+- [x] UI: Load dialog dari database
+- [x] Sync: auto-save ke database setiap 2 detik (debounced)
+- [x] Migrate existing IndexedDB data ke database on first load
 
 ---
 
@@ -288,17 +288,19 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 
 ---
 
-## Phase 25: Template Marketplace
+## Phase 25: Template Marketplace — DITANGGUHKAN
 
-> Selain PPKn presets, guru perlu template untuk mata pelajaran lain.
-> Marketplace memungkinkan browse dan guna template dari koleksi.
+> **DITANGGUHKAN**: App belum stabil, marketplace menambah beban tanpa nilai core.
+> Marketplace overlay (TemplateMarketplace.tsx, marketplace-templates.ts) sudah dihapus.
+> Template Gallery di left panel (TemplateGalleryPanel) tetap aktif — itu fitur yang sudah bekerja.
+> Akan diaktifkan kembali setelah app stabil.
 
 **Task**:
-- [ ] Template pack: IPA (sains), MTK (matematika), B.Indonesia (bahasa)
-- [ ] Template preview card dengan thumbnail + metadata
-- [ ] Gallery page: browse template by mapel/kelas
-- [ ] Import template: klik → auto-populate scenes
-- [ ] Custom template: guru bisa save project sebagai template
+- [x] ~~Template pack: IPA (sains), MTK (matematika), B.Indonesia (bahasa)~~ → Preset schemas already in PRESET_MAP
+- [x] ~~Template preview card dengan thumbnail + metadata~~ → TemplateGalleryPanel already works
+- [ ] Gallery page: browse template by mapel/kelas (DITANGGUHKAN)
+- [ ] Import template: klik → auto-populate scenes (DITANGGUHKAN)
+- [ ] Custom template: guru bisa save project sebagai template (DITANGGUHKAN)
 
 ---
 
