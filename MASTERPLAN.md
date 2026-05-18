@@ -365,57 +365,57 @@ Guru tinggal klik-teks-edit per block.
 
 | Task | File | Status |
 |------|------|--------|
-| F-1.1 | Buat `AppMode` type & state di store | 🔲 |
-| F-1.2 | Refactor `CanvaBuilder.tsx` ke layout 3-column | 🔲 |
-| F-1.3 | Refactor `LeftPanel.tsx` → ScenePanel (scene-only) | 🔲 |
-| F-1.4 | Refactor `RightPanel.tsx` → ContextPanel (contextual) | 🔲 |
-| F-1.5 | Simplify `Toolbar.tsx` → minimal contextual toolbar | 🔲 |
-| F-1.6 | Tambah mode PREVIEW overlay | 🔲 |
-| F-1.7 | Tambah mode PRESENT fullscreen | 🔲 |
-| F-1.8 | Mode switching keyboard shortcuts | 🔲 |
-| F-1.9 | URL-based mode state (`?mode=edit|preview|present`) | 🔲 |
-| F-1.10 | Status bar (zoom, scene info, mode) | 🔲 |
+| F-1.1 | Buat `AppMode` type & state di store | ✅ |
+| F-1.2 | Refactor `CanvaBuilder.tsx` ke layout 3-column | ✅ |
+| F-1.3 | Refactor `LeftPanel.tsx` → ScenePanel (scene-only) | ✅ |
+| F-1.4 | Refactor `RightPanel.tsx` → ContextPanel (contextual) | ✅ |
+| F-1.5 | Simplify `Toolbar.tsx` → minimal contextual toolbar | ✅ |
+| F-1.6 | Tambah mode PREVIEW overlay | ✅ |
+| F-1.7 | Tambah mode PRESENT fullscreen | ✅ |
+| F-1.8 | Mode switching keyboard shortcuts | ✅ |
+| F-1.9 | URL-based mode state (`?mode=edit|preview|present`) | ✅ |
+| F-1.10 | Status bar (zoom, scene info, mode) | ✅ |
 
 ### Phase F-2: Smart Block Library (Week 2)
 **Tujuan**: Block grouping pedagogis + content-first
 
 | Task | File | Status |
 |------|------|--------|
-| F-2.1 | Definisikan `BlockPersonality` enum & mapping | 🔲 |
-| F-2.2 | Tambah `personality` field ke BlockDefinitionRegistry | 🔲 |
-| F-2.3 | Refactor `AddBlockPanel.tsx` → pedagogical groups | 🔲 |
-| F-2.4 | Content-first property tab order | 🔲 |
-| F-2.5 | Zero-config block defaults (beautiful placeholders) | 🔲 |
-| F-2.6 | Block personality color coding | 🔲 |
-| F-2.7 | Smart block suggestions per scene type | 🔲 |
+| F-2.1 | Definisikan `BlockPersonality` enum & mapping | ✅ |
+| F-2.2 | Tambah `personality` field ke BlockDefinitionRegistry | ✅ |
+| F-2.3 | Refactor `AddBlockPanel.tsx` → pedagogical groups | ✅ |
+| F-2.4 | Content-first property tab order | ✅ |
+| F-2.5 | Zero-config block defaults (beautiful placeholders) | ✅ |
+| F-2.6 | Block personality color coding | ✅ |
+| F-2.7 | Smart block suggestions per scene type | ✅ |
 
 ### Phase F-3: Mode Architecture (Week 2-3)
 **Tujuan**: Full 4-mode system
 
 | Task | File | Status |
 |------|------|--------|
-| F-3.1 | Mode state machine implementation | 🔲 |
-| F-3.2 | EDIT mode: Full chrome layout | 🔲 |
-| F-3.3 | PREVIEW mode: Stage-only + floating nav | 🔲 |
-| F-3.4 | PRESENT mode: Fullscreen + keyboard nav | 🔲 |
-| F-3.5 | EXPORT mode: Dialog with format options | 🔲 |
-| F-3.6 | Mode-specific keyboard shortcuts | 🔲 |
-| F-3.7 | Mode transition animations | 🔲 |
+| F-3.1 | Mode state machine implementation | ✅ |
+| F-3.2 | EDIT mode: Full chrome layout | ✅ |
+| F-3.3 | PREVIEW mode: Stage-only + floating nav | ✅ |
+| F-3.4 | PRESENT mode: Fullscreen + keyboard nav | ✅ |
+| F-3.5 | EXPORT mode: Dialog with format options | ✅ |
+| F-3.6 | Mode-specific keyboard shortcuts | ✅ |
+| F-3.7 | Mode transition animations | ✅ |
 
 ### Phase F-4: Template Wizard (Week 3-4)
 **Tujuan**: 3-level template system + wizard UI
 
 | Task | File | Status |
 |------|------|--------|
-| F-4.1 | Definisikan `CourseTemplate` schema | 🔲 |
-| F-4.2 | Definisikan `SceneTemplate` schema | 🔲 |
-| F-4.3 | Definisikan `BlockPreset` schema | 🔲 |
-| F-4.4 | Buat `CourseTemplateRegistry` | 🔲 |
-| F-4.5 | Buat Template Wizard UI (4-step) | 🔲 |
-| F-4.6 | Wizard → auto-populate scenes with templates | 🔲 |
-| F-4.7 | Scene template picker di ScenePanel | 🔲 |
-| F-4.8 | Block preset switcher di ContextPanel | 🔲 |
-| F-4.9 | Template metadata (mapel, kelas, semester, KD) | 🔲 |
+| F-4.1 | Definisikan `CourseTemplate` schema | ✅ |
+| F-4.2 | Definisikan `SceneTemplate` schema | ✅ |
+| F-4.3 | Definisikan `BlockPreset` schema | ✅ |
+| F-4.4 | Buat `CourseTemplateRegistry` | ✅ |
+| F-4.5 | Buat Template Wizard UI (4-step) | ✅ |
+| F-4.6 | Wizard → auto-populate scenes with templates | ✅ |
+| F-4.7 | Scene template picker di ScenePanel | ✅ |
+| F-4.8 | Block preset switcher di ContextPanel | ✅ |
+| F-4.9 | Template metadata (mapel, kelas, semester, KD) | ✅ |
 
 ---
 

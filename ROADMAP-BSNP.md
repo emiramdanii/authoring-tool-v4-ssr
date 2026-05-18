@@ -4,7 +4,7 @@
 > Flow searah, remedial serahkan ke guru.
 > Lean & praktis — hindari over-engineering.
 >
-> **Dibuat**: 9 Mei 2026 | **Update**: 10 Mei 2026
+> **Dibuat**: 9 Mei 2026 | **Update**: 18 Mei 2026
 
 ---
 
@@ -239,6 +239,63 @@ Guru pilih "Full Interaktif" → Toggle "Per Pertemuan" → Jumlah pertemuan (da
 - [x] Accordion per blok di MateriTemplate (interactive mode) → CompressionEngine accordion strategy
 - [x] Badge visual di PenutupTemplate berdasarkan skor → PenutupRenderer score badges
 - [x] HasilTemplate — tampilkan skor per aktivitas → HasilRenderer ActivityBreakdown
+
+---
+
+## Phase 22: Quality & Polish (SELESAI)
+
+> Fix bugs, register orphaned renderers, clean up dead code.
+
+- [x] Fix block-registry test: EXPECTED_BLOCK_TYPES 31→40
+- [x] Register 4 orphaned renderers (tabel, checklist, statistik, studi) as standalone block types
+- [x] Remove duplicate client-export.ts (superseded by export/index.ts)
+- [x] Update MASTERPLAN — mark F-1/F-2/F-3/F-4 as complete
+
+---
+
+## Phase 23: Project Persistence (Database)
+
+> Saat ini project hanya disimpan di IndexedDB (local).
+> Guru perlu bisa save/load project dari database supaya bisa
+> akses dari perangkat lain dan tidak kehilangan data.
+
+**Task**:
+- [ ] Setup Prisma schema untuk Project model (id, title, data JSON, userId, createdAt, updatedAt)
+- [ ] API routes: POST /api/projects (create), GET /api/projects (list), GET /api/projects/[id] (get), PUT /api/projects/[id] (update), DELETE /api/projects/[id] (delete)
+- [ ] UI: Project list page (/projects) dengan grid card
+- [ ] UI: Save dialog dengan nama project + thumbnail
+- [ ] UI: Load dialog dari database
+- [ ] Sync: auto-save ke database setiap 30 detik (debounced)
+- [ ] Migrate existing IndexedDB data ke database on first load
+
+---
+
+## Phase 24: Image Upload & Media Library
+
+> Saat ini gambar hanya bisa via URL. Guru perlu upload gambar
+> langsung dari komputer supaya lebih praktis.
+
+**Task**:
+- [ ] API route: POST /api/upload (multipart, simpan ke /upload atau cloud storage)
+- [ ] Komponen ImageUploader di panel konten (drag & drop + file picker)
+- [ ] Media Library panel: browse gambar yang sudah diupload
+- [ ] Thumbnail preview untuk gambar di block editor
+- [ ] Optimize: auto-resize gambar ke max 1280px width
+- [ ] Cleanup: hapus gambar orphan yang tidak dipakai
+
+---
+
+## Phase 25: Template Marketplace
+
+> Selain PPKn presets, guru perlu template untuk mata pelajaran lain.
+> Marketplace memungkinkan browse dan guna template dari koleksi.
+
+**Task**:
+- [ ] Template pack: IPA (sains), MTK (matematika), B.Indonesia (bahasa)
+- [ ] Template preview card dengan thumbnail + metadata
+- [ ] Gallery page: browse template by mapel/kelas
+- [ ] Import template: klik → auto-populate scenes
+- [ ] Custom template: guru bisa save project sebagai template
 
 ---
 
