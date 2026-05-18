@@ -57,6 +57,21 @@ import { isCompositeBlockType, getCompositeContainerDescriptor } from './capabil
 export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
   // ═══ Path 1: Already native schema ═══════════════════════════
   if (page.schema) {
+    // DEFENSIVE: Validate that page.schema is actually an object, not a string or other type.
+    // Corrupted localStorage data may have schema as a string (double-serialized).
+    if (typeof page.schema !== 'object' || Array.isArray(page.schema)) {
+      console.warn('[ensurePageSchema] page.schema is not an object — treating as no schema. Type:', typeof page.schema);
+      // Fall through to Path 4 (return null) — caller will auto-create schema
+      return null;
+    }
+    // DEFENSIVE: Ensure blocks is an array
+    if (!Array.isArray(page.schema.blocks)) {
+      console.warn('[ensurePageSchema] page.schema.blocks is not an array — creating empty blocks. Value:', page.schema.blocks);
+      // Return schema with corrected blocks array
+      const fixedSchema = { ...page.schema, blocks: [] };
+      return deepFreeze(deepClone(fixedSchema));
+    }
+
     // Apply version migration if needed (e.g., v0 → v1)
     const currentVersion = page.schema.version || 0;
     if (currentVersion < SCHEMA_VERSION) {
@@ -71,7 +86,12 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       // Note: We return the migrated schema but don't mutate page.schema here.
       // The caller (persistence-slice) handles persisting the migration result.
       // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
-      return deepFreeze(deepClone(migrated));
+      try {
+        return deepFreeze(deepClone(migrated));
+      } catch (cloneErr) {
+        console.warn('[ensurePageSchema] deepClone/deepFreeze failed for migrated schema — returning unfrozen clone:', cloneErr);
+        try { return deepClone(migrated); } catch { return migrated; }
+      }
     }
     // Dev-mode purity guard: ensure no runtime state has leaked into schema
     // Wrapped in try-catch to prevent dev-mode purity check from crashing the app
@@ -83,7 +103,21 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
     // deepFreeze(page.schema) was mutating the store, causing produceWithPatches
     // to fail silently when adding blocks — the root cause of "blocks don't appear on canvas".
-    return deepFreeze(deepClone(page.schema));
+    try {
+      return deepFreeze(deepClone(page.schema));
+    } catch (cloneErr) {
+      // Fallback: if deepClone fails (e.g., non-cloneable runtime state in schema),
+      // use JSON parse/stringify as fallback, or return the schema without freezing.
+      console.warn('[ensurePageSchema] deepClone/deepFreeze failed — using JSON fallback:', cloneErr);
+      try {
+        const jsonCloned = JSON.parse(JSON.stringify(page.schema)) as ScreenSchema;
+        return deepFreeze(jsonCloned);
+      } catch (jsonErr) {
+        // Last resort: return shallow copy without deep freeze
+        console.warn('[ensurePageSchema] JSON clone also failed — returning shallow copy without freeze:', jsonErr);
+        return { ...page.schema, blocks: [...(page.schema.blocks || [])] };
+      }
+    }
   }
 
   // ═══ Path 2: schemaScreen in templateData — promote it ══════

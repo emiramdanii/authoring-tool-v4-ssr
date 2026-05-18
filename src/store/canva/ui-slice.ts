@@ -863,8 +863,9 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
   addSchemaBlock: (blockType, insertAfterIndex) => {
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
-    if (!page) return;
+    if (!page) { console.warn('[addSchemaBlock] No page at index', currentPageIndex); return; }
 
+    console.log('[addSchemaBlock] START', { blockType, insertAfterIndex, pageId: page.id, hasSchema: !!page.schema, schemaBlocks: page.schema?.blocks?.length ?? 0 });
     try {
     // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
     // If the page has no schema (e.g., custom/blank page), auto-create one
@@ -883,6 +884,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     }
 
     const blocks = schema.blocks;
+    console.log('[addSchemaBlock] After ensurePageSchema', { needsSchemaInit, blocksLen: blocks.length, schemaFrozen: Object.isFrozen(blocks) });
 
     // ═══ AUTO-SPLIT: Full-page blocks should be the only block on a page ═══
     // If the current page has a full-page block (cover/hero) and the user
@@ -965,8 +967,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       return;
     }
 
-    get()._pushHistory();
-
     // Create default block — stable nanoid, data-driven from registry
     const newBlock: Record<string, unknown> = {
       id: generateBlockId(), // ← Stable nanoid, not Date.now()
@@ -1008,6 +1008,45 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       newBlocks = [...blocks.slice(0, insertAt), newBlock as unknown as SchemaBlock, ...blocks.slice(insertAt)];
     }
 
+    // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
+    const newPages = [...pages];
+    const updatedSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
+    console.log('[addSchemaBlock] After commitSchemaUpdate', { updatedBlocksLen: updatedSchema.blocks.length, updatedVersion: updatedSchema.version });
+    newPages[currentPageIndex] = {
+      ...page,
+      schema: updatedSchema,
+      // Ensure pageMode is schema-driven when adding blocks
+      pageMode: 'schema',
+      // Clear legacy elements when converting to schema-driven page
+      ...(needsSchemaInit ? { elements: [] } : {}),
+    };
+    // ═══ ATOMIC STATE UPDATE ════════════════════════════════════
+    // Merge _pushHistory state with page update to prevent intermediate
+    // renders that could see stale data. This avoids the race condition
+    // where _pushHistory's set() triggers a re-render before pages are updated.
+    const { _history, _historyIdx } = get();
+    const snapshot = { pages: structuredClone(get().pages), currentPageIndex, ratioId: get().ratioId };
+    const newHistory = _history.slice(0, _historyIdx + 1);
+    newHistory.push(snapshot);
+    if (newHistory.length > 50) newHistory.shift();
+
+    console.log('[addSchemaBlock] BEFORE set', { newPageSchemaBlocks: newPages[currentPageIndex].schema?.blocks?.length, pageMode: newPages[currentPageIndex].pageMode });
+    set({
+      pages: newPages,
+      // Inline _pushHistory state update (atomic with pages update)
+      _history: newHistory,
+      _historyIdx: newHistory.length - 1,
+      // Inline selectBlock state update (atomic with pages update)
+      selectedBlockId: newBlock.id as string,
+      selectedBlockType: blockType,
+      editingBlockId: null,
+      selectedBlockIds: [newBlock.id as string],
+      selectedElId: null,
+      selectedElIds: [],
+    });
+    console.log('[addSchemaBlock] AFTER set — store state:', { storePagesBlocks: get().pages[currentPageIndex]?.schema?.blocks?.length });
+
+    // Emit editBus event for PatchHistory (now that state is consistent)
     if (forwardPatches && inversePatches) {
       editBus.emit({
         type: 'patch',
@@ -1027,21 +1066,6 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       });
     }
 
-    // ═══ SCHEMA-FIRST: Update page.schema directly ════════════
-    const newPages = [...pages];
-    const updatedSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
-    newPages[currentPageIndex] = {
-      ...page,
-      schema: updatedSchema,
-      // Ensure pageMode is schema-driven when adding blocks
-      pageMode: 'schema',
-      // Clear legacy elements when converting to schema-driven page
-      ...(needsSchemaInit ? { elements: [] } : {}),
-    };
-    set({ pages: newPages });
-
-    // Select the new block
-    get().selectBlock(newBlock.id as string, blockType);
     toast.success(`${definition.name} ditambahkan`, {
       action: {
         label: 'Undo',

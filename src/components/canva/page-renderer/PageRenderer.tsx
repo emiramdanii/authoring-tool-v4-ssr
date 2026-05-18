@@ -94,6 +94,7 @@ export function PageRenderer({
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
     // Schema-first: page.schema is the canonical source
     const schema = ensurePageSchema(page);
+    console.log('[PageRenderer] ensurePageSchema result:', { pageId: page.id, hasSchema: !!schema, blocksLen: schema?.blocks?.length, pageSchemaBlocks: page.schema?.blocks?.length });
     if (schema) return schema;
     // Custom pages have no schema — return null
     return null;
