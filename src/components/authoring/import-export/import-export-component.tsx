@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import { Upload, Download, FileSpreadsheet, CheckCircle2, Loader2, Rocket, Sparkles, Printer, ClipboardList, BarChart3, Lightbulb } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
@@ -31,6 +32,9 @@ export default function ImportExport() {
     handleExcelFileSelect,
     closePreview,
   } = useExcelImport();
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('excelImportExport')) return null;
 
   return (
     <div className="p-6 space-y-6">

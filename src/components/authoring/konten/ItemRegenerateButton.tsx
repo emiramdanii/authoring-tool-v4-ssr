@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { canRegenerate } from '../auto-generate/regenerate';
 
@@ -22,6 +23,9 @@ export function ItemRegenerateButton({
 }: ItemRegenerateButtonProps) {
   const [loading, setLoading] = useState(false);
   const canRegen = canRegenerate();
+
+  // Feature flag guard — after all hooks, before conditional returns
+  if (!isEnabled('aiRefinement')) return null;
 
   if (!canRegen) return null;
 

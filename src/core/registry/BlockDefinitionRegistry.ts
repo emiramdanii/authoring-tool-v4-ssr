@@ -229,6 +229,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: 'VII', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'y',
+      layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
     }),
   },
   'hero': {
@@ -251,6 +252,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: '', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'c',
+      layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
     }),
   },
   'petunjuk': {

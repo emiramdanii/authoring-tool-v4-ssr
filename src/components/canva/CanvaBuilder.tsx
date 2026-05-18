@@ -19,6 +19,7 @@ import PresentMode from './PresentMode';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
 import { OfflineIndicator } from '@/components/shared/OfflineIndicator';
 import { useCommandPalette } from '@/components/shared/CommandPalette';
+import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import CanvaTour from '@/components/shared/CanvaTour';
@@ -92,6 +93,7 @@ export default function CanvaBuilder() {
       setCanvaState: useCanvaStore.setState,
       getInteractiveState: useInteractiveStore.getState,
       openAIAssistant: () => {
+        if (!isEnabled('aiAssistant')) return;
         const store = useCanvaStore.getState();
         if (!store.rightPanelOpen) {
           useCanvaStore.setState({ rightPanelOpen: true });
@@ -130,7 +132,7 @@ export default function CanvaBuilder() {
           <PreviewMode />
           <PlayOverlay />
           <OfflineIndicator />
-          <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
+          {isEnabled('commandPalette') && <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />}
         </div>
       </MobileGuard>
     );
@@ -210,7 +212,7 @@ export default function CanvaBuilder() {
         <CanvaTour />
 
         {/* Command Palette */}
-        <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />
+        {isEnabled('commandPalette') && <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />}
 
         {/* Offline Indicator */}
         <OfflineIndicator />

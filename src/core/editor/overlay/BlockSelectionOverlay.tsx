@@ -212,7 +212,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
 
       {/* ── Selection label badge (canvas mode, selected) ──────── */}
       {isSelected && isCompact && (
-        <div className="absolute -top-6 left-0 flex items-center gap-0.5 z-30 pointer-events-auto">
+        <div className="absolute left-0 flex items-center gap-0.5 z-30 pointer-events-auto" style={{ top: -24 }}>
           {/* Block type badge */}
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-t-md bg-app-accent text-[9px] font-bold text-black whitespace-nowrap">
             <span>{blockIcon}</span>

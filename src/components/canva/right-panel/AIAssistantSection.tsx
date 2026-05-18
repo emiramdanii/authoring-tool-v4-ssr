@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import { createPortal } from 'react-dom';
 import { useCanvaStore } from '@/store/canva-store';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
@@ -131,6 +132,9 @@ export default function AIAssistantSection() {
     const timer = setTimeout(dismissHint, 6000);
     return () => clearTimeout(timer);
   }, [showHint, dismissHint]);
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('aiAssistant')) return null;
 
   return (
     <>

@@ -18,6 +18,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Profiler } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import {
   initPerfCollector,
   getMemoryUsage,
@@ -483,7 +484,7 @@ function PerformancePanel() {
  * Usage: Just add `<PerformanceMonitor />` at the top level of your app.
  */
 export default function PerformanceMonitor() {
-  if (!IS_DEV) return null;
+  if (!IS_DEV || !isEnabled('performanceMonitor')) return null;
   return <PerformancePanel />;
 }
 

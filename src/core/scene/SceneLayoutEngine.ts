@@ -434,7 +434,14 @@ export function estimateBlockHeight(
     }
   }
 
-  // Apply compact factor
+  // Full-page blocks (cover, hero) ALWAYS fill the scene —
+  // do NOT apply compactFactor. They use the full scene height
+  // regardless of canvas mode, ensuring no overflow or gap.
+  if (isFullPageBlockType(block.type)) {
+    return { height: contentHeight, minHeight: contentHeight, maxHeight: contentHeight };
+  }
+
+  // Apply compact factor for non-full-page blocks
   const estimatedHeight = Math.round(contentHeight * compactFactor);
 
   // Determine min/max bounds
@@ -484,7 +491,16 @@ export function resolveSceneLayout(
   const gap = BLOCK_GAP[isCompact ? 'compact' : 'normal'];
 
   // ── Phase 1: Resolve flow blocks (vertical stack) ──
-  const flowBlocks = blocks.filter(b => !b.layout || b.layout.position === 'flow');
+  // SAFETY: Full-page blocks (cover, hero) without an explicit layout property
+  // are treated as absolute-positioned blocks, not flow blocks. This prevents
+  // legacy cover blocks (created before layout was added to createDefault())
+  // from being stacked as flow blocks and overflowing.
+  const flowBlocks = blocks.filter(b => {
+    if (isFullPageBlockType(b.type) && (!b.layout || b.layout.position !== 'flow')) {
+      return false; // Full-page blocks → absolute path
+    }
+    return !b.layout || b.layout.position === 'flow';
+  });
   let currentY = contentTop;
 
   for (let i = 0; i < flowBlocks.length; i++) {

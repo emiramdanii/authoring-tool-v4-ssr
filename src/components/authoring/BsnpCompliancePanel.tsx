@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
@@ -475,6 +476,9 @@ export default function BsnpCompliancePanel() {
   const handleNavigate = useCallback((panel: PanelId) => {
     setActivePanel(panel);
   }, [setActivePanel]);
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('bsnpCompliance')) return null;
 
   // ── Check if completely empty (no content entered at all) ──────
   const hasAnyContent =

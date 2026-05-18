@@ -16,6 +16,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useCallback, useMemo } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import {
   Sparkles,
   Loader2,
@@ -169,6 +170,9 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
   }, [generatedTemplate, jumlahKuis, _pushHistory, onTemplateGenerated]);
 
   const patternConfig = TEMPLATE_PATTERNS[pattern];
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('aiTemplateGenerator')) return null;
 
   return (
     <div className="space-y-3">

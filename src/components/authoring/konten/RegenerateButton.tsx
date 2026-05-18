@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import { Zap, Loader2 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { canRegenerate, getStoredText } from '../auto-generate/regenerate';
@@ -32,6 +33,9 @@ export function RegenerateButton({
   const [loading, setLoading] = useState(false);
   const storedText = getStoredText();
   const showButton = canRegenerate() || hasExistingData;
+
+  // Feature flag guard — after all hooks, before conditional returns
+  if (!isEnabled('aiRefinement')) return null;
 
   if (!showButton) return null;
 

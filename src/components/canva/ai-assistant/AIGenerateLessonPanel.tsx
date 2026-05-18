@@ -14,6 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import {
@@ -223,6 +224,9 @@ export default function AIGenerateLessonPanel() {
     eksperimen: '🔬 Eksperimen',
     mini: '⚡ Mini',
   };
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('aiGeneration')) return null;
 
   return (
     <div className="space-y-3">

@@ -13,9 +13,13 @@
 
 import { GraduationCap, Settings } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { isEnabled } from '@/config/feature-flags';
 
 export default function TeacherModeToggle() {
   const { isSederhana, toggle } = useTeacherMode();
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('teacherMode')) return null;
 
   return (
     <button

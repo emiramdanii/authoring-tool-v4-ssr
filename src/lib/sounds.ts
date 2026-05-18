@@ -6,6 +6,7 @@
 // No SoundManager class needed — just a function.
 
 import { useAuthoringStore } from '@/store/authoring-store';
+import { isEnabled } from '@/config/feature-flags';
 
 // ── Audio cache ───────────────────────────────────────────────
 const cache = new Map<string, HTMLAudioElement>();
@@ -48,6 +49,9 @@ export function playSound(id: string) {
   // Only run in browser
   if (typeof window === 'undefined') return;
 
+  // Feature flag guard
+  if (!isEnabled('soundEffects')) return;
+
   // Check if this sound category is enabled in SuaraConfig
   const configKey = SOUND_CONFIG[id];
   if (configKey) {
@@ -76,6 +80,9 @@ export function playSound(id: string) {
 // ── Preload all sounds ───────────────────────────────────────
 export function preloadSounds() {
   if (typeof window === 'undefined') return;
+
+  // Feature flag guard
+  if (!isEnabled('soundEffects')) return;
   for (const [id, src] of Object.entries(SOUND_FILES)) {
     if (!cache.has(id)) {
       const audio = new Audio(src);

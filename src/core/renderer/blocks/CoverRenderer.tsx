@@ -460,7 +460,7 @@ export const CoverRenderer = React.memo(function CoverRenderer({ block, tokens, 
   const accentKey = block.accentColor || 'y';
   return (
     <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}>
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <div style={{ position: 'absolute', inset: 0 }}>
         <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />
         {variant === 'A' && <CoverVariantA {...sharedProps} />}
         {variant === 'B' && <CoverVariantB {...sharedProps} />}

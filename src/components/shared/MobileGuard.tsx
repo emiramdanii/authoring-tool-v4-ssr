@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { Monitor, Smartphone } from 'lucide-react';
+import { isEnabled } from '@/config/feature-flags';
 
 export function MobileGuard({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -20,6 +21,10 @@ export function MobileGuard({ children }: { children: React.ReactNode }) {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // Feature flag guard — after all hooks, before conditional returns
+  // When disabled, bypass the guard entirely (pass through children)
+  if (!isEnabled('mobileGuard')) return <>{children}</>;
 
   if (!isMobile) return <>{children}</>;
 

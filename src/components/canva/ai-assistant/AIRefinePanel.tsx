@@ -15,6 +15,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import {
   Sparkles,
   Loader2,
@@ -210,6 +211,9 @@ export default function AIRefinePanel() {
     setApplied(false);
     clear();
   }, [clear]);
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('aiRefinement')) return null;
 
   return (
     <div className="space-y-3">

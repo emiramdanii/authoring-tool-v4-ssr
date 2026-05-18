@@ -266,3 +266,49 @@ Stage Summary:
 - 6 files modified: store.ts, ui-slice.ts, stage/index.tsx, persistence-slice.ts, types.ts, use-auto-save.ts
 - Block addition now works: "Tambah Block" → select block type → block appears on canvas → "Halaman Kosong" dialog disappears
 - Auto-save no longer causes infinite loop/stack overflow
+
+---
+Task ID: post-migration-recovery
+Agent: Main Agent
+Task: Post-migration systematic recovery — Fix core features, create feature flags, disable advanced features
+
+Work Log:
+- Audited entire project: 40+ block types, 3 Zustand stores, 12 API routes, 4 rendering modes
+- Identified 4 root causes for Cover Overflow P0 bug:
+  1. `compactFactor (0.8)` applied to full-page blocks in `estimateBlockHeight()` → cover height = 576px instead of 720px
+  2. Missing `layout` property on cover/hero `createDefault()` → blocks treated as flow instead of absolute
+  3. `height: 100%` chain breaks in CoverRenderer → inner div resolves to auto height
+  4. BlockSelectionOverlay badge at `-top-6` overflows scene boundary at y=0
+- Fixed all 4 cover overflow root causes:
+  1. SceneLayoutEngine.ts: Skip compactFactor for full-page blocks, return full scene height
+  2. BlockDefinitionRegistry.ts: Added `layout: { position: 'absolute', x: 0, y: 0, width: 100, height: 100 }` to cover and hero createDefault()
+  3. CoverRenderer.tsx: Changed inner div from `height: 100%` to `position: absolute; inset: 0`
+  4. BlockSelectionOverlay.tsx: Changed badge position from `-top-6` class to inline `style={{ top: -24 }}`
+  5. SceneLayoutEngine.ts: Added safety check in flow block filter — full-page blocks without layout are treated as absolute
+- Created Feature Flag system at `/src/config/feature-flags.ts`:
+  - 12 core features (always enabled)
+  - 4 AI features (disabled)
+  - 3 export features (disabled)
+  - 6 advanced features (disabled)
+  - 3 dev-only features (disabled)
+  - Helper functions: isEnabled(), getFlagsByCategory(), setFlag()
+- Applied feature flags to 15+ components:
+  - AI: AITemplateGenerator, AIGenerateLessonPanel, AIRefinePanel, AIAssistantPanel, AIAssistantSection, RegenerateButton, ItemRegenerateButton
+  - Sound: sounds.ts (playSound, preloadSounds)
+  - CommandPalette: CanvaBuilder.tsx
+  - BSNP: BsnpCompliancePanel (both authoring and features)
+  - Teacher Mode: TeacherModeToggle
+  - Mobile Guard: MobileGuard (passthrough children when disabled)
+  - SCORM: ToolbarExport.tsx
+  - Excel: import-export-component.tsx
+  - Performance: PerformanceMonitor
+  - RightPanel: AI tab conditional on aiAssistant flag
+  - Keyboard shortcuts: AI assistant shortcut gated by flag
+- Build verification: TypeScript ✅ zero errors, Next.js build ✅ success
+
+Stage Summary:
+- Cover Overflow P0 bug FIXED (4 root causes addressed)
+- Feature Flag system created with 28 flags across 5 categories
+- Advanced features temporarily disabled (AI, SCORM, BSNP, sounds, command palette, teacher mode, mobile guard, PWA, dev tools)
+- Core features fully active: canvas editor, schema renderer, block CRUD, page management, undo/redo, auto-save, 4 modes, authoring, themes, block selection, property panel, backgrounds
+- Build passes clean — ready for core feature testing

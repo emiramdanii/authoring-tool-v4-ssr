@@ -13,6 +13,7 @@ import PageInfo from './PageInfo';
 import LayerPanel from '../left-panel/LayerPanel';
 import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
 
 // Lazy-loaded: AI sections are heavy (API calls, complex UI, code editors)
@@ -62,12 +63,14 @@ export default function RightPanel() {
 
   const [activeTab, setActiveTab] = useState<RightPanelTab>('properties');
 
+  const aiEnabled = isEnabled('aiAssistant');
+
   // Teacher-mode aware tab configuration
   // Sederhana mode: only Properti + AI (Layer is hidden — reduces cognitive load)
   // Lengkap mode: all 3 tabs including Layer for advanced block ordering
   const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
     { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
-    { id: 'ai', label: 'AI', icon: <Sparkles size={12} /> },
+    ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: <Sparkles size={12} /> }] : []),
     // Layer tab only in advanced mode — teachers get NavigationSection in Properties tab instead
     ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={12} /> }] : []),
   ];
@@ -186,8 +189,8 @@ export default function RightPanel() {
           </div>
         )}
 
-        {/* AI Tab */}
-        {activeTab === 'ai' && (
+        {/* AI Tab — only rendered when aiAssistant feature flag is enabled */}
+        {aiEnabled && activeTab === 'ai' && (
           <div role="tabpanel" aria-label="AI">
             {hasBlockSelection ? (
               <>

@@ -7,6 +7,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { isEnabled } from '@/config/feature-flags';
 import type { ScreenSchema, SchemaBlock } from '../../../core/schema/types';
 import { BlockCapabilityRegistry } from '../../../core/schema/capability-registry';
 import { estimateBlockHeight, SCENE_MAX_HEIGHT } from '../../../core/schema/transaction';
@@ -107,6 +108,9 @@ export function BsnpCompliancePanel({ schema, className }: BsnpCompliancePanelPr
   const metCount = results.filter(r => r.met).length;
   const totalCount = results.length;
   const compliancePercent = totalCount > 0 ? Math.round((metCount / totalCount) * 100) : 0;
+
+  // Feature flag guard — after all hooks, before JSX
+  if (!isEnabled('bsnpCompliance')) return null;
 
   if (!schema) {
     return (
