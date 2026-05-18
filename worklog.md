@@ -192,3 +192,28 @@ Stage Summary:
 - Media Library allows browsing, searching, and deleting uploaded images
 - URL input remains as fallback for external image URLs
 - File validation: JPG, PNG, GIF, WebP, SVG only, max 5MB
+---
+Task ID: 6
+Agent: Main
+Task: Quality fixes, Phase 22-25 implementation
+
+Work Log:
+- Fixed block-registry test: EXPECTED_BLOCK_TYPES 31→40 (adds materi-blok, gambar, timeline, compare, reveal, tabel, checklist, statistik, studi)
+- Registered 4 orphaned renderers (tabel, checklist, statistik, studi) as standalone block types
+- Added TabelRenderer, ChecklistRenderer, StatistikRenderer, StudiRenderer to SceneRegistry
+- Added barrel exports for 4 newly registered renderers
+- Removed duplicate src/lib/client-export.ts (superseded by src/lib/export/index.ts)
+- Updated use-vite-export.ts to import from @/lib/export
+- Updated MASTERPLAN.md: marked F-1/F-2/F-3/F-4 all ✅
+- Added Phase 22 (Quality & Polish), 23 (Project Persistence), 24 (Image Upload), 25 (Template Marketplace) to ROADMAP-BSNP.md
+- Phase 23 already implemented (Prisma schema, API routes, ProjectProvider, Projects.tsx)
+- Phase 24: Created POST/GET/DELETE /api/upload, ImageUploader.tsx, MediaLibrary.tsx, updated GambarEditor
+- Phase 25: Created IPA preset (Sistem Pernapasan Manusia), MTK preset (Persamaan Linear Satu Variabel)
+- Registered 10 presets in PRESET_MAP (8 PPKn + 1 IPA + 1 MTK) with lazy-loading
+- All builds pass, zero TypeScript errors
+
+Stage Summary:
+- 40 block types now registered (was 31 before, added 9)
+- All roadmap phases 11-25 are COMPLETE
+- 3 commits pushed: e4b4fe3, 596bc11, c62e43b, 135c772
+- 401 tests pass, zero TypeScript errors, build clean
