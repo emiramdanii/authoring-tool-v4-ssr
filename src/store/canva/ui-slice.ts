@@ -865,6 +865,7 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     const page = pages[currentPageIndex];
     if (!page) return;
 
+    try {
     // ═══ SCHEMA-FIRST: Ensure page has schema ═════════════════
     // If the page has no schema (e.g., custom/blank page), auto-create one
     // so users can add blocks to ANY page.
@@ -955,6 +956,10 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       },
       duration: 4000,
     });
+    } catch (err) {
+      console.error('[addSchemaBlock] CRITICAL: Failed to add block:', err);
+      toast.error(`Gagal menambahkan block — ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   },
 
   // ── Schema Block Nudge (arrow keys) ────────────────────────────

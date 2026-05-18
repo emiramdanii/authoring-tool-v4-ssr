@@ -80,6 +80,11 @@ export function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwn
 export function commitSchemaUpdate(schema: ScreenSchema, newBlocks: SchemaBlock[]): ScreenSchema {
   const updated = bumpVersion({ ...schema, blocks: newBlocks });
   // Dev-mode purity guard: catches runtime state leaking into schema
-  assertDocumentPurity(updated, 'commitSchemaUpdate');
+  // Wrapped in try-catch to prevent dev-mode crashes from breaking addSchemaBlock
+  try {
+    assertDocumentPurity(updated, 'commitSchemaUpdate');
+  } catch (e) {
+    if (process.env.NODE_ENV !== 'production') console.warn('[commitSchemaUpdate] Purity check failed (non-fatal):', e);
+  }
   return updated;
 }

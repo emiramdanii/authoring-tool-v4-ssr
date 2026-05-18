@@ -477,6 +477,31 @@
   animation: blockEntrance 0.25s ease-out;
 }
 
+/* ── Block stagger entrance — subtle translateY + fade for premium blocks ── */
+@keyframes blockStaggerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Cover reveal animation ── */
+@keyframes coverReveal {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Gradient border rotation for premium blocks ── */
+@keyframes gradientBorderRotate {
+  0% { background-position: 100% 0%; }
+  50% { background-position: 0% 100%; }
+  100% { background-position: 100% 0%; }
+}
+
+/* ── Breathe animation for cover icons ── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 /* ── Selection glow — subtle pulse for selected blocks ── */
 @keyframes selectionGlow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }

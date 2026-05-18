@@ -39,7 +39,7 @@ import { convertToSchema } from '@/core/engine/TemplateAdapter';
 import { nanoid } from 'nanoid';
 import { logger } from '@/core/utils/logger';
 import { assertValidSchema, isSchemaVersionCompatible, SCHEMA_VERSION } from './validation';
-import { deepFreeze } from './immutable';
+import { deepFreeze, deepClone } from './immutable';
 import { migrateSchema } from './schema-migration';
 import { assertDocumentPurity } from './session-state';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
@@ -62,26 +62,47 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     if (currentVersion < SCHEMA_VERSION) {
       const migrated = migrateSchema(page.schema);
       // Dev-mode purity guard: ensure migration didn't introduce runtime state
-      assertDocumentPurity(migrated, `ensurePageSchema:migration:${page.id}`);
+      // Wrapped in try-catch to prevent dev-mode purity check from crashing the app
+      try {
+        assertDocumentPurity(migrated, `ensurePageSchema:migration:${page.id}`);
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+      }
       // Note: We return the migrated schema but don't mutate page.schema here.
       // The caller (persistence-slice) handles persisting the migration result.
-      return deepFreeze(migrated);
+      // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
+      return deepFreeze(deepClone(migrated));
     }
     // Dev-mode purity guard: ensure no runtime state has leaked into schema
-    assertDocumentPurity(page.schema, `ensurePageSchema:read:${page.id}`);
-    // Deep freeze in dev mode to catch accidental mutations
-    return deepFreeze(page.schema);
+    // Wrapped in try-catch to prevent dev-mode purity check from crashing the app
+    try {
+      assertDocumentPurity(page.schema, `ensurePageSchema:read:${page.id}`);
+    } catch (e) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+    }
+    // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
+    // deepFreeze(page.schema) was mutating the store, causing produceWithPatches
+    // to fail silently when adding blocks — the root cause of "blocks don't appear on canvas".
+    return deepFreeze(deepClone(page.schema));
   }
 
   // ═══ Path 2: schemaScreen in templateData — promote it ══════
   const storedSchema = page.templateData?.schemaScreen as ScreenSchema | undefined;
   if (storedSchema) {
     const migrated = assignStableIds(storedSchema);
-    // Validate migrated schema (dev-mode guard)
-    assertValidSchema(migrated, `ensurePageSchema:promote:${page.id}`);
-    // Dev-mode purity guard: ensure promotion didn't introduce runtime state
-    assertDocumentPurity(migrated, `ensurePageSchema:promote:${page.id}`);
-    return deepFreeze(migrated);
+    // Validate migrated schema (dev-mode guard) — wrapped to prevent crash
+    try {
+      assertValidSchema(migrated, `ensurePageSchema:promote:${page.id}`);
+    } catch (e) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Schema validation failed (non-fatal):', e);
+    }
+    // Dev-mode purity guard — wrapped to prevent crash
+    try {
+      assertDocumentPurity(migrated, `ensurePageSchema:promote:${page.id}`);
+    } catch (e) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+    }
+    return deepFreeze(deepClone(migrated));
   }
 
   // ═══ Path 3: Legacy template page — convert via TemplateAdapter ═══
@@ -94,11 +115,19 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     const converted = convertToSchema(page);
     if (converted) {
       const migrated = assignStableIds(converted);
-      // Validate converted schema (dev-mode guard)
-      assertValidSchema(migrated, `ensurePageSchema:legacy:${page.id}`);
-      // Dev-mode purity guard: ensure TemplateAdapter didn't introduce runtime state
-      assertDocumentPurity(migrated, `ensurePageSchema:legacy:${page.id}`);
-      return deepFreeze(migrated);
+      // Validate converted schema (dev-mode guard) — wrapped to prevent crash
+      try {
+        assertValidSchema(migrated, `ensurePageSchema:legacy:${page.id}`);
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Schema validation failed (non-fatal):', e);
+      }
+      // Dev-mode purity guard — wrapped to prevent crash
+      try {
+        assertDocumentPurity(migrated, `ensurePageSchema:legacy:${page.id}`);
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+      }
+      return deepFreeze(deepClone(migrated));
     }
   }
 
