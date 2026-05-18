@@ -612,7 +612,11 @@ export function resolveSceneLayout(
       height: absH,
       position: 'absolute',
       overflow: getOverflowRule(block.type),
-      zIndex: layout.zIndex ?? 10,
+      // FIX: Full-page blocks (cover/hero) that fill the entire scene must render as
+      // BACKGROUND layer (zIndex: 0). Otherwise they occlude all flow blocks (zIndex: 1)
+      // causing "blocks don't appear on canvas" bug.
+      // Non-full-page absolute blocks (e.g., floating badges) keep zIndex: 10.
+      zIndex: layout.zIndex ?? (isFullPageBlockType(block.type) ? 0 : 10),
       rotation: layout.rotation ?? 0,
       key: block.id || `abs-${block.type}-${i}`,
       isOverflowing,

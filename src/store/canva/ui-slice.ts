@@ -15,7 +15,7 @@ import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 import { ensurePageSchema, generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
 import { bumpVersion, splitScene, mergeScene, duplicateBlock as duplicateBlockImmutable, findBlockById, moveBlockNested, insertBlockNested, type ContainerRef } from '@/core/schema/immutable';
 import { createTransaction } from '@/core/schema/scene-transaction';
-import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
+import { isCompositeBlockType, getCompositeContainerDescriptor, isFullPageBlockType } from '@/core/schema/capability-registry';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { rebalanceFromScenePlan, promoteSceneSplitToPage, mergePagesTransaction } from '@/core/schema/schema-apply';
 import { computeScenePlan } from '@/core/layout/SceneOverflowEngine';
@@ -883,6 +883,80 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
     }
 
     const blocks = schema.blocks;
+
+    // ═══ AUTO-SPLIT: Full-page blocks should be the only block on a page ═══
+    // If the current page has a full-page block (cover/hero) and the user
+    // is adding a non-full-page block, auto-create a new page instead.
+    // This prevents the zIndex occlusion bug where cover blocks hide flow blocks.
+    const hasExistingFullPageBlock = blocks.some(b => isFullPageBlockType(b.type));
+    const isNewBlockFullPage = isFullPageBlockType(blockType);
+    if (hasExistingFullPageBlock && !isNewBlockFullPage) {
+      // Auto-create a new page and add the block there instead
+      const { createPage } = require('./constants');
+      const newPage = createPage(`Halaman ${pages.length + 1}`, 'custom');
+      const newPageWithSchema: typeof newPage = {
+        ...newPage,
+        schema: {
+          id: newPage.id,
+          version: 1,
+          templateType: 'custom',
+          blocks: [],
+        },
+        pageMode: 'schema',
+        elements: [],
+      };
+
+      // Get block definition and create the block
+      const definition = BLOCK_DEFINITIONS[blockType];
+      if (!definition) {
+        toast.error(`Block type "${blockType}" tidak ditemukan`);
+        return;
+      }
+
+      get()._pushHistory();
+
+      const newBlock: Record<string, unknown> = {
+        id: generateBlockId(),
+        type: blockType,
+        variant: 'A' as const,
+        layout: {
+          position: definition.defaultLayout.position,
+          ...(definition.defaultLayout.defaultX != null ? { x: definition.defaultLayout.defaultX } : {}),
+          ...(definition.defaultLayout.defaultY != null ? { y: definition.defaultLayout.defaultY } : {}),
+          ...(definition.defaultLayout.defaultWidth != null ? { width: definition.defaultLayout.defaultWidth } : {}),
+          ...(definition.defaultLayout.defaultHeight != null ? { height: definition.defaultLayout.defaultHeight } : {}),
+        },
+      };
+      const defaultContent = definition.createDefault?.() ?? { title: definition.name };
+      Object.assign(newBlock, defaultContent);
+
+      // Add block to the new page
+      const updatedNewPage = {
+        ...newPageWithSchema,
+        schema: {
+          ...newPageWithSchema.schema!,
+          blocks: [newBlock as unknown as SchemaBlock],
+          version: 2,
+        },
+      };
+
+      const newPages = [...pages, updatedNewPage];
+      const newPageIndex = newPages.length - 1;
+      set({
+        pages: newPages,
+        currentPageIndex: newPageIndex,
+      });
+
+      get().selectBlock(newBlock.id as string, blockType);
+      toast.success(`${definition.name} ditambahkan ke halaman baru`, {
+        action: {
+          label: 'Undo',
+          onClick: () => { get().undo(); },
+        },
+        duration: 4000,
+      });
+      return; // Block added to new page — done
+    }
 
     // Get block definition from registry
     const definition = BLOCK_DEFINITIONS[blockType];

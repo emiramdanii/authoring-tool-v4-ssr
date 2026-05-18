@@ -142,7 +142,13 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   pageIndex = 0,
 }: ScreenRendererProps) {
   const isCompact = mode === 'canvas';
-  const hasCoverBlock = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
+  // FIX: Detect full-page blocks (cover/hero) even when mixed with flow blocks.
+  // Previously: only true when there was exactly 1 full-page block.
+  // Now: true when ANY block is a full-page type — this correctly handles
+  // the "cover + flow blocks" mixed layout where cover is background layer.
+  const hasCoverBlock = screen.blocks.some(b => isFullPageBlockType(b.type));
+  // Pure cover page: ONLY a full-page block, no flow content
+  const isPureCoverPage = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
 
   // ═══ BLOCK ENTRANCE ANIMATION ═════════════════════════════════
   // Track newly added blocks to apply entrance animation.
@@ -209,15 +215,15 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     showTopNav,
     showBottomNav,
     isCompact,
-    pagePadding: hasCoverBlock ? 0 : 16,
+    pagePadding: isPureCoverPage ? 0 : 16,
   });
 
   // Compute scene plan from measurements
   const scenePlan = useMemo<ScenePlan>(() => {
-    const effectiveSafeArea = hasCoverBlock ? DEFAULT_SAFE_AREA : safeArea;
+    const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
     return computeScenePlan(screen, sceneRes, effectiveSafeArea, { isCompact });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen.blocks, screen.id, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
+  }, [screen.blocks, screen.id, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
 
   // Sync scene state to store whenever scene plan changes
   // Use ref for sceneIndex to avoid circular dependency (effect reads + writes sceneIndex)
@@ -247,12 +253,12 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   //   Render → Measure → Decide → Commit
   const resolvedBlocks = useMemo(() => {
     // Cover/hero pages: safe area is 0 (they fill the entire scene)
-    const effectiveSafeArea = hasCoverBlock ? DEFAULT_SAFE_AREA : safeArea;
+    const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
     // Use effectiveSchema (derived for current scene) instead of full screen
     const resolved = resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
     return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveSchema, sceneRes, safeArea, hasCoverBlock, isCompact, measurementVersion]);
+  }, [effectiveSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
 
   // ═══ CANVAS BLOCK DRAG REORDER ═══════════════════════════════
   // Only enable drag-reorder in canvas mode when onBlockReorder is provided.
@@ -336,11 +342,11 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         style.background = tokens.color(bg.color1 || 'bg');
       }
     }
-    if (!bg && !hasCoverBlock) {
+    if (!bg && !isPureCoverPage) {
       style.background = tokens.color('bg');
     }
     return style;
-  }, [bg, tokens, hasCoverBlock]);
+  }, [bg, tokens, isPureCoverPage]);
 
   // ═══ RENDER: Scene-driven absolute positioning ═══
   // Cover/hero: absolute inset-0 (fills entire scene)
@@ -356,7 +362,10 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   return (
     <div
       ref={setSceneRefCombined}
-      className={hasCoverBlock ? 'absolute inset-0' : 'relative h-full w-full'}
+      // FIX: Pure cover pages use absolute inset-0 (fills entire scene).
+      // Mixed layouts (cover + flow blocks) use relative positioning so flow
+      // blocks are visible above the cover background layer (zIndex: 0).
+      className={isPureCoverPage ? 'absolute inset-0' : 'relative h-full w-full'}
       style={{
         fontFamily: tokens.fontFamily('body'),
         color: tokens.color('text'),

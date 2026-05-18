@@ -198,7 +198,11 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
     <div
       data-block-id={blockId}
       data-block-type={blockType}
-      className={`relative group ${ringClass} ${isBeingDraggedClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg editing-glow' : ''}`}
+      // FIX: h-full ensures the overlay fills its parent (MeasuredBlock),
+      // preventing height collapse when children use position: absolute.
+      // Without h-full, the overlay collapses to 0px and absolute children
+      // (like cover/hero renderers) can't fill the allocated space.
+      className={`relative group h-full ${ringClass} ${isBeingDraggedClass} ${isCompact ? (isDragging ? 'cursor-grabbing' : isSelected && capabilities.movable ? 'cursor-grab' : 'cursor-pointer') : ''} ${isEditing ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-transparent rounded-lg editing-glow' : ''}`}
       onClick={handleClick}
       onMouseDown={handleDragStart}
       onMouseEnter={handleMouseEnter}

@@ -349,3 +349,35 @@ Stage Summary:
 - Empty schema page warning resolved
 - Core features stable: canvas rendering, block insertion, cover rendering, page navigation
 - Ready for Layer 3: progressive re-enablement of advanced features
+
+---
+Task ID: blocks-rendering-fix-session
+Agent: Main Agent
+Task: Fix P0 bugs — blocks don't appear on canvas + cover overflow to top (continued from previous session)
+
+Work Log:
+- Resumed from context where enablePatches() fix was confirmed but blocks still didn't render
+- Deep-investigated rendering pipeline: addSchemaBlock → produceWithPatches → commitSchemaUpdate → set({ pages }) → Stage → PageRenderer → SchemaScreenRenderer
+- Runtime testing via browser console revealed ROOT CAUSE of "blocks don't appear":
+  - Bug A (PRIMARY): Cover block zIndex:10 occludes flow blocks at zIndex:1 in SceneLayoutEngine
+  - Bug B: `hasCoverBlock` in SchemaScreenRenderer only true when exactly 1 block — doesn't handle mixed layouts
+  - Bug C: BlockSelectionOverlay collapses to 0px height (no h-full) — children with position:absolute can't fill
+- Fixed Bug A: SceneLayoutEngine.ts — Full-page blocks (cover/hero) now get zIndex:0 (background layer), non-full-page absolute blocks keep zIndex:10
+- Fixed Bug B: SchemaRenderer.tsx — Changed `hasCoverBlock` to detect ANY full-page block in schema; added `isPureCoverPage` for cases where ONLY one full-page block exists
+- Fixed Bug C: BlockSelectionOverlay.tsx — Added `h-full` class to prevent height collapse
+- Added auto-split logic in addSchemaBlock: when adding a non-full-page block to a page that already has a full-page block, auto-creates a new page for the block
+- Fixed Cover Overflow P0: BlockMeasurer.tsx — Changed `minHeight: '100%'` to `height: '100%', minHeight: '100%'` so CSS percentage height resolution works correctly for children (h-full)
+- All fixes verified via runtime testing:
+  - Blocks appear correctly on canvas ✅
+  - Cover content contained within canvas (no overflow above) ✅
+  - Auto-split creates new page when adding blocks after cover ✅
+  - AddBlockPanel opens from UI button ✅
+- TypeScript: zero errors
+
+Stage Summary:
+- Both P0 bugs FIXED and verified:
+  1. Blocks now appear on canvas after being added (zIndex fix + auto-split)
+  2. Cover no longer overflows above canvas (BlockMeasurer height fix)
+- 5 files modified: SceneLayoutEngine.ts, SchemaRenderer.tsx, BlockSelectionOverlay.tsx, BlockMeasurer.tsx, ui-slice.ts
+- Core features stable: canvas rendering, block insertion, cover rendering, page management
+- Next: Progressive re-enablement of advanced features
