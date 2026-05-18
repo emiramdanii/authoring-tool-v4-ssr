@@ -107,6 +107,16 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
     [validQuestions],
   );
 
+  // ── Accessibility hook ────────────────────────────────────────
+  // MUST be declared BEFORE the score guard useEffect that uses a11y.announceComplete()
+  const a11y = useGameA11y({
+    gameType: 'Kuis Tim',
+    blockId: block.id,
+    score: scoreA + scoreB,
+    maxScore: totalPoints,
+    interactive: interactive ?? false,
+  });
+
   // ── Score guard (MANDATORY) ─────────────────────────────────────
   const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
@@ -136,16 +146,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
     if (phase !== 'done') {
       hasReportedRef.current = false;
     }
-  }, [phase, interactive, block.id, scoreA, scoreB, totalPoints, reportScore, pageIndex]);
-
-  // ── Accessibility hook ────────────────────────────────────────
-  const a11y = useGameA11y({
-    gameType: 'Kuis Tim',
-    blockId: block.id,
-    score: scoreA + scoreB,
-    maxScore: totalPoints,
-    interactive: interactive ?? false,
-  });
+  }, [phase, interactive, block.id, scoreA, scoreB, totalPoints, reportScore, pageIndex, a11y]);
 
   // ── Inline editing hooks ────────────────────────────────────────
   const titleEditor = useInlineEditor({

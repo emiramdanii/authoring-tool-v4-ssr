@@ -155,6 +155,16 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
   // ── Interactive store: score reporting ─────────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
+  // ── Accessibility hook ──────────────────────────────────────────
+  // MUST be declared BEFORE the score guard useEffect that uses a11y.announceComplete()
+  const a11y = useGameA11y({
+    gameType: 'Memory Match',
+    blockId: block.id,
+    score: matched.size / 2,
+    maxScore: validPairsLen,
+    interactive: interactive ?? false,
+  });
+
   // ── Score guard: report once per completion cycle ─────────────────
   const hasReportedRef = React.useRef(false);
   React.useEffect(() => {
@@ -186,16 +196,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
     if (phase !== 'done') {
       hasReportedRef.current = false;
     }
-  }, [phase, interactive, block.id, wrongAttempts, validPairsLen, reportScore, pageIndex]);
-
-  // ── Accessibility hook ──────────────────────────────────────────
-  const a11y = useGameA11y({
-    gameType: 'Memory Match',
-    blockId: block.id,
-    score: matched.size / 2,
-    maxScore: validPairsLen,
-    interactive: interactive ?? false,
-  });
+  }, [phase, interactive, block.id, wrongAttempts, validPairsLen, reportScore, pageIndex, a11y]);
 
   // ── Inline editing hooks ──────────────────────────────────────────
   const titleEditor = useInlineEditor({

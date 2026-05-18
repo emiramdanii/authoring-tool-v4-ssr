@@ -65,6 +65,10 @@ export default function RightPanel() {
 
   const aiEnabled = isEnabled('aiAssistant');
 
+  // Page data hook must be called before any early return (Rules of Hooks)
+  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
+  const isSchemaDriven = !!page?.schema;
+
   // Teacher-mode aware tab configuration
   // Sederhana mode: only Properti + AI (Layer is hidden — reduces cognitive load)
   // Lengkap mode: all 3 tabs including Layer for advanced block ordering
@@ -75,21 +79,20 @@ export default function RightPanel() {
     ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={12} /> }] : []),
   ];
 
-  if (!rightPanelOpen) return null;
-
-  // Determine context mode
-  const hasBlockSelection = selectedBlockId != null;
-  const hasMultiBlockSelection = selectedBlockIds.length > 1;
-  const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
-  const page = useCanvaStore(s => s.pages[s.currentPageIndex]);
-  const isSchemaDriven = !!page?.schema;
-
   // Auto-correct: if teacher mode is on and layer tab was active, switch to properties
+  // (useEffect must be called before any early return — Rules of Hooks)
   useEffect(() => {
     if (isSederhana && activeTab === 'layer') {
       setActiveTab('properties');
     }
   }, [isSederhana, activeTab]);
+
+  // Determine context mode
+  const hasBlockSelection = selectedBlockId != null;
+  const hasMultiBlockSelection = selectedBlockIds.length > 1;
+  const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
+
+  if (!rightPanelOpen) return null;
 
   return (
     <div className="w-full flex flex-col bg-app-surface overflow-hidden" style={{ width: 'var(--semantic-panel-expanded)' }}>

@@ -285,10 +285,11 @@ export function isSchemaPage(page: CanvaPage): boolean {
 export function validateCanvaPageInvariant(page: CanvaPage, source?: string): void {
   if (process.env.NODE_ENV === 'production') return;
 
-  const hasSchema = page.schema != null && page.schema.blocks?.length > 0;
+  const hasSchema = page.schema != null;
+  const hasSchemaBlocks = page.schema != null && page.schema.blocks?.length > 0;
   const hasElements = page.elements != null && page.elements.length > 0;
 
-  if (hasSchema && hasElements) {
+  if (hasSchemaBlocks && hasElements) {
     const src = source ? ` (${source})` : '';
     const schemaBlocks = page.schema?.blocks?.length ?? 0;
     logger.error(
@@ -300,10 +301,11 @@ export function validateCanvaPageInvariant(page: CanvaPage, source?: string): vo
     );
   }
 
-  // Also validate pageMode discriminator if set
+  // Validate pageMode discriminator — schema pages must have a schema object
+  // (but empty blocks array is OK — it just means "no blocks yet")
   if (page.pageMode === 'schema' && !hasSchema) {
     console.warn(
-      `[INVARIANT] Page "${page.label}" has pageMode='schema' but no schema blocks. ` +
+      `[INVARIANT] Page "${page.label}" has pageMode='schema' but no schema object. ` +
       `This should not happen.`
     );
   }

@@ -36,20 +36,6 @@ export default function AIRefineSection() {
   const [showCustom, setShowCustom] = useState(false);
   const [lastAppliedMode, setLastAppliedMode] = useState<RefineMode | null>(null);
 
-  // ── Listen for "ai-refine" custom event from BlockContextMenu ──
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { mode, blockId: eventBlockId } = (e as CustomEvent).detail as { mode: RefineMode; blockId?: string };
-      if (eventBlockId) {
-        useCanvaStore.getState().selectBlock(eventBlockId, useCanvaStore.getState().selectedBlockType || '');
-      }
-      // Small delay to let state settle after selectBlock
-      setTimeout(() => handleRefine(mode), 50);
-    };
-    window.addEventListener('ai-refine', handler);
-    return () => window.removeEventListener('ai-refine', handler);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const page = pages[currentPageIndex];
 
   // Get the selected block's content
@@ -70,7 +56,7 @@ export default function AIRefineSection() {
     return getApplicableRefineModes(selectedBlockType);
   }, [selectedBlockType]);
 
-  // Handle refine
+  // Handle refine — MUST be declared BEFORE the useEffect that references it
   const handleRefine = useCallback(async (mode: RefineMode) => {
     if (!selectedBlockType || !selectedBlockContent) {
       toast.warning('Pilih block terlebih dahulu');
@@ -108,6 +94,21 @@ export default function AIRefineSection() {
     clear();
     toast.info('Perubahan AI dibatalkan');
   }, [selectedBlockContent, selectedBlockId, updateSchemaBlock, clear]);
+
+  // ── Listen for "ai-refine" custom event from BlockContextMenu ──
+  // MUST be declared AFTER handleRefine to avoid TDZ (temporal dead zone)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { mode, blockId: eventBlockId } = (e as CustomEvent).detail as { mode: RefineMode; blockId?: string };
+      if (eventBlockId) {
+        useCanvaStore.getState().selectBlock(eventBlockId, useCanvaStore.getState().selectedBlockType || '');
+      }
+      // Small delay to let state settle after selectBlock
+      setTimeout(() => handleRefine(mode), 50);
+    };
+    window.addEventListener('ai-refine', handler);
+    return () => window.removeEventListener('ai-refine', handler);
+  }, [handleRefine]);
 
   if (!selectedBlockId || !selectedBlockType) return null;
 

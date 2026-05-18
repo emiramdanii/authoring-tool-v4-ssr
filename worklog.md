@@ -312,3 +312,40 @@ Stage Summary:
 - Advanced features temporarily disabled (AI, SCORM, BSNP, sounds, command palette, teacher mode, mobile guard, PWA, dev tools)
 - Core features fully active: canvas editor, schema renderer, block CRUD, page management, undo/redo, auto-save, 4 modes, authoring, themes, block selection, property panel, backgrounds
 - Build passes clean — ready for core feature testing
+
+---
+Task ID: systematic-recovery-layer1-layer2
+Agent: Main Agent
+Task: Systematic recovery — Fix Layer 1 (Code Integrity) and Layer 2 (Core Canvas) issues after migration
+
+Work Log:
+- Audited full codebase: 40+ block types, 3 Zustand stores, 40+ renderers
+- Identified 3 layers of problems: Code Integrity → Core Canvas → Advanced Features
+- Layer 1: Fixed 15 Rules-of-Hooks violations across 4 files:
+  1. AddBlockPanel.tsx: Moved 8 hooks (useState, useMemo, useCallback) before early return
+  2. BatchActionsBar.tsx: Moved 4 useCallback hooks before early return
+  3. RightPanel.tsx: Moved useCanvaStore + useEffect before early return
+  4. RichText.tsx: Moved useMemo out of conditional branch
+- Layer 1: Fixed 8 hoisting/immutability violations:
+  1. LivePreview.tsx: Moved navigatePrevPage/navigateNextPage declarations before keyboard useEffect
+  2. AIRefineSection.tsx: Moved handleRefine declaration before custom event listener useEffect
+  3-7. FillBlankGameRenderer, MatchingGameRenderer, MemoryGameRenderer, TeamBuzzerGameRenderer, TrueFalseGameRenderer: Moved useGameA11y() hook before score guard useEffect that uses a11y
+- Layer 2: Fixed Cover Overflow P0 bug (5th root cause):
+  1. PremiumBlockWrapper had no position:relative/overflow:hidden → child div[absolute inset:0] collapsed to 0 height
+  2. CoverRenderer inner div had no overflow:hidden
+  3. Added position:relative + overflow:hidden to PremiumBlockWrapper
+  4. Added width:100% + height:100% to CoverRenderer's PremiumBlockWrapper
+  5. Added overflow:hidden to CoverRenderer's inner absolute div
+- Layer 2: Fixed empty schema page warning:
+  1. Invariant check was testing schema.blocks.length > 0 but new pages have empty schema.blocks=[]
+  2. Split hasSchema into hasSchema (object exists) and hasSchemaBlocks (has content)
+  3. DUAL-RENDER check now uses hasSchemaBlocks; pageMode check uses hasSchema
+- TypeScript: zero errors
+- Build: passes clean
+
+Stage Summary:
+- 23 ESLint-critical violations fixed (15 Rules-of-Hooks + 8 hoisting/immutability)
+- Cover Overflow P0 fully resolved (5 root causes total across sessions)
+- Empty schema page warning resolved
+- Core features stable: canvas rendering, block insertion, cover rendering, page navigation
+- Ready for Layer 3: progressive re-enablement of advanced features

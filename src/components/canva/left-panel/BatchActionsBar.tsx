@@ -38,12 +38,10 @@ export default function BatchActionsBar() {
 
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
-  // Don't show bar unless multiple blocks selected
-  if (!selectedBlockIds || selectedBlockIds.length <= 1) return null;
+  // Count must be derived before any early return
+  const count = selectedBlockIds?.length ?? 0;
 
-  const count = selectedBlockIds.length;
-
-  // ── Batch delete ──
+  // ── Batch delete ── (ALL hooks must be declared before any early returns)
   const handleBatchDelete = useCallback(() => {
     _pushHistory();
     deleteSchemaBlocks(selectedBlockIds);
@@ -72,6 +70,9 @@ export default function BatchActionsBar() {
     selectBlock(null);
     setShowVariantPicker(false);
   }, [selectBlock]);
+
+  // Don't show bar unless multiple blocks selected (AFTER all hooks)
+  if (!selectedBlockIds || selectedBlockIds.length <= 1) return null;
 
   return (
     <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 overflow-hidden">

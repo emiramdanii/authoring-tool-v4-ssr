@@ -136,29 +136,7 @@ export default function AddBlockPanel() {
     return sorted;
   }, [filteredBlocks]);
 
-  // If page can't accept blocks, show message
-  if (!canAddBlocks) {
-    return (
-      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-        <div className="text-2xl mb-2 opacity-40">📦</div>
-        <div className="text-[10px] text-app-muted">
-          Tidak dapat menambah {blockLabel.toLowerCase()}
-        </div>
-        <div className="text-[8px] text-app-muted mt-1">
-          {isSederhana
-            ? 'Konten hanya bisa ditambahkan ke halaman kosong atau template'
-            : 'Block hanya bisa ditambahkan ke halaman kosong atau template/schema'}
-        </div>
-        <div className="text-[8px] text-app-muted mt-0.5">
-          {page && page.templateType === 'custom' && page.elements && page.elements.length > 0
-            ? 'Halaman ini memiliki elemen legacy — hapus elemen terlebih dahulu'
-            : 'Gunakan tab Halaman untuk menambah template terlebih dahulu'}
-        </div>
-      </div>
-    );
-  }
-
-  // ── Fragment state ──
+  // ── Fragment state ── (ALL hooks must be declared before any early returns)
   const [fragmentFilter, setFragmentFilter] = useState<TemplateFragmentCategory | 'all'>('all');
 
   // Get fragments grouped by category
@@ -202,6 +180,28 @@ export default function AddBlockPanel() {
   }, [allFragments, fragmentFilter]);
   const fragmentCategories = useMemo(() => FRAGMENT_CATEGORIES, []);
   const fragmentCategoryKeys = useMemo(() => Object.keys(fragmentCategories) as TemplateFragmentCategory[], [fragmentCategories]);
+
+  // If page can't accept blocks, show message (AFTER all hooks)
+  if (!canAddBlocks) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+        <div className="text-2xl mb-2 opacity-40">📦</div>
+        <div className="text-[10px] text-app-muted">
+          Tidak dapat menambah {blockLabel.toLowerCase()}
+        </div>
+        <div className="text-[8px] text-app-muted mt-1">
+          {isSederhana
+            ? 'Konten hanya bisa ditambahkan ke halaman kosong atau template'
+            : 'Block hanya bisa ditambahkan ke halaman kosong atau template/schema'}
+        </div>
+        <div className="text-[8px] text-app-muted mt-0.5">
+          {page && page.templateType === 'custom' && page.elements && page.elements.length > 0
+            ? 'Halaman ini memiliki elemen legacy — hapus elemen terlebih dahulu'
+            : 'Gunakan tab Halaman untuk menambah template terlebih dahulu'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3" data-testid="add-block-panel">

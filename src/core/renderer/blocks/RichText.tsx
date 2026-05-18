@@ -89,18 +89,19 @@ export function RichText({
   tag: Tag = 'span',
   placeholder = '',
 }: RichTextProps) {
-  const hasHtml = useMemo(() => hasHtmlTags(content || ''), [content]);
-
   const displayContent = content || placeholder;
+
+  // Both useMemo calls must be unconditional (Rules of Hooks)
+  const hasHtml = useMemo(() => hasHtmlTags(content || ''), [content]);
+  const sanitizedHtml = useMemo(() => sanitizeHtml(displayContent), [displayContent]);
 
   if (hasHtml) {
     // Content contains HTML — sanitize and render as HTML
-    const sanitized = useMemo(() => sanitizeHtml(displayContent), [displayContent]);
     return (
       <Tag
         className={className}
         style={style}
-        dangerouslySetInnerHTML={{ __html: sanitized }}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
     );
   }

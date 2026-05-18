@@ -114,6 +114,27 @@ export default function LivePreview() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // ── Page navigation helpers ────────────────────────────────
+  // MUST be declared BEFORE the keyboard shortcut useEffect that uses them
+  const navigatePrevPage = useCallback(() => {
+    if (previewMode === 'canvas') {
+      if (activeSlide > 0) handleSlideSelect(activeSlide - 1);
+    } else {
+      // For schema/unified — navigate iframe or screens
+      const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
+      if (currentIdx > 0) handleScreenSelect(SCREEN_OPTIONS[currentIdx - 1].id);
+    }
+  }, [previewMode, activeSlide, activeScreen, handleSlideSelect, handleScreenSelect]);
+
+  const navigateNextPage = useCallback(() => {
+    if (previewMode === 'canvas') {
+      if (activeSlide < canvaPages.length - 1) handleSlideSelect(activeSlide + 1);
+    } else {
+      const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
+      if (currentIdx < SCREEN_OPTIONS.length - 1) handleScreenSelect(SCREEN_OPTIONS[currentIdx + 1].id);
+    }
+  }, [previewMode, activeSlide, activeScreen, canvaPages.length, handleSlideSelect, handleScreenSelect]);
+
   // ── Keyboard shortcuts (8.4) ────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -133,27 +154,7 @@ export default function LivePreview() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActivePanel, previewMode, activeSlide, canvaPages]);
-
-  // ── Page navigation helpers ────────────────────────────────
-  const navigatePrevPage = useCallback(() => {
-    if (previewMode === 'canvas') {
-      if (activeSlide > 0) handleSlideSelect(activeSlide - 1);
-    } else {
-      // For schema/unified — navigate iframe or screens
-      const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
-      if (currentIdx > 0) handleScreenSelect(SCREEN_OPTIONS[currentIdx - 1].id);
-    }
-  }, [previewMode, activeSlide, activeScreen, handleSlideSelect, handleScreenSelect]);
-
-  const navigateNextPage = useCallback(() => {
-    if (previewMode === 'canvas') {
-      if (activeSlide < canvaPages.length - 1) handleSlideSelect(activeSlide + 1);
-    } else {
-      const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
-      if (currentIdx < SCREEN_OPTIONS.length - 1) handleScreenSelect(SCREEN_OPTIONS[currentIdx + 1].id);
-    }
-  }, [previewMode, activeSlide, activeScreen, canvaPages.length, handleSlideSelect, handleScreenSelect]);
+  }, [setActivePanel, previewMode, activeSlide, canvaPages, navigatePrevPage, navigateNextPage]);
 
   // ── Determine if we should show the mode selector at all ──
   // If no schema preset, and user hasn't manually selected, just show "Preview"

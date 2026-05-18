@@ -90,6 +90,16 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
   // ── Interactive store: score reporting ────────────────────────
   const reportScore = useInteractiveStore(s => s.reportScore);
 
+  // ── Accessibility hook ──────────────────────────────────────
+  // MUST be declared BEFORE the score guard useEffect that uses a11y.announceComplete()
+  const a11y = useGameA11y({
+    gameType: 'Benar/Salah',
+    blockId: block.id,
+    score,
+    maxScore: validQuestions.length,
+    interactive: interactive ?? false,
+  });
+
   // ── Score guard (MANDATORY) ───────────────────────────────────
   // Report score on completion — only fire once per completion cycle
   const hasReportedRef = React.useRef(false);
@@ -112,16 +122,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
     }
     // Reset reported flag when no longer in result phase (replay)
     if (phase !== 'result') hasReportedRef.current = false;
-  }, [phase, interactive, block.id, score, validQuestions.length, reportScore, pageIndex]);
-
-  // ── Accessibility hook ──────────────────────────────────────
-  const a11y = useGameA11y({
-    gameType: 'Benar/Salah',
-    blockId: block.id,
-    score,
-    maxScore: validQuestions.length,
-    interactive: interactive ?? false,
-  });
+  }, [phase, interactive, block.id, score, validQuestions.length, reportScore, pageIndex, a11y]);
 
   // ── Inline editing hooks ──────────────────────────────────────
   const titleEditor = useInlineEditor({

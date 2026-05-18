@@ -64,6 +64,8 @@ export function PremiumBlockWrapper({
     <div
       className={combinedClassName}
       style={{
+        position: 'relative',
+        overflow: 'hidden',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${staggerIndex * 0.08}s both`,
         ...style,
       }}
