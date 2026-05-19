@@ -522,3 +522,28 @@ Stage Summary:
 - Cover stagger animation: DISABLED — no more visual bounce on full-page blocks
 - Diagnostic logging: CLEANED UP — removed 4 verbose console.log/warn calls
 - Block add pipeline: VERIFIED — adding Definisi + Kuis blocks works, renders correctly
+
+---
+Task ID: cover-overflow-fix-2
+Agent: Main Agent
+Task: Fix cover overflow to top — replace viewport-relative vw units with fixed px
+
+Work Log:
+- Analyzed full rendering pipeline: CoverRenderer → PremiumBlockWrapper → SchemaScreenRenderer → PageFrame → Stage
+- Identified ROOT CAUSE: All 3 cover variants used `vw` (viewport width) units in `clamp()` for font sizes
+- `vw` references browser viewport width, NOT the 1280×720 virtual canvas coordinate space
+- On wide monitors, 30vw could be 576px+ for watermark icons, 5vw could be 64px+ for titles
+- This caused content to overflow upward (especially Variant B with justify-end + tall content)
+- Fixed CoverVariantA: Added `overflow: hidden`, replaced `clamp(18px, 3.5vw, 32px)` → `30px`, `clamp(11px, 1.8vw, 16px)` → `15px`
+- Fixed CoverVariantB: Added `maxHeight: '100%'`, replaced `clamp(120px, 30vw, 220px)` → `160px`, `clamp(22px, 5vw, 42px)` → `38px`, `clamp(12px, 2vw, 17px)` → `16px`
+- Fixed CoverVariantC: Added `overflow: hidden`, replaced `clamp(20px, 4vw, 36px)` → `34px`, `clamp(12px, 1.8vw, 16px)` → `15px`
+- Verified overflow chain: Stage(overflow-hidden) → PageFrame(overflow-hidden) → SchemaScreenRenderer(overflow-hidden) → BlockContainer(overflow-y:hidden) → PremiumBlockWrapper(overflow-hidden) → CoverVariant(overflow-hidden)
+- Build verified: TypeScript clean, npx next build passes
+- Git pushed to origin/main
+
+Stage Summary:
+- Root cause: vw units in clamp() scaled with browser viewport, not 1280px canvas
+- Fix: All font sizes now use fixed px values appropriate for 1280×720 canvas
+- Fix: All 3 cover variants now have overflow:hidden to prevent upward overflow
+- Fix: VariantB has maxHeight:100% to constrain bottom-anchored content
+- Overflow chain: 7 layers of overflow-hidden protection confirmed

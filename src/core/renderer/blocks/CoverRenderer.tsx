@@ -70,6 +70,7 @@ function CoverVariantA({
       style={{
         background: 'radial-gradient(ellipse 90% 60% at 50% 0%, ' + tokens.colorAlpha(accentKey, 0.22) + ', transparent 60%), linear-gradient(180deg, ' + tokens.color('bg') + ', ' + tokens.color('bg2') + ')',
         animation: 'coverReveal 0.6s ease-out',
+        overflow: 'hidden',
       }}>
 
       {/* Decorative top bar */}
@@ -97,7 +98,7 @@ function CoverVariantA({
 
       {/* Title — inline editable */}
       <h1 className="font-black leading-tight mt-3 min-w-0 line-clamp-4"
-        style={{ fontSize: 'clamp(18px, 3.5vw, 32px)', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
+        style={{ fontSize: '30px', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
@@ -109,7 +110,7 @@ function CoverVariantA({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-3 max-w-[380px] overflow-hidden"
-        style={{ fontSize: 'clamp(11px, 1.8vw, 16px)', color: tokens.textSecondary(0.7) }}
+        style={{ fontSize: '15px', color: tokens.textSecondary(0.7) }}
         placeholder="Ketik subtitle..."
       />
 
@@ -187,6 +188,10 @@ function CoverVariantB({
         background: 'linear-gradient(180deg, ' + tokens.color('bg2') + ' 0%, ' + tokens.color('bg') + ' 60%, ' + tokens.colorAlpha(accentKey, 0.12) + ' 100%)',
         animation: 'coverReveal 0.6s ease-out',
         overflow: 'hidden',
+        // Prevent bottom-anchored content from overflowing upward.
+        // When title/subtitle/badges stack is tall, justify-end pushes
+        // content up — max-height constrains it to the available space.
+        maxHeight: '100%',
       }}>
 
       {/* Animated gradient border on outer edge */}
@@ -205,7 +210,9 @@ function CoverVariantB({
         style={{
           top: '8%',
           right: '-5%',
-          fontSize: 'clamp(120px, 30vw, 220px)',
+          // Fixed px — vw units reference browser viewport, not the 1280px
+          // virtual canvas. On wide monitors, 30vw could be 576px+.
+          fontSize: '160px',
           opacity: 0.08,
           lineHeight: 1,
           animation: 'float 6s ease-in-out infinite, breathe 8s ease-in-out infinite',
@@ -225,7 +232,9 @@ function CoverVariantB({
         {/* Title — left-aligned, bold */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            fontSize: 'clamp(22px, 5vw, 42px)',
+            // Fixed px — vw references browser viewport which can be much
+            // wider than the 1280px canvas, causing text to overflow upward.
+            fontSize: '38px',
             fontFamily: tokens.fontFamily('display'),
             color: tokens.color('text'),
             wordBreak: 'break-word',
@@ -241,7 +250,7 @@ function CoverVariantB({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-3 max-w-[480px] overflow-hidden"
-          style={{ fontSize: 'clamp(12px, 2vw, 17px)', color: tokens.textSecondary(0.7), lineHeight: 1.6 }}
+          style={{ fontSize: '16px', color: tokens.textSecondary(0.7), lineHeight: 1.6 }}
           placeholder="Ketik subtitle..."
         />
 
@@ -323,6 +332,7 @@ function CoverVariantC({
       style={{
         background: tokens.color('bg'),
         animation: 'coverReveal 0.6s ease-out',
+        overflow: 'hidden',
       }}>
 
       {/* Thin accent line at top */}
@@ -345,7 +355,9 @@ function CoverVariantC({
         {/* Title */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            fontSize: 'clamp(20px, 4vw, 36px)',
+            // Fixed px — vw references viewport width which doesn't match
+            // the 1280px canvas coordinate space.
+            fontSize: '34px',
             fontFamily: tokens.fontFamily('display'),
             color: tokens.color('text'),
             wordBreak: 'break-word',
@@ -361,7 +373,7 @@ function CoverVariantC({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-3 max-w-[440px] overflow-hidden"
-          style={{ fontSize: 'clamp(12px, 1.8vw, 16px)', color: tokens.textSecondary(0.6), lineHeight: 1.6 }}
+          style={{ fontSize: '15px', color: tokens.textSecondary(0.6), lineHeight: 1.6 }}
           placeholder="Ketik subtitle..."
         />
 
