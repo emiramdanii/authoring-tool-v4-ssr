@@ -43,9 +43,12 @@ export const PRIMITIVES = {
     errorDark: '#dc2626',
     info: '#3b82f6',
 
-    // Canvas background (white — SMP teachers need visible canvas)
-    canvasBg: '#ffffff',
-    canvasBg2: '#f8fafc',
+    // Canvas background — off-white so white cards stand out with clear contrast.
+    // Pure white (#fff) caused cards to blend into the background, making
+    // content appear "canvas putih tulisan gak jelas" (white canvas, unclear text).
+    // Slate-50 (#f8fafc) gives enough contrast for white cards to be visible.
+    canvasBg: '#f8fafc',
+    canvasBg2: '#f1f5f9',
     canvasCard: '#ffffff',
   },
   spacing: {

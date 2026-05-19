@@ -44,25 +44,38 @@ export class TokenResolver {
     return this._themeId;
   }
 
+  /** Minimum text opacity — enforces WCAG AA readability.
+   *  Light themes need higher minimum opacity because dark text on light bg
+   *  at low opacity has poor contrast. Dark themes can use lower opacity
+   *  because light text on dark bg is readable even at lower alpha.
+   *
+   *  Previously, muted(0.5) on light bg resulted in ~2.5:1 contrast —
+   *  failing WCAG AA for all text sizes. This clamp ensures minimum 0.65
+   *  opacity on light themes (~4.5:1 contrast for body text).
+   */
+  private minOpacity(a: number): number {
+    return this.isDark() ? Math.max(a, 0.4) : Math.max(a, 0.65);
+  }
+
   /** Muted text color — adapts to dark/light automatically
    *  Dark: uses 'muted' token, Light: uses 'muted' token (both are theme-appropriate)
    */
   muted(a: number = 1): string {
-    return this.colorAlpha('muted', a);
+    return this.colorAlpha('muted', this.minOpacity(a));
   }
 
   /** Secondary text — slightly dimmer than main text
    *  Uses text color with reduced alpha
    */
-  textSecondary(a: number = 0.7): string {
-    return this.colorAlpha('text', a);
+  textSecondary(a: number = 0.8): string {
+    return this.colorAlpha('text', this.minOpacity(a));
   }
 
   /** Subtle text — for hints, placeholders, captions
    *  Uses text color with low alpha
    */
-  textSubtle(a: number = 0.45): string {
-    return this.colorAlpha('text', a);
+  textSubtle(a: number = 0.55): string {
+    return this.colorAlpha('text', this.minOpacity(a));
   }
 
   /** Get a color by token key (e.g., 'y' → '#f9c12e') */

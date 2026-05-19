@@ -57,11 +57,11 @@ export const SEMANTIC_TOKENS = {
     'glass-border': PRIMITIVES.color.slate200,
 
     // Canvas (lighter palette for light mode)
-    'canvas-bg': '#fafafa',
-    'canvas-bg2': '#f5f5f5',
+    'canvas-bg': '#f8fafc',
+    'canvas-bg2': '#f1f5f9',
     'canvas-card': '#ffffff',
-    'canvas-text': '#1a1a1a',
-    'canvas-muted': '#737373',
+    'canvas-text': '#0f172a',
+    'canvas-muted': '#475569',
   },
   spacing: {
     'panel-collapsed': 60,
