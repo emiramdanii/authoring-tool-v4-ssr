@@ -461,6 +461,13 @@ export const CoverRenderer = React.memo(function CoverRenderer({ block, tokens, 
   return (
     <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}
       style={{ width: '100%', height: '100%' }}
+      // Disable entrance animation for full-page cover blocks:
+      // The blockStaggerIn translateY(8px→0) animation causes the cover
+      // to shift during render, creating a visual "bounce" that looks
+      // like overflow. Cover blocks fill the entire scene and don't need
+      // stagger animation.
+      noAnimation
+      hoverLift={false}
     >
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />

@@ -594,13 +594,26 @@ export function resolveSceneLayout(
 
     // Convert percentage coordinates to absolute pixels
     const absX = layout.x != null ? (layout.x / 100) * scene.w : contentX;
-    const absY = layout.y != null ? (layout.y / 100) * scene.h : contentTop;
+    // FIX (cover overflow to top): Full-page blocks in mixed layouts must
+    // respect safe area. When cover/hero is on a page with flow blocks,
+    // y=0% causes overflow into navbar. Clamp to contentTop in mixed layouts.
+    const rawAbsY = layout.y != null ? (layout.y / 100) * scene.h : contentTop;
+    const isFullPageAbs = isFullPageBlockType(block.type);
+    // Pure full-page block on a page with flow blocks → respect safe area
+    const hasFlowBlocksSoFar = resolved.some(r => r.position === 'flow');
+    const absY = (isFullPageAbs && hasFlowBlocksSoFar && rawAbsY < contentTop)
+      ? contentTop
+      : rawAbsY;
     const absW = layout.width != null && layout.width !== 'auto'
       ? (layout.width as number / 100) * scene.w
       : contentW;
-    const absH = layout.height != null && layout.height !== 'auto'
+    const rawAbsH = layout.height != null && layout.height !== 'auto'
       ? (layout.height as number / 100) * scene.h
       : estimateBlockHeight(block, { isCompact, sceneH: scene.h }).height;
+    // Clamp cover height in mixed layouts to avoid overflow past contentBottom
+    const absH = (isFullPageAbs && hasFlowBlocksSoFar)
+      ? Math.min(rawAbsH, contentBottom - absY)
+      : rawAbsH;
 
     const isOverflowing = absY + absH > contentBottom;
 
@@ -630,6 +643,12 @@ export function resolveSceneLayout(
   // `layout.position === 'absolute'`. Without this phase, they're silently
   // dropped — never rendered — which is the root cause of "cover overflow
   // to top" and "cover block doesn't appear on canvas" bugs.
+  //
+  // FIX (cover overflow to top): Legacy full-page blocks in MIXED layouts
+  // (cover + flow blocks on same page) must respect the safe area.
+  // Previously hardcoded y:0 caused cover to overflow into navbar space.
+  // Now: pure cover page → y:0 (full bleed), mixed layout → y:contentTop
+  // to stay below the navbar.
   const resolvedBlockIds = new Set(resolved.map(r => r.block.id).filter(Boolean));
   const legacyFullPageBlocks = blocks.filter(b =>
     isFullPageBlockType(b.type)
@@ -637,14 +656,22 @@ export function resolveSceneLayout(
     && !resolvedBlockIds.has(b.id)
   );
 
+  // Detect if this is a mixed layout (full-page block + flow blocks)
+  const hasFlowBlocks = resolved.some(r => r.position === 'flow');
+
   for (let i = 0; i < legacyFullPageBlocks.length; i++) {
     const block = legacyFullPageBlocks[i];
+    // In mixed layouts, cover blocks must stay within the safe area
+    // to avoid overflowing into navbar space. In pure cover pages,
+    // they fill the entire scene (y:0, full bleed).
+    const coverY = hasFlowBlocks ? contentTop : 0;
+    const coverH = hasFlowBlocks ? (contentBottom - contentTop) : scene.h;
     resolved.push({
       block,
       x: 0,
-      y: 0,
+      y: coverY,
       width: scene.w,
-      height: scene.h,
+      height: coverH,
       position: 'absolute',
       overflow: 'clip' as const,
       zIndex: 0,

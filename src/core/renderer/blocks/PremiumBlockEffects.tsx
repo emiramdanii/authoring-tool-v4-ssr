@@ -35,6 +35,8 @@ export interface PremiumBlockWrapperProps {
   className?: string;
   /** Additional inline styles */
   style?: React.CSSProperties;
+  /** Disable entrance animation (use for full-page blocks like cover/hero) */
+  noAnimation?: boolean;
 }
 
 export function PremiumBlockWrapper({
@@ -48,6 +50,7 @@ export function PremiumBlockWrapper({
   gradientBorder = false,
   className = '',
   style = {},
+  noAnimation = false,
 }: PremiumBlockWrapperProps) {
   const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
   const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
@@ -66,7 +69,10 @@ export function PremiumBlockWrapper({
       style={{
         position: 'relative',
         overflow: 'hidden',
-        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${staggerIndex * 0.08}s both`,
+        // Disable stagger animation for full-page blocks (cover/hero).
+        // The translateY(8px→0) animation causes visual shift that looks
+        // like overflow on full-page blocks that fill the entire scene.
+        animation: noAnimation ? 'none' : `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${staggerIndex * 0.08}s both`,
         ...style,
       }}
     >

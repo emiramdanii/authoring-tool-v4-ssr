@@ -102,18 +102,7 @@ export function PageRenderer({
   //
   // If migration is needed, it happens at load time, not render time.
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
-    const schema = ensurePageSchema(page);
-
-    // ── DIAGNOSTIC: Log schema blocks for debugging visibility ──
-    if (schema && process.env.NODE_ENV !== 'production') {
-      console.log(
-        '[PageRenderer] SCHEMA BLOCKS:',
-        schema.blocks.length,
-        schema.blocks.map(b => ({ type: b.type, id: b.id }))
-      );
-    }
-
-    return schema;
+    return ensurePageSchema(page);
   }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType]);
 
   // Resolve tokens, applying palette overrides for legacy pages

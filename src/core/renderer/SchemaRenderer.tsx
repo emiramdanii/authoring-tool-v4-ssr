@@ -267,31 +267,6 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     // Use effectiveSchema (derived for current scene) instead of full screen
     const resolved = resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
 
-    // ── DIAGNOSTIC: Log resolved layout for debugging visibility ──
-    if (process.env.NODE_ENV !== 'production') {
-      const invisible = resolved.filter(r => r.height <= 0 || isNaN(r.y) || r.width <= 0);
-      if (invisible.length > 0) {
-        console.warn(
-          '[SchemaRenderer] INVISIBLE BLOCKS:',
-          invisible.map(r => ({
-            type: r.block.type,
-            id: r.block.id,
-            x: r.x, y: r.y,
-            width: r.width, height: r.height,
-            overflow: r.overflow,
-          }))
-        );
-      }
-      console.log(
-        '[SchemaRenderer] RESOLVED LAYOUT:',
-        resolved.length,
-        'blocks, scene:',
-        sceneRes,
-        'safeArea:',
-        effectiveSafeArea
-      );
-    }
-
     return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
@@ -407,9 +382,6 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         color: tokens.color('text'),
         ...bgStyle,
         overflow: 'hidden', // Scene clips at boundary — no content escapes
-        // ── DEBUG OUTLINE: Uncomment to trace CSS clipping chain ──
-        // outline: '3px solid red',
-        // outlineOffset: '-3px',
       }}
     >
       {/* ══ BACKGROUND IMAGE LAYER — rendered behind content ════ */}
