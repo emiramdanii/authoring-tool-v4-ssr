@@ -498,3 +498,27 @@ Stage Summary:
 - Key fix: Version migration now happens at load time in migrateAllPages() Step 4
 - Diagnostic logging added for runtime debugging of block visibility issues
 - All changes committed as: fix: block visibility debug — remove render-path writeback, fix MeasuredBlock height=0, add diagnostic logging
+
+---
+Task ID: cover-overflow-fix
+Agent: Main Agent
+Task: Fix cover overflow to top bug + clean up diagnostic logging
+
+Work Log:
+- Analyzed full cover rendering pipeline: CoverRenderer → PremiumBlockWrapper → SchemaScreenRenderer → PageFrame → Stage
+- Identified root cause #1: SceneLayoutEngine Phase 3 hardcoded y:0 for legacy cover blocks, causing overflow into navbar space in mixed layouts
+- Identified root cause #2: PremiumBlockWrapper blockStaggerIn animation (translateY 8px→0) caused visual shift on full-page cover blocks
+- Applied fix: SceneLayoutEngine Phase 2 & 3 now detect mixed layouts (cover + flow blocks) and clamp cover position to safe area
+- Applied fix: PremiumBlockWrapper now supports noAnimation prop; CoverRenderer disables stagger animation
+- Cleaned up diagnostic logging: Removed console.log/warn from PageRenderer (SCHEMA BLOCKS), SchemaRenderer (INVISIBLE BLOCKS, RESOLVED LAYOUT), ui-slice (addSchemaBlock VERIFIED)
+- Kept useful dev-mode warnings: throttled purity warnings, zero-height measurement warnings
+- Removed debug outline comments from SchemaRenderer
+- Build verified: npx next build passes successfully
+- Visual verification: Cover page renders on canvas without overflow past top edge
+- Git pushed to origin/main
+
+Stage Summary:
+- Cover overflow to top: FIXED — mixed layout cover blocks now respect safe area
+- Cover stagger animation: DISABLED — no more visual bounce on full-page blocks
+- Diagnostic logging: CLEANED UP — removed 4 verbose console.log/warn calls
+- Block add pipeline: VERIFIED — adding Definisi + Kuis blocks works, renders correctly
