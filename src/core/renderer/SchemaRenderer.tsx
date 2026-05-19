@@ -150,6 +150,16 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   // Pure cover page: ONLY a full-page block, no flow content
   const isPureCoverPage = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
 
+  // ── FIX: Cover overflow to top ──
+  // When a cover/hero block is on a page with flow blocks (mixed layout),
+  // the scene container MUST be 'relative' (not 'absolute inset-0').
+  // 'absolute inset-0' causes the cover to overflow above the safe area
+  // and occlude flow blocks. With 'relative', the cover is positioned
+  // at y=0 (via resolveSceneLayout Phase 3) and flow blocks stack below it.
+  // Only pure cover pages (single block) use 'absolute inset-0'.
+  // This is already handled below in the className, but isPureCoverPage
+  // is the key discriminator — make sure it's correct.
+
   // ═══ BLOCK ENTRANCE ANIMATION ═════════════════════════════════
   // Track newly added blocks to apply entrance animation.
   // When a new block ID appears that wasn't in the previous render,
@@ -256,6 +266,32 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
     // Use effectiveSchema (derived for current scene) instead of full screen
     const resolved = resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
+
+    // ── DIAGNOSTIC: Log resolved layout for debugging visibility ──
+    if (process.env.NODE_ENV !== 'production') {
+      const invisible = resolved.filter(r => r.height <= 0 || isNaN(r.y) || r.width <= 0);
+      if (invisible.length > 0) {
+        console.warn(
+          '[SchemaRenderer] INVISIBLE BLOCKS:',
+          invisible.map(r => ({
+            type: r.block.type,
+            id: r.block.id,
+            x: r.x, y: r.y,
+            width: r.width, height: r.height,
+            overflow: r.overflow,
+          }))
+        );
+      }
+      console.log(
+        '[SchemaRenderer] RESOLVED LAYOUT:',
+        resolved.length,
+        'blocks, scene:',
+        sceneRes,
+        'safeArea:',
+        effectiveSafeArea
+      );
+    }
+
     return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
@@ -371,6 +407,9 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         color: tokens.color('text'),
         ...bgStyle,
         overflow: 'hidden', // Scene clips at boundary — no content escapes
+        // ── DEBUG OUTLINE: Uncomment to trace CSS clipping chain ──
+        // outline: '3px solid red',
+        // outlineOffset: '-3px',
       }}
     >
       {/* ══ BACKGROUND IMAGE LAYER — rendered behind content ════ */}

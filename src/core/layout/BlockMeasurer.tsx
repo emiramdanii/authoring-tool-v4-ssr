@@ -142,6 +142,18 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
         const height = entry.borderBoxSize?.[0]?.blockSize
           ?? entry.contentRect.height;
 
+        // ── DIAGNOSTIC: Warn on zero height measurement ──
+        if (process.env.NODE_ENV !== 'production' && height <= 0) {
+          console.warn(
+            '[MeasuredBlock] ZERO HEIGHT:', blockId,
+            'borderBoxSize:', entry.borderBoxSize?.[0]?.blockSize,
+            'contentRect:', entry.contentRect.height,
+            'element:', el.tagName,
+            'display:', getComputedStyle(el).display,
+            'parentHeight:', el.parentElement?.getBoundingClientRect().height
+          );
+        }
+
         // Only update if height actually changed (avoid infinite loops)
         if (Math.round(height) !== lastHeightRef.current) {
           lastHeightRef.current = Math.round(height);
@@ -170,7 +182,12 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
     <div
       ref={ref}
       data-measured-block={blockId}
-      style={{ width: '100%', height: '100%', minHeight: '100%' }}
+      // FIX: Removed height:100% / minHeight:100% — these create circular
+      // dependency with absolute-positioned parents that have no explicit height.
+      // For 'autoResize' blocks, parent has minHeight but no height,
+      // so height:100% resolves to 0 (percentage requires definite containing block).
+      // Instead, let the content determine height naturally.
+      style={{ width: '100%' }}
     >
       {children}
     </div>

@@ -1067,6 +1067,21 @@ export const createUISlice: StateCreator<CanvaState, [], [], UISlice> = (set, ge
       selectedElIds: [],
     });
 
+    // ── DIAGNOSTIC: Verify block was added to store ──
+    if (process.env.NODE_ENV !== 'production') {
+      const verifyPage = get().pages[currentPageIndex];
+      console.log(
+        '[addSchemaBlock] VERIFIED:', {
+          blockType,
+          blockId: newBlock.id,
+          totalBlocks: verifyPage?.schema?.blocks?.length,
+          pageMode: verifyPage?.pageMode,
+          hasSchema: !!verifyPage?.schema,
+          blockIds: verifyPage?.schema?.blocks?.map((b: SchemaBlock) => b.id),
+        }
+      );
+    }
+
 
     // Emit editBus event for PatchHistory (now that state is consistent)
     if (forwardPatches && inversePatches) {

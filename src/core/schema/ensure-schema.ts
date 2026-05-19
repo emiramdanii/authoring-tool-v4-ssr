@@ -83,8 +83,6 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       } catch (e) {
         if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
       }
-      // Note: We return the migrated schema but don't mutate page.schema here.
-      // The caller (persistence-slice) handles persisting the migration result.
       // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
       try {
         return deepFreeze(deepClone(migrated));
@@ -95,10 +93,19 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     }
     // Dev-mode purity guard: ensure no runtime state has leaked into schema
     // Wrapped in try-catch to prevent dev-mode purity check from crashing the app
+    // NOTE: This runs on EVERY render, so we throttle the warning to avoid console spam.
+    // The purity check is important but the warning is noise if it fires every frame.
     try {
       assertDocumentPurity(page.schema, `ensurePageSchema:read:${page.id}`);
     } catch (e) {
-      if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+      // Throttle purity warnings — only log once per page per second
+      const now = Date.now();
+      const key = `purity-warn:${page.id}`;
+      const lastWarn = (globalThis as unknown as Record<string, number>)[key] || 0;
+      if (now - lastWarn > 1000) {
+        (globalThis as unknown as Record<string, number>)[key] = now;
+        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+      }
     }
     // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
     // deepFreeze(page.schema) was mutating the store, causing produceWithPatches
@@ -429,6 +436,22 @@ export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
     if (!updated.pageMode) {
       updated = { ...updated, pageMode: updated.schema ? 'schema' : 'elements' };
       anyMigrated = true;
+    }
+
+    // Step 4: Migrate schema version at load time
+    // This is the CORRECT place for version migration — at load/hydration time,
+    // NOT during render. Previously, ensurePageSchema() would run migration
+    // on every render and attempt a queueMicrotask writeback, causing
+    // rerender cascades and layout invalidation loops.
+    // By migrating here at load time, ensurePageSchema() stays PURE during render.
+    if (updated.schema && (updated.schema.version || 0) < SCHEMA_VERSION) {
+      try {
+        const migrated = migrateSchema(updated.schema);
+        updated = { ...updated, schema: migrated };
+        anyMigrated = true;
+      } catch (e) {
+        console.warn('[migrateAllPages] Version migration failed for page:', updated.id, e);
+      }
     }
 
     return updated;

@@ -88,38 +88,33 @@ export function PageRenderer({
     ? undefined // Schema pages use token system, not theme IDs
     : (page.templateData?.schemaThemeId as string | undefined);
 
-  // Use ensurePageSchema() — the schema-first gateway
-  // This lazily migrates legacy pages on first read.
-  // After migration, page.schema is the single source of truth.
+  // ═══ ENSURE PAGE SCHEMA — PURE, no writeback during render ════
+  // ensurePageSchema() is now PURE during render — it only READS
+  // and returns the schema. Migration writeback is handled at
+  // load/hydration time by migrateAllPages() in persistence-slice,
+  // NOT during the render cycle.
   //
-  // MIGRATION WRITEBACK: When ensurePageSchema runs a migration (e.g., v1→v2),
-  // the migrated schema is returned but NOT written back to the store.
-  // This caused repeated migration warnings on every render.
-  // Fix: Write back the migrated schema to the store on first detection.
+  // REMOVED: queueMicrotask writeback that caused:
+  //   - Rerender cascade (store write → re-render → write → ...)
+  //   - Stale schema references
+  //   - Layout invalidation loops
+  //   - Hydration mismatch
+  //
+  // If migration is needed, it happens at load time, not render time.
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
-    // Schema-first: page.schema is the canonical source
     const schema = ensurePageSchema(page);
-    if (schema) {
-      // Write back migrated schema to store if version was upgraded
-      // This prevents repeated migration on every render
-      if (page.schema && schema.version > page.schema.version) {
-        // Schedule writeback outside of render cycle to avoid setState-in-render
-        queueMicrotask(() => {
-          const store = useCanvaStore.getState();
-          const pages = store.pages;
-          const idx = currentPageIndex;
-          if (pages[idx] && pages[idx].schema === page.schema) {
-            const newPages = [...pages];
-            newPages[idx] = { ...pages[idx], schema };
-            useCanvaStore.setState({ pages: newPages });
-          }
-        });
-      }
-      return schema;
+
+    // ── DIAGNOSTIC: Log schema blocks for debugging visibility ──
+    if (schema && process.env.NODE_ENV !== 'production') {
+      console.log(
+        '[PageRenderer] SCHEMA BLOCKS:',
+        schema.blocks.length,
+        schema.blocks.map(b => ({ type: b.type, id: b.id }))
+      );
     }
-    // Custom pages have no schema — return null
-    return null;
-  }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType, currentPageIndex]);
+
+    return schema;
+  }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType]);
 
   // Resolve tokens, applying palette overrides for legacy pages
   const tokens = React.useMemo(() => {
