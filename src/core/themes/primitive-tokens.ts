@@ -43,13 +43,14 @@ export const PRIMITIVES = {
     errorDark: '#dc2626',
     info: '#3b82f6',
 
-    // Canvas background — off-white so white cards stand out with clear contrast.
-    // Pure white (#fff) caused cards to blend into the background, making
-    // content appear "canvas putih tulisan gak jelas" (white canvas, unclear text).
-    // Slate-50 (#f8fafc) gives enough contrast for white cards to be visible.
-    canvasBg: '#f8fafc',
-    canvasBg2: '#f1f5f9',
-    canvasCard: '#ffffff',
+    // Canvas background — dark blue palette (matches --semantic-canvas-bg in dark mode).
+    // The app defaults to dark mode, so DEFAULT_TOKENS must use dark values.
+    // Previously used light values (#f8fafc) which caused "canvas putih" bug:
+    // the TokenResolver reads JS tokens (not CSS vars), so even in dark mode
+    // the canvas rendered with white background, making cards invisible.
+    canvasBg: '#0e1c2f',
+    canvasBg2: '#13243a',
+    canvasCard: '#182d45',
   },
   spacing: {
     0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64,

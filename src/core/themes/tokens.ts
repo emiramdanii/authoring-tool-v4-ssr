@@ -87,15 +87,17 @@ export const DEFAULT_TOKENS: DesignTokens = {
     bg: PRIMITIVES.color.canvasBg,
     bg2: PRIMITIVES.color.canvasBg2,
     card: PRIMITIVES.color.canvasCard,
-    border: 'rgba(0,0,0,.12)',
+    border: 'rgba(255,255,255,.08)',
     y: PRIMITIVES.color.nagama,
     c: PRIMITIVES.color.cyan,
     r: PRIMITIVES.color.red,
     p: PRIMITIVES.color.purple,
     g: PRIMITIVES.color.green,
     o: PRIMITIVES.color.orange,
-    text: '#0f172a',
-    muted: '#475569',
+    // Dark mode text — matches --semantic-canvas-text in dark mode.
+    // The app defaults to dark mode; light presets override these values.
+    text: '#e8f2ff',
+    muted: '#6e90b5',
   },
   spacing: {
     xs: PRIMITIVES.spacing[1],
@@ -161,7 +163,7 @@ export interface ThemePreset {
 export const THEME_PRESETS: ThemePreset[] = [
   {
     id: 'default',
-    name: 'Dark Classic',
+    name: 'Default (Dark)',
     tokens: {},
   },
   {

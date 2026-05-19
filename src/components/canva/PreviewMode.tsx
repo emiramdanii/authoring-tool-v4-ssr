@@ -129,7 +129,7 @@ export default function PreviewMode() {
               {/* Phone notch indicator */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-b-2xl z-10" />
               {/* Phone screen area */}
-              <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-white">
+              <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-app-canvas">
                 <div
                   className="relative overflow-hidden"
                   style={{
