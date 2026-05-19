@@ -473,3 +473,28 @@ Stage Summary:
 - Confirmation dialogs: Destructive actions now have proper warnings
 - Save status: Header shows "Belum simpan" text when there are unsaved changes
 - Build verified: All changes compile successfully
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Push to git + Fix block visibility bugs (render-path writeback, MeasuredBlock height=0, diagnostic logging)
+
+Work Log:
+- Resolved git rebase conflict (kept remote HEAD versions for conflicted files)
+- Successfully pushed to origin/main
+- Removed queueMicrotask writeback from PageRenderer.tsx render path
+- Added version migration to migrateAllPages() Step 4 (load-time, not render-time)
+- Fixed MeasuredBlock height:100% / minHeight:100% circular dependency
+- Added diagnostic logging: [PageRenderer] SCHEMA BLOCKS, [SchemaRenderer] INVISIBLE BLOCKS + RESOLVED LAYOUT, [MeasuredBlock] ZERO HEIGHT, [addSchemaBlock] VERIFIED
+- Throttled ensurePageSchema purity warnings (1/sec per page instead of every frame)
+- Added cover overflow documentation in SchemaRenderer
+- Added debug outline comments in SchemaRenderer for CSS clipping trace
+- Verified LeftPanel/AddBlock state sync is reactive
+- Build successful, pushed to git
+
+Stage Summary:
+- Key fix: ensurePageSchema() is now PURE during render — no writeback
+- Key fix: MeasuredBlock no longer uses height:100% which caused 0-height measurement for autoResize blocks
+- Key fix: Version migration now happens at load time in migrateAllPages() Step 4
+- Diagnostic logging added for runtime debugging of block visibility issues
+- All changes committed as: fix: block visibility debug — remove render-path writeback, fix MeasuredBlock height=0, add diagnostic logging
