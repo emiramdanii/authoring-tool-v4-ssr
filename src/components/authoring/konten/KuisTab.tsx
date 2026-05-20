@@ -9,8 +9,6 @@ import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
 import { ItemRegenerateButton } from './ItemRegenerateButton';
 import { regenerateKuis, regenerateKuisSchema, regenerateSingleKuisItem } from '../auto-generate/regenerate';
-import { replaceKuisQuestionInSchema, findPageIdByType } from '@/core/schema/schema-apply';
-import { useCanvaStore } from '@/store/canva-store';
 import { syncKuisToSchema } from '@/core/schema/sync-projection';
 
 // ── Kuis Tab (Fully Functional) ────────────────────────────────
@@ -163,24 +161,9 @@ export function KuisTab() {
                         const newKuis = [...kuis];
                         newKuis[i] = { ...newItem, _id: kuis[i]._id || newItem._id };
                         useAuthoringStore.setState({ kuis: newKuis, dirty: true });
-                        // Update schema (canvas) — scoped, not full page
-                        const kuisPageId = findPageIdByType('kuis');
-                        if (kuisPageId) {
-                          const canvaPages = useCanvaStore.getState().pages;
-                          const page = canvaPages.find(p => p.id === kuisPageId);
-                          if (page?.schema) {
-                            const kuisBlock = page.schema.blocks.find(b => b.type === 'kuis');
-                            if (kuisBlock?.id) {
-                              replaceKuisQuestionInSchema(kuisPageId, kuisBlock.id, i, {
-                                q: newItem.q,
-                                opts: newItem.opts,
-                                ans: newItem.ans,
-                                ex: newItem.ex,
-                                ...(newItem.pertemuan != null ? { pertemuan: newItem.pertemuan } : {}),
-                              });
-                            }
-                          }
-                        }
+                        // Sync the updated kuis projection to schema (canvas)
+                        // Uses syncKuisToSchema which writes all kuis items to the schema block
+                        syncKuisToSchema(newKuis);
                         toast.success(`🔄 Soal ${i + 1} berhasil digenerate ulang`);
                       } else {
                         toast.error('Gagal regenerate — tidak ada teks sumber.');

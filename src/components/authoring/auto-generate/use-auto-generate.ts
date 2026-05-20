@@ -47,9 +47,8 @@ import {
   genPenutupSchema,
   genCoverSchema,
   genFullLessonSchema,
-  genPertemuanSchema,
 } from '@/core/schema/generators';
-import { applyBlocksToPages, applyBlockToPages, ensureLessonPages, ensurePertemuanPages } from '@/core/schema/schema-apply';
+import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
 import type { SchemaBlock } from '@/core/schema/types';
 import { useCanvaStore } from '@/store/canva-store';
 
@@ -640,8 +639,23 @@ export function useAutoGenerate() {
           authState.tp,
         );
 
-        // 2. Create/reuse BSNP pages and apply schema blocks
-        const pageCount = ensureLessonPages(lessonSchema);
+        // 2. Apply each section of the full lesson to canvas pages
+        let pageCount = 0;
+        if (lessonSchema.cover) { applyBlockToPages('cover', [lessonSchema.cover]); pageCount++; }
+        if (lessonSchema.petunjuk) { applyBlockToPages('petunjuk', [lessonSchema.petunjuk]); pageCount++; }
+        if (lessonSchema.tp) { applyBlockToPages('tujuan', [lessonSchema.tp]); applyBlockToPages('dokumen', [lessonSchema.tp]); pageCount++; }
+        if (lessonSchema.alur) { applyBlockToPages('dokumen', [lessonSchema.alur]); pageCount++; }
+        if (lessonSchema.motivasi) { applyBlockToPages('motivasi', [lessonSchema.motivasi]); pageCount++; }
+        if (lessonSchema.tujuan) { applyBlockToPages('dokumen', [lessonSchema.tujuan]); pageCount++; }
+        if (lessonSchema.materi.length) { applyBlocksToPages('materi', lessonSchema.materi); pageCount++; }
+        if (lessonSchema.skenario) { applyBlockToPages('skenario', [lessonSchema.skenario]); pageCount++; }
+        if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis]); pageCount++; }
+        if (lessonSchema.flashcard) { applyBlockToPages('materi', [lessonSchema.flashcard]); pageCount++; }
+        if (lessonSchema.diskusi) { applyBlockToPages('diskusi', [lessonSchema.diskusi]); pageCount++; }
+        if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi]); pageCount++; }
+        if (lessonSchema.rangkuman) { applyBlockToPages('rangkuman', [lessonSchema.rangkuman]); pageCount++; }
+        if (lessonSchema.hasil) { applyBlockToPages('hasil', [lessonSchema.hasil]); pageCount++; }
+        if (lessonSchema.penutup) { applyBlockToPages('penutup', [lessonSchema.penutup]); pageCount++; }
 
         // 3. Write projections to authoring store for Konten panel compat
         // TP
@@ -721,6 +735,8 @@ export function useAutoGenerate() {
   }, [parsed]);
 
   // ── Per-Pertemuan Generation ──────────────────────────────────
+  // NOTE: genPertemuanSchema was removed during rebase. This uses
+  // genFullLessonSchema as a fallback (generates all pertemuan content).
   const handleGeneratePertemuan = useCallback(
     (nomor: number) => {
       if (!parsed) {
@@ -734,18 +750,26 @@ export function useAutoGenerate() {
         try {
           const authState = store.getState();
 
-          // 1. Generate pertemuan schema
-          const pertemuanSchema = genPertemuanSchema(
+          // 1. Generate full lesson schema (no per-pertemuan generator available)
+          const lessonSchema = genFullLessonSchema(
             parsed,
+            meta,
+            settings,
+            [
+              { icon: '📖', judul: 'Baca Materi', isi: 'Pelajari materi yang disajikan di setiap halaman.' },
+              { icon: '💬', judul: 'Diskusi Kelompok', isi: 'Diskusikan pertanyaan bersama teman sekelompok.' },
+              { icon: '✍️', judul: 'Jawab Soal', isi: 'Kerjakan kuis untuk menguji pemahamanmu.' },
+              { icon: '🪞', judul: 'Refleksi', isi: 'Renungkan apa yang sudah dipelajari.' },
+            ],
             authState.tp,
-            { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab },
-            nomor,
-            settings.pertemuan,
-            Math.ceil(settings.jumlahKuis / settings.pertemuan),
           );
 
-          // 2. Create/update canvas pages
-          const pageCount = ensurePertemuanPages(pertemuanSchema);
+          // 2. Apply each section to canvas pages
+          let pageCount = 0;
+          if (lessonSchema.materi.length) { applyBlocksToPages('materi', lessonSchema.materi); pageCount++; }
+          if (lessonSchema.diskusi) { applyBlockToPages('diskusi', [lessonSchema.diskusi]); pageCount++; }
+          if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis]); pageCount++; }
+          if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi]); pageCount++; }
 
           // 3. Write projections to authoring store for Konten panel
           // Materi

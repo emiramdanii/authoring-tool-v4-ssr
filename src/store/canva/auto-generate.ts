@@ -258,7 +258,6 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
           const materiBlocks = genMateriSchema(
             storedParsed,
             { judulPertemuan: authStore.meta.judulPertemuan, namaBab: authStore.meta.namaBab },
-            perPertemuan ? { pertemuan: pert, jumlahPertemuan } : undefined,
           );
           addPage('materi', `Materi${pLabel}`, materiBlocks);
         } else {

@@ -169,7 +169,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
                 overflowWrap: 'break-word',
               }}
             >
-              <RichText content={block.pertanyaan} />
+              <RichText content={block.pertanyaan || ''} />
             </div>
           </div>
 

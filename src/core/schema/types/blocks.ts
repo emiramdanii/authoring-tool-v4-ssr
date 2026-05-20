@@ -508,3 +508,135 @@ export interface RangkumanBlock extends BaseBlock {
 // This enables separate BlockDefinitionRegistry entry + variant support.
 
 export type HeroBlock = Omit<CoverBlock, 'type'> & { type: 'hero' };
+
+// ── Tabel Schema ──────────────────────────────────────────────
+
+export interface TabelBlock extends BaseBlock {
+  type: 'tabel';
+  title?: string;
+  headers: string[];
+  rows: string[][];
+  accentColor?: string;
+}
+
+// ── Timeline Schema ───────────────────────────────────────────
+
+export interface TimelineBlock extends BaseBlock {
+  type: 'timeline';
+  title?: string;
+  steps: Array<{
+    icon: string;
+    label: string;
+    description: string;
+    color: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Compare Schema ────────────────────────────────────────────
+
+export interface CompareBlock extends BaseBlock {
+  type: 'compare';
+  title?: string;
+  kiri?: {
+    icon?: string;
+    judul?: string;
+    isi?: string;
+  };
+  kanan?: {
+    icon?: string;
+    judul?: string;
+    isi?: string;
+  };
+  accentColor?: string;
+}
+
+// ── Gambar Schema ─────────────────────────────────────────────
+
+export interface GambarBlock extends BaseBlock {
+  type: 'gambar';
+  title?: string;
+  url: string;
+  caption?: string;
+  accentColor?: string;
+}
+
+// ── Reveal Schema ─────────────────────────────────────────────
+
+export interface RevealBlock extends BaseBlock {
+  type: 'reveal';
+  title?: string;
+  coverIcon?: string;
+  coverText?: string;
+  revealIcon?: string;
+  revealContent?: string;
+  accentColor?: string;
+}
+
+// ── Checklist Schema ──────────────────────────────────────────
+
+export interface ChecklistBlock extends BaseBlock {
+  type: 'checklist';
+  title?: string;
+  items: Array<{
+    text: string;
+    checked?: boolean;
+  }>;
+  accentColor?: string;
+}
+
+// ── Statistik Schema ──────────────────────────────────────────
+
+export interface StatistikBlock extends BaseBlock {
+  type: 'statistik';
+  title?: string;
+  items: Array<{
+    warna: string;
+    angka: string;
+    satuan?: string;
+    label: string;
+    icon?: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Studi (Case Study) Schema ─────────────────────────────────
+
+export interface StudiBlock extends BaseBlock {
+  type: 'studi';
+  title?: string;
+  karakter?: string;
+  situasi: string;
+  pertanyaan?: string;
+  pesan?: string;
+  accentColor?: string;
+}
+
+// ── MateriBlok (Legacy) Schema ────────────────────────────────
+// Used by MateriBlokRenderer inside MateriSection content
+
+export type MateriBlokTipe =
+  | 'teks' | 'definisi' | 'poin' | 'tabel' | 'kutipan'
+  | 'gambar' | 'timeline' | 'highlight' | 'compare'
+  | 'infobox' | 'checklist' | 'statistik' | 'studi';
+
+export interface MateriBlokBlock extends BaseBlock {
+  type: 'materi-blok';
+  tipe: MateriBlokTipe;
+  judul?: string;
+  isi?: string;
+  butir?: string[];
+  baris?: string[][];
+  karakter?: string;
+  warna?: string;
+  icon?: string;
+  kiri?: { icon?: string; judul?: string; isi?: string };
+  kanan?: { icon?: string; judul?: string; isi?: string };
+  langkah?: Array<{ icon?: string; judul: string; isi?: string }>;
+  situasi?: string;
+  pertanyaan?: string;
+  pesan?: string;
+  infoboxStyle?: string;
+  items?: Array<{ warna: string; angka: string; satuan?: string; label: string; icon?: string }>;
+  accentColor?: string;
+}

@@ -46,6 +46,16 @@ export type {
   TujuanDisplayBlock,
   MotivasiBlock,
   RangkumanBlock,
+  TabelBlock,
+  TimelineBlock,
+  CompareBlock,
+  GambarBlock,
+  RevealBlock,
+  ChecklistBlock,
+  StatistikBlock,
+  StudiBlock,
+  MateriBlokBlock,
+  MateriBlokTipe,
 } from './blocks';
 
 export type {
