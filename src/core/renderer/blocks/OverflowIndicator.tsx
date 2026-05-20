@@ -32,7 +32,7 @@ export interface OverflowIndicatorProps {
   safeMode?: boolean;
 }
 
-export function OverflowIndicator({
+export const OverflowIndicator = React.memo(function OverflowIndicator({
   estimatedHeight,
   availableHeight,
   onAction,
@@ -123,4 +123,4 @@ export function OverflowIndicator({
       </div>
     </div>
   );
-}
+});

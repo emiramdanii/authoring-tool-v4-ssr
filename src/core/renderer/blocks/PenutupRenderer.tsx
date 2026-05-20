@@ -39,12 +39,12 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
   const hasScores = scores.length > 0;
 
   const tier = totalPct >= 90 ? 'excellent' : totalPct >= 75 ? 'good' : totalPct >= 50 ? 'fair' : 'needs-practice';
-  const tierConfig = hasScores ? {
+  const tierConfig = React.useMemo(() => hasScores ? {
     'excellent': { label: 'Luar Biasa!', color: 'y', emoji: '🏆', icon: <Trophy size={16} /> },
     'good': { label: 'Hebat!', color: 'g', emoji: '⭐', icon: <Star size={16} /> },
     'fair': { label: 'Cukup Baik', color: 'c', emoji: '🎯', icon: <Target size={16} /> },
     'needs-practice': { label: 'Terus Berlatih!', color: 'o', emoji: '💪', icon: <Zap size={16} /> },
-  }[tier] : null;
+  }[tier] : null, [hasScores, tier]);
 
   const isCompressed = compression?.isCompressed ?? false;
 

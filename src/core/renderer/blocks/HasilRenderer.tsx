@@ -591,33 +591,36 @@ function ActivityBreakdown({
 
   // Group scores by pageIndex
   const pages = useCanvaStore(s => s.pages);
-  const pageMap = new Map<number, { label: string; score: number; maxScore: number; completed: boolean; pct: number }>();
 
-  for (const s of scores) {
-    const existing = pageMap.get(s.pageIndex);
-    if (existing) {
-      existing.score += s.score;
-      existing.maxScore += s.maxScore;
-      existing.completed = existing.completed && s.completed;
-    } else {
-      pageMap.set(s.pageIndex, {
-        label: pages[s.pageIndex]?.label || `Aktivitas ${s.pageIndex + 1}`,
-        score: s.score,
-        maxScore: s.maxScore,
-        completed: s.completed,
-        pct: s.maxScore > 0 ? Math.round((s.score / s.maxScore) * 100) : 0,
-      });
+  const activities = React.useMemo(() => {
+    const pageMap = new Map<number, { label: string; score: number; maxScore: number; completed: boolean; pct: number }>();
+
+    for (const s of scores) {
+      const existing = pageMap.get(s.pageIndex);
+      if (existing) {
+        existing.score += s.score;
+        existing.maxScore += s.maxScore;
+        existing.completed = existing.completed && s.completed;
+      } else {
+        pageMap.set(s.pageIndex, {
+          label: pages[s.pageIndex]?.label || `Aktivitas ${s.pageIndex + 1}`,
+          score: s.score,
+          maxScore: s.maxScore,
+          completed: s.completed,
+          pct: s.maxScore > 0 ? Math.round((s.score / s.maxScore) * 100) : 0,
+        });
+      }
     }
-  }
 
-  // Recalculate pct after aggregation
-  for (const [, entry] of pageMap) {
-    entry.pct = entry.maxScore > 0 ? Math.round((entry.score / entry.maxScore) * 100) : 0;
-  }
+    // Recalculate pct after aggregation
+    for (const [, entry] of pageMap) {
+      entry.pct = entry.maxScore > 0 ? Math.round((entry.score / entry.maxScore) * 100) : 0;
+    }
 
-  const activities = Array.from(pageMap.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([, v]) => v);
+    return Array.from(pageMap.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([, v]) => v);
+  }, [scores, pages]);
 
   if (activities.length === 0) return null;
 

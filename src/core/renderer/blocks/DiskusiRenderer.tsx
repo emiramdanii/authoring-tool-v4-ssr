@@ -87,8 +87,14 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
     totalItems: allQuestions.length,
   });
   const questions = isCompressed ? allQuestions.slice(0, visibleCount) : allQuestions;
-  const allAnswered = allQuestions.length > 0 && allQuestions.every((_, i) => responses[i]?.trim().length > 0);
-  const answeredCount = Object.values(responses).filter(r => r.trim().length > 0).length;
+  const allAnswered = React.useMemo(() =>
+    allQuestions.length > 0 && allQuestions.every((_, i) => responses[i]?.trim().length > 0),
+    [allQuestions.length, responses]
+  );
+  const answeredCount = React.useMemo(() =>
+    Object.values(responses).filter(r => r.trim().length > 0).length,
+    [responses]
+  );
   const progress = allQuestions.length > 0 ? answeredCount / allQuestions.length : 0;
 
   const handleSubmit = () => {

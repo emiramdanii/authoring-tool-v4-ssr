@@ -40,7 +40,7 @@ export interface PremiumBlockWrapperProps {
   noAnimation?: boolean;
 }
 
-export function PremiumBlockWrapper({
+export const PremiumBlockWrapper = React.memo(function PremiumBlockWrapper({
   children,
   tokens,
   accent = 'y',
@@ -80,7 +80,7 @@ export function PremiumBlockWrapper({
       {children}
     </div>
   );
-}
+});
 
 // ─── ReadingProgressIndicator ──────────────────────────────────
 
@@ -95,7 +95,7 @@ export interface ReadingProgressIndicatorProps {
   position?: 'top' | 'bottom';
 }
 
-export function ReadingProgressIndicator({
+export const ReadingProgressIndicator = React.memo(function ReadingProgressIndicator({
   progress,
   tokens,
   accent = 'y',
@@ -151,7 +151,7 @@ export function ReadingProgressIndicator({
       />
     </div>
   );
-}
+});
 
 // ─── StepCompletionOverlay ─────────────────────────────────────
 
@@ -165,7 +165,7 @@ export interface StepCompletionOverlayProps {
   isCompact?: boolean;
 }
 
-export function StepCompletionOverlay({
+export const StepCompletionOverlay = React.memo(function StepCompletionOverlay({
   show,
   tokens,
   accent = 'y',
@@ -248,7 +248,7 @@ export function StepCompletionOverlay({
       </div>
     </div>
   );
-}
+});
 
 // ─── PremiumBadge ──────────────────────────────────────────────
 
@@ -263,7 +263,7 @@ export interface PremiumBadgeProps {
   className?: string;
 }
 
-export function PremiumBadge({
+export const PremiumBadge = React.memo(function PremiumBadge({
   children,
   tokens,
   accent = 'y',
@@ -321,7 +321,7 @@ export function PremiumBadge({
       {children}
     </span>
   );
-}
+});
 
 // ─── MicroInteraction ──────────────────────────────────────────
 
@@ -339,7 +339,7 @@ export interface MicroInteractionProps {
   style?: React.CSSProperties;
 }
 
-export function MicroInteraction({
+export const MicroInteraction = React.memo(function MicroInteraction({
   children,
   tokens,
   accent = 'y',
@@ -431,4 +431,4 @@ export function MicroInteraction({
       ))}
     </div>
   );
-}
+});

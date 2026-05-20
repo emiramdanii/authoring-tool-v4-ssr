@@ -91,13 +91,13 @@ function MateriVariantKlasik({
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
 
-  const sectionNumber = (() => {
+  const sectionNumber = React.useMemo(() => {
     if (block.id) {
       const match = block.id.match(/(\d+)$/);
       if (match) return parseInt(match[1], 10);
     }
     return 1;
-  })();
+  }, [block.id]);
 
   const allContentBlocks = block.content || [];
   const takeaways = block.takeaways || [];
@@ -464,13 +464,13 @@ function MateriVariantMajalah({
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
 
-  const sectionNumber = (() => {
+  const sectionNumber = React.useMemo(() => {
     if (block.id) {
       const match = block.id.match(/(\d+)$/);
       if (match) return parseInt(match[1], 10);
     }
     return 1;
-  })();
+  }, [block.id]);
 
   const allContentBlocks = block.content || [];
   const takeaways = block.takeaways || [];
@@ -678,13 +678,13 @@ function MateriVariantPill({
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
 
-  const sectionNumber = (() => {
+  const sectionNumber = React.useMemo(() => {
     if (block.id) {
       const match = block.id.match(/(\d+)$/);
       if (match) return parseInt(match[1], 10);
     }
     return 1;
-  })();
+  }, [block.id]);
 
   const allContentBlocks = block.content || [];
   const takeaways = block.takeaways || [];

@@ -82,7 +82,7 @@ function sanitizeHtml(html: string): string {
 
 // ── Component ──────────────────────────────────────────────────
 
-export function RichText({
+export const RichText = React.memo(function RichText({
   content,
   className,
   style,
@@ -112,7 +112,7 @@ export function RichText({
       {displayContent}
     </Tag>
   );
-}
+});
 
 /**
  * Convenience function: strip all HTML tags from a string.

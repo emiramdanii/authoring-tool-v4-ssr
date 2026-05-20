@@ -225,12 +225,12 @@ export function PremiumStepNavigator({
   const progress = totalSteps <= 1 ? 1 : (activeStep + 1) / totalSteps;
   const isAllComplete = activeStep === totalSteps - 1 && totalSteps > 1;
 
-  const handleStepClick = (step: number) => {
+  const handleStepClick = useCallback((step: number) => {
     onStepChange(step);
     if (step !== activeStep) {
       setSpringKey((k) => k + 1);
     }
-  };
+  }, [onStepChange, activeStep]);
 
   return (
     <div
