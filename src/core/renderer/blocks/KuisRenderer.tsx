@@ -59,7 +59,7 @@ function VariantSelector({
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             background: active === v.key ? 'rgba(245,158,11,0.18)' : 'transparent',
-            color: active === v.key ? '#d97706' : 'rgba(0,0,0,0.45)',
+            color: active === v.key ? '#d97706' : 'rgba(255,255,255,0.45)',
             boxShadow: active === v.key ? '0 1px 4px rgba(245,158,11,0.15)' : 'none',
           }}
         >
