@@ -10,3 +10,4 @@ export { BHINNEKA_TUNGAL_IKA_LESSON } from './bhinneka-tunggal-ika-schema';
 export { HAM_HAK_KEWAJIBAN_LESSON } from './ham-hak-kewajiban-schema';
 export { DEMOKRASI_PANCASILA_LESSON } from './demokrasi-pancasila-schema';
 export { GLOBALISASI_LESSON } from './globalisasi-schema';
+export { MISI_PENJELAJAH_PANCASILA_LESSON } from './misi-penjelajah-pancasila-schema';

@@ -31,6 +31,7 @@ const PRESET_MAP: Record<string, () => Promise<LessonSchema>> = {
   'ham-hak-kewajiban': () => import('@/presets/ppkn/ham-hak-kewajiban-schema').then(m => m.HAM_HAK_KEWAJIBAN_LESSON),
   'demokrasi-pancasila': () => import('@/presets/ppkn/demokrasi-pancasila-schema').then(m => m.DEMOKRASI_PANCASILA_LESSON),
   'globalisasi': () => import('@/presets/ppkn/globalisasi-schema').then(m => m.GLOBALISASI_LESSON),
+  'misi-penjelajah-pancasila': () => import('@/presets/ppkn/misi-penjelajah-pancasila-schema').then(m => m.MISI_PENJELAJAH_PANCASILA_LESSON),
   // IPA
   'sistem-pernapasan': () => import('@/presets/ipa/sistem-pernapasan-schema').then(m => m.SISTEM_PERNAPASAN_LESSON),
   // MTK

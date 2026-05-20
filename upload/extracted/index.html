@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misi Penjelajah Pancasila | PPKn Kelas VII</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ Confetti ══ -->
+  <div id="confWrap"></div>
+
+  <!-- ══════════════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════════════ -->
+  <nav id="navbar">
+    <span id="nav-logo">⛵ Misi Penjelajah Pancasila</span>
+    <div id="nav-progress-wrap"><div id="nav-progress-bar" style="width:0%"></div></div>
+    <span id="nav-scene-label">—</span>
+    <div id="nav-score-box">
+      <span id="nav-score-lbl">SKOR</span>
+      <span id="navScore">0</span>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: FEEDBACK
+  ══════════════════════════════════════════════ -->
+  <div id="modal-feedback" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-icon" id="mf-icon">💡</div>
+      <div class="modal-title" id="mf-title">Info</div>
+      <div class="modal-msg"   id="mf-msg">—</div>
+      <button class="btn btn-primary btn-fw" id="mf-close">Lanjutkan</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: MULAI MISI
+  ══════════════════════════════════════════════ -->
+  <div id="modal-misi" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-icon" id="mm-icon">⭐</div>
+      <div class="modal-title" id="mm-title">Pulau Sila ke-X</div>
+      <div class="modal-msg"   id="mm-desc">Siap menjelajah?</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost flex-1" id="mm-tunda">Kembali ke Peta</button>
+        <button class="btn btn-primary" style="flex:1.4" id="mm-mulai">Masuk Pulau 🧭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-COVER  ·  Identitas Pembelajaran
+  ══════════════════════════════════════════════ -->
+  <div class="screen active" id="s-cover">
+    <div class="scene-body items-center justify-center" style="gap:0;text-align:center;">
+      <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
+        <div style="position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;top:12%;left:15%;animation:pulse 3s infinite;opacity:.5;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:var(--y);border-radius:50%;top:80%;left:85%;animation:pulse 2.5s infinite;opacity:.4;"></div>
+      </div>
+
+      <div style="font-size:clamp(36px,6vw,60px);line-height:1;margin-bottom:clamp(6px,1.2vh,14px);">🇮🇩</div>
+
+      <div style="font-size:clamp(.58rem,1vw,.72rem);color:rgba(255,255,255,.5);margin-bottom:2px;text-transform:uppercase;letter-spacing:.15em;">PENDIDIKAN PANCASILA · KURIKULUM MERDEKA</div>
+      <div style="font-family:var(--font-head);font-size:clamp(1.2rem,3.2vw,2.1rem);color:var(--y);margin-bottom:4px;text-shadow:0 2px 12px rgba(244,197,66,.4);">
+        Makna dan Nilai yang<br>Terkandung dalam Pancasila
+      </div>
+      <div style="font-size:clamp(.6rem,1.1vw,.76rem);color:rgba(255,255,255,.7);margin-bottom:clamp(6px,1.2vh,14px);max-width:460px;line-height:1.6;">
+        Pertemuan 2 · Menganalisis makna dan implementasi nilai-nilai Pancasila
+      </div>
+
+      <div class="cover-chip-row" style="margin-bottom:clamp(4px,.8vh,8px);">
+        <span class="cover-chip" style="background:rgba(230,57,70,.15);border-color:rgba(230,57,70,.3);">TP-2 Menguraikan</span>
+        <span class="cover-chip" style="background:rgba(42,157,143,.15);border-color:rgba(42,157,143,.3);">TP-3 Mengidentifikasi</span>
+        <span class="cover-chip" style="background:rgba(69,123,157,.15);border-color:rgba(69,123,157,.3);">TP-4 Membedakan</span>
+      </div>
+      <div class="cover-chip-row" style="margin-bottom:clamp(8px,1.4vh,16px);">
+        <span class="cover-chip">Beriman & Bertakwa</span>
+        <span class="cover-chip">Berkebhinekaan Global</span>
+        <span class="cover-chip">Gotong Royong</span>
+        <span class="cover-chip">Bernalar Kritis</span>
+      </div>
+
+      <button class="btn btn-gold btn-lg" onclick="goto('s-surat')">⛵ Mulai Penjelajahan!</button>
+
+      <div class="cover-meta">Kelas VII · Fase D · 2 JP · Kurikulum Merdeka 2022</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-SURAT  ·  Surat Misi + Petunjuk Terpadu
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-surat">
+    <div class="scene-body">
+      <span class="chip" style="background:rgba(244,197,66,.15);color:var(--y);">📜 Surat Misi Penjelajah</span>
+      <div class="h1 mb-xs">📜 Surat Misi</div>
+      <div class="card card-p mb-sm" style="border-left:4px solid var(--y);background:rgba(244,197,66,.04);">
+        <div class="body-text" style="line-height:1.7;">
+          <strong>Kepada: Penjelajah Kelas VII</strong><br>
+          Selamat datang, Penjelajah! Kamu telah terpilih untuk berlayar menjelajahi <strong>lima pulau Pancasila</strong> di seluruh Nusantara. Di setiap pulau, kamu akan menggali makna dan nilai yang terkandung dalam setiap sila Pancasila. Misi kita hari ini: memahami <em>apa</em> nilai Pancasila dan <em>mengapa</em> nilai itu penting bagi kehidupan kita.
+        </div>
+      </div>
+      <div class="h3 mb-xs" style="color:var(--c);">🧭 Petunjuk Singkat</div>
+      <div class="grid-3 gap-sm" style="flex:1;">
+        <div class="card card-p flex-col gap-xs" style="padding:clamp(6px,1vh,10px) clamp(8px,1.2vw,14px);">
+          <div style="font-size:clamp(1rem,2vw,1.5rem);">🗺️</div>
+          <div class="h3" style="color:var(--c);font-size:clamp(.62rem,1.1vw,.78rem);">Jelajahi 5 Pulau</div>
+          <div class="body-text muted" style="font-size:clamp(.55rem,.95vw,.7rem);">Baca materi (4 tab) + uraikan dengan kata-katamu sendiri (Tab 5)</div>
+        </div>
+        <div class="card card-p flex-col gap-xs" style="padding:clamp(6px,1vh,10px) clamp(8px,1.2vw,14px);">
+          <div style="font-size:clamp(1rem,2vw,1.5rem);">⚔️</div>
+          <div class="h3" style="color:var(--r);font-size:clamp(.62rem,1.1vw,.78rem);">Hadapi Tantangan</div>
+          <div class="body-text muted" style="font-size:clamp(.55rem,.95rem,.7rem);">Hotspot / DnD / Studi Kasus + jelaskan alasanmu</div>
+        </div>
+        <div class="card card-p flex-col gap-xs" style="padding:clamp(6px,1vh,10px) clamp(8px,1.2vw,14px);">
+          <div style="font-size:clamp(1rem,2vw,1.5rem);">🏔️</div>
+          <div class="h3" style="font-size:clamp(.62rem,1.1vw,.78rem);">Pendakian + Perkemahan</div>
+          <div class="body-text muted" style="font-size:clamp(.55rem,.95vw,.7rem);">5 soal evaluasi + diskusi & refleksi di akhir</div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-cover')">⬅ Kembali</button>
+        <button class="btn btn-primary" onclick="goto('s-tp')">Buka Bekal! 🎒</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-TP  ·  Bekal Penjelajah (CP · TP · ATP)
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-tp" style="background:linear-gradient(155deg,#0d1b2a,#1a3a5c);color:#fff;">
+    <div class="scene-body">
+      <span class="chip" style="background:rgba(244,197,66,.15);color:var(--y);">🎒 Bekal Penjelajah · 5 Menit</span>
+      <div class="h1 mb-xs" style="color:var(--y);">🎒 Bekal Penjelajah</div>
+      <div style="font-size:clamp(.6rem,1.05vw,.76rem);color:rgba(255,255,255,.65);margin-bottom:clamp(4px,.8vh,8px);">Sebelum berangkat, pastikan kamu membawa bekal pengetahuan yang cukup!</div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar mb-sm">
+        <button class="tab-btn active" id="cp-btn-cp"  onclick="switchCPTab('cp')" style="background:rgba(255,255,255,.12);color:#fff;">Capaian (CP)</button>
+        <button class="tab-btn"        id="cp-btn-tp"  onclick="switchCPTab('tp')" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);">Tujuan (TP)</button>
+        <button class="tab-btn"        id="cp-btn-atp" onclick="switchCPTab('atp')" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);">Alur (ATP)</button>
+      </div>
+
+      <!-- CP Pane -->
+      <div id="cp-pane-cp" class="tab-pane active flex-col gap-sm" style="flex:1;overflow-y:auto;">
+        <div class="card card-p" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+          <div class="bold mb-xs" style="color:var(--y);font-size:clamp(.65rem,1.2vw,.82rem);">📌 CP Fase D — Kelas VII–IX</div>
+          <div class="body-text" style="color:rgba(255,255,255,.88);line-height:1.7;" id="cp-text-render">—</div>
+        </div>
+        <div class="card card-p" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);">
+          <div class="bold mb-xs" style="color:var(--y);font-size:clamp(.62rem,1.1vw,.76rem);">🌟 PROFIL PELAJAR PANCASILA YANG DIKEMBANGKAN</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="ppl-chips"></div>
+        </div>
+      </div>
+
+      <!-- TP Pane -->
+      <div id="cp-pane-tp" class="tab-pane flex-col gap-sm" style="flex:1;overflow-y:auto;display:none;">
+        <div id="tp-list"></div>
+      </div>
+
+      <!-- ATP Pane -->
+      <div id="cp-pane-atp" class="tab-pane flex-col gap-sm" style="flex:1;overflow-y:auto;display:none;">
+        <div id="atp-list" class="flex-col gap-sm"></div>
+        <div class="card card-p" style="background:rgba(42,157,143,.1);border-color:rgba(42,157,143,.25);">
+          <div class="bold mb-xs" style="color:var(--g);font-size:clamp(.62rem,1.1vw,.76rem);">⏱️ ALUR KEGIATAN HARI INI (80 Menit)</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;" id="alur-render"></div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-outline-white" onclick="goto('s-surat')">⬅ Kembali</button>
+        <button class="btn btn-gold" onclick="goto('s-pengantar')">Bekal Sudah Siap! ➡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-PENGANTAR  ·  Apa Itu Nilai Pancasila?
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-pengantar" style="background:linear-gradient(155deg,#0d1b2a,#1a3a5c);color:#fff;">
+    <div class="scene-body">
+      <span class="chip" style="background:rgba(69,123,157,.15);color:var(--c);">📖 Pengantar · 5 Menit</span>
+      <div class="h1 mb-xs" style="color:var(--y);">📖 Dari Kedudukan ke Nilai</div>
+      <div style="font-size:clamp(.6rem,1.05vw,.76rem);color:rgba(255,255,255,.6);margin-bottom:clamp(4px,.8vh,8px);">Menjembatani Pertemuan 1 → Pertemuan 2</div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar mb-sm">
+        <button class="tab-btn active" id="pg-btn-1" onclick="switchPengantarTab(1)" style="background:rgba(255,255,255,.12);color:#fff;">📖 Recap</button>
+        <button class="tab-btn" id="pg-btn-2" onclick="switchPengantarTab(2)" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);">💡 Definisi</button>
+        <button class="tab-btn" id="pg-btn-3" onclick="switchPengantarTab(3)" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);">🔗 Jembatan Sila</button>
+      </div>
+
+      <!-- Tab 1: Recap + Jembatan -->
+      <div id="pg-pane-1" class="tab-pane active flex-col gap-sm" style="flex:1;overflow-y:auto;">
+        <div class="card card-p" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+          <div class="bold mb-xs" style="color:var(--y);font-size:clamp(.65rem,1.2vw,.82rem);">📌 Pertemuan Lalu...</div>
+          <div class="body-text" style="color:rgba(255,255,255,.88);line-height:1.7;" id="pg-recap">—</div>
+        </div>
+        <div class="card card-p" style="background:rgba(244,197,66,.06);border-color:rgba(244,197,66,.2);">
+          <div class="bold mb-xs" style="color:var(--y);font-size:clamp(.65rem,1.2vw,.82rem);">🤔 Pertanyaan Jembatan</div>
+          <div class="body-text" style="color:rgba(255,255,255,.88);line-height:1.7;" id="pg-jembatan">—</div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Definisi + 3 Dimensi -->
+      <div id="pg-pane-2" class="tab-pane flex-col gap-sm" style="flex:1;overflow-y:auto;display:none;">
+        <div class="card card-p" style="background:rgba(42,157,143,.08);border-color:rgba(42,157,143,.2);">
+          <div class="bold mb-xs" style="color:var(--g);font-size:clamp(.65rem,1.2vw,.82rem);">💡 Apa Itu Nilai Pancasila?</div>
+          <div class="body-text" style="color:rgba(255,255,255,.88);line-height:1.7;" id="pg-definisi">—</div>
+        </div>
+        <div class="bold small-text" style="color:var(--y);margin-top:4px;">3 Zona Pengamalan Nilai Pancasila</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;" id="pg-dimensi"></div>
+      </div>
+
+      <!-- Tab 3: Jembatan Sila -->
+      <div id="pg-pane-3" class="tab-pane flex-col gap-sm" style="flex:1;overflow-y:auto;display:none;">
+        <div class="card card-p" style="background:rgba(107,72,255,.08);border-color:rgba(107,72,255,.2);">
+          <div class="bold mb-xs" style="color:var(--p);font-size:clamp(.65rem,1.2vw,.82rem);">🔗 Jembatan Sila — Hubungan Antar Sila</div>
+          <div class="body-text" style="color:rgba(255,255,255,.85);line-height:1.6;margin-bottom:6px;">Kelima sila Pancasila <strong>tidak berdiri sendiri</strong> — saling terkait dan mendasari satu sama lain seperti rantai yang tak terputus:</div>
+          <div id="pg-jembatanSila" class="flex-col gap-sm"></div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-outline-white" onclick="goto('s-tp')">⬅ Kembali</button>
+        <button class="btn btn-gold" onclick="goto('s-pemantik')">Siap Menjelajah! ➡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-PEMANTIK  ·  Pemanasan Sebelum Jelajah
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-pemantik">
+    <div class="scene-body" style="padding:clamp(8px,1.4vh,14px) clamp(12px,1.8vw,22px);">
+      <!-- Header -->
+      <div class="flex-row items-center gap-sm shrink-0 mb-xs">
+        <div style="font-size:clamp(1.6rem,3.5vw,2.4rem);">🔥</div>
+        <div>
+          <span class="chip" style="background:rgba(230,57,70,.1);color:var(--r);">🔥 Pemanasan Sebelum Jelajah · 10 Menit</span>
+          <div class="h2">Tugas Mandiri</div>
+          <div style="font-size:clamp(.56rem,.95vw,.68rem);color:var(--muted);">Pemanasan sebelum menjelajah</div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar mb-xs">
+        <button class="tab-btn active" id="tm-btn-1" onclick="switchTugasTab(1)" style="background:var(--r);color:#fff;">📝 Tugas 1</button>
+        <button class="tab-btn" id="tm-btn-2" onclick="switchTugasTab(2)" style="background:rgba(44,24,16,.06);color:var(--muted);">📝 Tugas 2</button>
+        <button class="tab-btn" id="tm-btn-3" onclick="switchTugasTab(3)" style="background:rgba(44,24,16,.06);color:var(--muted);">✅ Checklist</button>
+      </div>
+
+      <!-- Tab 1: Pertanyaan 1 + Textarea -->
+      <div id="tm-pane-1" class="tab-pane active flex-col gap-sm" style="flex:1;overflow-y:auto;">
+        <div class="card card-p" style="border-left:4px solid var(--r);">
+          <div class="bold mb-xs" style="color:var(--r);font-size:clamp(.65rem,1.2vw,.82rem);">📝 Pertanyaan 1</div>
+          <div class="body-text" style="line-height:1.7;" id="tm-q1">—</div>
+        </div>
+        <div class="flex-col gap-xs" style="flex:1;">
+          <div class="bold small-text" style="color:var(--c);">✏️ Tuliskan jawabanmu:</div>
+          <textarea id="tm-ans1" rows="4" placeholder="Tuliskan jawabanmu di sini..." style="flex:1;min-height:60px;"></textarea>
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;">
+            <span class="saved-badge" id="badge-tm-ans1">✅ Tersimpan</span>
+            <button class="btn btn-primary" style="font-size:.6rem;padding:4px 12px;" onclick="saveTugasMandiri('tm-ans1','tm-ans1','Tugas Mandiri 1',0)">Simpan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Pertanyaan 2 + Textarea -->
+      <div id="tm-pane-2" class="tab-pane flex-col gap-sm" style="flex:1;overflow-y:auto;display:none;">
+        <div class="card card-p" style="border-left:4px solid var(--c);">
+          <div class="bold mb-xs" style="color:var(--c);font-size:clamp(.65rem,1.2vw,.82rem);">📝 Pertanyaan 2</div>
+          <div class="body-text" style="line-height:1.7;" id="tm-q2">—</div>
+        </div>
+        <div class="flex-col gap-xs" style="flex:1;">
+          <div class="bold small-text" style="color:var(--c);">✏️ Tuliskan jawabanmu:</div>
+          <textarea id="tm-ans2" rows="4" placeholder="Tuliskan jawabanmu di sini..." style="flex:1;min-height:60px;"></textarea>
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;">
+            <span class="saved-badge" id="badge-tm-ans2">✅ Tersimpan</span>
+            <button class="btn btn-primary" style="font-size:.6rem;padding:4px 12px;" onclick="saveTugasMandiri('tm-ans2','tm-ans2','Tugas Mandiri 2',0)">Simpan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Checklist Bekal -->
+      <div id="tm-pane-3" class="tab-pane flex-col gap-sm" style="flex:1;overflow-y:auto;display:none;">
+        <div class="diskusi-banner db-green" style="flex:1;">
+          <div class="bold small-text" style="color:var(--g);">🎒 Cek Bekal Penjelajah</div>
+          <div class="body-text" style="margin-top:4px;">Sebelum mulai misi, pastikan kamu sudah:</div>
+          <div class="flex-col gap-sm" style="margin-top:8px;">
+            <label class="flex-row items-center gap-xs card card-p" style="cursor:pointer;border-color:rgba(42,157,143,.2);padding:8px 12px;">
+              <input type="checkbox" id="chk1" style="width:16px;height:16px;cursor:pointer;accent-color:var(--g);flex-shrink:0;">
+              <span class="body-text" style="cursor:pointer;">Memahami tujuan pembelajaran hari ini</span>
+            </label>
+            <label class="flex-row items-center gap-xs card card-p" style="cursor:pointer;border-color:rgba(42,157,143,.2);padding:8px 12px;">
+              <input type="checkbox" id="chk2" style="width:16px;height:16px;cursor:pointer;accent-color:var(--g);flex-shrink:0;">
+              <span class="body-text" style="cursor:pointer;">Sudah mengerjakan tugas mandiri di Tab 1 dan Tab 2</span>
+            </label>
+            <label class="flex-row items-center gap-xs card card-p" style="cursor:pointer;border-color:rgba(42,157,143,.2);padding:8px 12px;">
+              <input type="checkbox" id="chk3" style="width:16px;height:16px;cursor:pointer;accent-color:var(--g);flex-shrink:0;">
+              <span class="body-text" style="cursor:pointer;">Siap mengerjakan 5 misi secara berurutan</span>
+            </label>
+            <label class="flex-row items-center gap-xs card card-p" style="cursor:pointer;border-color:rgba(42,157,143,.2);padding:8px 12px;">
+              <input type="checkbox" id="chk4" style="width:16px;height:16px;cursor:pointer;accent-color:var(--g);flex-shrink:0;">
+              <span class="body-text" style="cursor:pointer;">Siap belajar dengan penuh semangat dan rasa ingin tahu</span>
+            </label>
+          </div>
+        </div>
+        <p class="body-text muted center anim-pulse" style="margin-top:6px;">🗺️ Klik "Mulai Pelayaran" untuk menuju Peta Pelayaran!</p>
+      </div>
+
+      <!-- Navigation -->
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-pengantar')">⬅ Kembali</button>
+        <button class="btn btn-primary" onclick="goto('s-map')">Mulai Pelayaran! ⛵</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-MAP  ·  Peta Misi Indonesia
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-map">
+    <div class="scene-body" style="padding:8px 10px;">
+
+      <!-- Header bar -->
+      <div class="flex-row items-center justify-between shrink-0 mb-xs" style="gap:8px;">
+        <div class="map-title-box">
+          <div class="h2" style="color:var(--dk);font-size:clamp(.85rem,1.8vw,1.2rem);">🗺️ PETA PELAYARAN</div>
+        </div>
+        <div style="font-family:var(--font-head);font-size:clamp(1.4rem,3.5vw,2.5rem);color:var(--dk);opacity:.18;position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;white-space:nowrap;">INDONESIA</div>
+        <div class="flex-row gap-sm">
+          <div class="map-stat-box">
+            SKOR: <span style="font-family:var(--font-head);color:var(--r);font-size:clamp(.9rem,1.8vw,1.2rem);" id="map-score">0</span>
+          </div>
+          <div class="map-stat-box">
+            MISI: <span style="font-family:var(--font-head);color:var(--c);font-size:clamp(.9rem,1.8vw,1.2rem);" id="map-mission">0/5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paspor bar -->
+      <div id="paspor-bar" class="paspor-bar shrink-0 mb-xs"></div>
+
+      <!-- Peta canvas -->
+      <div id="map-canvas" style="flex:1;position:relative;border-radius:18px;overflow:hidden;border:2px solid rgba(29,53,87,.2);box-shadow:var(--shadow-md);background-color:var(--sea);">
+
+        <!-- Kompas -->
+        <div class="compass">🧭
+          <div style="position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:clamp(.35rem,.7vw,.5rem);font-weight:900;color:var(--dk);white-space:nowrap;letter-spacing:.05em;">FASE 2: PELAYARAN</div>
+        </div>
+
+        <!-- Indonesia SVG (hidden) -->
+        <svg id="indonesia-svg" style="position:absolute;inset:0;width:100%;height:100%;display:none;" viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet"></svg>
+
+        <!-- Jalur pelayaran SVG (overlay) -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path id="map-svg-path" d="" fill="none" style="stroke:rgba(69,123,157,.6);stroke-width:2.5;stroke-dasharray:5,3;stroke-linecap:round;"/>
+        </svg>
+
+        <!-- Nodes container -->
+        <div id="map-nodes" style="position:absolute;inset:0;"></div>
+
+        <!-- Avatar kapal -->
+        <div id="map-avatar" class="anim-bounce-avatar" style="font-size:clamp(1.6rem,4vw,3rem);z-index:50;pointer-events:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));left:-5%;top:55%;transform:translateX(-50%) translateY(-50%);">
+          ⛵
+        </div>
+
+        <!-- Legenda -->
+        <div style="position:absolute;bottom:8px;left:10px;background:rgba(255,255,255,.82);backdrop-filter:blur(4px);border-radius:10px;padding:5px 10px;border:1px solid rgba(29,53,87,.12);display:flex;gap:8px;align-items:center;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--g);"></div><span style="font-size:.55rem;font-weight:800;color:var(--dk);">Selesai</span>
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--c);"></div><span style="font-size:.55rem;font-weight:800;color:var(--dk);">Tersedia</span>
+          <div style="width:8px;height:8px;border-radius:50%;background:rgba(100,100,100,.4);"></div><span style="font-size:.55rem;font-weight:800;color:var(--dk);">Terkunci</span>
+        </div>
+      </div>
+
+      <!-- Footer bar -->
+      <div class="flex-row items-center justify-between shrink-0" style="margin-top:8px;gap:8px;">
+        <div class="flex-row gap-sm">
+          <button class="btn btn-ghost" onclick="goto('s-pemantik')" style="font-size:.7rem;padding:5px 14px;">⚓ Beranda</button>
+          <button class="btn" style="background:rgba(69,123,157,.1);border:1.5px solid rgba(69,123,157,.2);color:var(--c);font-size:.7rem;padding:5px 14px;" onclick="goto('s-perkemahan')">🏕️ Perkemahan</button>
+        </div>
+        <button id="btn-eval-map" class="btn btn-gold" onclick="EVAL.start()" disabled style="font-size:clamp(.65rem,1.2vw,.82rem);">⛰️ Pendakian Akhir (0/5)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-SILA1  ·  Pulau 1: Ketuhanan
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-sila1">
+    <!-- Materi Overlay -->
+    <div class="materi-overlay" id="mo-sila1" style="margin-top:clamp(38px,6.8vh,54px);">
+      <div class="scene-body">
+        <div class="flex-row items-center justify-between shrink-0 mb-xs">
+          <div>
+            <span class="chip" style="background:var(--s1l);color:var(--s1);">📖 Jelajah Pulau 1 · 5 Menit</span>
+            <div class="h2">⭐ Ketuhanan Yang Maha Esa</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="hideMateri(1)">Tutup ✕</button>
+        </div>
+        <div class="tab-bar" id="tb-s1m">
+          <button class="tab-btn active" data-tab-btn="s1m" data-tab-btn-idx="1" onclick="TABS.switch('s1m',1)">🗺️ Peta Pulau</button>
+          <button class="tab-btn" data-tab-btn="s1m" data-tab-btn-idx="2" onclick="TABS.switch('s1m',2)">💡 Makna</button>
+          <button class="tab-btn" data-tab-btn="s1m" data-tab-btn-idx="3" onclick="TABS.switch('s1m',3)">✅ Jejak</button>
+          <button class="tab-btn" data-tab-btn="s1m" data-tab-btn-idx="4" onclick="TABS.switch('s1m',4)">📖 Kamus Jelajah</button>
+          <button class="tab-btn" data-tab-btn="s1m" data-tab-btn-idx="5" onclick="TABS.switch('s1m',5)">✏️ Uraikan</button>
+        </div>
+        <div data-tab-group="s1m" data-tab-idx="1" class="tab-pane active card card-p scroll-y" style="flex:1;background:linear-gradient(135deg,#0d2137,#1a3a5c);">
+          <div class="bold mb-xs" style="color:var(--y);font-size:clamp(.68rem,1.2vw,.85rem);">📌 Nilai Ketuhanan</div>
+          <div class="body-text" style="color:rgba(255,255,255,.9);" id="s1-tab1-content">—</div>
+        </div>
+        <div data-tab-group="s1m" data-tab-idx="2" class="tab-pane card card-p scroll-y" style="flex:1;display:none;">
+          <div class="bold mb-xs" style="color:var(--s1);font-size:clamp(.68rem,1.2vw,.85rem);">💡 Makna &amp; Nilai Utama</div>
+          <div class="body-text" id="s1-tab2-content">—</div>
+        </div>
+        <div data-tab-group="s1m" data-tab-idx="3" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(26,82,118,.04);display:none;">
+          <div class="bold mb-xs" style="color:var(--s1);font-size:clamp(.68rem,1.2vw,.85rem);">✅ Penerapan dalam Kehidupan Nyata</div>
+          <div class="body-text" id="s1-tab3-content">—</div>
+        </div>
+        <div data-tab-group="s1m" data-tab-idx="4" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(26,82,118,.04);display:none;">
+          <div class="bold mb-xs" style="color:var(--s1);font-size:clamp(.68rem,1.2vw,.85rem);">📖 Kamus Istilah Sila 1</div>
+          <div class="body-text" id="s1-tab4-content">—</div>
+        </div>
+        <div data-tab-group="s1m" data-tab-idx="5" class="tab-pane card card-p scroll-y" style="flex:1;display:none;">
+          <div class="bold mb-xs" style="color:var(--s1);font-size:clamp(.68rem,1.2vw,.85rem);">✏️ Uraikan dengan Kata-katamu Sendiri</div>
+          <div class="body-text" id="s1-tab5-content">—</div>
+        </div>
+        <div class="nav-row">
+          <button class="btn btn-ghost" id="s1m-prev" onclick="TABS.prev('s1m')" style="display:none;">⬅ Sebelumnya</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-blue" id="s1m-next" onclick="TABS.next('s1m')">Selanjutnya ➡</button>
+          <button class="btn btn-green" id="s1m-fin" onclick="hideMateri(1)" style="display:none;">Siap Hadapi Tantangan! ⚔️</button>
+        </div>
+      </div>
+    </div>
+    <!-- Challenge -->
+    <div class="scene-body">
+      <div class="flex-row items-center justify-between shrink-0 mb-xs">
+        <div>
+          <span class="chip" style="background:var(--s1l);color:var(--s1);">⚔️ Tantangan Pulau 1 · Sila Pertama</span>
+          <div class="h2">⭐ Ketuhanan Yang Maha Esa</div>
+          <div class="body-text muted" id="s1-instr" style="margin-top:2px;">Pilih 3 perilaku yang mencerminkan Sila ke-1!</div>
+        </div>
+        <div class="flex-row gap-sm items-center">
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="showMateri(1)">📖 Lihat Peta Pulau</button>
+          <div class="map-stat-box" id="ctr-s1">0/3</div>
+        </div>
+      </div>
+      <div class="grid-3 gap-sm" style="flex:1;" id="s1-grid"></div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-map')">⬅ Peta</button>
+        <button class="btn btn-green" id="btn-done-1" onclick="finishMission(1)" disabled>Pulau 1 Selesai! 🛂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-SILA2  ·  Pulau 2: Kemanusiaan
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-sila2">
+    <div class="materi-overlay" id="mo-sila2" style="margin-top:clamp(38px,6.8vh,54px);">
+      <div class="scene-body">
+        <div class="flex-row items-center justify-between shrink-0 mb-xs">
+          <div>
+            <span class="chip" style="background:var(--s2l);color:var(--s2);">📖 Jelajah Pulau 2 · 5 Menit</span>
+            <div class="h2">⛓️ Kemanusiaan yang Adil dan Beradab</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="hideMateri(2)">Tutup ✕</button>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab-btn="s2m" data-tab-btn-idx="1" onclick="TABS.switch('s2m',1)">🗺️ Peta Pulau</button>
+          <button class="tab-btn" data-tab-btn="s2m" data-tab-btn-idx="2" onclick="TABS.switch('s2m',2)">💡 Makna</button>
+          <button class="tab-btn" data-tab-btn="s2m" data-tab-btn-idx="3" onclick="TABS.switch('s2m',3)">✅ Jejak</button>
+          <button class="tab-btn" data-tab-btn="s2m" data-tab-btn-idx="4" onclick="TABS.switch('s2m',4)">📖 Kamus Jelajah</button>
+          <button class="tab-btn" data-tab-btn="s2m" data-tab-btn-idx="5" onclick="TABS.switch('s2m',5)">✏️ Uraikan</button>
+        </div>
+        <div data-tab-group="s2m" data-tab-idx="1" class="tab-pane active card card-p scroll-y" style="flex:1;background:linear-gradient(135deg,#3d0c09,#7b2018);">
+          <div class="bold mb-xs" style="color:var(--y);">📌 Nilai Kemanusiaan</div>
+          <div class="body-text" style="color:rgba(255,255,255,.9);" id="s2-tab1-content">—</div>
+        </div>
+        <div data-tab-group="s2m" data-tab-idx="2" class="tab-pane card card-p scroll-y" style="flex:1;display:none;"><div class="bold mb-xs" style="color:var(--s2);">💡 Makna</div><div class="body-text" id="s2-tab2-content">—</div></div>
+        <div data-tab-group="s2m" data-tab-idx="3" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(146,43,33,.04);display:none;"><div class="bold mb-xs" style="color:var(--s2);">✅ Penerapan</div><div class="body-text" id="s2-tab3-content">—</div></div>
+        <div data-tab-group="s2m" data-tab-idx="4" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(146,43,33,.04);display:none;"><div class="bold mb-xs" style="color:var(--s2);">📖 Definisi</div><div class="body-text" id="s2-tab4-content">—</div></div>
+        <div data-tab-group="s2m" data-tab-idx="5" class="tab-pane card card-p scroll-y" style="flex:1;display:none;">
+          <div class="bold mb-xs" style="color:var(--s2);font-size:clamp(.68rem,1.2vw,.85rem);">✏️ Uraikan dengan Kata-katamu Sendiri</div>
+          <div class="body-text" id="s2-tab5-content">—</div>
+        </div>
+        <div class="nav-row">
+          <button class="btn btn-ghost" id="s2m-prev" onclick="TABS.prev('s2m')" style="display:none;">⬅ Sebelumnya</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-blue" id="s2m-next" onclick="TABS.next('s2m')">Selanjutnya ➡</button>
+          <button class="btn btn-green" id="s2m-fin" onclick="hideMateri(2)" style="display:none;">Siap Hadapi Tantangan! ⚔️</button>
+        </div>
+      </div>
+    </div>
+    <!-- DnD Challenge -->
+    <div class="scene-body">
+      <div class="flex-row items-center justify-between shrink-0 mb-xs">
+        <div>
+          <span class="chip" style="background:var(--s2l);color:var(--s2);">⚔️ Tantangan Pulau 2 · Drag &amp; Drop</span>
+          <div class="h2">⛓️ Kemanusiaan yang Adil dan Beradab</div>
+          <div class="body-text muted" style="margin-top:2px;" id="s2-instr">Sortir 6 kartu perilaku ke kotak yang tepat!</div>
+        </div>
+        <div class="flex-row gap-sm items-center">
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="showMateri(2)">📖 Lihat Peta Pulau</button>
+          <div class="map-stat-box" id="ctr-s2">0/6</div>
+        </div>
+      </div>
+      <div class="flex-row gap-sm" style="flex:1;overflow:hidden;">
+        <div class="card" style="width:26%;padding:10px;display:flex;flex-direction:column;gap:4px;overflow:hidden;">
+          <div style="font-weight:900;color:var(--muted);font-size:.6rem;text-transform:uppercase;text-align:center;letter-spacing:.05em;margin-bottom:4px;flex-shrink:0;">Tumpukan Kartu</div>
+          <div id="pool-s2" class="drag-pool flex-1"></div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;">
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--card);border-radius:50%;width:clamp(28px,4vw,38px);height:clamp(28px,4vw,38px);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--muted);z-index:10;border:1.5px solid var(--border);font-size:.8rem;box-shadow:var(--shadow-sm);">VS</div>
+          <div class="dropzone" data-sila="2" data-type="ok" id="dz-ok-2" style="border-color:rgba(42,157,143,.4);background:rgba(42,157,143,.04);">
+            <div class="dz-title" style="color:var(--g);">✅ Sesuai Pancasila</div>
+            <div class="dz-area"></div>
+          </div>
+          <div class="dropzone" data-sila="2" data-type="no" id="dz-no-2" style="border-color:rgba(230,57,70,.4);background:rgba(230,57,70,.04);">
+            <div class="dz-title" style="color:var(--r);">❌ Tidak Sesuai</div>
+            <div class="dz-area"></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-map')">⬅ Peta</button>
+        <button class="btn btn-green" id="btn-done-2" onclick="finishMission(2)" disabled>Pulau 2 Selesai! 🛂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-SILA3  ·  Pulau 3: Persatuan
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-sila3">
+    <div class="materi-overlay" id="mo-sila3" style="margin-top:clamp(38px,6.8vh,54px);">
+      <div class="scene-body">
+        <div class="flex-row items-center justify-between shrink-0 mb-xs">
+          <div>
+            <span class="chip" style="background:var(--s3l);color:var(--s3);">📖 Jelajah Pulau 3 · 5 Menit</span>
+            <div class="h2">🌳 Persatuan Indonesia</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="hideMateri(3)">Tutup ✕</button>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab-btn="s3m" data-tab-btn-idx="1" onclick="TABS.switch('s3m',1)">🗺️ Peta Pulau</button>
+          <button class="tab-btn" data-tab-btn="s3m" data-tab-btn-idx="2" onclick="TABS.switch('s3m',2)">💡 Makna</button>
+          <button class="tab-btn" data-tab-btn="s3m" data-tab-btn-idx="3" onclick="TABS.switch('s3m',3)">✅ Jejak</button>
+          <button class="tab-btn" data-tab-btn="s3m" data-tab-btn-idx="4" onclick="TABS.switch('s3m',4)">📖 Kamus Jelajah</button>
+          <button class="tab-btn" data-tab-btn="s3m" data-tab-btn-idx="5" onclick="TABS.switch('s3m',5)">✏️ Uraikan</button>
+        </div>
+        <div data-tab-group="s3m" data-tab-idx="1" class="tab-pane active card card-p scroll-y" style="flex:1;background:linear-gradient(135deg,#0a2e18,#155724);">
+          <div class="bold mb-xs" style="color:var(--y);">📌 Nilai Persatuan</div>
+          <div class="body-text" style="color:rgba(255,255,255,.9);" id="s3-tab1-content">—</div>
+        </div>
+        <div data-tab-group="s3m" data-tab-idx="2" class="tab-pane card card-p scroll-y" style="flex:1;display:none;"><div class="bold mb-xs" style="color:var(--s3);">💡 Makna</div><div class="body-text" id="s3-tab2-content">—</div></div>
+        <div data-tab-group="s3m" data-tab-idx="3" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(30,132,73,.04);display:none;"><div class="bold mb-xs" style="color:var(--s3);">✅ Penerapan</div><div class="body-text" id="s3-tab3-content">—</div></div>
+        <div data-tab-group="s3m" data-tab-idx="4" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(30,132,73,.04);display:none;"><div class="bold mb-xs" style="color:var(--s3);">📖 Definisi</div><div class="body-text" id="s3-tab4-content">—</div></div>
+        <div data-tab-group="s3m" data-tab-idx="5" class="tab-pane card card-p scroll-y" style="flex:1;display:none;">
+          <div class="bold mb-xs" style="color:var(--s3);font-size:clamp(.68rem,1.2vw,.85rem);">✏️ Uraikan dengan Kata-katamu Sendiri</div>
+          <div class="body-text" id="s3-tab5-content">—</div>
+        </div>
+        <div class="nav-row">
+          <button class="btn btn-ghost" id="s3m-prev" onclick="TABS.prev('s3m')" style="display:none;">⬅ Sebelumnya</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-blue" id="s3m-next" onclick="TABS.next('s3m')">Selanjutnya ➡</button>
+          <button class="btn btn-green" id="s3m-fin" onclick="hideMateri(3)" style="display:none;">Siap Hadapi Tantangan! ⚔️</button>
+        </div>
+      </div>
+    </div>
+    <!-- Hotspot Challenge -->
+    <div class="scene-body">
+      <div class="flex-row items-center justify-between shrink-0 mb-xs">
+        <div>
+          <span class="chip" style="background:var(--s3l);color:var(--s3);">⚔️ Tantangan Pulau 3 · Hotspot</span>
+          <div class="h2">🌳 Persatuan Indonesia</div>
+          <div class="body-text muted" style="margin-top:2px;" id="s3-instr">Pilih 3 tindakan yang mencerminkan nilai Persatuan!</div>
+        </div>
+        <div class="flex-row gap-sm items-center">
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="showMateri(3)">📖 Lihat Peta Pulau</button>
+          <div class="map-stat-box" id="ctr-s3">0/3</div>
+        </div>
+      </div>
+      <div class="grid-3 gap-sm" style="flex:1;" id="s3-grid"></div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-map')">⬅ Peta</button>
+        <button class="btn btn-green" id="btn-done-3" onclick="finishMission(3)" disabled>Pulau 3 Selesai! 🛂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-SILA4  ·  Pulau 4: Musyawarah (Studi Kasus)
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-sila4">
+    <div class="materi-overlay" id="mo-sila4" style="margin-top:clamp(38px,6.8vh,54px);">
+      <div class="scene-body">
+        <div class="flex-row items-center justify-between shrink-0 mb-xs">
+          <div>
+            <span class="chip" style="background:var(--s4l);color:var(--s4);">📖 Jelajah Pulau 4 · 5 Menit</span>
+            <div class="h2">🐂 Kerakyatan yang Dipimpin Hikmat Kebijaksanaan</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="hideMateri(4)">Tutup ✕</button>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab-btn="s4m" data-tab-btn-idx="1" onclick="TABS.switch('s4m',1)">🗺️ Peta Pulau</button>
+          <button class="tab-btn" data-tab-btn="s4m" data-tab-btn-idx="2" onclick="TABS.switch('s4m',2)">💡 Makna</button>
+          <button class="tab-btn" data-tab-btn="s4m" data-tab-btn-idx="3" onclick="TABS.switch('s4m',3)">✅ Jejak</button>
+          <button class="tab-btn" data-tab-btn="s4m" data-tab-btn-idx="4" onclick="TABS.switch('s4m',4)">📖 Kamus Jelajah</button>
+          <button class="tab-btn" data-tab-btn="s4m" data-tab-btn-idx="5" onclick="TABS.switch('s4m',5)">✏️ Uraikan</button>
+        </div>
+        <div data-tab-group="s4m" data-tab-idx="1" class="tab-pane active card card-p scroll-y" style="flex:1;background:linear-gradient(135deg,#3d200a,#6b3a0f);">
+          <div class="bold mb-xs" style="color:var(--y);">📌 Nilai Kerakyatan</div>
+          <div class="body-text" style="color:rgba(255,255,255,.9);" id="s4-tab1-content">—</div>
+        </div>
+        <div data-tab-group="s4m" data-tab-idx="2" class="tab-pane card card-p scroll-y" style="flex:1;display:none;"><div class="bold mb-xs" style="color:var(--s4);">💡 Makna</div><div class="body-text" id="s4-tab2-content">—</div></div>
+        <div data-tab-group="s4m" data-tab-idx="3" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(120,66,18,.04);display:none;"><div class="bold mb-xs" style="color:var(--s4);">✅ Penerapan</div><div class="body-text" id="s4-tab3-content">—</div></div>
+        <div data-tab-group="s4m" data-tab-idx="4" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(120,66,18,.04);display:none;"><div class="bold mb-xs" style="color:var(--s4);">📖 Definisi</div><div class="body-text" id="s4-tab4-content">—</div></div>
+        <div data-tab-group="s4m" data-tab-idx="5" class="tab-pane card card-p scroll-y" style="flex:1;display:none;">
+          <div class="bold mb-xs" style="color:var(--s4);font-size:clamp(.68rem,1.2vw,.85rem);">✏️ Uraikan dengan Kata-katamu Sendiri</div>
+          <div class="body-text" id="s4-tab5-content">—</div>
+        </div>
+        <div class="nav-row">
+          <button class="btn btn-ghost" id="s4m-prev" onclick="TABS.prev('s4m')" style="display:none;">⬅ Sebelumnya</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-blue" id="s4m-next" onclick="TABS.next('s4m')">Selanjutnya ➡</button>
+          <button class="btn btn-green" id="s4m-fin" onclick="hideMateri(4)" style="display:none;">Siap Hadapi Tantangan! ⚔️</button>
+        </div>
+      </div>
+    </div>
+    <!-- Studi Kasus Challenge -->
+    <div class="scene-body">
+      <div class="flex-row items-center justify-between shrink-0 mb-xs">
+        <div>
+          <span class="chip" style="background:var(--s4l);color:var(--s4);">⚔️ Tantangan Pulau 4 · Studi Kasus × 4</span>
+          <div class="h2">🐂 Kerakyatan — Musyawarah Mufakat</div>
+          <div class="body-text muted" style="margin-top:2px;">Jawab 4 studi kasus tentang penerapan Sila ke-4!</div>
+        </div>
+        <div class="flex-row gap-sm items-center">
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="showMateri(4)">📖 Lihat Peta Pulau</button>
+          <div class="map-stat-box" id="ctr-s4">0/4</div>
+        </div>
+      </div>
+      <!-- Soal area -->
+      <div class="card card-p shrink-0 mb-sm" style="border-left:4px solid var(--s4);position:relative;">
+        <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--s4);color:#fff;border-radius:99px;padding:2px 14px;font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;" id="s4-soal-num">Studi Kasus 1 dari 4</div>
+        <div class="dots-row mb-xs" id="s4-soal-prog"></div>
+        <div class="body-text bold" id="s4-soal-q" style="font-size:clamp(.7rem,1.3vw,.9rem);line-height:1.6;">Memuat soal...</div>
+      </div>
+      <div class="flex-col gap-sm" style="flex:1;overflow-y:auto;" id="s4-soal-opts"></div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-map')">⬅ Peta</button>
+        <button class="btn btn-green" id="btn-done-4" onclick="finishMission(4)" disabled>Pulau 4 Selesai! 🛂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-SILA5  ·  Pulau 5: Keadilan Sosial (DnD)
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-sila5">
+    <div class="materi-overlay" id="mo-sila5" style="margin-top:clamp(38px,6.8vh,54px);">
+      <div class="scene-body">
+        <div class="flex-row items-center justify-between shrink-0 mb-xs">
+          <div>
+            <span class="chip" style="background:var(--s5l);color:var(--s5);">📖 Jelajah Pulau 5 · 5 Menit</span>
+            <div class="h2">🌾 Keadilan Sosial bagi Seluruh Rakyat Indonesia</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="hideMateri(5)">Tutup ✕</button>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab-btn="s5m" data-tab-btn-idx="1" onclick="TABS.switch('s5m',1)">🗺️ Peta Pulau</button>
+          <button class="tab-btn" data-tab-btn="s5m" data-tab-btn-idx="2" onclick="TABS.switch('s5m',2)">💡 Makna</button>
+          <button class="tab-btn" data-tab-btn="s5m" data-tab-btn-idx="3" onclick="TABS.switch('s5m',3)">✅ Jejak</button>
+          <button class="tab-btn" data-tab-btn="s5m" data-tab-btn-idx="4" onclick="TABS.switch('s5m',4)">📖 Kamus Jelajah</button>
+          <button class="tab-btn" data-tab-btn="s5m" data-tab-btn-idx="5" onclick="TABS.switch('s5m',5)">✏️ Uraikan</button>
+        </div>
+        <div data-tab-group="s5m" data-tab-idx="1" class="tab-pane active card card-p scroll-y" style="flex:1;background:linear-gradient(135deg,#3d2d00,#7a5e00);">
+          <div class="bold mb-xs" style="color:var(--y);">📌 Nilai Keadilan Sosial</div>
+          <div class="body-text" style="color:rgba(255,255,255,.9);" id="s5-tab1-content">—</div>
+        </div>
+        <div data-tab-group="s5m" data-tab-idx="2" class="tab-pane card card-p scroll-y" style="flex:1;display:none;"><div class="bold mb-xs" style="color:var(--s5);">💡 Makna</div><div class="body-text" id="s5-tab2-content">—</div></div>
+        <div data-tab-group="s5m" data-tab-idx="3" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(183,149,11,.04);display:none;"><div class="bold mb-xs" style="color:var(--s5);">✅ Penerapan</div><div class="body-text" id="s5-tab3-content">—</div></div>
+        <div data-tab-group="s5m" data-tab-idx="4" class="tab-pane card card-p scroll-y" style="flex:1;background:rgba(183,149,11,.04);display:none;"><div class="bold mb-xs" style="color:var(--s5);">📖 Definisi</div><div class="body-text" id="s5-tab4-content">—</div></div>
+        <div data-tab-group="s5m" data-tab-idx="5" class="tab-pane card card-p scroll-y" style="flex:1;display:none;">
+          <div class="bold mb-xs" style="color:var(--s5);font-size:clamp(.68rem,1.2vw,.85rem);">✏️ Uraikan dengan Kata-katamu Sendiri</div>
+          <div class="body-text" id="s5-tab5-content">—</div>
+        </div>
+        <div class="nav-row">
+          <button class="btn btn-ghost" id="s5m-prev" onclick="TABS.prev('s5m')" style="display:none;">⬅ Sebelumnya</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-blue" id="s5m-next" onclick="TABS.next('s5m')">Selanjutnya ➡</button>
+          <button class="btn btn-green" id="s5m-fin" onclick="hideMateri(5)" style="display:none;">Siap Hadapi Tantangan! ⚔️</button>
+        </div>
+      </div>
+    </div>
+    <!-- DnD Challenge -->
+    <div class="scene-body">
+      <div class="flex-row items-center justify-between shrink-0 mb-xs">
+        <div>
+          <span class="chip" style="background:var(--s5l);color:var(--s5);">⚔️ Tantangan Pulau 5 · Drag &amp; Drop</span>
+          <div class="h2">🌾 Keadilan Sosial bagi Seluruh Rakyat Indonesia</div>
+          <div class="body-text muted" style="margin-top:2px;">Sortir 6 kartu perilaku ke kotak yang tepat!</div>
+        </div>
+        <div class="flex-row gap-sm items-center">
+          <button class="btn btn-ghost" style="font-size:.65rem;padding:4px 12px;" onclick="showMateri(5)">📖 Lihat Peta Pulau</button>
+          <div class="map-stat-box" id="ctr-s5">0/6</div>
+        </div>
+      </div>
+      <div class="flex-row gap-sm" style="flex:1;overflow:hidden;">
+        <div class="card" style="width:26%;padding:10px;display:flex;flex-direction:column;gap:4px;overflow:hidden;">
+          <div style="font-weight:900;color:var(--muted);font-size:.6rem;text-transform:uppercase;text-align:center;letter-spacing:.05em;margin-bottom:4px;flex-shrink:0;">Tumpukan Kartu</div>
+          <div id="pool-s5" class="drag-pool flex-1"></div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;">
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--card);border-radius:50%;width:clamp(28px,4vw,38px);height:clamp(28px,4vw,38px);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--muted);z-index:10;border:1.5px solid var(--border);font-size:.8rem;box-shadow:var(--shadow-sm);">VS</div>
+          <div class="dropzone" data-sila="5" data-type="ok" id="dz-ok-5" style="border-color:rgba(42,157,143,.4);background:rgba(42,157,143,.04);">
+            <div class="dz-title" style="color:var(--g);">✅ Sesuai Pancasila</div>
+            <div class="dz-area"></div>
+          </div>
+          <div class="dropzone" data-sila="5" data-type="no" id="dz-no-5" style="border-color:rgba(230,57,70,.4);background:rgba(230,57,70,.04);">
+            <div class="dz-title" style="color:var(--r);">❌ Tidak Sesuai</div>
+            <div class="dz-area"></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-map')">⬅ Peta</button>
+        <button class="btn btn-green" id="btn-done-5" onclick="finishMission(5)" disabled>Pulau 5 Selesai! 🛂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-EVAL  ·  Pendakian Akhir
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-eval" style="background:linear-gradient(155deg,#0d1b2a,#1a3a5c);color:#fff;">
+    <div class="scene-body">
+      <div class="center shrink-0 mb-sm">
+        <span class="chip" style="background:rgba(244,197,66,.15);color:var(--y);">⛰️ Pendakian Akhir · 10 Menit</span>
+        <div class="h1" style="color:var(--y);">⛰️ Pendakian Akhir</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);padding:4px 16px;border-radius:99px;margin-top:5px;border:1px solid rgba(255,255,255,.12);">
+          <span id="eval-sila-badge" style="border-radius:99px;padding:2px 10px;font-size:.65rem;font-weight:900;">Sila ke-?</span>
+          <span id="eval-qnum" style="font-size:clamp(.68rem,1.2vw,.82rem);">Rintangan 1 dari 5</span>
+        </div>
+      </div>
+      <div class="card card-p shrink-0 mb-sm" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+        <div class="dots-row mb-sm" id="eval-prog"></div>
+        <div class="body-text" id="eval-q" style="color:rgba(255,255,255,.95);font-size:clamp(.72rem,1.3vw,.9rem);font-weight:700;line-height:1.65;">Memuat soal...</div>
+      </div>
+      <div class="flex-col gap-sm" style="flex:1;overflow-y:auto;" id="eval-opts"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-HASIL  ·  Puncak Pencapaian + Flashcard
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-hasil">
+    <div class="scene-body">
+      <span class="chip" style="background:rgba(244,197,66,.15);color:var(--dk);">🏔️ Puncak Pencapaian</span>
+      <div class="h2 mb-xs" style="color:var(--dk);">🏔️ Puncak Pencapaian</div>
+      <div class="flex-row gap-md" style="flex:1;overflow:hidden;">
+
+        <!-- Kiri: Skor & Rincian -->
+        <div class="flex-col gap-sm" style="width:34%;flex-shrink:0;overflow:hidden;">
+          <div class="card card-p flex-col items-center justify-center" style="flex:1;gap:8px;">
+            <div class="score-ring-wrap">
+              <svg class="score-ring-svg" width="clamp(95px,14vw,130px)" height="clamp(95px,14vw,130px)" viewBox="0 0 120 120">
+                <circle class="ring-track" cx="60" cy="60" r="52" stroke-width="10"/>
+                <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-width="10" stroke-dasharray="327" stroke-dashoffset="327"/>
+              </svg>
+              <div class="ring-text">
+                <div style="font-family:var(--font-head);font-size:clamp(1.4rem,3vw,2rem);color:var(--r);" id="hasil-score">0</div>
+                <div style="font-size:.58rem;color:var(--muted);font-weight:900;letter-spacing:.05em;">SKOR</div>
+              </div>
+            </div>
+            <div class="star-row" id="hasil-stars"></div>
+            <div id="hasil-badge" style="font-family:var(--font-head);font-size:clamp(.8rem,1.5vw,1.05rem);color:var(--dk);text-align:center;"></div>
+            <div id="hasil-rincian" class="fw flex-col" style="gap:3px;border-top:1.5px solid var(--border);padding-top:8px;margin-top:4px;"></div>
+          </div>
+        </div>
+
+        <!-- Kanan: Flashcard Review -->
+        <div class="flex-col gap-sm" style="flex:1;overflow:hidden;">
+          <div class="card card-p shrink-0">
+            <div class="bold mb-xs" style="color:var(--c);font-size:clamp(.6rem,1.1vw,.76rem);">🎒 BEKAL PULANG — Review Materi (Klik untuk Membalik!)</div>
+            <div class="small-text muted">Anggota 1 baca pertanyaan → Anggota 2 jawab sebelum dibalik → Bandingkan jawaban bersama.</div>
+          </div>
+          <div class="flash-container" onclick="FLASH.flip()">
+            <div class="flash-inner" id="flash-inner">
+              <div class="flash-face card" id="flash-front" style="background:linear-gradient(135deg,var(--c),#2c5f7a);color:#fff;border-color:transparent;">
+                <div id="flash-sila-badge" style="border-radius:99px;padding:3px 12px;font-size:.65rem;font-weight:900;margin-bottom:6px;">Sila ke-?</div>
+                <div id="flash-emoji" style="font-size:clamp(1.6rem,4vw,2.8rem);margin-bottom:6px;">⭐</div>
+                <div style="font-size:clamp(.55rem,.95vw,.68rem);opacity:.65;margin-bottom:5px;font-weight:800;letter-spacing:.04em;">PERTANYAAN</div>
+                <div id="flash-q" style="font-family:var(--font-head);font-size:clamp(.8rem,1.5vw,1.05rem);line-height:1.5;"></div>
+                <div class="flash-hint">👆 Klik untuk melihat jawaban</div>
+              </div>
+              <div class="flash-face card" id="flash-back" style="background:linear-gradient(135deg,#0a2e18,var(--g));color:#fff;border-color:transparent;">
+                <div style="font-size:clamp(.55rem,.95vw,.68rem);opacity:.65;margin-bottom:5px;font-weight:800;letter-spacing:.04em;">JAWABAN</div>
+                <div id="flash-a" style="font-family:var(--font-head);font-size:clamp(.75rem,1.35vw,.98rem);line-height:1.55;"></div>
+                <div class="flash-hint">👆 Klik untuk kembali ke pertanyaan</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex-row items-center justify-center gap-sm shrink-0">
+            <button class="btn btn-ghost" onclick="FLASH.prev()" style="padding:5px 14px;">⬅</button>
+            <div class="dots-row" id="flash-dots"></div>
+            <button class="btn btn-ghost" onclick="FLASH.next()" style="padding:5px 14px;">➡</button>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goto('s-eval')">⬅ Pendakian</button>
+        <button class="btn btn-primary" onclick="goto('s-perkemahan')">Lanjut Perkemahan ➡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-PERKEMAHAN  ·  Perkemahan Akhir (Diskusi + Refleksi)
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-perkemahan" style="background:linear-gradient(160deg,#1a0f0a,#2d1810,#1a1510);color:#fff;">
+    <div class="scene-body" style="padding:clamp(8px,1.4vh,14px) clamp(12px,1.8vw,22px);">
+      <div class="flex-row items-center gap-sm shrink-0 mb-xs">
+        <div style="font-size:clamp(1.6rem,3.5vw,2.4rem);">🏕️</div>
+        <div>
+          <span class="chip" style="background:rgba(244,118,42,.15);color:var(--o);">🏕️ Perkemahan Akhir · 15 Menit</span>
+          <div class="h2" style="color:#fff;">Perkemahan Akhir</div>
+        </div>
+      </div>
+      <!-- Main tab bar -->
+      <div class="tab-bar mb-xs">
+        <button class="tab-btn active" id="pk-btn-api" onclick="switchPerkemahanTab('api')" style="background:var(--o);color:#fff;box-shadow:0 3px 10px rgba(244,118,42,.35);">🔥 Api Unggun</button>
+        <button class="tab-btn" id="pk-btn-jurnal" onclick="switchPerkemahanTab('jurnal')" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);">📝 Jurnal Malam</button>
+      </div>
+      <!-- Api Unggun pane (Diskusi) -->
+      <div id="pk-pane-api" class="tab-pane active" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="tab-bar mb-xs" id="diskusi-tab-bar"></div>
+        <div id="diskusi-panes" style="flex:1;overflow:hidden;"></div>
+      </div>
+      <!-- Jurnal Malam pane (Refleksi) -->
+      <div id="pk-pane-jurnal" class="tab-pane" style="flex:1;overflow-y:auto;display:none;">
+        <!-- Portofolio -->
+        <div class="card card-p mb-xs" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1);">
+          <div class="bold mb-xs" style="color:var(--y);font-size:clamp(.65rem,1.2vw,.82rem);">🎒 Portofolio Penjelajah</div>
+          <div id="porto-render"></div>
+        </div>
+        <!-- Refleksi questions -->
+        <div id="refleksi-render" class="flex-col gap-sm"></div>
+      </div>
+      <!-- Nav -->
+      <div class="nav-row">
+        <button class="btn btn-outline-white" onclick="goto('s-hasil')">⬅ Puncak</button>
+        <button class="btn btn-gold" onclick="goto('s-penutup')">Pulang! 📜</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-PENUTUP  ·  Surat Pulang
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-penutup">
+    <div class="scene-body items-center justify-center" style="text-align:center;">
+      <div class="card card-p flex-col items-center" style="max-width:min(92%,620px);width:100%;gap:clamp(8px,1.4vh,13px);text-align:center;">
+        <div style="font-size:clamp(2rem,5vw,3.5rem);">📜</div>
+        <div class="h1" style="color:var(--dk);">📜 SURAT PULANG</div>
+        <div style="font-size:clamp(.6rem,1.1vw,.78rem);color:var(--muted);">Dari: Ketua Penjelajah Pancasila</div>
+        <div style="font-size:clamp(.64rem,1.15vw,.82rem);color:var(--text);line-height:1.6;max-width:480px;">
+          Selamat, Penjelajah! Kamu telah menyelesaikan seluruh misi menjelajahi Pancasila. Berikut penghargaanmu:
+        </div>
+        <div id="penutup-score" style="font-family:var(--font-head);font-size:clamp(1.8rem,4.5vw,3rem);color:var(--r);"></div>
+        <div id="penutup-level" class="bold" style="font-size:clamp(.8rem,1.6vw,1.1rem);color:var(--dk);"></div>
+        <div id="penutup-misi" class="small-text muted"></div>
+        <div class="fw flex-col gap-sm" style="text-align:left;">
+          <div class="card card-p flex-row gap-sm items-center">
+            <span style="font-size:1.5rem;flex-shrink:0;">✨</span>
+            <div>
+              <div class="bold small-text" style="color:var(--c);margin-bottom:3px;">PENCAPAIAN HARI INI</div>
+              <div class="body-text muted">Kamu berhasil mengidentifikasi penerapan 5 sila Pancasila, mensortir perilaku, memecahkan studi kasus musyawarah, dan merumuskan refleksi pribadi.</div>
+            </div>
+          </div>
+          <div class="card card-p flex-row gap-sm items-center">
+            <span style="font-size:1.5rem;flex-shrink:0;">🔜</span>
+            <div>
+              <div class="bold small-text" style="color:var(--p);margin-bottom:3px;">PERTEMUAN SELANJUTNYA</div>
+              <div class="body-text muted">Analisis Kasus Konstitusi & UUD 1945. Siapkan tugas refleksimu tentang kasus Pancasila di lingkungan sekitar!</div>
+            </div>
+          </div>
+          <!-- Progress pertemuan -->
+          <div class="card card-p">
+            <div class="bold small-text mb-sm" style="color:var(--dk);">📅 PROGRESS UNIT PANCASILA</div>
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;text-align:center;"><div style="background:var(--g);color:#fff;border-radius:8px;padding:5px;font-size:clamp(.55rem,.9vw,.68rem);font-weight:900;margin-bottom:3px;">✅ P1</div><div class="small-text muted">Sejarah</div></div>
+              <div style="flex:1;text-align:center;"><div style="background:var(--c);color:#fff;border-radius:8px;padding:5px;font-size:clamp(.55rem,.9vw,.68rem);font-weight:900;margin-bottom:3px;">📍 P2</div><div class="small-text muted">Misi ini</div></div>
+              <div style="flex:1;text-align:center;"><div style="background:rgba(0,0,0,.1);border-radius:8px;padding:5px;font-size:clamp(.55rem,.9vw,.68rem);font-weight:900;margin-bottom:3px;">⏳ P3</div><div class="small-text muted">Konstitusi</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex-row gap-sm fw" style="flex-wrap:wrap;">
+          <button class="btn btn-primary flex-1" onclick="resetAll()">🔄 Kembali ke Beranda</button>
+          <button class="btn btn-ghost flex-1" onclick="goto('s-kredit')">📚 Lihat Kredit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+    S-KREDIT  ·  Kredit & Sumber
+  ══════════════════════════════════════════════ -->
+  <div class="screen" id="s-kredit" style="background:linear-gradient(155deg,#0d1b2a,#1a3a5c);color:#fff;">
+    <div class="scene-body items-center justify-center">
+      <div style="max-width:min(90%,500px);width:100%;">
+        <div class="h1 center mb-md" style="color:var(--y);">📚 Sumber &amp; Kredit</div>
+        <div class="flex-col gap-sm">
+          <div class="card card-p flex-row gap-sm items-center" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+            <span style="font-size:1.3rem;">📚</span>
+            <div><div class="bold small-text" style="color:var(--y);margin-bottom:2px;">Referensi Materi</div><div class="body-text" style="color:rgba(255,255,255,.78);" id="kredit-sumber">—</div></div>
+          </div>
+          <div class="card card-p flex-row gap-sm items-center" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+            <span style="font-size:1.3rem;">🎨</span>
+            <div><div class="bold small-text" style="color:var(--y);margin-bottom:2px;">Aset Visual</div><div class="body-text" style="color:rgba(255,255,255,.78);" id="kredit-visual">—</div></div>
+          </div>
+          <div class="card card-p flex-row gap-sm items-center" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+            <span style="font-size:1.3rem;">💻</span>
+            <div><div class="bold small-text" style="color:var(--y);margin-bottom:2px;">Pengembangan</div><div class="body-text" style="color:rgba(255,255,255,.78);" id="kredit-dev">—</div></div>
+          </div>
+        </div>
+        <div class="flex-row gap-sm" style="margin-top:14px;">
+          <button class="btn btn-outline-white flex-1" onclick="resetAll()">▶ Main Lagi</button>
+          <button class="btn btn-outline-white flex-1" onclick="goto('s-penutup')">⬅ Kembali</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- ══════════════════════════════════════════════
+     LOAD SCRIPTS (order matters!)
+══════════════════════════════════════════════ -->
+<script src="data.js"></script>
+<script src="activities.js"></script>
+<script src="map.js"></script>
+<script src="engine.js"></script>
+<script src="init.js"></script>
+</body>
+</html>
