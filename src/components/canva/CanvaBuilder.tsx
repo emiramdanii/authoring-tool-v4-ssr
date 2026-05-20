@@ -27,6 +27,7 @@ import { MobileGuard } from '@/components/shared/MobileGuard';
 import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
 import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 import { CanvaOrientationTooltip } from '@/components/shared/CanvaOrientationTooltip';
+import { useHealthMonitor } from '@/hooks/use-health-monitor';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
@@ -65,6 +66,9 @@ export default function CanvaBuilder() {
     window.addEventListener('silse-export-success', handler);
     return () => window.removeEventListener('silse-export-success', handler);
   }, []);
+
+  // ── FASE 8: Periodic health monitor ──────────────────────────
+  useHealthMonitor();
 
   // ── Sync interactive page total with canva pages ─────────────
   useEffect(() => {

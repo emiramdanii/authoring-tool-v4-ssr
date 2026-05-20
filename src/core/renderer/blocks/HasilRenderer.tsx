@@ -135,7 +135,7 @@ function VariantAKlasik({
                 style={{ color: tokens.color(tierColor) }}>
                 {displayPct}%
               </div>
-              <div className="text-[10px] font-bold" style={{ color: tokens.muted(0.7) }}>
+              <div className="text-[10px] font-bold" style={{ color: tokens.muted(0.85) }}>
                 {displayScore}/{displayMax} poin
               </div>
             </div>
@@ -518,12 +518,12 @@ function VariantCRingkas({
       <InlineTextEditor
         {...subtitleEditor}
         className="canvas-truncate-2 max-w-full"
-        style={{ fontSize: '11px', color: tokens.muted(0.7), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ fontSize: '11px', color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik subtitle..."
       />
 
       {/* ── Score breakdown as simple inline text ─────────────────── */}
-      <div className="mt-2 flex items-center gap-3 text-[10px] font-bold" style={{ color: tokens.muted(0.6) }}>
+      <div className="mt-2 flex items-center gap-3 text-[10px] font-bold" style={{ color: tokens.muted(0.85) }}>
         <span className="flex items-center gap-1">
           <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
           <span style={{ color: tokens.color('g') }}>{scores.filter(s => s.completed).length}</span> benar
@@ -546,7 +546,7 @@ function VariantCRingkas({
       </div>
 
       {/* ── Mini motivational text ────────────────────────────────── */}
-      <div className="mt-2 text-[11px]" style={{ color: tokens.muted(0.7) }}>
+      <div className="mt-2 text-[11px]" style={{ color: tokens.muted(0.85) }}>
         {motivationalText}
       </div>
 

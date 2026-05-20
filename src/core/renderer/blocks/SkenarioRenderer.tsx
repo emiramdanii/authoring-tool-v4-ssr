@@ -193,7 +193,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
           {/* Choice prompt */}
           {ch.choicePrompt && (
             <div className="italic mb-3 p-2.5 rounded-lg" style={{
-                fontSize: '12px', color: tokens.muted(0.7),
+                fontSize: '12px', color: tokens.muted(0.85),
                 background: tokens.colorAlpha('c', 0.08),
                 border: '1px solid ' + tokens.colorAlpha('c', 0.2),
                 wordBreak: 'break-word',
@@ -283,7 +283,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
               }}>
               <div className="font-bold mb-1.5" style={{ fontSize: '12px', color: tokens.textSubtle(0.5) }}><Bell size={14} className="inline" /> Dampak</div>
               {selectedChoice.choice.consequences.map((con, k) => (
-                <div key={`skenario-con-${con.text?.slice(0,6)}-${k}`} className={`flex items-start gap-1.5 leading-relaxed mb-1 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
+                <div key={`skenario-con-${con.text?.slice(0,6)}-${k}`} className={`flex items-start gap-1.5 leading-relaxed mb-1 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.muted(0.85) }}>
                   <span className="mt-px">{con.icon}</span> <RichText content={con.text ?? ''} />
                 </div>
               ))}

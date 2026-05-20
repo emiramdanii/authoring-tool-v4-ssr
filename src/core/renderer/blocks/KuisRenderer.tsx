@@ -249,7 +249,7 @@ function KuisVariantRingkas({
             }}
           />
         </div>
-        <span className="font-bold" style={{ fontSize: '10px', color: tokens.muted(0.6) }}>
+        <span className="font-bold" style={{ fontSize: '10px', color: tokens.muted(0.85) }}>
           {current + 1}/{questionsLength}
         </span>
       </div>

@@ -144,7 +144,7 @@ function TujuanVariantA({
             className="mt-1.5 leading-relaxed"
             style={{
               fontSize: isCompact ? '10px' : '12px',
-              color: tokens.muted(0.7),
+              color: tokens.muted(0.85),
               marginLeft: isCompact ? '44px' : '52px',
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
@@ -229,7 +229,7 @@ function TujuanVariantA({
               className="absolute bottom-8 left-0 right-0 pointer-events-none"
               style={{
                 height: 40,
-                background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.9))',
+                background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.9)})`,
                 zIndex: 2,
               }}
             />
@@ -412,7 +412,7 @@ function TujuanVariantB({
             className="mt-1"
             style={{
               fontSize: isCompact ? '10px' : '11px',
-              color: tokens.muted(0.6),
+              color: tokens.muted(0.85),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}

@@ -837,3 +837,60 @@ Stage Summary:
   5. Safe Mode Boot: SafeModeBanner UI + sessionStorage flag
 - Build passes, zero new errors
 - Ready for FASE 7 (Performance & Observability) and FASE 8 (Hardening)
+---
+Task ID: bug-fix-visual
+Agent: Main
+Task: Fix open bugs — white canvas, unclear text, cover overflow
+
+Work Log:
+- Investigated root cause of white canvas: SchemaRenderer.tsx line 334 skipped background for cover pages when `!hasCoverBlock` guard was true and no schema.background was set
+- Fixed SchemaRenderer.tsx: removed `!hasCoverBlock` guard — always set `tokens.color('bg')` fallback for scene container
+- Fixed CoverRenderer.tsx: added `overflow: 'hidden'` to Variant A (line 73) and Variant C (line 327) — matching Variant B which already had it
+- Fixed CoverRenderer.tsx: added `overflow: 'hidden'` to inner container div (line 463)
+- Fixed pre-existing TS7030 error in SchemaRenderer.tsx: added `return undefined` to useEffect
+- Build clean: `npx tsc --noEmit` and `npx next build` both pass with 0 errors
+
+Stage Summary:
+- White canvas bug: SchemaRenderer now always sets background color for scene container
+- Cover overflow bug: All 3 cover variants now clip overflow
+- First clean TypeScript build (pre-existing error fixed)
+
+---
+Task ID: fase7
+Agent: Main
+Task: FASE 7 — Visual Quality & Render Fidelity
+
+Work Log:
+- Updated TokenResolver defaults: `textSecondary(0.7)` → `0.85`, `textSubtle(0.45)` → `0.6` for readable contrast
+- Fixed 22 low-alpha text instances across 8 core renderers (Cover, Tujuan, Materi, Motivasi, Petunjuk, Hasil, Skenario, Kuis)
+- All `muted(0.6)` and `muted(0.7)` for readable body text changed to `muted(0.85)`
+- Replaced 4 hardcoded dark-only gradients in DefBoxRenderer and TujuanDisplayRenderer with theme-aware `tokens.colorAlpha('bg', ...)`
+- Updated ENGINE_PRINCIPLES.ts to FASE 1-7 with 4 new quick-reference checklist items for visual quality
+
+Stage Summary:
+- Text readability dramatically improved across all themes (especially light themes)
+- No more hardcoded dark-only gradients — light themes render correctly
+- Minimum alpha for readable text: 0.85 (was 0.6-0.7 — illegible)
+
+---
+Task ID: fase8
+Agent: Main
+Task: FASE 8 — Production Hardening (Error Boundaries, Health Monitor, Memory Guard)
+
+Work Log:
+- Upgraded BlockErrorBoundary.tsx: teacher-friendly amber/orange fallback (was red/alarming), 20+ block display name map, retry via re-mount
+- BlockErrorBoundary already integrated in SchemaRenderer.tsx — every block is individually crash-isolated
+- Created `src/hooks/use-health-monitor.ts` — periodic health monitor with 3 checks:
+  1. Schema integrity check every 5 min (auto-repair corrupt pages)
+  2. Memory guard every 2 min (trim history if >5MB)
+  3. Storage quota check every 10 min (warn if >85% of 5MB)
+- Integrated useHealthMonitor() into CanvaBuilder.tsx
+- Updated ENGINE_PRINCIPLES.ts to FASE 1-8
+- Build clean: `npx tsc --noEmit` and `npx next build` both pass with 0 errors
+
+Stage Summary:
+- Block-level error isolation: one bad block can't crash the whole page
+- Automatic integrity checks run in background while editing
+- Memory guard prevents history from consuming all RAM
+- Storage quota warnings before localStorage fills up
+- ROADMAP PEMULIHAN SILSE FASE 1-8 COMPLETE

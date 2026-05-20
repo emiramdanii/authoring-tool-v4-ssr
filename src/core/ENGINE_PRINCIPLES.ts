@@ -4,7 +4,7 @@
 // This document codifies the foundational principles that govern
 // the SILSE Visual Editor Engine. Every contribution MUST comply.
 //
-// STATUS: ENFORCED — FASE 1-6 of ROADMAP PEMULIHAN SILSE
+// STATUS: ENFORCED — FASE 1-8 of ROADMAP PEMULIHAN SILSE
 // LAST UPDATED: 2026-05-20
 // ═══════════════════════════════════════════════════════════════════
 
@@ -236,5 +236,9 @@
 // [ ] If this operation is dangerous, is a crash checkpoint saved first?
 // [ ] Does my recovery code preserve more data than it removes?
 // [ ] Would this code pass assertDocumentPurity() in dev mode?
+// [ ] Is my text readable? (muted min 0.85, textSecondary min 0.85)
+// [ ] Do I use tokens for colors/gradient (no hardcoded rgba)?
+// [ ] Does my cover/block have overflow:hidden to prevent leaks?
+// [ ] Does my scene always have a background (even for covers)?
 //
 // ═══════════════════════════════════════════════════════════════════

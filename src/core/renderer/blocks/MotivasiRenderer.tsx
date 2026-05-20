@@ -220,7 +220,7 @@ function MotivasiVariantKlasik({
           <div
             className="font-extrabold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
             style={{
-              color: tokens.muted(0.6),
+              color: tokens.muted(0.85),
               fontSize: isCompact ? '9px' : '10px',
               letterSpacing: '0.08em',
             }}
@@ -359,7 +359,7 @@ function MotivasiVariantKartuHook({
               style={{
                 fontFamily: tokens.fontFamily('display'),
                 fontSize: isCompact ? '12px' : '14px',
-                color: tokens.muted(0.7),
+                color: tokens.muted(0.85),
                 wordBreak: 'break-word',
               }}
             >
@@ -422,7 +422,7 @@ function MotivasiVariantKartuHook({
           <div
             className="font-extrabold uppercase tracking-wider mb-2"
             style={{
-              color: tokens.muted(0.7),
+              color: tokens.muted(0.85),
               fontSize: '11px',
               letterSpacing: '0.08em',
             }}
@@ -466,7 +466,7 @@ function MotivasiVariantKartuHook({
               className="italic"
               style={{
                 fontSize: isCompact ? '10px' : '11px',
-                color: tokens.muted(0.7),
+                color: tokens.muted(0.85),
               }}
             >
               <RichText content={block.transition ?? ''} />
@@ -526,7 +526,7 @@ function MotivasiVariantKutipan({
             style={{
               fontFamily: tokens.fontFamily('display'),
               fontSize: isCompact ? '11px' : '13px',
-              color: tokens.muted(0.6),
+              color: tokens.muted(0.85),
               wordBreak: 'break-word',
             }}
           >
@@ -579,7 +579,7 @@ function MotivasiVariantKutipan({
               className="italic"
               style={{
                 fontSize: isCompact ? '10px' : '11px',
-                color: tokens.muted(0.7),
+                color: tokens.muted(0.85),
               }}
             >
               <RichText content={block.transition ?? ''} />

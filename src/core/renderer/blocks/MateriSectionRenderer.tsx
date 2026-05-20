@@ -189,7 +189,7 @@ function MateriVariantKlasik({
                 className="mt-1 leading-relaxed"
                 style={{
                   fontSize: isCompact ? '11px' : '13px',
-                  color: tokens.muted(0.75),
+                  color: tokens.muted(0.85),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}

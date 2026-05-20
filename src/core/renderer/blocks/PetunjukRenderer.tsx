@@ -322,7 +322,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   <span>{nav.icon}</span>
                   <div className="min-w-0">
                     <div className="font-bold" style={{ color: tokens.color('p') }}>{nav.label}</div>
-                    {!isCompact && <div style={{ color: tokens.muted(0.6), fontSize: '10px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{nav.description}</div>}
+                    {!isCompact && <div style={{ color: tokens.muted(0.85), fontSize: '10px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{nav.description}</div>}
                   </div>
                 </div>
               ))}
@@ -366,7 +366,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
          *  meets BSNP requirements for SMP interactive media.
          *  Shows the required components checkmark. */}
         <div className="mt-3 flex items-center justify-center gap-3 flex-wrap"
-          style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
+          style={{ fontSize: '11px', color: tokens.muted(0.85) }}>
           {['Petunjuk', 'KD/TP', 'Materi', 'Evaluasi', 'Profil'].map(comp => (
             <span key={`bsnp-${comp}`} className="flex items-center gap-0.5">
               <BookOpen size={8} /> {comp}

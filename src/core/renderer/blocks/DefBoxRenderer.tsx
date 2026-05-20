@@ -242,7 +242,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                     className="absolute bottom-0 left-0 right-0 pointer-events-none"
                     style={{
                       height: 30,
-                      background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.85))',
+                      background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.85)})`,
                     }}
                   />
                 )}
@@ -379,7 +379,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 />
                 {isContentCollapsed && (
                   <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                    style={{ height: 30, background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.85))' }} />
+                    style={{ height: 30, background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.85)})` }} />
                 )}
               </div>
             )}
@@ -449,7 +449,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             />
             {isContentCollapsed && (
               <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                style={{ height: 20, background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.85))' }} />
+                style={{ height: 20, background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.85)})` }} />
             )}
           </div>
           {isContentCollapsed && (
