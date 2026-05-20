@@ -78,7 +78,7 @@ export function useExportActions() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const errorData = await response.json().catch(() => ({ error: 'Kesalahan tidak diketahui' }));
         throw new Error(errorData.error || `SCORM export gagal (status ${response.status})`);
       }
 
@@ -101,7 +101,7 @@ export function useExportActions() {
 
       toast.success(`SCORM berhasil dibuat (${canvaState.pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB) — Upload ke Moodle!`, { id: 'export-scorm' });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : 'Kesalahan tidak diketahui';
       logger.error('SCORM Export', err);
       toast.error(`Gagal membuat SCORM: ${message}`, { id: 'export-scorm' });
     } finally {

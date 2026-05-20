@@ -11,6 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import type { ScreenSchema } from './types';
 import { isDocumentPure, type PurityViolation } from './session-state';
+import { logger } from '@/core/utils/logger';
 
 interface DevPurityGuardProps {
   schema: ScreenSchema | null;
@@ -36,10 +37,7 @@ export function DevPurityGuard({ schema, children }: DevPurityGuardProps) {
     setViolations(result.violations);
 
     if (result.violations.length > 0) {
-      console.warn(
-        `[DevPurityGuard] ${result.violations.length} purity violation(s) detected in schema "${schema.id}"`,
-        result.violations
-      );
+      logger.warn('DevPurityGuard', `${result.violations.length} purity violation(s) detected in schema "${schema.id}"`);
     }
   }, [schema]);
 

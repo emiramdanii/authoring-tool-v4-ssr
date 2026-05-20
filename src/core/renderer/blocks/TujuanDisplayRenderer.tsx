@@ -238,9 +238,9 @@ function TujuanVariantA({
             onClick={showMore}
             className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all"
             style={{
-              background: 'rgba(52, 211, 153, 0.08)',
-              border: '1px dashed rgba(52, 211, 153, 0.3)',
-              color: 'rgba(52, 211, 153, 0.9)',
+              background: tokens.isDark() ? 'rgba(52, 211, 153, 0.12)' : 'rgba(52, 211, 153, 0.08)',
+              border: `1px dashed ${tokens.isDark() ? 'rgba(52, 211, 153, 0.4)' : 'rgba(52, 211, 153, 0.3)'}`,
+              color: tokens.isDark() ? 'rgba(52, 211, 153, 1)' : 'rgba(52, 211, 153, 0.9)',
               fontSize: isCompact ? '9px' : '11px',
               fontWeight: 700,
               cursor: 'pointer',
@@ -259,8 +259,8 @@ function TujuanVariantA({
             onClick={showMore}
             className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors"
             style={{
-              background: 'rgba(99, 102, 241, 0.1)',
-              color: 'rgba(99, 102, 241, 0.9)',
+              background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
               fontSize: isCompact ? '9px' : '11px',
               cursor: 'pointer',
               fontWeight: 700,
@@ -536,9 +536,9 @@ function TujuanVariantB({
             onClick={showMore}
             className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl transition-all mt-2"
             style={{
-              background: 'rgba(52, 211, 153, 0.08)',
-              border: '1px dashed rgba(52, 211, 153, 0.3)',
-              color: 'rgba(52, 211, 153, 0.9)',
+              background: tokens.isDark() ? 'rgba(52, 211, 153, 0.12)' : 'rgba(52, 211, 153, 0.08)',
+              border: `1px dashed ${tokens.isDark() ? 'rgba(52, 211, 153, 0.4)' : 'rgba(52, 211, 153, 0.3)'}`,
+              color: tokens.isDark() ? 'rgba(52, 211, 153, 1)' : 'rgba(52, 211, 153, 0.9)',
               fontSize: isCompact ? '9px' : '11px',
               fontWeight: 700,
               cursor: 'pointer',
@@ -555,8 +555,8 @@ function TujuanVariantB({
             onClick={showMore}
             className="flex items-center justify-center gap-1 w-full py-1.5 rounded-xl transition-colors mt-2"
             style={{
-              background: 'rgba(99, 102, 241, 0.1)',
-              color: 'rgba(99, 102, 241, 0.9)',
+              background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
               fontSize: isCompact ? '9px' : '11px',
               cursor: 'pointer',
               fontWeight: 700,

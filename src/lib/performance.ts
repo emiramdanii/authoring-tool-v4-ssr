@@ -18,6 +18,7 @@ export const ACTION_STORM_WINDOW_MS = 100;
 export const ACTION_STORM_THRESHOLD = 8;
 
 const IS_DEV = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
+import { logger } from '@/core/utils/logger';
 
 // ── Render timing ──────────────────────────────────────────────
 
@@ -59,13 +60,9 @@ export function createProfilerCallback(componentName: string) {
 
     // Console warnings for slow renders
     if (actualDuration > CRITICAL_RENDER_MS) {
-      console.warn(
-        `🔴 CRITICAL render: ${componentName || id} (${phase}) took ${actualDuration.toFixed(1)}ms (base: ${baseDuration.toFixed(1)}ms)`,
-      );
+      logger.warn('Perf', `CRITICAL render: ${componentName || id} (${phase}) took ${actualDuration.toFixed(1)}ms (base: ${baseDuration.toFixed(1)}ms)`);
     } else if (actualDuration > SLOW_RENDER_MS) {
-      console.warn(
-        `🟡 Slow render: ${componentName || id} (${phase}) took ${actualDuration.toFixed(1)}ms (base: ${baseDuration.toFixed(1)}ms)`,
-      );
+      logger.warn('Perf', `Slow render: ${componentName || id} (${phase}) took ${actualDuration.toFixed(1)}ms (base: ${baseDuration.toFixed(1)}ms)`);
     }
   };
 }
@@ -122,8 +119,8 @@ export async function measureAsync<T>(
   } finally {
     const elapsed = performance.now() - start;
     if (elapsed > SLOW_RENDER_MS) {
-      console.warn(`⏱ Async ${name}: ${elapsed.toFixed(1)}ms`);
-    } else {
+      logger.warn('Perf', `Async ${name}: ${elapsed.toFixed(1)}ms`);
+    } else if (process.env.NODE_ENV === 'development') {
       console.log(`⏱ Async ${name}: ${elapsed.toFixed(1)}ms`);
     }
   }

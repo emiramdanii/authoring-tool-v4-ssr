@@ -24,6 +24,7 @@ import type {
 import { validateSchema, type ValidationResult } from './validation';
 import { assertDocumentPurity, type PurityViolation } from './session-state';
 import { BlockCapabilityRegistry, isCompositeBlockType } from './capability-registry';
+import { logger } from '@/core/utils/logger';
 
 // ─── Transaction State ─────────────────────────────────────────────────
 type TxnState = 'open' | 'committed' | 'rolled-back';
@@ -282,14 +283,9 @@ export class Transaction {
     if (process.env.NODE_ENV === 'development') {
       const { pure, violations } = assertDocumentPurity(this.workingSchema);
       if (!pure && violations.length > 0) {
-        console.group('🚫 Transaction Purity Violations');
         for (const v of violations) {
-          console.warn(
-            `  Block "${v.blockType}" (${v.blockId}) has forbidden field "${v.fieldName}":`,
-            v.fieldValue
-          );
+          logger.warn('Transaction', `Block "${v.blockType}" (${v.blockId}) has forbidden field "${v.fieldName}": ${String(v.fieldValue)}`);
         }
-        console.groupEnd();
       }
     }
 

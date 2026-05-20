@@ -68,7 +68,7 @@ export type {
 } from './registry/BlockDefinitionRegistry';
 
 // Renderer
-export { SchemaScreenRenderer, SchemaBlockRenderer, TokenResolver } from './renderer/SchemaRenderer';
+export { SchemaScreenRenderer, SchemaBlockRenderer, TokenResolver, resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from './renderer/SchemaRenderer';
 export type { SchemaRenderMode, ScreenRendererProps, BlockRenderProps } from './renderer/SchemaRenderer';
 
 // Engine

@@ -93,7 +93,7 @@ export function saveCrashCheckpoint(
     localStorage.setItem(CRASH_RECOVERY_KEY, payload);
     localStorage.setItem(CRASH_RECOVERY_META_KEY, JSON.stringify(meta));
   } catch (err) {
-    console.warn('[Recovery] Failed to save crash checkpoint:', err);
+    logger.warn('Recovery', 'Failed to save crash checkpoint: ' + String(err));
   }
 }
 
@@ -132,12 +132,12 @@ export function loadCrashRecovery(): { pages: unknown[]; ratioId: string } | nul
     if (metaRaw) {
       const meta: CrashRecoveryMeta = JSON.parse(metaRaw);
       if (currentHash !== meta.schemaHash) {
-        console.warn('[Recovery] Checkpoint hash mismatch — data may be corrupted');
+        logger.warn('Recovery', 'Checkpoint hash mismatch — data may be corrupted');
       }
     }
     return { pages: data.pages, ratioId: data.ratioId };
   } catch (err) {
-    console.warn('[Recovery] Failed to load crash recovery:', err);
+    logger.warn('Recovery', 'Failed to load crash recovery: ' + String(err));
     return null;
   }
 }
@@ -322,7 +322,7 @@ class TransactionRollbackManager {
 
   rollback(checkpointId: string): TransactionCheckpoint | null {
     const idx = this.checkpoints.findIndex(cp => cp.id === checkpointId);
-    if (idx === -1) { console.warn(`[Recovery] Checkpoint "${checkpointId}" not found`); return null; }
+    if (idx === -1) { logger.warn('Recovery', `Checkpoint "${checkpointId}" not found`); return null; }
     const cp = this.checkpoints[idx];
     this.checkpoints = this.checkpoints.slice(0, idx);
     return cp;

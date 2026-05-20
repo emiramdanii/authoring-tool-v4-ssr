@@ -110,7 +110,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
         const currentHash = computePagesHash(savedPages);
         const previousHash = useCanvaStore.getState()._pagesHashAtSave;
         if (previousHash && currentHash !== previousHash) {
-          console.warn('[AutoSave] Hash mismatch after save — possible write corruption');
+          logger.warn('AutoSave', 'Hash mismatch after save — possible write corruption');
         }
       } catch {
         // Hash verification is best-effort — don't break save on failure

@@ -107,7 +107,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const result = tx.commit();
 
     if (!result.success || !result.schema) {
-      toast.error('Split gagal: ' + (result.error || 'Unknown error')); return;
+      toast.error('Split gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return;
     }
 
     const splitResult = splitScene(schema, blockId);
@@ -174,7 +174,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const result = tx.commit();
 
     if (!result.success || !result.schema) {
-      toast.error('Merge gagal: ' + (result.error || 'Unknown error')); return;
+      toast.error('Merge gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return;
     }
 
     const newPages = [...pages];
@@ -248,7 +248,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     saveCrashCheckpoint(get().pages, get().ratioId, 'rebalance');
 
     const result = rebalanceFromScenePlan(page.id, { isCompact: true, compressionFirst: true });
-    if (!result.success) { toast.error('Rebalance gagal: ' + (result.error || 'Unknown error')); return; }
+    if (!result.success) { toast.error('Rebalance gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return; }
     if (!result.pageUpdated) {
       if (result.scenePlan?.isSingleScene) { toast.info('Konten sudah pas — tidak perlu rebalance'); }
       return;
@@ -284,7 +284,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     saveCrashCheckpoint(get().pages, get().ratioId, 'promote-scene-split');
 
     const result = promoteSceneSplitToPage(page.id, scenePlan, sceneIndex);
-    if (!result.success) { toast.error('Split gagal: ' + (result.error || 'Unknown error')); return; }
+    if (!result.success) { toast.error('Split gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return; }
 
     toast.success('Scene dipisah menjadi halaman baru', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
@@ -314,7 +314,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const sourceId = direction === 'next' ? adjacentPage.id : page.id;
     const result = mergePagesTransaction(targetId, sourceId);
 
-    if (!result.success) { toast.error('Merge gagal: ' + (result.error || 'Unknown error')); return; }
+    if (!result.success) { toast.error('Merge gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return; }
 
     toast.success('Halaman berhasil digabung', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },

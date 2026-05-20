@@ -138,9 +138,9 @@ export default function BlockPropertiesPanel() {
               Kemampuan Editor
             </summary>
             <div className="grid grid-cols-2 gap-1 mt-1">
-              <CapabilityBadge label="Editable" value={definition.capabilities.editable} />
-              <CapabilityBadge label="Resizable" value={definition.capabilities.resizable} />
-              <CapabilityBadge label="Movable" value={definition.capabilities.movable} />
+              <CapabilityBadge label="Dapat Diedit" value={definition.capabilities.editable} />
+              <CapabilityBadge label="Dapat Diubah Ukuran" value={definition.capabilities.resizable} />
+              <CapabilityBadge label="Dapat Dipindah" value={definition.capabilities.movable} />
               <CapabilityBadge label="Interaktif" value={definition.capabilities.interactive} />
               <CapabilityBadge label="Auto-gen" value={definition.capabilities.autoGeneratable} />
               <CapabilityBadge label="Komposit" value={definition.capabilities.composite} />
@@ -168,7 +168,7 @@ export default function BlockPropertiesPanel() {
                 return Object.entries(info.sources).map(([cap, source]) => (
                   <div key={cap} className="flex items-center gap-1 text-[8px] text-app-muted">
                     <span className={`w-1.5 h-1.5 rounded-full ${
-                      source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500'
+                      source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500 dark:bg-gray-600'
                     }`} />
                     <span className="font-mono">{cap}</span>
                     <span className="opacity-60">← {source}</span>

@@ -3,6 +3,7 @@
 import React from 'react';
 import { AlertTriangle, Footprints, LayoutGrid, FilePlus, ShieldOff } from 'lucide-react';
 import type { TokenResolver } from '../types';
+import { resolveColor, resolveColorAlpha } from '../types';
 import { PremiumBadge } from './PremiumBlockEffects';
 import { isFeatureAllowed, type SafeModeFeature } from '@/core/recovery';
 
@@ -48,8 +49,8 @@ export function OverflowIndicator({
     ? `${Math.round(overflow / 100) / 10}k px`
     : `${Math.round(overflow)}px`;
 
-  const accentColor = tokens ? tokens.color('y') : '#fbbf24';
-  const accentAlpha = (a: number) => tokens ? tokens.colorAlpha('y', a) : `rgba(251,191,36,${a})`;
+  const accentColor = resolveColor(tokens, 'y', '#fbbf24', '#fbbf24');
+  const accentAlpha = (a: number) => resolveColorAlpha(tokens, 'y', a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
 
   // ── FASE 6: Safe mode gates for overflow actions ──
   // In safe mode, scene-overflow-split and scene-overflow-merge are disabled.

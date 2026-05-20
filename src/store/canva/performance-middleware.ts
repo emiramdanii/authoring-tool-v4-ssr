@@ -12,6 +12,7 @@ import {
   ACTION_STORM_WINDOW_MS,
   ACTION_STORM_THRESHOLD,
 } from '@/lib/performance';
+import { logger } from '@/core/utils/logger';
 
 const IS_DEV = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
 
@@ -66,10 +67,7 @@ function detectStorm(actionName: string): void {
       stats.stormDetections = stats.stormDetections.slice(-20);
     }
 
-    console.warn(
-      `🌪️ Action storm detected: ${recentActions.length} updates in ${ACTION_STORM_WINDOW_MS}ms`,
-      recentActions.map(a => a.name).join(', '),
-    );
+    logger.warn('PerfMiddleware', `Action storm detected: ${recentActions.length} updates in ${ACTION_STORM_WINDOW_MS}ms — ${recentActions.map(a => a.name).join(', ')}`);
 
     // Clear to avoid repeated warnings
     recentActions.length = 0;
@@ -97,9 +95,7 @@ export function trackAction(actionName: string, duration: number): void {
       stats.slowUpdates = stats.slowUpdates.slice(-50);
     }
 
-    console.warn(
-      `🐢 Slow Zustand update: "${actionName}" took ${duration.toFixed(1)}ms (> ${SLOW_UPDATE_MS}ms threshold)`,
-    );
+    logger.warn('PerfMiddleware', `Slow Zustand update: "${actionName}" took ${duration.toFixed(1)}ms (> ${SLOW_UPDATE_MS}ms threshold)`);
   }
 
   // Detect storms

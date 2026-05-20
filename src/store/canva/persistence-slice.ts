@@ -16,6 +16,7 @@ import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { logger } from '@/core/utils/logger';
 
 // ── Migration version for localStorage data ──────────────────
 // Increment when adding new one-time migration logic.
@@ -96,7 +97,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         }
       } catch (purityErr) {
-        console.warn('[CanvaStore] Purity check skipped:', purityErr);
+        logger.warn('CanvaStore', 'Purity check skipped: ' + String(purityErr));
       }
 
       // Safe JSON.stringify with circular reference detection
@@ -124,10 +125,10 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       set({ _saveStatus: 'saved', _lastSavedAt: Date.now(), _pagesHashAtSave: computePagesHash(cleanPages) });
     } catch (err) {
       // Storage full, unavailable, or stack overflow from corrupted data
-      console.warn('[CanvaStore] Failed to save to localStorage:', err);
+      logger.warn('CanvaStore', 'Failed to save to localStorage: ' + String(err));
       // If stack overflow, clear localStorage to break the cycle
       if (err instanceof RangeError) {
-        console.warn('[CanvaStore] Stack overflow detected — clearing corrupted localStorage data');
+        logger.warn('CanvaStore', 'Stack overflow detected — clearing corrupted localStorage data');
         try { localStorage.removeItem(CANVA_STORAGE_KEY); } catch {}
       }
       set({ _saveStatus: 'error' });
@@ -148,7 +149,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         if (crashData) {
           // Use crash recovery data — it's more recent than auto-save
           raw = JSON.stringify({ pages: crashData.pages, ratioId: crashData.ratioId });
-          console.log(
+          if (process.env.NODE_ENV === 'development') console.log(
             `[Recovery] Found crash checkpoint from ${new Date(crashMeta.timestamp).toLocaleTimeString()} ` +
             `(reason: ${crashMeta.reason}, ${crashMeta.pageCount} pages)`
           );
@@ -239,7 +240,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             }
           }
         } catch (purityErr) {
-          console.warn('[CanvaStore] Purity check on load failed (data may be corrupted):', purityErr);
+          logger.warn('CanvaStore', 'Purity check on load failed (data may be corrupted): ' + String(purityErr));
         }
 
         // ── FASE 6: Proactive integrity validation ──────────────────
@@ -248,17 +249,17 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         try {
           const validationResult = validateAndRepairPages(cleanPages as unknown as Array<{ id: string; schema?: any; [k: string]: unknown }>, { autoRepair: true });
           if (validationResult.repairedPages > 0) {
-            console.warn(`[Recovery] Proactive repair: ${validationResult.repairedPages}/${validationResult.totalPages} pages repaired`);
+            logger.warn('Recovery', `Proactive repair: ${validationResult.repairedPages}/${validationResult.totalPages} pages repaired`);
             // Set safe mode flag — some data was corrupted
             try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
           }
           if (validationResult.corruptedPages > 0 && validationResult.repairedPages === 0) {
-            console.error(`[Recovery] Unrecoverable corruption: ${validationResult.corruptedPages} pages`);
+            logger.error('Recovery', `Unrecoverable corruption: ${validationResult.corruptedPages} pages`);
             try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
           }
           set({ _lastIntegrityResult: validationResult });
         } catch (validationErr) {
-          console.warn('[Recovery] Proactive validation failed:', validationErr);
+          logger.warn('Recovery', 'Proactive validation failed: ' + String(validationErr));
         }
 
         // ── FASE 6: Hash verification on load ──────────────────
@@ -266,7 +267,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         if (data._schemaHash) {
           const currentHash = computePagesHash(cleanPages);
           if (currentHash !== data._schemaHash) {
-            console.warn('[Recovery] Schema hash mismatch on load — data may have been corrupted');
+            logger.warn('Recovery', 'Schema hash mismatch on load — data may have been corrupted');
             try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
           }
         }
@@ -296,7 +297,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         } catch (err) {
           // Projection derivation is best-effort — don't break load on error
-          console.warn('[Persistence] Failed to derive projection from schema:', err);
+          logger.warn('Persistence', 'Failed to derive projection from schema: ' + String(err));
         }
 
         // Migrate legacy leftTab names
@@ -324,7 +325,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const rawForRecovery = localStorage.getItem(CANVA_STORAGE_KEY);
         const bootResult = safeBootFromStorage(rawForRecovery);
         if (bootResult.booted && bootResult.repairs.length > 0) {
-          console.warn('[Recovery] Safe boot repairs:', bootResult.repairs);
+          logger.warn('Recovery', 'Safe boot repairs: ' + bootResult.repairs.join(', '));
           // Try to load the repaired data
           const repairedData = JSON.parse(rawForRecovery!);
           // Apply repairs to pages
@@ -350,7 +351,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           return get().loadFromStorage();
         }
       } catch (recoveryErr) {
-        console.warn('[Recovery] Safe boot failed:', recoveryErr);
+        logger.warn('Recovery', 'Safe boot failed: ' + String(recoveryErr));
       }
       try { localStorage.removeItem(CANVA_STORAGE_KEY); } catch {}
       return false;
@@ -442,7 +443,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
           }
         } catch (err) {
-          console.warn('[Persistence:DB] Failed to derive projection from schema:', err);
+          logger.warn('Persistence:DB', 'Failed to derive projection from schema: ' + String(err));
         }
 
         set({
@@ -458,7 +459,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         });
       }
     } catch (err) {
-      console.warn('[CanvaStore] Failed to load from DB:', err);
+      logger.warn('CanvaStore', 'Failed to load from DB: ' + String(err));
     }
   },
 

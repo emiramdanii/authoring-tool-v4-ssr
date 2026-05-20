@@ -87,7 +87,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
           >
             <ExternalLink size={12} />
-            Buka Folder Download
+            Buka Folder Unduhan
           </Button>
         </DialogFooter>
       </DialogContent>

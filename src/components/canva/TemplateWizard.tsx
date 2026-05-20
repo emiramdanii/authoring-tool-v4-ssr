@@ -40,6 +40,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useProjectManager } from '@/hooks/use-project-manager';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 import {
   SUBJECTS,
   GRADE_OPTIONS,
@@ -186,7 +187,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
         });
       } catch (dbErr) {
         // DB save failed — project is still in memory, just log warning
-        console.warn('TemplateWizard: DB persist failed, project is in memory only', dbErr);
+        logger.warn('TemplateWizard', 'DB persist failed, project is in memory only: ' + String(dbErr));
         // Save to localStorage as fallback
         useCanvaStore.getState().saveToStorage();
         useAuthoringStore.getState().saveToStorage();
@@ -211,7 +212,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
       setSekolah('');
     } catch (err) {
       toast.error('Gagal membuat project. Silakan coba lagi.');
-      console.error('TemplateWizard: createProjectFromTemplate error', err);
+      logger.error('TemplateWizard', 'createProjectFromTemplate error: ' + String(err));
     } finally {
       setIsCreating(false);
     }

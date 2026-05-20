@@ -184,8 +184,8 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
               textCol = 'text-red-300';
               icon = <XCircle size={12} className="inline ml-1" />;
             } else {
-              bg = 'bg-white/[.02] border-app-border/5';
-              textCol = 'text-white/30';
+              bg = 'bg-black/[.02] dark:bg-white/[.02] border-app-border/5';
+              textCol = 'text-app-muted';
             }
           }
 

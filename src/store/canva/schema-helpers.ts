@@ -11,6 +11,7 @@ import { bumpVersion } from '@/core/schema/immutable';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
+import { logger } from '@/core/utils/logger';
 
 // ── Nested Block Finder ─────────────────────────────────────────
 // Finds blocks inside composite blocks (ftab.tabs[].content[],
@@ -84,7 +85,7 @@ export function commitSchemaUpdate(schema: ScreenSchema, newBlocks: SchemaBlock[
   try {
     assertDocumentPurity(updated, 'commitSchemaUpdate');
   } catch (e) {
-    if (process.env.NODE_ENV !== 'production') console.warn('[commitSchemaUpdate] Purity check failed (non-fatal):', e);
+    logger.warn('commitSchemaUpdate', 'Purity check failed (non-fatal): ' + String(e));
   }
   return updated;
 }

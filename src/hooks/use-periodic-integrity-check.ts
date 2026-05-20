@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { logger } from '@/core/utils/logger';
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const MIN_EDIT_COUNT_BETWEEN_CHECKS = 5; // Only check after some edits
@@ -31,14 +32,11 @@ export function usePeriodicIntegrityCheck() {
     try {
       const result = runIntegrityCheckNow();
       if (result.corruptedPages > 0) {
-        console.warn(
-          `[Integrity] Periodic check found ${result.corruptedPages} corrupted pages ` +
-          `(${result.repairedPages} repaired)`
-        );
+        logger.warn('Integrity', `Periodic check found ${result.corruptedPages} corrupted pages (${result.repairedPages} repaired)`);
       }
       editCountRef.current = 0; // Reset after check
     } catch (err) {
-      console.warn('[Integrity] Periodic check failed:', err);
+      logger.warn('Integrity', 'Periodic check failed: ' + String(err));
     }
   }, [runIntegrityCheckNow]);
 

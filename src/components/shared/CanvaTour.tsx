@@ -411,7 +411,7 @@ export default function CanvaTour() {
                     <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Alt+↑↓</kbd>
                   </div>
                   <div className="flex justify-between">
-                    <span>Zoom in/out</span>
+                    <span>Perbesar/Perkecil</span>
                     <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 text-app-muted text-[9px] font-mono">Ctrl+/−</kbd>
                   </div>
                   <div className="flex justify-between">

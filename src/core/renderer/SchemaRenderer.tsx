@@ -43,7 +43,7 @@ import { OverflowIndicator } from './blocks/OverflowIndicator';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
-export { TokenResolver } from './types';
+export { TokenResolver, resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from './types';
 import type { SchemaRenderMode } from './types';
 import type { TokenResolver } from './types';
 
@@ -643,9 +643,9 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   if (!BlockComponent) {
     return (
       <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-        Unregistered block type: <strong>{block.type}</strong>
+        Tipe blok tidak terdaftar: <strong>{block.type}</strong>
         <br />
-        <span className="text-red-400/60">Register it in SceneRegistry.tsx</span>
+        <span className="text-red-400/60">Daftarkan di SceneRegistry.tsx</span>
       </div>
     );
   }

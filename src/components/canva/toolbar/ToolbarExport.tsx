@@ -103,7 +103,7 @@ export function ToolbarExport() {
 
           {/* ── Download Section ── */}
           <DropdownMenuLabel className="px-3 py-1.5 bg-emerald-500/10 border-y border-emerald-500/20 text-[9px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-            <Download size={11} /> Download
+            <Download size={11} /> Unduh
           </DropdownMenuLabel>
           <DropdownMenuItem
             onClick={exportHtml}
@@ -116,7 +116,7 @@ export function ToolbarExport() {
             }
             <div className="flex-1 min-w-0">
               <div className="text-[11px] font-semibold text-emerald-300">
-                {isExporting ? 'Mengunduh...' : 'Download HTML'}
+                {isExporting ? 'Mengunduh...' : 'Unduh HTML'}
               </div>
               <div className="text-[8px] text-app-muted">File HTML lengkap — siap dibagikan</div>
             </div>
@@ -133,7 +133,7 @@ export function ToolbarExport() {
               }
               <div className="flex-1 min-w-0">
                 <div className="text-[11px] font-semibold text-orange-300">
-                  {isExporting ? 'Membuat SCORM...' : 'Download SCORM (Moodle)'}
+                  {isExporting ? 'Membuat SCORM...' : 'Unduh SCORM (Moodle)'}
                 </div>
                 <div className="text-[8px] text-app-muted">Paket ZIP untuk upload ke LMS Moodle</div>
               </div>

@@ -201,7 +201,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             dirty: false,
           });
         } catch (err) {
-          console.warn('[ProjectProvider] Failed to parse authoringData:', err);
+          logger.warn('ProjectProvider', 'Failed to parse authoringData: ' + String(err));
         }
       }
 
@@ -298,7 +298,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
           imported++;
         } catch (err) {
-          console.warn('[ProjectProvider] Failed to import project:', lp.name, err);
+          logger.warn('ProjectProvider', 'Failed to import project: ' + lp.name + ' ' + String(err));
         }
       }
 

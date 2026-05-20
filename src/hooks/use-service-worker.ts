@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 /**
  * Service Worker Registration Hook
@@ -67,7 +68,7 @@ export function useServiceWorker() {
           });
         });
       } catch (error) {
-        console.warn('[SW] Registration failed:', error);
+        logger.warn('SW', 'Registration failed: ' + String(error));
         setSwStatus('error');
       }
     };

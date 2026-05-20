@@ -662,7 +662,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                       cursor: interactive && phase === 'play' ? 'pointer' : 'default',
                       boxShadow: isActive ? '0 0 8px ' + tokens.colorAlpha('c', 0.3) : 'none',
                     }}
-                    aria-label={`Cell row ${r + 1} column ${c + 1}${cell.num > 0 ? `, clue ${cell.num}` : ''}${val ? `, filled with ${val}` : ', empty'}`}
+                    aria-label={`Baris ${r + 1} kolom ${c + 1}${cell.num > 0 ? `, petunjuk ${cell.num}` : ''}${val ? `, terisi ${val}` : ', kosong'}`}
                   >
                     {cell.num > 0 && (
                       <span

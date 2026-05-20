@@ -210,9 +210,9 @@ export default function StatusBar() {
         <button
           onClick={zoomToFit}
           className="font-mono text-[9px] text-app-muted hover:text-app-accent transition-colors w-12 text-right"
-          title="Fit to screen"
+          title="Sesuaikan layar"
         >
-          {storeZoom === -1 ? `Fit ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}
+          {storeZoom === -1 ? `Pas ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}
         </button>
       </div>
     </div>

@@ -5,6 +5,7 @@
 
 import type { CanvaElement } from '@/components/canva/types';
 import type { KuisItem, Module } from '@/store/authoring/types';
+import { logger } from '@/core/utils/logger';
 
 /**
  * Resolve a canva element's data reference to actual module data.
@@ -69,10 +70,9 @@ export function resolveKuis(
 
   // No reference found — return empty instead of ALL (was a scoping bug)
   if (typeof console !== 'undefined' && typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-    console.warn(
-      '[resolveKuis] Quiz element has no kuisId/kuisIds or valid dataIdx. ' +
-      'Returning empty array to avoid showing ALL questions. ' +
-      'Element:', el
+    logger.warn('resolveKuis',
+      'Quiz element has no kuisId/kuisIds or valid dataIdx. ' +
+      'Returning empty array to avoid showing ALL questions.'
     );
   }
   return [];

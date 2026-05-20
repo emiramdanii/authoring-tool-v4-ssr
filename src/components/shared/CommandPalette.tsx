@@ -339,8 +339,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       },
       {
         id: 'action-export-html',
-        label: 'Export HTML',
-        description: 'Download file HTML interaktif',
+        label: 'Ekspor HTML',
+        description: 'Unduh file HTML interaktif',
         icon: <FileDown size={16} className="text-amber-400" />,
         category: 'action',
         action: () => {

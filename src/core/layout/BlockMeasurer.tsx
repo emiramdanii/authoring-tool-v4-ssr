@@ -27,6 +27,7 @@
 'use client';
 
 import React, { useRef, useEffect, useCallback } from 'react';
+import { logger } from '@/core/utils/logger';
 
 // ── Measurement Cache ──────────────────────────────────────────
 
@@ -144,13 +145,11 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
 
         // ── DIAGNOSTIC: Warn on zero height measurement ──
         if (process.env.NODE_ENV !== 'production' && height <= 0) {
-          console.warn(
-            '[MeasuredBlock] ZERO HEIGHT:', blockId,
-            'borderBoxSize:', entry.borderBoxSize?.[0]?.blockSize,
-            'contentRect:', entry.contentRect.height,
-            'element:', el.tagName,
-            'display:', getComputedStyle(el).display,
-            'parentHeight:', el.parentElement?.getBoundingClientRect().height
+          logger.warn('MeasuredBlock',
+            `ZERO HEIGHT: ${blockId} borderBoxSize: ${entry.borderBoxSize?.[0]?.blockSize} ` +
+            `contentRect: ${entry.contentRect.height} element: ${el.tagName} ` +
+            `display: ${getComputedStyle(el).display} ` +
+            `parentHeight: ${el.parentElement?.getBoundingClientRect().height}`
           );
         }
 

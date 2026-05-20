@@ -104,7 +104,7 @@ export class AppErrorBoundary extends React.Component<
     }
 
     const { error, errorInfo, showDetails, saving } = this.state;
-    const errorMessage = error?.message || 'Unknown error';
+    const errorMessage = error?.message || 'Kesalahan tidak diketahui';
     const componentStack = errorInfo?.componentStack || '';
 
     // Mode-aware: check teacher mode from localStorage (store may be broken)

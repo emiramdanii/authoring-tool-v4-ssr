@@ -53,7 +53,7 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
   render() {
     if (this.state.hasError) {
       const { blockType, blockId } = this.props;
-      const errorMessage = this.state.error?.message || 'Unknown error';
+      const errorMessage = this.state.error?.message || 'Kesalahan tidak diketahui';
 
       // Check teacher mode from localStorage (store may be broken)
       let isSederhana = false;

@@ -21,6 +21,7 @@ import {
   computePagesHash,
 } from '@/core/recovery';
 import type { PageValidationResult } from '@/core/recovery';
+import { logger } from '@/core/utils/logger';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -135,7 +136,7 @@ export const createRecoverySlice: StateCreator<CanvaState, [], [], RecoverySlice
   rollbackTransaction: (transactionId: string) => {
     const checkpoint = transactionRollback.rollback(transactionId);
     if (!checkpoint) {
-      console.warn('[Recovery] No checkpoint found for transaction:', transactionId);
+      logger.warn('Recovery', 'No checkpoint found for transaction: ' + transactionId);
       return;
     }
 
@@ -150,7 +151,7 @@ export const createRecoverySlice: StateCreator<CanvaState, [], [], RecoverySlice
 
       showToast('info', 'Transaksi dibatalkan', `Kembali ke: ${checkpoint.description}`);
     } catch (err) {
-      console.error('[Recovery] Failed to rollback transaction:', err);
+      logger.error('Recovery', 'Failed to rollback transaction: ' + String(err));
       // Don't throw — recovery must be non-destructive
     }
   },

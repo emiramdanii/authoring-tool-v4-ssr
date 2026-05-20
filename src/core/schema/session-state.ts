@@ -37,6 +37,7 @@
 import type { ScreenSchema, SchemaBlock } from './types';
 import { validateSchema, type ValidationResult } from './validation';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from './capability-registry';
+import { logger } from '@/core/utils/logger';
 
 // ── Purity Violation ───────────────────────────────────────────
 
@@ -265,7 +266,7 @@ export function assertDocumentPurity(doc: DocumentState, source?: string): { pur
     const msg = `Document purity violation${src}:\n  ${result.violationStrings.join('\n  ')}`;
 
     if (process.env.NODE_ENV === 'production') {
-      console.error('[DOCUMENT-PURITY]', msg);
+      logger.error('DOCUMENT-PURITY', msg);
     } else {
       throw new Error(msg);
     }

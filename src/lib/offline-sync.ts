@@ -9,6 +9,7 @@
  */
 
 import { canvaPagesToSavePages } from '@/lib/save-utils';
+import { logger } from '@/core/utils/logger';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ function writeQueue(queue: SyncQueueItem[]): void {
       const trimmed = queue.slice(-5); // Keep only last 5
       localStorage.setItem(QUEUE_KEY, JSON.stringify(trimmed));
     } catch {
-      console.warn('[offline-sync] Failed to write queue to localStorage');
+      logger.warn('offline-sync', 'Failed to write queue to localStorage');
     }
   }
   // Notify listeners that queue changed
@@ -157,10 +158,10 @@ export function initAutoFlush(): () => void {
       try {
         const count = await flushQueue();
         if (count > 0) {
-          console.log(`[offline-sync] Flushed ${count} pending saves`);
+          if (process.env.NODE_ENV === 'development') console.log(`[offline-sync] Flushed ${count} pending saves`);
         }
       } catch (error) {
-        console.warn('[offline-sync] Auto-flush failed:', error);
+        logger.warn('offline-sync', 'Auto-flush failed: ' + String(error));
       }
     }
   };

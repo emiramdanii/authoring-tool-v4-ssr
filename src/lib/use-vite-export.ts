@@ -86,8 +86,8 @@ export function useViteExport() {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(error.error || `Export failed with status ${response.status}`);
+        const error = await response.json().catch(() => ({ error: 'Kesalahan tidak diketahui' }));
+        throw new Error(error.error || `Export gagal dengan status ${response.status}`);
       }
 
       // Get the HTML blob
@@ -236,7 +236,7 @@ export function useViteExport() {
       await exportHTML();
     } catch (viteErr) {
       // Vite failed — fall back to client-side
-      console.warn('[Export] Vite export failed, falling back to client-side:', viteErr);
+      logger.warn('Export', 'Vite export failed, falling back to client-side: ' + String(viteErr));
       toast.loading(`Vite gagal, menggunakan client-side fallback...`, { id: 'export-fallback' });
 
       try {

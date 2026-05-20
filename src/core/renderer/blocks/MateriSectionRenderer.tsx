@@ -416,8 +416,8 @@ function MateriVariantKlasik({
             onClick={showMore}
             className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors"
             style={{
-              background: 'rgba(99, 102, 241, 0.1)',
-              color: 'rgba(99, 102, 241, 0.9)',
+              background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
               fontSize: isCompact ? '9px' : '11px',
               cursor: 'pointer',
               fontWeight: 700,

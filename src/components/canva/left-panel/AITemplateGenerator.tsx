@@ -41,6 +41,7 @@ import {
 } from '@/core/template/template-gallery';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import { useAIAssistant, type AIAction, type AIGenerateParams } from '../ai-assistant/use-ai-assistant';
+import { logger } from '@/core/utils/logger';
 
 // ── Mapel options ──
 const MAPEL_OPTIONS = [
@@ -164,7 +165,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
       toast.success(`Template "${generatedTemplate.title}" berhasil dibuat — ${pages.length} halaman`);
       onTemplateGenerated?.(generatedTemplate);
     } catch (err) {
-      console.error('AITemplateGenerator: Failed to apply template', err);
+      logger.error('AITemplateGenerator', 'Failed to apply template: ' + String(err));
       toast.error('Gagal menerapkan template');
     }
   }, [generatedTemplate, jumlahKuis, _pushHistory, onTemplateGenerated]);

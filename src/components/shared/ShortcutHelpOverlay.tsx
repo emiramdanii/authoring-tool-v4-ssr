@@ -53,7 +53,7 @@ export function ShortcutHelpOverlay() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Keyboard size={16} className="text-app-accent" />
-            <h2 className="text-sm font-bold text-app-primary">Keyboard Shortcuts</h2>
+            <h2 className="text-sm font-bold text-app-primary">Pintasan Keyboard</h2>
           </div>
           <button
             onClick={() => setOpen(false)}

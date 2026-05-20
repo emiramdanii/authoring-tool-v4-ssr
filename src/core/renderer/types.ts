@@ -137,3 +137,85 @@ export class TokenResolver {
       : `rgba(0,0,0,${opacity})`;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// DARK-MODE-AWARE FALLBACK HELPERS
+// ═══════════════════════════════════════════════════════════════════
+// When `tokens` is null/undefined (defensive edge case), these helpers
+// pick the correct fallback based on the user's system color-scheme
+// preference. Without them, hardcoded light-mode fallbacks (e.g.
+// `#ffffff` for card bg, `#0f172a` for text) would render invisible
+// elements in dark mode.
+//
+// Usage:
+//   resolveColor(tokens, 'card', '#ffffff', '#182d45')
+//   resolveColorAlpha(tokens, 'y', 0.15, 'rgba(251,191,36,0.15)', 'rgba(251,191,36,0.15)')
+//   resolveSubtleBg(tokens, 0.06)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Detect if the user prefers dark mode. Defaults to `true` (app default is dark). */
+function prefersDarkMode(): boolean {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  return true; // Default to dark
+}
+
+/** Resolve a token color with dark-mode-aware fallback.
+ *  When `tokens` is available, delegates to `tokens.color(name)`.
+ *  When null/undefined, returns `darkFallback` or `lightFallback`
+ *  based on the user's system color-scheme preference. */
+export function resolveColor(
+  tokens: TokenResolver | null | undefined,
+  name: string,
+  lightFallback: string,
+  darkFallback: string,
+): string {
+  if (tokens) return tokens.color(name);
+  return prefersDarkMode() ? darkFallback : lightFallback;
+}
+
+/** Resolve a token color-alpha with dark-mode-aware fallback. */
+export function resolveColorAlpha(
+  tokens: TokenResolver | null | undefined,
+  name: string,
+  a: number,
+  lightFallback: string,
+  darkFallback: string,
+): string {
+  if (tokens) return tokens.colorAlpha(name, a);
+  return prefersDarkMode() ? darkFallback : lightFallback;
+}
+
+/** Resolve muted text color with dark-mode-aware fallback. */
+export function resolveMuted(
+  tokens: TokenResolver | null | undefined,
+  a: number,
+  lightFallback: string,
+  darkFallback: string,
+): string {
+  if (tokens) return tokens.muted(a);
+  return prefersDarkMode() ? darkFallback : lightFallback;
+}
+
+/** Resolve subtle background — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light. */
+export function resolveSubtleBg(
+  tokens: TokenResolver | null | undefined,
+  opacity: number,
+): string {
+  if (tokens) return tokens.subtleBg(opacity);
+  return prefersDarkMode()
+    ? `rgba(255,255,255,${opacity})`
+    : `rgba(0,0,0,${opacity})`;
+}
+
+/** Resolve subtle border — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light. */
+export function resolveSubtleBorder(
+  tokens: TokenResolver | null | undefined,
+  opacity: number,
+): string {
+  if (tokens) return tokens.subtleBorder(opacity);
+  return prefersDarkMode()
+    ? `rgba(255,255,255,${opacity})`
+    : `rgba(0,0,0,${opacity})`;
+}

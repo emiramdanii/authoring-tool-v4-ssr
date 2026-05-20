@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { StoreApi } from 'zustand';
+import { logger } from '@/core/utils/logger';
 
 // ── Score Entry ────────────────────────────────────────────────
 
@@ -104,7 +105,7 @@ export const useInteractiveStore = create<InteractiveState>()(
       // If canva store is not available, totalPages stays at its last
       // known value. Navigation guards will silently fail-safe.
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[interactive-store] syncTotalPages failed — canva store may not be ready', err);
+        logger.warn('interactive-store', 'syncTotalPages failed — canva store may not be ready: ' + String(err));
       }
     }
   };

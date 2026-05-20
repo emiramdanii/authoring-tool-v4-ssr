@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
+import { resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from '../types';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREMIUM STEP NAVIGATOR — Enhanced Step Navigation with Visual FX
@@ -94,7 +95,13 @@ export function usePremiumStepNavigator(totalSteps: number, initialStep: number 
 function ConfettiBurst({ accent, tokens }: { accent: string; tokens?: TokenResolver }) {
   const colors = tokens
     ? [tokens.color(accent), tokens.color('c'), tokens.color('y'), tokens.color('g'), tokens.color('r')]
-    : ['#fbbf24', '#3ecfcf', '#a78bfa', '#34d399', '#f87171'];
+    : [
+        resolveColor(tokens, accent, '#fbbf24', '#fbbf24'),
+        resolveColor(tokens, 'c', '#0891b2', '#3ecfcf'),
+        resolveColor(tokens, 'y', '#fbbf24', '#fbbf24'),
+        resolveColor(tokens, 'g', '#16a34a', '#34d399'),
+        resolveColor(tokens, 'r', '#dc2626', '#ff6b6b'),
+      ];
 
   return (
     <div
@@ -127,9 +134,9 @@ function ConfettiBurst({ accent, tokens }: { accent: string; tokens?: TokenResol
 
 /** "SELESAI" badge with glow pulse */
 function SelesaiBadge({ tokens, isCompact }: { tokens?: TokenResolver; isCompact?: boolean }) {
-  const accentColor = tokens ? tokens.color('y') : '#fbbf24';
-  const accentBg = tokens ? tokens.colorAlpha('y', 0.15) : 'rgba(251,191,36,0.15)';
-  const accentBgStrong = tokens ? tokens.colorAlpha('y', 0.25) : 'rgba(251,191,36,0.25)';
+  const accentColor = resolveColor(tokens, 'y', '#fbbf24', '#fbbf24');
+  const accentBg = resolveColorAlpha(tokens, 'y', 0.15, 'rgba(251,191,36,0.15)', 'rgba(251,191,36,0.15)');
+  const accentBgStrong = resolveColorAlpha(tokens, 'y', 0.25, 'rgba(251,191,36,0.25)', 'rgba(251,191,36,0.25)');
 
   return (
     <div
@@ -146,8 +153,8 @@ function SelesaiBadge({ tokens, isCompact }: { tokens?: TokenResolver; isCompact
         fontWeight: 900,
         letterSpacing: '0.08em',
         animation: 'glowPulse 2s ease-in-out infinite',
-        '--glow-color': tokens?.colorAlpha('y', 0.3) || 'rgba(251,191,36,0.3)',
-        '--glow-color-strong': tokens?.colorAlpha('y', 0.6) || 'rgba(251,191,36,0.6)',
+        '--glow-color': resolveColorAlpha(tokens, 'y', 0.3, 'rgba(251,191,36,0.3)', 'rgba(251,191,36,0.3)'),
+        '--glow-color-strong': resolveColorAlpha(tokens, 'y', 0.6, 'rgba(251,191,36,0.6)', 'rgba(251,191,36,0.6)'),
       } as React.CSSProperties}
     >
       <span style={{ fontSize: isCompact ? '12px' : '14px' }}>&#127942;</span>
@@ -210,11 +217,11 @@ export function PremiumStepNavigator({
     return () => el.removeEventListener('keydown', handleKeyDown);
   }, [activeStep, totalSteps, onStepChange]);
 
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
-  const accentSecondary = tokens ? tokens.color('c') : '#3ecfcf';
-  const mutedColor = tokens ? tokens.muted(0.6) : 'rgba(148,163,184,0.6)';
-  const cardBg = tokens ? tokens.color('card') : '#ffffff';
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentAlpha = (a: number) => resolveColorAlpha(tokens, accent, a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
+  const accentSecondary = resolveColor(tokens, 'c', '#0891b2', '#3ecfcf');
+  const mutedColor = resolveMuted(tokens, 0.6, 'rgba(71,85,105,0.6)', 'rgba(110,144,181,0.6)');
+  const cardBg = resolveColor(tokens, 'card', '#ffffff', '#182d45');
   const progress = totalSteps <= 1 ? 1 : (activeStep + 1) / totalSteps;
   const isAllComplete = activeStep === totalSteps - 1 && totalSteps > 1;
 
@@ -245,7 +252,7 @@ export function PremiumStepNavigator({
       <div
         style={{
           height: isCompact ? '3px' : '4px',
-          background: tokens?.subtleBg(0.06) || 'rgba(0,0,0,0.06)',
+          background: resolveSubtleBg(tokens, 0.06),
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -363,7 +370,7 @@ export function PremiumStepNavigator({
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: isCompact ? '6px 10px 8px' : '8px 14px 10px',
-          borderTop: `1px solid ${tokens?.subtleBorder(0.08) || 'rgba(0,0,0,0.06)'}`,
+          borderTop: `1px solid ${resolveSubtleBorder(tokens, 0.08)}`,
           position: 'relative',
         }}
       >
@@ -401,7 +408,7 @@ export function PremiumStepNavigator({
           <span style={{ fontSize: isCompact ? '11px' : '13px' }}>&#8592;</span>
           <span>Sebelumnya</span>
           {hoveredBtn === 'prev' && activeStep > 0 && (
-            <span style={{ fontSize: '9px', opacity: 0.5, marginLeft: '2px' }}>(&#8592;)</span>
+            <span style={{ fontSize: '10px', opacity: 0.7, marginLeft: '2px' }}>(&#8592;)</span>
           )}
         </button>
 
@@ -455,7 +462,7 @@ export function PremiumStepNavigator({
           <span>Berikutnya</span>
           <span style={{ fontSize: isCompact ? '11px' : '13px' }}>&#8594;</span>
           {hoveredBtn === 'next' && activeStep < totalSteps - 1 && (
-            <span style={{ fontSize: '9px', opacity: 0.5, marginLeft: '2px' }}>(&#8594;)</span>
+            <span style={{ fontSize: '10px', opacity: 0.7, marginLeft: '2px' }}>(&#8594;)</span>
           )}
         </button>
       </div>

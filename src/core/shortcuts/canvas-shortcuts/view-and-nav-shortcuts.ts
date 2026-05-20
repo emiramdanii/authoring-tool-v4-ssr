@@ -296,8 +296,8 @@ export function getViewAndNavShortcuts(deps: CanvaShortcutDeps): ShortcutDefinit
         if (store.zoom === -1) store.setZoom(1);
         else store.zoomDelta(0.1);
       },
-      description: 'Zoom in',
-      category: 'View',
+      description: 'Perbesar',
+      category: 'Tampilan',
     },
     {
       id: 'canvas.zoom-out',
@@ -310,8 +310,8 @@ export function getViewAndNavShortcuts(deps: CanvaShortcutDeps): ShortcutDefinit
         if (store.zoom === -1) store.setZoom(0.8);
         else store.zoomDelta(-0.1);
       },
-      description: 'Zoom out',
-      category: 'View',
+      description: 'Perkecil',
+      category: 'Tampilan',
     },
     {
       id: 'canvas.zoom-fit',
@@ -322,8 +322,8 @@ export function getViewAndNavShortcuts(deps: CanvaShortcutDeps): ShortcutDefinit
         e.preventDefault();
         getCanvaState().zoomToFit();
       },
-      description: 'Fit to screen',
-      category: 'View',
+      description: 'Sesuaikan layar',
+      category: 'Tampilan',
     },
 
     // ═══════════════════════════════════════════════════════════════

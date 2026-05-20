@@ -20,6 +20,7 @@ import { setCanvaStoreRef, startInteractiveCanvaSync, stopInteractiveCanvaSync }
 import { subscriptionManager } from './subscription-manager';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { logger } from '@/core/utils/logger';
 
 let _initialized = false;
 
@@ -110,7 +111,7 @@ function startProjectionSync() {
             useAuthoringStore.setState(updates);
           }
         } catch (err) {
-          console.warn('[ProjectionSync] Failed to derive projection:', err);
+          logger.warn('ProjectionSync', 'Failed to derive projection: ' + String(err));
         }
         _projectionSyncing = false;
         projectionTimer = null;

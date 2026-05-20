@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { logger } from '@/core/utils/logger';
 
 // ═══════════════════════════════════════════════════════════════
 // USE CLEANUP — Hook for registering cleanup functions on unmount
@@ -25,7 +26,7 @@ export function useCleanup() {
   useEffect(() => {
     return () => {
       cleanupFns.current.forEach(fn => {
-        try { fn(); } catch (e) { console.error('[G.4] Cleanup error:', e); }
+        try { fn(); } catch (e) { logger.error('G.4', 'Cleanup error: ' + String(e)); }
       });
       cleanupFns.current = [];
     };

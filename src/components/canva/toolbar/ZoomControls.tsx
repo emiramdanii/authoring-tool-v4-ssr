@@ -80,7 +80,7 @@ export function ZoomControls() {
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
-          Fit to screen (Ctrl+0)
+          Sesuaikan layar (Ctrl+0)
         </TooltipContent>
       </Tooltip>
       <Button
@@ -88,22 +88,22 @@ export function ZoomControls() {
         size="icon"
         onClick={() => zoomDelta(-0.1)}
         className="focus-ring h-7 w-7"
-        title="Zoom out (Ctrl+-)"
+        title="Perkecil (Ctrl+-)"
       >
         <Minus size={12} />
       </Button>
       <span
         className="text-[10px] font-mono text-app-secondary w-12 text-center select-none"
-        title={storeZoom === -1 ? `Auto-fit (${Math.round(storeFitZoom * 100)}%)` : `${Math.round(storeZoom * 100)}%`}
+        title={storeZoom === -1 ? `Otomatis (${Math.round(storeFitZoom * 100)}%)` : `${Math.round(storeZoom * 100)}%`}
       >
-        {storeZoom === -1 ? `Fit ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}
+        {storeZoom === -1 ? `Pas ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}
       </span>
       <Button
         variant="ghost"
         size="icon"
         onClick={() => zoomDelta(0.1)}
         className="focus-ring h-7 w-7"
-        title="Zoom in (Ctrl++)"
+        title="Perbesar (Ctrl++)"
       >
         <PlusCircle size={12} />
       </Button>

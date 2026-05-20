@@ -17,6 +17,7 @@ import { useEffect, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva/store';
 import { runIntegrityCheck } from '@/core/recovery/periodic-check';
 import { trimHistory, getHistorySize } from '@/store/canva/history-slice';
+import { logger } from '@/core/utils/logger';
 
 // ── Timing constants ─────────────────────────────────────────────
 const INTEGRITY_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -44,10 +45,7 @@ export function useHealthMonitor() {
         const report = runIntegrityCheck(pages, { autoRepair: true });
 
         if (report.corruptedPages > 0) {
-          console.warn(
-            `[Health] Integrity check: ${report.corruptedPages} corrupted, ` +
-            `${report.repairedPages} repaired, ${report.unrecoverablePages} unrecoverable`
-          );
+          logger.warn('Health', `Integrity check: ${report.corruptedPages} corrupted, ${report.repairedPages} repaired, ${report.unrecoverablePages} unrecoverable`);
 
           // If pages were repaired, update the store
           if (report.repairedPages > 0) {
@@ -65,7 +63,7 @@ export function useHealthMonitor() {
         }
       } catch (err) {
         // Health checks must never crash the app
-        console.warn('[Health] Integrity check failed:', err);
+        logger.warn('Health', 'Integrity check failed: ' + String(err));
       }
     }, INTEGRITY_CHECK_INTERVAL);
 
@@ -83,12 +81,10 @@ export function useHealthMonitor() {
             _history: trimmed.history,
             _historyIdx: trimmed.historyIdx,
           });
-          console.info(
-            `[Health] Memory guard: trimmed history from ${history.length} to ${trimmed.history.length} entries`
-          );
+          logger.warn('Health', `Memory guard: trimmed history from ${history.length} to ${trimmed.history.length} entries`);
         }
       } catch (err) {
-        console.warn('[Health] Memory check failed:', err);
+        logger.warn('Health', 'Memory check failed: ' + String(err));
       }
     }, MEMORY_CHECK_INTERVAL);
 
@@ -103,13 +99,10 @@ export function useHealthMonitor() {
 
         if (sizeBytes > maxBytes * STORAGE_QUOTA_WARNING) {
           const pct = Math.round((sizeBytes / maxBytes) * 100);
-          console.warn(
-            `[Health] Storage quota: ${pct}% used (${(sizeBytes / 1048576).toFixed(1)}MB / 5MB). ` +
-            `Consider saving to server to free up space.`
-          );
+          logger.warn('Health', `Storage quota: ${pct}% used (${(sizeBytes / 1048576).toFixed(1)}MB / 5MB). Consider saving to server to free up space.`);
         }
       } catch (err) {
-        console.warn('[Health] Storage check failed:', err);
+        logger.warn('Health', 'Storage check failed: ' + String(err));
       }
     }, STORAGE_CHECK_INTERVAL);
 

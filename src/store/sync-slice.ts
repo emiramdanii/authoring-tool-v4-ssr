@@ -11,6 +11,7 @@ import type { StateCreator } from 'zustand';
 import type { ScreenSchema } from '../core/schema/types';
 import type { CanvaPage } from '../components/canva/types';
 import { BlockCapabilityRegistry } from '../core/schema/capability-registry';
+import { logger } from '@/core/utils/logger';
 
 // ─── Apply Result ──────────────────────────────────────────────────
 export interface ApplyResult {
@@ -52,7 +53,7 @@ export function createSyncSlice(
 
     applyTransactionResult: (pageId: string, result: ApplyResult) => {
       if (!result.success) {
-        console.warn(`Transaction failed for page ${pageId}:`, result.errors);
+        logger.warn('SyncSlice', `Transaction failed for page ${pageId}: ${result.errors.join(', ')}`);
         return;
       }
 

@@ -57,7 +57,7 @@ export function ThemePresetPicker() {
       <PopoverTrigger asChild>
         <button
           className="flex items-center justify-center h-6 w-6 rounded-md text-app-muted hover:text-app-accent hover:bg-app-accent/10 transition-colors"
-          title="Theme presets"
+          title="Preset tema"
         >
           <Palette size={12} />
         </button>

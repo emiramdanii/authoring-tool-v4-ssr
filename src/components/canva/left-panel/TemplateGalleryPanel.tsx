@@ -23,6 +23,7 @@ import { Search, BookOpen, Loader2, FileText, Sparkles, Settings2, LayoutGrid, W
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 import {
   getAllLessonTemplates,
   getTemplateMapelList,
@@ -230,7 +231,7 @@ export default function TemplateGalleryPanel() {
         toast.success(`${pages.length} halaman dari "${template.title}" ditambahkan ke project`);
       }
     } catch (err) {
-      console.error('TemplateGallery: Failed to apply template', err);
+      logger.error('TemplateGallery', 'Failed to apply template: ' + String(err));
       toast.error(`Gagal menerapkan template "${template.title}"`);
     } finally {
       setLoadingTemplateId(null);
@@ -284,7 +285,7 @@ export default function TemplateGalleryPanel() {
         toast.success(`Template "${template.title}" diterapkan — ${pages.length} halaman`);
       }
     } catch (err) {
-      console.error('TemplateGallery: Failed to apply template with config', err);
+      logger.error('TemplateGallery', 'Failed to apply template with config: ' + String(err));
       toast.error(`Gagal menerapkan template "${template.title}"`);
     } finally {
       setLoadingTemplateId(null);

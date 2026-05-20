@@ -78,10 +78,10 @@ export function QuickActions() {
         onClick={exportHtml}
         disabled={isExporting}
         className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-app-success/90 hover:bg-app-success text-white text-[10px] font-bold transition-all shadow-sm hover:shadow disabled:opacity-50"
-        title="Download HTML — siap dibagikan ke siswa"
+        title="Unduh HTML — siap dibagikan ke siswa"
       >
         {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-        <span className="hidden sm:inline">Export</span>
+        <span className="hidden sm:inline">Ekspor</span>
       </button>
 
       {/* Export (advanced options dropdown) — only in advanced mode */}

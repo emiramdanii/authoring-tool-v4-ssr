@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
+import { resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from '../types';
 
 // ═══════════════════════════════════════════════════════════════════
 // STEP NAVIGATOR — Reusable Step/Tab Navigation Component
@@ -109,12 +110,12 @@ export function StepNavigator({
     return () => el.removeEventListener('keydown', handleKeyDown);
   }, [activeStep, totalSteps, onStepChange]);
 
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentBg = tokens ? tokens.colorAlpha(accent, 0.12) : 'rgba(251,191,36,0.12)';
-  const accentBorder = tokens ? tokens.colorAlpha(accent, 0.3) : 'rgba(251,191,36,0.3)';
-  const mutedColor = tokens ? tokens.muted(0.6) : 'rgba(148,163,184,0.6)';
-  const textColor = tokens ? tokens.color('text') : '#0f172a';
-  const bgColor = tokens ? tokens.color('card') : '#ffffff';
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentBg = resolveColorAlpha(tokens, accent, 0.12, 'rgba(251,191,36,0.12)', 'rgba(251,191,36,0.12)');
+  const accentBorder = resolveColorAlpha(tokens, accent, 0.3, 'rgba(251,191,36,0.3)', 'rgba(251,191,36,0.3)');
+  const mutedColor = resolveMuted(tokens, 0.6, 'rgba(71,85,105,0.6)', 'rgba(110,144,181,0.6)');
+  const textColor = resolveColor(tokens, 'text', '#0f172a', '#e8f2ff');
+  const bgColor = resolveColor(tokens, 'card', '#ffffff', '#182d45');
   const progress = totalSteps <= 1 ? 1 : (activeStep + 1) / totalSteps;
 
   return (
@@ -158,8 +159,8 @@ export function StepNavigator({
                 fontWeight: 700,
                 letterSpacing: '0.03em',
                 border: `1px solid ${isActive ? accentBorder : 'transparent'}`,
-                background: isActive ? accentBg : isPast ? tokens?.colorAlpha(accent, 0.05) || 'rgba(251,191,36,0.05)' : 'transparent',
-                color: isActive ? accentColor : isPast ? tokens?.colorAlpha(accent, 0.6) || 'rgba(251,191,36,0.6)' : mutedColor,
+                background: isActive ? accentBg : isPast ? resolveColorAlpha(tokens, accent, 0.05, 'rgba(251,191,36,0.05)', 'rgba(251,191,36,0.05)') : 'transparent',
+                color: isActive ? accentColor : isPast ? resolveColorAlpha(tokens, accent, 0.6, 'rgba(251,191,36,0.6)', 'rgba(251,191,36,0.6)') : mutedColor,
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
@@ -181,7 +182,7 @@ export function StepNavigator({
           margin: isCompact ? '6px 8px' : '8px 12px',
           height: isCompact ? '2px' : '3px',
           borderRadius: '9999px',
-          background: tokens?.subtleBg(0.06) || 'rgba(0,0,0,0.06)',
+          background: resolveSubtleBg(tokens, 0.06),
           overflow: 'hidden',
         }}
       >
@@ -190,7 +191,7 @@ export function StepNavigator({
             height: '100%',
             width: `${progress * 100}%`,
             borderRadius: '9999px',
-            background: `linear-gradient(90deg, ${accentColor}, ${tokens?.colorAlpha(accent, 0.6) || 'rgba(251,191,36,0.6)'})`,
+            background: `linear-gradient(90deg, ${accentColor}, ${resolveColorAlpha(tokens, accent, 0.6, 'rgba(251,191,36,0.6)', 'rgba(251,191,36,0.6)')})`,
             transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         />
@@ -220,7 +221,7 @@ export function StepNavigator({
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: isCompact ? '6px 8px 8px' : '8px 12px 10px',
-          borderTop: `1px solid ${tokens?.subtleBorder(0.08) || 'rgba(0,0,0,0.06)'}`,
+          borderTop: `1px solid ${resolveSubtleBorder(tokens, 0.08)}`,
         }}
       >
         <button

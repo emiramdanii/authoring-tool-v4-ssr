@@ -186,7 +186,7 @@ export default function PresentMode() {
             <span className="hidden sm:inline">Keluar</span>
           </Button>
 
-          <div className="w-px h-5 bg-white/10" />
+          <div className="w-px h-5 bg-gray-900/10 dark:bg-white/10" />
 
           {/* Prev */}
           <Button
@@ -215,7 +215,7 @@ export default function PresentMode() {
             <ChevronRight size={14} />
           </Button>
 
-          <div className="w-px h-5 bg-white/10" />
+          <div className="w-px h-5 bg-gray-900/10 dark:bg-white/10" />
 
           {/* Fullscreen */}
           <Button

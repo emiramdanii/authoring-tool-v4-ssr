@@ -18,6 +18,8 @@
 
 // ── Types ──────────────────────────────────────────────────────
 
+import { logger } from '@/core/utils/logger';
+
 interface SubscriptionEntry {
   key: string;
   unsub: () => void;
@@ -41,7 +43,7 @@ class SubscriptionManager {
       try {
         existing.unsub();
       } catch (e) {
-        console.warn(`[G.4] Error unsubscribing "${key}":`, e);
+        logger.warn('G.4', `Error unsubscribing "${key}": ${String(e)}`);
       }
     }
 
@@ -62,7 +64,7 @@ class SubscriptionManager {
     try {
       entry.unsub();
     } catch (e) {
-      console.warn(`[G.4] Error unsubscribing "${key}":`, e);
+      logger.warn('G.4', `Error unsubscribing "${key}": ${String(e)}`);
     }
 
     this.subscriptions.delete(key);
@@ -78,7 +80,7 @@ class SubscriptionManager {
       try {
         entry.unsub();
       } catch (e) {
-        console.warn(`[G.4] Error unsubscribing "${key}" during cleanupAll:`, e);
+        logger.warn('G.4', `Error unsubscribing "${key}" during cleanupAll: ${String(e)}`);
       }
     }
     this.subscriptions.clear();

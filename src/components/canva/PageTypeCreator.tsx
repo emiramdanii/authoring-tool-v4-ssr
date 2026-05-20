@@ -182,7 +182,7 @@ function OptionControl({
           }`}
         >
           <span
-            className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+            className={`absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-gray-900 shadow transition-transform ${
               value ? 'left-[18px]' : 'left-0.5'
             }`}
           />

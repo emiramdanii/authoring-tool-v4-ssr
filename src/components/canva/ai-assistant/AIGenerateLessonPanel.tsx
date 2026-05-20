@@ -50,6 +50,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 // ── Page type icons ──
 const PAGE_ICONS: Record<string, string> = {
@@ -213,7 +214,7 @@ export default function AIGenerateLessonPanel() {
       setApplied(true);
       toast.success(`Materi "${result.data.title}" berhasil dibuat — ${pages.length} halaman`);
     } catch (err) {
-      console.error('AIGenerateLesson: Failed to apply', err);
+      logger.error('AIGenerateLesson', 'Failed to apply: ' + String(err));
       toast.error('Gagal menerapkan struktur pembelajaran');
     }
   }, [result, _pushHistory]);

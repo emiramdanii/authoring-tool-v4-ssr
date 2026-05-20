@@ -82,7 +82,7 @@ class ExportErrorBoundary extends React.Component<
             <details style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
               <summary>Detail Teknis</summary>
               <pre style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                {this.state.error?.message || 'Unknown error'}
+                {this.state.error?.message || 'Kesalahan tidak diketahui'}
               </pre>
             </details>
           </div>

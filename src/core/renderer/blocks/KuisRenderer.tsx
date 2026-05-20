@@ -30,9 +30,11 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 function VariantSelector({
   active,
   onChange,
+  tokens,
 }: {
   active: 'A' | 'B' | 'C';
   onChange: (v: 'A' | 'B' | 'C') => void;
+  tokens: TokenResolver;
 }) {
   const variants: Array<{ key: 'A' | 'B' | 'C'; label: string }> = [
     { key: 'A', label: 'Klasik' },
@@ -41,7 +43,7 @@ function VariantSelector({
   ];
 
   return (
-    <div className="variant-selector" style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.06)', borderRadius: '9999px', padding: '3px' }}>
+    <div className="variant-selector" style={{ display: 'flex', gap: '4px', background: tokens.isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '9999px', padding: '3px' }}>
       {variants.map((v) => (
         <button
           key={v.key}
@@ -58,9 +60,9 @@ function VariantSelector({
             border: 'none',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            background: active === v.key ? 'rgba(245,158,11,0.18)' : 'transparent',
-            color: active === v.key ? '#d97706' : 'rgba(255,255,255,0.45)',
-            boxShadow: active === v.key ? '0 1px 4px rgba(245,158,11,0.15)' : 'none',
+            background: active === v.key ? (tokens.isDark() ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.18)') : 'transparent',
+            color: active === v.key ? (tokens.isDark() ? '#fbbf24' : '#d97706') : (tokens.isDark() ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'),
+            boxShadow: active === v.key ? `0 1px 4px ${tokens.isDark() ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.15)'}` : 'none',
           }}
         >
           {v.key}
@@ -564,7 +566,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       {/* ── Variant selector (only in editing mode) ──────────────── */}
       {isEditing && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} />
+          <VariantSelector active={variant} onChange={setCurrentVariant} tokens={tokens} />
         </div>
       )}
 

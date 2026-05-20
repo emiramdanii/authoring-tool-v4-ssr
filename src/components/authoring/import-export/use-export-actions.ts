@@ -78,7 +78,7 @@ export function useExportActions() {
       await exportHTML();
     } catch (err: unknown) {
       logger.error('ExportHTML', err);
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : 'Kesalahan tidak diketahui';
       toast.error(`Gagal mengexport HTML: ${message}`);
     }
   }, [exportHTML]);

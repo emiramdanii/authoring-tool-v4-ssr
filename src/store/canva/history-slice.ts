@@ -28,6 +28,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import { showUndoRedoToast } from '@/components/shared/StatusToast';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import { logger } from '@/core/utils/logger';
 
 export type HistorySlice = Pick<
   CanvaState,
@@ -199,7 +200,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
             return;
           } catch {
             // Patch application failed (state diverged) — fall through to snapshot undo
-            console.warn('[History] Patch-based undo failed, falling back to snapshot undo');
+            logger.warn('History', 'Patch-based undo failed, falling back to snapshot undo');
           }
         }
       }
@@ -260,7 +261,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
             showUndoRedoToast(formatRedoMessage(redoDescription));
             return;
           } catch {
-            console.warn('[History] Patch-based redo failed, falling back to snapshot redo');
+            logger.warn('History', 'Patch-based redo failed, falling back to snapshot redo');
           }
         }
       }
@@ -310,7 +311,7 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
         selectedBlockIds: [],
       });
     } catch {
-      console.warn('[History] Time-travel patch application failed — state may have diverged');
+      logger.warn('History', 'Time-travel patch application failed — state may have diverged');
     }
   },
 });

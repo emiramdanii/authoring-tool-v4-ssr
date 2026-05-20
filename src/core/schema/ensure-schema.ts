@@ -60,13 +60,13 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     // DEFENSIVE: Validate that page.schema is actually an object, not a string or other type.
     // Corrupted localStorage data may have schema as a string (double-serialized).
     if (typeof page.schema !== 'object' || Array.isArray(page.schema)) {
-      console.warn('[ensurePageSchema] page.schema is not an object — treating as no schema. Type:', typeof page.schema);
+      logger.warn('ensurePageSchema', `page.schema is not an object — treating as no schema. Type: ${typeof page.schema}`);
       // Fall through to Path 4 (return null) — caller will auto-create schema
       return null;
     }
     // DEFENSIVE: Ensure blocks is an array
     if (!Array.isArray(page.schema.blocks)) {
-      console.warn('[ensurePageSchema] page.schema.blocks is not an array — creating empty blocks. Value:', page.schema.blocks);
+      logger.warn('ensurePageSchema', `page.schema.blocks is not an array — creating empty blocks. Value: ${String(page.schema.blocks)}`);
       // Return schema with corrected blocks array
       const fixedSchema = { ...page.schema, blocks: [] };
       return deepFreeze(deepClone(fixedSchema));
@@ -81,13 +81,13 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       try {
         assertDocumentPurity(migrated, `ensurePageSchema:migration:${page.id}`);
       } catch (e) {
-        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+        logger.warn('ensurePageSchema', 'Purity check failed (non-fatal): ' + String(e));
       }
       // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
       try {
         return deepFreeze(deepClone(migrated));
       } catch (cloneErr) {
-        console.warn('[ensurePageSchema] deepClone/deepFreeze failed for migrated schema — returning unfrozen clone:', cloneErr);
+        logger.warn('ensurePageSchema', 'deepClone/deepFreeze failed for migrated schema — returning unfrozen clone: ' + String(cloneErr));
         try { return deepClone(migrated); } catch { return migrated; }
       }
     }
@@ -104,7 +104,7 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       const lastWarn = (globalThis as unknown as Record<string, number>)[key] || 0;
       if (now - lastWarn > 1000) {
         (globalThis as unknown as Record<string, number>)[key] = now;
-        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+        logger.warn('ensurePageSchema', 'Purity check failed (non-fatal): ' + String(e));
       }
     }
     // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
@@ -115,13 +115,13 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     } catch (cloneErr) {
       // Fallback: if deepClone fails (e.g., non-cloneable runtime state in schema),
       // use JSON parse/stringify as fallback, or return the schema without freezing.
-      console.warn('[ensurePageSchema] deepClone/deepFreeze failed — using JSON fallback:', cloneErr);
+      logger.warn('ensurePageSchema', 'deepClone/deepFreeze failed — using JSON fallback: ' + String(cloneErr));
       try {
         const jsonCloned = JSON.parse(JSON.stringify(page.schema)) as ScreenSchema;
         return deepFreeze(jsonCloned);
       } catch (jsonErr) {
         // Last resort: return shallow copy without deep freeze
-        console.warn('[ensurePageSchema] JSON clone also failed — returning shallow copy without freeze:', jsonErr);
+        logger.warn('ensurePageSchema', 'JSON clone also failed — returning shallow copy without freeze: ' + String(jsonErr));
         return { ...page.schema, blocks: [...(page.schema.blocks || [])] };
       }
     }
@@ -135,13 +135,13 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     try {
       assertValidSchema(migrated, `ensurePageSchema:promote:${page.id}`);
     } catch (e) {
-      if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Schema validation failed (non-fatal):', e);
+      logger.warn('ensurePageSchema', 'Schema validation failed (non-fatal): ' + String(e));
     }
     // Dev-mode purity guard — wrapped to prevent crash
     try {
       assertDocumentPurity(migrated, `ensurePageSchema:promote:${page.id}`);
     } catch (e) {
-      if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+      logger.warn('ensurePageSchema', 'Purity check failed (non-fatal): ' + String(e));
     }
     return deepFreeze(deepClone(migrated));
   }
@@ -160,13 +160,13 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       try {
         assertValidSchema(migrated, `ensurePageSchema:legacy:${page.id}`);
       } catch (e) {
-        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Schema validation failed (non-fatal):', e);
+        logger.warn('ensurePageSchema', 'Schema validation failed (non-fatal): ' + String(e));
       }
       // Dev-mode purity guard — wrapped to prevent crash
       try {
         assertDocumentPurity(migrated, `ensurePageSchema:legacy:${page.id}`);
       } catch (e) {
-        if (process.env.NODE_ENV !== 'production') console.warn('[ensurePageSchema] Purity check failed (non-fatal):', e);
+        logger.warn('ensurePageSchema', 'Purity check failed (non-fatal): ' + String(e));
       }
       return deepFreeze(deepClone(migrated));
     }
@@ -345,16 +345,10 @@ export function validateCanvaPageInvariant(page: CanvaPage, source?: string): vo
   // Validate pageMode discriminator — schema pages must have a schema object
   // (but empty blocks array is OK — it just means "no blocks yet")
   if (page.pageMode === 'schema' && !hasSchema) {
-    console.warn(
-      `[INVARIANT] Page "${page.label}" has pageMode='schema' but no schema object. ` +
-      `This should not happen.`
-    );
+    logger.warn('INVARIANT', `Page "${page.label}" has pageMode='schema' but no schema object. This should not happen.`);
   }
   if (page.pageMode === 'elements' && hasSchema) {
-    console.warn(
-      `[INVARIANT] Page "${page.label}" has pageMode='elements' but has schema. ` +
-      `This should not happen.`
-    );
+    logger.warn('INVARIANT', `Page "${page.label}" has pageMode='elements' but has schema. This should not happen.`);
   }
 }
 
@@ -450,7 +444,7 @@ export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
         updated = { ...updated, schema: migrated };
         anyMigrated = true;
       } catch (e) {
-        console.warn('[migrateAllPages] Version migration failed for page:', updated.id, e);
+        logger.warn('migrateAllPages', `Version migration failed for page: ${updated.id}: ${String(e)}`);
       }
     }
 

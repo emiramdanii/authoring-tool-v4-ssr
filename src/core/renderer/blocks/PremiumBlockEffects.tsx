@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
+import { resolveColor, resolveColorAlpha, resolveSubtleBg } from '../types';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREMIUM BLOCK EFFECTS — Collection of Visual Effect Wrappers
@@ -52,8 +53,8 @@ export function PremiumBlockWrapper({
   style = {},
   noAnimation = false,
 }: PremiumBlockWrapperProps) {
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentAlpha = (a: number) => resolveColorAlpha(tokens, accent, a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
 
   const combinedClassName = [
     className,
@@ -101,9 +102,9 @@ export function ReadingProgressIndicator({
   height = 3,
   position = 'top',
 }: ReadingProgressIndicatorProps) {
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentSecondary = tokens ? tokens.color('c') : '#3ecfcf';
-  const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentSecondary = resolveColor(tokens, 'c', '#0891b2', '#3ecfcf');
+  const accentAlpha = (a: number) => resolveColorAlpha(tokens, accent, a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
 
   return (
     <div
@@ -112,7 +113,7 @@ export function ReadingProgressIndicator({
         [position]: 0,
         zIndex: 40,
         height: `${height}px`,
-        background: tokens?.subtleBg(0.06) || 'rgba(0,0,0,0.06)',
+        background: resolveSubtleBg(tokens, 0.06),
         overflow: 'hidden',
         borderRadius: position === 'top' ? '0 0 4px 4px' : '4px 4px 0 0',
       }}
@@ -173,8 +174,8 @@ export function StepCompletionOverlay({
 }: StepCompletionOverlayProps) {
   if (!show) return null;
 
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentSecondary = tokens ? tokens.color('c') : '#3ecfcf';
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentSecondary = resolveColor(tokens, 'c', '#0891b2', '#3ecfcf');
 
   // Generate sparkle particles
   const sparkles = Array.from({ length: 8 }, (_, i) => ({
@@ -270,13 +271,13 @@ export function PremiumBadge({
   isCompact = false,
   className,
 }: PremiumBadgeProps) {
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
-  const textColor = tokens ? tokens.color('text') : '#0f172a';
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentAlpha = (a: number) => resolveColorAlpha(tokens, accent, a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
+  const textColor = resolveColor(tokens, 'text', '#0f172a', '#e8f2ff');
 
   const variantStyles: Record<PremiumBadgeVariant, React.CSSProperties> = {
     glass: {
-      background: tokens ? tokens.colorAlpha(accent, 0.1) : 'rgba(251,191,36,0.1)',
+      background: resolveColorAlpha(tokens, accent, 0.1, 'rgba(251,191,36,0.1)', 'rgba(251,191,36,0.1)'),
       backdropFilter: 'blur(8px)',
       border: `1px solid ${accentAlpha(0.25)}`,
       color: accentColor,
@@ -284,7 +285,7 @@ export function PremiumBadge({
     solid: {
       background: `linear-gradient(135deg, ${accentColor}, ${accentAlpha(0.8)})`,
       border: '1px solid transparent',
-      color: tokens ? tokens.color('bg') : '#ffffff',
+      color: resolveColor(tokens, 'bg', '#ffffff', '#0e1c2f'),
       boxShadow: `0 2px 8px ${accentAlpha(0.35)}`,
     },
     outline: {
@@ -293,9 +294,9 @@ export function PremiumBadge({
       color: accentColor,
     },
     gradient: {
-      background: `linear-gradient(135deg, ${accentColor}, ${tokens?.color('c') || '#3ecfcf'})`,
+      background: `linear-gradient(135deg, ${accentColor}, ${resolveColor(tokens, 'c', '#0891b2', '#3ecfcf')})`,
       border: '1px solid transparent',
-      color: tokens ? tokens.color('bg') : '#ffffff',
+      color: resolveColor(tokens, 'bg', '#ffffff', '#0e1c2f'),
       boxShadow: `0 2px 10px ${accentAlpha(0.3)}`,
     },
   };
@@ -350,8 +351,8 @@ export function MicroInteraction({
   const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [isPressed, setIsPressed] = useState(false);
 
-  const accentColor = tokens ? tokens.color(accent) : '#fbbf24';
-  const accentAlpha = (a: number) => tokens ? tokens.colorAlpha(accent, a) : `rgba(251,191,36,${a})`;
+  const accentColor = resolveColor(tokens, accent, '#fbbf24', '#fbbf24');
+  const accentAlpha = (a: number) => resolveColorAlpha(tokens, accent, a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (effect === 'ripple' && containerRef.current) {

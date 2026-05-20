@@ -56,11 +56,11 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
         <div className="w-full h-full flex flex-col items-center justify-center bg-red-950/20 rounded-lg p-4 text-center">
           <AlertTriangle size={24} className="mb-2 text-red-400" />
           <div className="text-xs text-red-400 font-semibold mb-1">
-            {isSederhana ? 'Ada Masalah' : (this.props.name ? `${this.props.name} error` : 'Component error')}
+            {isSederhana ? 'Ada Masalah' : (this.props.name ? `${this.props.name} error` : 'Kesalahan komponen')}
           </div>
           {!isSederhana && (
             <div className="text-[10px] text-red-400/60 max-w-[200px] break-words">
-              {this.state.error?.message || 'Unknown error'}
+              {this.state.error?.message || 'Kesalahan tidak diketahui'}
             </div>
           )}
           <button

@@ -63,9 +63,9 @@ export const CANVAS_SHORTCUTS: ShortcutDefinition[] = [
   { id: 'canvas.ai-assistant', keys: 'ctrl+i', scope: 'canvas', priority: 10, handler: () => {}, description: 'Buka AI Assistant', category: 'Tools' },
 
   // ── View ──────────────────────────────────────────────────────
-  { id: 'canvas.zoom-in', keys: 'ctrl+=', scope: 'canvas', priority: 10, handler: () => {}, description: 'Zoom in', category: 'View' },
-  { id: 'canvas.zoom-out', keys: 'ctrl+-', scope: 'canvas', priority: 10, handler: () => {}, description: 'Zoom out', category: 'View' },
-  { id: 'canvas.zoom-fit', keys: 'ctrl+0', scope: 'canvas', priority: 10, handler: () => {}, description: 'Fit to screen', category: 'View' },
+  { id: 'canvas.zoom-in', keys: 'ctrl+=', scope: 'canvas', priority: 10, handler: () => {}, description: 'Perbesar', category: 'Tampilan' },
+  { id: 'canvas.zoom-out', keys: 'ctrl+-', scope: 'canvas', priority: 10, handler: () => {}, description: 'Perkecil', category: 'Tampilan' },
+  { id: 'canvas.zoom-fit', keys: 'ctrl+0', scope: 'canvas', priority: 10, handler: () => {}, description: 'Sesuaikan layar', category: 'Tampilan' },
 
   // ── Navigation ──────────────────────────────────────────────────
   { id: 'canvas.scene-prev', keys: 'ctrl+arrowleft', scope: 'canvas', priority: 6, handler: () => {}, description: 'Scene sebelumnya (Ctrl+←)', category: 'Navigation' },
