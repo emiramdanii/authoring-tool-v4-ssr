@@ -10,7 +10,7 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
-import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage, repairSchema } from '@/core/recovery';
+import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage, repairSchema, validateAndRepairPages, computePagesHash } from '@/core/recovery';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
@@ -119,8 +119,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         ratioId,
         _lastSavedAt: Date.now(),
         _migrationVersion: STORAGE_MIGRATION_VERSION,
+        _schemaHash: computePagesHash(cleanPages),
       }));
-      set({ _saveStatus: 'saved', _lastSavedAt: Date.now() });
+      set({ _saveStatus: 'saved', _lastSavedAt: Date.now(), _pagesHashAtSave: computePagesHash(cleanPages) });
     } catch (err) {
       // Storage full, unavailable, or stack overflow from corrupted data
       console.warn('[CanvaStore] Failed to save to localStorage:', err);
@@ -239,6 +240,35 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         } catch (purityErr) {
           console.warn('[CanvaStore] Purity check on load failed (data may be corrupted):', purityErr);
+        }
+
+        // ── FASE 6: Proactive integrity validation ──────────────────
+        // Validate all page schemas after migration and BEFORE setting state.
+        // This catches corruption early and auto-repairs if possible.
+        try {
+          const validationResult = validateAndRepairPages(cleanPages as unknown as Array<{ id: string; schema?: any; [k: string]: unknown }>, { autoRepair: true });
+          if (validationResult.repairedPages > 0) {
+            console.warn(`[Recovery] Proactive repair: ${validationResult.repairedPages}/${validationResult.totalPages} pages repaired`);
+            // Set safe mode flag — some data was corrupted
+            try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
+          }
+          if (validationResult.corruptedPages > 0 && validationResult.repairedPages === 0) {
+            console.error(`[Recovery] Unrecoverable corruption: ${validationResult.corruptedPages} pages`);
+            try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
+          }
+          set({ _lastIntegrityResult: validationResult });
+        } catch (validationErr) {
+          console.warn('[Recovery] Proactive validation failed:', validationErr);
+        }
+
+        // ── FASE 6: Hash verification on load ──────────────────
+        // Verify stored hash matches computed hash (detects in-transit corruption)
+        if (data._schemaHash) {
+          const currentHash = computePagesHash(cleanPages);
+          if (currentHash !== data._schemaHash) {
+            console.warn('[Recovery] Schema hash mismatch on load — data may have been corrupted');
+            try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
+          }
         }
 
         // Derive EditorProjectionStore from schema (write-through)

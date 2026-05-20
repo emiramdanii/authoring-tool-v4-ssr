@@ -307,6 +307,28 @@ export interface CanvaState {
   /** Set teacher mode explicitly */
   setTeacherMode: (mode: boolean) => void;
 
+  // ── Recovery (FASE 6) ──────────────────────────────────────────
+  /** Whether the app is in safe mode (degraded features due to corruption) */
+  safeMode: boolean;
+  /** Enter safe mode — disables complex features to prevent further corruption */
+  enterSafeMode: (reason?: string) => void;
+  /** Exit safe mode — re-enables all features after user confirms data is OK */
+  exitSafeMode: () => void;
+  /** Active transaction ID (null = no active transaction) */
+  _activeTransactionId: string | null;
+  /** Begin a recoverable transaction — saves checkpoint before operation */
+  beginTransaction: (description: string) => string;
+  /** Commit a transaction — clears its checkpoint (operation succeeded) */
+  commitTransaction: (transactionId: string) => void;
+  /** Rollback a transaction — restores pages to pre-transaction state */
+  rollbackTransaction: (transactionId: string) => void;
+  /** Last integrity check result (null = never checked) */
+  _lastIntegrityResult: import('@/core/recovery').PageValidationResult | null;
+  /** Run integrity check on all pages now */
+  runIntegrityCheckNow: () => import('@/core/recovery').PageValidationResult;
+  /** Hash of pages at last save (for corruption detection) */
+  _pagesHashAtSave: string;
+
   // ── Export ────────────────────────────────────────────────────
   // Legacy export methods removed — all exports now use Vite SSR pipeline
   // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts

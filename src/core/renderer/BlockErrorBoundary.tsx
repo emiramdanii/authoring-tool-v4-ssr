@@ -122,3 +122,71 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
     return this.props.children;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// SAFE MODE BLOCK GATE — Disables complex blocks in safe mode
+// ═══════════════════════════════════════════════════════════════════
+// In safe mode, game blocks and other complex features are disabled
+// to prevent further corruption or crashes. This component wraps
+// block renderers and shows a fallback when the block is gated.
+//
+// Usage: <SafeModeBlockGate blockType="sortir-game">
+//          <GameBlock ... />
+//        </SafeModeBlockGate>
+// ═══════════════════════════════════════════════════════════════════
+
+import { isFeatureAllowed, type SafeModeFeature, SAFE_MODE_DISABLED_FEATURES } from '@/core/recovery';
+
+/** Block types that are gated by specific safe mode features */
+const BLOCK_TYPE_TO_FEATURE: Record<string, SafeModeFeature> = {
+  'sortir-game': 'game-blocks',
+  'roda-game': 'game-blocks',
+  'memory-game': 'game-blocks',
+  'matching-game': 'game-blocks',
+  'fill-blank-game': 'game-blocks',
+  'word-search-game': 'game-blocks',
+  'true-false-game': 'game-blocks',
+  'drag-drop-game': 'game-blocks',
+  'crossword-game': 'game-blocks',
+  'team-buzzer-game': 'game-blocks',
+};
+
+interface SafeModeBlockGateProps {
+  blockType: string;
+  children: React.ReactNode;
+}
+
+/**
+ * Gate that prevents complex blocks from rendering in safe mode.
+ * In safe mode, game blocks and other gated features show a
+ * placeholder instead of the full block (preventing potential crashes).
+ */
+export function SafeModeBlockGate({ blockType, children }: SafeModeBlockGateProps) {
+  // Read safeMode from store — use a simple check to avoid
+  // re-rendering the entire tree on every state change
+  let safeMode = false;
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      safeMode = sessionStorage.getItem('silse_safe_mode') === '1';
+    }
+  } catch { /* ignore */ }
+
+  if (!safeMode) return <>{children}</>;
+
+  // Check if this block type is gated in safe mode
+  const feature = BLOCK_TYPE_TO_FEATURE[blockType];
+  if (!feature || isFeatureAllowed(feature, safeMode)) {
+    return <>{children}</>;
+  }
+
+  // Block is gated — show safe mode placeholder
+  return (
+    <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 my-2 flex items-center gap-2">
+      <span className="text-xs text-amber-400/80 flex-shrink-0">🛡️</span>
+      <div className="text-xs text-amber-300/70">
+        <span className="font-semibold">{blockType}</span>
+        {' — ditonaktifkan di Mode Aman'}
+      </div>
+    </div>
+  );
+}

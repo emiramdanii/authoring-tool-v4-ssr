@@ -19,6 +19,7 @@ import { assertValidSchema } from '../validation';
 import { assertDocumentPurity, writeCompressedHeights } from '../session-state';
 import { createTransaction, type TransactionResult, type RebalanceOptions } from '../scene-transaction';
 import type { ScenePlan } from '../../layout/SceneOverflowEngine';
+import { withCrashCheckpoint } from '@/core/recovery';
 
 /**
  * Commit a scene transaction and write the result to the store.
@@ -40,47 +41,48 @@ export function commitSceneTransaction(
   pageId: string,
   tx: { commit: () => TransactionResult },
 ): TransactionResult & { pageUpdated: boolean } {
-  const result = tx.commit();
+  // FASE 6: Wrap in crash checkpoint — if browser crashes during
+  // the transaction commit, the user can recover to pre-transaction state
+  const preStore = useCanvaStore.getState();
+  return withCrashCheckpoint(
+    preStore.pages, preStore.ratioId, 'commitSceneTransaction',
+    () => {
+      const result = tx.commit();
 
-  if (!result.success || !result.schema) {
-    return { ...result, pageUpdated: false };
-  }
+      if (!result.success || !result.schema) {
+        return { ...result, pageUpdated: false };
+      }
 
-  // Write the committed schema to the store
-  const store = useCanvaStore.getState();
-  const pages = [...store.pages];
-  const idx = pages.findIndex(p => p.id === pageId);
+      // Write the committed schema to the store
+      const pages = [...useCanvaStore.getState().pages];
+      const idx = pages.findIndex(p => p.id === pageId);
 
-  if (idx < 0) {
-    return {
-      ...result,
-      success: false,
-      error: `Page "${pageId}" not found`,
-      pageUpdated: false,
-    };
-  }
+      if (idx < 0) {
+        return {
+          ...result,
+          success: false,
+          error: `Page "${pageId}" not found`,
+          pageUpdated: false,
+        };
+      }
 
-  pages[idx] = {
-    ...pages[idx],
-    schema: result.schema,
-    pageMode: 'schema',
-    elements: [],
-  };
+      pages[idx] = {
+        ...pages[idx],
+        schema: result.schema,
+        pageMode: 'schema',
+        elements: [],
+      };
 
-  useCanvaStore.setState({ pages });
+      useCanvaStore.setState({ pages });
 
-  // ═══ Write compressed heights to runtime cache ═════════════════
-  // The transaction's rebalanceSchema() computes compressed heights
-  // and stores them in result.compressedHeights. We must write these
-  // to the module-level cache so layout engines can read them.
-  // Without this, the compressed heights are lost after commit and
-  // the layout engines would recompute independently — potentially
-  // producing different results than the transaction intended.
-  if (result.compressedHeights.size > 0) {
-    writeCompressedHeights(result.compressedHeights);
-  }
+      // Write compressed heights to runtime cache
+      if (result.compressedHeights.size > 0) {
+        writeCompressedHeights(result.compressedHeights);
+      }
 
-  return { ...result, pageUpdated: true };
+      return { ...result, pageUpdated: true };
+    },
+  );
 }
 
 /**
@@ -157,6 +159,21 @@ export function promoteSceneSplitToPage(
 ): TransactionResult & { pageUpdated: boolean; newPageId?: string } {
   const store = useCanvaStore.getState();
   const page = store.pages.find(p => p.id === pageId);
+
+  // FASE 6: Wrap page split in crash checkpoint
+  return withCrashCheckpoint(
+    store.pages, store.ratioId, 'promoteSceneSplitToPage',
+    () => _promoteSceneSplitToPageInner(pageId, scenePlan, sceneIndex, page),
+  );
+}
+
+/** Inner implementation of promoteSceneSplitToPage (called inside crash checkpoint) */
+function _promoteSceneSplitToPageInner(
+  pageId: string,
+  scenePlan: ScenePlan,
+  sceneIndex: number,
+  page: CanvaPage | undefined,
+): TransactionResult & { pageUpdated: boolean; newPageId?: string } {
   if (!page?.schema) {
     return {
       success: false,
@@ -241,7 +258,7 @@ export function promoteSceneSplitToPage(
   assertDocumentPurity(newPageSchema, 'promoteSceneSplitToPage (new page)');
 
   // Write both updates to the store atomically
-  const pages = [...store.pages];
+  const pages = [...useCanvaStore.getState().pages];
   const pageIdx = pages.findIndex(p => p.id === pageId);
 
   if (pageIdx < 0) {
@@ -309,6 +326,20 @@ export function promoteSceneSplitToPage(
  * @param sourcePageId - The page whose blocks will be merged (then removed)
  */
 export function mergePagesTransaction(
+  targetPageId: string,
+  sourcePageId: string,
+): TransactionResult & { pageUpdated: boolean } {
+  const store = useCanvaStore.getState();
+
+  // FASE 6: Wrap page merge in crash checkpoint
+  return withCrashCheckpoint(
+    store.pages, store.ratioId, 'mergePagesTransaction',
+    () => _mergePagesTransactionInner(targetPageId, sourcePageId),
+  );
+}
+
+/** Inner implementation of mergePagesTransaction (called inside crash checkpoint) */
+function _mergePagesTransactionInner(
   targetPageId: string,
   sourcePageId: string,
 ): TransactionResult & { pageUpdated: boolean } {

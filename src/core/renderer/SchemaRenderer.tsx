@@ -54,7 +54,7 @@ import { SCENE_REGISTRY, getBlockDefinition } from '../registry/SceneRegistry';
 import { BlockSelectionOverlay } from '../editor/overlay/BlockSelectionOverlay';
 
 // Import BlockErrorBoundary — per-block crash isolation
-import { BlockErrorBoundary } from './BlockErrorBoundary';
+import { BlockErrorBoundary, SafeModeBlockGate } from './BlockErrorBoundary';
 
 // Import CompressionBoundary — universal compression fallback
 import { CompressionBoundary } from '../layout/CompressionBoundary';
@@ -640,13 +640,15 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     );
   }
 
-  // The block renderer output — always wrapped in error boundary + suspense
+  // The block renderer output — always wrapped in error boundary + suspense + safe mode gate
   const blockContent = (
-    <BlockErrorBoundary blockType={block.type} blockId={blockId}>
-      <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
-        <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} pageIndex={pageIndex} />
-      </React.Suspense>
-    </BlockErrorBoundary>
+    <SafeModeBlockGate blockType={block.type}>
+      <BlockErrorBoundary blockType={block.type} blockId={blockId}>
+        <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+          <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} pageIndex={pageIndex} />
+        </React.Suspense>
+      </BlockErrorBoundary>
+    </SafeModeBlockGate>
   );
 
   // Wrap in CompressionBoundary for blocks that don't handle compression natively.

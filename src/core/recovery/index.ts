@@ -15,11 +15,13 @@
 //   - Operations are idempotent (safe to call multiple times)
 //   - Errors are caught and logged, never propagated to crash the app
 //   - All operations work in production (not just dev mode)
+//   - withCrashCheckpoint wraps dangerous ops with automatic save
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
 import { validateSchema } from '@/core/schema/validation';
 import { generateBlockId } from '@/core/schema/ensure-schema';
+import { logger } from '@/core/utils/logger';
 
 // ── 4. Integrity Check (Hash-based) ────────────────────────────────
 
@@ -398,3 +400,206 @@ export function safeBootFromStorage(rawStorageData: string | null): SafeBootResu
 }
 
 export { runIntegrityCheck, type IntegrityReport } from './periodic-check';
+
+// ── 6.1 Crash Checkpoint Wrapper ──────────────────────────────────
+
+/**
+ * Wrap a dangerous operation with a crash checkpoint.
+ * Saves the current pages state BEFORE the operation, so if the
+ * browser crashes during the operation, the user can recover.
+ *
+ * This is the PRIMARY way to protect dangerous multi-step operations:
+ *   - Scene transactions (split, merge, rebalance)
+ *   - Block apply operations (auto-generate, regeneration)
+ *   - Page reordering with schema changes
+ *
+ * Usage:
+ *   const result = withCrashCheckpoint(pages, ratioId, 'commitSceneTransaction', () => {
+ *     return commitSceneTransaction(pageId, tx);
+ *   });
+ *
+ * If the operation succeeds, the checkpoint is automatically cleared.
+ * If it fails or crashes, the checkpoint persists for recovery.
+ */
+export function withCrashCheckpoint<T>(
+  pages: unknown[],
+  ratioId: string,
+  reason: string,
+  operation: () => T,
+): T {
+  // Save checkpoint BEFORE the dangerous operation
+  saveCrashCheckpoint(pages, ratioId, reason);
+
+  try {
+    const result = operation();
+
+    // Operation succeeded — clear the checkpoint
+    // Use a microtask so the checkpoint is available during
+    // any synchronous side effects of the operation
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(() => {
+        try { clearCrashRecovery(); } catch { /* ignore */ }
+      });
+    } else {
+      // Fallback for environments without queueMicrotask
+      try { clearCrashRecovery(); } catch { /* ignore */ }
+    }
+
+    return result;
+  } catch (err) {
+    // Operation FAILED — keep the checkpoint for recovery
+    logger.warn('[Recovery]', `Operation failed, crash checkpoint retained: ${reason}`);
+    throw err; // Re-throw — caller decides what to do
+  }
+}
+
+// ── 6.3 Proactive Page Validation + Repair ─────────────────────────
+
+export interface PageValidationResult {
+  totalPages: number;
+  validPages: number;
+  repairedPages: number;
+  corruptedPages: number;
+  repairs: Array<{ pageIndex: number; pageId: string; details: string[] }>;
+  unrecoverable: Array<{ pageIndex: number; pageId: string; details: string[] }>;
+}
+
+/**
+ * Validate ALL pages and optionally repair corrupted schemas.
+ * Called proactively on loadFromStorage (before the exception path)
+ * and periodically by the integrity checker.
+ *
+ * This is non-throwing — all errors are caught and reported.
+ * Returns a detailed report of what was found/fixed.
+ */
+export function validateAndRepairPages(
+  pages: Array<{ id: string; schema?: ScreenSchema; [k: string]: unknown }>,
+  options?: { autoRepair?: boolean },
+): PageValidationResult {
+  const result: PageValidationResult = {
+    totalPages: pages.length,
+    validPages: 0,
+    repairedPages: 0,
+    corruptedPages: 0,
+    repairs: [],
+    unrecoverable: [],
+  };
+
+  const shouldRepair = options?.autoRepair !== false;
+
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+
+    // Page without schema — skip (might be a legacy page without schema yet)
+    if (!page.schema) {
+      result.validPages++;
+      continue;
+    }
+
+    const validation = validateSchema(page.schema);
+    if (validation.valid) {
+      result.validPages++;
+      continue;
+    }
+
+    // Schema is invalid
+    result.corruptedPages++;
+
+    if (shouldRepair) {
+      const repairResult = repairSchema(page.schema);
+      if (repairResult.repaired) {
+        // Apply the repaired schema back to the page
+        (page as Record<string, unknown>).schema = repairResult.schema;
+        result.repairedPages++;
+        result.repairs.push({
+          pageIndex: i,
+          pageId: page.id,
+          details: repairResult.repairs,
+        });
+        // Also track unrecoverable issues from repaired pages
+        if (repairResult.unrecoverable.length > 0) {
+          result.unrecoverable.push({
+            pageIndex: i,
+            pageId: page.id,
+            details: repairResult.unrecoverable,
+          });
+        }
+      } else {
+        result.unrecoverable.push({
+          pageIndex: i,
+          pageId: page.id,
+          details: repairResult.unrecoverable,
+        });
+      }
+    }
+  }
+
+  return result;
+}
+
+// ── 6.4 Pages Hash for Integrity ──────────────────────────────────
+
+/**
+ * Compute a hash of all page schemas for integrity verification.
+ * Used during save/load to verify data was not corrupted in transit.
+ */
+export function computePagesHash(pages: unknown[]): string {
+  // Only hash schema blocks (the single source of truth)
+  const schemasOnly = pages.map((p: any) => {
+    if (p?.schema?.blocks) {
+      return { id: p.id, blocks: p.schema.blocks };
+    }
+    return { id: p?.id };
+  });
+  return computeSchemaHash(schemasOnly);
+}
+
+// ── 6.5 Safe Mode Feature Gates ──────────────────────────────────
+
+/**
+ * Feature gates that are disabled in safe mode.
+ * Safe mode is activated when:
+ *   - localStorage data was corrupted and required repair
+ *   - Schema validation failed on load
+ *   - Multiple integrity check failures detected
+ *
+ * In safe mode, these features are disabled to prevent further corruption:
+ *   - Game blocks (complex rendering, potential crash sources)
+ *   - Lazy rendering (may hide corrupted blocks)
+ *   - Compression engine (may alter block heights incorrectly)
+ *   - Scene overflow (split/merge disabled)
+ */
+export const SAFE_MODE_DISABLED_FEATURES = [
+  'game-blocks',
+  'lazy-render',
+  'compression-engine',
+  'scene-overflow-split',
+  'scene-overflow-merge',
+] as const;
+
+export type SafeModeFeature = typeof SAFE_MODE_DISABLED_FEATURES[number];
+
+/**
+ * Check if a specific feature is allowed in the current mode.
+ * Returns true if the feature is allowed (safe mode off, or feature not gated).
+ */
+export function isFeatureAllowed(feature: SafeModeFeature, safeMode: boolean): boolean {
+  if (!safeMode) return true;
+  return !SAFE_MODE_DISABLED_FEATURES.includes(feature);
+}
+
+// ── 6.2 Transaction Rollback Store Integration ─────────────────────
+
+/**
+ * Get the current transaction rollback manager state for store sync.
+ * Used by recovery-slice to expose transaction state to the UI.
+ */
+export function getTransactionState(): {
+  activeCount: number;
+  checkpoints: ReadonlyArray<Readonly<TransactionCheckpoint>>;
+} {
+  return {
+    activeCount: transactionRollback.getActiveCheckpoints().length,
+    checkpoints: transactionRollback.getActiveCheckpoints(),
+  };
+}
