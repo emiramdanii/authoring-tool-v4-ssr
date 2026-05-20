@@ -19,7 +19,10 @@ import { createPage } from './constants';
 import { createHistorySlice } from './history-slice';
 import { createPageSlice } from './page-slice';
 import { createElementSlice } from './element-slice';
-import { createUISlice } from './ui-slice';
+import { createViewportSlice } from './viewport-slice';
+import { createSchemaCRDSlice } from './schema-crud-slice';
+import { createSchemaOpsSlice } from './schema-ops-slice';
+import { createPageOpsSlice } from './page-ops-slice';
 import { createSessionSlice } from './session-slice';
 import { createBackgroundSlice } from './background-slice';
 import { createResetCanvasSlice } from './reset-canvas';
@@ -108,7 +111,10 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     ...createHistorySlice(...api),
     ...createPageSlice(...api),
     ...createElementSlice(...api),
-    ...createUISlice(...api),
+    ...createViewportSlice(...api),
+    ...createSchemaCRDSlice(...api),
+    ...createSchemaOpsSlice(...api),
+    ...createPageOpsSlice(...api),
     ...createSessionSlice(...api),
     ...createBackgroundSlice(...api),
     ...createResetCanvasSlice(...api),

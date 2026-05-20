@@ -205,7 +205,7 @@ vi.mock('immer', async () => {
 import { createPageSlice } from '@/store/canva/page-slice';
 import { createElementSlice } from '@/store/canva/element-slice';
 import { createHistorySlice } from '@/store/canva/history-slice';
-import { createUISlice } from '@/store/canva/ui-slice';
+import { createViewportSlice, createSchemaCRDSlice, createSchemaOpsSlice, createPageOpsSlice } from '@/store/canva/ui-slice';
 import { createBackgroundSlice } from '@/store/canva/background-slice';
 import type { CanvaState } from '@/store/canva/types';
 import type { CanvaPage, CanvaElement } from '@/components/canva/types';
@@ -300,7 +300,7 @@ describe('Page Slice', () => {
       ...createHistorySlice(...a),
       ...createPageSlice(...a),
       ...createElementSlice(...a),
-      ...createUISlice(...a),
+      ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -388,7 +388,7 @@ describe('Element Slice', () => {
       ...createHistorySlice(...a),
       ...createPageSlice(...a),
       ...createElementSlice(...a),
-      ...createUISlice(...a),
+      ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -558,7 +558,7 @@ describe('History Slice', () => {
       ...createHistorySlice(...a),
       ...createPageSlice(...a),
       ...createElementSlice(...a),
-      ...createUISlice(...a),
+      ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -641,7 +641,7 @@ describe('UI Slice', () => {
       ...createHistorySlice(...a),
       ...createPageSlice(...a),
       ...createElementSlice(...a),
-      ...createUISlice(...a),
+      ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -791,7 +791,7 @@ describe('Background Slice', () => {
       ...createHistorySlice(...a),
       ...createPageSlice(...a),
       ...createElementSlice(...a),
-      ...createUISlice(...a),
+      ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });

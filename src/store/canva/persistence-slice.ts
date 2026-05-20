@@ -10,6 +10,7 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
+import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage } from '@/core/recovery';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
@@ -134,12 +135,33 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
   loadFromStorage: () => {
     try {
-      const raw = localStorage.getItem(CANVA_STORAGE_KEY);
+      // ── FASE 6: Crash Recovery ──────────────────────────────
+      // Check if there's a crash recovery checkpoint (from a previous
+      // session that crashed during a dangerous operation).
+      // If so, prefer the checkpoint over the last auto-save.
+      const crashMeta = hasCrashRecovery();
+      let raw: string | null = null;
+
+      if (crashMeta) {
+        const crashData = loadCrashRecovery();
+        if (crashData) {
+          // Use crash recovery data — it's more recent than auto-save
+          raw = JSON.stringify({ pages: crashData.pages, ratioId: crashData.ratioId });
+          console.log(
+            `[Recovery] Found crash checkpoint from ${new Date(crashMeta.timestamp).toLocaleTimeString()} ` +
+            `(reason: ${crashMeta.reason}, ${crashMeta.pageCount} pages)`
+          );
+          clearCrashRecovery();
+        }
+      }
+
+      // Fall back to normal storage if no crash recovery
+      if (!raw) {
+        raw = localStorage.getItem(CANVA_STORAGE_KEY);
+      }
       if (!raw) return false;
 
       // Clear runtime caches when loading new project data.
-      // Compressed heights are per-session and derived from measurements
-      // that belong to the previous project — they're stale for new data.
       clearCompressedHeightCache();
 
       const data = JSON.parse(raw);
