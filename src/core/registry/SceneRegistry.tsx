@@ -70,6 +70,7 @@ export interface BlockDefinition extends BlockDefinitionMeta {
 // ── Eager imports (lightweight, frequently used) ─────────────────
 import {
   CoverRenderer,
+  HeroRenderer,
   PetunjukRenderer,
   TpRenderer,
   AlurRenderer,
@@ -144,7 +145,7 @@ import { BLOCK_DEFINITIONS, DEFAULT_CAPABILITIES } from './BlockDefinitionRegist
 
 const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'cover': CoverRenderer,
-  'hero': CoverRenderer, // Hero shares Cover's data model & renderer
+  'hero': HeroRenderer, // Hero has its own dedicated banner renderer
   'petunjuk': PetunjukRenderer,
   'tp': TpRenderer,
   'alur': AlurRenderer,

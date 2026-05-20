@@ -5,6 +5,7 @@
 // Import them all from here: import { CoverRenderer, ... } from './blocks';
 
 export { CoverRenderer } from './CoverRenderer';
+export { HeroRenderer } from './HeroRenderer';
 export { PetunjukRenderer } from './PetunjukRenderer';
 export { TpRenderer } from './TpRenderer';
 export { AlurRenderer } from './AlurRenderer';
