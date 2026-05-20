@@ -186,7 +186,7 @@ export default function PresentMode() {
             <span className="hidden sm:inline">Keluar</span>
           </Button>
 
-          <div className="w-px h-5 bg-gray-900/10 dark:bg-white/10" />
+          <div className="w-px h-5 bg-white/10" />
 
           {/* Prev */}
           <Button
@@ -195,14 +195,23 @@ export default function PresentMode() {
             onClick={handlePrev}
             disabled={currentPageIndex <= 0}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold text-white/70 hover:text-white disabled:opacity-30"
+            aria-label="Halaman sebelumnya"
           >
             <ChevronLeft size={14} />
           </Button>
 
-          {/* Page counter */}
-          <span className="text-[11px] font-bold text-white/90 whitespace-nowrap min-w-[60px] text-center">
-            {currentPageIndex + 1}/{totalPages}
-          </span>
+          {/* Page counter + progress bar */}
+          <div className="flex flex-col items-center gap-1 min-w-[80px]">
+            <span className="text-[11px] font-bold text-white/90 whitespace-nowrap">
+              {currentPageIndex + 1}/{totalPages}
+            </span>
+            <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-white/60 transition-all duration-300 ease-out"
+                style={{ width: `${((currentPageIndex + 1) / totalPages) * 100}%` }}
+              />
+            </div>
+          </div>
 
           {/* Next */}
           <Button
@@ -211,11 +220,12 @@ export default function PresentMode() {
             onClick={handleNext}
             disabled={currentPageIndex >= totalPages - 1}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold text-white/70 hover:text-white disabled:opacity-30"
+            aria-label="Halaman berikutnya"
           >
             <ChevronRight size={14} />
           </Button>
 
-          <div className="w-px h-5 bg-gray-900/10 dark:bg-white/10" />
+          <div className="w-px h-5 bg-white/10" />
 
           {/* Fullscreen */}
           <Button
@@ -223,6 +233,8 @@ export default function PresentMode() {
             size="sm"
             onClick={toggleFullscreen}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-white/50 hover:text-white/80"
+            aria-label={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+            title={isFullscreen ? 'Keluar layar penuh (F)' : 'Layar penuh (F)'}
           >
             {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
           </Button>

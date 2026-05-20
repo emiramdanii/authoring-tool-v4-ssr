@@ -467,6 +467,61 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* ── Spring bounce — elastic overshoot for buttons and interactive elements ── */
+@keyframes springBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.92); }
+  50% { transform: scale(1.06); }
+  70% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* ── Confetti burst — scale-up + fade-out for step completion ── */
+@keyframes confettiBurst {
+  0% { transform: scale(0); opacity: 1; }
+  60% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* ── Glow pulse — subtle pulsing glow for active elements ── */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ── Shimmer — sweeping highlight for loading/skeleton states ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Sparkle — twinkling effect for quiz elements ── */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ── Trophy bounce — celebratory bounce for completion ── */
+@keyframes trophyBounce {
+  0% { transform: translateY(0) scale(0.3); opacity: 0; }
+  40% { transform: translateY(-16px) scale(1.1); opacity: 1; }
+  60% { transform: translateY(4px) scale(0.95); }
+  80% { transform: translateY(-4px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* ── Ripple — expanding circle for button feedback ── */
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* ── Pulse — generic pulse animation for attention ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* ── Block entrance animation — subtle scale + fade for newly added blocks ── */
 @keyframes blockEntrance {
   from { opacity: 0; transform: scale(0.92); }
