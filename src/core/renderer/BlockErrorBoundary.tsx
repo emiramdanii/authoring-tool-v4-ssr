@@ -136,6 +136,7 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
 // ═══════════════════════════════════════════════════════════════════
 
 import { isFeatureAllowed, type SafeModeFeature, SAFE_MODE_DISABLED_FEATURES } from '@/core/recovery';
+import { useCanvaStore } from '@/store/canva-store';
 
 /** Block types that are gated by specific safe mode features */
 const BLOCK_TYPE_TO_FEATURE: Record<string, SafeModeFeature> = {
@@ -160,16 +161,14 @@ interface SafeModeBlockGateProps {
  * Gate that prevents complex blocks from rendering in safe mode.
  * In safe mode, game blocks and other gated features show a
  * placeholder instead of the full block (preventing potential crashes).
+ *
+ * FASE 6: Now reads safeMode from the Zustand store (reactive)
+ * instead of raw sessionStorage. This ensures the gate updates
+ * immediately when safe mode is toggled, without stale reads.
  */
 export function SafeModeBlockGate({ blockType, children }: SafeModeBlockGateProps) {
-  // Read safeMode from store — use a simple check to avoid
-  // re-rendering the entire tree on every state change
-  let safeMode = false;
-  try {
-    if (typeof sessionStorage !== 'undefined') {
-      safeMode = sessionStorage.getItem('silse_safe_mode') === '1';
-    }
-  } catch { /* ignore */ }
+  // Read safeMode from Zustand store — reactive and in sync with UI
+  const safeMode = useCanvaStore((s) => s.safeMode);
 
   if (!safeMode) return <>{children}</>;
 

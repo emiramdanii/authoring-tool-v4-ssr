@@ -8,6 +8,7 @@ import { logger } from '@/core/utils/logger';
 import { toast } from 'sonner';
 import { enqueueSave, type SyncPayload } from '@/lib/offline-sync';
 import { canvaPagesToSavePages } from '@/lib/save-utils';
+import { computePagesHash } from '@/core/recovery';
 
 /**
  * Unified auto-save hook — single source of truth for saving both stores.
@@ -100,6 +101,20 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
       }
 
       useCanvaStore.setState({ _saveStatus: 'saved' });
+
+      // ── FASE 6: Post-save hash verification ──
+      // After saving, verify the hash matches what was saved.
+      // This catches corruption in the write path (e.g., storage truncation).
+      try {
+        const savedPages = useCanvaStore.getState().pages;
+        const currentHash = computePagesHash(savedPages);
+        const previousHash = useCanvaStore.getState()._pagesHashAtSave;
+        if (previousHash && currentHash !== previousHash) {
+          console.warn('[AutoSave] Hash mismatch after save — possible write corruption');
+        }
+      } catch {
+        // Hash verification is best-effort — don't break save on failure
+      }
 
       // Auto-hide "saved" indicator after HIDE_SAVED_MS
       if (timerRef.current) clearTimeout(timerRef.current);

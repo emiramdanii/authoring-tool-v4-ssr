@@ -470,6 +470,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 }}
                 tokens={tokens}
                 isCompact={isCompact}
+                safeMode={useCanvaStore.getState().safeMode}
               />
             )}
             {/* Compression indicator (canvas mode only) */}
@@ -549,6 +550,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         isCompact={isCompact}
         position="bottom"
         onPromoteScene={isCompact ? () => useCanvaStore.getState().promoteSceneSplit(1) : undefined}
+        safeMode={useCanvaStore.getState().safeMode}
       />
 
       {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}

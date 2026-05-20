@@ -187,6 +187,9 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
       },
     });
 
+    // FASE 6: Commit transaction checkpoint — merge succeeded
+    transactionRollback.commit(txId);
+
     toast.success('Halaman berhasil digabung', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,

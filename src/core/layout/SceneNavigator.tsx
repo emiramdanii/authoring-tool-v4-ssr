@@ -14,7 +14,8 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { ChevronLeft, ChevronRight, FilePlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FilePlus, ShieldOff } from 'lucide-react';
+import { isFeatureAllowed, type SafeModeFeature } from '@/core/recovery';
 
 export interface SceneNavigatorProps {
   /** Current scene index (0-based) */
@@ -29,6 +30,8 @@ export interface SceneNavigatorProps {
   position?: 'bottom' | 'top';
   /** Callback to promote current scene to a new page (optional) */
   onPromoteScene?: () => void;
+  /** Whether safe mode is active (disables promote scene button) */
+  safeMode?: boolean;
 }
 
 export const SceneNavigator = React.memo(function SceneNavigator({
@@ -38,6 +41,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
   isCompact = false,
   position = 'bottom',
   onPromoteScene,
+  safeMode = false,
 }: SceneNavigatorProps) {
   const handlePrev = useCallback(() => {
     if (currentScene > 0) onSceneChange(currentScene - 1);
@@ -126,16 +130,24 @@ export const SceneNavigator = React.memo(function SceneNavigator({
         {currentScene + 1}/{totalScenes}
       </span>
 
-      {/* Promote to page button — only when multi-scene and callback provided */}
+      {/* Promote to page button — only when multi-scene, callback provided, and allowed in safe mode */}
       {onPromoteScene && (
         <button
-          onClick={onPromoteScene}
+          onClick={() => {
+            const allowed = isFeatureAllowed('scene-overflow-split' as SafeModeFeature, safeMode);
+            if (allowed) onPromoteScene();
+          }}
           className="flex items-center justify-center rounded-full transition-colors hover:bg-white/10 ml-1"
-          style={{ width: isCompact ? 20 : 24, height: isCompact ? 20 : 24 }}
+          style={{
+            width: isCompact ? 20 : 24,
+            height: isCompact ? 20 : 24,
+            ...(safeMode ? { opacity: 0.3, cursor: 'not-allowed' } : {}),
+          }}
           aria-label="Promosi scene ke halaman"
-          title="Promosi Scene ke Halaman Baru"
+          title={safeMode ? 'Dinonaktifkan di Mode Aman' : 'Promosi Scene ke Halaman Baru'}
+          disabled={safeMode}
         >
-          <FilePlus size={isCompact ? 11 : 13} className="text-emerald-400/80" />
+          {safeMode ? <ShieldOff size={isCompact ? 11 : 13} className="text-amber-400/80" /> : <FilePlus size={isCompact ? 11 : 13} className="text-emerald-400/80" />}
         </button>
       )}
     </div>

@@ -18,6 +18,7 @@ import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/sc
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { findBlockOwner, commitSchemaUpdate } from './schema-helpers';
 import { removeCompressedHeight } from '@/core/schema/session-state';
+import { saveCrashCheckpoint } from '@/core/recovery';
 
 export type SchemaOpsSlice = Pick<
   CanvaState,
@@ -168,6 +169,10 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const schema = ensurePageSchema(page);
     if (!schema) return;
     const blocks = schema.blocks;
+
+    // ── FASE 6: Crash checkpoint before bulk delete ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'bulk-delete-blocks');
+
     get()._pushHistory();
 
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
@@ -233,6 +238,10 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     if (fromIndex < 0 || fromIndex >= blocks.length) return;
     if (toIndex < 0 || toIndex >= blocks.length) return;
     if (fromIndex === toIndex) return;
+
+    // ── FASE 6: Crash checkpoint before reorder ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'reorder-blocks');
+
     get()._pushHistory();
 
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
@@ -407,6 +416,10 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     if (!page || blockIds.length === 0) return;
     const schema = ensurePageSchema(page);
     if (!schema) return;
+
+    // ── FASE 6: Crash checkpoint before batch duplicate ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'batch-duplicate-blocks');
+
     get()._pushHistory();
 
     const { generateBlockId } = await import('@/core/schema/ensure-schema');

@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, Footprints, LayoutGrid, FilePlus } from 'lucide-react';
+import { AlertTriangle, Footprints, LayoutGrid, FilePlus, ShieldOff } from 'lucide-react';
 import type { TokenResolver } from '../types';
 import { PremiumBadge } from './PremiumBlockEffects';
+import { isFeatureAllowed, type SafeModeFeature } from '@/core/recovery';
 
 // ═══════════════════════════════════════════════════════════════════
 // OVERFLOW INDICATOR — Floating Action Panel for Overflow Handling
@@ -26,6 +27,8 @@ export interface OverflowIndicatorProps {
   onAction: (action: 'step-mode' | 'compact' | 'new-page') => void;
   tokens?: TokenResolver;
   isCompact?: boolean;
+  /** Whether safe mode is active (disables split/merge actions) */
+  safeMode?: boolean;
 }
 
 export function OverflowIndicator({
@@ -34,6 +37,7 @@ export function OverflowIndicator({
   onAction,
   tokens,
   isCompact = false,
+  safeMode = false,
 }: OverflowIndicatorProps) {
   const overflow = estimatedHeight - availableHeight;
 
@@ -47,25 +51,38 @@ export function OverflowIndicator({
   const accentColor = tokens ? tokens.color('y') : '#fbbf24';
   const accentAlpha = (a: number) => tokens ? tokens.colorAlpha('y', a) : `rgba(251,191,36,${a})`;
 
+  // ── FASE 6: Safe mode gates for overflow actions ──
+  // In safe mode, scene-overflow-split and scene-overflow-merge are disabled.
+  // 'step-mode' uses scene split → gated by 'scene-overflow-split'
+  // 'new-page' uses page split → gated by 'scene-overflow-split'
+  // 'compact' uses compression engine → gated by 'compression-engine'
+  const isStepModeAllowed = isFeatureAllowed('scene-overflow-split' as SafeModeFeature, safeMode);
+  const isNewPageAllowed = isFeatureAllowed('scene-overflow-split' as SafeModeFeature, safeMode);
+  const isCompactAllowed = isFeatureAllowed('compression-engine' as SafeModeFeature, safeMode);
+
   const actions: Array<{
     key: 'step-mode' | 'compact' | 'new-page';
     icon: React.ReactNode;
     label: string;
+    disabled?: boolean;
   }> = [
     {
       key: 'step-mode',
       icon: <Footprints size={isCompact ? 9 : 10} />,
       label: 'Mode Langkah',
+      disabled: !isStepModeAllowed,
     },
     {
       key: 'compact',
       icon: <LayoutGrid size={isCompact ? 9 : 10} />,
       label: 'Tata Letak Ringkas',
+      disabled: !isCompactAllowed,
     },
     {
       key: 'new-page',
       icon: <FilePlus size={isCompact ? 9 : 10} />,
       label: 'Halaman Baru',
+      disabled: !isNewPageAllowed,
     },
   ];
 
@@ -85,17 +102,20 @@ export function OverflowIndicator({
         </span>
       </PremiumBadge>
 
-      {/* Action buttons */}
+      {/* Action buttons — disabled in safe mode for gated features */}
       <div style={{ display: 'flex', gap: '4px' }}>
         {actions.map((action) => (
           <button
             key={action.key}
             className="overflow-action-btn"
-            onClick={() => onAction(action.key)}
+            onClick={() => !action.disabled && onAction(action.key)}
             aria-label={action.label}
             type="button"
+            disabled={action.disabled}
+            style={action.disabled ? { opacity: 0.35, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
+            title={action.disabled ? 'Dinonaktifkan di Mode Aman' : undefined}
           >
-            {action.icon}
+            {action.disabled ? <ShieldOff size={isCompact ? 9 : 10} /> : action.icon}
             <span>{action.label}</span>
           </button>
         ))}

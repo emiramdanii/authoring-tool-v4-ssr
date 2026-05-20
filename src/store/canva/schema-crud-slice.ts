@@ -18,6 +18,7 @@ import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
 import { duplicateBlock as duplicateBlockImmutable, findBlockById, insertBlockNested, type ContainerRef } from '@/core/schema/immutable';
 import { findBlockOwner, commitSchemaUpdate, type BlockOwner } from './schema-helpers';
 import { removeCompressedHeight } from '@/core/schema/session-state';
+import { saveCrashCheckpoint } from '@/core/recovery';
 
 export type SchemaCRDSlice = Pick<
   CanvaState,
@@ -137,6 +138,9 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
 
     const owner = findBlockOwner(blocks, blockId);
     if (!owner) return;
+
+    // ── FASE 6: Crash checkpoint before destructive delete ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'delete-block');
 
     get()._pushHistory();
 
