@@ -7,6 +7,7 @@ import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
 import { SkipNavLink } from "@/components/shared/SkipNavLink";
 import { LiveAnnouncer } from "@/components/shared/LiveAnnouncer";
 import AutoSaveRecovery from "@/components/shared/AutoSaveRecovery";
+import { SafeModeBanner } from "@/components/shared/SafeModeBanner";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -75,6 +76,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${nunito.variable} antialiased bg-background text-foreground`}
       >
         <AppErrorBoundary>
+          <SafeModeBanner />
           <ThemeProvider>
             <A11yProvider>
               <SkipNavLink />

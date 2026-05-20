@@ -37,6 +37,7 @@ import {
 } from '@/core/schema/generators';
 import type { SchemaBlock } from '@/core/schema/types';
 import { getStoredText, parseStoredText } from '@/components/authoring/auto-generate/regenerate';
+import { saveCrashCheckpoint } from '@/core/recovery';
 
 // ── Auto-generate modules from existing authoring data ────────
 export function autoGenerateContent(): {
@@ -360,6 +361,10 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     }
 
     get()._pushHistory();
+
+    // ── FASE 6: Crash checkpoint before AI-generated content is applied ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'ai-generate');
+
     set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success(
       `⚡ ${pageType.name}: ${newPages.length} halaman dibuat${perPertemuan ? ` (${jumlahPertemuan} pertemuan)` : ''}${blueprint.autoGenerateModules ? ' + modul auto-generated' : ''}`

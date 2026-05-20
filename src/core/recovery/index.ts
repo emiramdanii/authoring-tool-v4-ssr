@@ -396,3 +396,5 @@ export function safeBootFromStorage(rawStorageData: string | null): SafeBootResu
 
   return { booted: true, safeMode: hasRepairs || warnings.length > 0, repairs, warnings };
 }
+
+export { runIntegrityCheck, type IntegrityReport } from './periodic-check';

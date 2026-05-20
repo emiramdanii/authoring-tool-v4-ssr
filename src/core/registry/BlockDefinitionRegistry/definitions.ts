@@ -1,105 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════
-// BLOCK DEFINITION REGISTRY — Metadata-only block definitions
+// BLOCK DEFINITION REGISTRY — Block Definitions
 // ═══════════════════════════════════════════════════════════════════
-// This is a lightweight, RENDERER-FREE version of the SceneRegistry.
-// It contains ONLY block metadata (type, name, icon, capabilities,
-// defaultLayout, createDefault, propertySchema) without importing
-// any React renderer components.
-//
-// WHY: The full SceneRegistry imports all renderer components, which
-// in turn import from @/store/canva-store (via BlockSelectionOverlay,
-// InlineTextEditor, etc.). This creates a circular dependency:
-//
-//   canva-store → ui-slice → SceneRegistry → renderers → canva-store
-//
-// By splitting the metadata into a separate module, ui-slice can
-// import block definitions WITHOUT pulling in the renderer graph.
-// The SceneRegistry.tsx then extends these definitions with renderers.
+// The complete BLOCK_DEFINITIONS record — metadata-only, renderer-free.
 //
 // Rule: This file MUST NOT import any React components or stores.
 
-import type { PropertySchema } from '../editor/types';
-
-// ═══════════════════════════════════════════════════════════════════
-// BLOCK PERSONALITY — Pedagogical intent grouping
-// ═══════════════════════════════════════════════════════════════════
-// Instead of grouping blocks by technical category (layout, content, etc.),
-// we group them by their pedagogical purpose — what role they play
-// in the learning experience.
-
-export type BlockPersonality = 'understanding' | 'discussion' | 'reflection' | 'assessment' | 'activation' | 'structure';
-
-export const PERSONALITY_CONFIG: Record<BlockPersonality, {
-  label: string;
-  icon: string;
-  color: string;
-  colorClass: string;
-  bgColorClass: string;
-  borderColorClass: string;
-  order: number;
-  description: string;
-}> = {
-  understanding: {
-    label: 'Membangun Pemahaman',
-    icon: '📖',
-    color: '#3B82F6',
-    colorClass: 'text-blue-400',
-    bgColorClass: 'bg-blue-500/10',
-    borderColorClass: 'border-blue-500/20',
-    order: 0,
-    description: 'Siswa perlu memahami konsep ini',
-  },
-  discussion: {
-    label: 'Mengembangkan Diskusi',
-    icon: '💬',
-    color: '#22C55E',
-    colorClass: 'text-green-400',
-    bgColorClass: 'bg-green-500/10',
-    borderColorClass: 'border-green-500/20',
-    order: 1,
-    description: 'Siswa perlu berdiskusi dan berkolaborasi',
-  },
-  reflection: {
-    label: 'Mendalami Refleksi',
-    icon: '🪞',
-    color: '#EAB308',
-    colorClass: 'text-yellow-400',
-    bgColorClass: 'bg-yellow-500/10',
-    borderColorClass: 'border-yellow-500/20',
-    order: 2,
-    description: 'Siswa perlu merenung dan merefleksi',
-  },
-  assessment: {
-    label: 'Mengukur Pemahaman',
-    icon: '❓',
-    color: '#EF4444',
-    colorClass: 'text-red-400',
-    bgColorClass: 'bg-red-500/10',
-    borderColorClass: 'border-red-500/20',
-    order: 3,
-    description: 'Siswa perlu diuji pemahamannya',
-  },
-  activation: {
-    label: 'Menghidupkan Kelas',
-    icon: '⚡',
-    color: '#A855F7',
-    colorClass: 'text-purple-400',
-    bgColorClass: 'bg-purple-500/10',
-    borderColorClass: 'border-purple-500/20',
-    order: 4,
-    description: 'Siswa perlu aktivitas menyenangkan',
-  },
-  structure: {
-    label: 'Struktur & Navigasi',
-    icon: '🏗️',
-    color: '#6B7280',
-    colorClass: 'text-gray-400',
-    bgColorClass: 'bg-gray-500/10',
-    borderColorClass: 'border-gray-500/20',
-    order: 5,
-    description: 'Kerangka presentasi',
-  },
-};
+import type { BlockDefinitionMeta } from './types';
+import { DEFAULT_CAPABILITIES } from './types';
 
 import {
   COVER_PROPERTY_SCHEMA,
@@ -133,76 +40,7 @@ import {
   TUJUANDISPLAY_PROPERTY_SCHEMA,
   MOTIVASI_PROPERTY_SCHEMA,
   RANGKUMAN_PROPERTY_SCHEMA,
-  MATERIBLOK_PROPERTY_SCHEMA,
-  GAMBAR_PROPERTY_SCHEMA,
-  TIMELINE_PROPERTY_SCHEMA,
-  COMPARE_PROPERTY_SCHEMA,
-  REVEAL_PROPERTY_SCHEMA,
-  TABEL_PROPERTY_SCHEMA,
-  CHECKLIST_PROPERTY_SCHEMA,
-  STATISTIK_PROPERTY_SCHEMA,
-  STUDI_PROPERTY_SCHEMA,
-} from '../editor/property-schemas';
-
-// ═══════════════════════════════════════════════════════════════════
-// TYPES (re-exported for consumers)
-// ═══════════════════════════════════════════════════════════════════
-
-export interface BlockCapabilities {
-  editable: boolean;
-  resizable: boolean;
-  movable: boolean;
-  backgroundCustom: boolean;
-  interactive: boolean;
-  autoGeneratable: boolean;
-  composite: boolean;
-  variants: ('A' | 'B' | 'C')[];
-  /** Whether the renderer handles compression natively via useBlockCompression.
-   *  If false, CompressionBoundary will wrap the block in CompressedBlockWrapper. */
-  handlesCompression: boolean;
-}
-
-export const DEFAULT_CAPABILITIES: BlockCapabilities = {
-  editable: true,
-  resizable: false,
-  movable: false,
-  backgroundCustom: false,
-  interactive: false,
-  autoGeneratable: true,
-  composite: false,
-  variants: ['A'],
-  handlesCompression: false,
-};
-
-export interface SceneBlockLayout {
-  position: 'flow' | 'absolute';
-  defaultWidth?: number;
-  defaultHeight?: number;
-  defaultX?: number;
-  defaultY?: number;
-  zIndex?: number;
-}
-
-/**
- * Block definition WITHOUT renderer.
- * This is safe to import from store modules — no React dependency.
- */
-export interface BlockDefinitionMeta {
-  type: string;
-  name: string;
-  icon: string;
-  category: 'layout' | 'content' | 'interactive' | 'navigation' | 'feedback' | 'decoration';
-  /** Pedagogical intent — groups blocks by learning purpose */
-  personality: BlockPersonality;
-  description: string;
-  capabilities: BlockCapabilities;
-  defaultLayout: SceneBlockLayout;
-  usedInTemplates: string[];
-  propertySchema: PropertySchema;
-  createDefault: () => Record<string, unknown>;
-  /** Estimated rendered height in px (used by overflow detection system) */
-  estimatedHeight: Record<'A' | 'B' | 'C', number>;
-}
+} from '../../editor/property-schemas';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK DEFINITIONS (renderer-free)
@@ -229,7 +67,6 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: 'VII', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'y',
-      layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
     }),
   },
   'hero': {
@@ -252,7 +89,6 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: '', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'c',
-      layout: { position: 'absolute' as const, x: 0, y: 0, width: 100, height: 100 },
     }),
   },
   'petunjuk': {
@@ -444,11 +280,11 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     category: 'interactive',
     personality: 'discussion',
     description: 'Pertanyaan diskusi dengan area jawaban',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B', 'C'], handlesCompression: true },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['diskusi'],
     propertySchema: DISKUSI_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 300, B: 320, C: 260 },
+    estimatedHeight: { A: 300, B: 280, C: 280 },
     createDefault: () => ({
       title: 'Diskusi',
       questions: [{ label: '1', icon: '💬', teks: 'Pertanyaan diskusi?', petunjuk: 'Petunjuk jawaban', color: 'c' }],
@@ -854,222 +690,4 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       interactive: true,
     }),
   },
-  'materi-blok': {
-    type: 'materi-blok',
-    name: 'Blok Materi',
-    icon: '📝',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Konten materi dengan 13 pola render (teks, definisi, poin, tabel, kutipan, timeline, dll.)',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: MATERIBLOK_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 200, B: 200, C: 200 },
-    createDefault: () => ({
-      tipe: 'teks',
-      judul: '',
-      isi: '',
-    }),
-  },
-  'gambar': {
-    type: 'gambar',
-    name: 'Gambar',
-    icon: '🖼️',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Gambar dengan judul dan keterangan',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: GAMBAR_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 300, B: 300, C: 300 },
-    createDefault: () => ({
-      title: '',
-      url: '',
-      caption: '',
-      accentColor: 'c',
-    }),
-  },
-  'timeline': {
-    type: 'timeline',
-    name: 'Alur Waktu',
-    icon: '📅',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Timeline vertikal dengan langkah-langkah',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: TIMELINE_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 350, B: 350, C: 350 },
-    createDefault: () => ({
-      title: '',
-      steps: [{ icon: '📌', label: 'Langkah 1', description: 'Deskripsi langkah', color: 'c' }],
-      accentColor: 'c',
-    }),
-  },
-  'compare': {
-    type: 'compare',
-    name: 'Perbandingan',
-    icon: '⚖️',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Perbandingan dua sisi dengan icon dan konten',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: COMPARE_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 300, B: 300, C: 300 },
-    createDefault: () => ({
-      title: '',
-      kiri: { icon: '🔵', judul: 'Sisi Kiri', isi: '' },
-      kanan: { icon: '🔴', judul: 'Sisi Kanan', isi: '' },
-      accentColor: 'c',
-    }),
-  },
-  'reveal': {
-    type: 'reveal',
-    name: 'Reveal',
-    icon: '🎁',
-    category: 'interactive',
-    personality: 'activation',
-    description: 'Konten tersembunyi yang bisa di-reveal dengan klik',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: REVEAL_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 250, B: 250, C: 250 },
-    createDefault: () => ({
-      title: '',
-      coverIcon: '🎁',
-      coverText: 'Ketuk untuk membuka!',
-      revealIcon: '💡',
-      revealContent: 'Konten tersembunyi di sini',
-      accentColor: 'p',
-      interactive: true,
-    }),
-  },
-  'tabel': {
-    type: 'tabel',
-    name: 'Tabel',
-    icon: '📊',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Tabel data dengan header dan baris',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: TABEL_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 250, B: 250, C: 250 },
-    createDefault: () => ({
-      title: '',
-      headers: ['Kolom 1', 'Kolom 2'],
-      rows: [['Data 1', 'Data 2']],
-      accentColor: 'c',
-    }),
-  },
-  'checklist': {
-    type: 'checklist',
-    name: 'Checklist',
-    icon: '✅',
-    category: 'interactive',
-    personality: 'activation',
-    description: 'Daftar checklist interaktif dengan centang',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: CHECKLIST_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 250, B: 250, C: 250 },
-    createDefault: () => ({
-      title: '',
-      items: [{ text: 'Item checklist', checked: false }],
-      accentColor: 'c',
-    }),
-  },
-  'statistik': {
-    type: 'statistik',
-    name: 'Statistik',
-    icon: '📈',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Kartu angka besar dengan label dan satuan',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: STATISTIK_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 200, B: 200, C: 200 },
-    createDefault: () => ({
-      title: '',
-      items: [{ angka: '100', satuan: 'juta', label: 'Penduduk', warna: 'c' }],
-      accentColor: 'c',
-    }),
-  },
-  'studi': {
-    type: 'studi',
-    name: 'Studi Kasus',
-    icon: '🔬',
-    category: 'content',
-    personality: 'understanding',
-    description: 'Kasus dengan situasi, pertanyaan, dan pesan',
-    capabilities: { ...DEFAULT_CAPABILITIES, variants: ['A'], handlesCompression: true },
-    defaultLayout: { position: 'flow' },
-    usedInTemplates: ['materi'],
-    propertySchema: STUDI_PROPERTY_SCHEMA,
-    estimatedHeight: { A: 300, B: 300, C: 300 },
-    createDefault: () => ({
-      title: '',
-      karakter: '🧑‍🎓',
-      situasi: 'Situasi kasus...',
-      pertanyaan: 'Pertanyaan refleksi?',
-      pesan: 'Pesan atau insight',
-      accentColor: 'c',
-    }),
-  },
 };
-
-// ═══════════════════════════════════════════════════════════════════
-// METADATA API (safe for store imports — no renderer dependency)
-// ═══════════════════════════════════════════════════════════════════
-
-/** Get block metadata by type (no renderer) */
-export function getBlockMeta(type: string): BlockDefinitionMeta | undefined {
-  return BLOCK_DEFINITIONS[type];
-}
-
-/** Get all block types in a category */
-export function getBlocksByCategoryMeta(category: string): BlockDefinitionMeta[] {
-  return Object.values(BLOCK_DEFINITIONS).filter(b => b.category === category);
-}
-
-/** Get all block types with a given personality */
-export function getBlocksByPersonalityMeta(personality: BlockPersonality): BlockDefinitionMeta[] {
-  return Object.values(BLOCK_DEFINITIONS).filter(b => b.personality === personality);
-}
-
-/** Get all block types used in a template */
-export function getBlocksForTemplateTypeMeta(templateType: string): BlockDefinitionMeta[] {
-  return Object.values(BLOCK_DEFINITIONS).filter(b =>
-    b.usedInTemplates.includes(templateType) || b.usedInTemplates.includes('all')
-  );
-}
-
-/** Check if a block type is registered */
-export function isBlockRegisteredMeta(type: string): boolean {
-  return type in BLOCK_DEFINITIONS;
-}
-
-/** Get capabilities for a block type */
-export function getBlockCapabilitiesMeta(type: string): BlockCapabilities {
-  return BLOCK_DEFINITIONS[type]?.capabilities ?? DEFAULT_CAPABILITIES;
-}
-
-/** Get property schema for a block type */
-export function getBlockPropertySchemaMeta(type: string): PropertySchema | undefined {
-  return BLOCK_DEFINITIONS[type]?.propertySchema;
-}
-
-/** Get all registered block metadata */
-export function getAllBlockMeta(): BlockDefinitionMeta[] {
-  return Object.values(BLOCK_DEFINITIONS);
-}

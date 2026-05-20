@@ -10,7 +10,7 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // Export methods removed — now using Vite SSR Export pipeline
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
-import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage } from '@/core/recovery';
+import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage, repairSchema } from '@/core/recovery';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
@@ -289,7 +289,39 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       }
       return false;
     } catch {
-      // If data is corrupt, clear it
+      // FASE 6: Try safe boot before giving up
+      try {
+        const rawForRecovery = localStorage.getItem(CANVA_STORAGE_KEY);
+        const bootResult = safeBootFromStorage(rawForRecovery);
+        if (bootResult.booted && bootResult.repairs.length > 0) {
+          console.warn('[Recovery] Safe boot repairs:', bootResult.repairs);
+          // Try to load the repaired data
+          const repairedData = JSON.parse(rawForRecovery!);
+          // Apply repairs to pages
+          const repairedPages = (repairedData.pages || []).map((p: any, i: number) => {
+            if (bootResult.safeMode && p.schema) {
+              const repairResult = repairSchema(p.schema);
+              return { ...p, schema: repairResult.schema };
+            }
+            return p;
+          });
+          // Set safe mode flag if data was repaired
+          if (bootResult.safeMode) {
+            try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
+          }
+          // Re-save the repaired data
+          localStorage.setItem(CANVA_STORAGE_KEY, JSON.stringify({
+            ...repairedData,
+            pages: repairedPages,
+            _lastSavedAt: Date.now(),
+            _migrationVersion: 1,
+          }));
+          // Try loading again
+          return get().loadFromStorage();
+        }
+      } catch (recoveryErr) {
+        console.warn('[Recovery] Safe boot failed:', recoveryErr);
+      }
       try { localStorage.removeItem(CANVA_STORAGE_KEY); } catch {}
       return false;
     }
