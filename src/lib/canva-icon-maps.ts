@@ -4,6 +4,26 @@
 // Previously duplicated in: LeftPanel.tsx, RightPanel.tsx, PageTemplate.tsx
 // All components MUST import from this file instead of defining local copies.
 
+import {
+  BookOpen,
+  Brain,
+  Gamepad2,
+  MessageCircle,
+  Trophy,
+  Target,
+  Sparkles,
+  Lightbulb,
+  LayoutGrid,
+  FileText,
+  PenTool,
+  HelpCircle,
+  Users,
+  Puzzle,
+  ListChecks,
+  GraduationCap,
+  type LucideIcon,
+} from 'lucide-react';
+
 // ── Game type icons ─────────────────────────────────────────────
 
 export const GAME_TYPE_ICON_MAP: Record<string, string> = {
@@ -96,3 +116,77 @@ export function getModuleIcon(type: string): string {
 export function getGameIcon(type: string): string {
   return GAME_TYPE_ICON_MAP[type] || '🎮';
 }
+
+// ── Tab icon map (Lucide component lookup) ────────────────────────
+
+export const TAB_ICON_MAP: Record<string, LucideIcon> = {
+  BookOpen,
+  Brain,
+  Gamepad2,
+  MessageCircle,
+  Trophy,
+  Target,
+  Sparkles,
+  Lightbulb,
+  LayoutGrid,
+  FileText,
+  PenTool,
+  HelpCircle,
+  Users,
+  Puzzle,
+  ListChecks,
+  GraduationCap,
+};
+
+/** Resolve a tab icon name to its Lucide component */
+export function getTabIcon(name: string): LucideIcon {
+  return TAB_ICON_MAP[name] || LayoutGrid;
+}
+
+// ── Block type → default tab icon name ────────────────────────────
+
+export const BLOCK_TYPE_TAB_ICON: Record<string, string> = {
+  cover: 'BookOpen',
+  hero: 'Sparkles',
+  petunjuk: 'ListChecks',
+  tp: 'Target',
+  alur: 'LayoutGrid',
+  skenario: 'Puzzle',
+  'def-box': 'BookOpen',
+  'nc-grid': 'LayoutGrid',
+  'flashcard-set': 'Brain',
+  ftab: 'LayoutGrid',
+  'nk-card': 'BookOpen',
+  'materi-section': 'BookOpen',
+  diskusi: 'MessageCircle',
+  kuis: 'HelpCircle',
+  'sortir-game': 'Gamepad2',
+  'roda-game': 'Gamepad2',
+  'memory-game': 'Brain',
+  'matching-game': 'Gamepad2',
+  'fill-blank-game': 'PenTool',
+  'word-search-game': 'Gamepad2',
+  'true-false-game': 'Gamepad2',
+  'drag-drop-game': 'Gamepad2',
+  'crossword-game': 'Gamepad2',
+  'team-buzzer-game': 'Trophy',
+  hasil: 'Trophy',
+  refleksi: 'Brain',
+  penutup: 'GraduationCap',
+  'tabel-accord': 'FileText',
+  'tujuan-display': 'Target',
+  motivasi: 'Lightbulb',
+  rangkuman: 'BookOpen',
+  tabel: 'FileText',
+  timeline: 'LayoutGrid',
+  compare: 'LayoutGrid',
+  gambar: 'FileText',
+  reveal: 'Sparkles',
+  checklist: 'ListChecks',
+  statistik: 'Target',
+  studi: 'BookOpen',
+  'materi-blok': 'BookOpen',
+  // Generic fallback for unknown types
+  custom: 'LayoutGrid',
+  base: 'LayoutGrid',
+};

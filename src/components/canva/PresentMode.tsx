@@ -9,6 +9,7 @@ import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SceneTabBar } from './toolbar/SceneTabBar';
 
 // ═══════════════════════════════════════════════════════════════
 // PRESENT MODE — Fullscreen presentation playback
@@ -35,6 +36,10 @@ export default function PresentMode() {
   const [direction, setDirection] = useState(0);
   const prevIdxRef = useRef(currentPageIndex);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // FASE 10: Tab cycling support
+  const activeTabId = useCanvaStore(s => s.activeTabId);
+  const setActiveTabId = useCanvaStore(s => s.setActiveTabId);
 
   const page = pages[currentPageIndex];
   const totalPages = pages.length;
@@ -113,11 +118,31 @@ export default function PresentMode() {
         toggleFullscreen();
         return;
       }
+      // FASE 10: T key cycles through tabs
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        const currentPage = useCanvaStore.getState().pages[currentPageIndex];
+        const currentTabs = currentPage?.schema?.tabs;
+        if (currentTabs && currentTabs.length >= 2) {
+          if (!activeTabId) {
+            setActiveTabId(currentTabs[0].id);
+          } else {
+            const currentIdx = currentTabs.findIndex(t => t.id === activeTabId);
+            if (currentIdx === -1 || currentIdx >= currentTabs.length - 1) {
+              // Wrap around: back to showing all
+              setActiveTabId(null);
+            } else {
+              setActiveTabId(currentTabs[currentIdx + 1].id);
+            }
+          }
+        }
+        return;
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPageIndex, totalPages, goPage, setAppMode, resetHideTimer, toggleFullscreen]);
+  }, [currentPageIndex, totalPages, goPage, setAppMode, resetHideTimer, toggleFullscreen, activeTabId, setActiveTabId]);
 
   const handlePrev = useCallback(() => {
     if (currentPageIndex > 0) {
@@ -141,7 +166,10 @@ export default function PresentMode() {
       onMouseMove={resetHideTimer}
     >
       {/* Main canvas area */}
-      <div ref={canvasRef} className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+      <div ref={canvasRef} className="flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden">
+        {/* FASE 10: Scene Tab Bar for present mode */}
+        <SceneTabBar isCompact={false} className="w-full" />
+        <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
         <PageTransition
           pageKey={`present-page-${currentPageIndex}`}
           direction={direction as PageDirection}
@@ -163,6 +191,7 @@ export default function PresentMode() {
             />
           </CanvasErrorBoundary>
         </PageTransition>
+        </div>
       </div>
 
       {/* Floating minimal controls — visible on hover */}

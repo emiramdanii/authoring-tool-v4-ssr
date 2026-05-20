@@ -92,6 +92,19 @@ export type SchemaBlock =
   | MateriBlokBlock
   | BaseBlock;
 
+// ── Tab Definition ──────────────────────────────────────────────
+
+export interface TabDefinition {
+  /** Unique tab ID */
+  id: string;
+  /** Display label */
+  label: string;
+  /** Icon name (Lucide icon key — resolved by getTabIcon) */
+  icon: string;
+  /** Block IDs assigned to this tab */
+  blockIds: string[];
+}
+
 // ── Screen Schema ──────────────────────────────────────────────
 
 export interface ScreenSchema {
@@ -107,6 +120,8 @@ export interface ScreenSchema {
   sectionColor?: string;
   /** Screen blocks in order */
   blocks: SchemaBlock[];
+  /** Tab definitions for icon navigation */
+  tabs?: TabDefinition[];
   /** Navigation targets and config */
   nav?: {
     prev?: string;

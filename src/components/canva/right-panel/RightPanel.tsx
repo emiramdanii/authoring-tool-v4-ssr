@@ -10,6 +10,7 @@ import PageSettingsSection from './PageSettingsSection';
 import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
+import TabManagementSection from './TabManagementSection';
 import LayerPanel from '../left-panel/LayerPanel';
 import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -143,6 +144,7 @@ export default function RightPanel() {
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />
+                <TabManagementSection />
                 {/* ── Teacher mode: Show NavigationSection + PageInfo here ── */}
                 {/* (These are normally in the Layer tab, but Layer is hidden in sederhana mode) */}
                 {isSederhana && (

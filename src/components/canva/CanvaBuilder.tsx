@@ -28,6 +28,7 @@ import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
 import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 import { CanvaOrientationTooltip } from '@/components/shared/CanvaOrientationTooltip';
 import { useHealthMonitor } from '@/hooks/use-health-monitor';
+import { SceneTabBar } from './toolbar/SceneTabBar';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
@@ -205,6 +206,9 @@ export default function CanvaBuilder() {
             </CanvasErrorBoundary>
           </div>
         </div>
+
+        {/* FASE 10: Scene Tab Bar — between builder row and status bar */}
+        <SceneTabBar isCompact={true} />
 
         {/* Status Bar */}
         <StatusBar />

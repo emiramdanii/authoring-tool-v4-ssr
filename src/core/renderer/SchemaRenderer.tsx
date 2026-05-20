@@ -255,6 +255,22 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     return createDerivedSchema(screen, scenePlan.scenes[currentScene] || scenePlan.scenes[0]);
   }, [screen, scenePlan, sceneIndex]);
 
+  // ── FASE 10: Tab filtering ────────────────────────────────────
+  // When a tab is active, filter blocks to only show those assigned
+  // to that tab. If no tab is active, or page has < 2 tabs, show all.
+  const activeTabId = useCanvaStore(s => s.activeTabId);
+
+  const tabFilteredSchema = useMemo(() => {
+    if (!activeTabId || !effectiveSchema.tabs || effectiveSchema.tabs.length <= 1) {
+      return effectiveSchema;
+    }
+    const activeTab = effectiveSchema.tabs.find(t => t.id === activeTabId);
+    if (!activeTab) return effectiveSchema;
+    const tabBlockIds = new Set(activeTab.blockIds);
+    const filteredBlocks = effectiveSchema.blocks.filter(b => b.id && tabBlockIds.has(b.id));
+    return { ...effectiveSchema, blocks: filteredBlocks };
+  }, [effectiveSchema, activeTabId]);
+
   // ═══ SCENE LAYOUT RESOLUTION — SINGLE LAYOUT AUTHORITY ═══
   // resolveSceneLayout() is the ONLY source of block positions.
   // Browser flex/grid is NO LONGER the layout authority.
@@ -266,12 +282,12 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   const resolvedBlocks = useMemo(() => {
     // Cover/hero pages: safe area is 0 (they fill the entire scene)
     const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
-    // Use effectiveSchema (derived for current scene) instead of full screen
-    const resolved = resolveSceneLayout(effectiveSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
+    // Use tabFilteredSchema (derived for current scene + active tab) instead of full screen
+    const resolved = resolveSceneLayout(tabFilteredSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
 
     return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
+  }, [tabFilteredSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
 
   // ═══ CANVAS BLOCK DRAG REORDER ═══════════════════════════════
   // Only enable drag-reorder in canvas mode when onBlockReorder is provided.

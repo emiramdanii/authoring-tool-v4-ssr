@@ -168,6 +168,26 @@ export interface CanvaState {
   copySelected: () => void;
   pasteElements: () => void;
 
+  // ── Tab Navigation (FASE 10) ──────────────────────────────────
+  /** Currently active tab ID (ephemeral — not persisted) */
+  activeTabId: string | null;
+  /** Set the active tab ID */
+  setActiveTabId: (tabId: string | null) => void;
+  /** Add a new tab to the current page's schema */
+  addSceneTab: (label: string, icon: string) => void;
+  /** Remove a tab from the current page's schema */
+  removeSceneTab: (tabId: string) => void;
+  /** Rename a tab */
+  renameSceneTab: (tabId: string, label: string) => void;
+  /** Change a tab's icon */
+  setSceneTabIcon: (tabId: string, icon: string) => void;
+  /** Assign a block to a tab */
+  assignBlockToTab: (tabId: string, blockId: string) => void;
+  /** Remove a block from a tab */
+  removeBlockFromTab: (tabId: string, blockId: string) => void;
+  /** Auto-cluster blocks into tabs based on block type */
+  autoClusterTabs: () => void;
+
   // ── Actions: Tool & UI ───────────────────────────────────────
   setTool: (tool: Tool) => void;
   setLeftTab: (tab: LeftTab) => void;

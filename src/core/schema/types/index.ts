@@ -60,6 +60,7 @@ export type {
 
 export type {
   SchemaBlock,
+  TabDefinition,
   ScreenSchema,
   LessonSchema,
 } from './schema';
