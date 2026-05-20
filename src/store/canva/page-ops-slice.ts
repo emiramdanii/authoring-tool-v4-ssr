@@ -51,6 +51,9 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
       return;
     }
 
+    // ── FASE 6: Crash checkpoint before cross-page move ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'move-block-to-page');
+
     get()._pushHistory();
 
     const movedBlock = sourceSchema.blocks[blockIdx];
@@ -208,6 +211,9 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
 
     const block = findBlockById(blocks, blockId);
     if (!block) return;
+
+    // ── FASE 6: Crash checkpoint before container move ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'move-block-to-container');
 
     get()._pushHistory();
 

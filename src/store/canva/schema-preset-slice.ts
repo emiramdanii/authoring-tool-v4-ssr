@@ -22,6 +22,7 @@ import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine.utils
 import { generatePageId } from '@/core/schema/ensure-schema';
 import type { LessonSchema } from '@/core/schema/types';
 import { logger } from '@/core/utils/logger';
+import { saveCrashCheckpoint, transactionRollback } from '@/core/recovery';
 
 export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset' | 'loadCustomSchema'>;
 
@@ -70,6 +71,11 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         };
       }
 
+      // ── FASE 6: Crash checkpoint + transaction before replacing all pages ──
+      const { pages: currentPages, ratioId } = get();
+      saveCrashCheckpoint(currentPages, ratioId, 'load-schema-preset');
+      const txId = transactionRollback.checkpoint(currentPages, ratioId, 'load-schema-preset');
+
       get()._pushHistory();
       set({
         pages,
@@ -81,6 +87,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         editingBlockId: null,
         selectedBlockIds: [],
       });
+
+      // FASE 6: Commit transaction — preset load succeeded
+      transactionRollback.commit(txId);
 
       toast.success(`📦 Preset "${schema.title}" dimuat — ${pages.length} layar`);
     } catch (err) {
@@ -123,6 +132,11 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         };
       }
 
+      // ── FASE 6: Crash checkpoint + transaction before replacing all pages ──
+      const { pages: currentPages, ratioId } = get();
+      saveCrashCheckpoint(currentPages, ratioId, 'load-custom-schema');
+      const txId = transactionRollback.checkpoint(currentPages, ratioId, 'load-custom-schema');
+
       get()._pushHistory();
       set({
         pages,
@@ -134,6 +148,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         editingBlockId: null,
         selectedBlockIds: [],
       });
+
+      // FASE 6: Commit transaction — custom schema load succeeded
+      transactionRollback.commit(txId);
 
       toast.success(`🏪 Template "${schema.title}" diterapkan — ${pages.length} layar`);
     } catch (err) {

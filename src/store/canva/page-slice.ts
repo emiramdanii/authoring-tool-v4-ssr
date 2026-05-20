@@ -15,6 +15,7 @@ import { getTemplateLabel, getTemplateExtraProps } from './template-data';
 import { generatePageId, generateBlockId, ensurePageSchema } from '@/core/schema/ensure-schema';
 import { regenerateNestedIds } from '@/core/schema/immutable';
 import { assertDocumentPurity } from '@/core/schema/session-state';
+import { saveCrashCheckpoint } from '@/core/recovery';
 import { patchHistory } from '@/core/editor/patch-history';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 
@@ -57,6 +58,10 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
   duplicatePage: () => {
     const { pages, currentPageIndex } = get();
+
+    // ── FASE 6: Crash checkpoint before page duplication ──
+    saveCrashCheckpoint(pages, get().ratioId, 'duplicate-page');
+
     const orig = pages[currentPageIndex];
     const clone: CanvaPage = structuredClone(orig);
     clone.id = generatePageId();
@@ -97,6 +102,10 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
   deletePage: () => {
     const { pages, currentPageIndex } = get();
     if (pages.length <= 1) { toast.warning('Minimal 1 halaman'); return; }
+
+    // ── FASE 6: Crash checkpoint before page deletion ──
+    saveCrashCheckpoint(pages, get().ratioId, 'delete-page');
+
     get()._pushHistory();
     const newPages = pages.filter((_, i) => i !== currentPageIndex);
     set({
