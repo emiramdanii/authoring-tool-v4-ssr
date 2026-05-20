@@ -521,7 +521,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           {currentStreak >= 2 && (
             <div className="mb-4">
               <PremiumBadge tokens={tokens} accent="o" variant="gradient" isCompact={isCompact}>
-                <Flame size={12} /> Best Streak: {currentStreak}x
+                <Flame size={12} /> Streak Terbaik: {currentStreak}x
               </PremiumBadge>
             </div>
           )}

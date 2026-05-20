@@ -52,7 +52,7 @@ const blockModeMap: Record<PageRendererMode, BlockRendererMode> = {
   export: 'export',
 };
 
-export function PageRenderer({
+export const PageRenderer = React.memo(function PageRenderer({
   mode,
   page,
   currentPageIndex,
@@ -285,4 +285,4 @@ export function PageRenderer({
       {content}
     </PageFrame>
   );
-}
+});

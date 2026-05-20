@@ -225,6 +225,172 @@ export const TABELACCORD_PROPERTY_SCHEMA: PropertySchema = {
   ],
 };
 
+// ── Gambar (Image) Schema ──────────────────────────────────────
+
+export const GAMBAR_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'gambar',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'url', type: 'text', label: 'URL Gambar', group: 'content', required: true },
+    { key: 'caption', type: 'textarea', label: 'Keterangan', group: 'content', rows: 2 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+// ── Timeline Schema ───────────────────────────────────────────
+
+export const TIMELINE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'timeline',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'steps', type: 'array', label: 'Langkah', group: 'content',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '1️⃣' },
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'description', label: 'Deskripsi', type: 'textarea' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+// ── Compare Schema ────────────────────────────────────────────
+
+export const COMPARE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'compare',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'kiri', label: 'Sisi Kiri', icon: 'ArrowLeft' },
+    { key: 'kanan', label: 'Sisi Kanan', icon: 'ArrowRight' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'kiri.icon', type: 'icon', label: 'Icon Kiri', group: 'kiri', placeholder: '🔵' },
+    { key: 'kiri.judul', type: 'text', label: 'Judul Kiri', group: 'kiri' },
+    { key: 'kiri.isi', type: 'textarea', label: 'Isi Kiri', group: 'kiri', rows: 3 },
+    { key: 'kanan.icon', type: 'icon', label: 'Icon Kanan', group: 'kanan', placeholder: '🔴' },
+    { key: 'kanan.judul', type: 'text', label: 'Judul Kanan', group: 'kanan' },
+    { key: 'kanan.isi', type: 'textarea', label: 'Isi Kanan', group: 'kanan', rows: 3 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+// ── Tabel (Table) Schema ──────────────────────────────────────
+
+export const TABEL_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'tabel',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'headers', type: 'array', label: 'Header Kolom', group: 'content',
+      fields: [
+        { key: 'text', label: 'Header', type: 'text' },
+      ],
+    },
+    {
+      key: 'rows', type: 'json', label: 'Baris Data', group: 'content',
+      helpText: 'Array of string arrays, contoh: [["A1","B1"],["A2","B2"]]',
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+// ── Statistik Schema ──────────────────────────────────────────
+
+export const STATISTIK_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'statistik',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'items', type: 'array', label: 'Angka', group: 'content',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📊' },
+        { key: 'angka', label: 'Angka', type: 'text' },
+        { key: 'satuan', label: 'Satuan', type: 'text' },
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'warna', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+// ── Studi (Case Study) Schema ─────────────────────────────────
+
+export const STUDI_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'studi',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'karakter', type: 'icon', label: 'Karakter', group: 'content', placeholder: '🧑' },
+    { key: 'situasi', type: 'textarea', label: 'Situasi', group: 'content', rows: 4, required: true },
+    { key: 'pertanyaan', type: 'textarea', label: 'Pertanyaan', group: 'content', rows: 3 },
+    { key: 'pesan', type: 'textarea', label: 'Pesan / Tips', group: 'content', rows: 2 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+// ── MateriBlok (Internal) Schema ──────────────────────────────
+
+export const MATERIBLOK_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'materi-blok',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'tipe', type: 'select', label: 'Tipe Konten', group: 'content',
+      options: [
+        { label: 'Paragraf', value: 'teks' },
+        { label: 'Definisi', value: 'definisi' },
+        { label: 'Poin', value: 'poin' },
+        { label: 'Tabel', value: 'tabel' },
+        { label: 'Kutipan', value: 'kutipan' },
+        { label: 'Gambar', value: 'gambar' },
+        { label: 'Timeline', value: 'timeline' },
+        { label: 'Highlight', value: 'highlight' },
+        { label: 'Perbandingan', value: 'compare' },
+        { label: 'Info Box', value: 'infobox' },
+        { label: 'Checklist', value: 'checklist' },
+        { label: 'Statistik', value: 'statistik' },
+        { label: 'Studi Kasus', value: 'studi' },
+      ],
+    },
+    { key: 'judul', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'isi', type: 'textarea', label: 'Isi', group: 'content', rows: 4 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
 // ═══════════════════════════════════════════════════════════════════
 // NOTE: The takeaways field in MATERISECTION_PROPERTY_SCHEMA uses a
 // simplified schema with a single 'text' field. At runtime, the

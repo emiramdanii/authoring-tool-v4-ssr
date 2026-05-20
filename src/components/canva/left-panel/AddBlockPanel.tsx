@@ -79,8 +79,8 @@ export default function AddBlockPanel() {
     return { insertAfterIndex: idx, selectedBlockName: isSederhana ? teacherTerm(name, 'sederhana') : name };
   }, [selectedBlockId, page, isSederhana]);
 
-  // Get all block definitions, filter by search
-  const allBlocks = useMemo(() => getAllBlockDefinitions(), []);
+  // Get all block definitions, filter by search, exclude non-addable (internal) blocks
+  const allBlocks = useMemo(() => getAllBlockDefinitions().filter(b => b.addable !== false), []);
 
   // ── Add block handler with screen reader announcement ──────────
   const handleAddBlock = useCallback((block: BlockDefinition) => {

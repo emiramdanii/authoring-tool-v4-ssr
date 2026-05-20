@@ -34,6 +34,15 @@ import type {
   RangkumanBlock,
   CrosswordGameBlock,
   TeamBuzzerGameBlock,
+  GambarBlock,
+  TimelineBlock,
+  CompareBlock,
+  RevealBlock,
+  TabelBlock,
+  ChecklistBlock,
+  StatistikBlock,
+  StudiBlock,
+  MateriBlokBlock,
 } from './blocks';
 
 import type { BaseBlock } from './base';
@@ -72,6 +81,15 @@ export type SchemaBlock =
   | RangkumanBlock
   | CrosswordGameBlock
   | TeamBuzzerGameBlock
+  | GambarBlock
+  | TimelineBlock
+  | CompareBlock
+  | RevealBlock
+  | TabelBlock
+  | ChecklistBlock
+  | StatistikBlock
+  | StudiBlock
+  | MateriBlokBlock
   | BaseBlock;
 
 // ── Screen Schema ──────────────────────────────────────────────

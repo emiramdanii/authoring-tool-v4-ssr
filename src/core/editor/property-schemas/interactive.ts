@@ -148,3 +148,46 @@ export const RODAGAME_PROPERTY_SCHEMA: PropertySchema = {
     },
   ],
 };
+
+// ── Reveal (Hidden Content) Schema ──────────────────────────────
+
+export const REVEAL_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'reveal',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'cover', label: 'Sampul', icon: 'Eye' },
+    { key: 'revealed', label: 'Konten Terbuka', icon: 'Lightbulb' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'coverIcon', type: 'icon', label: 'Icon Sampul', group: 'cover', placeholder: '🎁' },
+    { key: 'coverText', type: 'text', label: 'Teks Sampul', group: 'cover' },
+    { key: 'revealIcon', type: 'icon', label: 'Icon Terbuka', group: 'revealed', placeholder: '💡' },
+    { key: 'revealContent', type: 'textarea', label: 'Konten Terbuka', group: 'revealed', rows: 4 },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'p' },
+  ],
+};
+
+// ── Checklist Schema ────────────────────────────────────────────
+
+export const CHECKLIST_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'checklist',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'items', type: 'array', label: 'Item', group: 'content',
+      fields: [
+        { key: 'text', label: 'Teks', type: 'text' },
+        { key: 'checked', label: 'Tercentang', type: 'boolean' },
+      ],
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};

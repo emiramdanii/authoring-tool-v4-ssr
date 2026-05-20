@@ -243,6 +243,15 @@ function inferSemanticDefaults(block: SchemaBlock): Record<string, unknown> {
     'penutup': 'penutup',
     'tabel-accord': 'inti',
     'hero': 'pendahuluan',
+    'gambar': 'inti',
+    'timeline': 'inti',
+    'compare': 'inti',
+    'reveal': 'inti',
+    'tabel': 'inti',
+    'checklist': 'inti',
+    'statistik': 'inti',
+    'studi': 'inti',
+    'materi-blok': 'inti',
   };
 
   // Map block types to interaction types
@@ -261,6 +270,8 @@ function inferSemanticDefaults(block: SchemaBlock): Record<string, unknown> {
     'diskusi': 'discuss',
     'refleksi': 'reflect',
     'flashcard-set': 'read',
+    'reveal': 'choose',
+    'checklist': 'choose',
   };
 
   return {

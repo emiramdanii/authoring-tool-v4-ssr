@@ -219,6 +219,8 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   const sceneIndex = useCanvaStore(s => s.sceneIndex);
   const sceneTotal = useCanvaStore(s => s.sceneTotal);
   const setSceneState = useCanvaStore(s => s.setSceneState);
+  // Reactive safeMode — ensures UI updates when safe mode toggles
+  const safeMode = useCanvaStore(s => s.safeMode);
 
   const sceneRes = externalSceneRes || getSceneResolution(ratioId);
   const safeArea = externalSafeArea || computeSafeArea({
@@ -280,11 +282,17 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
 
   // Map each resolved block to its index in the ORIGINAL screen.blocks
   // (effectiveSchema may be a derived subset for multi-scene pages)
+  // Uses Map for O(1) lookup instead of O(n) findIndex → O(n²) total
   const resolvedToSchemaIndex = useMemo(() => {
+    const idToIndex = new Map<string, number>();
+    for (let i = 0; i < screen.blocks.length; i++) {
+      const id = screen.blocks[i].id;
+      if (id) idToIndex.set(id, i);
+    }
     return resolvedBlocks.map(rb => {
       const bid = rb.block.id;
       if (!bid) return -1;
-      return screen.blocks.findIndex(b => b.id === bid);
+      return idToIndex.get(bid) ?? -1;
     });
   }, [resolvedBlocks, screen.blocks]);
 
@@ -470,7 +478,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
                 }}
                 tokens={tokens}
                 isCompact={isCompact}
-                safeMode={useCanvaStore.getState().safeMode}
+                safeMode={safeMode}
               />
             )}
             {/* Compression indicator (canvas mode only) */}
@@ -550,7 +558,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         isCompact={isCompact}
         position="bottom"
         onPromoteScene={isCompact ? () => useCanvaStore.getState().promoteSceneSplit(1) : undefined}
-        safeMode={useCanvaStore.getState().safeMode}
+        safeMode={safeMode}
       />
 
       {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}

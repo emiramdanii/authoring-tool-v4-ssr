@@ -158,7 +158,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
   // ── Accessibility hook ──────────────────────────────────────────
   // MUST be declared BEFORE the score guard useEffect that uses a11y.announceComplete()
   const a11y = useGameA11y({
-    gameType: 'Memory Match',
+    gameType: 'Cocokkan Kartu',
     blockId: block.id,
     score: matched.size / 2,
     maxScore: validPairsLen,
@@ -310,7 +310,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
           />
         </div>
         <div style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
-          Tambahkan pasangan kartu untuk memulai game Memory Match!
+          Tambahkan pasangan kartu untuk memulai game Cocokkan Kartu!
         </div>
       </div>
     );
@@ -417,7 +417,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
 
       {/* Progress bar */}
       <div className="h-1.5 rounded-full overflow-hidden relative"
-        {...a11y.progressAria('Kemajuan Memory Match', matched.size / 2, validPairsLen)}
+        {...a11y.progressAria('Kemajuan Cocokkan Kartu', matched.size / 2, validPairsLen)}
         style={{ background: tokens.subtleBg(0.08) }}>
         <div className="h-full rounded-full transition-all"
           style={{

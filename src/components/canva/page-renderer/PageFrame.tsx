@@ -324,7 +324,7 @@ const NAV_THEMES: Record<string, NavStyleTheme> = {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════
 
-export function PageFrame({
+export const PageFrame = React.memo(function PageFrame({
   mode,
   page,
   currentPageIndex,
@@ -637,4 +637,4 @@ export function PageFrame({
       )}
     </>
   );
-}
+});

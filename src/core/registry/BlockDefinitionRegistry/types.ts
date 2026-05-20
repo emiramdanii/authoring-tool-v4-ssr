@@ -147,4 +147,8 @@ export interface BlockDefinitionMeta {
   createDefault: () => Record<string, unknown>;
   /** Estimated rendered height in px (used by overflow detection system) */
   estimatedHeight: Record<'A' | 'B' | 'C', number>;
+  /** Whether this block can be added from the Add Block UI panel.
+   *  Internal blocks (like materi-blok) should set this to false.
+   *  Defaults to true when not specified. */
+  addable?: boolean;
 }

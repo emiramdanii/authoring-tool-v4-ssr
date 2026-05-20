@@ -613,6 +613,8 @@ class BlockCapabilityRegistryClass {
       'drag-drop-game', 'crossword-game', 'team-buzzer-game',
       'hasil', 'refleksi', 'penutup', 'tabel-accord',
       'tujuan-display', 'motivasi', 'rangkuman',
+      'gambar', 'timeline', 'compare', 'reveal',
+      'tabel', 'checklist', 'statistik', 'studi', 'materi-blok',
     ];
 
     for (const type of types) {
