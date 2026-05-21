@@ -22,6 +22,7 @@ import { computeScenePlan, type ScenePlan } from '../../layout/SceneOverflowEngi
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '../../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../../layout/BlockMeasurer';
 import { rebalancePageCompression } from './transaction-ops';
+import { computePerBlockGaps } from '../../vcs/TransitionRhythmEngine';
 
 /**
  * Compute a scene plan for a page and rebalance using transactions.
@@ -85,7 +86,11 @@ export function rebalanceFromScenePlan(
       });
 
   // Step 1: Compute fresh scene plan from current measurements
-  const scenePlan = computeScenePlan(page.schema, sceneRes, safeArea, { isCompact });
+  // FASE 11A.4 — Include VCS rhythm-based per-block gaps
+  const vcsPerBlockGaps = computePerBlockGaps(
+    page.schema.blocks, page.schema.templateType, page.schema.sectionType
+  );
+  const scenePlan = computeScenePlan(page.schema, sceneRes, safeArea, { isCompact, perBlockGaps: vcsPerBlockGaps });
 
   // Single scene → no overflow, nothing to rebalance
   if (scenePlan.isSingleScene) {

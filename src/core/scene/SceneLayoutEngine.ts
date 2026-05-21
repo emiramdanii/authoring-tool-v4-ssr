@@ -519,6 +519,17 @@ export function resolveSceneLayout(
     const block = flowBlocks[i];
     const blockId = block.id || `flow-${block.type}-${i}`;
 
+    // ═══ FASE 11A.4 — Per-block gap BEFORE this block ═══
+    // perBlockGaps[i] = gap BEFORE block i (0 for first block).
+    // Add the gap BEFORE positioning the block, not after,
+    // so the gap is between the previous block and this one.
+    const originalIndex = blocks.indexOf(block);
+    const gapBeforeThisBlock = (i === 0) ? 0
+      : (perBlockGaps && originalIndex >= 0 && originalIndex < perBlockGaps.length)
+        ? perBlockGaps[originalIndex]
+        : defaultGap;
+    currentY += gapBeforeThisBlock;
+
     // ═══ MEASUREMENT-FIRST: Use real DOM height if available ═══
     // This is the KEY change that makes layout deterministic.
     // Height resolution priority: compressed cache > measured > estimated
@@ -594,15 +605,7 @@ export function resolveSceneLayout(
       compression: compressionDecision,
     });
 
-    // FASE 11A.4 — Use per-block gap from rhythm engine when available.
-    // perBlockGaps is indexed by the ORIGINAL blocks array position.
-    // Find the original index of this flow block in the blocks array.
-    const originalIndex = blocks.indexOf(block);
-    const blockGap = (perBlockGaps && originalIndex >= 0 && originalIndex < perBlockGaps.length)
-      ? perBlockGaps[originalIndex]
-      : defaultGap;
-
-    currentY += effectiveHeight + blockGap;
+    currentY += effectiveHeight;
   }
 
   // ── Phase 2: Resolve absolute blocks (coordinate-based) ──

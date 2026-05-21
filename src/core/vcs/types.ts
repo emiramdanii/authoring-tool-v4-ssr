@@ -681,3 +681,102 @@ export const INTERACTIVE_BLOCK_TYPES = new Set([
 export const CTA_BLOCK_TYPES = new Set([
   'cta', 'hasil',
 ]);
+
+// ═══════════════════════════════════════════════════════════════
+// FASE 11A.5 — VISUAL LINTER TYPES
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Visual Linter categories — group warnings by subsystem.
+ */
+export type LinterCategory = 'preset' | 'rhythm' | 'composition' | 'density' | 'accessibility';
+
+/**
+ * Quality grade bands — from excellent to critical.
+ * A: 90+, B: 75+, C: 60+, D: 40+, F: <40
+ */
+export type LinterGrade = 'A' | 'B' | 'C' | 'D' | 'F';
+
+/**
+ * Smart suggestion — actionable advice for a visual warning.
+ * The linter enriches every warning with a SmartSuggestion.
+ */
+export interface SmartSuggestion {
+  /** Short actionable fix (1 line, imperative mood) */
+  quickFix: string;
+  /** Longer explanation with reasoning */
+  reasoning: string;
+  /** Specific block types that would solve the issue */
+  suggestedBlockTypes?: string[];
+  /** Auto-fix hint for future AI authoring assist */
+  autoFixHint?: string;
+}
+
+/**
+ * Context passed to getSmartSuggestion for parameterized suggestions.
+ */
+export interface SuggestionContext {
+  sectionType?: SectionType;
+  blockCount?: number;
+  textRatio?: number;
+  cadenceScore?: number;
+  compositionScore?: number;
+}
+
+/**
+ * Extended VisualWarning with linter enrichment.
+ * Adds category, smart suggestion, and source tracking.
+ */
+export interface EnrichedVisualWarning extends VisualWarning {
+  /** Which linter category this belongs to */
+  category: LinterCategory;
+  /** Smart suggestion (enriched by the linter) */
+  smartSuggestion: SmartSuggestion;
+  /** Which subsystem generated this warning */
+  source: 'preset' | 'rhythm' | 'composition' | 'linter';
+}
+
+/**
+ * Per-category score breakdown.
+ */
+export interface CategoryScore {
+  /** Linter category */
+  category: LinterCategory;
+  /** Score 0-100 */
+  score: number;
+  /** Weight in composite score (0-1) */
+  weight: number;
+  /** Number of warnings in this category */
+  warningCount: number;
+}
+
+/**
+ * The complete output of the Visual Linter.
+ *
+ * This is a PASSIVE quality indicator — it shows score + suggestions
+ * but NEVER blocks authoring. The linter is a Design Assistant,
+ * not Design Police.
+ *
+ * Usage: lintVisual(screen) → VisualLinterResult
+ */
+export interface VisualLinterResult {
+  /** Composite quality score 0-100 */
+  score: number;
+  /** Letter grade (A: 90+, B: 75+, C: 60+, D: 40+, F: <40) */
+  grade: LinterGrade;
+  /** Quick one-line summary for UI header */
+  summary: string;
+  /** Per-category score breakdown */
+  categories: CategoryScore[];
+  /** All warnings (collected + synthesized + enriched) */
+  warnings: EnrichedVisualWarning[];
+  /** Counts by severity */
+  counts: {
+    info: number;
+    suggestion: number;
+    warning: number;
+    error: number;
+  };
+  /** Source VCS resolution (for debugging / advanced UI) */
+  resolvedVCS: import('./resolver').ResolvedVCS;
+}

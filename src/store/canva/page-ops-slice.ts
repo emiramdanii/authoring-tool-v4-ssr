@@ -17,6 +17,7 @@ import { createTransaction } from '@/core/schema/scene-transaction';
 import { rebalanceFromScenePlan, promoteSceneSplitToPage, mergePagesTransaction } from '@/core/schema/schema-apply';
 import { computeScenePlan } from '@/core/layout/SceneOverflowEngine';
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/scene/SceneLayoutEngine';
+import { computePerBlockGaps } from '@/core/vcs/TransitionRhythmEngine';
 import { findBlockOwner, commitSchemaUpdate } from './schema-helpers';
 import { assertValidSchema } from '@/core/schema/validation';
 import { assertDocumentPurity } from '@/core/schema/session-state';
@@ -272,7 +273,9 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const safeArea = hasCoverBlock ? DEFAULT_SAFE_AREA
       : computeSafeArea({ showTopNav: false, showBottomNav: false, isCompact: true, pagePadding: 16 });
 
-    const scenePlan = computeScenePlan(page.schema, sceneRes, safeArea, { isCompact: true });
+    // FASE 11A.4 — Include VCS rhythm-based per-block gaps
+    const vcsPerBlockGaps = computePerBlockGaps(page.schema.blocks, page.schema.templateType, page.schema.sectionType);
+    const scenePlan = computeScenePlan(page.schema, sceneRes, safeArea, { isCompact: true, perBlockGaps: vcsPerBlockGaps });
     if (scenePlan.isSingleScene) { toast.info('Konten sudah pas dalam satu scene — tidak perlu split'); return; }
     if (sceneIndex < 1 || sceneIndex >= scenePlan.totalScenes) {
       toast.error(`Scene index ${sceneIndex} tidak valid (total: ${scenePlan.totalScenes} scenes)`); return;

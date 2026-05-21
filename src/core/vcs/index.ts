@@ -43,6 +43,14 @@ export type {
   TextVisualRatio,
   IntentDistribution,
   CompositionAnalysis,
+  // 11A.5 — Visual Linter
+  LinterCategory,
+  LinterGrade,
+  SmartSuggestion,
+  SuggestionContext,
+  EnrichedVisualWarning,
+  CategoryScore,
+  VisualLinterResult,
 } from './types';
 
 export {
@@ -111,3 +119,11 @@ export {
 } from './resolver';
 
 export type { ResolvedVCS } from './resolver';
+
+// ── Visual Linter (11A.5) ──────────────────────────────────
+export {
+  lintVisual,
+  lintFromResolvedVCS,
+  lintCategory,
+  getSmartSuggestion,
+} from './VisualLinter';

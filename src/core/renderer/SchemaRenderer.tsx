@@ -33,6 +33,7 @@ import {
   DEFAULT_SAFE_AREA,
 } from '../scene/SceneLayoutEngine';
 import { MeasuredBlock } from '../layout/BlockMeasurer';
+import { computePerBlockGaps } from '../vcs/TransitionRhythmEngine';
 import { createMeasurementQueue, type MeasurementCommitQueue } from '../layout/MeasurementCommitQueue';
 import { computeScenePlan, createDerivedSchema, type ScenePlan } from '../layout/SceneOverflowEngine';
 import { SceneNavigator } from '../layout/SceneNavigator';
@@ -230,12 +231,24 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     pagePadding: isPureCoverPage ? 0 : 16,
   });
 
+  // ═══ FASE 11A.4 — VCS Rhythm Engine Integration ═════════════════
+  // Compute per-block gaps from the Visual Composition Standard.
+  // This replaces uniform BLOCK_GAP with transition-based spacing:
+  //   section-open → big gap, repetition → small gap, visual-break → big gap, etc.
+  // Falls back to uniform gap when perBlockGaps is not provided.
+  const vcsPerBlockGaps = useMemo(() => {
+    // Pure cover pages don't need rhythm gaps (single block fills scene)
+    if (isPureCoverPage) return undefined;
+    return computePerBlockGaps(screen.blocks, screen.templateType, screen.sectionType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen.blocks, screen.templateType, screen.sectionType, isPureCoverPage]);
+
   // Compute scene plan from measurements
   const scenePlan = useMemo<ScenePlan>(() => {
     const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
-    return computeScenePlan(screen, sceneRes, effectiveSafeArea, { isCompact });
+    return computeScenePlan(screen, sceneRes, effectiveSafeArea, { isCompact, perBlockGaps: vcsPerBlockGaps });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen.blocks, screen.id, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
+  }, [screen.blocks, screen.id, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion, vcsPerBlockGaps]);
 
   // Sync scene state to store whenever scene plan changes
   // Use ref for sceneIndex to avoid circular dependency (effect reads + writes sceneIndex)
@@ -283,7 +296,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     // Cover/hero pages: safe area is 0 (they fill the entire scene)
     const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
     // Use tabFilteredSchema (derived for current scene + active tab) instead of full screen
-    const resolved = resolveSceneLayout(tabFilteredSchema.blocks, sceneRes, effectiveSafeArea, { isCompact });
+    const resolved = resolveSceneLayout(tabFilteredSchema.blocks, sceneRes, effectiveSafeArea, { isCompact, perBlockGaps: vcsPerBlockGaps });
 
     return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
