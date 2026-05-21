@@ -15,10 +15,12 @@ import type {
   DiskusiBlock,
   KuisBlock,
   MateriSectionBlock,
+  MateriContentTab,
   CompressionHints,
   SemanticHints,
 } from '../types';
 import { generateBlockId } from '../ensure-schema';
+import { nanoid } from 'nanoid';
 import { COLOR_PALETTE } from '@/components/authoring/auto-generate/constants';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -27,6 +29,52 @@ import { COLOR_PALETTE } from '@/components/authoring/auto-generate/constants';
 
 function withIds<T extends SchemaBlock>(blocks: T[]): T[] {
   return blocks.map(b => ({ ...b, id: b.id || generateBlockId() }));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTO-TAB GROUPING — Heuristic to group content into tabs
+// ═══════════════════════════════════════════════════════════════════
+
+function autoGroupIntoTabs(contentBlocks: SchemaBlock[]): {
+  content: SchemaBlock[];
+  tabs?: MateriContentTab[];
+} | null {
+  // Only group if 6+ blocks
+  if (contentBlocks.length < 6) return null;
+
+  const groups: Map<string, SchemaBlock[]> = new Map([
+    ['Konsep', []],
+    ['Penjelasan', []],
+    ['Visual', []],
+    ['Latihan', []],
+  ]);
+
+  for (const block of contentBlocks) {
+    if (['def-box'].includes(block.type)) {
+      groups.get('Konsep')!.push(block);
+    } else if (['nc-grid', 'timeline', 'compare'].includes(block.type)) {
+      groups.get('Penjelasan')!.push(block);
+    } else if (['gambar', 'tabel', 'statistik'].includes(block.type)) {
+      groups.get('Visual')!.push(block);
+    } else if (['checklist', 'studi', 'reveal'].includes(block.type)) {
+      groups.get('Latihan')!.push(block);
+    } else {
+      groups.get('Penjelasan')!.push(block); // default group
+    }
+  }
+
+  // Only create tabs if at least 2 groups have content
+  const nonEmptyGroups = [...groups.entries()].filter(([_, blocks]) => blocks.length > 0);
+  if (nonEmptyGroups.length < 2) return null;
+
+  const tabs: MateriContentTab[] = nonEmptyGroups.map(([label, blocks]) => ({
+    id: `tab-${nanoid(6)}`,
+    label,
+    icon: label === 'Konsep' ? '\uD83D\uDCA1' : label === 'Penjelasan' ? '\uD83D\uDCD6' : label === 'Visual' ? '\uD83C\uDFA8' : '\u270F\uFE0F',
+    content: blocks,
+  }));
+
+  return { content: contentBlocks, tabs };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -112,6 +160,9 @@ export function genMateriSchema(
 
   // Wrap in materi-section if we have content blocks
   if (contentBlocks.length > 0) {
+    // Auto-group into tabs when content is rich enough
+    const tabGrouping = autoGroupIntoTabs(contentBlocks);
+
     blocks.push({
       type: 'materi-section',
       id: generateBlockId(),
@@ -121,6 +172,7 @@ export function genMateriSchema(
       icon: '📖',
       accentColor: 'p',
       content: contentBlocks,
+      ...(tabGrouping?.tabs ? { tabs: tabGrouping.tabs } : {}),
       takeaways: topWords.slice(0, 5),
       selfCheck: `Apa yang sudah kamu pelajari tentang ${topWords[0] || 'materi ini'}?`,
       compression: { priority: 'high', strategy: 'accordion', splittable: true, minFragmentHeight: 200 } satisfies CompressionHints,

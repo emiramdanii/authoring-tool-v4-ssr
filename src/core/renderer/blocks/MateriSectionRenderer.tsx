@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Shield, Star, CheckCircle2, Brain, ChevronDown, ChevronUp } from 'lucide-react';
-import type { MateriSectionBlock } from '../../schema/types';
+import type { MateriSectionBlock, MateriContentTab } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { RichText, hasHtmlTags, stripHtmlTags } from './RichText';
@@ -11,6 +11,7 @@ import { useCanvaStore } from '../../../store/canva/store';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
+import { Scissors } from 'lucide-react';
 
 // NOTE: Use React.lazy() to break the circular dependency:
 //   SceneRegistry → MateriSectionRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
@@ -71,6 +72,99 @@ function VariantSelector({
   );
 }
 
+// ── MateriTabBar — Pill-style tab bar for tabbed content ─────────
+function MateriTabBar({
+  tabs, activeIndex, onSelect, accentColor, tokens, interactive
+}: {
+  tabs: MateriContentTab[];
+  activeIndex: number;
+  onSelect: (i: number) => void;
+  accentColor?: string;
+  tokens: TokenResolver;
+  interactive?: boolean;
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+      {tabs.map((tab, i) => {
+        const isActive = i === activeIndex;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onSelect(i)}
+            type="button"
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              fontSize: 13,
+              fontWeight: isActive ? 600 : 400,
+              border: `1.5px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.6) : tokens.colorAlpha('g', 0.15)}`,
+              background: isActive ? tokens.colorAlpha(accentColor || 'p', 0.12) : 'transparent',
+              color: isActive ? (tokens as any).accentText?.(accentColor || 'p') ?? tokens.color(accentColor || 'p') : tokens.muted(0.85),
+              cursor: interactive ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {tab.icon && <span style={{ marginRight: 4 }}>{tab.icon}</span>}
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Overflow Indicator — Shows when content overflows beyond compression ──
+function OverflowIndicator({
+  overflowCount, onSplit, tokens, interactive, isCompact,
+}: {
+  overflowCount: number;
+  onSplit?: () => void;
+  tokens: TokenResolver;
+  interactive: boolean;
+  isCompact?: boolean;
+}) {
+  if (overflowCount <= 0) return null;
+
+  return (
+    <div style={{
+      padding: isCompact ? '6px 10px' : '10px 16px',
+      marginTop: 4,
+      borderRadius: 12,
+      background: tokens.colorAlpha('y', 0.08),
+      border: `1px dashed ${tokens.colorAlpha('y', 0.3)}`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    }}>
+      <span style={{ fontSize: isCompact ? 11 : 13, color: tokens.textSecondary(0.9) }}>
+        {overflowCount} blok tidak cukup ruang di halaman ini
+      </span>
+      {onSplit && interactive && (
+        <button
+          onClick={onSplit}
+          style={{
+            padding: isCompact ? '3px 8px' : '4px 12px',
+            borderRadius: 8,
+            fontSize: isCompact ? 10 : 12,
+            fontWeight: 600,
+            background: tokens.colorAlpha('p', 0.15),
+            color: tokens.color('p'),
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+          }}
+        >
+          <Scissors size={isCompact ? 10 : 12} />
+          Bagi Halaman
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Variant A "Klasik" — Original full section style ─────────────
 function MateriVariantKlasik({
   block,
@@ -79,6 +173,12 @@ function MateriVariantKlasik({
   interactive,
   isCompact,
   compression,
+  activeContent,
+  hasTabs,
+  activeTabIndex,
+  onTabChange,
+  overflowCount,
+  onSplit,
 }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
@@ -86,6 +186,12 @@ function MateriVariantKlasik({
   interactive?: boolean;
   isCompact?: boolean;
   compression?: CompressionDecision;
+  activeContent: import('../../schema/types').SchemaBlock[];
+  hasTabs: boolean;
+  activeTabIndex: number;
+  onTabChange: (i: number) => void;
+  overflowCount?: number;
+  onSplit?: () => void;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -99,7 +205,7 @@ function MateriVariantKlasik({
     return 1;
   }, [block.id]);
 
-  const allContentBlocks = block.content || [];
+  const allContentBlocks = activeContent || [];
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
 
@@ -111,6 +217,7 @@ function MateriVariantKlasik({
 
   const isAccordionMode = isCompressed && strategy === 'accordion';
   const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const isClipped = compression?.clipped ?? false;
 
   // Accordion state: first content block expanded, rest collapsed
   const [expandedSections, setExpandedSections] = React.useState<Set<number>>(new Set([0]));
@@ -128,6 +235,11 @@ function MateriVariantKlasik({
       ? (isExpanded ? allContentBlocks : allContentBlocks.slice(0, Math.max(1, Math.ceil(allContentBlocks.length * 0.4))))
       : (isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks)
     );
+
+  // ── Overflow detection: how many blocks are hidden beyond compression ──
+  // When clipped (compression can't fit everything) or when there's a significant
+  // number of hidden blocks, we show the OverflowIndicator.
+  const effectiveOverflowCount = overflowCount ?? Math.max(0, allContentBlocks.length - contentBlocks.length);
 
   return (
     <div
@@ -216,12 +328,27 @@ function MateriVariantKlasik({
         />
       </div>
 
+      {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
+      {hasTabs && block.tabs && (
+        <div style={{ padding: isCompact ? '8px 14px 0' : '12px 20px 0' }}>
+          <MateriTabBar
+            tabs={block.tabs}
+            activeIndex={activeTabIndex}
+            onSelect={onTabChange}
+            accentColor={accentColor}
+            tokens={tokens}
+            interactive={interactive}
+          />
+        </div>
+      )}
+
       {/* ═══ CONTENT AREA — Strategy-aware compression ══════════ */}
       {contentBlocks.length > 0 && (
         <div
           className="flex flex-col gap-4"
           style={{
             padding: isCompact ? '12px 14px' : '18px 20px',
+            position: 'relative',
           }}
         >
           {contentBlocks.map((childBlock, i) => (
@@ -285,6 +412,18 @@ function MateriVariantKlasik({
               )}
             </React.Suspense>
           ))}
+          {/* Clipped indicator — fade-out gradient when content is hard-clipped */}
+          {isClipped && !isExpanded && (
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 40,
+              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              pointerEvents: 'none',
+            }} />
+          )}
         </div>
       )}
 
@@ -440,6 +579,19 @@ function MateriVariantKlasik({
           />
         </div>
       )}
+
+      {/* ═══ OVERFLOW INDICATOR — Auto-split prompt (canvas/edit mode only) */}
+      {mode === 'canvas' && (
+        <div style={{ margin: isCompact ? '0 14px 14px' : '0 20px 20px' }}>
+          <OverflowIndicator
+            overflowCount={effectiveOverflowCount}
+            onSplit={onSplit}
+            tokens={tokens}
+            interactive={!!interactive}
+            isCompact={isCompact}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -452,6 +604,12 @@ function MateriVariantMajalah({
   interactive,
   isCompact,
   compression,
+  activeContent,
+  hasTabs,
+  activeTabIndex,
+  onTabChange,
+  overflowCount,
+  onSplit,
 }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
@@ -459,6 +617,12 @@ function MateriVariantMajalah({
   interactive?: boolean;
   isCompact?: boolean;
   compression?: CompressionDecision;
+  activeContent: import('../../schema/types').SchemaBlock[];
+  hasTabs: boolean;
+  activeTabIndex: number;
+  onTabChange: (i: number) => void;
+  overflowCount?: number;
+  onSplit?: () => void;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -472,7 +636,7 @@ function MateriVariantMajalah({
     return 1;
   }, [block.id]);
 
-  const allContentBlocks = block.content || [];
+  const allContentBlocks = activeContent || [];
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
 
@@ -483,9 +647,13 @@ function MateriVariantMajalah({
   });
 
   const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const isClipped = compression?.clipped ?? false;
   const contentBlocks = isCollapsibleMode
     ? (isExpanded ? allContentBlocks : allContentBlocks.slice(0, Math.max(1, Math.ceil(allContentBlocks.length * 0.4))))
     : (isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks);
+
+  // ── Overflow detection ──
+  const effectiveOverflowCount = overflowCount ?? Math.max(0, allContentBlocks.length - contentBlocks.length);
 
   return (
     <div
@@ -536,6 +704,20 @@ function MateriVariantMajalah({
         </div>
       </div>
 
+      {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
+      {hasTabs && block.tabs && (
+        <div style={{ padding: isCompact ? '8px 14px 0' : '12px 20px 0' }}>
+          <MateriTabBar
+            tabs={block.tabs}
+            activeIndex={activeTabIndex}
+            onSelect={onTabChange}
+            accentColor={accentColor}
+            tokens={tokens}
+            interactive={interactive}
+          />
+        </div>
+      )}
+
       {/* ═══ MAGAZINE 2-COLUMN LAYOUT ════════════════════════════ */}
       <div
         className={isCompact ? undefined : 'variant-magazine-layout'}
@@ -545,7 +727,7 @@ function MateriVariantMajalah({
         }}
       >
         {/* Left column: content blocks */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4" style={{ position: 'relative' }}>
           {contentBlocks.map((childBlock, i) => (
             <React.Suspense
               key={`materi-majalah-child-${childBlock.id || childBlock.type}-${i}`}
@@ -559,6 +741,18 @@ function MateriVariantMajalah({
               />
             </React.Suspense>
           ))}
+          {/* Clipped indicator — fade-out gradient when content is hard-clipped */}
+          {isClipped && !isExpanded && (
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 40,
+              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              pointerEvents: 'none',
+            }} />
+          )}
         </div>
 
         {/* Right column: takeaways sidebar */}
@@ -654,6 +848,19 @@ function MateriVariantMajalah({
           </div>
         </div>
       )}
+
+      {/* ═══ OVERFLOW INDICATOR — Auto-split prompt (canvas/edit mode only) */}
+      {mode === 'canvas' && (
+        <div style={{ margin: isCompact ? '0 14px 14px' : '0 20px 20px' }}>
+          <OverflowIndicator
+            overflowCount={effectiveOverflowCount}
+            onSplit={onSplit}
+            tokens={tokens}
+            interactive={!!interactive}
+            isCompact={isCompact}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -666,6 +873,12 @@ function MateriVariantPill({
   interactive,
   isCompact,
   compression,
+  activeContent,
+  hasTabs,
+  activeTabIndex,
+  onTabChange,
+  overflowCount,
+  onSplit,
 }: {
   block: MateriSectionBlock;
   mode: SchemaRenderMode;
@@ -673,6 +886,12 @@ function MateriVariantPill({
   interactive?: boolean;
   isCompact?: boolean;
   compression?: CompressionDecision;
+  activeContent: import('../../schema/types').SchemaBlock[];
+  hasTabs: boolean;
+  activeTabIndex: number;
+  onTabChange: (i: number) => void;
+  overflowCount?: number;
+  onSplit?: () => void;
 }) {
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
@@ -686,7 +905,7 @@ function MateriVariantPill({
     return 1;
   }, [block.id]);
 
-  const allContentBlocks = block.content || [];
+  const allContentBlocks = activeContent || [];
   const takeaways = block.takeaways || [];
   const selfCheck = block.selfCheck;
 
@@ -699,9 +918,13 @@ function MateriVariantPill({
   });
 
   const isCollapsibleMode = isCompressed && strategy === 'collapsible';
+  const isClipped = compression?.clipped ?? false;
   const contentBlocks = isCollapsibleMode
     ? (isExpanded ? allContentBlocks : allContentBlocks.slice(0, Math.max(1, Math.ceil(allContentBlocks.length * 0.4))))
     : (isCompressed ? allContentBlocks.slice(0, visibleCount) : allContentBlocks);
+
+  // ── Overflow detection ──
+  const effectiveOverflowCount = overflowCount ?? Math.max(0, allContentBlocks.length - contentBlocks.length);
 
   return (
     <div
@@ -748,12 +971,27 @@ function MateriVariantPill({
         )}
       </div>
 
+      {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
+      {hasTabs && block.tabs && (
+        <div style={{ padding: isCompact ? '4px 12px 0' : '6px 16px 0' }}>
+          <MateriTabBar
+            tabs={block.tabs}
+            activeIndex={activeTabIndex}
+            onSelect={onTabChange}
+            accentColor={accentColor}
+            tokens={tokens}
+            interactive={interactive}
+          />
+        </div>
+      )}
+
       {/* ═══ CONTENT BLOCKS ══════════════════════════════════════ */}
       {contentBlocks.length > 0 && (
         <div
           className="flex flex-col gap-3"
           style={{
             padding: isCompact ? '8px 12px' : '10px 16px',
+            position: 'relative',
           }}
         >
           {contentBlocks.map((childBlock, i) => (
@@ -769,6 +1007,18 @@ function MateriVariantPill({
               />
             </React.Suspense>
           ))}
+          {/* Clipped indicator — fade-out gradient when content is hard-clipped */}
+          {isClipped && !isExpanded && (
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 40,
+              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              pointerEvents: 'none',
+            }} />
+          )}
         </div>
       )}
 
@@ -868,6 +1118,19 @@ function MateriVariantPill({
           )}
         </div>
       )}
+
+      {/* ═══ OVERFLOW INDICATOR — Auto-split prompt (canvas/edit mode only) */}
+      {mode === 'canvas' && (
+        <div style={{ padding: isCompact ? '4px 12px 8px' : '6px 16px 10px' }}>
+          <OverflowIndicator
+            overflowCount={effectiveOverflowCount}
+            onSplit={onSplit}
+            tokens={tokens}
+            interactive={!!interactive}
+            isCompact={isCompact}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -884,10 +1147,50 @@ export const MateriSectionRenderer = React.memo(function MateriSectionRenderer({
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
+  // ── Tab state management ──────────────────────────────────────
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const hasTabs = !!(block.tabs && block.tabs.length > 0);
+  const activeContent = hasTabs
+    ? (block.tabs![activeTabIndex]?.content ?? [])
+    : block.content;
+
+  // Clamp activeTabIndex when block.tabs changes
+  useEffect(() => {
+    if (hasTabs && activeTabIndex >= block.tabs!.length) {
+      setActiveTabIndex(0);
+    }
+  }, [block.tabs?.length, activeTabIndex, hasTabs]);
+
+  const handleTabChange = useCallback((i: number) => {
+    setActiveTabIndex(i);
+  }, []);
+
   const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const splitMateriContent = useCanvaStore((s) => s.splitMateriContent);
   const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
     if (block.id) updateSchemaBlock(block.id, { variant: v });
   }, [block.id, updateSchemaBlock]);
+
+  // ── Overflow detection & split handler ──────────────────────────
+  // Compute how many content blocks are hidden beyond compression
+  const allContentBlocks = activeContent || [];
+  const overflowCount = React.useMemo(() => {
+    if (!compression?.isCompressed) return 0;
+    // When clipped, all hidden blocks are overflow candidates
+    if (compression.clipped) {
+      return allContentBlocks.length - 1; // At least 1 visible, rest overflow
+    }
+    // When compressed but not clipped, check if hidden count is significant
+    const visibleCount = compression.params?.visibleItemCount ?? Math.ceil(allContentBlocks.length * 0.4);
+    return Math.max(0, allContentBlocks.length - visibleCount);
+  }, [compression, allContentBlocks.length]);
+
+  const handleSplit = useCallback(() => {
+    if (!block.id) return;
+    // Split after the first half of visible blocks
+    const splitPoint = Math.max(0, Math.ceil(allContentBlocks.length / 2) - 1);
+    splitMateriContent(block.id, splitPoint);
+  }, [block.id, allContentBlocks.length, splitMateriContent]);
 
   const sharedProps = {
     block,
@@ -896,6 +1199,12 @@ export const MateriSectionRenderer = React.memo(function MateriSectionRenderer({
     interactive,
     isCompact,
     compression,
+    activeContent,
+    hasTabs,
+    activeTabIndex,
+    onTabChange: handleTabChange,
+    overflowCount,
+    onSplit: handleSplit,
   };
 
   const accentColor = block.accentColor || 'c';

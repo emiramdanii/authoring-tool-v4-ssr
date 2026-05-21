@@ -63,6 +63,9 @@ export const CompressedBlockWrapper = React.memo(function CompressedBlockWrapper
     setParams(prev => ({ ...prev, ...updates }));
   }, []);
 
+  const clipped = compression.clipped ?? false;
+  const containerBg = 'rgba(15, 23, 42, 0.95)';
+
   switch (compression.strategy) {
     case 'accordion':
       return (
@@ -72,6 +75,8 @@ export const CompressedBlockWrapper = React.memo(function CompressedBlockWrapper
           expandedHeight={compression.expandedHeight}
           title={title}
           isCompact={isCompact}
+          clipped={clipped}
+          containerBg={containerBg}
         >
           {children}
         </AccordionView>
@@ -84,6 +89,8 @@ export const CompressedBlockWrapper = React.memo(function CompressedBlockWrapper
           expandedHeight={compression.expandedHeight}
           title={title}
           isCompact={isCompact}
+          clipped={clipped}
+          containerBg={containerBg}
         >
           {children}
         </RevealSetView>
@@ -96,6 +103,8 @@ export const CompressedBlockWrapper = React.memo(function CompressedBlockWrapper
           expandedHeight={compression.expandedHeight}
           title={title}
           isCompact={isCompact}
+          clipped={clipped}
+          containerBg={containerBg}
         >
           {children}
         </CollapsibleView>
@@ -108,6 +117,8 @@ export const CompressedBlockWrapper = React.memo(function CompressedBlockWrapper
           expandedHeight={compression.expandedHeight}
           title={title}
           isCompact={isCompact}
+          clipped={clipped}
+          containerBg={containerBg}
         >
           {children}
         </StepRevealView>
@@ -126,6 +137,10 @@ interface StrategyViewProps {
   title?: string;
   isCompact: boolean;
   children: React.ReactNode;
+  /** Whether content was hard-clipped (overflow exceeded best compression ratio) */
+  clipped?: boolean;
+  /** Background color for the gradient fade-out (must match container bg) */
+  containerBg?: string;
 }
 
 const AccordionView = React.memo(function AccordionView({
@@ -135,6 +150,8 @@ const AccordionView = React.memo(function AccordionView({
   title,
   isCompact,
   children,
+  clipped,
+  containerBg,
 }: StrategyViewProps) {
   // Accordion shows a header with expand/collapse toggle
   // Content is rendered inside a collapsible container
@@ -176,9 +193,22 @@ const AccordionView = React.memo(function AccordionView({
           maxHeight: isExpanded ? expandedHeight : 0,
           overflow: isExpanded ? 'auto' : 'hidden',
           transition: 'max-height 0.3s ease-out',
+          position: 'relative',
         }}
       >
         {children}
+        {/* Clipped indicator — fade-out gradient when content is hard-clipped */}
+        {clipped && !isExpanded && (
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 40,
+            background: `linear-gradient(transparent, ${containerBg ?? 'rgba(15, 23, 42, 0.95)'})`,
+            pointerEvents: 'none',
+          }} />
+        )}
       </div>
     </div>
   );
@@ -193,8 +223,11 @@ const RevealSetView = React.memo(function RevealSetView({
   title,
   isCompact,
   children,
+  clipped,
+  containerBg,
 }: StrategyViewProps) {
   const isRevealed = params.isExpanded ?? false;
+  const bg = containerBg ?? 'rgba(15, 23, 42, 0.95)';
 
   return (
     <div className="relative w-full">
@@ -214,7 +247,7 @@ const RevealSetView = React.memo(function RevealSetView({
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
               height: 40,
-              background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.9))',
+              background: `linear-gradient(transparent, ${clipped ? bg : 'rgba(15, 23, 42, 0.9)'})`,
             }}
           />
         )}
@@ -257,6 +290,8 @@ const CollapsibleView = React.memo(function CollapsibleView({
   title,
   isCompact,
   children,
+  clipped,
+  containerBg,
 }: StrategyViewProps) {
   const isExpanded = params.isExpanded ?? false;
 
@@ -268,9 +303,22 @@ const CollapsibleView = React.memo(function CollapsibleView({
           maxHeight: isExpanded ? expandedHeight : (expandedHeight * 0.4),
           overflow: isExpanded ? 'auto' : 'hidden',
           transition: 'max-height 0.3s ease-out',
+          position: 'relative',
         }}
       >
         {children}
+        {/* Clipped indicator — fade-out gradient when content is hard-clipped */}
+        {clipped && !isExpanded && (
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 40,
+            background: `linear-gradient(transparent, ${containerBg ?? 'rgba(15, 23, 42, 0.95)'})`,
+            pointerEvents: 'none',
+          }} />
+        )}
       </div>
 
       {/* Expand/Collapse toggle */}
@@ -311,16 +359,31 @@ const StepRevealView = React.memo(function StepRevealView({
   title,
   isCompact,
   children,
+  clipped,
+  containerBg,
 }: StrategyViewProps) {
   // Step reveal shows one step at a time with prev/next navigation
   // For now, we use a simplified view that clips content and shows nav
   const currentStep = params.currentStep ?? 0;
+  const isExpanded = params.isExpanded ?? false;
 
   return (
     <div className="relative w-full">
       {/* Content — shown in full (the block renderer handles step logic internally) */}
-      <div style={{ maxHeight: expandedHeight, overflow: 'auto' }}>
+      <div style={{ maxHeight: expandedHeight, overflow: 'auto', position: 'relative' }}>
         {children}
+        {/* Clipped indicator — fade-out gradient when content is hard-clipped */}
+        {clipped && !isExpanded && (
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 40,
+            background: `linear-gradient(transparent, ${containerBg ?? 'rgba(15, 23, 42, 0.95)'})`,
+            pointerEvents: 'none',
+          }} />
+        )}
       </div>
 
       {/* Step navigation bar */}

@@ -56,6 +56,7 @@ export type {
   StudiBlock,
   MateriBlokBlock,
   MateriBlokTipe,
+  MateriContentTab,
 } from './blocks';
 
 export type {

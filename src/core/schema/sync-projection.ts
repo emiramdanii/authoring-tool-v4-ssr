@@ -25,11 +25,12 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { KuisItem, DiskusiData, RefleksiData, MateriState } from '@/store/authoring-store';
-import type { SchemaBlock, ScreenSchema } from './types';
+import type { SchemaBlock, ScreenSchema, MateriContentTab } from './types';
 import type { CanvaPage } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva/store';
 import { assertDocumentPurity } from './session-state';
 import { generateBlockId } from './ensure-schema';
+import { nanoid } from 'nanoid';
 
 // ── Helper: Find and update a block in a page's schema ──────────
 
@@ -132,6 +133,7 @@ export function syncRefleksiToSchema(refleksi: RefleksiData): boolean {
 /**
  * Sync MateriState from projection to the materi-section block in the schema.
  * Converts MateriBlok[] → SchemaBlock[] for the materi-section's content.
+ * Also produces MateriContentTab[] when any MateriBlok has a tabGroup.
  *
  * This is the most complex sync because MateriBlok has varied types
  * (teks, definisi, poin, highlight, compare, infobox, etc.) that each
@@ -139,175 +141,232 @@ export function syncRefleksiToSchema(refleksi: RefleksiData): boolean {
  */
 export function syncMateriToSchema(materi: MateriState): boolean {
   return updateSchemaBlock('materi', 'materi-section', (block) => {
-    const contentBlocks = materiBloksToSchemaBlocks(materi.blok);
+    const result = materiBloksToSchemaBlocks(materi.blok);
     return {
       ...block,
-      content: contentBlocks,
+      content: result.content,
+      ...(result.tabs ? { tabs: result.tabs } : {}),
     } as SchemaBlock;
   });
 }
 
 /**
- * Convert MateriBlok[] from the authoring store to SchemaBlock[] for the canvas.
+ * Convert a single MateriBlok from the authoring store to a SchemaBlock for the canvas.
  * Each MateriBlok.tipe maps to a specific SchemaBlock type.
  */
-function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').MateriBlok[]): SchemaBlock[] {
-  return bloks.map((blok) => {
-    switch (blok.tipe) {
-      case 'teks':
-        return {
-          type: 'def-box' as const,
-          id: generateBlockId(),
-          borderColor: 'c',
-          content: blok.isi || '',
-          compression: { priority: 'high' as const, strategy: 'accordion' as const },
-          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'definisi':
-        return {
-          type: 'def-box' as const,
-          id: generateBlockId(),
-          borderColor: 'y',
-          content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
-          compression: { priority: 'high' as const, strategy: 'accordion' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'poin':
-        return {
-          type: 'nc-grid' as const,
-          id: generateBlockId(),
-          cards: (blok.butir || []).map((item, i) => ({
-            icon: ['📌', '📋', '🔑', '💡', '⭐', '📝'][i % 6],
-            title: item,
-            body: `Bagian dari ${blok.judul || 'materi'}`,
-            color: ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c'][i % 6],
-          })),
-          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'highlight':
-        return {
-          type: 'def-box' as const,
-          id: generateBlockId(),
-          borderColor: blok.warna === 'blue' ? 'c' : 'y',
-          content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
-          compression: { priority: 'high' as const, strategy: 'accordion' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'compare':
-        return {
-          type: 'nc-grid' as const,
-          id: generateBlockId(),
-          cards: [
-            { icon: '🔥', title: 'Kiri', body: blok.kiri?.isi || blok.kiri?.judul || '', color: 'c' },
-            { icon: '⚡', title: 'Kanan', body: blok.kanan?.isi || blok.kanan?.judul || '', color: 'y' },
-          ],
-          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
-          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'infobox':
-        return {
-          type: 'def-box' as const,
-          id: generateBlockId(),
-          borderColor: 'g',
-          content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
-          compression: { priority: 'high' as const, strategy: 'accordion' as const },
-          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'kutipan':
-        return {
-          type: 'def-box' as const,
-          id: generateBlockId(),
-          borderColor: 'g',
-          content: blok.isi ? `"${blok.isi}"` : '',
-          compression: { priority: 'high' as const, strategy: 'accordion' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const, style: 'quote' },
-        };
-      case 'tabel':
-        return {
-          type: 'tabel' as const,
-          id: generateBlockId(),
-          title: blok.judul || undefined,
-          headers: (blok.baris?.[0]) || ['No', 'Isi'],
-          rows: (blok.baris?.slice(1) || []) as string[][],
-          accentColor: 'c',
-          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'gambar':
-        return {
-          type: 'gambar' as const,
-          id: generateBlockId(),
-          title: blok.judul || undefined,
-          url: blok.isi || '',
-          caption: blok.isi || undefined,
-          accentColor: 'c',
-          compression: { priority: 'low' as const, strategy: 'scroll' as const },
-          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'timeline':
-        return {
-          type: 'timeline' as const,
-          id: generateBlockId(),
-          title: blok.judul || undefined,
-          steps: (blok.langkah || []).map((step, i) => ({
-            icon: (step as Record<string, unknown>).icon as string || ['📌', '📋', '🔑', '💡', '⭐'][i % 5],
-            label: (step as Record<string, unknown>).judul as string || (step as Record<string, unknown>).label as string || `Langkah ${i + 1}`,
-            description: (step as Record<string, unknown>).isi as string || (step as Record<string, unknown>).description as string || '',
-            color: ['c', 'g', 'y', 'p', 'o'][i % 5],
-          })),
-          accentColor: 'c',
-          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'checklist':
-        return {
-          type: 'checklist' as const,
-          id: generateBlockId(),
-          title: blok.judul || undefined,
-          items: (blok.butir || []).map(item => ({
-            text: typeof item === 'string' ? item : (item as Record<string, unknown>).text as string || '',
-            checked: false,
-          })),
-          accentColor: 'g',
-          compression: { priority: 'medium' as const, strategy: 'scroll' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'choose' as const },
-        };
-      case 'statistik':
-        return {
-          type: 'statistik' as const,
-          id: generateBlockId(),
-          title: blok.judul || undefined,
-          items: ((blok as unknown as Record<string, unknown>).items || []) as Array<{ angka: string; satuan?: string; label: string; warna: string }>,
-          accentColor: 'c',
-          compression: { priority: 'low' as const, strategy: 'scroll' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
-      case 'studi':
-        return {
-          type: 'studi' as const,
-          id: generateBlockId(),
-          title: blok.judul || undefined,
-          karakter: blok.karakter || undefined,
-          situasi: blok.situasi || blok.isi || '',
-          pertanyaan: (blok as unknown as Record<string, unknown>).pertanyaan as string || '',
-          pesan: (blok as unknown as Record<string, unknown>).pesan as string || undefined,
-          accentColor: 'y',
-          compression: { priority: 'medium' as const, strategy: 'accordion' as const },
-          semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'reflect' as const },
-        };
-      default:
-        // Fallback: any unknown type → def-box
-        return {
-          type: 'def-box' as const,
-          id: generateBlockId(),
-          borderColor: 'y',
-          content: blok.isi || blok.judul || `Blok ${blok.tipe}`,
-          compression: { priority: 'high' as const, strategy: 'accordion' as const },
-          semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
-        };
+function convertMateriBlok(blok: import('@/store/authoring-store').MateriBlok): SchemaBlock {
+  switch (blok.tipe) {
+    case 'teks':
+      return {
+        type: 'def-box' as const,
+        id: generateBlockId(),
+        borderColor: 'c',
+        content: blok.isi || '',
+        compression: { priority: 'high' as const, strategy: 'accordion' as const },
+        semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'definisi':
+      return {
+        type: 'def-box' as const,
+        id: generateBlockId(),
+        borderColor: 'y',
+        content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
+        compression: { priority: 'high' as const, strategy: 'accordion' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'poin':
+      return {
+        type: 'nc-grid' as const,
+        id: generateBlockId(),
+        cards: (blok.butir || []).map((item, i) => ({
+          icon: ['📌', '📋', '🔑', '💡', '⭐', '📝'][i % 6],
+          title: item,
+          body: `Bagian dari ${blok.judul || 'materi'}`,
+          color: ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c'][i % 6],
+        })),
+        compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'highlight':
+      return {
+        type: 'def-box' as const,
+        id: generateBlockId(),
+        borderColor: blok.warna === 'blue' ? 'c' : 'y',
+        content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
+        compression: { priority: 'high' as const, strategy: 'accordion' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'compare':
+      return {
+        type: 'nc-grid' as const,
+        id: generateBlockId(),
+        cards: [
+          { icon: '🔥', title: 'Kiri', body: blok.kiri?.isi || blok.kiri?.judul || '', color: 'c' },
+          { icon: '⚡', title: 'Kanan', body: blok.kanan?.isi || blok.kanan?.judul || '', color: 'y' },
+        ],
+        compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+        semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'infobox':
+      return {
+        type: 'def-box' as const,
+        id: generateBlockId(),
+        borderColor: 'g',
+        content: blok.judul ? `<strong>${blok.judul}</strong> — ${blok.isi || ''}` : blok.isi || '',
+        compression: { priority: 'high' as const, strategy: 'accordion' as const },
+        semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'kutipan':
+      return {
+        type: 'def-box' as const,
+        id: generateBlockId(),
+        borderColor: 'g',
+        content: blok.isi ? `"${blok.isi}"` : '',
+        compression: { priority: 'high' as const, strategy: 'accordion' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'tabel':
+      return {
+        type: 'tabel' as const,
+        id: generateBlockId(),
+        title: blok.judul || undefined,
+        headers: (blok.baris?.[0]) || ['No', 'Isi'],
+        rows: (blok.baris?.slice(1) || []) as string[][],
+        accentColor: 'c',
+        compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'gambar':
+      return {
+        type: 'gambar' as const,
+        id: generateBlockId(),
+        title: blok.judul || undefined,
+        url: blok.isi || '',
+        caption: blok.isi || undefined,
+        accentColor: 'c',
+        compression: { priority: 'low' as const, strategy: 'scroll' as const },
+        semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'timeline':
+      return {
+        type: 'timeline' as const,
+        id: generateBlockId(),
+        title: blok.judul || undefined,
+        steps: (blok.langkah || []).map((step, i) => ({
+          icon: (step as Record<string, unknown>).icon as string || ['📌', '📋', '🔑', '💡', '⭐'][i % 5],
+          label: (step as Record<string, unknown>).judul as string || (step as Record<string, unknown>).label as string || `Langkah ${i + 1}`,
+          description: (step as Record<string, unknown>).isi as string || (step as Record<string, unknown>).description as string || '',
+          color: ['c', 'g', 'y', 'p', 'o'][i % 5],
+        })),
+        accentColor: 'c',
+        compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'checklist':
+      return {
+        type: 'checklist' as const,
+        id: generateBlockId(),
+        title: blok.judul || undefined,
+        items: (blok.butir || []).map(item => ({
+          text: typeof item === 'string' ? item : (item as Record<string, unknown>).text as string || '',
+          checked: false,
+        })),
+        accentColor: 'g',
+        compression: { priority: 'medium' as const, strategy: 'scroll' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'choose' as const },
+      };
+    case 'statistik':
+      return {
+        type: 'statistik' as const,
+        id: generateBlockId(),
+        title: blok.judul || undefined,
+        items: ((blok as unknown as Record<string, unknown>).items || []) as Array<{ angka: string; satuan?: string; label: string; warna: string }>,
+        accentColor: 'c',
+        compression: { priority: 'low' as const, strategy: 'scroll' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+    case 'studi':
+      return {
+        type: 'studi' as const,
+        id: generateBlockId(),
+        title: blok.judul || undefined,
+        karakter: blok.karakter || undefined,
+        situasi: blok.situasi || blok.isi || '',
+        pertanyaan: (blok as unknown as Record<string, unknown>).pertanyaan as string || '',
+        pesan: (blok as unknown as Record<string, unknown>).pesan as string || undefined,
+        accentColor: 'y',
+        compression: { priority: 'medium' as const, strategy: 'accordion' as const },
+        semantic: { topic: blok.judul, learningPhase: 'inti' as const, interactionType: 'reflect' as const },
+      };
+    default:
+      // Fallback: any unknown type → def-box
+      return {
+        type: 'def-box' as const,
+        id: generateBlockId(),
+        borderColor: 'y',
+        content: blok.isi || blok.judul || `Blok ${blok.tipe}`,
+        compression: { priority: 'high' as const, strategy: 'accordion' as const },
+        semantic: { learningPhase: 'inti' as const, interactionType: 'read' as const },
+      };
+  }
+}
+
+/**
+ * Convert MateriBlok[] from the authoring store to SchemaBlock[] for the canvas.
+ * When any MateriBlok has a `tabGroup`, blocks are grouped into tabs
+ * (MateriContentTab[]) and both flat content + tabs are returned.
+ * When no `tabGroup` is present, returns flat content only (backward compatible).
+ */
+function materiBloksToSchemaBlocks(bloks: import('@/store/authoring-store').MateriBlok[]): {
+  content: SchemaBlock[];
+  tabs?: MateriContentTab[];
+} {
+  // Check if any blok has tabGroup
+  const hasGroups = bloks.some(b => b.tabGroup);
+
+  if (!hasGroups) {
+    // Existing flat behavior — zero breaking change
+    return { content: bloks.flatMap(b => convertMateriBlok(b)) };
+  }
+
+  // Group by tabGroup
+  const groups = new Map<string, import('@/store/authoring-store').MateriBlok[]>();
+  const ungrouped: import('@/store/authoring-store').MateriBlok[] = [];
+
+  for (const blok of bloks) {
+    if (blok.tabGroup) {
+      const arr = groups.get(blok.tabGroup) || [];
+      arr.push(blok);
+      groups.set(blok.tabGroup, arr);
+    } else {
+      ungrouped.push(blok);
     }
-  }) as SchemaBlock[];
+  }
+
+  // Create tabs from groups
+  const tabs: MateriContentTab[] = [];
+
+  // Ungrouped bloks go into a leading "Utama" tab
+  if (ungrouped.length > 0) {
+    tabs.push({
+      id: `tab-${nanoid(6)}`,
+      label: 'Utama',
+      content: ungrouped.flatMap(b => convertMateriBlok(b)),
+    });
+  }
+
+  for (const [groupName, groupBloks] of groups) {
+    tabs.push({
+      id: `tab-${nanoid(6)}`,
+      label: groupName,
+      content: groupBloks.flatMap(b => convertMateriBlok(b)),
+    });
+  }
+
+  // Put all content as flat content too for backward compat
+  const allContent = bloks.flatMap(b => convertMateriBlok(b));
+
+  return { content: allContent, tabs };
 }
 
 /**

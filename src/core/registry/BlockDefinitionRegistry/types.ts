@@ -105,6 +105,9 @@ export interface BlockCapabilities {
   /** Whether the renderer handles compression natively via useBlockCompression.
    *  If false, CompressionBoundary will wrap the block in CompressedBlockWrapper. */
   handlesCompression: boolean;
+  /** Whether this block type supports tab-grouped content.
+   *  When true, the block can organize child blocks into named tabs. */
+  hasTabs: boolean;
 }
 
 export const DEFAULT_CAPABILITIES: BlockCapabilities = {
@@ -117,6 +120,7 @@ export const DEFAULT_CAPABILITIES: BlockCapabilities = {
   composite: false,
   variants: ['A'],
   handlesCompression: false,
+  hasTabs: false,
 };
 
 export interface SceneBlockLayout {

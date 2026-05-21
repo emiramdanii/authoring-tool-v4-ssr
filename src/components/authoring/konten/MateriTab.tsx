@@ -21,6 +21,7 @@ function BlokCard({
   onRemove,
   onRegenerate,
   onUpdatePertemuan,
+  onUpdateTabGroup,
   jumlahPertemuan,
 }: {
   blok: MateriBlok;
@@ -31,6 +32,7 @@ function BlokCard({
   onRemove: () => void;
   onRegenerate: () => void;
   onUpdatePertemuan: (val: number | undefined) => void;
+  onUpdateTabGroup: (val: string | undefined) => void;
   jumlahPertemuan: number;
 }) {
   const [open, setOpen] = useState(true);
@@ -113,6 +115,18 @@ function BlokCard({
               </select>
             </div>
           )}
+
+          {/* Tab Group — for organizing blocks into tabs */}
+          <div className="flex items-center gap-2 mt-3 pt-2 border-t border-app-border/40">
+            <label className="text-xs font-medium text-app-secondary whitespace-nowrap">Grup Tab</label>
+            <input
+              type="text"
+              value={blok.tabGroup ?? ''}
+              onChange={(e) => onUpdateTabGroup(e.target.value || undefined)}
+              placeholder="— tanpa grup —"
+              className="bg-app-elevated border border-app-border rounded-lg px-2 py-1 text-xs text-app-primary placeholder:text-app-muted/50 focus:outline-none focus:ring-2 focus:ring-app-accent/50 flex-1 min-w-0"
+            />
+          </div>
         </div>
       )}
     </div>
@@ -236,6 +250,11 @@ export function MateriTab() {
               onUpdatePertemuan={(val) => {
                 const newBloks = [...materi.blok];
                 newBloks[i] = { ...newBloks[i], pertemuan: val };
+                useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
+              }}
+              onUpdateTabGroup={(val) => {
+                const newBloks = [...materi.blok];
+                newBloks[i] = { ...newBloks[i], tabGroup: val };
                 useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
               }}
               jumlahPertemuan={jumlahPertemuan}

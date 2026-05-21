@@ -151,6 +151,7 @@ export interface MateriBlok {
   pertanyaan?: string;
   pesan?: string;
   pertemuan?: number; // Pertemuan ke berapa (1-based), undefined = semua pertemuan
+  tabGroup?: string;  // Group name for tab organization — blocks with same tabGroup go into the same tab
 }
 
 export interface MateriState {

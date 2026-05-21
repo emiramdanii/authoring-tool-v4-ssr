@@ -28,6 +28,7 @@ export type PageOpsSlice = Pick<
   | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
   | 'moveBlockToContainer'
   | 'rebalanceCurrentPage' | 'promoteSceneSplit' | 'mergeWithAdjacentPage'
+  | 'splitMateriContent'
 >;
 
 export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> = (set, get) => ({
@@ -327,6 +328,132 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     if (!result.success) { toast.error('Merge gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return; }
 
     toast.success('Halaman berhasil digabung', {
+      action: { label: 'Undo', onClick: () => { get().undo(); } },
+      duration: 4000,
+    });
+  },
+
+  // ── Split Materi Content ──────────────────────────────────────
+  // Splits a materi-section's content at a given index, creating a
+  // new page with the overflow blocks. Current page keeps content[0..splitAfterIndex],
+  // new page gets content[splitAfterIndex+1..end].
+  splitMateriContent: (blockId: string, splitAfterIndex: number) => {
+    const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    if (!page?.schema) { toast.info('Halaman ini tidak memiliki schema'); return; }
+    const schema = ensurePageSchema(page);
+    if (!schema) return;
+
+    // Find the materi-section block
+    const blockIdx = schema.blocks.findIndex(b => b.id === blockId);
+    if (blockIdx === -1) {
+      toast.error('Block materi-section tidak ditemukan'); return;
+    }
+    const materiBlock = schema.blocks[blockIdx] as import('@/core/schema/types').MateriSectionBlock;
+    if (materiBlock.type !== 'materi-section') {
+      toast.error('Block bukan materi-section'); return;
+    }
+
+    // Determine which content array to split (tabs vs flat)
+    const hasTabs = !!(materiBlock.tabs && materiBlock.tabs.length > 0);
+    const activeTabIndex = 0; // Default to first tab for split
+    let contentToSplit: import('@/core/schema/types').SchemaBlock[];
+    let tabsToSplit: import('@/core/schema/types').MateriContentTab[] | undefined;
+
+    if (hasTabs && materiBlock.tabs) {
+      // Split the first tab's content (most common case)
+      tabsToSplit = materiBlock.tabs.map((tab, i) => ({
+        ...tab,
+        content: i === activeTabIndex
+          ? tab.content.slice(splitAfterIndex + 1)
+          : [],
+      }));
+      contentToSplit = materiBlock.tabs[activeTabIndex]?.content ?? [];
+    } else {
+      contentToSplit = materiBlock.content || [];
+    }
+
+    if (splitAfterIndex < 0 || splitAfterIndex >= contentToSplit.length - 1) {
+      toast.info('Tidak bisa split — tidak cukup blok untuk dibagi'); return;
+    }
+
+    get()._pushHistory();
+
+    // ── FASE 6: Crash checkpoint before materi split ──
+    saveCrashCheckpoint(get().pages, get().ratioId, 'split-materi');
+
+    const keepContent = contentToSplit.slice(0, splitAfterIndex + 1);
+    const overflowContent = contentToSplit.slice(splitAfterIndex + 1);
+
+    if (overflowContent.length === 0) {
+      toast.info('Tidak ada blok overflow untuk dipindahkan'); return;
+    }
+
+    // Update current materi-section: keep only the first half
+    const updatedMateriBlock = {
+      ...materiBlock,
+      content: hasTabs ? materiBlock.content : keepContent,
+      ...(hasTabs && materiBlock.tabs ? {
+        tabs: materiBlock.tabs.map((tab, i) => ({
+          ...tab,
+          content: i === activeTabIndex ? keepContent : tab.content,
+        })),
+      } : {}),
+      takeaways: undefined, // Remove takeaways from current (moved to next page)
+      selfCheck: undefined,  // Remove selfCheck from current (moved to next page)
+    };
+
+    // Create new materi-section for the next page with overflow content
+    const newMateriBlockId = generateBlockId();
+    const newMateriBlock: import('@/core/schema/types').MateriSectionBlock = {
+      ...materiBlock,
+      id: newMateriBlockId,
+      title: `${materiBlock.title} (lanjutan)`,
+      content: hasTabs ? overflowContent : overflowContent,
+      ...(hasTabs && tabsToSplit ? { tabs: tabsToSplit } : {}),
+      takeaways: materiBlock.takeaways, // Move takeaways to continuation
+      selfCheck: materiBlock.selfCheck,   // Move selfCheck to continuation
+    };
+
+    // Update current page schema
+    const newBlocks = [...schema.blocks];
+    newBlocks[blockIdx] = updatedMateriBlock;
+
+    // Create new page with the overflow materi-section
+    const newPageId = generatePageId();
+    const currentPageLabel = page.label || `Halaman ${currentPageIndex + 1}`;
+    const newPageSchema: import('@/core/schema/types').ScreenSchema = {
+      id: newPageId,
+      version: 1,
+      templateType: page.schema?.templateType || 'custom',
+      blocks: [newMateriBlock],
+    };
+
+    const newPage: typeof page = {
+      ...page,
+      id: newPageId,
+      label: `${currentPageLabel} (lanjutan)`,
+      schema: newPageSchema,
+      elements: [],
+      templateData: {},
+    };
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks) };
+    newPages.splice(currentPageIndex + 1, 0, newPage);
+
+    set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+
+    editBus.emit({
+      type: 'cross-page',
+      operation: 'splitMateriContent',
+      pageIndex: currentPageIndex,
+      blockId,
+      blockType: 'materi-section',
+      details: { _splitAfterIndex: splitAfterIndex, newPageId, overflowCount: overflowContent.length },
+    });
+
+    toast.success(`${overflowContent.length} blok dipindahkan ke halaman baru`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
     });

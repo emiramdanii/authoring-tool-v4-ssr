@@ -257,6 +257,8 @@ export interface CanvaState {
   promoteSceneSplit: (sceneIndex?: number) => void;
   /** Merge current page with adjacent page via transaction */
   mergeWithAdjacentPage: (direction?: 'next' | 'prev') => void;
+  /** Split a materi-section's content at a given block index, creating a new page with overflow content */
+  splitMateriContent: (blockId: string, splitAfterIndex: number) => void;
 
   // Alignment & Distribution
   alignSelected: (direction: 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom') => void;

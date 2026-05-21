@@ -189,6 +189,24 @@ export interface NormaKartuBlock extends BaseBlock {
   };
 }
 
+// ── Materi Content Tab ─────────────────────────────────────────
+
+/**
+ * A tab within a MateriSectionBlock.
+ * When present, content is organized into named tabs
+ * instead of a single flat array.
+ */
+export interface MateriContentTab {
+  /** Unique ID for the tab */
+  id: string;
+  /** Display label (e.g., "Definisi", "Contoh") */
+  label: string;
+  /** Optional icon name */
+  icon?: string;
+  /** Blocks within this tab */
+  content: import('./schema').SchemaBlock[];
+}
+
 // ── Materi Section Schema (BSNP-compliant) ──────────────────────
 
 export interface MateriSectionBlock extends BaseBlock {
@@ -203,6 +221,9 @@ export interface MateriSectionBlock extends BaseBlock {
   accentColor?: string;
   /** Content blocks within this section */
   content: import('./schema').SchemaBlock[];
+  /** NEW: Tab-grouped content. When present, renderer shows tab bar.
+   *  When absent, flat content is used (backward compatible). */
+  tabs?: MateriContentTab[];
   /** Key takeaways at the bottom */
   takeaways?: string[];
   /** "Apa yang sudah kamu pelajari?" self-check prompt */
