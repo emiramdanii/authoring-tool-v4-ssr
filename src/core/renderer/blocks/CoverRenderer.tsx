@@ -11,11 +11,9 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 // COVER RENDERER — Premium Cover Page with 3 Creative Variants
 // ═══════════════════════════════════════════════════════════════════
 // Variants:
-//   A "Klasik" — Centered layout, radial gradient bg, floating icon
-//   B "Sinematik" — Cinematic full-bleed: icon as watermark, left-aligned,
-//                    badges horizontal, animated gradient border
-//   C "Minimalis" — Ultra-clean: solid bg, no icon container, thin accent
-//                    line, small inline icon, left-aligned
+//   A "Klasik" — Clean light surface, centered layout, soft accent icon
+//   B "Sinematik" — Elegant light with subtle gradient accent, watermark
+//   C "Minimalis" — Pure white, thin accent line, maximum whitespace
 //
 // All text/labels in Indonesian (Bahasa Indonesia).
 // ═══════════════════════════════════════════════════════════════════
@@ -50,7 +48,7 @@ function VariantSelector({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// VARIANT A "Klasik" — Centered layout, radial gradient, floating icon
+// VARIANT A "Klasik" — Clean light surface, centered layout, soft accent icon
 // ═══════════════════════════════════════════════════════════════════
 function CoverVariantA({
   block, tokens, interactive, isEditing,
@@ -68,49 +66,48 @@ function CoverVariantA({
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
       style={{
-        background: 'radial-gradient(ellipse 90% 60% at 50% 0%, ' + tokens.colorAlpha(accentKey, 0.22) + ', transparent 60%), linear-gradient(180deg, ' + tokens.color('bg') + ', ' + tokens.color('bg2') + ')',
+        background: tokens.color('bg'),
         animation: 'coverReveal 0.6s ease-out',
         overflow: 'hidden',
       }}>
 
-      {/* Decorative top bar */}
-      <div className="absolute top-0 left-0 right-0 h-1.5"
-        style={{ background: 'linear-gradient(90deg, ' + y + ', ' + c + ', ' + y + ')' }} />
+      {/* Subtle top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-0.5"
+        style={{ background: tokens.color(accentKey) }} />
 
-      {/* Icon with glowing container + breathe effect */}
-      <div className="mb-5 relative">
+      {/* Icon with soft accent background */}
+      <div className="mb-6 relative">
         <div className="w-20 h-20 rounded-2xl flex items-center justify-center"
           style={{
-            background: tokens.colorAlpha(accentKey, 0.18),
-            boxShadow: '0 0 40px ' + tokens.colorAlpha(accentKey, 0.25) + ', 0 8px 24px ' + tokens.colorAlpha('bg', 0.3),
-            backdropFilter: 'blur(8px)',
+            background: tokens.accentBg(accentKey, 0.1),
+            boxShadow: tokens.raw.shadow.card,
           }}>
-          <div className="text-4xl" style={{ animation: 'float 3s ease-in-out infinite, breathe 4s ease-in-out infinite' }}>
+          <div className="text-4xl" style={{ animation: 'breathe 5s ease-in-out infinite' }}>
             {block.icon}
           </div>
         </div>
       </div>
 
       <div className="font-extrabold tracking-widest uppercase truncate"
-        style={{ fontSize: '13px', color: c }}>
+        style={{ fontSize: tokens.fontSize('sm'), color: tokens.accentText(accentKey) }}>
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
       {/* Title — inline editable */}
-      <h1 className="font-black leading-tight mt-3 min-w-0 line-clamp-4"
-        style={{ fontSize: '30px', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), textShadow: '0 2px 12px ' + tokens.colorAlpha('bg', 0.5), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
+      <h1 className="font-black leading-tight mt-4 min-w-0 line-clamp-4"
+        style={{ fontSize: '32px', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
-          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', textShadow: 'inherit', wordBreak: 'break-word' }}
+          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
         />
       </h1>
 
       {/* Subtitle */}
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-3 max-w-[380px] overflow-hidden"
-        style={{ fontSize: '15px', color: tokens.textSecondary(0.7) }}
+        className="mt-5 max-w-[380px] overflow-hidden"
+        style={{ fontSize: '15px', color: tokens.textSecondary(0.85), lineHeight: 1.6 }}
         placeholder="Ketik subtitle..."
       />
 
@@ -126,15 +123,14 @@ function CoverVariantA({
         </div>
       )}
 
-      {/* Meta — glass card */}
+      {/* Meta — subtle card */}
       {block.meta && (
-        <div className="mt-5 px-4 py-2.5 rounded-xl flex-wrap min-w-0"
+        <div className="mt-6 px-4 py-2.5 rounded-xl flex-wrap min-w-0"
           style={{
             fontSize: '12px',
             color: tokens.muted(0.8),
-            background: tokens.colorAlpha('c', 0.08),
-            border: '1px solid ' + tokens.colorAlpha('c', 0.2),
-            backdropFilter: 'blur(8px)',
+            background: tokens.subtleBg(0.04),
+            border: '1px solid ' + tokens.subtleBorder(0.06),
           }}>
           ⏱️ {block.meta.durasi} | 🎯 Fase {block.meta.fase} | 📚 Elemen: {block.meta.elemen}
         </div>
@@ -143,24 +139,24 @@ function CoverVariantA({
       {/* CTA */}
       {block.cta && (
         <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
-        <button className={`mt-6 rounded-[99px] text-[0.9rem] font-extrabold transition-all ${
+        <button className={`mt-7 rounded-[99px] text-[0.9rem] font-extrabold transition-all ${
           interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
         }`}
           style={{
-            background: 'linear-gradient(135deg, ' + y + ', ' + tokens.color('o') + ')',
+            background: tokens.color(accentKey),
             color: tokens.color('bg'),
             padding: '12px 28px',
-            boxShadow: '0 6px 24px ' + tokens.colorAlpha('y', 0.4) + ', 0 2px 8px ' + tokens.colorAlpha('bg', 0.2),
+            boxShadow: tokens.raw.shadow.elevated,
           }}>
           {block.cta.label}
         </button>
         </MicroInteraction>
       )}
 
-      {/* Bottom decoration */}
+      {/* Bottom decoration — subtle dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
         {[y, c, g].map((color, i) => (
-          <div key={`cover-deco-a-${i}`} className="w-10 h-1.5 rounded-full" style={{ background: color, opacity: 0.7, boxShadow: '0 0 8px ' + tokens.colorAlpha(['y','c','g'][i], 0.4) }} />
+          <div key={`cover-deco-a-${i}`} className="w-6 h-1 rounded-full" style={{ background: color, opacity: 0.5 }} />
         ))}
       </div>
     </div>
@@ -168,7 +164,7 @@ function CoverVariantA({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// VARIANT B "Sinematik" — Cinematic full-bleed, movie poster layout
+// VARIANT B "Sinematik" — Elegant light with subtle gradient accent, watermark
 // ═══════════════════════════════════════════════════════════════════
 function CoverVariantB({
   block, tokens, interactive, isEditing,
@@ -185,7 +181,7 @@ function CoverVariantB({
   return (
     <div className="absolute inset-0 flex flex-col justify-end p-8 pb-12"
       style={{
-        background: 'linear-gradient(180deg, ' + tokens.color('bg2') + ' 0%, ' + tokens.color('bg') + ' 60%, ' + tokens.colorAlpha(accentKey, 0.12) + ' 100%)',
+        background: tokens.color('bg2'),
         animation: 'coverReveal 0.6s ease-out',
         overflow: 'hidden',
         // Prevent bottom-anchored content from overflowing upward.
@@ -194,15 +190,10 @@ function CoverVariantB({
         maxHeight: '100%',
       }}>
 
-      {/* Animated gradient border on outer edge */}
-      <div className="absolute inset-0 pointer-events-none"
+      {/* Subtle accent gradient band at top */}
+      <div className="absolute top-0 left-0 right-0 h-16 pointer-events-none"
         style={{
-          border: '2px solid transparent',
-          backgroundImage: `linear-gradient(${tokens.color('bg')}, ${tokens.color('bg')}), linear-gradient(135deg, ${y}, ${c}, ${y}, ${tokens.color('o')}, ${y})`,
-          backgroundOrigin: 'border-box',
-          backgroundClip: 'padding-box, border-box',
-          animation: 'gradientBorderRotate 4s linear infinite',
-          backgroundSize: '100% 100%, 300% 300%',
+          background: `linear-gradient(180deg, ${tokens.accentBg(accentKey, 0.06)}, transparent)`,
         }} />
 
       {/* Large watermark icon behind title */}
@@ -213,10 +204,9 @@ function CoverVariantB({
           // Fixed px — vw units reference browser viewport, not the 1280px
           // virtual canvas. On wide monitors, 30vw could be 576px+.
           fontSize: '160px',
-          opacity: 0.08,
+          color: tokens.textSubtle(0.08),
           lineHeight: 1,
-          animation: 'float 6s ease-in-out infinite, breathe 8s ease-in-out infinite',
-          filter: 'blur(1px)',
+          animation: 'breathe 8s ease-in-out infinite',
         }}>
         {block.icon}
       </div>
@@ -225,7 +215,7 @@ function CoverVariantB({
       <div className="relative z-1 max-w-[90%]">
         {/* Meta label */}
         <div className="font-extrabold tracking-widest uppercase mb-2 truncate"
-          style={{ fontSize: '11px', color: tokens.colorAlpha(accentKey, 0.7), letterSpacing: '0.15em' }}>
+          style={{ fontSize: tokens.fontSize('sm'), color: tokens.accentText(accentKey), letterSpacing: '0.15em' }}>
           {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
         </div>
 
@@ -249,8 +239,8 @@ function CoverVariantB({
         {/* Subtitle */}
         <InlineTextEditor
           {...subtitleEditor}
-          className="mt-3 max-w-[480px] overflow-hidden"
-          style={{ fontSize: '16px', color: tokens.textSecondary(0.7), lineHeight: 1.6 }}
+          className="mt-5 max-w-[480px] overflow-hidden"
+          style={{ fontSize: '16px', color: tokens.textSecondary(0.85), lineHeight: 1.6 }}
           placeholder="Ketik subtitle..."
         />
 
@@ -259,13 +249,12 @@ function CoverVariantB({
           <div className="mt-5 flex flex-wrap items-center gap-2 max-w-full">
             {block.badges.map((b, i) => (
               <span key={`badge-b-${b.text?.slice(0,10)}-${i}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold min-w-0 premium-card-glow"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold min-w-0"
                 style={{
                   fontSize: '11px',
-                  background: tokens.colorAlpha(b.color, 0.15),
+                  background: tokens.accentBg(b.color, 0.1),
                   color: tokens.color(b.color),
-                  border: '1px solid ' + tokens.colorAlpha(b.color, 0.3),
-                  backdropFilter: 'blur(12px)',
+                  border: '1px solid ' + tokens.colorAlpha(b.color, 0.2),
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -281,11 +270,11 @@ function CoverVariantB({
         {/* Meta — compact row */}
         {block.meta && (
           <div className="mt-4 flex items-center gap-3 flex-wrap min-w-0"
-            style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
+            style={{ fontSize: '11px', color: tokens.muted(0.7) }}>
             <span>⏱️ {block.meta.durasi}</span>
-            <span style={{ color: tokens.colorAlpha('c', 0.3) }}>|</span>
+            <span style={{ color: tokens.subtleBorder(0.15) }}>|</span>
             <span>🎯 Fase {block.meta.fase}</span>
-            <span style={{ color: tokens.colorAlpha('c', 0.3) }}>|</span>
+            <span style={{ color: tokens.subtleBorder(0.15) }}>|</span>
             <span>📚 {block.meta.elemen}</span>
           </div>
         )}
@@ -296,10 +285,10 @@ function CoverVariantB({
             interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
           }`}
             style={{
-              background: 'linear-gradient(135deg, ' + y + ', ' + tokens.color('o') + ')',
+              background: tokens.color(accentKey),
               color: tokens.color('bg'),
               padding: '10px 24px',
-              boxShadow: '0 4px 20px ' + tokens.colorAlpha('y', 0.35),
+              boxShadow: tokens.raw.shadow.elevated,
             }}>
             {block.cta.label}
           </button>
@@ -307,14 +296,14 @@ function CoverVariantB({
       </div>
 
       {/* Bottom accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-1"
-        style={{ background: `linear-gradient(90deg, ${y}, ${c}, ${y})` }} />
+      <div className="absolute bottom-0 left-0 right-0 h-0.5"
+        style={{ background: tokens.color(accentKey) }} />
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// VARIANT C "Minimalis" — Ultra-clean, solid bg, left-aligned
+// VARIANT C "Minimalis" — Pure white, thin accent line, maximum whitespace
 // ═══════════════════════════════════════════════════════════════════
 function CoverVariantC({
   block, tokens, interactive, isEditing,
@@ -328,16 +317,16 @@ function CoverVariantC({
   const accentKey = block.accentColor || 'y';
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-center p-6"
+    <div className="absolute inset-0 flex flex-col justify-center p-10"
       style={{
-        background: tokens.color('bg'),
+        background: tokens.color('bg2'),
         animation: 'coverReveal 0.6s ease-out',
         overflow: 'hidden',
       }}>
 
       {/* Thin accent line at top */}
-      <div className="absolute top-0 left-0 right-0 h-[3px]"
-        style={{ background: y }} />
+      <div className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: tokens.color(accentKey) }} />
 
       {/* Content — left-aligned with generous whitespace */}
       <div className="max-w-full">
@@ -347,7 +336,7 @@ function CoverVariantC({
             {block.icon}
           </span>
           <div className="font-extrabold tracking-widest uppercase truncate"
-            style={{ fontSize: '11px', color: tokens.muted(0.6), letterSpacing: '0.2em' }}>
+            style={{ fontSize: '11px', color: tokens.muted(0.7), letterSpacing: '0.2em' }}>
             {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
           </div>
         </div>
@@ -372,8 +361,8 @@ function CoverVariantC({
         {/* Subtitle */}
         <InlineTextEditor
           {...subtitleEditor}
-          className="mt-3 max-w-[440px] overflow-hidden"
-          style={{ fontSize: '15px', color: tokens.textSecondary(0.6), lineHeight: 1.6 }}
+          className="mt-5 max-w-[440px] overflow-hidden"
+          style={{ fontSize: '15px', color: tokens.textSecondary(0.85), lineHeight: 1.6 }}
           placeholder="Ketik subtitle..."
         />
 
@@ -403,7 +392,7 @@ function CoverVariantC({
         {/* Meta — minimal inline */}
         {block.meta && (
           <div className="mt-5 flex items-center gap-4 flex-wrap min-w-0"
-            style={{ fontSize: '11px', color: tokens.muted(0.6) }}>
+            style={{ fontSize: '11px', color: tokens.muted(0.7) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span>🎯 Fase {block.meta.fase}</span>
             <span>📚 {block.meta.elemen}</span>
@@ -417,9 +406,9 @@ function CoverVariantC({
           }`}
             style={{
               background: 'transparent',
-              color: y,
+              color: tokens.color(accentKey),
               padding: '10px 24px',
-              border: '2px solid ' + y,
+              border: '1px solid ' + tokens.color(accentKey),
             }}>
             {block.cta.label}
           </button>
@@ -428,7 +417,7 @@ function CoverVariantC({
 
       {/* Minimal bottom line */}
       <div className="absolute bottom-6 left-10 right-10">
-        <div className="h-px" style={{ background: tokens.colorAlpha('c', 0.12) }} />
+        <div className="h-px" style={{ background: tokens.subtleBorder(0.1) }} />
       </div>
     </div>
   );

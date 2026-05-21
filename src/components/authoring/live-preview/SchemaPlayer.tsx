@@ -33,6 +33,7 @@ import {
   getAvailablePresets,
   THEME_PRESETS,
   resolveTokens,
+  DEFAULT_THEME_ID,
   type LessonSchema,
   type DesignTokens,
 } from '@/core';
@@ -74,7 +75,7 @@ export default function SchemaPlayer({
   const [loading, setLoading] = useState(!schemaProp && !!presetId);
   const [error, setError] = useState<string | null>(null);
   const [screenIdx, setScreenIdx] = useState(initialScreen);
-  const [themeId, setThemeId] = useState<string>('default');
+  const [themeId, setThemeId] = useState<string>(DEFAULT_THEME_ID);
   const [interactive, setInteractive] = useState(true);
   const [transitionType, setTransitionType] = useState<TransitionType>('slide');
 
@@ -101,7 +102,7 @@ export default function SchemaPlayer({
   useEffect(() => {
     if (schemaProp) {
       setSchema(schemaProp);
-      setThemeId(schemaProp.themeId || 'default');
+      setThemeId(schemaProp.themeId || DEFAULT_THEME_ID);
       setScreenIdx(0);
       return;
     }
@@ -118,7 +119,7 @@ export default function SchemaPlayer({
           setError(`Preset "${presetId}" tidak ditemukan`);
         } else {
           setSchema(s);
-          setThemeId(s.themeId || 'default');
+          setThemeId(s.themeId || DEFAULT_THEME_ID);
           setScreenIdx(0);
         }
       })

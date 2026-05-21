@@ -5,7 +5,7 @@ import type { HeroBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // HERO RENDERER — Banner/section header with 3 Creative Variants
@@ -74,9 +74,9 @@ function HeroVariantA({
         animation: 'coverReveal 0.5s ease-out',
       }}>
 
-      {/* Decorative accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-        style={{ background: `linear-gradient(90deg, ${y}, ${c}, ${y})` }} />
+      {/* Accent bar */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
+        style={{ background: y }} />
 
       {/* Icon */}
       <div className="mb-3">
@@ -87,7 +87,7 @@ function HeroVariantA({
             background: tokens.colorAlpha(accentKey, 0.15),
             border: `1px solid ${tokens.colorAlpha(accentKey, 0.3)}`,
             fontSize: isCompact ? '18px' : '24px',
-            boxShadow: `0 4px 16px ${tokens.colorAlpha(accentKey, 0.15)}`,
+            boxShadow: 'none',
           }}>
           {block.icon}
         </div>
@@ -126,37 +126,41 @@ function HeroVariantA({
       {block.badges && block.badges.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-2 max-w-full">
           {block.badges.map((b, i) => (
-            <PremiumBadge key={`hero-badge-a-${b.text?.slice(0,10)}-${i}`}
-              tokens={tokens} accent={b.color} variant="glass">
+            <span key={`hero-badge-a-${b.text?.slice(0,10)}-${i}`}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+              style={{
+                fontSize: '11px',
+                background: tokens.accentBg(b.color, 0.08),
+                color: tokens.color(b.color),
+                border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
+              }}>
               {b.icon && <span className="flex-shrink-0">{b.icon}</span>} {b.text}
-            </PremiumBadge>
+            </span>
           ))}
         </div>
       )}
 
       {/* CTA */}
       {block.cta && (
-        <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
           <button className={`mt-4 rounded-lg font-bold transition-all ${
             interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
           }`}
             style={{
               fontSize: '13px',
-              background: `linear-gradient(135deg, ${y}, ${tokens.color('o')})`,
+              background: y,
               color: tokens.color('bg'),
               padding: '8px 20px',
-              boxShadow: `0 4px 16px ${tokens.colorAlpha(accentKey, 0.3)}`,
+              boxShadow: tokens.raw.shadow.card,
             }}>
             {block.cta.label}
           </button>
-        </MicroInteraction>
       )}
 
       {/* Bottom accent dots */}
       <div className="absolute bottom-3 right-4 flex gap-1.5">
         {[y, c, tokens.color('g')].map((color, i) => (
-          <div key={`hero-deco-a-${i}`} className="w-6 h-1 rounded-full"
-            style={{ background: color, opacity: 0.5 }} />
+          <div key={`hero-deco-a-${i}`} className="w-4 h-0.5 rounded-full"
+            style={{ background: color, opacity: 0.3 }} />
         ))}
       </div>
     </div>
@@ -286,19 +290,17 @@ function HeroVariantC({
         animation: 'coverReveal 0.5s ease-out',
       }}>
 
-      {/* Glowing accent line */}
+      {/* Accent line */}
       <div className="mx-auto mb-4 rounded-full"
         style={{
           width: isCompact ? 40 : 60,
-          height: 3,
+          height: 2,
           background: y,
-          boxShadow: `0 0 16px ${tokens.colorAlpha(accentKey, 0.4)}, 0 0 32px ${tokens.colorAlpha(accentKey, 0.15)}`,
-          animation: 'glowPulse 3s ease-in-out infinite',
         }} />
 
       {/* Icon — small inline */}
       <div className="mb-2">
-        <span style={{ fontSize: isCompact ? '20px' : '28px', animation: 'breathe 5s ease-in-out infinite' }}>
+        <span style={{ fontSize: isCompact ? '20px' : '28px' }}>
           {block.icon}
         </span>
       </div>
@@ -361,7 +363,7 @@ function HeroVariantC({
             background: 'transparent',
             color: y,
             padding: '8px 20px',
-            border: `2px solid ${y}`,
+            border: `1px solid ${y}`,
           }}>
           {block.cta.label}
         </button>
@@ -410,7 +412,7 @@ export const HeroRenderer = React.memo(function HeroRenderer({ block, tokens, in
   return (
     <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}
       style={{ width: '100%' }}>
-      <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', maxWidth: tokens.contentWidth(), margin: '0 auto' }}>
         <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />
         {variant === 'A' && <HeroVariantA {...sharedProps} />}
         {variant === 'B' && <HeroVariantB {...sharedProps} />}

@@ -136,6 +136,57 @@ export class TokenResolver {
       ? `rgba(255,255,255,${opacity})`
       : `rgba(0,0,0,${opacity})`;
   }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VISUAL CONTRACT HELPERS — Consistent patterns across all renderers
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Standard card style — consistent across all renderers */
+  cardStyle(): Record<string, string | number> {
+    return {
+      background: this.color('card'),
+      borderRadius: this.radius('xl'),
+      border: `1px solid ${this.subtleBorder(0.06)}`,
+      boxShadow: this.tokens.shadow.card,
+    };
+  }
+
+  /** Elevated card style — for hover/active states */
+  elevatedCardStyle(): Record<string, string | number> {
+    return {
+      background: this.color('card'),
+      borderRadius: this.radius('xl'),
+      border: `1px solid ${this.subtleBorder(0.08)}`,
+      boxShadow: this.tokens.shadow.elevated,
+    };
+  }
+
+  /** Section padding — consistent content area spacing */
+  sectionPadding(): Record<string, string | number> {
+    return {
+      padding: `${this.tokens.spacing.xxl}px ${this.tokens.spacing.xl}px`,
+    };
+  }
+
+  /** Accent text color — for headings and highlights on the given accent key */
+  accentText(key: string = 'c'): string {
+    return this.color(key);
+  }
+
+  /** Subtle accent background — for hover states and badges */
+  accentBg(key: string = 'c', opacity: number = 0.08): string {
+    return this.colorAlpha(key, opacity);
+  }
+
+  /** Content max-width for readable text */
+  contentWidth(): string {
+    return '720px';
+  }
+
+  /** Narrow content width (refleksi, kuis) */
+  narrowWidth(): string {
+    return '560px';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -153,12 +204,12 @@ export class TokenResolver {
 //   resolveSubtleBg(tokens, 0.06)
 // ═══════════════════════════════════════════════════════════════════
 
-/** Detect if the user prefers dark mode. Defaults to `true` (app default is dark). */
+/** Detect if the user prefers dark mode. Defaults to `false` (education-first, light default). */
 function prefersDarkMode(): boolean {
   if (typeof window !== 'undefined' && window.matchMedia) {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
-  return true; // Default to dark
+  return false; // Default to light (education-first)
 }
 
 /** Resolve a token color with dark-mode-aware fallback.

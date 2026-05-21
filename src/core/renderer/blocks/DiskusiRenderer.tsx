@@ -8,9 +8,9 @@ import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/In
 import { RichText } from './RichText';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti } from '@/lib/confetti';
+
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
@@ -110,7 +110,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       });
     }
     playSound('complete');
-    fireConfetti({ count: 50, duration: 3000 });
   };
 
   const titleEditor = useInlineEditor({
@@ -129,31 +128,21 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   // ══ SUBMITTED SCREEN — Premium with StepCompletionOverlay ═══════
   if (submitted && interactive) {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
-        <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={3} position="top" />
+      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
       <div className="relative rounded-2xl p-5 text-center overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.12)}, ${tokens.colorAlpha('y', 0.05)})`,
-          border: `2px solid ${tokens.colorAlpha('c', 0.35)}`,
-          boxShadow: tokens.raw.shadow.card + ', 0 0 30px ' + tokens.colorAlpha('c', 0.1),
-          animation: 'popSuccess 0.5s ease-out',
+          background: tokens.color('card'),
+          border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
+          boxShadow: tokens.raw.shadow.card,
         }}>
-        {/* Step Completion Overlay */}
-        <StepCompletionOverlay
-          show={true}
-          tokens={tokens}
-          accent="c"
-          completionText="SELESAI!"
-          isCompact={isCompact}
-        />
-
-        {/* Trophy emoji with bounce */}
-        <div className="text-4xl mb-3" style={{ animation: 'trophyBounce 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' }}>
+        {/* Trophy emoji */}
+        <div className="text-4xl mb-3">
           💬
         </div>
 
         {/* Title with gradient */}
-        <div className="font-black text-lg mb-2 premium-text-gradient" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('c') }}>
+        <div className="font-black text-lg mb-2" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('c') }}>
           Diskusi Selesai!
         </div>
         <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
@@ -168,8 +157,8 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               style={{
                 background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.2)}, ${tokens.colorAlpha('c', 0.1)})`,
                 border: `1px solid ${tokens.colorAlpha('c', 0.35)}`,
-                boxShadow: `0 2px 8px ${tokens.colorAlpha('c', 0.15)}`,
-                animation: `sparkle 1.5s ease-in-out ${i * 0.2}s infinite`,
+                boxShadow: 'none',
+                animation: 'none',
               }}>
               <CheckCircle2 size={14} style={{ color: tokens.color('c') }} />
             </div>
@@ -178,13 +167,12 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
         {/* Participation badge */}
         <div className="mb-4">
-          <PremiumBadge tokens={tokens} accent="c" variant="gradient" isCompact={isCompact}>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold" style={{ fontSize: '11px', background: tokens.accentBg('c', 0.1), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.25)}` }}>
             <Heart size={12} /> Aktif Berdiskusi
-          </PremiumBadge>
+          </span>
         </div>
 
         {/* Replay button — premium spring */}
-        <MicroInteraction tokens={tokens} accent="c" effect="squish">
           <button className="px-5 py-2.5 rounded-xl font-extrabold transition-all hover:scale-105"
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
@@ -196,7 +184,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             }}>
             <RotateCcw size={14} className="inline" /> Diskusi Ulang
           </button>
-        </MicroInteraction>
       </div>
       </PremiumBlockWrapper>
     );
@@ -206,11 +193,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   const renderVariantA = () => (
     <>
       {/* Decorative sparkle */}
-      <div className="absolute top-3 left-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
-        <Sparkles size={18} style={{ color: tokens.color('c') }} />
-      </div>
-
-      {/* ── Header with premium icon ─────────────────────────────── */}
       <div className="flex items-center gap-2.5 mb-3">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{
@@ -230,9 +212,9 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         {/* Progress indicator — PremiumBadge */}
         {interactive && questions.length > 0 && (
           <div className="ml-auto">
-            <PremiumBadge tokens={tokens} accent={allAnswered ? 'g' : 'c'} variant={allAnswered ? 'gradient' : 'glass'} isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold" style={{ fontSize: '10px', background: allAnswered ? tokens.accentBg('g', 0.08) : tokens.accentBg('c', 0.08), color: allAnswered ? tokens.color('g') : tokens.color('c'), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : tokens.colorAlpha('c', 0.2)}` }}>
               {answeredCount}/{questions.length}
-            </PremiumBadge>
+            </span>
           </div>
         )}
       </div>
@@ -252,10 +234,10 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           <div className="h-full rounded-full transition-all"
             style={{
               width: progress * 100 + '%',
-              background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')}, ${tokens.color('c')})`,
-              backgroundSize: '200% 100%',
-              boxShadow: `0 0 8px ${tokens.colorAlpha('c', 0.4)}`,
-              animation: 'shimmer 2s linear infinite',
+              background: tokens.color('c'),
+              
+              boxShadow: 'none',
+              animation: 'none',
             }} />
         </div>
       )}
@@ -332,7 +314,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
       {/* ── Submit button — premium spring bounce ──────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
-        <MicroInteraction tokens={tokens} accent="c" effect={allAnswered ? 'bounce' : 'squish'}>
           <button
             className="w-full mt-4 py-2.5 rounded-xl font-extrabold transition-all hover:scale-[1.02]"
             onClick={handleSubmit}
@@ -345,16 +326,15 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
               border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
-                ? `0 4px 20px ${tokens.colorAlpha('c', 0.4)}, 0 0 30px ${tokens.colorAlpha('c', 0.15)}`
+                ? tokens.raw.shadow.card
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
-              animation: allAnswered ? 'glowPulse 2s ease-in-out infinite' : 'none',
+              animation: 'none',
               '--glow-color': tokens.colorAlpha('c', 0.3),
               '--glow-color-strong': tokens.colorAlpha('c', 0.6),
             } as React.CSSProperties}>
             <Send size={14} className="inline mr-1" /> Kirim Diskusi
           </button>
-        </MicroInteraction>
       )}
     </>
   );
@@ -362,12 +342,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   // ══ VARIANT B — KARTU (Card-style layout with more visual space) ═
   const renderVariantB = () => (
     <>
-      {/* Decorative sparkle */}
-      <div className="absolute top-3 left-4" style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}>
-        <Sparkles size={18} style={{ color: tokens.color('c') }} />
-      </div>
-
-      {/* ── Header with premium icon — larger ─────────────────────── */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
           style={{
@@ -387,9 +361,9 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         {/* Progress indicator — PremiumBadge */}
         {interactive && questions.length > 0 && (
           <div className="ml-auto">
-            <PremiumBadge tokens={tokens} accent={allAnswered ? 'g' : 'c'} variant={allAnswered ? 'gradient' : 'glass'} isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold" style={{ fontSize: '10px', background: allAnswered ? tokens.accentBg('g', 0.08) : tokens.accentBg('c', 0.08), color: allAnswered ? tokens.color('g') : tokens.color('c'), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : tokens.colorAlpha('c', 0.2)}` }}>
               {answeredCount}/{questions.length}
-            </PremiumBadge>
+            </span>
           </div>
         )}
       </div>
@@ -409,10 +383,10 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           <div className="h-full rounded-full transition-all"
             style={{
               width: progress * 100 + '%',
-              background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')}, ${tokens.color('c')})`,
-              backgroundSize: '200% 100%',
-              boxShadow: `0 0 8px ${tokens.colorAlpha('c', 0.4)}`,
-              animation: 'shimmer 2s linear infinite',
+              background: tokens.color('c'),
+              
+              boxShadow: 'none',
+              animation: 'none',
             }} />
         </div>
       )}
@@ -498,7 +472,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
       {/* ── Submit button — premium spring bounce ──────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
-        <MicroInteraction tokens={tokens} accent="c" effect={allAnswered ? 'bounce' : 'squish'}>
           <button
             className="w-full mt-5 py-3 rounded-2xl font-extrabold transition-all hover:scale-[1.02]"
             onClick={handleSubmit}
@@ -511,16 +484,15 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
               border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
-                ? `0 4px 20px ${tokens.colorAlpha('c', 0.4)}, 0 0 30px ${tokens.colorAlpha('c', 0.15)}`
+                ? tokens.raw.shadow.card
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
-              animation: allAnswered ? 'glowPulse 2s ease-in-out infinite' : 'none',
+              animation: 'none',
               '--glow-color': tokens.colorAlpha('c', 0.3),
               '--glow-color-strong': tokens.colorAlpha('c', 0.6),
             } as React.CSSProperties}>
             <Send size={15} className="inline mr-1" /> Kirim Diskusi
           </button>
-        </MicroInteraction>
       )}
     </>
   );
@@ -543,9 +515,9 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         {/* Progress indicator — PremiumBadge */}
         {interactive && questions.length > 0 && (
           <div className="ml-auto">
-            <PremiumBadge tokens={tokens} accent={allAnswered ? 'g' : 'c'} variant={allAnswered ? 'gradient' : 'glass'} isCompact={true}>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold" style={{ fontSize: '9px', background: allAnswered ? tokens.accentBg('g', 0.08) : tokens.accentBg('c', 0.08), color: allAnswered ? tokens.color('g') : tokens.color('c'), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : tokens.colorAlpha('c', 0.2)}` }}>
               {answeredCount}/{questions.length}
-            </PremiumBadge>
+            </span>
           </div>
         )}
       </div>
@@ -565,10 +537,10 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           <div className="h-full rounded-full transition-all"
             style={{
               width: progress * 100 + '%',
-              background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')}, ${tokens.color('c')})`,
-              backgroundSize: '200% 100%',
-              boxShadow: `0 0 6px ${tokens.colorAlpha('c', 0.4)}`,
-              animation: 'shimmer 2s linear infinite',
+              background: tokens.color('c'),
+              
+              boxShadow: 'none',
+              animation: 'none',
             }} />
         </div>
       )}
@@ -642,7 +614,6 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
       {/* ── Submit button — compact ─────────────────────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
-        <MicroInteraction tokens={tokens} accent="c" effect={allAnswered ? 'bounce' : 'squish'}>
           <button
             className="w-full mt-3 py-1.5 rounded-lg font-extrabold transition-all hover:scale-[1.01]"
             onClick={handleSubmit}
@@ -655,25 +626,24 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
               border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
-                ? `0 4px 20px ${tokens.colorAlpha('c', 0.4)}, 0 0 30px ${tokens.colorAlpha('c', 0.15)}`
+                ? tokens.raw.shadow.card
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
-              animation: allAnswered ? 'glowPulse 2s ease-in-out infinite' : 'none',
+              animation: 'none',
               '--glow-color': tokens.colorAlpha('c', 0.3),
               '--glow-color-strong': tokens.colorAlpha('c', 0.6),
             } as React.CSSProperties}>
             <Send size={11} className="inline mr-1" /> Kirim
           </button>
-        </MicroInteraction>
       )}
     </>
   );
 
   // ══ MAIN DISCUSSION SCREEN — Render based on variant ═════════════
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
     <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={3} position="top" />
-    <div className="mt-3 rounded-2xl p-4 premium-card-glow relative overflow-hidden"
+    <div className="mt-3 rounded-2xl p-4 relative overflow-hidden"
       style={{
         background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.1)}, ${tokens.colorAlpha('c', 0.04)})`,
         border: `2px solid ${tokens.colorAlpha('c', 0.3)}`,

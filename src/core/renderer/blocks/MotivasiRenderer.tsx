@@ -7,7 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper, PremiumBadge, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 
@@ -81,7 +81,7 @@ function MotivasiVariantKlasik({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden premium-card-glow"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -135,9 +135,9 @@ function MotivasiVariantKlasik({
           </div>
 
           {block.bsnpRequired && (
-            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
-            </PremiumBadge>
+            </span>
           )}
         </div>
 
@@ -172,19 +172,17 @@ function MotivasiVariantKlasik({
 
         <div className="flex items-start gap-4 relative">
           {visual?.emoji && (
-            <MicroInteraction tokens={tokens} accent={gradientFrom} effect="bounce">
             <div
               className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
               style={{
                 background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.2)}, ${tokens.colorAlpha(gradientTo, 0.15)})`,
-                boxShadow: `0 4px 16px ${tokens.colorAlpha(gradientFrom, 0.3)}`,
+                boxShadow: 'none',
                 fontSize: isCompact ? '22px' : '28px',
                 animation: 'float 3s ease-in-out infinite',
               }}
             >
               {visual.emoji}
             </div>
-            </MicroInteraction>
           )}
 
           <div className="flex-1 min-w-0">
@@ -231,7 +229,6 @@ function MotivasiVariantKlasik({
 
           <div className="flex flex-col gap-2">
             {connections.map((conn, i) => (
-              <MicroInteraction key={`mot-conn-mi-${block.id || 'mot'}-${i}`} tokens={tokens} accent={conn.color} effect="squish">
               <div
                 className="flex items-start gap-2.5 rounded-lg p-2.5"
                 style={{
@@ -267,7 +264,6 @@ function MotivasiVariantKlasik({
                   />
                 </div>
               </div>
-              </MicroInteraction>
             ))}
           </div>
         </div>
@@ -325,7 +321,7 @@ function MotivasiVariantKartuHook({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden premium-card-glow"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -371,15 +367,14 @@ function MotivasiVariantKartuHook({
             </h2>
           </div>
           {block.bsnpRequired && (
-            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
-            </PremiumBadge>
+            </span>
           )}
         </div>
 
         {/* Centered emoji */}
         {visual?.emoji && (
-          <MicroInteraction tokens={tokens} accent={gradientFrom} effect="bounce">
           <div
             style={{
               textAlign: 'center',
@@ -390,7 +385,6 @@ function MotivasiVariantKartuHook({
           >
             {visual.emoji}
           </div>
-          </MicroInteraction>
         )}
 
         {/* Hook question — hero text */}
@@ -431,7 +425,6 @@ function MotivasiVariantKartuHook({
           </div>
           <div className="flex flex-wrap gap-2">
             {connections.map((conn, i) => (
-              <MicroInteraction key={`mot-pill-mi-${block.id || 'mot'}-${i}`} tokens={tokens} accent={conn.color} effect="squish">
               <div
                 className="variant-compact-pill"
                 style={{
@@ -443,7 +436,6 @@ function MotivasiVariantKartuHook({
                 <span style={{ fontSize: isCompact ? '11px' : '13px' }}>{conn.icon}</span>
                 <span style={{ fontWeight: 700, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{conn.label}</span>
               </div>
-              </MicroInteraction>
             ))}
           </div>
         </div>
@@ -451,7 +443,6 @@ function MotivasiVariantKartuHook({
 
       {/* ═══ TRANSITION — hidden when compressed ════════════════ */}
       {!isCompressed && block.transition && (
-        <MicroInteraction tokens={tokens} accent={gradientTo} effect="bounce">
         <div
           style={{
             margin: isCompact ? '0 12px 10px' : '0 18px 14px',
@@ -473,7 +464,6 @@ function MotivasiVariantKartuHook({
             </span>
           </div>
         </div>
-        </MicroInteraction>
       )}
     </div>
   );
@@ -500,7 +490,7 @@ function MotivasiVariantKutipan({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden premium-card-glow"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -538,9 +528,9 @@ function MotivasiVariantKutipan({
           </h2>
         </div>
         {block.bsnpRequired && (
-          <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
             <Shield size={7} /> WAJIB
-          </PremiumBadge>
+          </span>
         )}
       </div>
 
@@ -563,7 +553,6 @@ function MotivasiVariantKutipan({
 
       {/* Transition only — connections hidden; also hidden when compressed */}
       {!isCompressed && block.transition && (
-        <MicroInteraction tokens={tokens} accent={gradientFrom} effect="bounce">
         <div
           style={{
             marginTop: isCompact ? '10px' : '14px',
@@ -586,7 +575,6 @@ function MotivasiVariantKutipan({
             </span>
           </div>
         </div>
-        </MicroInteraction>
       )}
     </div>
   );
@@ -636,7 +624,7 @@ export const MotivasiRenderer = React.memo(function MotivasiRenderer({ block, to
   };
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={gradientFrom} staggerIndex={0} gradientBorder>
+    <PremiumBlockWrapper tokens={tokens} accent={gradientFrom} staggerIndex={0}>
       <div style={{ position: 'relative' }}>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>

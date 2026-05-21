@@ -4,7 +4,7 @@
 // Import everything from this single entry point.
 
 // Theme system
-export { DEFAULT_TOKENS, THEME_PRESETS, resolveTokens } from './themes/tokens';
+export { DEFAULT_TOKENS, DEFAULT_THEME_ID, THEME_PRESETS, resolveTokens } from './themes/tokens';
 export type { DesignTokens, ThemePreset } from './themes/tokens';
 
 // Schema types

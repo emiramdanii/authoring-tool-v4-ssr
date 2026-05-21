@@ -97,9 +97,9 @@ function MateriTabBar({
               borderRadius: 20,
               fontSize: 13,
               fontWeight: isActive ? 600 : 400,
-              border: `1.5px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.6) : tokens.colorAlpha('g', 0.15)}`,
-              background: isActive ? tokens.colorAlpha(accentColor || 'p', 0.12) : 'transparent',
-              color: isActive ? (tokens as any).accentText?.(accentColor || 'p') ?? tokens.color(accentColor || 'p') : tokens.muted(0.85),
+              border: `1px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.4) : tokens.subtleBorder(0.1)}`,
+              background: isActive ? tokens.accentBg(accentColor || 'p', 0.08) : 'transparent',
+              color: isActive ? tokens.accentText(accentColor || 'p') : tokens.muted(0.85),
               cursor: interactive ? 'pointer' : 'default',
               transition: 'all 0.2s ease',
             }}
@@ -243,37 +243,32 @@ function MateriVariantKlasik({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
-        animation: 'fadeIn 0.4s ease',
-        border: `1px solid ${accentAlpha(0.15)}`,
+        ...tokens.cardStyle(),
+        overflow: 'hidden',
       }}
     >
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `4px solid ${accent}`,
-          background: `linear-gradient(135deg, ${accentAlpha(0.08)}, ${accentAlpha(0.03)})`,
+          borderLeft: `3px solid ${accent}`,
+          background: tokens.color('card'),
           padding: isCompact ? '12px 14px' : '18px 20px',
+          borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
         <div className="flex items-start gap-3">
           {/* Section number badge */}
-          <MicroInteraction tokens={tokens} accent={accentColor} effect="glow">
           <div
             className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-black"
             style={{
-              background: `linear-gradient(135deg, ${accent}, ${accentAlpha(0.7)})`,
-              color: tokens.color('bg'),
+              background: tokens.accentBg(accentColor, 0.12),
+              color: tokens.accentText(accentColor),
               fontSize: isCompact ? '13px' : '15px',
-              boxShadow: `0 4px 14px ${accentAlpha(0.35)}`,
             }}
           >
             {sectionNumber}
           </div>
-          </MicroInteraction>
 
           {/* Title + subtitle */}
           <div className="flex-1 min-w-0">
@@ -301,6 +296,7 @@ function MateriVariantKlasik({
                 className="mt-1 leading-relaxed"
                 style={{
                   fontSize: isCompact ? '11px' : '13px',
+                  lineHeight: 1.7,
                   color: tokens.muted(0.85),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
@@ -318,14 +314,6 @@ function MateriVariantKlasik({
             </PremiumBadge>
           )}
         </div>
-
-        {/* Gradient accent line under header */}
-        <div
-          className="mt-3 h-1 rounded-full"
-          style={{
-            background: `linear-gradient(90deg, ${accent}, ${accentAlpha(0.2)}, transparent)`,
-          }}
-        />
       </div>
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
@@ -349,6 +337,8 @@ function MateriVariantKlasik({
           style={{
             padding: isCompact ? '12px 14px' : '18px 20px',
             position: 'relative',
+            maxWidth: tokens.contentWidth(),
+            lineHeight: 1.7,
           }}
         >
           {contentBlocks.map((childBlock, i) => (
@@ -435,8 +425,8 @@ function MateriVariantKlasik({
           style={{
             margin: isCompact ? '0 14px 12px' : '0 20px 16px',
             padding: isCompact ? '10px 12px' : '14px 16px',
-            background: tokens.colorAlpha('g', 0.08),
-            border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
+            background: tokens.subtleBg(0.03),
+            border: `1px solid ${tokens.subtleBorder(0.08)}`,
             borderRadius: tokens.radius('xl') + 'px',
           }}
         >
@@ -444,7 +434,7 @@ function MateriVariantKlasik({
             <div
               className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
               style={{
-                background: tokens.colorAlpha('g', 0.2),
+                background: tokens.colorAlpha('g', 0.12),
               }}
             >
               <Star size={12} style={{ color: tokens.color('g') }} />
@@ -462,12 +452,12 @@ function MateriVariantKlasik({
 
           <div className="flex flex-col gap-2">
             {takeaways.map((item, i) => (
-              <MicroInteraction key={`materi-takeaway-mi-${block.id || 'ms'}-${i}`} tokens={tokens} accent="g" effect="squish">
               <div
+                key={`materi-takeaway-mi-${block.id || 'ms'}-${i}`}
                 className="flex items-start gap-2.5 rounded-lg p-2"
                 style={{
-                  background: tokens.colorAlpha('g', 0.06),
-                  border: `1px solid ${tokens.colorAlpha('g', 0.12)}`,
+                  background: tokens.subtleBg(0.02),
+                  border: `1px solid ${tokens.subtleBorder(0.06)}`,
                 }}
               >
                 <CheckCircle2
@@ -479,6 +469,7 @@ function MateriVariantKlasik({
                   className="leading-relaxed"
                   style={{
                     fontSize: isCompact ? '12px' : '13px',
+                    lineHeight: 1.7,
                     color: tokens.color('text'),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
@@ -487,7 +478,6 @@ function MateriVariantKlasik({
                   <RichText content={item} />
                 </span>
               </div>
-              </MicroInteraction>
             ))}
           </div>
         </div>
@@ -496,23 +486,21 @@ function MateriVariantKlasik({
       {/* ═══ SELF-CHECK PROMPT ════════════════════════════════════
        *  Hidden when compressed to save vertical space. */}
       {!isCompressed && selfCheck && (
-        <MicroInteraction tokens={tokens} accent="y" effect="bounce">
         <div
           style={{
             margin: isCompact ? '0 14px 14px' : '0 20px 20px',
             padding: isCompact ? '10px 12px' : '14px 16px',
-            background: tokens.colorAlpha('y', 0.1),
-            border: `1px solid ${tokens.colorAlpha('y', 0.25)}`,
+            background: tokens.accentBg('y', 0.04),
+            border: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('xl') + 'px',
-            borderLeft: `4px solid ${tokens.color('y')}`,
+            borderLeft: `3px solid ${tokens.color('y')}`,
           }}
         >
           <div className="flex items-start gap-3">
             <div
               className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
               style={{
-                background: `linear-gradient(135deg, ${tokens.colorAlpha('y', 0.25)}, ${tokens.colorAlpha('y', 0.12)})`,
-                boxShadow: `0 2px 8px ${tokens.colorAlpha('y', 0.2)}`,
+                background: tokens.colorAlpha('y', 0.12),
               }}
             >
               <Brain size={14} style={{ color: tokens.color('y') }} />
@@ -532,6 +520,7 @@ function MateriVariantKlasik({
                 className="leading-relaxed"
                 style={{
                   fontSize: isCompact ? '11px' : '13px',
+                  lineHeight: 1.7,
                   color: tokens.color('text'),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
@@ -542,7 +531,6 @@ function MateriVariantKlasik({
             </div>
           </div>
         </div>
-        </MicroInteraction>
       )}
 
       {/* ═══ COMPRESSION: Strategy-aware show-more UI ═══════════
@@ -555,8 +543,8 @@ function MateriVariantKlasik({
             onClick={showMore}
             className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors"
             style={{
-              background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
-              color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
+              background: tokens.accentBg(accentColor, 0.08),
+              color: tokens.accentText(accentColor),
               fontSize: isCompact ? '9px' : '11px',
               cursor: 'pointer',
               fontWeight: 700,
@@ -657,28 +645,26 @@ function MateriVariantMajalah({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden premium-card-glow"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
-        animation: 'fadeIn 0.4s ease',
-        border: `1px solid ${accentAlpha(0.15)}`,
+        ...tokens.cardStyle(),
+        overflow: 'hidden',
       }}
     >
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `4px solid ${accent}`,
-          background: `linear-gradient(135deg, ${accentAlpha(0.08)}, ${accentAlpha(0.03)})`,
+          borderLeft: `3px solid ${accent}`,
+          background: tokens.color('card'),
           padding: isCompact ? '12px 14px' : '18px 20px',
+          borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
         <div className="flex items-center gap-3">
           <div
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-black"
             style={{
-              background: `linear-gradient(135deg, ${accent}, ${accentAlpha(0.7)})`,
-              color: tokens.color('bg'),
+              background: tokens.accentBg(accentColor, 0.12),
+              color: tokens.accentText(accentColor),
               fontSize: isCompact ? '12px' : '14px',
             }}
           >
@@ -761,9 +747,9 @@ function MateriVariantMajalah({
             style={{
               ...(isCompact ? {} : { position: 'sticky', top: '16px', alignSelf: 'start' }),
               padding: isCompact ? '10px' : '14px',
-              background: tokens.colorAlpha('g', 0.06),
+              background: tokens.subtleBg(0.03),
               borderRadius: tokens.radius('xl') + 'px',
-              border: `1px solid ${tokens.colorAlpha('g', 0.15)}`,
+              border: `1px solid ${tokens.subtleBorder(0.08)}`,
             }}
           >
             <div className="flex items-center gap-2 mb-3">
@@ -784,7 +770,7 @@ function MateriVariantMajalah({
                   key={`materi-majalah-takeaway-${block.id || 'ms'}-${i}`}
                   className="flex items-start gap-2 p-1.5 rounded"
                   style={{
-                    background: tokens.colorAlpha('g', 0.06),
+                    background: tokens.subtleBg(0.02),
                   }}
                 >
                   <CheckCircle2
@@ -796,6 +782,7 @@ function MateriVariantMajalah({
                     className="leading-relaxed"
                     style={{
                       fontSize: '12px',
+                      lineHeight: 1.7,
                       color: tokens.color('text'),
                       wordBreak: 'break-word',
                     }}
@@ -815,10 +802,10 @@ function MateriVariantMajalah({
           style={{
             margin: isCompact ? '0 14px 14px' : '0 20px 20px',
             padding: isCompact ? '10px 14px' : '12px 18px',
-            background: `linear-gradient(90deg, ${tokens.colorAlpha('y', 0.08)}, ${tokens.colorAlpha('y', 0.04)})`,
+            background: tokens.accentBg('y', 0.04),
             borderRadius: tokens.radius('lg') + 'px',
-            border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
-            borderLeft: `4px solid ${tokens.color('y')}`,
+            border: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderLeft: `3px solid ${tokens.color('y')}`,
           }}
         >
           <div className="flex items-center gap-3">
@@ -838,6 +825,7 @@ function MateriVariantMajalah({
                 className="leading-relaxed"
                 style={{
                   fontSize: '12px',
+                  lineHeight: 1.7,
                   color: tokens.color('text'),
                   wordBreak: 'break-word',
                 }}
@@ -928,11 +916,9 @@ function MateriVariantPill({
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.card,
-        border: `1px solid ${accentAlpha(0.12)}`,
+        ...tokens.cardStyle(),
+        overflow: 'hidden',
       }}
     >
       {/* ═══ HEADER ONLY — title + number badge ══════════════════ */}
@@ -946,8 +932,8 @@ function MateriVariantPill({
         <div
           className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center font-black"
           style={{
-            background: `linear-gradient(135deg, ${accent}, ${accentAlpha(0.7)})`,
-            color: tokens.color('bg'),
+            background: tokens.accentBg(accentColor, 0.12),
+            color: tokens.accentText(accentColor),
             fontSize: isCompact ? '10px' : '12px',
           }}
         >
@@ -1076,8 +1062,8 @@ function MateriVariantPill({
             style={{
               padding: isCompact ? '4px 8px' : '6px 10px',
               borderRadius: '8px',
-              background: tokens.colorAlpha('y', 0.06),
-              border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
+              background: tokens.accentBg('y', 0.06),
+              border: `1px solid ${tokens.subtleBorder(0.06)}`,
               color: tokens.color('y'),
               fontSize: '11px',
               fontWeight: 700,
@@ -1098,7 +1084,7 @@ function MateriVariantPill({
               style={{
                 marginTop: '6px',
                 padding: isCompact ? '8px 10px' : '10px 14px',
-                background: tokens.colorAlpha('y', 0.06),
+                background: tokens.accentBg('y', 0.04),
                 borderRadius: '8px',
                 borderLeft: `3px solid ${tokens.color('y')}`,
                 animation: 'fadeIn 0.3s ease',
@@ -1209,7 +1195,7 @@ export const MateriSectionRenderer = React.memo(function MateriSectionRenderer({
 
   const accentColor = block.accentColor || 'c';
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0} gradientBorder>
+    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
       <div style={{ position: 'relative' }}>
         {isEditing && (

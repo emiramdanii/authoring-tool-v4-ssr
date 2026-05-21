@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import type { NcGridBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './PremiumBlockEffects';
+import { PremiumBlockWrapper } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
@@ -101,14 +101,14 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         transition: 'all 0.2s ease',
       }}>
       {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl"
-        style={{ background: `linear-gradient(90deg, ${cardColor}, ${tokens.colorAlpha(card.color, 0.3)})` }} />
+      <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-xl"
+        style={{ background: cardColor }} />
 
       <div className="flex items-center gap-2.5 mb-2 min-w-0">
         <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
           style={{
             background: tokens.colorAlpha(card.color, 0.2),
-            boxShadow: '0 4px 12px ' + tokens.colorAlpha(card.color, 0.25),
+            boxShadow: 'none',
           }}>
           <span style={{ fontSize: isCompact ? '15px' : '20px' }}>{card.icon}</span>
         </div>
@@ -208,8 +208,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
             width: isCompact ? '40px' : '48px',
             height: isCompact ? '40px' : '48px',
             borderRadius: '12px',
-            background: `linear-gradient(135deg, ${tokens.colorAlpha(card.color, 0.2)}, ${tokens.colorAlpha(card.color, 0.08)})`,
-            boxShadow: `0 4px 14px ${tokens.colorAlpha(card.color, 0.15)}`,
+            background: tokens.colorAlpha(card.color, 0.1),
+            boxShadow: 'none',
           }}
         >
           <span style={{ fontSize: isCompact ? '18px' : '24px' }}>{card.icon}</span>
@@ -458,13 +458,13 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
   // Step mode is hidden to save vertical space
   if (cards.length > 2 && !isCompressed) {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
-      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
-      <div style={{ position: 'relative' }} className="premium-card-glow">
+      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
+      <div style={{ position: 'relative' }}>
         <div className="flex items-center gap-2 mb-2">
-          <PremiumBadge tokens={tokens} accent="c" variant="glass" isCompact={isCompact}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+            style={{ fontSize: '11px', background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
             Norma
-          </PremiumBadge>
+          </span>
         </div>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
@@ -491,16 +491,16 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
       : { minWidth: 0 };
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0} gradientBorder>
-      <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
+    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
       <div
-        className={variant === 'A' ? 'grid gap-3 my-3 premium-card-glow' : 'my-3 premium-card-glow'}
+        className={variant === 'A' ? 'grid gap-3 my-3' : 'my-3'}
         style={{ ...(variant === 'A' ? { minWidth: 0, gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, 1fr)' } : containerStyle), position: 'relative' }}
       >
         <div className="flex items-center gap-2 mb-2">
-          <PremiumBadge tokens={tokens} accent="c" variant="glass" isCompact={isCompact}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+            style={{ fontSize: '11px', background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
             Norma
-          </PremiumBadge>
+          </span>
         </div>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>

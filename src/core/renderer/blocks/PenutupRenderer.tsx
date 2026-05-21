@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2, ArrowRight, BookOpen, Sparkles, Trophy, Star, Target, Zap } from 'lucide-react';
+import { CheckCircle2, ArrowRight, BookOpen, Trophy, Star, Target, Zap } from 'lucide-react';
 import type { PenutupBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -9,7 +9,7 @@ import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
 import { useCanvaStore } from '../../../store/canva/store';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
@@ -59,14 +59,13 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
   return (
     <PremiumBlockWrapper tokens={tokens} accent="g" staggerIndex={0}>
     <ReadingProgressIndicator progress={1} tokens={tokens} accent="g" height={2} position="top" />
-    <div className="premium-card-glow" style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', maxWidth: tokens.contentWidth(), margin: '0 auto' }}>
       {/* Header with completion icon */}
       <div className="flex items-center gap-2.5 mb-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center"
           style={{
-            background: tokens.colorAlpha('g', 0.15),
-            border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            boxShadow: '0 0 16px ' + tokens.colorAlpha('g', 0.1),
+            background: tokens.accentBg('g', 0.08),
+            border: `1px solid ${tokens.colorAlpha('g', 0.15)}`,
           }}>
           <CheckCircle2 size={18} style={{ color: tokens.color('g') }} />
         </div>
@@ -97,49 +96,36 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
       {/* ── Score-based badge (Phase 21) — shown when scores exist ── */}
       {hasScores && tierConfig && !isCompressed && (
-        <div className="mb-4 p-3.5 rounded-2xl premium-card-glow"
+        <div className="mb-4 p-3 rounded-xl"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha(tierConfig.color, 0.12)}, ${tokens.colorAlpha(tierConfig.color, 0.04)})`,
-            border: `1px solid ${tokens.colorAlpha(tierConfig.color, 0.3)}`,
-            boxShadow: `0 2px 16px ${tokens.colorAlpha(tierConfig.color, 0.1)}`,
+            ...tokens.cardStyle(),
           }}>
           <div className="flex items-center gap-3">
-            {/* Tier emoji circle */}
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{
-                background: tokens.colorAlpha(tierConfig.color, 0.2),
-                border: `1px solid ${tokens.colorAlpha(tierConfig.color, 0.4)}`,
-                boxShadow: `0 0 20px ${tokens.colorAlpha(tierConfig.color, 0.15)}`,
-              }}>
-              <span style={{ fontSize: isCompact ? '18px' : '22px' }}>{tierConfig.emoji}</span>
-            </div>
-            {/* Tier info */}
+            <span style={{ fontSize: isCompact ? '16px' : '18px' }}>{tierConfig.emoji}</span>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <PremiumBadge tokens={tokens} accent={tierConfig.color} variant="gradient" isCompact={isCompact}>
-                  {tierConfig.icon}
-                  <span>{tierConfig.label}</span>
-                </PremiumBadge>
-              </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="font-bold" style={{ color: tokens.color(tierConfig.color), fontSize: isCompact ? '13px' : '15px' }}>
+                  {tierConfig.label}
+                </span>
                 <span className="font-black text-lg" style={{ color: tokens.color(tierConfig.color) }}>
                   {totalPct}%
                 </span>
-                <span className="text-[11px] font-bold" style={{ color: tokens.muted(0.6) }}>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[11px]" style={{ color: tokens.muted(0.65) }}>
                   {totalScore}/{totalMax} poin
                 </span>
-                <span className="text-[10px] font-bold" style={{ color: tokens.muted(0.5) }}>
-                  {scores.filter(s => s.completed).length} aktivitas
+                <span className="text-[10px]" style={{ color: tokens.muted(0.55) }}>
+                  · {scores.filter(s => s.completed).length} aktivitas
                 </span>
               </div>
-              {/* Mini progress bar */}
-              <div className="mt-1.5 w-full h-1.5 rounded-full overflow-hidden"
-                style={{ background: tokens.colorAlpha(tierConfig.color, 0.1) }}>
+              {/* Thin progress bar */}
+              <div className="mt-1.5 w-full h-1 rounded-full overflow-hidden"
+                style={{ background: tokens.subtleBg(0.06) }}>
                 <div className="h-full rounded-full transition-all duration-1000 ease-out"
                   style={{
                     width: `${totalPct}%`,
-                    background: `linear-gradient(90deg, ${tokens.color(tierConfig.color)}, ${tokens.colorAlpha(tierConfig.color, 0.7)})`,
-                    boxShadow: `0 0 8px ${tokens.colorAlpha(tierConfig.color, 0.3)}`,
+                    background: tokens.color(tierConfig.color),
                   }} />
               </div>
             </div>
@@ -149,30 +135,24 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
       {/* Preview items - improved with card styling */}
       {previewItems.length > 0 && (
-        <div className="p-4 rounded-2xl"
+        <div className="mb-4 p-4 rounded-xl"
           style={{
-            background: 'linear-gradient(135deg, ' + tokens.colorAlpha('c', 0.08) + ', ' + tokens.colorAlpha('p', 0.08) + ')',
-            border: '1px solid ' + tokens.colorAlpha('c', 0.2),
-            boxShadow: tokens.raw.shadow.card,
+            ...tokens.cardStyle(),
           }}>
           <div className="flex items-center gap-2 mb-3">
             <BookOpen size={14} style={{ color: tokens.color('c') }} />
-            <div className="font-extrabold uppercase tracking-wider" style={{ color: tokens.color('c'), fontSize: isCompact ? '10px' : '12px' }}>
+            <div className="font-bold uppercase tracking-wider" style={{ color: tokens.color('c'), fontSize: isCompact ? '10px' : '12px' }}>
               Ringkasan Pembelajaran
             </div>
           </div>
           {previewItems.map((item, i) => (
-            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 p-2.5 rounded-xl mb-2 font-bold leading-relaxed transition-all hover:-translate-y-0.5 min-w-0"
+            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 py-2 leading-relaxed min-w-0"
               style={{
-                background: tokens.colorAlpha(item.warna, 0.08),
-                border: '1px solid ' + tokens.colorAlpha(item.warna, 0.18),
-                boxShadow: tokens.raw.shadow.card,
                 fontSize: isCompact ? '11px' : '13px',
+                borderBottom: i < previewItems.length - 1 ? `1px solid ${tokens.subtleBorder(0.06)}` : 'none',
               }}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: tokens.colorAlpha(item.warna, 0.2) }}>
-                <span style={{ fontSize: isCompact ? '10px' : '12px' }}>{item.icon}</span>
-              </div>
+              <div className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0"
+                style={{ background: tokens.color(item.warna) }} />
               <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}><RichText content={item.isi ?? ''} /></span></div>
             </div>
           ))}
@@ -181,44 +161,37 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
       {/* Next pertemuan preview — hidden when compressed */}
       {!isCompressed && block.nextPertemuan && (
-        <div className="mt-4 p-4 rounded-2xl"
+        <div className="mt-4 p-4 rounded-xl"
           style={{
-            background: tokens.colorAlpha('g', 0.06),
-            border: '1px solid ' + tokens.colorAlpha('g', 0.2),
-            borderLeft: '4px solid ' + tokens.color('g'),
-            boxShadow: tokens.raw.shadow.card,
+            ...tokens.cardStyle(),
+            borderLeft: `3px solid ${tokens.color('g')}`,
           }}>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: tokens.colorAlpha('g', 0.2), boxShadow: '0 4px 12px ' + tokens.colorAlpha('g', 0.25) }}>
-              <Sparkles size={14} style={{ color: tokens.color('g') }} />
-            </div>
-            <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: isCompact ? '12px' : '14px' }}>Pertemuan Berikutnya</div>
+            <ArrowRight size={14} style={{ color: tokens.color('g') }} />
+            <div className="font-bold" style={{ color: tokens.color('g'), fontSize: isCompact ? '12px' : '14px' }}>Pertemuan Berikutnya</div>
           </div>
           <div className="mb-3 font-bold" style={{ color: tokens.color('text'), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
             <RichText content={block.nextPertemuan.judul ?? ''} />
           </div>
           <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={block.nextPertemuan.deskripsi ?? ''} /></div>
-          <div className={`grid gap-2 ${isCompact ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          <div className="space-y-1.5">
             {(block.nextPertemuan.items || []).map((item, i) => (
-              <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="rounded-xl p-2.5 font-bold text-center transition-all hover:-translate-y-0.5 min-w-0"
+              <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="flex items-center gap-2 py-1 min-w-0"
                 style={{
-                  background: tokens.colorAlpha(item.warna, 0.1),
-                  color: tokens.color(item.warna),
-                  border: '1px solid ' + tokens.colorAlpha(item.warna, 0.25),
-                  boxShadow: tokens.raw.shadow.card,
                   fontSize: isCompact ? '11px' : '13px',
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}>
-                {item.icon} {item.judul}
+                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: tokens.color(item.warna) }} />
+                <span style={{ color: tokens.color(item.warna) }}>{item.icon}</span>
+                <span className="font-bold" style={{ color: tokens.color('text') }}>{item.judul}</span>
               </div>
             ))}
           </div>
 
           {/* Call-to-action for next meeting — navigates to next page */}
           {interactive && (
-            <button className="w-full mt-3 py-2.5 rounded-xl font-extrabold transition-all hover:scale-[1.02]"
+            <button className="w-full mt-3 py-2.5 rounded-xl font-bold transition-all"
               onClick={() => {
                 playSound('click');
                 // Navigate to next page if available
@@ -230,9 +203,9 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
               }}
               style={{
                 fontSize: '13px',
-                background: 'linear-gradient(135deg, ' + tokens.color('g') + ', ' + tokens.color('c') + ')',
-                color: tokens.color('bg'),
-                boxShadow: '0 4px 16px ' + tokens.colorAlpha('g', 0.35),
+                background: tokens.accentBg('g', 0.1),
+                color: tokens.color('g'),
+                border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
               }}>
               <ArrowRight size={14} className="inline mr-1" /> Lanjut ke Pertemuan Berikutnya
             </button>
@@ -249,7 +222,6 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
         />
       )}
     </div>
-    <StepCompletionOverlay show tokens={tokens} accent="g" completionText="PEMBELAJARAN SELESAI!" isCompact={isCompact} />
     </PremiumBlockWrapper>
   );
 });

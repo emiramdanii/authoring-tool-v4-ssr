@@ -7,7 +7,7 @@ import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useCanvaStore } from '../../../store/canva/store';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
@@ -16,9 +16,9 @@ import type { CompressionDecision } from '../../layout/CompressionEngine';
 // DEF BOX RENDERER — BSNP Definition Box with Variants & Step Mode
 // ═══════════════════════════════════════════════════════════════════
 // Variants:
-//   A "Klasik" — Current style (accent bar top, left border, clean)
-//   B "Kreatif" — Glassmorphism card with gradient border, floating icon
-//   C "Ringkas" — Ultra-compact pill/badge style, minimal vertical space
+//   A "Klasik" — Clean card with left accent stripe, subtle fill
+//   B "Kreatif" — Light card with left accent, softer rounded feel
+//   C "Ringkas" — Pill-style badge, minimal padding
 //
 // Step Mode: When content is long (>200 chars) or has examples/sanctions,
 //   splits into navigable steps: Definisi → Contoh → Sanksi
@@ -170,10 +170,10 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
     ];
   }, [block.content, shouldUseStepMode]);
 
-  // ── Variant A "Klasik" ──────────────────────────────────────
+  // ── Variant A "Klasik" — Clean card with left accent stripe, subtle fill ──
   if (variant === 'A') {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
+      <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
         <div style={{ position: 'relative' }}>
           {isEditing && (
@@ -182,29 +182,35 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             </div>
           )}
         <div
-          className="rounded-xl overflow-hidden premium-card-glow"
-            style={{
-              background: tokens.colorAlpha(colorKey, 0.08),
-              border: '1px solid ' + tokens.colorAlpha(colorKey, 0.25),
-              boxShadow: tokens.raw.shadow.card,
-            }}
-          >
-          {/* Top accent bar */}
-          <div className="h-1.5"
-            style={{ background: `linear-gradient(90deg, ${borderColor}, ${tokens.colorAlpha(colorKey, 0.4)})` }} />
-
+          style={{
+            background: tokens.accentBg(colorKey, 0.04),
+            borderLeft: `3px solid ${tokens.color(colorKey)}`,
+            borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderRadius: tokens.radius('lg'),
+            boxShadow: tokens.raw.shadow.card,
+            overflow: 'hidden',
+          }}
+        >
           {/* Icon row */}
-          <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+          <div style={{ padding: isCompact ? '10px 12px' : '16px 20px' }}>
             <div className="flex items-center gap-2 mb-2">
-              <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: tokens.colorAlpha(colorKey, 0.2) }}>
-                <BookOpen size={10} className="inline" style={{ color: borderColor }} />
+                style={{ background: tokens.colorAlpha(colorKey, 0.12) }}>
+                <BookOpen size={10} className="inline" style={{ color: tokens.accentText(colorKey) }} />
               </div>
-              </MicroInteraction>
-              <PremiumBadge tokens={tokens} accent={colorKey} variant="glass">
+              <span
+                style={{
+                  fontSize: isCompact ? '10px' : '11px',
+                  fontWeight: 800,
+                  color: tokens.accentText(colorKey),
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Definisi
-              </PremiumBadge>
+              </span>
             </div>
 
             {/* Content — step mode or inline */}
@@ -218,7 +224,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               />
             ) : (
               <div style={{
-                borderLeft: `${isCompact ? 3 : 4}px solid ${borderColor}`,
+                borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color(colorKey)}`,
                 paddingLeft: isCompact ? '10px' : '12px',
                 fontSize: isCompact ? '12px' : '14.5px',
                 lineHeight: 1.7,
@@ -242,7 +248,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                     className="absolute bottom-0 left-0 right-0 pointer-events-none"
                     style={{
                       height: 30,
-                      background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.85)})`,
+                      background: `linear-gradient(transparent, ${tokens.accentBg(colorKey, 0.04)})`,
                     }}
                   />
                 )}
@@ -254,11 +260,12 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 onClick={expandContent}
                 className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors"
                 style={{
-                  background: tokens.colorAlpha(colorKey, 0.08),
-                  color: tokens.color(colorKey),
+                  background: tokens.accentBg(colorKey, 0.06),
+                  color: tokens.accentText(colorKey),
                   fontSize: isCompact ? '9px' : '11px',
                   cursor: 'pointer',
                   fontWeight: 700,
+                  border: 'none',
                 }}
               >
                 <ChevronDown size={isCompact ? 10 : 12} />
@@ -272,10 +279,10 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
     );
   }
 
-  // ── Variant B "Kreatif" — Glassmorphism card ────────────────
+  // ── Variant B "Kreatif" — Light card with left accent, softer rounded feel ──
   if (variant === 'B') {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} glass gradientBorder>
+      <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0}>
         <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
         <div style={{ position: 'relative' }}>
           {isEditing && (
@@ -284,68 +291,63 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             </div>
           )}
         <div
-          className="variant-glass-card"
           style={{
-            padding: isCompact ? '16px' : '24px',
+            background: tokens.accentBg(colorKey, 0.04),
+            borderLeft: `3px solid ${tokens.color(colorKey)}`,
+            borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
+            borderRadius: tokens.radius('xl'),
+            boxShadow: tokens.raw.shadow.card,
+            padding: isCompact ? '16px' : '20px',
             position: 'relative',
             overflow: 'hidden',
           }}
         >
-          {/* Gradient border effect */}
+          {/* Subtle floating icon — lighter feel */}
           <div
             style={{
               position: 'absolute',
-              inset: 0,
-              borderRadius: 'inherit',
-              padding: '2px',
-              background: `linear-gradient(135deg, ${borderColor}, ${tokens.colorAlpha(colorKey, 0.3)}, ${tokens.color('c')})`,
-              mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              WebkitMaskComposite: 'xor',
-              maskComposite: 'exclude',
-              pointerEvents: 'none',
-            }}
-          />
-
-          {/* Floating icon */}
-          <div
-            style={{
-              position: 'absolute',
-              top: isCompact ? '-8px' : '-12px',
-              right: isCompact ? '-4px' : '-8px',
-              width: isCompact ? '40px' : '56px',
-              height: isCompact ? '40px' : '56px',
+              top: isCompact ? '8px' : '12px',
+              right: isCompact ? '8px' : '12px',
+              width: isCompact ? '32px' : '40px',
+              height: isCompact ? '32px' : '40px',
               borderRadius: '50%',
-              background: `linear-gradient(135deg, ${tokens.colorAlpha(colorKey, 0.25)}, ${tokens.colorAlpha(colorKey, 0.1)})`,
+              background: tokens.colorAlpha(colorKey, 0.08),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: `0 4px 20px ${tokens.colorAlpha(colorKey, 0.2)}`,
+              pointerEvents: 'none',
             }}
           >
             <Sparkles
-              size={isCompact ? 16 : 22}
-              style={{ color: borderColor, opacity: 0.7 }}
+              size={isCompact ? 14 : 18}
+              style={{ color: tokens.accentText(colorKey), opacity: 0.5 }}
             />
           </div>
 
           {/* Content */}
           <div style={{ position: 'relative', zIndex: 1 }}>
             <div className="flex items-center gap-2 mb-3">
-              <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, ${borderColor}, ${tokens.colorAlpha(colorKey, 0.7)})`,
-                  boxShadow: `0 2px 8px ${tokens.colorAlpha(colorKey, 0.3)}`,
+                  background: tokens.colorAlpha(colorKey, 0.12),
                 }}
               >
-                <BookOpen size={12} style={{ color: tokens.color('bg') }} />
+                <BookOpen size={12} style={{ color: tokens.accentText(colorKey) }} />
               </div>
-              </MicroInteraction>
-              <PremiumBadge tokens={tokens} accent={colorKey} variant="gradient">
+              <span
+                style={{
+                  fontSize: isCompact ? '10px' : '11px',
+                  fontWeight: 800,
+                  color: tokens.accentText(colorKey),
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Definisi
-              </PremiumBadge>
+              </span>
             </div>
 
             {shouldUseStepMode && !isContentCollapsed ? (
@@ -362,7 +364,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                   lineHeight: 1.8,
                   color: tokens.color('text'),
                   paddingLeft: isCompact ? '8px' : '12px',
-                  borderLeft: `3px solid ${tokens.colorAlpha(colorKey, 0.3)}`,
+                  borderLeft: `3px solid ${tokens.color(colorKey)}`,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                   maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
@@ -379,14 +381,14 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 />
                 {isContentCollapsed && (
                   <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                    style={{ height: 30, background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.85)})` }} />
+                    style={{ height: 30, background: `linear-gradient(transparent, ${tokens.accentBg(colorKey, 0.04)})` }} />
                 )}
               </div>
             )}
             {isContentCollapsed && (
               <button onClick={expandContent}
                 className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors"
-                style={{ background: tokens.colorAlpha(colorKey, 0.08), color: tokens.color(colorKey), fontSize: isCompact ? '9px' : '11px', cursor: 'pointer', fontWeight: 700 }}>
+                style={{ background: tokens.accentBg(colorKey, 0.06), color: tokens.accentText(colorKey), fontSize: isCompact ? '9px' : '11px', cursor: 'pointer', fontWeight: 700, border: 'none' }}>
                 <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
               </button>
             )}
@@ -397,9 +399,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
     );
   }
 
-  // ── Variant C "Ringkas" — Ultra-compact pill/badge ──────────
+  // ── Variant C "Ringkas" — Pill-style badge, minimal padding ──
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
+    <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={colorKey} height={2} position="top" />
       <div style={{ position: 'relative' }}>
         {isEditing && (
@@ -411,23 +413,32 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         className="flex items-start gap-2"
         style={{
           padding: isCompact ? '6px 10px' : '8px 14px',
-          borderRadius: '12px',
-          background: tokens.colorAlpha(colorKey, 0.06),
-          border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`,
+          borderRadius: tokens.radius('lg'),
+          background: tokens.accentBg(colorKey, 0.04),
+          borderLeft: `3px solid ${tokens.color(colorKey)}`,
+          borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
+          borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
+          borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
-        <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
         <div
           className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: tokens.colorAlpha(colorKey, 0.2) }}
+          style={{ background: tokens.colorAlpha(colorKey, 0.12) }}
         >
-          <BookOpen size={9} style={{ color: borderColor }} />
+          <BookOpen size={9} style={{ color: tokens.accentText(colorKey) }} />
         </div>
-        </MicroInteraction>
         <div className="min-w-0 flex-1">
-          <PremiumBadge tokens={tokens} accent={colorKey} variant="outline" isCompact={isCompact}>
+          <span
+            style={{
+              fontSize: isCompact ? '9px' : '10px',
+              fontWeight: 800,
+              color: tokens.accentText(colorKey),
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}
+          >
             Definisi
-          </PremiumBadge>
+          </span>
           <div
             style={{
               fontSize: isCompact ? '12px' : '13px',
@@ -449,13 +460,13 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             />
             {isContentCollapsed && (
               <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                style={{ height: 20, background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.85)})` }} />
+                style={{ height: 20, background: `linear-gradient(transparent, ${tokens.accentBg(colorKey, 0.04)})` }} />
             )}
           </div>
           {isContentCollapsed && (
             <button onClick={expandContent}
               className="flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg transition-colors"
-              style={{ background: tokens.colorAlpha(colorKey, 0.06), color: tokens.color(colorKey), fontSize: isCompact ? '8px' : '9px', cursor: 'pointer', fontWeight: 700 }}>
+              style={{ background: tokens.accentBg(colorKey, 0.06), color: tokens.accentText(colorKey), fontSize: isCompact ? '8px' : '9px', cursor: 'pointer', fontWeight: 700, border: 'none' }}>
               <ChevronDown size={8} /> Selengkapnya
             </button>
           )}

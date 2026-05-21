@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover';
-import { THEME_PRESETS } from '@/core/themes/tokens';
+import { THEME_PRESETS, DEFAULT_THEME_ID } from '@/core/themes/tokens';
 import {
   applyThemePreset,
   getStoredPresetId,
@@ -21,7 +21,7 @@ import {
 } from '@/lib/apply-theme-preset';
 
 export function ThemePresetPicker() {
-  const [currentPreset, setCurrentPreset] = useState<string>('default');
+  const [currentPreset, setCurrentPreset] = useState<string>(DEFAULT_THEME_ID);
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
 

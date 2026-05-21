@@ -6,10 +6,10 @@ import type { RangkumanBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction, StepCompletionOverlay } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti } from '@/lib/confetti';
+
 import { useCanvaStore } from '../../../store/canva/store';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
@@ -519,15 +519,14 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
     setAllStepsCompleted(true);
     if (interactive) {
       playSound('complete');
-      fireConfetti({ count: 40, duration: 3000 });
     }
   }, [interactive]);
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0} gradientBorder>
+    <PremiumBlockWrapper tokens={tokens} accent={accentColor} staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentColor} height={2} position="top" />
     <div
-      className="rounded-2xl overflow-hidden premium-card-glow"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -602,9 +601,9 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           </div>
 
           {block.bsnpRequired && (
-            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
-            </PremiumBadge>
+            </span>
           )}
         </div>
 
@@ -677,7 +676,6 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
 
       {/* ═══ CLOSING STATEMENT ═══════════════════════════════════ */}
       {block.closingStatement && (
-        <MicroInteraction tokens={tokens} accent={accentColor} effect="bounce">
         <div
           style={{
             margin: isCompact ? '0 12px 12px' : '0 18px 16px',
@@ -719,18 +717,9 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             />
           </div>
         </div>
-        </MicroInteraction>
       )}
     </div>
 
-      {/* ═══ STEP COMPLETION OVERLAY ═══════════════════════════ */}
-      <StepCompletionOverlay
-        show={allStepsCompleted || (concepts.length <= 2 && !!block.closingStatement)}
-        tokens={tokens}
-        accent={accentColor}
-        completionText="Rangkuman Selesai!"
-        isCompact={isCompact}
-      />
     </PremiumBlockWrapper>
   );
 });

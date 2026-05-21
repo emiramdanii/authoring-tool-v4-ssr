@@ -6,9 +6,9 @@ import type { TujuanDisplayBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { RichText } from './RichText';
-import { fireConfettiMini } from '@/lib/confetti';
+
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
@@ -84,7 +84,7 @@ function TujuanVariantA({
 
   return (
     <div
-      className="premium-card-glow rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -107,7 +107,7 @@ function TujuanVariantA({
               style={{
                 background: tokens.colorAlpha('y', 0.15),
                 border: `1px solid ${tokens.colorAlpha('y', 0.3)}`,
-                boxShadow: `0 0 12px ${tokens.colorAlpha('y', 0.1)}`,
+                boxShadow: 'none',
               }}
             >
               <Target size={16} style={{ color: tokens.color('y') }} />
@@ -132,9 +132,10 @@ function TujuanVariantA({
 
           {/* BSNP Badge */}
           {block.bsnpRequired && (
-            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
+              style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
-            </PremiumBadge>
+            </span>
           )}
         </div>
 
@@ -169,7 +170,7 @@ function TujuanVariantA({
         style={{ padding: isCompact ? '10px 12px' : '14px 18px' }}
       >
         {objectives.map((obj, i) => (
-          <MicroInteraction key={`td-a-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="squish">
+          
           <div
             className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5"
             style={{
@@ -188,7 +189,7 @@ function TujuanVariantA({
                 background: tokens.colorAlpha(obj.color, 0.2),
                 color: tokens.color(obj.color),
                 fontSize: isCompact ? '11px' : '12px',
-                boxShadow: `0 3px 10px ${tokens.colorAlpha(obj.color, 0.25)}`,
+                boxShadow: 'none',
               }}
             >
               {i + 1}
@@ -214,7 +215,7 @@ function TujuanVariantA({
               </span>
             </div>
           </div>
-          </MicroInteraction>
+          
         ))}
       </div>
       {/* ═══ COMPRESSION: Strategy-aware reveal/collapse UI ════
@@ -354,17 +355,13 @@ function TujuanVariantB({
   const toggleCheck = (idx: number) => {
     setChecked(prev => {
       const next = { ...prev, [idx]: !prev[idx] };
-      // Fire confetti when all objectives are checked
-      if (objectives.length > 0 && Object.values(next).filter(Boolean).length === objectives.length) {
-        fireConfettiMini();
-      }
       return next;
     });
   };
 
   return (
     <div
-      className="premium-card-glow rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -401,9 +398,10 @@ function TujuanVariantB({
           </div>
 
           {block.bsnpRequired && (
-            <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
+              style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
-            </PremiumBadge>
+            </span>
           )}
         </div>
 
@@ -432,7 +430,7 @@ function TujuanVariantB({
           {objectives.map((obj, i) => {
             const isChecked = !!checked[i];
             return (
-              <MicroInteraction key={`td-b-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="ripple">
+              
               <div
                 className="flex items-start gap-3 rounded-lg transition-all"
                 style={{
@@ -494,7 +492,7 @@ function TujuanVariantB({
                   </span>
                 </div>
               </div>
-              </MicroInteraction>
+              
             );
           })}
         </div>
@@ -699,7 +697,7 @@ function TujuanVariantC({
 
   return (
     <div
-      className="premium-card-glow rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
@@ -710,9 +708,10 @@ function TujuanVariantC({
       {/* BSNP Badge */}
       {block.bsnpRequired && isEditing && (
         <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 5 }}>
-          <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
+              style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
             <Shield size={8} /> WAJIB
-          </PremiumBadge>
+          </span>
         </div>
       )}
 
@@ -737,10 +736,10 @@ function TujuanVariantC({
         {objectives.map((obj, i) => {
           const pos = getSatellitePosition(i, count);
           return (
-            <MicroInteraction key={`td-c-mi-${block.id || 'td'}-${i}`} tokens={tokens} accent={obj.color} effect="bounce">
+            
             <div
               key={`td-c-obj-${block.id || 'td'}-${i}`}
-              className="premium-card-glow"
+              className=""
               style={{
                 position: 'absolute',
                 left: pos.left,
@@ -753,7 +752,7 @@ function TujuanVariantC({
                 borderRadius: tokens.radius('lg') + 'px',
                 background: tokens.colorAlpha(obj.color, 0.1),
                 border: `1.5px solid ${tokens.colorAlpha(obj.color, 0.3)}`,
-                boxShadow: `0 2px 12px ${tokens.colorAlpha(obj.color, 0.12)}`,
+                boxShadow: 'none',
                 textAlign: 'center',
                 animation: `blockStaggerIn 0.5s ease ${i * 0.1 + 0.3}s both`,
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -781,7 +780,7 @@ function TujuanVariantC({
                 {obj.text}
               </span>
             </div>
-            </MicroInteraction>
+            
           );
         })}
 
@@ -809,7 +808,7 @@ function TujuanVariantC({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: `0 4px 20px ${tokens.colorAlpha('y', 0.35)}`,
+              boxShadow: tokens.raw.shadow.card,
               animation: 'breathe 4s ease-in-out infinite',
             }}
           >
@@ -904,7 +903,7 @@ export const TujuanDisplayRenderer = React.memo(function TujuanDisplayRenderer({
   };
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
+    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={2} position="top" />
       <div style={{ position: 'relative' }}>
         <VariantSelector current={variant} onChange={handleVariantChange} isEditing={isEditing} />

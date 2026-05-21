@@ -6,27 +6,15 @@ import type { HasilBlock } from '../../schema/types';
 import type { ScoreEntry } from '@/store/interactive-store';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, StepCompletionOverlay, MicroInteraction } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '../../../store/canva/store';
 import { playSound } from '@/lib/sounds';
-import { fireConfetti, fireConfettiCelebration } from '@/lib/confetti';
 
 // ═══════════════════════════════════════════════════════════════════
-// HASIL RENDERER (SKORING) — Premium Score Results with Full Visual FX
+// HASIL RENDERER (SKORING) — Clean Score Results for iOS Light
 // ═══════════════════════════════════════════════════════════════════
-// Premium Features:
-//   - Holographic aurora conic-gradient progress circle
-//   - StepCompletionOverlay when results shown
-//   - Confetti celebration on excellent scores
-//   - Glow pulse ring around score circle
-//   - PremiumBadge for tier classification
-//   - MicroInteraction on reset button
-//   - Animated sparkles on tier badge
-//   - Holographic aurora progress bar
-//   - Premium card glow hover
-//   - Score breakdown with gradient borders
-//   - Variant A/B/C support (Klasik / Majalah / Ringkas)
+// Variant A/B/C support (Klasik / Majalah / Ringkas)
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Variant Selector Component ─────────────────────────────────────
@@ -76,46 +64,24 @@ function VariantAKlasik({
   resetAllScores: () => void;
 }) {
   return (
-    <div className="relative flex flex-col items-center justify-center text-center p-6 overflow-hidden">
-      {/* Step Completion Overlay — sparkle particles + trophy */}
-      <StepCompletionOverlay
-        show={allComplete || displayMax > 0}
-        tokens={tokens}
-        accent={tierColor}
-        completionText={tierConfig.label}
-        isCompact={isCompact}
-      />
-
-      {/* ── Performance Tier Badge — premium gradient ──────────────── */}
+    <div className="relative flex flex-col items-center justify-center text-center p-6 overflow-hidden"
+      style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
+      {/* ── Performance Tier Badge ──────────────── */}
       <div className="mb-4">
-        <PremiumBadge tokens={tokens} accent={tierColor} variant="gradient" isCompact={isCompact}>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold"
+          style={{
+            fontSize: isCompact ? '11px' : '12px',
+            background: tokens.accentBg(tierColor, 0.1),
+            color: tokens.color(tierColor),
+            border: `1px solid ${tokens.colorAlpha(tierColor, 0.25)}`,
+          }}>
           <span style={{ fontSize: isCompact ? '12px' : '14px' }}>{tierConfig.emoji}</span>
           <span>{tierConfig.label}</span>
-        </PremiumBadge>
+        </span>
       </div>
 
-      {/* ── Holographic Aurora Circle — score ring ────────────────── */}
+      {/* ── Score Circle — clean progress ring ────────────────── */}
       <div className={`relative ${isCompact ? 'w-28 h-28' : 'w-40 h-40'} mb-5`}>
-        {/* Outer glow ring — pulse animation */}
-        <div className="absolute inset-[-4px] rounded-full"
-          style={{
-            boxShadow: `0 0 50px ${tokens.colorAlpha(tierColor, 0.3)}, 0 0 100px ${tokens.colorAlpha(tierColor, 0.1)}`,
-            animation: 'glowPulse 2s ease-in-out infinite',
-            '--glow-color': tokens.colorAlpha(tierColor, 0.3),
-            '--glow-color-strong': tokens.colorAlpha(tierColor, 0.6),
-          } as React.CSSProperties} />
-
-        {/* Rotating border gradient */}
-        <div className="absolute inset-[-2px] rounded-full premium-border-gradient"
-          style={{
-            background: 'conic-gradient(from var(--border-angle, 0deg), ' + tokens.color(tierColor) + ', ' + tokens.color('c') + ', ' + tokens.color(tierColor) + ', ' + tokens.color('c') + ', ' + tokens.color(tierColor) + ')',
-            padding: '3px',
-            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            WebkitMaskComposite: 'xor',
-            maskComposite: 'exclude',
-          } as React.CSSProperties} />
-
         {/* Conic gradient score ring */}
         <div className={`${isCompact ? 'w-28 h-28' : 'w-40 h-40'} rounded-full flex items-center justify-center`}
           style={{
@@ -123,15 +89,15 @@ function VariantAKlasik({
           }}>
           <div className="rounded-full flex items-center justify-center"
             style={{
-              background: tokens.color('bg2'),
+              background: tokens.color('card'),
               width: isCompact ? '88px' : '136px',
               height: isCompact ? '88px' : '136px',
             }}>
             <div className="text-center">
-              <div className="text-3xl mb-1" style={{ animation: 'trophyBounce 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' }}>
+              <div className="text-3xl mb-1">
                 {tierConfig.emoji}
               </div>
-              <div className="text-3xl font-black premium-text-gradient"
+              <div className="text-3xl font-black"
                 style={{ color: tokens.color(tierColor) }}>
                 {displayPct}%
               </div>
@@ -141,26 +107,6 @@ function VariantAKlasik({
             </div>
           </div>
         </div>
-
-        {/* Animated sparkles around circle */}
-        {[
-          { top: '-6px', left: '50%', delay: '0s' },
-          { top: '50%', right: '-6px', delay: '0.4s' },
-          { bottom: '-6px', left: '50%', delay: '0.8s' },
-          { top: '50%', left: '-6px', delay: '1.2s' },
-        ].map((pos, idx) => (
-          <div key={`hasil-sparkle-${idx}`}
-            style={{
-              position: 'absolute',
-              ...pos,
-              width: isCompact ? '6px' : '8px',
-              height: isCompact ? '6px' : '8px',
-              borderRadius: '50%',
-              background: tokens.color(tierColor),
-              animation: `sparkle 2s ease-in-out ${pos.delay} infinite`,
-              pointerEvents: 'none',
-            } as React.CSSProperties} />
-        ))}
       </div>
 
       {/* ── Title ──────────────────────────────────────────────────── */}
@@ -178,13 +124,13 @@ function VariantAKlasik({
         placeholder="Ketik subtitle..."
       />
 
-      {/* ── Score Breakdown — premium gradient cards ──────────────── */}
+      {/* ── Score Breakdown ──────────────── */}
       <div className="mt-5 flex gap-3">
-        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'} premium-card-glow`}
+        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.12)}, ${tokens.colorAlpha('g', 0.06)})`,
-            border: `1px solid ${tokens.colorAlpha('g', 0.35)}`,
-            boxShadow: tokens.raw.shadow.card + `, 0 0 16px ${tokens.colorAlpha('g', 0.08)}`,
+            background: tokens.accentBg('g', 0.06),
+            border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
+            boxShadow: tokens.raw.shadow.card,
           }}>
           <CheckCircle2 size={14} className="inline mb-0.5" style={{ color: tokens.color('g') }} />
           <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: isCompact ? '9px' : '11px' }}>Benar</div>
@@ -192,21 +138,21 @@ function VariantAKlasik({
             {scores.filter(s => s.completed).length}
           </div>
         </div>
-        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'} premium-card-glow`}
+        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('y', 0.12)}, ${tokens.colorAlpha('y', 0.06)})`,
-            border: `1px solid ${tokens.colorAlpha('y', 0.35)}`,
-            boxShadow: tokens.raw.shadow.card + `, 0 0 16px ${tokens.colorAlpha('y', 0.08)}`,
+            background: tokens.accentBg('y', 0.06),
+            border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,
+            boxShadow: tokens.raw.shadow.card,
           }}>
           <Star size={14} className="inline mb-0.5" style={{ color: tokens.color('y') }} />
           <div className="font-extrabold" style={{ color: tokens.color('y'), fontSize: isCompact ? '9px' : '11px' }}>Skor</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('y') }}>{displayScore}</div>
         </div>
-        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'} premium-card-glow`}
+        <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.12)}, ${tokens.colorAlpha('c', 0.06)})`,
-            border: `1px solid ${tokens.colorAlpha('c', 0.35)}`,
-            boxShadow: tokens.raw.shadow.card + `, 0 0 16px ${tokens.colorAlpha('c', 0.08)}`,
+            background: tokens.accentBg('c', 0.06),
+            border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
+            boxShadow: tokens.raw.shadow.card,
           }}>
           <Target size={14} className="inline mb-0.5" style={{ color: tokens.color('c') }} />
           <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '9px' : '11px' }}>Maks</div>
@@ -214,16 +160,16 @@ function VariantAKlasik({
         </div>
       </div>
 
-      {/* ── Motivational message — premium glassmorphism ──────────── */}
-      <div className="mt-4 p-3.5 rounded-xl max-w-[300px] premium-card-glow"
+      {/* ── Motivational message ──────────── */}
+      <div className="mt-4 p-3.5 rounded-xl max-w-[300px]"
         style={{
-          background: `linear-gradient(135deg, ${tokens.colorAlpha(tierColor, 0.1)}, ${tokens.colorAlpha(tierColor, 0.04)})`,
-          border: `1px solid ${tokens.colorAlpha(tierColor, 0.25)}`,
+          background: tokens.accentBg(tierColor, 0.04),
+          border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
           borderLeft: `3px solid ${tokens.color(tierColor)}`,
-          boxShadow: `0 2px 12px ${tokens.colorAlpha(tierColor, 0.08)}`,
+          boxShadow: tokens.raw.shadow.card,
         }}>
         <div className="flex items-start gap-2">
-          <Sparkles size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor), animation: 'sparkle 2s ease-in-out infinite' }} />
+          <Sparkles size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
           <div className={`leading-relaxed text-left ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ fontSize: '12px', color: tokens.muted(0.8) }}>
             {displayPct >= 90
               ? 'Kamu menguasai materi dengan sangat baik! Pertahankan prestasimu dan terus belajar!'
@@ -238,23 +184,24 @@ function VariantAKlasik({
 
       {/* ── Tier progress indicator badges ────────────────────────── */}
       <div className="mt-3 flex gap-2">
-        <PremiumBadge tokens={tokens} accent={tierColor} variant="outline" isCompact={isCompact}>
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+          style={{ fontSize: '10px', background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
           <TrendingUp size={10} /> Level {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
-        </PremiumBadge>
-        <PremiumBadge tokens={tokens} accent={tierColor} variant="glass" isCompact={isCompact}>
+        </span>
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+          style={{ fontSize: '10px', background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
           <Award size={10} /> {scores.filter(s => s.completed).length} Aktivitas
-        </PremiumBadge>
+        </span>
       </div>
 
-      {/* ── Per-activity score breakdown (Phase 21) ────────────────── */}
+      {/* ── Per-activity score breakdown ────────────────── */}
       {scores.length > 0 && (
         <ActivityBreakdown tokens={tokens} isCompact={isCompact} tierColor={tierColor} scores={scores} />
       )}
 
-      {/* ── Reset button — premium spring ─────────────────────────── */}
+      {/* ── Reset button ─────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-5">
-          <MicroInteraction tokens={tokens} accent="y" effect="bounce">
             <button className="px-5 py-2.5 rounded-xl font-extrabold transition-all hover:scale-105"
               onClick={() => {
                 resetAllScores();
@@ -263,14 +210,12 @@ function VariantAKlasik({
               aria-label="Ulangi semua"
               style={{
                 fontSize: '13px',
-                background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+                background: tokens.color('y'),
                 color: tokens.color('bg'),
-                boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
-                animation: 'springBounce 0.4s ease',
+                boxShadow: tokens.raw.shadow.card,
               }}>
               <RotateCcw size={14} className="inline" /> Ulangi Semua
             </button>
-          </MicroInteraction>
         </div>
       )}
     </div>
@@ -300,22 +245,19 @@ function VariantBMajalah({
         : 'Jangan menyerah! Pelajari kembali materi dan coba lagi. Kamu pasti bisa!';
 
   return (
-    <div className="relative p-5 overflow-hidden">
-      {/* Step Completion Overlay */}
-      <StepCompletionOverlay
-        show={allComplete || displayMax > 0}
-        tokens={tokens}
-        accent={tierColor}
-        completionText={tierConfig.label}
-        isCompact={isCompact}
-      />
-
+    <div className="relative p-5 overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
       {/* ── Header: Tier badge + Title side by side ──────────────── */}
       <div className="flex items-center gap-3 mb-4">
-        <PremiumBadge tokens={tokens} accent={tierColor} variant="gradient" isCompact={isCompact}>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold"
+          style={{
+            fontSize: '11px',
+            background: tokens.accentBg(tierColor, 0.1),
+            color: tokens.color(tierColor),
+            border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
+          }}>
           <span style={{ fontSize: '14px' }}>{tierConfig.emoji}</span>
           <span>{tierConfig.label}</span>
-        </PremiumBadge>
+        </span>
         <div className="flex-1 min-w-0">
           <h2 className="font-black text-lg leading-tight" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
             <InlineTextEditor
@@ -345,13 +287,12 @@ function VariantBMajalah({
             {displayPct}%
           </span>
         </div>
-        <div className="w-full h-3 rounded-full overflow-hidden"
-          style={{ background: tokens.colorAlpha(tierColor, 0.1) }}>
+        <div className="w-full h-2.5 rounded-full overflow-hidden"
+          style={{ background: tokens.subtleBg(0.06) }}>
           <div className="h-full rounded-full transition-all duration-1000 ease-out"
             style={{
               width: `${displayPct}%`,
-              background: `linear-gradient(90deg, ${tokens.color(tierColor)}, ${tokens.colorAlpha(tierColor, 0.7)})`,
-              boxShadow: `0 0 12px ${tokens.colorAlpha(tierColor, 0.4)}`,
+              background: tokens.color(tierColor),
             }} />
         </div>
         <div className="text-[10px] mt-1 font-bold" style={{ color: tokens.muted(0.5) }}>
@@ -359,12 +300,12 @@ function VariantBMajalah({
         </div>
       </div>
 
-      {/* ── Score Breakdown — horizontal cards ────────────────────── */}
+      {/* ── Score Breakdown ────────────────────── */}
       <div className="flex gap-2 mb-4">
-        <div className="flex-1 px-3 py-2 rounded-lg premium-card-glow"
+        <div className="flex-1 px-3 py-2 rounded-lg"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.1)}, ${tokens.colorAlpha('g', 0.04)})`,
-            border: `1px solid ${tokens.colorAlpha('g', 0.25)}`,
+            background: tokens.accentBg('g', 0.06),
+            border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
           }}>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
@@ -374,10 +315,10 @@ function VariantBMajalah({
             {scores.filter(s => s.completed).length}
           </div>
         </div>
-        <div className="flex-1 px-3 py-2 rounded-lg premium-card-glow"
+        <div className="flex-1 px-3 py-2 rounded-lg"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('y', 0.1)}, ${tokens.colorAlpha('y', 0.04)})`,
-            border: `1px solid ${tokens.colorAlpha('y', 0.25)}`,
+            background: tokens.accentBg('y', 0.06),
+            border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,
           }}>
           <div className="flex items-center gap-1.5">
             <Star size={12} style={{ color: tokens.color('y') }} />
@@ -385,10 +326,10 @@ function VariantBMajalah({
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('y') }}>{displayScore}</div>
         </div>
-        <div className="flex-1 px-3 py-2 rounded-lg premium-card-glow"
+        <div className="flex-1 px-3 py-2 rounded-lg"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.1)}, ${tokens.colorAlpha('c', 0.04)})`,
-            border: `1px solid ${tokens.colorAlpha('c', 0.25)}`,
+            background: tokens.accentBg('c', 0.06),
+            border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
           }}>
           <div className="flex items-center gap-1.5">
             <Target size={12} style={{ color: tokens.color('c') }} />
@@ -402,23 +343,25 @@ function VariantBMajalah({
       <div className="flex gap-3 items-start">
         {/* Left: Level badges */}
         <div className="flex flex-col gap-1.5 flex-shrink-0">
-          <PremiumBadge tokens={tokens} accent={tierColor} variant="outline" isCompact>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+            style={{ fontSize: '10px', background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
             <TrendingUp size={10} /> {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
-          </PremiumBadge>
-          <PremiumBadge tokens={tokens} accent={tierColor} variant="glass" isCompact>
+          </span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
+            style={{ fontSize: '10px', background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
             <Award size={10} /> {scores.filter(s => s.completed).length} Aktivitas
-          </PremiumBadge>
+          </span>
         </div>
 
         {/* Right: Motivational message */}
-        <div className="flex-1 p-3 rounded-xl premium-card-glow"
+        <div className="flex-1 p-3 rounded-xl"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha(tierColor, 0.08)}, ${tokens.colorAlpha(tierColor, 0.03)})`,
-            border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
+            background: tokens.accentBg(tierColor, 0.04),
+            border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
             borderLeft: `3px solid ${tokens.color(tierColor)}`,
           }}>
           <div className="flex items-start gap-2">
-            <Sparkles size={13} className="flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor), animation: 'sparkle 2s ease-in-out infinite' }} />
+            <Sparkles size={13} className="flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
             <div className="leading-relaxed text-left" style={{ fontSize: '12px', color: tokens.muted(0.8) }}>
               {motivationalText}
             </div>
@@ -426,7 +369,7 @@ function VariantBMajalah({
         </div>
       </div>
 
-      {/* ── Per-activity score breakdown (Phase 21) ────────────────── */}
+      {/* ── Per-activity score breakdown ────────────────── */}
       {scores.length > 0 && (
         <ActivityBreakdown tokens={tokens} isCompact={isCompact} tierColor={tierColor} scores={scores} />
       )}
@@ -434,7 +377,6 @@ function VariantBMajalah({
       {/* ── Reset button ──────────────────────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-4 flex justify-end">
-          <MicroInteraction tokens={tokens} accent="y" effect="bounce">
             <button className="px-4 py-2 rounded-lg font-extrabold transition-all hover:scale-105"
               onClick={() => {
                 resetAllScores();
@@ -443,14 +385,12 @@ function VariantBMajalah({
               aria-label="Ulangi semua"
               style={{
                 fontSize: '12px',
-                background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+                background: tokens.color('y'),
                 color: tokens.color('bg'),
-                boxShadow: '0 4px 12px ' + tokens.colorAlpha('y', 0.3),
-                animation: 'springBounce 0.4s ease',
+                boxShadow: tokens.raw.shadow.card,
               }}>
               <RotateCcw size={12} className="inline" /> Ulangi Semua
             </button>
-          </MicroInteraction>
         </div>
       )}
     </div>
@@ -480,23 +420,14 @@ function VariantCRingkas({
         : 'Terus berlatih, kamu pasti bisa!';
 
   return (
-    <div className="relative p-3 overflow-hidden">
-      {/* Step Completion Overlay */}
-      <StepCompletionOverlay
-        show={allComplete || displayMax > 0}
-        tokens={tokens}
-        accent={tierColor}
-        completionText={tierConfig.label}
-        isCompact={true}
-      />
-
+    <div className="relative p-3 overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
       {/* ── Inline: Tier badge + Percentage + Title ──────────────── */}
       <div className="flex items-center gap-2 mb-1">
         <span className="px-2 py-0.5 rounded-md font-bold text-[11px]"
           style={{
-            background: tokens.colorAlpha(tierColor, 0.15),
+            background: tokens.accentBg(tierColor, 0.1),
             color: tokens.color(tierColor),
-            border: `1px solid ${tokens.colorAlpha(tierColor, 0.3)}`,
+            border: `1px solid ${tokens.colorAlpha(tierColor, 0.25)}`,
           }}>
           {tierConfig.emoji} {tierConfig.label}
         </span>
@@ -550,7 +481,7 @@ function VariantCRingkas({
         {motivationalText}
       </div>
 
-      {/* ── Per-activity score breakdown (Phase 21) ────────────────── */}
+      {/* ── Per-activity score breakdown ────────────────── */}
       {scores.length > 0 && (
         <ActivityBreakdown tokens={tokens} isCompact={isCompact} tierColor={tierColor} scores={scores} />
       )}
@@ -566,9 +497,9 @@ function VariantCRingkas({
             aria-label="Ulangi semua"
             style={{
               fontSize: '10px',
-              background: tokens.colorAlpha('y', 0.15),
+              background: tokens.accentBg('y', 0.1),
               color: tokens.color('y'),
-              border: `1px solid ${tokens.colorAlpha('y', 0.3)}`,
+              border: `1px solid ${tokens.colorAlpha('y', 0.25)}`,
             }}>
             <RotateCcw size={10} className="inline" /> Ulangi
           </button>
@@ -579,7 +510,7 @@ function VariantCRingkas({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// PER-ACTIVITY SCORE BREAKDOWN (Phase 21)
+// PER-ACTIVITY SCORE BREAKDOWN
 // ═══════════════════════════════════════════════════════════════════
 function ActivityBreakdown({
   tokens, isCompact, tierColor, scores,
@@ -647,15 +578,15 @@ function ActivityBreakdown({
           {activities.map((act, i) => {
             const barColor = getBarColor(act.pct);
             return (
-              <div key={`act-${i}`} className="flex items-center gap-2.5 p-2 rounded-lg transition-all hover:-translate-y-0.5"
+              <div key={`act-${i}`} className="flex items-center gap-2.5 p-2 rounded-lg transition-all"
                 style={{
-                  background: tokens.colorAlpha(barColor, 0.06),
-                  border: `1px solid ${tokens.colorAlpha(barColor, 0.15)}`,
+                  background: tokens.accentBg(barColor, 0.04),
+                  border: `1px solid ${tokens.colorAlpha(barColor, 0.12)}`,
                 }}>
                 {/* Completion indicator */}
                 <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: act.completed ? tokens.colorAlpha(barColor, 0.2) : tokens.colorAlpha('p', 0.1),
+                    background: act.completed ? tokens.accentBg(barColor, 0.1) : tokens.accentBg('p', 0.05),
                   }}>
                   {act.completed
                     ? <CheckCircle2 size={10} style={{ color: tokens.color(barColor) }} />
@@ -668,11 +599,10 @@ function ActivityBreakdown({
                     <span className="text-[10px] font-bold truncate" style={{ color: tokens.color('text'), maxWidth: '140px' }}>{act.label}</span>
                     <span className="text-[10px] font-black flex-shrink-0" style={{ color: tokens.color(barColor) }}>{act.pct}%</span>
                   </div>
-                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: tokens.colorAlpha(barColor, 0.08) }}>
+                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: tokens.subtleBg(0.06) }}>
                     <div className="h-full rounded-full transition-all duration-700 ease-out" style={{
                       width: `${act.pct}%`,
                       background: tokens.color(barColor),
-                      boxShadow: `0 0 6px ${tokens.colorAlpha(barColor, 0.25)}`,
                     }} />
                   </div>
                 </div>
@@ -728,8 +658,6 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
   React.useEffect(() => {
     if (interactive && allComplete) {
       playSound('complete');
-      if (totalPct >= 80) fireConfettiCelebration();
-      else if (totalPct >= 50) fireConfetti({ count: 50, duration: 3000 });
     }
   }, [interactive, allComplete]);
 
@@ -766,8 +694,8 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
   };
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={tierColor} staggerIndex={0} gradientBorder>
-      <ReadingProgressIndicator progress={1} tokens={tokens} accent={tierColor} height={3} position="top" />
+    <PremiumBlockWrapper tokens={tokens} accent={tierColor} staggerIndex={0}>
+      <ReadingProgressIndicator progress={1} tokens={tokens} accent={tierColor} height={2} position="top" />
 
       {/* Variant selector overlay — only when editing */}
       {isEditing && (

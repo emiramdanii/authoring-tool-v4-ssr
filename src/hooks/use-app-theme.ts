@@ -19,15 +19,15 @@ export function useAppTheme() {
     setMounted(true);
   }, []);
 
-  const isDark = mounted ? resolvedTheme === 'dark' : true; // default dark during SSR
-  const isLight = mounted ? resolvedTheme === 'light' : false;
+  const isDark = mounted ? resolvedTheme === 'dark' : false; // default light during SSR
+  const isLight = mounted ? resolvedTheme === 'light' : true;
 
   const toggleTheme = useCallback(() => {
     setTheme(isDark ? 'light' : 'dark');
   }, [isDark, setTheme]);
 
   return {
-    theme: resolvedTheme ?? 'dark',
+    theme: resolvedTheme ?? 'light',
     isDark,
     isLight,
     toggleTheme,

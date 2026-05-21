@@ -6,8 +6,8 @@ import type { PetunjukBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
-import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
-import { fireConfettiMini } from '@/lib/confetti';
+import { PremiumBlockWrapper } from './PremiumBlockEffects';
+
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision, CompressionStrategy } from '../../layout/CompressionEngine';
@@ -65,14 +65,13 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
   });
 
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0} gradientBorder>
-    <ReadingProgressIndicator progress={1} tokens={tokens} accent={accentKey} height={2} position="top" />
-    <div className={`${isCompact ? 'p-1' : 'p-2'} premium-card-glow`}
+    <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}>
+    <div className={`${isCompact ? 'p-1' : 'p-2'}`}
       style={{
-        background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.06)}, ${tokens.colorAlpha('y', 0.04)})`,
+        background: tokens.color('card'),
         borderRadius: tokens.radius('xl') + 'px',
-        border: `2px solid ${tokens.colorAlpha('c', 0.2)}`,
-        borderLeft: `5px solid ${tokens.color('c')}`,
+        border: `1px solid ${tokens.colorAlpha('c', 0.15)}`,
+        borderLeft: `4px solid ${tokens.color('c')}`,
         boxShadow: tokens.raw.shadow.card,
         position: 'relative',
         overflow: 'hidden',
@@ -84,20 +83,22 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
        *  Design: Ribbon-style badge at top-left with Info icon. */}
       <div className="absolute top-0 left-0"
         style={{
-          background: `linear-gradient(135deg, ${tokens.color('c')}, ${tokens.colorAlpha('c', 0.85)})`,
+          background: tokens.color('c'),
           borderRadius: '0 0 10px 0',
-          padding: '5px 12px 5px 10px',
+          padding: '4px 10px 4px 8px',
           zIndex: 2,
-          boxShadow: `2px 2px 8px ${tokens.colorAlpha('c', 0.3)}`,
         }}>
-        <span style={{ fontSize: '12px', fontWeight: 900, color: tokens.color('bg'), display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Info size={12} /> Petunjuk
+        <span style={{ fontSize: '11px', fontWeight: 800, color: tokens.color('bg'), display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Info size={11} /> Petunjuk
         </span>
       </div>
 
       {/* BSNP "Wajib" badge — top right */}
       <div className="absolute top-0 right-0" style={{ zIndex: 2, borderRadius: '0 0 0 10px', overflow: 'hidden' }}>
-        <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}><Shield size={10} /> BSNP Wajib</PremiumBadge>
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full font-bold"
+          style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+          <Shield size={9} /> BSNP Wajib
+        </span>
       </div>
 
       <div style={{ paddingTop: isCompact ? '24px' : '32px' }}>
@@ -243,7 +244,6 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
 
             // ── Normal (non-accordion) mode: full card rendering ──
             return (
-              <MicroInteraction key={`petunjuk-item-mi-${block.id || 'pet'}-${i}`} tokens={tokens} accent={itemColor} effect="squish">
               <div key={`petunjuk-item-${block.id || 'pet'}-${i}`} className="rounded-xl text-center transition-all hover:-translate-y-0.5 min-w-0"
                 style={{
                   background: tokens.colorAlpha(itemColor, 0.1),
@@ -258,7 +258,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                 <div className="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2 relative"
                   style={{
                     background: tokens.colorAlpha(itemColor, 0.2),
-                    boxShadow: '0 4px 12px ' + tokens.colorAlpha(itemColor, 0.25),
+                    boxShadow: 'none',
                   }}>
                   <span style={{ fontSize: isCompact ? '15px' : '20px' }}>{item.icon}</span>
                   {/* Step number badge */}
@@ -276,7 +276,6 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                 <div className="font-extrabold mb-1.5" style={{ color: tokens.color(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
                 <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={item.body ?? ''} /></div>
               </div>
-              </MicroInteraction>
             );
           })}
         </div>
@@ -334,11 +333,10 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
          *  Tips provide additional guidance for students.
          *  Displayed with a lightbulb icon and accent color. */}
         {block.tips && (
-          <MicroInteraction tokens={tokens} accent={accentKey} effect="bounce">
           <div className="mt-4 p-3.5 rounded-xl leading-relaxed"
             style={{
-              background: tokens.colorAlpha(accentKey, 0.12),
-              border: '1px solid ' + tokens.colorAlpha(accentKey, 0.3),
+              background: tokens.accentBg(accentKey, 0.06),
+              border: '1px solid ' + tokens.colorAlpha(accentKey, 0.2),
               borderLeft: `4px solid ${tokens.color(accentKey)}`,
               boxShadow: tokens.raw.shadow.card,
               color: tokens.color('text'),
@@ -346,7 +344,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             }}>
             <div className="flex items-start gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: tokens.colorAlpha(accentKey, 0.25), boxShadow: '0 2px 8px ' + tokens.colorAlpha(accentKey, 0.2) }}>
+                style={{ background: tokens.accentBg(accentKey, 0.15) }}>
                 <Lightbulb size={12} className="inline" />
               </div>
               <div className="min-w-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
@@ -358,7 +356,6 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
               </div>
             </div>
           </div>
-          </MicroInteraction>
         )}
 
         {/* ══ BSNP COMPLIANCE FOOTER ═══════════════════════════════

@@ -167,6 +167,98 @@ export const THEME_PRESETS: ThemePreset[] = [
     tokens: {},
   },
   {
+    id: 'ios-light',
+    name: '\ud83c\udf4e iOS Light',
+    tokens: {
+      colors: {
+        bg: '#F5F7FB',
+        bg2: '#FFFFFF',
+        card: '#FFFFFF',
+        border: 'rgba(15,23,42,0.06)',
+        y: '#FF9F0A',   // iOS systemOrange
+        c: '#007AFF',   // iOS systemBlue (PRIMARY accent)
+        r: '#FF3B30',   // iOS systemRed
+        p: '#AF52DE',   // iOS systemPurple
+        g: '#34C759',   // iOS systemGreen
+        o: '#FF9500',   // iOS systemOrange
+        text: '#1C1C1E', // iOS label
+        muted: '#8E8E93', // iOS tertiaryLabel
+      },
+      spacing: {
+        xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28,
+      },
+      radius: {
+        sm: 10, md: 14, lg: 18, xl: 24, full: 99,
+      },
+      shadow: {
+        card: '0 1px 2px rgba(0,0,0,0.04)',
+        elevated: '0 8px 24px rgba(15,23,42,0.06)',
+        glow: (color: string, opacity = 0.1) =>
+          `0 0 20px rgba(${color},${opacity})`,
+      },
+      typography: {
+        fontFamily: {
+          display: "var(--font-fredoka), 'Fredoka', cursive",
+          body: "var(--font-nunito), 'Nunito', sans-serif",
+        },
+        fontSize: {
+          xs: '0.7rem',
+          sm: '0.76rem',
+          base: '0.84rem',
+          md: '0.9rem',
+          lg: '0.96rem',
+          xl: '1.06rem',
+          h3: '1.3rem',
+          h2: '1.7rem',
+        },
+        fontWeight: {
+          normal: 400,
+          semibold: 500,
+          bold: 600,
+          extrabold: 700,
+          black: 800,
+        },
+      },
+      animation: {
+        fadeMs: 300,
+        hoverLift: 'translateY(-1px)',
+        pressDown: 'translateY(0)',
+      },
+    },
+  },
+  {
+    id: 'ios-warm',
+    name: '\ud83c\udf24\ufe0f iOS Warm',
+    tokens: {
+      colors: {
+        bg: '#FAF8F5',
+        bg2: '#F5F0EB',
+        card: '#FFFFFF',
+        border: 'rgba(15,23,42,0.06)',
+        y: '#FF9F0A',
+        c: '#007AFF',
+        r: '#FF3B30',
+        p: '#AF52DE',
+        g: '#34C759',
+        o: '#FF6344',
+        text: '#2C2420',
+        muted: '#9A8E85',
+      },
+      spacing: {
+        xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28,
+      },
+      radius: {
+        sm: 10, md: 14, lg: 18, xl: 24, full: 99,
+      },
+      shadow: {
+        card: '0 1px 2px rgba(0,0,0,0.04)',
+        elevated: '0 8px 24px rgba(15,23,42,0.06)',
+        glow: (color: string, opacity = 0.1) =>
+          `0 0 20px rgba(${color},${opacity})`,
+      },
+    },
+  },
+  {
     id: 'hakikat-norma',
     name: 'Hakikat Norma (Yellow Accent)',
     tokens: {
@@ -384,15 +476,17 @@ export const THEME_PRESETS: ThemePreset[] = [
   },
 ];
 
+export const DEFAULT_THEME_ID = 'ios-light';
+
 /**
  * Merge a theme preset with default tokens.
  * Deep-merges colors, shallow-merges everything else.
  */
 export function resolveTokens(presetId?: string): DesignTokens {
-  if (!presetId || presetId === 'default') return DEFAULT_TOKENS;
+  const effectiveId = (!presetId || presetId === 'default') ? DEFAULT_THEME_ID : presetId;
 
-  const preset = THEME_PRESETS.find(p => p.id === presetId);
-  if (!preset) return DEFAULT_TOKENS;
+  const preset = THEME_PRESETS.find(p => p.id === effectiveId);
+  if (!preset) return DEFAULT_TOKENS; // Fallback to dark tokens if not found
 
   return {
     ...DEFAULT_TOKENS,
