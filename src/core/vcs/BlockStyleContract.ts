@@ -373,7 +373,7 @@ export const BLOCK_STYLE_CONTRACTS: Record<string, BlockStyleContract> = {
     isFullWidth: false,
     intentStyles: {
       highlight: INTENT_DEFAULTS.highlight,
-      quiet: { ...INTENT_DEFAULTS.quiet, preferredWidthRatio: 0.6 },
+      quiet: INTENT_DEFAULTS.quiet,
     },
   },
 
