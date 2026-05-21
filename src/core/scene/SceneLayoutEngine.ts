@@ -477,9 +477,21 @@ export function resolveSceneLayout(
   safeArea: SafeArea,
   options: {
     isCompact: boolean;
+    /**
+     * FASE 11A.4 — Per-block gaps from the rhythm engine.
+     * When provided, each flow block uses its own transition-based gap
+     * instead of the uniform BLOCK_GAP.
+     *
+     * perBlockGaps[i] = gap BEFORE block i (0 for first block).
+     * Length should equal blocks.length. If shorter, remaining blocks
+     * fall back to uniform BLOCK_GAP.
+     *
+     * Backward compatible: if not provided, uses uniform BLOCK_GAP.
+     */
+    perBlockGaps?: number[];
   }
 ): ResolvedBlockPosition[] {
-  const { isCompact } = options;
+  const { isCompact, perBlockGaps } = options;
   const resolved: ResolvedBlockPosition[] = [];
 
   // Content area bounds
@@ -488,7 +500,7 @@ export function resolveSceneLayout(
   const contentTop = safeArea.top;
   const contentBottom = scene.h - safeArea.bottom;
 
-  const gap = BLOCK_GAP[isCompact ? 'compact' : 'normal'];
+  const defaultGap = BLOCK_GAP[isCompact ? 'compact' : 'normal'];
 
   // ── Phase 1: Resolve flow blocks (vertical stack) ──
   // SAFETY: Full-page blocks (cover, hero) without an explicit layout property
@@ -582,7 +594,15 @@ export function resolveSceneLayout(
       compression: compressionDecision,
     });
 
-    currentY += effectiveHeight + gap;
+    // FASE 11A.4 — Use per-block gap from rhythm engine when available.
+    // perBlockGaps is indexed by the ORIGINAL blocks array position.
+    // Find the original index of this flow block in the blocks array.
+    const originalIndex = blocks.indexOf(block);
+    const blockGap = (perBlockGaps && originalIndex >= 0 && originalIndex < perBlockGaps.length)
+      ? perBlockGaps[originalIndex]
+      : defaultGap;
+
+    currentY += effectiveHeight + blockGap;
   }
 
   // ── Phase 2: Resolve absolute blocks (coordinate-based) ──

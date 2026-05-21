@@ -1,33 +1,29 @@
 ---
-Task ID: 6
+Task ID: 11A.4
 Agent: Main Agent
-Task: FASE 6 — Reliability + Recovery Layer (complete implementation)
+Task: FASE 11A.4 — Layout Integration
 
 Work Log:
-- Scanned entire codebase to understand current FASE 6 state
-- Found core recovery module already implemented in src/core/recovery/index.ts
-- Found recovery-slice, hooks, and components already created
-- Identified 5 critical integration gaps:
-  1. deleteBlock, batchDelete, batchDuplicate, reorderSchemaBlocks missing crash checkpoints
-  2. mergeWithNextPage missing transactionRollback.commit() after success
-  3. OverflowIndicator and SceneNavigator not gated by safe mode
-  4. SafeModeBlockGate reading from raw sessionStorage instead of Zustand store
-  5. Auto-save hook missing post-save hash verification
-- Added crash checkpoints to schema-crud-slice.ts (deleteBlock)
-- Added crash checkpoints to schema-ops-slice.ts (deleteSchemaBlocks, reorderSchemaBlocks, batchDuplicateBlocks)
-- Added transactionRollback.commit(txId) to mergeWithNextPage in page-ops-slice.ts
-- Enhanced OverflowIndicator with safe mode gates (scene-overflow-split, compression-engine)
-- Enhanced SceneNavigator with safe mode gate on promote scene button
-- Updated SchemaRenderer to pass safeMode prop to OverflowIndicator and SceneNavigator
-- Fixed SafeModeBlockGate to read from Zustand store (reactive) instead of sessionStorage
-- Enhanced SafeModeBanner with integrity check details and "Cek Integritas" button
-- Added post-save hash verification to use-auto-save.ts hook
-- Verified build compiles with zero type errors (tsc --noEmit)
+- Discovered VCS engine files (TransitionRhythmEngine, CompositionAnalyzer, resolver, index.ts) were MISSING — lost during context switch
+- Re-created all missing files from design spec:
+  - Added TransitionKind (13 kinds), ScreenRhythm, BlockTransitionInfo, CompositionAnalysis types to types.ts
+  - Created TransitionRhythmEngine.ts (transition classification, gap computation, cadence scoring)
+  - Created CompositionAnalyzer.ts (density, balance, text-visual, intent analysis + computeCompositionScore)
+  - Created resolver.ts (resolveSectionPreset, getTransitionGap, computeCompositionScore, resolveVCS)
+  - Created index.ts barrel export
+- Added visualIntent to BaseBlock (schema/types/base.ts)
+- Added sectionType + layoutGrammar to ScreenSchema (schema/types/schema.ts)
+- Wired perBlockGaps into SceneLayoutEngine.ts (scene/SceneLayoutEngine.ts)
+- Wired perBlockGaps into SceneOverflowEngine.ts (layout/SceneOverflowEngine.ts)
+- Fixed preferredWidthRatio bug in BlockStyleContract.ts (was in IntentStyleOverride type)
+- Fixed transition classification order: CTA-zone before section-close, visual-break before milestone, intent-amplify before repetition
+- Wrote 43 VCS engine tests (vcs-engine.test.ts)
+- Build: clean (0 errors)
+- Tests: 444 passed (12 test files, excluding pre-existing store-slices bug)
 
 Stage Summary:
-- FASE 6 is now fully integrated with all 5 features wired end-to-end:
-  6.1 Crash Recovery: saveCrashCheckpoint called before ALL destructive operations
-  6.2 Transaction Rollback: beginTransaction/commitTransaction/rollbackTransaction in recovery-slice + commit() in page-ops
-  6.3 Schema Corruption Recovery: repairSchema + validateAndRepairPages on load + periodic checks
-  6.4 Snapshot Integrity Verification: computePagesHash on save + hash verification on load + post-save verification in auto-save
-  6.5 Safe Mode Boot: safeBootFromStorage on load failure + SafeModeBlockGate for game blocks + feature gates in OverflowIndicator + SceneNavigator + SafeModeBanner with integrity check
+- FASE 11A.4 COMPLETE: Rhythm engine + composition analyzer fully wired into renderer pipeline
+- SceneLayoutEngine and SceneOverflowEngine now accept optional perBlockGaps[] from rhythm engine
+- Backward compatible: if perBlockGaps not provided, falls back to uniform BLOCK_GAP
+- resolveVCS() is the all-in-one entry point: preset + rhythm + composition in one call
+- Pre-existing store-slices test bug (createHistorySlice) not related to 11A.4

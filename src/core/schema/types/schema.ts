@@ -118,6 +118,10 @@ export interface ScreenSchema {
   sectionLabel?: string;
   /** Section label color token */
   sectionColor?: string;
+  /** FASE 11A — Semantic section type (replaces templateType for visual decisions) */
+  sectionType?: import('../../vcs/types').SectionType;
+  /** FASE 11A — Layout grammar (visual structure, overrides templateType-derived default) */
+  layoutGrammar?: import('../../vcs/types').LayoutGrammarKey;
   /** Screen blocks in order */
   blocks: SchemaBlock[];
   /** Tab definitions for icon navigation */

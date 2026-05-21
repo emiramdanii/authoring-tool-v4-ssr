@@ -102,6 +102,15 @@ export interface BaseBlock {
    * This enables: nested blocks, grouping, z-index, layer panel.
    */
   children?: import('./schema').SchemaBlock[];
+  /**
+   * FASE 11A — Visual Intent
+   * WHY this block is visually present. Same block type can have
+   * different visual treatment based on intent.
+   *
+   * Affects: border weight, spacing, accent color intensity, typography emphasis.
+   * Default: derived from BlockStyleContract per block type.
+   */
+  visualIntent?: import('../../vcs/types').VisualIntent;
 }
 
 // ── Block Variant Type ──────────────────────────────────────────

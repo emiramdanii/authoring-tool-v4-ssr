@@ -470,3 +470,214 @@ export const VCS_PRINCIPLES = {
   ASSISTANT_NOT_POLICE: 'Design Assistant, Not Design Police',
   INTENT_DECouples_ROLE: 'Visual Intent Decouples Role From Type',
 } as const;
+
+// ═══════════════════════════════════════════════════════════════
+// FASE 11A.2 — TRANSITION RHYTHM ENGINE TYPES
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Transition kinds — WHY two blocks are next to each other.
+ *
+ * Spacing depends on the TRANSITION between blocks, not on
+ * individual blocks in isolation. This produces natural visual cadence:
+ *
+ *   section-open    → big gap (new section begins)
+ *   heading-entry   → big gap (heading introduces content)
+ *   visual-break    → big gap (visual needs breathing room)
+ *   repetition      → small gap (same-type items are grouped)
+ *   text-separator  → small gap (text between visuals)
+ *   intent-amplify  → medium gap (escalating importance)
+ *   intent-deescalate → small gap (winding down)
+ *   cta-zone        → big gap (call to action stands alone)
+ *   milestone       → big gap (achievement/progress marker)
+ *   mixed-flow      → medium gap (unusual transition, safe default)
+ *   interactive-entry → medium gap (entering interactive section)
+ *   section-close   → big gap (section ending, breathing room)
+ *   default         → base gap (fallback)
+ */
+export type TransitionKind =
+  | 'section-open'
+  | 'section-close'
+  | 'repetition'
+  | 'visual-break'
+  | 'text-separator'
+  | 'heading-entry'
+  | 'interactive-entry'
+  | 'intent-amplify'
+  | 'intent-deescalate'
+  | 'mixed-flow'
+  | 'cta-zone'
+  | 'milestone'
+  | 'default';
+
+/**
+ * Gap multiplier per transition kind.
+ * Applied to RhythmConfig.baseGap to produce the actual gap in px.
+ */
+export const TRANSITION_GAP_MULTIPLIERS: Record<TransitionKind, number> = {
+  'section-open':     2.5,
+  'section-close':    2.0,
+  'repetition':       0.6,
+  'visual-break':     2.0,
+  'text-separator':   0.8,
+  'heading-entry':    2.0,
+  'interactive-entry': 1.8,
+  'intent-amplify':   1.5,
+  'intent-deescalate': 0.7,
+  'mixed-flow':       1.2,
+  'cta-zone':         2.5,
+  'milestone':        2.2,
+  'default':          1.0,
+};
+
+/**
+ * Describes a single transition between two adjacent blocks.
+ */
+export interface BlockTransitionInfo {
+  /** Index of the FIRST block in the transition */
+  fromIndex: number;
+  /** Index of the SECOND block in the transition */
+  toIndex: number;
+  /** Classified transition kind */
+  kind: TransitionKind;
+  /** Computed gap in px */
+  gap: number;
+}
+
+/**
+ * Complete rhythm analysis for a screen's block sequence.
+ */
+export interface ScreenRhythm {
+  /** Number of blocks analyzed */
+  blockCount: number;
+  /** Per-transition analysis (length = blockCount - 1) */
+  transitions: BlockTransitionInfo[];
+  /** Per-block gaps (length = blockCount). First element = 0 (no gap before first block) */
+  perBlockGaps: number[];
+  /** Cadence score 0-100 (measures rhythm quality) */
+  cadenceScore: number;
+  /** Total gap budget (sum of all gaps) */
+  totalGapBudget: number;
+  /** Average gap */
+  averageGap: number;
+  /** Warnings about rhythm issues */
+  warnings: VisualWarning[];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FASE 11A.3 — COMPOSITION ANALYSIS TYPES
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Block classification for composition purposes.
+ * Different from block functionality — this is about visual role.
+ *
+ *   VISUAL:      gambar, chart, code, table, carousel
+ *   INTERACTIVE: quiz, input, cta only
+ *   TEXT:        everything else (def-box, nc-grid, diskusi, etc.)
+ */
+export type BlockCompositionClass = 'visual' | 'interactive' | 'text';
+
+/**
+ * Density analysis of a screen's content.
+ */
+export interface DensityAnalysis {
+  /** Total number of blocks */
+  blockCount: number;
+  /** Estimated total content height in px */
+  totalContentHeight: number;
+  /** Ratio of content height to available height (0-1+, >1 = overflow) */
+  densityRatio: number;
+  /** Whether the screen is over the density limit */
+  isOverDense: boolean;
+  /** Longest consecutive text-only streak */
+  consecutiveTextStreak: number;
+  /** Longest consecutive visual-only streak */
+  consecutiveVisualStreak: number;
+  /** Density assessment label */
+  level: 'sparse' | 'comfortable' | 'dense' | 'overloaded';
+}
+
+/**
+ * Visual balance analysis.
+ * Uses gaussian scoring for smooth degradation instead of cliff-edge penalties.
+ */
+export interface BalanceAnalysis {
+  /** Top-heavy ratio (0 = balanced, >0 = top-heavy, <0 = bottom-heavy) */
+  topHeavyRatio: number;
+  /** Balance score 0-100 (100 = perfectly balanced) */
+  score: number;
+  /** Whether the screen is visually balanced */
+  isBalanced: boolean;
+  /** Distribution of visual weight across 3 zones (top/middle/bottom) */
+  weightDistribution: {
+    top: number;
+    middle: number;
+    bottom: number;
+  };
+}
+
+/**
+ * Text-to-visual ratio analysis.
+ */
+export interface TextVisualRatio {
+  /** Number of text-classified blocks */
+  textBlocks: number;
+  /** Number of visual-classified blocks */
+  visualBlocks: number;
+  /** Number of interactive-classified blocks */
+  interactiveBlocks: number;
+  /** Text-to-visual ratio (text / (text + visual)) */
+  ratio: number;
+  /** Assessment */
+  assessment: 'text-heavy' | 'balanced' | 'visual-heavy' | 'empty';
+}
+
+/**
+ * Visual intent distribution analysis.
+ */
+export interface IntentDistribution {
+  /** Count per intent */
+  counts: Partial<Record<VisualIntent, number>>;
+  /** Dominant intent */
+  dominant: VisualIntent;
+  /** Whether the distribution is varied enough */
+  isVaried: boolean;
+}
+
+/**
+ * Complete composition analysis for a screen.
+ */
+export interface CompositionAnalysis {
+  /** Density analysis */
+  density: DensityAnalysis;
+  /** Balance analysis */
+  balance: BalanceAnalysis;
+  /** Text-to-visual ratio */
+  textVisualRatio: TextVisualRatio;
+  /** Intent distribution */
+  intentDistribution: IntentDistribution;
+  /** Overall composition score 0-100 */
+  score: number;
+  /** Warnings about composition issues */
+  warnings: VisualWarning[];
+}
+
+/**
+ * Block type sets for composition classification.
+ * Only quiz/input/cta are truly interactive in composition terms.
+ * Other "interactive" blocks (checklist, flashcard-set, reveal)
+ * are classified as text because they don't fundamentally change
+ * the visual rhythm like quiz/cta blocks do.
+ */
+export const VISUAL_BLOCK_TYPES = new Set([
+  'gambar', 'chart', 'code', 'tabel', 'carousel',
+]);
+
+export const INTERACTIVE_BLOCK_TYPES = new Set([
+  'kuis', 'input', 'cta',
+]);
+
+export const CTA_BLOCK_TYPES = new Set([
+  'cta', 'hasil',
+]);

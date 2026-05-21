@@ -141,7 +141,35 @@ vi.mock('@/core/editor/patch-history', () => ({
     canRedo: vi.fn(() => false),
     undo: vi.fn(() => null),
     redo: vi.fn(() => null),
+    peekUndoPageIndex: vi.fn(() => undefined),
+    peekRedoPageIndex: vi.fn(() => undefined),
+    peekUndoDescription: vi.fn(() => undefined),
+    peekRedoDescription: vi.fn(() => undefined),
   },
+}));
+
+// Mock StatusToast
+vi.mock('@/components/shared/StatusToast', () => ({
+  showUndoRedoToast: vi.fn(),
+}));
+
+// Mock logger
+vi.mock('@/core/utils/logger', () => ({
+  logger: {
+    warn: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// Mock teacher terminology
+vi.mock('@/core/i18n/teacher-terminology', () => ({
+  teacherTerm: (name: string) => name,
+}));
+
+// Mock SceneRegistry
+vi.mock('@/core/registry/SceneRegistry', () => ({
+  getBlockDefinition: vi.fn(() => null),
 }));
 
 // Mock edit bus

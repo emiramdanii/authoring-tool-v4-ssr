@@ -108,9 +108,18 @@ export function computeScenePlan(
     isCompact: boolean;
     /** Gap between blocks in px */
     blockGap?: number;
+    /**
+     * FASE 11A.4 — Per-block gaps from the rhythm engine.
+     * When provided, each block uses its own transition-based gap
+     * instead of the uniform blockGap.
+     *
+     * perBlockGaps[i] = gap BEFORE block i (0 for first block).
+     * Backward compatible: if not provided, uses uniform blockGap.
+     */
+    perBlockGaps?: number[];
   }
 ): ScenePlan {
-  const { isCompact, blockGap = isCompact ? 8 : 12 } = options;
+  const { isCompact, blockGap = isCompact ? 8 : 12, perBlockGaps } = options;
 
   const availableHeight = scene.h - safeArea.top - safeArea.bottom;
   const blocks = schema.blocks;
@@ -209,11 +218,13 @@ export function computeScenePlan(
     // This keeps blocks on the same scene instead of splitting.
     // NOTE: Skip compression if we already have a cached compressed height
     // (the transaction already made this decision).
-    let prospectiveHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? blockGap : 0);
+    // FASE 11A.4 — Use per-block gap from rhythm engine when available
+    const gap = (perBlockGaps && i < perBlockGaps.length) ? perBlockGaps[i] : blockGap;
+    let prospectiveHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? gap : 0);
     let compressionDecision: CompressionDecision | undefined;
 
     if (compressedH == null && prospectiveHeight > availableHeight && measuredH != null && isBlockTypeCompressionCapable(block.type)) {
-      const remainingSpace = availableHeight - currentHeight - (currentBlockIds.length > 0 ? blockGap : 0);
+      const remainingSpace = availableHeight - currentHeight - (currentBlockIds.length > 0 ? gap : 0);
       const decision = computeCompressionDecision(block, measuredH, remainingSpace);
       if (decision) {
         blockHeight = decision.compressedHeight;
@@ -224,7 +235,7 @@ export function computeScenePlan(
 
     // Check if adding this block would exceed available height
     // (Recompute with potentially compressed blockHeight)
-    const finalHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? blockGap : 0);
+    const finalHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? gap : 0);
 
     const isSplittable = sceneSplittableIds.has(blockId);
 
