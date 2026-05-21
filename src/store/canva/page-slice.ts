@@ -32,14 +32,14 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     // Clear patch history when switching pages to prevent cross-page
     // patch application (patches from page N must not leak into page M)
     patchHistory.clear();
-    set({ currentPageIndex: idx, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    set({ currentPageIndex: idx, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [], activeTabId: null });
   },
 
   addPage: () => {
     const pages = get().pages;
     const newPage = createPage('Halaman ' + (pages.length + 1), 'custom');
     get()._pushHistory();
-    set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null });
+    set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null, activeTabId: null });
     toast.success('Halaman baru ditambahkan');
   },
 
@@ -52,7 +52,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPage = createPageFromPreset(templateType, pages.length);
 
     get()._pushHistory();
-    set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null });
+    set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null, activeTabId: null });
     toast.success(`${newPage.label} ditambahkan`);
   },
 
@@ -95,7 +95,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPages = [...pages];
     newPages.splice(currentPageIndex + 1, 0, clone);
     get()._pushHistory();
-    set({ pages: newPages, currentPageIndex: currentPageIndex + 1, selectedElId: null });
+    set({ pages: newPages, currentPageIndex: currentPageIndex + 1, selectedElId: null, activeTabId: null });
     toast.success('Halaman diduplikat');
   },
 
@@ -112,6 +112,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       pages: newPages,
       currentPageIndex: Math.max(0, currentPageIndex - 1),
       selectedElId: null,
+      activeTabId: null,
     });
     toast.success('Halaman dihapus');
   },
@@ -207,7 +208,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     if (currentPageIndex === fromIndex) newCurrentIdx = toIndex;
     else if (fromIndex < currentPageIndex && toIndex >= currentPageIndex) newCurrentIdx = currentPageIndex - 1;
     else if (fromIndex > currentPageIndex && toIndex <= currentPageIndex) newCurrentIdx = currentPageIndex + 1;
-    set({ pages: newPages, currentPageIndex: newCurrentIdx, selectedElId: null });
+    set({ pages: newPages, currentPageIndex: newCurrentIdx, selectedElId: null, activeTabId: null });
   },
 
 });

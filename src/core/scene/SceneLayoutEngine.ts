@@ -96,7 +96,7 @@ export function computeSafeArea(options: {
     showBottomNav,
     isCompact,
     topNavHeight = isCompact ? 36 : 44,
-    bottomNavHeight = isCompact ? 48 : 72,
+    bottomNavHeight = isCompact ? 48 : 80,
     pagePadding = 16,
   } = options;
 
@@ -588,6 +588,41 @@ export function resolveSceneLayout(
       effectiveHeight = Math.max(minHeight, remainingSpace);
     }
 
+    // ═══ LAYOUT-04 FIX: Clamp autoResize effectiveHeight to maxHeight ═══
+    // When measuredH > maxHeight, CSS clips the block at maxHeight (via
+    // style.maxHeight + overflowY:hidden), but the layout engine still
+    // allocates measuredH worth of vertical space — creating an invisible
+    // gap between the visual block bottom and the next block's top.
+    // Fix: clamp effectiveHeight so layout allocation matches CSS rendering.
+    const overflowRule = getOverflowRule(block.type);
+    if (overflowRule === 'autoResize' && effectiveHeight > maxHeight) {
+      effectiveHeight = maxHeight;
+    }
+
+    // ═══ LAYOUT-06 FIX: Stop advancing past contentBottom ═══
+    // When one block overflows past contentBottom, all subsequent blocks
+    // would be positioned below the visible area and become invisible.
+    // Fix: if currentY already exceeds contentBottom, mark this and all
+    // remaining flow blocks as overflowing and stop advancing.
+    if (currentY >= contentBottom) {
+      resolved.push({
+        block,
+        x: contentX,
+        y: contentBottom,
+        width: contentW,
+        height: 0,
+        position: 'flow',
+        overflow: overflowRule,
+        minHeight,
+        maxHeight: Math.min(maxHeight, contentBottom - contentTop),
+        zIndex: 1,
+        rotation: 0,
+        key: block.id || `flow-${block.type}-${i}`,
+        isOverflowing: true,
+      });
+      continue;
+    }
+
     resolved.push({
       block,
       x: contentX,
@@ -595,7 +630,7 @@ export function resolveSceneLayout(
       width: contentW,
       height: effectiveHeight,
       position: 'flow',
-      overflow: getOverflowRule(block.type),
+      overflow: overflowRule,
       minHeight,
       maxHeight: Math.min(maxHeight, contentBottom - contentTop),
       zIndex: 1,

@@ -39,6 +39,15 @@ export default function PreviewMode() {
   const page = pages[currentPageIndex];
   const totalPages = pages.length;
 
+  // Sync fullscreen state with browser (handles Esc key and other native exits)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // Track direction for page transition animation
   useEffect(() => {
     if (currentPageIndex > prevIdxRef.current) setDirection(1);

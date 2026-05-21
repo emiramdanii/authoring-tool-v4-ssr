@@ -174,7 +174,7 @@ const AccordionView = React.memo(function AccordionView({
       <div
         style={{
           maxHeight: isExpanded ? expandedHeight : 0,
-          overflow: 'hidden',
+          overflow: isExpanded ? 'auto' : 'hidden',
           transition: 'max-height 0.3s ease-out',
         }}
       >
@@ -202,7 +202,7 @@ const RevealSetView = React.memo(function RevealSetView({
       <div
         style={{
           maxHeight: isRevealed ? expandedHeight : (expandedHeight * 0.6),
-          overflow: 'hidden',
+          overflow: isRevealed ? 'auto' : 'hidden',
           transition: 'max-height 0.3s ease-out',
           position: 'relative',
         }}
@@ -266,7 +266,7 @@ const CollapsibleView = React.memo(function CollapsibleView({
       <div
         style={{
           maxHeight: isExpanded ? expandedHeight : (expandedHeight * 0.4),
-          overflow: 'hidden',
+          overflow: isExpanded ? 'auto' : 'hidden',
           transition: 'max-height 0.3s ease-out',
         }}
       >
@@ -319,7 +319,7 @@ const StepRevealView = React.memo(function StepRevealView({
   return (
     <div className="relative w-full">
       {/* Content — shown in full (the block renderer handles step logic internally) */}
-      <div style={{ maxHeight: expandedHeight, overflow: 'hidden' }}>
+      <div style={{ maxHeight: expandedHeight, overflow: 'auto' }}>
         {children}
       </div>
 

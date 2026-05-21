@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { NcGridBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
@@ -8,6 +8,7 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './P
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
+import { useCanvaStore } from '../../../store/canva/store';
 
 // ═══════════════════════════════════════════════════════════════════
 // NC GRID RENDERER — BSNP Norma Card Grid with Creative Variants
@@ -437,6 +438,13 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
   );
   const variant = currentVariant;
 
+  // Persist variant changes to schema (so they survive reload)
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    setCurrentVariant(v);
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
+
   // ── Compression-aware visibility (reveal-set strategy) ───────
   const { isCompressed } = useBlockCompression({
     compression,
@@ -460,7 +468,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
         </div>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-            <VariantSelector active={variant} onChange={setCurrentVariant} />
+            <VariantSelector active={variant} onChange={handleVariantChange} />
           </div>
         )}
         <NcGridStepMode
@@ -496,7 +504,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
         </div>
         {isEditing && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-            <VariantSelector active={variant} onChange={setCurrentVariant} />
+            <VariantSelector active={variant} onChange={handleVariantChange} />
           </div>
         )}
         {cards.map((card, i) => (

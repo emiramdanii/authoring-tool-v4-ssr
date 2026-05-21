@@ -15,6 +15,7 @@ import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
+import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { logger } from '@/core/utils/logger';
 
@@ -165,6 +166,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
       // Clear runtime caches when loading new project data.
       clearCompressedHeightCache();
+      clearMeasurementCache();
 
       const data = JSON.parse(raw);
       if (data.pages && Array.isArray(data.pages)) {
@@ -363,6 +365,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     try {
       // Clear runtime caches when loading new project data from DB.
       clearCompressedHeightCache();
+      clearMeasurementCache();
 
       if (data.pages && Array.isArray(data.pages)) {
         const rawPages: CanvaPage[] = data.pages.map((p) => {
@@ -485,6 +488,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       keysToRemove.forEach(k => localStorage.removeItem(k));
 
       clearCompressedHeightCache();
+      clearMeasurementCache();
     } catch {
       // localStorage might be unavailable — ignore
     }

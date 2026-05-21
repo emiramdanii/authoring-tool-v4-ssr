@@ -27,6 +27,7 @@ import {
   computeSafeArea,
   getSceneResolution,
   getBlockPositionStyle,
+  BLOCK_GAP,
   type SceneResolution,
   type SafeArea,
   type ResolvedBlockPosition,
@@ -284,6 +285,35 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     return { ...effectiveSchema, blocks: filteredBlocks };
   }, [effectiveSchema, activeTabId]);
 
+  // ═══ BUG FIX (LAYOUT-01): perBlockGaps alignment for filtered blocks ═══
+  // vcsPerBlockGaps is computed for screen.blocks (ALL blocks), but
+  // resolveSceneLayout receives tabFilteredSchema.blocks (a filtered subset).
+  // Using the same positional index would return WRONG gaps because the
+  // arrays have different contents at the same index.
+  //
+  // Example: screen.blocks = [A,B,C,D,E] with gaps [0,12,24,8,16]
+  //   Tab filter → [B,D,E]
+  //   Block D (filtered index 1): perBlockGaps[1]=12 (gap for B) ≠ perBlockGaps[3]=8 (gap for D)
+  //
+  // Fix: Build a Map<blockId, gap> from original blocks, then map to filtered blocks.
+  // This also handles the multi-scene case where effectiveSchema.blocks is a subset.
+  const filteredPerBlockGaps = useMemo(() => {
+    if (!vcsPerBlockGaps) return undefined;
+    // Map block IDs to their original gap values
+    const gapMap = new Map<string, number>();
+    screen.blocks.forEach((b, i) => {
+      if (b.id && i < vcsPerBlockGaps.length) {
+        gapMap.set(b.id, vcsPerBlockGaps[i]);
+      }
+    });
+    // Build gaps for filtered blocks in order, preserving each block's original gap
+    return tabFilteredSchema.blocks.map((b, i) => {
+      // First block has no gap before it (consistent with computePerBlockGaps)
+      if (i === 0) return 0;
+      return (b.id ? gapMap.get(b.id) : undefined) ?? BLOCK_GAP.normal;
+    });
+  }, [vcsPerBlockGaps, screen.blocks, tabFilteredSchema]);
+
   // ═══ SCENE LAYOUT RESOLUTION — SINGLE LAYOUT AUTHORITY ═══
   // resolveSceneLayout() is the ONLY source of block positions.
   // Browser flex/grid is NO LONGER the layout authority.
@@ -296,11 +326,12 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     // Cover/hero pages: safe area is 0 (they fill the entire scene)
     const effectiveSafeArea = isPureCoverPage ? DEFAULT_SAFE_AREA : safeArea;
     // Use tabFilteredSchema (derived for current scene + active tab) instead of full screen
-    const resolved = resolveSceneLayout(tabFilteredSchema.blocks, sceneRes, effectiveSafeArea, { isCompact, perBlockGaps: vcsPerBlockGaps });
+    // FIX (LAYOUT-01): Use filteredPerBlockGaps (aligned to filtered blocks) instead of vcsPerBlockGaps
+    const resolved = resolveSceneLayout(tabFilteredSchema.blocks, sceneRes, effectiveSafeArea, { isCompact, perBlockGaps: filteredPerBlockGaps });
 
     return resolved;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tabFilteredSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion]);
+  }, [tabFilteredSchema, sceneRes, safeArea, isPureCoverPage, isCompact, measurementVersion, filteredPerBlockGaps]);
 
   // ═══ CANVAS BLOCK DRAG REORDER ═══════════════════════════════
   // Only enable drag-reorder in canvas mode when onBlockReorder is provided.

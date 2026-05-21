@@ -61,6 +61,7 @@ function clearAllSelections() {
     selectedBlockIds: [] as string[],
     selectedElId: null as string | null,
     selectedElIds: [] as string[],
+    activeTabId: null as string | null,
   };
 }
 

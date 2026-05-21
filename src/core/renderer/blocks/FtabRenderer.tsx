@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { FtabBlock } from '../../schema/types';
 import type { TokenResolver, SchemaRenderMode } from '../types';
 // NOTE: Use React.lazy() to break the circular dependency:
@@ -66,13 +66,23 @@ export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, toke
   const [activeTab, setActiveTab] = React.useState(0);
   const [readTabs, setReadTabs] = React.useState<Set<number>>(new Set());
 
+  // Clamp activeTab when tabs are removed (prevents out-of-bounds access)
+  useEffect(() => {
+    const tabCount = block.tabs?.length ?? 0;
+    if (tabCount > 0 && activeTab >= tabCount) {
+      setActiveTab(0);
+      setReadTabs(new Set());
+    }
+  }, [block.tabs?.length, activeTab]);
+
   const handleTab = (i: number) => {
     setActiveTab(i);
     setReadTabs(prev => new Set([...prev, i]));
   };
 
   const tabs = block.tabs || [];
-  const tab = tabs[activeTab];
+  const safeActiveTab = Math.min(activeTab, Math.max(0, tabs.length - 1));
+  const tab = tabs[safeActiveTab];
 
   // ── Compression-aware visibility (accordion strategy) ────────
   const { isCompressed } = useBlockCompression({
@@ -91,7 +101,7 @@ export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, toke
             tab={t}
             tabIndex={i}
             blockId={block.id!}
-            isActive={activeTab === i}
+            isActive={safeActiveTab === i}
             onActivate={() => handleTab(i)}
             tokens={tokens}
             showReadMarker={block.showReadMarker}

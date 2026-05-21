@@ -394,7 +394,7 @@ export function connectHistoryToEditBus(): () => void {
           // Merge: keep the oldest inverse, accumulate forward patches
           patchHistory.replaceEntry(lastIdx, {
             patches: [...lastEntry.patches, ..._immerPatches.forward],
-            inversePatches: _immerPatches.inverse, // Keep the OLDEST inverse
+            inversePatches: lastEntry.inversePatches, // Keep the OLDEST inverse (pre-group state)
             source: event.patch.source ?? 'user',
             description: lastEntry.description,
             timestamp: lastEntry.timestamp, // Keep original timestamp

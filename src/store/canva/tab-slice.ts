@@ -72,6 +72,12 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
   },
 
   // ── Remove a tab ──────────────────────────────────────────────
+  // TAB-06 FIX: When a tab is removed, its blockIds are orphaned —
+  // they still exist in schema.blocks but aren't in any tab's blockIds.
+  // Under tab filtering (SchemaRenderer), orphaned blocks are excluded
+  // because the filter only shows blocks in the active tab's blockIds.
+  // Fix: add the removed tab's blockIds to all remaining tabs so the
+  // blocks remain visible regardless of which tab is active.
   removeSceneTab: (tabId) => {
     const { pages, currentPageIndex, activeTabId, _pushHistory } = get();
     _pushHistory();
@@ -79,7 +85,19 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
     const page = pages[currentPageIndex];
     if (!page?.schema) return;
 
-    const updatedTabs = (page.schema.tabs || []).filter(t => t.id !== tabId);
+    const removedTab = (page.schema.tabs || []).find(t => t.id === tabId);
+    const removedBlockIds = removedTab?.blockIds || [];
+    const updatedTabs = (page.schema.tabs || [])
+      .filter(t => t.id !== tabId)
+      .map(t => {
+        // Reassign removed tab's blockIds to each remaining tab (deduped)
+        if (removedBlockIds.length === 0) return t;
+        const merged = [...t.blockIds];
+        for (const bid of removedBlockIds) {
+          if (!merged.includes(bid)) merged.push(bid);
+        }
+        return { ...t, blockIds: merged };
+      });
 
     set({
       pages: pages.map((p, i) =>

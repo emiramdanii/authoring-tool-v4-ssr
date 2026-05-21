@@ -170,4 +170,6 @@ export type EditEvent =
   | { type: 'edit-start'; blockId: string; blockType: string }
   | { type: 'edit-end'; blockId: string }
   | { type: 'patch'; patch: SchemaPatch }
-  | { type: 'batch-patch'; patches: SchemaPatch[] };
+  | { type: 'batch-patch'; patches: SchemaPatch[] }
+  | { type: 'cross-page'; operation: string; pageIndex: number; blockId?: string; blockType?: string; details?: Record<string, unknown> }
+  | { type: 'snapshot-op'; operation: string; pageIndex: number; blockId?: string; blockType?: string; details?: Record<string, unknown> };

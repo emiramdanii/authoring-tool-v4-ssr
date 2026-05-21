@@ -61,6 +61,8 @@ function updateSchemaBlock(
   }
 
   if (updated) {
+    // [PERSIST-01] Capture snapshot before projection sync writes so undo can revert
+    useCanvaStore.getState()._pushHistory();
     useCanvaStore.setState({ pages });
   }
 

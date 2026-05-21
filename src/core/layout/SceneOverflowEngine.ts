@@ -179,9 +179,13 @@ export function computeScenePlan(
     const block = blocks[i];
     const blockId = block.id || `block-${i}`;
 
-    // Skip absolute-positioned blocks (they overlay, not flow)
-    if (block.layout?.position === 'absolute') {
-      // Absolute blocks are included in the first scene only
+    // Skip absolute-positioned blocks and full-page blocks (cover, hero, etc.)
+    // Full-page blocks fill the entire scene — they should never be split
+    // or counted as flow content. Legacy cover blocks from genCoverSchema()
+    // have no `layout` property, so we detect them by type via isFullPageBlockType().
+    const isFullPageBlock = isFullPageBlockType(block.type) || block.layout?.position === 'absolute';
+    if (isFullPageBlock) {
+      // Absolute/full-page blocks are included in the first scene only
       if (sceneIndex === 0) {
         currentBlockIds.push(blockId);
       }

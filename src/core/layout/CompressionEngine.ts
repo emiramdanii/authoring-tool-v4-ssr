@@ -91,6 +91,10 @@ export interface CompressionDecision {
   savingsRatio: number;
   /** Parameters for the compression renderer */
   params: CompressionParams;
+  /** Whether content was hard-clipped because no compression ratio was small enough.
+   *  When true, renderers should show a visual indicator ("…" or fade-out gradient)
+   *  to inform the user that content is truncated. */
+  clipped?: boolean;
 }
 
 /** Parameters passed to the compressed block renderer */
@@ -336,9 +340,21 @@ export function computeCompressionDecision(
         break;
       }
     }
-    // If still overflows, cap at available height
+    // If still overflows, cap at available height and mark as clipped
     if (effectiveCompressedHeight > availableHeight) {
       effectiveCompressedHeight = availableHeight;
+      // Mark as clipped so the renderer can show a visual indicator
+      // ("…" or fade-out gradient) to inform the user content is truncated
+      return {
+        blockId: block.id || block.type,
+        isCompressed: true,
+        strategy: effectiveStrategy,
+        compressedHeight: effectiveCompressedHeight,
+        expandedHeight: measuredHeight,
+        savingsRatio: savingsRatio,
+        params: getDefaultParams(effectiveStrategy, itemCount),
+        clipped: true,
+      };
     }
   }
 

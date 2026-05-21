@@ -191,6 +191,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               pages: newPages,
               // Navigate to the target page so the user sees the undo result
               currentPageIndex: pageIndex,
+              // [UNDO-01 FIX] Keep snapshot index in sync with patch history
+              _historyIdx: Math.max(0, get()._historyIdx - 1),
               selectedBlockId: null,
               selectedBlockType: null,
               editingBlockId: null,
@@ -253,6 +255,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               pages: newPages,
               // Navigate to the target page so the user sees the redo result
               currentPageIndex: pageIndex,
+              // [UNDO-01 FIX] Keep snapshot index in sync with patch history
+              _historyIdx: Math.min(get()._history.length - 1, get()._historyIdx + 1),
               selectedBlockId: null,
               selectedBlockType: null,
               editingBlockId: null,

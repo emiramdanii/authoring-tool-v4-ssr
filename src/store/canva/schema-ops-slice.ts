@@ -18,6 +18,7 @@ import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/sc
 import { isCompositeBlock } from '@/core/layout/SchemaTraversal';
 import { findBlockOwner, commitSchemaUpdate } from './schema-helpers';
 import { removeCompressedHeight } from '@/core/schema/session-state';
+import { removeMeasurement } from '@/core/layout/BlockMeasurer';
 import { saveCrashCheckpoint } from '@/core/recovery';
 
 export type SchemaOpsSlice = Pick<
@@ -218,7 +219,10 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
 
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
-    for (const deletedId of blockIds) removeCompressedHeight(deletedId);
+    for (const deletedId of blockIds) {
+      removeCompressedHeight(deletedId);
+      removeMeasurement(deletedId);
+    }
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success(`${blockIds.length} block dihapus`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },

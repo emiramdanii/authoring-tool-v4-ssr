@@ -30,6 +30,7 @@ export default function PresentMode() {
   });
 
   const canvasRef = useRef<HTMLDivElement>(null);
+  const pageContainerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -44,6 +45,15 @@ export default function PresentMode() {
   const page = pages[currentPageIndex];
   const totalPages = pages.length;
 
+  // Sync fullscreen state with browser (handles Esc key and other native exits)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // Track direction for animation
   useEffect(() => {
     if (currentPageIndex > prevIdxRef.current) setDirection(1);
@@ -52,17 +62,24 @@ export default function PresentMode() {
   }, [currentPageIndex]);
 
   // ResizeObserver for responsive scaling
+  // Uses the INNER page container (below the SceneTabBar) for height measurement.
+  // The outer container includes the tab bar height, which would cause the
+  // page to be scaled too small and clip at the bottom.
   useEffect(() => {
     const el = canvasRef.current;
+    const innerEl = pageContainerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(() => {
+      // Prefer inner container dimensions (excludes SceneTabBar height)
+      const measureEl = innerEl || el;
       setScale(computeSceneScale(
         { w: ratio.w, h: ratio.h },
-        { w: el.clientWidth || 800, h: el.clientHeight || 500 },
+        { w: measureEl.clientWidth || 800, h: measureEl.clientHeight || 500 },
         0,
       ));
     });
     observer.observe(el);
+    if (innerEl) observer.observe(innerEl);
     return () => observer.disconnect();
   }, [ratio]);
 
@@ -78,6 +95,7 @@ export default function PresentMode() {
 
   // Auto-hide controls after 3 seconds of inactivity
   const resetHideTimer = useCallback(() => {
+    setShowControls(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
   }, []);
@@ -104,6 +122,14 @@ export default function PresentMode() {
         return;
       }
       if (e.key === 'ArrowRight' || e.key === ' ') {
+        // Don't intercept Space when a button is focused — let the browser
+        // activate it natively (e.g. quiz "Lanjut" button)
+        if (e.key === ' ') {
+          const el = document.activeElement;
+          if (el instanceof HTMLButtonElement || el?.getAttribute('role') === 'button') {
+            return; // Let browser handle Space on buttons
+          }
+        }
         e.preventDefault();
         if (currentPageIndex < totalPages - 1) goPage(currentPageIndex + 1);
         return;
@@ -163,13 +189,14 @@ export default function PresentMode() {
   return (
     <div
       className="fixed inset-0 bg-black flex flex-col select-none"
-      onMouseMove={resetHideTimer}
+      onPointerMove={resetHideTimer}
+      onPointerDown={resetHideTimer}
     >
       {/* Main canvas area */}
       <div ref={canvasRef} className="flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden">
         {/* FASE 10: Scene Tab Bar for present mode */}
         <SceneTabBar isCompact={false} className="w-full" />
-        <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+        <div ref={pageContainerRef} className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
         <PageTransition
           pageKey={`present-page-${currentPageIndex}`}
           direction={direction as PageDirection}

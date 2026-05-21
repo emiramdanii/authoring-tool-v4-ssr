@@ -167,6 +167,15 @@ function PlayCanvas() {
   const hasScore = totalMaxVal > 0;
   const tier = hasScore ? getScoreTier(totalPctVal) : null;
 
+  // Sync fullscreen state with browser (handles Esc key and other native exits)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // Track direction for animation
   useEffect(() => {
     if (interactivePageIdx > prevIdxRef.current) setDirection(1);

@@ -227,6 +227,76 @@ vi.mock('immer', async () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
+// Mock page-ops-slice dependencies that create circular imports
+// (schema-apply → store → page-ops-slice = undefined at init time)
+// ═══════════════════════════════════════════════════════════════════
+
+vi.mock('@/core/schema/immutable', async () => {
+  const actual = await vi.importActual<typeof import('@/core/schema/immutable')>('@/core/schema/immutable');
+  return {
+    ...actual,
+    splitScene: vi.fn(() => null),
+    mergeScene: vi.fn(() => null),
+    findBlockById: vi.fn(() => null),
+    moveBlockNested: vi.fn(() => []),
+  };
+});
+
+vi.mock('@/core/schema/scene-transaction', () => ({
+  createTransaction: vi.fn(() => ({
+    splitAt: vi.fn(),
+    custom: vi.fn(),
+    commit: vi.fn(() => ({ success: false, error: 'mocked' })),
+  })),
+}));
+
+vi.mock('@/core/schema/schema-apply', () => ({
+  rebalanceFromScenePlan: vi.fn(() => ({ success: false, error: 'mocked' })),
+  promoteSceneSplitToPage: vi.fn(() => ({ success: false, error: 'mocked' })),
+  mergePagesTransaction: vi.fn(() => ({ success: false, error: 'mocked' })),
+}));
+
+vi.mock('@/core/layout/SceneOverflowEngine', () => ({
+  computeScenePlan: vi.fn(() => ({ isSingleScene: true, totalScenes: 1 })),
+}));
+
+vi.mock('@/core/scene/SceneLayoutEngine', () => ({
+  getSceneResolution: vi.fn(() => ({ width: 1280, height: 720 })),
+  computeSafeArea: vi.fn(() => ({ top: 0, right: 0, bottom: 0, left: 0 })),
+  DEFAULT_SAFE_AREA: { top: 0, right: 0, bottom: 0, left: 0 },
+}));
+
+vi.mock('@/core/vcs/TransitionRhythmEngine', () => ({
+  computePerBlockGaps: vi.fn(() => ({})),
+}));
+
+vi.mock('@/core/schema/validation', () => ({
+  assertValidSchema: vi.fn(),
+}));
+
+vi.mock('@/core/schema/session-state', async () => {
+  const actual = await vi.importActual<typeof import('@/core/schema/session-state')>('@/core/schema/session-state');
+  return {
+    ...actual,
+    assertDocumentPurity: vi.fn(),
+  };
+});
+
+vi.mock('@/core/recovery', () => ({
+  saveCrashCheckpoint: vi.fn(),
+  transactionRollback: {
+    checkpoint: vi.fn(() => 'tx-mock'),
+    commit: vi.fn(),
+    abort: vi.fn(),
+  },
+}));
+
+vi.mock('@/store/canva/schema-helpers', () => ({
+  findBlockOwner: vi.fn(() => null),
+  commitSchemaUpdate: vi.fn((_schema: unknown, newBlocks: unknown) => ({ blocks: newBlocks })),
+}));
+
+// ═══════════════════════════════════════════════════════════════════
 // Now import the slices
 // ═══════════════════════════════════════════════════════════════════
 
@@ -235,6 +305,7 @@ import { createElementSlice } from '@/store/canva/element-slice';
 import { createHistorySlice } from '@/store/canva/history-slice';
 import { createViewportSlice, createSchemaCRDSlice, createSchemaOpsSlice, createPageOpsSlice } from '@/store/canva/ui-slice';
 import { createBackgroundSlice } from '@/store/canva/background-slice';
+import { createSessionSlice } from '@/store/canva/session-slice';
 import type { CanvaState } from '@/store/canva/types';
 import type { CanvaPage, CanvaElement } from '@/components/canva/types';
 import { RATIOS, DEFAULT_NAV_CONFIG } from '@/components/canva/types';
@@ -329,6 +400,7 @@ describe('Page Slice', () => {
       ...createPageSlice(...a),
       ...createElementSlice(...a),
       ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
+      ...createSessionSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -417,6 +489,7 @@ describe('Element Slice', () => {
       ...createPageSlice(...a),
       ...createElementSlice(...a),
       ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
+      ...createSessionSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -587,6 +660,7 @@ describe('History Slice', () => {
       ...createPageSlice(...a),
       ...createElementSlice(...a),
       ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
+      ...createSessionSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -670,6 +744,7 @@ describe('UI Slice', () => {
       ...createPageSlice(...a),
       ...createElementSlice(...a),
       ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
+      ...createSessionSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });
@@ -820,6 +895,7 @@ describe('Background Slice', () => {
       ...createPageSlice(...a),
       ...createElementSlice(...a),
       ...createViewportSlice(...a), ...createSchemaCRDSlice(...a), ...createSchemaOpsSlice(...a), ...createPageOpsSlice(...a),
+      ...createSessionSlice(...a),
       ...createBackgroundSlice(...a),
     })));
   });

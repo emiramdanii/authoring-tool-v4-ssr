@@ -67,13 +67,14 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     newPages[currentPageIndex] = { ...sourcePage, schema: commitSchemaUpdate(sourceSchema, newSourceBlocks) };
     newPages[targetPageIndex] = { ...targetPage, schema: commitSchemaUpdate(targetSchema, newTargetBlocks) };
 
+    // [UNDO-03] Emit as 'cross-page' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId: newTargetBlock.id ?? blockId, blockType: movedBlock.type,
-        pageIndex: targetPageIndex, patch: { _movedToPage: targetPageIndex },
-        timestamp: Date.now(), source: 'user',
-      },
+      type: 'cross-page',
+      operation: 'moveBlockToPage',
+      pageIndex: targetPageIndex,
+      blockId: newTargetBlock.id ?? blockId,
+      blockType: movedBlock.type,
+      details: { _movedToPage: targetPageIndex },
     });
 
     set({ pages: newPages, currentPageIndex: targetPageIndex, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
@@ -136,12 +137,14 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
 
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
+    // [UNDO-03] Emit as 'cross-page' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId, blockType: 'split', pageIndex: currentPageIndex,
-        patch: { _splitAt: blockId, newPageId }, timestamp: Date.now(), source: 'user',
-      },
+      type: 'cross-page',
+      operation: 'splitPageAtBlock',
+      pageIndex: currentPageIndex,
+      blockId,
+      blockType: 'split',
+      details: { _splitAt: blockId, newPageId },
     });
 
     toast.success('Halaman berhasil di-split', {
@@ -183,12 +186,14 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     newPages.splice(currentPageIndex + 1, 1);
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
+    // [UNDO-03] Emit as 'cross-page' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId: 'merge', blockType: 'merge', pageIndex: currentPageIndex,
-        patch: { _mergedWith: currentPageIndex + 1 }, timestamp: Date.now(), source: 'user',
-      },
+      type: 'cross-page',
+      operation: 'mergeWithNextPage',
+      pageIndex: currentPageIndex,
+      blockId: 'merge',
+      blockType: 'merge',
+      details: { _mergedWith: currentPageIndex + 1 },
     });
 
     // FASE 6: Commit transaction checkpoint — merge succeeded
@@ -220,12 +225,14 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
 
     const newBlocks = moveBlockNested(blocks, { blockId, targetContainer, toIndex });
 
+    // [UNDO-04] Emit as 'snapshot-op' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId, blockType: block.type, pageIndex: currentPageIndex,
-        patch: { _movedToContainer: targetContainer }, timestamp: Date.now(), source: 'user',
-      },
+      type: 'snapshot-op',
+      operation: 'moveBlockToContainer',
+      pageIndex: currentPageIndex,
+      blockId,
+      blockType: block.type,
+      details: { _movedToContainer: targetContainer },
     });
 
     const newPages = [...pages];

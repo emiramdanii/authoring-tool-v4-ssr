@@ -18,6 +18,7 @@ import { ensurePageSchema, generateBlockId } from '@/core/schema/ensure-schema';
 import { duplicateBlock as duplicateBlockImmutable, findBlockById, insertBlockNested, type ContainerRef } from '@/core/schema/immutable';
 import { findBlockOwner, commitSchemaUpdate, type BlockOwner } from './schema-helpers';
 import { removeCompressedHeight } from '@/core/schema/session-state';
+import { removeMeasurement } from '@/core/layout/BlockMeasurer';
 import { saveCrashCheckpoint } from '@/core/recovery';
 
 export type SchemaCRDSlice = Pick<
@@ -177,6 +178,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     removeCompressedHeight(blockId);
+    removeMeasurement(blockId);
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
     toast.success(`Block "${blockName}" dihapus`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
@@ -299,12 +301,14 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const originalBlock = findBlockById(blocks, blockId);
     const blockType = originalBlock?.type || 'unknown';
 
+    // [UNDO-04] Emit as 'snapshot-op' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId: clonedBlock.id ?? blockId, blockType, pageIndex: currentPageIndex,
-        patch: { _duplicated: true }, timestamp: Date.now(), source: 'user',
-      },
+      type: 'snapshot-op',
+      operation: 'duplicateBlock',
+      pageIndex: currentPageIndex,
+      blockId: clonedBlock.id ?? blockId,
+      blockType,
+      details: { _duplicated: true },
     });
 
     const newPages = [...pages];
@@ -411,13 +415,14 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
 
     const newBlocks = insertBlockNested(blocks, newBlock as unknown as SchemaBlock, container, toIndex);
 
+    // [UNDO-04] Emit as 'snapshot-op' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
-      type: 'patch',
-      patch: {
-        blockId: newBlock.id as string, blockType, pageIndex: currentPageIndex,
-        patch: { _addedToContainer: true, container: container.type },
-        timestamp: Date.now(), source: 'user',
-      },
+      type: 'snapshot-op',
+      operation: 'addSchemaBlockToContainer',
+      pageIndex: currentPageIndex,
+      blockId: newBlock.id as string,
+      blockType,
+      details: { _addedToContainer: true, container: container.type },
     });
 
     const newPages = [...pages];
