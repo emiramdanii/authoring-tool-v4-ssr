@@ -244,7 +244,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             {isContentCollapsed && (
               <button
                 onClick={expandContent}
-                className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+                className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
                 style={{
                   background: tokens.accentBg(colorKey, 0.06),
                   ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }),
@@ -361,7 +361,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             )}
             {isContentCollapsed && (
               <button onClick={expandContent}
-                className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+                className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
                 style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }) }}>
                 <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
               </button>
@@ -431,7 +431,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           </div>
           {isContentCollapsed && (
             <button onClick={expandContent}
-              className="flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg transition-colors hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+              className={`flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}
               style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { fontSize: isCompact ? 8 : 9, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }) }}>
               <ChevronDown size={8} /> Selengkapnya
             </button>

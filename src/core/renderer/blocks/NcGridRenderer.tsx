@@ -88,7 +88,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
   const isLong = bodyText.length > 80;
 
   return (
-    <div className="rounded-xl border transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)] active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 group"
+    <div className={`rounded-xl border ${tokens.iosCardTw()} min-w-0 group`}
       style={{
         background: cardBg,
         borderColor: cardBorder,
@@ -98,7 +98,6 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         overflow: 'hidden',
         position: 'relative',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
-        transition: 'all 0.2s ease',
       }}>
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-xl"
@@ -128,7 +127,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
       />
       {/* Expand toggle for long text in compact mode */}
       {isLong && isCompact && (
-        <button className="mt-1 font-bold hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+        <button className={`mt-1 font-bold ${tokens.iosExpandTw()}`}
           style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
           onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
           {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
@@ -171,7 +170,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
 
   return (
     <div
-      className="rounded-xl hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)] active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 group"
+      className={`rounded-xl ${tokens.iosCardTw()} min-w-0 group`}
       style={{
         background: cardBg,
         borderColor: cardBorder,
@@ -182,7 +181,6 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
         overflow: 'hidden',
         position: 'relative',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
-        transition: 'all 0.2s ease',
         cursor: 'pointer',
       }}
       onClick={() => { if (isLong) setExpanded(!expanded); }}
@@ -236,7 +234,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
           {/* Expand toggle for long text */}
           {isLong && (
             <button
-              className="mt-1 font-bold hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+              className={`mt-1 font-bold ${tokens.iosExpandTw()}`}
               style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
             >
@@ -258,7 +256,6 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
   isCompact: boolean;
   interactive?: boolean;
 }) {
-  const [hovered, setHovered] = React.useState(false);
   const [expanded, setExpanded] = React.useState(false);
   const titleEditor = useInlineEditor({
     blockId,
@@ -276,12 +273,12 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
   });
 
   const cardColor = tokens.color(card.color);
-  const cardBg = tokens.colorAlpha(card.color, hovered ? 0.12 : 0.06);
-  const cardBorder = tokens.colorAlpha(card.color, hovered ? 0.35 : 0.18);
+  const cardBg = tokens.colorAlpha(card.color, 0.06);
+  const cardBorder = tokens.colorAlpha(card.color, 0.18);
 
   return (
     <div
-      className="active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 group"
+      className={`${tokens.iosCardTw()} min-w-0 group hover:bg-[${tokens.colorAlpha(card.color, 0.12)}] hover:border-[${tokens.colorAlpha(card.color, 0.35)}]`}
       style={{
         borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
         background: cardBg,
@@ -292,12 +289,9 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         alignItems: expanded ? 'flex-start' : 'center',
         gap: isCompact ? '5px' : '7px',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
         maxWidth: '100%',
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); if (expanded) setExpanded(false); }}
       onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
     >
       {/* Icon circle */}

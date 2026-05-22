@@ -91,7 +91,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           ))}
         </div>
         <div>
-          <button className="px-5 py-2 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer"
+          <button className={`px-5 py-2 rounded-xl font-bold ${tokens.iosButtonTw(true)}`}
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
               ...tokens.iosTypography('callToAction', { color: tokens.color('p') }),
@@ -146,7 +146,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]?.trim().length > 0;
         return (
-          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl p-3.5 mb-10 transition-all min-w-0"
+          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl p-3.5 mb-10 min-w-0"
             style={{
               background: tokens.color('card'),
               border: `1px solid ${tokens.subtleBorder(0.08)}`,
@@ -193,7 +193,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {/* Submit button */}
       {interactive && !submitted && (
         <button
-          className="w-full py-2.5 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+          className={`w-full py-2.5 rounded-xl font-bold ${tokens.iosButtonTw(allAnswered)}`}
           onClick={handleSubmit}
           disabled={!allAnswered}
           style={{

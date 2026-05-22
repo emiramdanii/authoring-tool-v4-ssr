@@ -7,7 +7,7 @@
 import { alpha } from '@/lib/color-palette';
 import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
-import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
+import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -264,6 +264,64 @@ export class TokenResolver {
     return {
       padding: `${spec.py}px ${spec.px}px`,
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // iOS INTERACTION — Tailwind class compositions for consistent UX
+  // ═══════════════════════════════════════════════════════════════════
+  // Renderers MUST use these helpers instead of hand-coding
+  // hover/focus/active/transition classes. This ensures consistent
+  // timing, easing, and interaction patterns across the entire app.
+  //
+  // Every method returns a Tailwind class string. When `interactive`
+  // is false, returns a minimal non-interactive string (cursor-default).
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** iOS CTA button — scale hover/press, targeted transition, focus ring.
+   *  Use for: primary action buttons ("Mulai", "Kirim", "Lanjut") */
+  iosButtonTw(interactive?: boolean): string {
+    if (!interactive) return 'cursor-default';
+    return IOS_INTERACTION.tw.button + ' cursor-pointer';
+  }
+
+  /** iOS interactive card — lift hover, settle press, focus ring.
+   *  Use for: NcGrid cards, selectable cards */
+  iosCardTw(): string {
+    return IOS_INTERACTION.tw.card;
+  }
+
+  /** iOS quiz option — subtle scale (1.02) for multi-option grids.
+   *  Use for: Kuis A/B option buttons */
+  iosQuizOptionTw(interactive?: boolean): string {
+    if (!interactive) return 'cursor-default';
+    return IOS_INTERACTION.tw.quizOption + ' cursor-pointer';
+  }
+
+  /** iOS tab/pill toggle — bg/border/color transition, opacity hover.
+   *  Use for: MateriTabBar tabs, variant selector pills */
+  iosTabTw(interactive?: boolean): string {
+    if (!interactive) return 'cursor-default';
+    return IOS_INTERACTION.tw.tab + ' cursor-pointer';
+  }
+
+  /** iOS accordion toggle — bg/color transition, opacity hover.
+   *  Use for: MateriSection accordion headers */
+  iosAccordionTw(interactive?: boolean): string {
+    if (!interactive) return 'cursor-default';
+    return IOS_INTERACTION.tw.accordion + ' cursor-pointer';
+  }
+
+  /** iOS expand/collapse button — opacity hover + scale press.
+   *  Use for: "Selengkapnya", "Sembunyikan" expand buttons */
+  iosExpandTw(interactive?: boolean): string {
+    if (!interactive) return 'cursor-default';
+    return IOS_INTERACTION.tw.expandButton + ' cursor-pointer';
+  }
+
+  /** iOS focus ring — accessible outline only.
+   *  Use for: elements that need focus ring without other interactions */
+  iosFocusRing(): string {
+    return IOS_INTERACTION.tw.focusRing;
   }
 }
 

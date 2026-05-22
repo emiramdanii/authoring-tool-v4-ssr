@@ -57,7 +57,7 @@ function VariantSelector({
             ...tokens.iosTypography('caption1', { fontWeight: 700 }),
             border: 'none',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
+            transition: 'all 0.15s ease',
             background: active === v.key ? tokens.accentBg('y', 0.12) : 'transparent',
             color: active === v.key ? tokens.color('y') : tokens.muted(0.65),
           }}
@@ -132,7 +132,7 @@ function KuisVariantKartu({
                 disabled={isAnswered}
                 onClick={() => onAnswer(current, i)}
                 aria-pressed={answers[current] === i}
-                className={`p-4 rounded-xl font-bold text-left transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''} ${!isAnswered ? 'hover:scale-[1.01] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent' : ''}`}
+                className={`p-4 rounded-xl font-bold text-left min-w-0 ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
                   ...tokens.iosTypography('body', { fontWeight: 700 }),
                   background: bg,
@@ -218,7 +218,7 @@ function KuisVariantRingkas({
       <div className="flex items-center gap-1.5 mb-2">
         <div className="h-1 flex-1 rounded-full overflow-hidden" style={{ background: tokens.subtleBg(0.08) }}>
           <div
-            className="h-full rounded-full transition-all"
+            className="h-full rounded-full transition-[width] duration-300 ease-out"
             style={{
               width: (totalAnswered / questionsLength) * 100 + '%',
               background: tokens.color('y'),
@@ -258,7 +258,7 @@ function KuisVariantRingkas({
                 disabled={isAnswered}
                 onClick={() => onAnswer(current, i)}
                 aria-pressed={answers[current] === i}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all ${isCompact ? 'canvas-truncate-1' : ''} ${!isAnswered ? 'hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent' : ''}`}
+                className={`px-3 py-1.5 rounded-full font-bold ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
                   ...tokens.iosTypography('caption1', { fontWeight: 700 }),
                   background: bg,
@@ -461,7 +461,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
           {/* Replay button */}
           {interactive && (
-              <button className="rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+              <button className={`rounded-xl font-bold ${tokens.iosButtonTw(true)}`}
                 onClick={() => { setAnswers({}); setCurrent(0); hasReportedRef.current = false; playSound('click'); }}
                 style={{
                   ...tokens.iosTypography('callToAction', {}),
@@ -541,7 +541,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       <div className="h-1 rounded-full overflow-hidden"
         style={{ background: tokens.subtleBg(0.08) }}
         role="progressbar" aria-label={`Progres kuis ${totalAnswered} dari ${questions.length}`} aria-valuenow={totalAnswered} aria-valuemin={0} aria-valuemax={questions.length}>
-        <div className="h-full rounded-full transition-all"
+        <div className="h-full rounded-full transition-[width] duration-300 ease-out"
           style={{
             width: (totalAnswered / questions.length) * 100 + '%',
             background: tokens.color('y'),
@@ -588,7 +588,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                     disabled={isAnswered}
                     onClick={() => handleAnswer(current, i)}
                     aria-pressed={answers[current] === i}
-                    className={`p-2.5 rounded-xl font-bold text-center transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''} ${!isAnswered ? 'hover:scale-[1.02] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent' : ''}`}
+                    className={`p-2.5 rounded-xl font-bold text-center min-w-0 ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
                       ...tokens.iosTypography('subheadline', { fontWeight: 700 }),
                       background: bg,
@@ -665,7 +665,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
       {/* ── Next button — premium spring ─────────────────────────── */}
       {answers[current] !== undefined && current < questions.length - 1 && (
-          <button className="rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+          <button className={`rounded-xl font-bold ${tokens.iosButtonTw(true)}`}
             aria-label="Lanjut ke soal berikutnya"
             onClick={() => { setCurrent(current + 1); playSound('click'); }}
             style={{

@@ -123,7 +123,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
               {/* Thin progress bar */}
               <div className="mt-1.5 w-full h-1 rounded-full overflow-hidden"
                 style={{ background: tokens.subtleBg(0.06) }}>
-                <div className="h-full rounded-full transition-all duration-1000 ease-out"
+                <div className="h-full rounded-full transition-[width] duration-1000 ease-out"
                   style={{
                     width: `${totalPct}%`,
                     background: tokens.color(tierConfig.color),
@@ -192,7 +192,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
           {/* Call-to-action for next meeting — navigates to next page */}
           {interactive && (
-            <button className="w-full mt-3 py-2.5 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer"
+            <button className={`w-full mt-3 py-2.5 rounded-xl font-bold ${tokens.iosButtonTw(interactive)}`}
               onClick={() => {
                 playSound('click');
                 // Navigate to next page if available

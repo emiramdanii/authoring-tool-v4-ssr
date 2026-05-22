@@ -93,7 +93,7 @@ function MateriTabBar({
             key={tab.id}
             onClick={() => onSelect(i)}
             type="button"
-            className={`${!isActive ? 'hover:opacity-80' : ''} active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent`}
+            className={tokens.iosTabTw(interactive)}
             style={{
               ...tokens.iosTypography('footnote', { fontWeight: isActive ? 600 : 400 }),
               padding: `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px`,
@@ -102,7 +102,6 @@ function MateriTabBar({
               background: isActive ? tokens.accentBg(accentColor || 'p', 0.08) : 'transparent',
               color: isActive ? tokens.accentText(accentColor || 'p') : tokens.muted(0.85),
               cursor: interactive ? 'pointer' : 'default',
-              transition: 'all 0.2s ease',
             }}
           >
             {tab.icon && <span style={{ marginRight: 4 }}>{tab.icon}</span>}
@@ -144,7 +143,7 @@ function OverflowIndicator({
       {onSplit && interactive && (
         <button
           onClick={onSplit}
-          className="hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+          className={`hover:opacity-80 active:scale-[0.97] ${tokens.iosFocusRing()}`}
           style={{
             padding: isCompact ? '3px 8px' : '4px 12px',
             borderRadius: 8,
@@ -157,7 +156,6 @@ function OverflowIndicator({
             display: 'flex',
             alignItems: 'center',
             gap: 4,
-            transition: 'all 0.15s ease',
           }}
         >
           <Scissors size={isCompact ? 10 : 12} />
@@ -355,8 +353,8 @@ function MateriVariantKlasik({
                   }}
                 >
                   <button
-                    onClick={() => toggleSection(i)}
-                    className="w-full flex items-center gap-2 text-left transition-colors hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+            onClick={() => toggleSection(i)}
+            className={`w-full flex items-center gap-2 text-left ${tokens.iosAccordionTw(interactive)}`}
                     style={{
                       padding: isCompact ? '5px 10px' : '7px 12px',
                       cursor: 'pointer',
@@ -530,7 +528,7 @@ function MateriVariantKlasik({
         <div style={{ margin: isCompact ? '0 14px 8px' : '0 20px 12px' }}>
           <button
             onClick={showMore}
-            className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+            className={`flex items-center justify-center gap-1 w-full py-2 rounded-xl ${tokens.iosExpandTw(interactive)}`}
             style={{
               background: tokens.accentBg(accentColor, 0.08),
               color: tokens.accentText(accentColor),
@@ -1034,7 +1032,7 @@ function MateriVariantPill({
           <button
             onClick={() => { setShowSelfCheck(!showSelfCheck); if (!showSelfCheck) fireConfettiMini(); }}
             type="button"
-            className="flex items-center gap-1.5 w-full text-left hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+            className={`flex items-center gap-1.5 w-full text-left ${tokens.iosExpandTw(interactive)}`}
             style={{
               padding: isCompact ? '4px 8px' : '6px 10px',
               borderRadius: '8px',
@@ -1043,7 +1041,6 @@ function MateriVariantPill({
               color: tokens.color('y'),
               ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
             }}
             aria-expanded={showSelfCheck}
             aria-label="Tampilkan cek pemahaman"
