@@ -32,7 +32,18 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     // Clear patch history when switching pages to prevent cross-page
     // patch application (patches from page N must not leak into page M)
     patchHistory.clear();
-    set({ currentPageIndex: idx, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [], activeTabId: null });
+    set({
+      currentPageIndex: idx,
+      selectedElId: null, selectedElIds: [],
+      selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [],
+      // Reset ephemeral navigation state — prevents stale UI from previous page:
+      // - activeTabId: tab bar was showing wrong active tab after page switch
+      // - sceneIndex: multi-scene page left sceneIndex=2, new page with 1 scene showed blank
+      // - hoveredBlockId: hover highlight from old page leaked into new page
+      activeTabId: null,
+      sceneIndex: 0,
+      hoveredBlockId: null,
+    });
   },
 
   addPage: () => {

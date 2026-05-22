@@ -424,5 +424,45 @@ export function getViewAndNavShortcuts(deps: CanvaShortcutDeps): ShortcutDefinit
       description: 'Scene berikutnya (Ctrl+→)',
       category: 'Navigation',
     },
+
+    // ═══════════════════════════════════════════════════════════════
+    // NAVIGATION — Page prev/next (Alt+Arrow, priority 6)
+    // ═══════════════════════════════════════════════════════════════
+    // Previously, there was NO keyboard shortcut for page navigation
+    // in edit mode. Users had to click the small toolbar buttons or
+    // the SceneList, making page switching feel "difficult" especially
+    // when many pages exist. Alt+Arrow now provides fast page switching.
+    {
+      id: 'canvas.page-prev',
+      keys: 'alt+arrowleft',
+      scope: 'canvas',
+      priority: 6,
+      handler: (e) => {
+        const store = getCanvaState();
+        if (isInteractive()) return;
+        if (store.currentPageIndex > 0) {
+          e.preventDefault();
+          store.goPage(store.currentPageIndex - 1);
+        }
+      },
+      description: 'Halaman sebelumnya (Alt+←)',
+      category: 'Navigation',
+    },
+    {
+      id: 'canvas.page-next',
+      keys: 'alt+arrowright',
+      scope: 'canvas',
+      priority: 6,
+      handler: (e) => {
+        const store = getCanvaState();
+        if (isInteractive()) return;
+        if (store.currentPageIndex < store.pages.length - 1) {
+          e.preventDefault();
+          store.goPage(store.currentPageIndex + 1);
+        }
+      },
+      description: 'Halaman berikutnya (Alt+→)',
+      category: 'Navigation',
+    },
   ];
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Copy, Trash2, Zap, Plus } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -42,6 +42,17 @@ export function SceneList() {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
+  // ── Auto-scroll: scroll active page into view when currentPageIndex changes ──
+  // Previously, navigating via toolbar/keyboard would update the canvas
+  // but the page list wouldn't scroll to show the active page — making
+  // navigation feel broken when many pages exist.
+  const activeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [currentPageIndex]);
+
   return (
     <div className="space-y-1.5">
       {pages.map((p, i) => {
@@ -59,6 +70,7 @@ export function SceneList() {
         return (
           <button
             key={p.id}
+            ref={isActive ? activeRef : undefined}
             data-testid={`page-tab-${i}`}
             onClick={() => goPage(i)}
             draggable
