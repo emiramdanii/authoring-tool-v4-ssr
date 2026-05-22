@@ -37,3 +37,32 @@ Stage Summary:
 - PerBlockGaps bug fixed: gaps now correctly placed BEFORE blocks (not after)
 - Backward compatible: if perBlockGaps not provided, falls back to uniform BLOCK_GAP
 - FASE 11A DONE (11A.6 was dropped by user)
+---
+Task ID: sprint-3c
+Agent: main
+Task: Sprint 3C — Interaction Polish (hover/focus/transition states)
+
+Work Log:
+- Audited all 8 renderers for current hover/focus/transition patterns
+- Found IOS_INTERACTION.tw compositions were defined but NEVER USED by any renderer
+- Found inconsistent hover scales in KuisRenderer (1.02/1.01/opacity-80)
+- Found missing focus-visible on NcGrid Variant B cards
+- Found JS hover in NcGrid Variant C instead of CSS
+- Found 15+ transition-all overuse instances
+- Expanded IOS_INTERACTION.tw from 4 → 7 compositions (added quizOption, tab, accordion, expandButton, focusRing)
+- Added 7 interaction helper methods to TokenResolver (iosButtonTw, iosCardTw, iosQuizOptionTw, iosTabTw, iosAccordionTw, iosExpandTw, iosFocusRing)
+- Added focus-visible ring to .variant-pill in globals.css
+- Migrated all 8 renderers to use contract-driven interaction tokens
+- Replaced JS hover in NcGrid Variant C with CSS hover
+- Replaced 15+ transition-all with targeted transitions
+- Removed 6 redundant inline transition styles
+- Build clean (tsc + next build), pushed as 3a14d2c
+
+Stage Summary:
+- 11 files changed, +114/-65
+- All 8 renderers now consume IOS_INTERACTION tokens via TokenResolver helpers
+- Consistent hover/focus/active patterns across all interactive elements
+- Quiz options standardized to 1.02 scale (was inconsistent across variants)
+- NcGrid Variant B now has focus-visible (was missing)
+- NcGrid Variant C uses CSS hover instead of JS
+- Commit: 3a14d2c, pushed to origin/main
