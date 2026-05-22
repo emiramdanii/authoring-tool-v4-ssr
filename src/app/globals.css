@@ -798,6 +798,148 @@ select {
   outline-offset: 2px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   iOS INTERACTION CONTRACT — Consistent hover/focus/active patterns
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Variant Selector — Pill-style variant toggle ──────────── */
+.variant-selector {
+  display: flex;
+  gap: 4px;
+}
+.variant-pill {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid rgba(15,23,42,0.08);
+  background: rgba(255,255,255,0.8);
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.variant-pill:hover {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(15,23,42,0.15);
+  color: #334155;
+}
+.variant-pill.active {
+  background: #3B82F6;
+  border-color: #3B82F6;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(59,130,246,0.25);
+}
+.dark .variant-pill {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  color: #94a3b8;
+}
+.dark .variant-pill:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.15);
+}
+.dark .variant-pill.active {
+  background: #3B82F6;
+  border-color: #3B82F6;
+  color: #ffffff;
+}
+
+/* ── Compact Pill — Materi Pill variant takeaway badges ────── */
+.variant-compact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+/* ── iOS Button — Primary action button ────────────────────── */
+.ios-button {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.ios-button:hover {
+  transform: scale(1.03);
+}
+.ios-button:active {
+  transform: scale(0.97);
+}
+.ios-button:focus-visible {
+  outline: 2px solid var(--semantic-accent);
+  outline-offset: 2px;
+}
+
+/* ── iOS Card — Subtle hover lift for interactive cards ────── */
+.ios-card-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.ios-card-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+}
+.ios-card-interactive:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ── pressDown keyframe — for MicroInteraction squish ──────── */
+@keyframes pressDown {
+  0% { transform: scale(1); }
+  100% { transform: scale(0.96); }
+}
+
+/* ── Premium Card Hover — Subtle lift (iOS-compliant, no glow) */
+.premium-card-glow {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.premium-card-glow:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+}
+
+/* ── Premium Focus Glow — Accessible focus ring ────────────── */
+.premium-focus-glow:focus-visible {
+  outline: 2px solid var(--semantic-accent);
+  outline-offset: 2px;
+}
+
+/* ── Premium Border Gradient — Subtle accent shimmer ───────── */
+.premium-border-gradient {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+.premium-border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--semantic-accent), var(--semantic-accent-secondary));
+  opacity: 0.15;
+  z-index: -1;
+  transition: opacity 0.2s ease;
+}
+.premium-border-gradient:hover::before {
+  opacity: 0.3;
+}
+
+/* ── Premium Text Gradient — Gradient text for completion ──── */
+.premium-text-gradient {
+  background: linear-gradient(135deg, var(--semantic-accent), var(--semantic-accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* ── Number Input ────────────────────────────────────────────── */
 input[type="number"] {
   -moz-appearance: textfield;

@@ -192,7 +192,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
           {/* Call-to-action for next meeting — navigates to next page */}
           {interactive && (
-            <button className="w-full mt-3 py-2.5 rounded-xl font-bold transition-all"
+            <button className="w-full mt-3 py-2.5 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer"
               onClick={() => {
                 playSound('click');
                 // Navigate to next page if available

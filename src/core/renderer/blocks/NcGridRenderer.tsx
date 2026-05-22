@@ -88,7 +88,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
   const isLong = bodyText.length > 80;
 
   return (
-    <div className="rounded-xl border transition-all hover:-translate-y-0.5 min-w-0 group"
+    <div className="rounded-xl border transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)] active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 group"
       style={{
         background: cardBg,
         borderColor: cardBorder,
@@ -128,7 +128,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
       />
       {/* Expand toggle for long text in compact mode */}
       {isLong && isCompact && (
-        <button className="mt-1 font-bold"
+        <button className="mt-1 font-bold hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
           style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
           onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
           {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
@@ -171,7 +171,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
 
   return (
     <div
-      className="rounded-xl min-w-0 group"
+      className="rounded-xl hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)] active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 group"
       style={{
         background: cardBg,
         borderColor: cardBorder,
@@ -236,7 +236,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
           {/* Expand toggle for long text */}
           {isLong && (
             <button
-              className="mt-1 font-bold"
+              className="mt-1 font-bold hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
               style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
             >
@@ -281,7 +281,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
 
   return (
     <div
-      className="min-w-0 group"
+      className="active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 group"
       style={{
         borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
         background: cardBg,

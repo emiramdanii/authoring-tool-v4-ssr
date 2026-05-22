@@ -91,7 +91,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           ))}
         </div>
         <div>
-          <button className="px-5 py-2 rounded-xl font-bold transition-all"
+          <button className="px-5 py-2 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer"
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
               ...tokens.iosTypography('callToAction', { color: tokens.color('p') }),
@@ -158,7 +158,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             </label>
             {interactive ? (
               <div className="relative">
-                <textarea className="w-full rounded-lg p-2.5 resize-y"
+                <textarea className="w-full rounded-lg p-2.5 resize-y focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                   style={{
                     ...tokens.iosTypography('subheadline', { color: tokens.color('text') }),
                     background: tokens.color('card'),
@@ -193,7 +193,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {/* Submit button */}
       {interactive && !submitted && (
         <button
-          className="w-full py-2.5 rounded-xl font-bold transition-all"
+          className="w-full py-2.5 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
           onClick={handleSubmit}
           disabled={!allAnswered}
           style={{

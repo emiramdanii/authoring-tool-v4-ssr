@@ -140,7 +140,7 @@ function HeroVariantA({
       {/* CTA */}
       {block.cta && (
           <button className={`mt-4 rounded-lg font-bold transition-all ${
-            interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
+            interactive ? 'hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer' : 'cursor-default'
           }`}
             style={{
               ...tokens.iosTypography('callToAction'),
@@ -230,7 +230,7 @@ function HeroVariantB({
       {/* CTA */}
       {block.cta && (
         <button className={`flex-shrink-0 rounded-lg font-bold transition-all ${
-          interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
+          interactive ? 'hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer' : 'cursor-default'
         }`}
           style={{
             ...tokens.iosTypography('callToAction', { fontSize: 12 }),
@@ -348,7 +348,7 @@ function HeroVariantC({
       {/* CTA */}
       {block.cta && (
         <button className={`mt-4 rounded-lg font-bold transition-all ${
-          interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
+          interactive ? 'hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer' : 'cursor-default'
         }`}
           style={{
             ...tokens.iosTypography('callToAction', { fontSize: 12 }),

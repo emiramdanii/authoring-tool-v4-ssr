@@ -140,7 +140,7 @@ function CoverVariantA({
       {block.cta && (
         <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`mt-7 rounded-[99px] transition-all ${
-          interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
+          interactive ? 'hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer' : 'cursor-default'
         }`}
           style={{
             ...tokens.iosTypography('callToAction'),
@@ -278,7 +278,7 @@ function CoverVariantB({
         {/* CTA */}
         {block.cta && (
           <button className={`mt-5 rounded-lg transition-all ${
-            interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
+            interactive ? 'hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer' : 'cursor-default'
           }`}
             style={{
               ...tokens.iosTypography('callToAction'),
@@ -394,7 +394,7 @@ function CoverVariantC({
         {/* CTA — minimal outline */}
         {block.cta && (
           <button className={`mt-6 rounded-lg font-bold transition-all ${
-            interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
+            interactive ? 'hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent cursor-pointer' : 'cursor-default'
           }`}
             style={{
               background: 'transparent',

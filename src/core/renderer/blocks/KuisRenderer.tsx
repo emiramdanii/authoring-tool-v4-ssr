@@ -132,7 +132,7 @@ function KuisVariantKartu({
                 disabled={isAnswered}
                 onClick={() => onAnswer(current, i)}
                 aria-pressed={answers[current] === i}
-                className={`p-4 rounded-xl font-bold text-left transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+                className={`p-4 rounded-xl font-bold text-left transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''} ${!isAnswered ? 'hover:scale-[1.01] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent' : ''}`}
                 style={{
                   ...tokens.iosTypography('body', { fontWeight: 700 }),
                   background: bg,
@@ -258,7 +258,7 @@ function KuisVariantRingkas({
                 disabled={isAnswered}
                 onClick={() => onAnswer(current, i)}
                 aria-pressed={answers[current] === i}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all ${isCompact ? 'canvas-truncate-1' : ''}`}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all ${isCompact ? 'canvas-truncate-1' : ''} ${!isAnswered ? 'hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent' : ''}`}
                 style={{
                   ...tokens.iosTypography('caption1', { fontWeight: 700 }),
                   background: bg,
@@ -461,7 +461,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
           {/* Replay button */}
           {interactive && (
-              <button className="rounded-xl font-bold transition-all"
+              <button className="rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                 onClick={() => { setAnswers({}); setCurrent(0); hasReportedRef.current = false; playSound('click'); }}
                 style={{
                   ...tokens.iosTypography('callToAction', {}),
@@ -588,7 +588,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                     disabled={isAnswered}
                     onClick={() => handleAnswer(current, i)}
                     aria-pressed={answers[current] === i}
-                    className={`p-2.5 rounded-xl font-bold text-center transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+                    className={`p-2.5 rounded-xl font-bold text-center transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''} ${!isAnswered ? 'hover:scale-[1.02] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent' : ''}`}
                     style={{
                       ...tokens.iosTypography('subheadline', { fontWeight: 700 }),
                       background: bg,
@@ -665,7 +665,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
       {/* ── Next button — premium spring ─────────────────────────── */}
       {answers[current] !== undefined && current < questions.length - 1 && (
-          <button className="rounded-xl font-bold transition-all"
+          <button className="rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
             aria-label="Lanjut ke soal berikutnya"
             onClick={() => { setCurrent(current + 1); playSound('click'); }}
             style={{

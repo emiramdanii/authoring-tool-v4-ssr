@@ -264,6 +264,62 @@ export const IOS_SURFACE = {
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════
+// IOS_INTERACTION — Consistent hover/focus/active patterns
+// ═══════════════════════════════════════════════════════════════════
+// iOS-style micro-interactions: subtle, fast, tactile.
+// No neon glow, no dramatic transforms. Scale 1.03 hover, 0.97 active.
+
+export const IOS_INTERACTION = {
+  /** Transition timing — iOS uses 150-200ms for most interactions */
+  duration: {
+    fast: 150,    // hover bg change, cursor swap
+    standard: 200, // card lift, option highlight
+    slow: 300,    // accordion expand, progress bar
+  },
+
+  /** Easing curves */
+  easing: {
+    default: 'ease',
+    ios: 'cubic-bezier(0.25, 0.1, 0.25, 1)',  // iOS system ease
+    spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)', // Spring overshoot
+  },
+
+  /** Hover — subtle scale-up */
+  hover: {
+    scale: 1.03,            // Button hover
+    cardLiftY: -1,          // Card hover (px)
+    cardLiftShadow: '0 4px 12px rgba(15,23,42,0.06)',
+    bgOpacityChange: 0.03,  // Subtle bg darkening
+  },
+
+  /** Active/Press — scale down */
+  active: {
+    scale: 0.97,            // Button press
+    cardPressY: 0,          // Card press
+    cardPressShadow: '0 1px 2px rgba(0,0,0,0.04)',
+  },
+
+  /** Focus — accessible ring */
+  focus: {
+    outlineWidth: 2,
+    outlineOffset: 2,
+    outlineColor: 'var(--semantic-accent)',
+  },
+
+  /** Tailwind class compositions for common patterns */
+  tw: {
+    /** Primary CTA button */
+    button: 'transition-[transform,box-shadow,background-color] duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
+    /** Interactive card */
+    card: 'transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)] active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.04)]',
+    /** Tab/pill toggle */
+    tab: 'transition-[background-color,border-color,color] duration-150 ease-out',
+    /** Accordion toggle */
+    accordion: 'transition-[background-color,color] duration-150 ease-out',
+  },
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════
 // HELPER — Build a typography style object from a level
 // ═══════════════════════════════════════════════════════════════════
 
@@ -291,4 +347,5 @@ export const iosVisualContract = {
   spacing: IOS_SPACING,
   shadow: IOS_SHADOW,
   surface: IOS_SURFACE,
+  interaction: IOS_INTERACTION,
 } as const;
