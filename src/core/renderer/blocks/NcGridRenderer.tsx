@@ -93,7 +93,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         background: cardBg,
         borderColor: cardBorder,
         borderRadius: tokens.radius('xl') + 'px',
-        boxShadow: tokens.raw.shadow.card,
+        boxShadow: tokens.iosShadow('whisper'),
         padding: isCompact ? '10px' : '15px',
         overflow: 'hidden',
         position: 'relative',
@@ -105,8 +105,9 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         style={{ background: cardColor }} />
 
       <div className="flex items-center gap-2.5 mb-2 min-w-0">
-        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+        <div className="rounded-full flex items-center justify-center flex-shrink-0"
           style={{
+            ...tokens.iosIconSize('md'),
             background: tokens.colorAlpha(card.color, 0.2),
             boxShadow: 'none',
           }}>
@@ -115,20 +116,20 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         <InlineTextEditor
           {...titleEditor}
           className="font-extrabold min-w-0"
-          style={{ color: cardColor, fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+          style={{ ...tokens.iosTypography('headline', { fontSize: isCompact ? 12 : 14 }), color: cardColor, wordBreak: 'break-word', overflowWrap: 'break-word' }}
         />
       </div>
       <InlineTextEditor
         {...bodyEditor}
         className={`leading-relaxed ${isCompact ? 'line-clamp-3' : ''}`}
-        style={{ color: tokens.muted(0.85), fontSize: isCompact ? '11px' : '13px', lineHeight: 1.55, wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }), color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik deskripsi kartu..."
         allowHtml={true}
       />
       {/* Expand toggle for long text in compact mode */}
       {isLong && isCompact && (
-        <button className="mt-1 text-[10px] font-bold"
-          style={{ color: cardColor }}
+        <button className="mt-1 font-bold"
+          style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
           onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
           {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
         </button>
@@ -175,8 +176,9 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
         background: cardBg,
         borderColor: cardBorder,
         border: `1px solid ${cardBorder}`,
+        borderLeft: tokens.accentStripe(card.color, 4),
         borderRadius: tokens.radius('xl') + 'px',
-        boxShadow: tokens.raw.shadow.card,
+        boxShadow: tokens.iosShadow('whisper'),
         overflow: 'hidden',
         position: 'relative',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
@@ -185,15 +187,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
       }}
       onClick={() => { if (isLong) setExpanded(!expanded); }}
     >
-      {/* Left gradient accent bar */}
-      <div
-        className="absolute top-0 left-0 bottom-0"
-        style={{
-          width: isCompact ? '4px' : '5px',
-          background: `linear-gradient(180deg, ${cardColor}, ${tokens.colorAlpha(card.color, 0.4)})`,
-          borderRadius: `${tokens.radius('xl')}px 0 0 ${tokens.radius('xl')}px`,
-        }}
-      />
+      {/* Left accent stripe via borderLeft */}
 
       <div
         className="flex items-start gap-3"
@@ -205,8 +199,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
         <div
           className="flex-shrink-0 flex items-center justify-center"
           style={{
-            width: isCompact ? '40px' : '48px',
-            height: isCompact ? '40px' : '48px',
+            ...tokens.iosIconSize('lg'),
             borderRadius: '12px',
             background: tokens.colorAlpha(card.color, 0.1),
             boxShadow: 'none',
@@ -221,8 +214,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
             {...titleEditor}
             className="font-extrabold min-w-0"
             style={{
+              ...tokens.iosTypography('headline', { fontSize: isCompact ? 13 : 15 }),
               color: cardColor,
-              fontSize: isCompact ? '13px' : '15px',
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
               marginBottom: '4px',
@@ -232,9 +225,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
             {...bodyEditor}
             className="leading-relaxed"
             style={{
+              ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }),
               color: tokens.muted(0.85),
-              fontSize: isCompact ? '11px' : '13px',
-              lineHeight: 1.6,
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -244,8 +236,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
           {/* Expand toggle for long text */}
           {isLong && (
             <button
-              className="mt-1 text-[10px] font-bold"
-              style={{ color: cardColor }}
+              className="mt-1 font-bold"
+              style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
             >
               {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
@@ -312,8 +304,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
       <div
         className="flex-shrink-0 flex items-center justify-center"
         style={{
-          width: isCompact ? '22px' : '26px',
-          height: isCompact ? '22px' : '26px',
+          ...tokens.iosIconSize('sm'),
           borderRadius: '50%',
           background: tokens.colorAlpha(card.color, 0.2),
         }}
@@ -326,8 +317,8 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         {...titleEditor}
         className="font-bold min-w-0"
         style={{
+          ...tokens.iosTypography('footnote', { fontSize: isCompact ? 11 : 12, fontWeight: 700 }),
           color: cardColor,
-          fontSize: isCompact ? '11px' : '12px',
           wordBreak: 'break-word',
           overflowWrap: 'break-word',
           whiteSpace: expanded ? 'normal' : 'nowrap',
@@ -350,9 +341,8 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
             {...bodyEditor}
             className="leading-relaxed"
             style={{
+              ...tokens.iosTypography('caption1', { fontSize: isCompact ? 10 : 11 }),
               color: tokens.muted(0.85),
-              fontSize: isCompact ? '10px' : '11px',
-              lineHeight: 1.5,
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -462,7 +452,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
       <div style={{ position: 'relative' }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-            style={{ fontSize: '11px', background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
+            style={{ ...tokens.iosTypography('caption2', {}), background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
             Norma
           </span>
         </div>
@@ -498,7 +488,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
       >
         <div className="flex items-center gap-2 mb-2">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-            style={{ fontSize: '11px', background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
+            style={{ ...tokens.iosTypography('caption2', {}), background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
             Norma
           </span>
         </div>

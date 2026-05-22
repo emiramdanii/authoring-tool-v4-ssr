@@ -79,7 +79,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         <div className="font-bold text-lg mb-2" style={{ color: tokens.color('text') }}>
           Refleksi Selesai
         </div>
-        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.7) }}>
+        <div className="mb-4" style={{ ...tokens.iosTypography('subheadline', { color: tokens.muted(0.7) }) }}>
           Terima kasih telah merenungkan pembelajaran hari ini.
         </div>
         <div className="inline-flex gap-2 mb-4">
@@ -94,9 +94,9 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           <button className="px-5 py-2 rounded-xl font-bold transition-all"
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
-              fontSize: '13px',
+              ...tokens.iosTypography('callToAction', { color: tokens.color('p') }),
+              ...tokens.iosButtonPadding('md'),
               background: tokens.accentBg('p', 0.08),
-              color: tokens.color('p'),
               border: `1px solid ${tokens.colorAlpha('p', 0.2)}`,
             }}>
             <RotateCcw size={14} className="inline" /> Tulis Ulang
@@ -113,8 +113,9 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
     <div style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
       {/* Header with icon */}
       <div className="flex items-center gap-2.5 mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+        <div className="rounded-xl flex items-center justify-center"
           style={{
+            ...tokens.iosIconSize('md'),
             background: tokens.accentBg('p', 0.08),
             border: `1px solid ${tokens.colorAlpha('p', 0.15)}`,
           }}>
@@ -122,7 +123,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         </div>
         <div>
           {block.title && (
-            <h2 className="font-black leading-tight" style={{ fontFamily: tokens.fontFamily('display'), fontSize: isCompact ? '14px' : '18px', color: tokens.color('text') }}>
+            <h2 className="font-black leading-tight" style={{ fontFamily: tokens.fontFamily('display'), ...tokens.iosTypography('title3', { fontSize: isCompact ? 14 : 18, color: tokens.color('text') }) }}>
               <InlineTextEditor
                 {...titleEditor}
                 className="font-black leading-tight"
@@ -136,7 +137,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {block.intro && <InlineTextEditor
         {...introEditor}
         className="mb-4 leading-relaxed"
-        style={{ fontSize: isCompact ? '11px' : '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13, color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }) }}
         placeholder="Ketik intro..."
       />}
 
@@ -149,18 +150,17 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             style={{
               background: tokens.color('card'),
               border: `1px solid ${tokens.subtleBorder(0.08)}`,
-              borderLeft: `3px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
+              borderLeft: tokens.accentStripe(hasResponse ? 'g' : qColor, 3),
             }}>
             <label className={`font-bold block mb-2 ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px', lineHeight: '1.8' }}>
+              style={{ ...tokens.iosTypography('headline', { fontSize: isCompact ? 12 : 14, color: tokens.color(qColor) }), lineHeight: '1.8' }}>
               {q.icon && <span className="mr-1">{q.icon}</span>} <RichText content={q.teks ?? ''} />
             </label>
             {interactive ? (
               <div className="relative">
                 <textarea className="w-full rounded-lg p-2.5 resize-y"
                   style={{
-                    fontSize: isCompact ? '11px' : '13px',
-                    color: tokens.color('text'),
+                    ...tokens.iosTypography('subheadline', { color: tokens.color('text') }),
                     background: tokens.color('card'),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
                     minHeight: isCompact ? '40px' : '50px',
@@ -179,8 +179,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             ) : (
               <div className="w-full mt-1 rounded-lg p-2.5 min-h-[40px]"
                 style={{
-                  fontSize: isCompact ? '10px' : '12px',
-                  color: tokens.muted(0.65),
+                  ...tokens.iosTypography('caption1', { color: tokens.muted(0.65) }),
                   background: tokens.color('card'),
                   border: `1px dashed ${tokens.subtleBorder(0.12)}`,
                 }}>
@@ -198,11 +197,11 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           onClick={handleSubmit}
           disabled={!allAnswered}
           style={{
-            fontSize: '13px',
+            ...tokens.iosTypography('callToAction', { color: allAnswered ? tokens.color('p') : tokens.muted(0.4) }),
+            ...tokens.iosButtonPadding('md'),
             background: allAnswered
               ? tokens.accentBg('p', 0.12)
               : tokens.subtleBg(0.04),
-            color: allAnswered ? tokens.color('p') : tokens.muted(0.4),
             border: '1px solid ' + (allAnswered ? tokens.colorAlpha('p', 0.25) : tokens.subtleBorder(0.08)),
             cursor: allAnswered ? 'pointer' : 'not-allowed',
           }}>
@@ -213,17 +212,17 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {block.penugasan && !isCompressed && (
         <div className="mt-4 p-4 rounded-xl"
           style={{
-            ...tokens.cardStyle(),
-            borderLeft: `3px solid ${tokens.color('p')}`,
+            ...tokens.nestedCardStyle(),
+            borderLeft: tokens.accentStripe('p', 3),
           }}>
           <div className="flex items-center gap-2 mb-2">
             <PenLine size={14} style={{ color: tokens.color('p') }} />
-            <div className="font-bold" style={{ color: tokens.color('p'), fontSize: isCompact ? '12px' : '14px' }}>{block.penugasan.judul}</div>
+            <div className="font-bold" style={{ ...tokens.iosTypography('headline', { color: tokens.color('p'), fontSize: isCompact ? 12 : 14 }) }}>{block.penugasan.judul}</div>
           </div>
-          <RichText content={block.penugasan.isi ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px' }} />
+          <RichText content={block.penugasan.isi ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ ...tokens.iosTypography('subheadline', { color: tokens.muted(0.8), fontSize: isCompact ? 11 : 13 }) }} />
           {block.penugasan.contoh && (
             <div className="mt-2 italic p-2 rounded-lg"
-              style={{ fontSize: isCompact ? '10px' : '12px', color: tokens.textSubtle(0.5), background: tokens.colorAlpha('p', 0.06) }}>
+              style={{ ...tokens.iosTypography('caption1', { color: tokens.textSubtle(0.5), fontSize: isCompact ? 10 : 12 }), background: tokens.colorAlpha('p', 0.06) }}>
               Contoh: <RichText content={block.penugasan.contoh ?? ''} />
             </div>
           )}

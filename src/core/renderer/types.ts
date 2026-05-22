@@ -7,6 +7,7 @@
 import { alpha } from '@/lib/color-palette';
 import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
+import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -186,6 +187,83 @@ export class TokenResolver {
   /** Narrow content width (refleksi, kuis) */
   narrowWidth(): string {
     return '560px';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // iOS VISUAL CONTRACT — Typography, Card, Surface helpers
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** iOS typography style — returns a style object for a semantic type level */
+  iosTypography(level: IOS_TypographyLevel, overrides?: Record<string, string | number>): Record<string, string | number> {
+    const spec = IOS_TYPOGRAPHY[level];
+    return {
+      fontSize: spec.size,
+      fontWeight: spec.weight,
+      lineHeight: spec.lineHeight,
+      letterSpacing: `${spec.letterSpacing}em`,
+      ...overrides,
+    };
+  }
+
+  /** iOS nested card style — for takeaways, self-check, inset areas */
+  nestedCardStyle(): Record<string, string | number> {
+    return {
+      background: this.isDark() ? IOS_SURFACE.nested.dark : IOS_SURFACE.nested.light,
+      borderRadius: `${IOS_CARD.nested.style.borderRadius}px`,
+      border: `1px solid ${this.subtleBorder(0.06)}`,
+      boxShadow: 'none',
+    };
+  }
+
+  /** iOS interactive card style — for buttons, options, tabs */
+  interactiveCardStyle(accentKey: string = 'c'): Record<string, string | number> {
+    return {
+      background: this.colorAlpha(accentKey, 0.06),
+      borderRadius: `${IOS_CARD.interactive.style.borderRadius}px`,
+      border: `1px solid ${this.colorAlpha(accentKey, 0.15)}`,
+      boxShadow: 'none',
+      transition: 'all 0.2s ease',
+      cursor: 'pointer',
+    };
+  }
+
+  /** iOS accent stripe — consistent left border */
+  accentStripe(key: string = 'c', width: number = IOS_CARD.accentStripe.standard): string {
+    return `${width}px solid ${this.color(key)}`;
+  }
+
+  /** iOS shadow — by discipline level (whisper/soft/ambient/prominent) */
+  iosShadow(level: 'whisper' | 'soft' | 'ambient' | 'prominent'): string {
+    return IOS_SHADOW[level];
+  }
+
+  /** iOS icon container size — returns { width, height } for a named size */
+  iosIconSize(level: 'xs' | 'sm' | 'md' | 'lg' | 'xl'): { width: number; height: number } {
+    const map = { xs: IOS_SPACING.iconXs, sm: IOS_SPACING.iconSm, md: IOS_SPACING.iconMd, lg: IOS_SPACING.iconLg, xl: IOS_SPACING.iconXl };
+    const size = map[level];
+    return { width: size, height: size };
+  }
+
+  /** iOS section padding — adaptive to compact/standard mode */
+  iosSectionPadding(compact?: boolean): Record<string, string> {
+    return {
+      padding: compact ? IOS_SPACING.sectionHeader.compact : IOS_SPACING.sectionHeader.standard,
+    };
+  }
+
+  /** iOS content area padding — adaptive to compact/standard mode */
+  iosContentPadding(compact?: boolean): Record<string, string> {
+    return {
+      padding: compact ? IOS_SPACING.contentArea.compact : IOS_SPACING.contentArea.standard,
+    };
+  }
+
+  /** iOS button padding — standard CTA */
+  iosButtonPadding(size: 'md' | 'lg' = 'md'): Record<string, string | number> {
+    const spec = size === 'lg' ? IOS_SPACING.buttonLg : IOS_SPACING.buttonMd;
+    return {
+      padding: `${spec.py}px ${spec.px}px`,
+    };
   }
 }
 

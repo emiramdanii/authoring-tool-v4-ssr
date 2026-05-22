@@ -54,8 +54,7 @@ function VariantSelector({
           style={{
             padding: '3px 10px',
             borderRadius: '9999px',
-            fontSize: '11px',
-            fontWeight: 700,
+            ...tokens.iosTypography('caption1', { fontWeight: 700 }),
             border: 'none',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
@@ -108,8 +107,8 @@ function KuisVariantKartu({
       {/* Question — larger text */}
       <InlineTextEditor
         {...questionEditor}
-        className={`text-[15px] font-bold leading-relaxed mb-5 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        className={`font-bold leading-relaxed mb-5 ${isCompact ? 'canvas-truncate-2' : ''}`}
+        style={{ ...tokens.iosTypography('body', { fontWeight: 700 }), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik pertanyaan..."
       />
 
@@ -135,7 +134,7 @@ function KuisVariantKartu({
                 aria-pressed={answers[current] === i}
                 className={`p-4 rounded-xl font-bold text-left transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
-                  fontSize: '15px',
+                  ...tokens.iosTypography('body', { fontWeight: 700 }),
                   background: bg,
                   border: `1px solid ${bdr}`,
                   wordBreak: 'break-word',
@@ -154,11 +153,11 @@ function KuisVariantKartu({
       {isAnswered && (
         <div className="mt-4 p-4 rounded-xl leading-relaxed"
           style={{
-            fontSize: '13px',
+            ...tokens.iosTypography('footnote', {}),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
               : tokens.accentBg('r', 0.06),
-            borderLeft: `3px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
+            borderLeft: tokens.accentStripe(answers[current] === q.ans ? 'g' : 'r', 3),
             color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             overflow: 'hidden',
             wordBreak: 'break-word',
@@ -166,7 +165,7 @@ function KuisVariantKartu({
           {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
           <InlineTextEditor
             {...explanationEditor}
-            className={`text-[11px] ${isCompact ? 'canvas-truncate-2' : ''}`}
+            className={`${isCompact ? 'canvas-truncate-2' : ''}`}
             style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
             placeholder="Ketik penjelasan..."
           />
@@ -226,7 +225,7 @@ function KuisVariantRingkas({
             }}
           />
         </div>
-        <span className="font-bold" style={{ fontSize: '10px', color: tokens.muted(0.65) }}>
+        <span style={{ ...tokens.iosTypography('caption2', {}), color: tokens.muted(0.65) }}>
           {current + 1}/{questionsLength}
         </span>
       </div>
@@ -234,8 +233,8 @@ function KuisVariantRingkas({
       {/* Question — smaller text */}
       <InlineTextEditor
         {...questionEditor}
-        className={`text-[11px] font-bold leading-snug mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        className={`font-bold leading-snug mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
+        style={{ ...tokens.iosTypography('caption1', { fontWeight: 700 }), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik pertanyaan..."
       />
 
@@ -261,7 +260,7 @@ function KuisVariantRingkas({
                 aria-pressed={answers[current] === i}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
-                  fontSize: '11px',
+                  ...tokens.iosTypography('caption1', { fontWeight: 700 }),
                   background: bg,
                   border: `1px solid ${bdr}`,
                   overflow: 'hidden',
@@ -282,11 +281,11 @@ function KuisVariantRingkas({
       {isAnswered && (
         <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug"
           style={{
-            fontSize: '10px',
+            ...tokens.iosTypography('footnote', {}),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
               : tokens.accentBg('r', 0.06),
-            borderLeft: `2px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
+            borderLeft: tokens.accentStripe(answers[current] === q.ans ? 'g' : 'r', 2),
             color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             overflow: 'hidden',
             wordBreak: 'break-word',
@@ -294,7 +293,6 @@ function KuisVariantRingkas({
           {answers[current] === q.ans ? <CheckCircle2 size={10} className="inline mr-0.5" /> : <XCircle size={10} className="inline mr-0.5" />}
           <InlineTextEditor
             {...explanationEditor}
-            className="text-[10px]"
             style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
             placeholder="Ketik penjelasan..."
           />
@@ -432,41 +430,42 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               background: tokens.accentBg(tierColor, 0.08),
               border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
             }}>
-            <span className="font-black text-xl" style={{ color: tokens.color(tierColor) }}>{pct}%</span>
-            <span style={{ fontSize: '12px', color: tokens.muted(0.65) }}>{totalCorrect}/{questions.length}</span>
+            <span style={{ ...tokens.iosTypography('title1', {}), color: tokens.color(tierColor) }}>{pct}%</span>
+            <span style={{ ...tokens.iosTypography('caption1', {}), color: tokens.muted(0.65) }}>{totalCorrect}/{questions.length}</span>
           </div>
 
           {/* Title */}
-          <div className="font-bold text-lg mb-1" style={{ color: tokens.color('text') }}>
+          <div className="mb-1" style={{ ...tokens.iosTypography('title3', {}), color: tokens.color('text') }}>
             {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
           </div>
-          <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.65) }}>
+          <div className="mb-4" style={{ ...tokens.iosTypography('subheadline', {}), color: tokens.muted(0.65) }}>
             Skor kamu: {totalCorrect}/{questions.length} benar
           </div>
 
           {/* Score breakdown */}
           <div className="flex justify-center gap-4 mb-4">
-            <div className="flex items-center gap-1.5" style={{ fontSize: '12px', color: tokens.color('g') }}>
+            <div className="flex items-center gap-1.5" style={{ ...tokens.iosTypography('caption1', {}), color: tokens.color('g') }}>
               <CheckCircle2 size={14} /> {totalCorrect} benar
             </div>
-            <div className="flex items-center gap-1.5" style={{ fontSize: '12px', color: tokens.color('r') }}>
+            <div className="flex items-center gap-1.5" style={{ ...tokens.iosTypography('caption1', {}), color: tokens.color('r') }}>
               <XCircle size={14} /> {questions.length - totalCorrect} salah
             </div>
           </div>
 
           {/* Best streak */}
           {currentStreak >= 2 && (
-            <div className="mb-4 flex items-center justify-center gap-1.5" style={{ fontSize: '12px', color: tokens.color('o') }}>
+            <div className="mb-4 flex items-center justify-center gap-1.5" style={{ ...tokens.iosTypography('caption1', {}), color: tokens.color('o') }}>
               <Flame size={14} /> Streak: {currentStreak}x
             </div>
           )}
 
           {/* Replay button */}
           {interactive && (
-              <button className="px-5 py-2.5 rounded-xl font-bold transition-all"
+              <button className="rounded-xl font-bold transition-all"
                 onClick={() => { setAnswers({}); setCurrent(0); hasReportedRef.current = false; playSound('click'); }}
                 style={{
-                  fontSize: '13px',
+                  ...tokens.iosTypography('callToAction', {}),
+                  ...tokens.iosButtonPadding('md'),
                   background: tokens.accentBg(tierColor, 0.1),
                   color: tokens.color(tierColor),
                   border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
@@ -510,10 +509,10 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
             }}>
             <Gamepad2 size={14} style={{ color: tokens.color('y') }} />
           </div>
-          <div className="font-extrabold min-w-0" style={{ fontSize: '13px', color: tokens.color('y') }}>
+          <div className="font-extrabold min-w-0" style={{ ...tokens.iosTypography('footnote', { fontWeight: 800 }), color: tokens.color('y') }}>
             <InlineTextEditor
               {...titleEditor}
-              className="text-[11px] font-extrabold"
+              className="font-extrabold"
               style={{ color: tokens.color('y'), fontSize: 'inherit' }}
               placeholder="Ketik judul kuis..."
             />
@@ -526,7 +525,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                 border: `1px solid ${tokens.colorAlpha('o', 0.2)}`,
               }}>
               <Flame size={12} style={{ color: tokens.color('o') }} />
-              <span className="font-bold" style={{ fontSize: '10px', color: tokens.color('o') }}>
+              <span style={{ ...tokens.iosTypography('caption2', {}), color: tokens.color('o') }}>
                 {currentStreak}x Streak
               </span>
             </div>
@@ -563,8 +562,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
           <InlineTextEditor
             {...questionEditor}
-            className={`text-[12px] font-bold leading-relaxed mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
-            style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+            className={`font-bold leading-relaxed mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
+            style={{ ...tokens.iosTypography('footnote', { fontWeight: 700 }), wordBreak: 'break-word', overflowWrap: 'break-word' }}
             placeholder="Ketik pertanyaan..."
           />
 
@@ -591,7 +590,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                     aria-pressed={answers[current] === i}
                     className={`p-2.5 rounded-xl font-bold text-center transition-all min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
-                      fontSize: '13px',
+                      ...tokens.iosTypography('subheadline', { fontWeight: 700 }),
                       background: bg,
                       border: `1px solid ${bdr}`,
                       wordBreak: 'break-word',
@@ -609,11 +608,11 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           {answers[current] !== undefined && (
             <div className="mt-3 p-3 rounded-xl leading-relaxed"
               style={{
-                fontSize: '12px',
+                ...tokens.iosTypography('footnote', {}),
                 background: answers[current] === q.ans
                   ? tokens.accentBg('g', 0.06)
                   : tokens.accentBg('r', 0.06),
-                borderLeft: `3px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
+                borderLeft: tokens.accentStripe(answers[current] === q.ans ? 'g' : 'r', 3),
                 color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
                 overflow: 'hidden',
                 wordBreak: 'break-word',
@@ -621,7 +620,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
               <InlineTextEditor
                 {...explanationEditor}
-                className={`text-[10px] ${isCompact ? 'canvas-truncate-2' : ''}`}
+                className={`${isCompact ? 'canvas-truncate-2' : ''}`}
                 style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
                 placeholder="Ketik penjelasan..."
               />
@@ -666,11 +665,12 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
       {/* ── Next button — premium spring ─────────────────────────── */}
       {answers[current] !== undefined && current < questions.length - 1 && (
-          <button className="px-5 py-2.5 rounded-xl font-bold transition-all"
+          <button className="rounded-xl font-bold transition-all"
             aria-label="Lanjut ke soal berikutnya"
             onClick={() => { setCurrent(current + 1); playSound('click'); }}
             style={{
-              fontSize: '13px',
+              ...tokens.iosTypography('callToAction', {}),
+              ...tokens.iosButtonPadding('md'),
               background: tokens.accentBg('y', 0.1),
               color: tokens.color('y'),
               border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,

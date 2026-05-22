@@ -77,10 +77,11 @@ function CoverVariantA({
 
       {/* Icon with soft accent background */}
       <div className="mb-6 relative">
-        <div className="w-20 h-20 rounded-2xl flex items-center justify-center"
+        <div className="rounded-2xl flex items-center justify-center"
           style={{
+            ...tokens.iosIconSize('xl'),
             background: tokens.accentBg(accentKey, 0.1),
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: tokens.iosShadow('whisper'),
           }}>
           <div className="text-4xl" style={{ animation: 'breathe 5s ease-in-out infinite' }}>
             {block.icon}
@@ -88,14 +89,14 @@ function CoverVariantA({
         </div>
       </div>
 
-      <div className="font-extrabold tracking-widest uppercase truncate"
-        style={{ fontSize: tokens.fontSize('sm'), color: tokens.accentText(accentKey) }}>
+      <div className="tracking-widest uppercase truncate"
+        style={{ ...tokens.iosTypography('caption2', { color: tokens.accentText(accentKey) }) }}>
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
       {/* Title — inline editable */}
       <h1 className="font-black leading-tight mt-4 min-w-0 line-clamp-4"
-        style={{ fontSize: '32px', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
+        style={{ ...tokens.iosTypography('hero', { fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
@@ -107,7 +108,7 @@ function CoverVariantA({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-5 max-w-[380px] overflow-hidden"
-        style={{ fontSize: '15px', color: tokens.textSecondary(0.85), lineHeight: 1.6 }}
+        style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }) }}
         placeholder="Ketik subtitle..."
       />
 
@@ -125,12 +126,11 @@ function CoverVariantA({
 
       {/* Meta — subtle card */}
       {block.meta && (
-        <div className="mt-6 px-4 py-2.5 rounded-xl flex-wrap min-w-0"
+        <div className="mt-6 px-4 py-2.5 flex-wrap min-w-0"
           style={{
+            ...tokens.nestedCardStyle(),
             fontSize: '12px',
             color: tokens.muted(0.8),
-            background: tokens.subtleBg(0.04),
-            border: '1px solid ' + tokens.subtleBorder(0.06),
           }}>
           ⏱️ {block.meta.durasi} | 🎯 Fase {block.meta.fase} | 📚 Elemen: {block.meta.elemen}
         </div>
@@ -139,14 +139,15 @@ function CoverVariantA({
       {/* CTA */}
       {block.cta && (
         <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
-        <button className={`mt-7 rounded-[99px] text-[0.9rem] font-extrabold transition-all ${
+        <button className={`mt-7 rounded-[99px] transition-all ${
           interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
         }`}
           style={{
+            ...tokens.iosTypography('callToAction'),
             background: tokens.color(accentKey),
             color: tokens.color('bg'),
-            padding: '12px 28px',
-            boxShadow: tokens.raw.shadow.elevated,
+            ...tokens.iosButtonPadding('lg'),
+            boxShadow: tokens.iosShadow('ambient'),
           }}>
           {block.cta.label}
         </button>
@@ -214,19 +215,15 @@ function CoverVariantB({
       {/* Content — left-aligned */}
       <div className="relative z-1 max-w-[90%]">
         {/* Meta label */}
-        <div className="font-extrabold tracking-widest uppercase mb-2 truncate"
-          style={{ fontSize: tokens.fontSize('sm'), color: tokens.accentText(accentKey), letterSpacing: '0.15em' }}>
+        <div className="tracking-widest uppercase mb-2 truncate"
+          style={{ ...tokens.iosTypography('caption2', { color: tokens.accentText(accentKey) }) }}>
           {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
         </div>
 
         {/* Title — left-aligned, bold */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            // Fixed px — vw references browser viewport which can be much
-            // wider than the 1280px canvas, causing text to overflow upward.
-            fontSize: '38px',
-            fontFamily: tokens.fontFamily('display'),
-            color: tokens.color('text'),
+            ...tokens.iosTypography('hero', { fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
             wordBreak: 'break-word',
           }}>
           <InlineTextEditor
@@ -240,7 +237,7 @@ function CoverVariantB({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-5 max-w-[480px] overflow-hidden"
-          style={{ fontSize: '16px', color: tokens.textSecondary(0.85), lineHeight: 1.6 }}
+          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }) }}
           placeholder="Ketik subtitle..."
         />
 
@@ -251,9 +248,8 @@ function CoverVariantB({
               <span key={`badge-b-${b.text?.slice(0,10)}-${i}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold min-w-0"
                 style={{
-                  fontSize: '11px',
+                  ...tokens.iosTypography('caption2', { color: tokens.color(b.color) }),
                   background: tokens.accentBg(b.color, 0.1),
-                  color: tokens.color(b.color),
                   border: '1px solid ' + tokens.colorAlpha(b.color, 0.2),
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -270,7 +266,7 @@ function CoverVariantB({
         {/* Meta — compact row */}
         {block.meta && (
           <div className="mt-4 flex items-center gap-3 flex-wrap min-w-0"
-            style={{ fontSize: '11px', color: tokens.muted(0.7) }}>
+            style={{ ...tokens.iosTypography('caption1', { color: tokens.muted(0.7) }) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span style={{ color: tokens.subtleBorder(0.15) }}>|</span>
             <span>🎯 Fase {block.meta.fase}</span>
@@ -281,14 +277,15 @@ function CoverVariantB({
 
         {/* CTA */}
         {block.cta && (
-          <button className={`mt-5 rounded-lg text-[0.85rem] font-extrabold transition-all ${
+          <button className={`mt-5 rounded-lg transition-all ${
             interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
           }`}
             style={{
+              ...tokens.iosTypography('callToAction'),
               background: tokens.color(accentKey),
               color: tokens.color('bg'),
-              padding: '10px 24px',
-              boxShadow: tokens.raw.shadow.elevated,
+              ...tokens.iosButtonPadding('md'),
+              boxShadow: tokens.iosShadow('ambient'),
             }}>
             {block.cta.label}
           </button>
@@ -335,8 +332,8 @@ function CoverVariantC({
           <span className="text-2xl" style={{ animation: 'breathe 5s ease-in-out infinite' }}>
             {block.icon}
           </span>
-          <div className="font-extrabold tracking-widest uppercase truncate"
-            style={{ fontSize: '11px', color: tokens.muted(0.7), letterSpacing: '0.2em' }}>
+          <div className="tracking-widest uppercase truncate"
+            style={{ ...tokens.iosTypography('caption2', { color: tokens.muted(0.7) }) }}>
             {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
           </div>
         </div>
@@ -344,11 +341,7 @@ function CoverVariantC({
         {/* Title */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            // Fixed px — vw references viewport width which doesn't match
-            // the 1280px canvas coordinate space.
-            fontSize: '34px',
-            fontFamily: tokens.fontFamily('display'),
-            color: tokens.color('text'),
+            ...tokens.iosTypography('title1', { fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
             wordBreak: 'break-word',
           }}>
           <InlineTextEditor
@@ -362,7 +355,7 @@ function CoverVariantC({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-5 max-w-[440px] overflow-hidden"
-          style={{ fontSize: '15px', color: tokens.textSecondary(0.85), lineHeight: 1.6 }}
+          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }) }}
           placeholder="Ketik subtitle..."
         />
 
@@ -373,9 +366,8 @@ function CoverVariantC({
               <span key={`badge-c-${b.text?.slice(0,10)}-${i}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold min-w-0"
                 style={{
-                  fontSize: '10px',
+                  ...tokens.iosTypography('caption2', { color: tokens.color(b.color) }),
                   background: tokens.colorAlpha(b.color, 0.08),
-                  color: tokens.color(b.color),
                   border: '1px solid ' + tokens.colorAlpha(b.color, 0.15),
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -392,7 +384,7 @@ function CoverVariantC({
         {/* Meta — minimal inline */}
         {block.meta && (
           <div className="mt-5 flex items-center gap-4 flex-wrap min-w-0"
-            style={{ fontSize: '11px', color: tokens.muted(0.7) }}>
+            style={{ ...tokens.iosTypography('caption1', { color: tokens.muted(0.7) }) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span>🎯 Fase {block.meta.fase}</span>
             <span>📚 {block.meta.elemen}</span>
@@ -401,13 +393,13 @@ function CoverVariantC({
 
         {/* CTA — minimal outline */}
         {block.cta && (
-          <button className={`mt-6 rounded-lg text-[0.85rem] font-bold transition-all ${
+          <button className={`mt-6 rounded-lg font-bold transition-all ${
             interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
           }`}
             style={{
               background: 'transparent',
               color: tokens.color(accentKey),
-              padding: '10px 24px',
+              ...tokens.iosButtonPadding('md'),
               border: '1px solid ' + tokens.color(accentKey),
             }}>
             {block.cta.label}

@@ -69,7 +69,7 @@ function HeroVariantA({
     <div className="relative overflow-hidden rounded-2xl"
       style={{
         background: `linear-gradient(135deg, ${tokens.colorAlpha(accentKey, 0.15)}, ${tokens.colorAlpha('c', 0.05)})`,
-        border: `1px solid ${tokens.colorAlpha(accentKey, 0.2)}`,
+        border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
         padding: isCompact ? '14px 16px' : '20px 28px',
         animation: 'coverReveal 0.5s ease-out',
       }}>
@@ -82,8 +82,7 @@ function HeroVariantA({
       <div className="mb-3">
         <div className="inline-flex items-center justify-center rounded-xl"
           style={{
-            width: isCompact ? 36 : 48,
-            height: isCompact ? 36 : 48,
+            ...tokens.iosIconSize(isCompact ? 'md' : 'lg'),
             background: tokens.colorAlpha(accentKey, 0.15),
             border: `1px solid ${tokens.colorAlpha(accentKey, 0.3)}`,
             fontSize: isCompact ? '18px' : '24px',
@@ -95,16 +94,14 @@ function HeroVariantA({
 
       {/* Meta label */}
       <div className="font-extrabold tracking-widest uppercase mb-1 truncate"
-        style={{ fontSize: '10px', color: tokens.colorAlpha(accentKey, 0.7), letterSpacing: '0.12em' }}>
+        style={{ ...tokens.iosTypography('caption2', { color: tokens.colorAlpha(accentKey, 0.7) }), letterSpacing: '0.12em' }}>
         {block.meta?.elemen || ''} {block.meta?.fase ? `· Kelas ${block.meta.fase}` : ''}
       </div>
 
       {/* Title */}
       <h1 className="font-black leading-tight min-w-0"
         style={{
-          fontSize: isCompact ? '18px' : '26px',
-          fontFamily: tokens.fontFamily('display'),
-          color: tokens.color('text'),
+          ...tokens.iosTypography('title2', { fontSize: isCompact ? 18 : 26, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
           wordBreak: 'break-word',
         }}>
         <InlineTextEditor
@@ -118,7 +115,7 @@ function HeroVariantA({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-2 max-w-[500px] overflow-hidden"
-        style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.textSecondary(0.7), lineHeight: 1.6 }}
+        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.7) }), lineHeight: 1.6 }}
         placeholder="Ketik subtitle..."
       />
 
@@ -129,7 +126,7 @@ function HeroVariantA({
             <span key={`hero-badge-a-${b.text?.slice(0,10)}-${i}`}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
               style={{
-                fontSize: '11px',
+                ...tokens.iosTypography('caption2'),
                 background: tokens.accentBg(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
@@ -146,11 +143,11 @@ function HeroVariantA({
             interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
           }`}
             style={{
-              fontSize: '13px',
+              ...tokens.iosTypography('callToAction'),
               background: y,
               color: tokens.color('bg'),
-              padding: '8px 20px',
-              boxShadow: tokens.raw.shadow.card,
+              ...tokens.iosButtonPadding('md'),
+              boxShadow: tokens.iosShadow('whisper'),
             }}>
             {block.cta.label}
           </button>
@@ -186,7 +183,7 @@ function HeroVariantB({
       style={{
         background: tokens.color('bg'),
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
-        borderLeft: `4px solid ${y}`,
+        borderLeft: tokens.accentStripe(accentKey, 4),
         padding: isCompact ? '12px 14px' : '16px 20px',
         animation: 'coverReveal 0.5s ease-out',
       }}>
@@ -194,8 +191,7 @@ function HeroVariantB({
       {/* Icon */}
       <div className="flex-shrink-0 flex items-center justify-center rounded-xl"
         style={{
-          width: isCompact ? 40 : 52,
-          height: isCompact ? 40 : 52,
+          ...tokens.iosIconSize(isCompact ? 'lg' : 'xl'),
           background: tokens.colorAlpha(accentKey, 0.12),
           border: `1px solid ${tokens.colorAlpha(accentKey, 0.25)}`,
           fontSize: isCompact ? '20px' : '26px',
@@ -208,16 +204,14 @@ function HeroVariantB({
         <div className="flex items-center gap-2 mb-0.5">
           {block.meta?.elemen && (
             <span className="font-bold tracking-wider uppercase truncate"
-              style={{ fontSize: '9px', color: tokens.colorAlpha(accentKey, 0.6), letterSpacing: '0.1em' }}>
+              style={{ ...tokens.iosTypography('caption2', { fontSize: 9, color: tokens.colorAlpha(accentKey, 0.6) }), letterSpacing: '0.1em' }}>
               {block.meta.elemen}
             </span>
           )}
         </div>
         <h2 className="font-black leading-tight min-w-0 truncate"
           style={{
-            fontSize: isCompact ? '15px' : '20px',
-            fontFamily: tokens.fontFamily('display'),
-            color: tokens.color('text'),
+            ...tokens.iosTypography('title3', { fontSize: isCompact ? 15 : 20, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
           }}>
           <InlineTextEditor
             {...titleEditor}
@@ -228,7 +222,7 @@ function HeroVariantB({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-1 overflow-hidden"
-          style={{ fontSize: isCompact ? '11px' : '13px', color: tokens.textSecondary(0.6), lineHeight: 1.5 }}
+          style={{ ...tokens.iosTypography('footnote', { fontSize: isCompact ? 11 : 13, color: tokens.textSecondary(0.6) }), lineHeight: 1.5 }}
           placeholder="Ketik subtitle..."
         />
       </div>
@@ -239,10 +233,10 @@ function HeroVariantB({
           interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
         }`}
           style={{
-            fontSize: '12px',
+            ...tokens.iosTypography('callToAction', { fontSize: 12 }),
             background: y,
             color: tokens.color('bg'),
-            padding: '8px 16px',
+            ...tokens.iosButtonPadding('md'),
           }}>
           {block.cta.label}
         </button>
@@ -307,16 +301,14 @@ function HeroVariantC({
 
       {/* Meta */}
       <div className="font-extrabold tracking-widest uppercase mb-1 truncate"
-        style={{ fontSize: '10px', color: tokens.muted(0.5), letterSpacing: '0.15em' }}>
+        style={{ ...tokens.iosTypography('caption2', { color: tokens.muted(0.5) }), letterSpacing: '0.15em' }}>
         {block.meta?.elemen || ''} {block.meta?.fase ? `· Kelas ${block.meta.fase}` : ''}
       </div>
 
       {/* Title */}
       <h2 className="font-black leading-tight min-w-0 mx-auto"
         style={{
-          fontSize: isCompact ? '18px' : '24px',
-          fontFamily: tokens.fontFamily('display'),
-          color: tokens.color('text'),
+          ...tokens.iosTypography('title2', { fontSize: isCompact ? 18 : 24, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
           maxWidth: '90%',
           wordBreak: 'break-word',
         }}>
@@ -331,7 +323,7 @@ function HeroVariantC({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-2 mx-auto max-w-[440px] overflow-hidden"
-        style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.textSecondary(0.6), lineHeight: 1.6 }}
+        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.6) }), lineHeight: 1.6 }}
         placeholder="Ketik subtitle..."
       />
 
@@ -342,7 +334,7 @@ function HeroVariantC({
             <span key={`hero-badge-c-${b.text?.slice(0,10)}-${i}`}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold"
               style={{
-                fontSize: '9px',
+                ...tokens.iosTypography('caption2', { fontSize: 9 }),
                 background: tokens.colorAlpha(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.15)}`,
@@ -359,10 +351,10 @@ function HeroVariantC({
           interactive ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'
         }`}
           style={{
-            fontSize: '12px',
+            ...tokens.iosTypography('callToAction', { fontSize: 12 }),
             background: 'transparent',
             color: y,
-            padding: '8px 20px',
+            ...tokens.iosButtonPadding('md'),
             border: `1px solid ${y}`,
           }}>
           {block.cta.label}

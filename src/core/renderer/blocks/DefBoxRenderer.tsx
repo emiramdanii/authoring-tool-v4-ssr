@@ -70,7 +70,6 @@ function DefBoxStepMode({
   isCompact: boolean;
   colorKey: string;
 }) {
-  const borderColor = tokens.color(colorKey);
   const totalSteps = steps.length;
   const { activeStep, ...nav } = usePremiumStepNavigator(totalSteps);
 
@@ -104,13 +103,9 @@ function DefBoxStepMode({
         >
           <div
             style={{
-              borderLeft: `${isCompact ? 3 : 4}px solid ${borderColor}`,
+              borderLeft: tokens.accentStripe(colorKey, isCompact ? 3 : 4),
               paddingLeft: isCompact ? '10px' : '12px',
-              fontSize: isCompact ? '12px' : '14.5px',
-              lineHeight: 1.7,
-              color: tokens.color('text'),
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
+              ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
             }}
             dangerouslySetInnerHTML={{ __html: step.content }}
           />
@@ -125,7 +120,6 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
   block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
   const colorKey = block.borderColor || 'y';
-  const borderColor = tokens.color(colorKey);
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
   const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
@@ -184,12 +178,12 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         <div
           style={{
             background: tokens.accentBg(colorKey, 0.04),
-            borderLeft: `3px solid ${tokens.color(colorKey)}`,
+            borderLeft: tokens.accentStripe(colorKey, 3),
             borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('lg'),
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: tokens.iosShadow('whisper'),
             overflow: 'hidden',
           }}
         >
@@ -202,11 +196,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               </div>
               <span
                 style={{
-                  fontSize: isCompact ? '10px' : '11px',
-                  fontWeight: 800,
-                  color: tokens.accentText(colorKey),
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
+                  ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), textTransform: 'uppercase' }),
                 }}
               >
                 Definisi
@@ -224,13 +214,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               />
             ) : (
               <div style={{
-                borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color(colorKey)}`,
+                borderLeft: tokens.accentStripe(colorKey, isCompact ? 3 : 4),
                 paddingLeft: isCompact ? '10px' : '12px',
-                fontSize: isCompact ? '12px' : '14.5px',
-                lineHeight: 1.7,
-                color: tokens.color('text'),
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
+                ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
                 maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                 overflow: isContentCollapsed ? 'hidden' : undefined,
                 transition: 'max-height 0.3s ease-out',
@@ -261,11 +247,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors"
                 style={{
                   background: tokens.accentBg(colorKey, 0.06),
-                  color: tokens.accentText(colorKey),
-                  fontSize: isCompact ? '9px' : '11px',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  border: 'none',
+                  ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }),
                 }}
               >
                 <ChevronDown size={isCompact ? 10 : 12} />
@@ -293,12 +275,12 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         <div
           style={{
             background: tokens.accentBg(colorKey, 0.04),
-            borderLeft: `3px solid ${tokens.color(colorKey)}`,
+            borderLeft: tokens.accentStripe(colorKey, 3),
             borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('xl'),
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: tokens.iosShadow('whisper'),
             padding: isCompact ? '16px' : '20px',
             position: 'relative',
             overflow: 'hidden',
@@ -339,11 +321,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               </div>
               <span
                 style={{
-                  fontSize: isCompact ? '10px' : '11px',
-                  fontWeight: 800,
-                  color: tokens.accentText(colorKey),
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
+                  ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), textTransform: 'uppercase' }),
                 }}
               >
                 Definisi
@@ -360,13 +338,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             ) : (
               <div
                 style={{
-                  fontSize: isCompact ? '12px' : '15px',
-                  lineHeight: 1.8,
-                  color: tokens.color('text'),
+                  ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
                   paddingLeft: isCompact ? '8px' : '12px',
-                  borderLeft: `3px solid ${tokens.color(colorKey)}`,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
+                  borderLeft: tokens.accentStripe(colorKey, 3),
                   maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                   overflow: isContentCollapsed ? 'hidden' : undefined,
                   transition: 'max-height 0.3s ease-out',
@@ -388,7 +362,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             {isContentCollapsed && (
               <button onClick={expandContent}
                 className="flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg transition-colors"
-                style={{ background: tokens.accentBg(colorKey, 0.06), color: tokens.accentText(colorKey), fontSize: isCompact ? '9px' : '11px', cursor: 'pointer', fontWeight: 700, border: 'none' }}>
+                style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }) }}>
                 <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
               </button>
             )}
@@ -415,7 +389,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           padding: isCompact ? '6px 10px' : '8px 14px',
           borderRadius: tokens.radius('lg'),
           background: tokens.accentBg(colorKey, 0.04),
-          borderLeft: `3px solid ${tokens.color(colorKey)}`,
+          borderLeft: tokens.accentStripe(colorKey, 3),
           borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
           borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
@@ -430,22 +404,14 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         <div className="min-w-0 flex-1">
           <span
             style={{
-              fontSize: isCompact ? '9px' : '10px',
-              fontWeight: 800,
-              color: tokens.accentText(colorKey),
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
+              ...tokens.iosTypography('caption2', { fontSize: isCompact ? 9 : 10, color: tokens.accentText(colorKey), textTransform: 'uppercase' }),
             }}
           >
             Definisi
           </span>
           <div
             style={{
-              fontSize: isCompact ? '12px' : '13px',
-              lineHeight: 1.6,
-              color: tokens.color('text'),
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
+              ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
               maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,
               overflow: isContentCollapsed ? 'hidden' : undefined,
               transition: 'max-height 0.3s ease-out',
@@ -466,7 +432,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           {isContentCollapsed && (
             <button onClick={expandContent}
               className="flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg transition-colors"
-              style={{ background: tokens.accentBg(colorKey, 0.06), color: tokens.accentText(colorKey), fontSize: isCompact ? '8px' : '9px', cursor: 'pointer', fontWeight: 700, border: 'none' }}>
+              style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { fontSize: isCompact ? 8 : 9, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }) }}>
               <ChevronDown size={8} /> Selengkapnya
             </button>
           )}

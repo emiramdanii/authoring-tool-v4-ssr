@@ -12,6 +12,7 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { Scissors } from 'lucide-react';
+import { IOS_SPACING } from '../../themes/ios-visual-contract';
 
 // NOTE: Use React.lazy() to break the circular dependency:
 //   SceneRegistry → MateriSectionRenderer → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
@@ -93,10 +94,9 @@ function MateriTabBar({
             onClick={() => onSelect(i)}
             type="button"
             style={{
-              padding: '6px 14px',
-              borderRadius: 20,
-              fontSize: 13,
-              fontWeight: isActive ? 600 : 400,
+              ...tokens.iosTypography('footnote', { fontWeight: isActive ? 600 : 400 }),
+              padding: `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px`,
+              borderRadius: tokens.radius('full'),
               border: `1px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.4) : tokens.subtleBorder(0.1)}`,
               background: isActive ? tokens.accentBg(accentColor || 'p', 0.08) : 'transparent',
               color: isActive ? tokens.accentText(accentColor || 'p') : tokens.muted(0.85),
@@ -137,7 +137,7 @@ function OverflowIndicator({
       justifyContent: 'space-between',
       gap: 12,
     }}>
-      <span style={{ fontSize: isCompact ? 11 : 13, color: tokens.textSecondary(0.9) }}>
+      <span style={{ ...tokens.iosTypography('caption1', { fontSize: isCompact ? 11 : 13, color: tokens.textSecondary(0.9) }) }}>
         {overflowCount} blok tidak cukup ruang di halaman ini
       </span>
       {onSplit && interactive && (
@@ -251,20 +251,21 @@ function MateriVariantKlasik({
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `3px solid ${accent}`,
+          borderLeft: tokens.accentStripe(accentColor, 3),
           background: tokens.color('card'),
-          padding: isCompact ? '12px 14px' : '18px 20px',
+          ...tokens.iosSectionPadding(isCompact),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
         <div className="flex items-start gap-3">
           {/* Section number badge */}
           <div
-            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-black"
+            className="flex-shrink-0 rounded-xl flex items-center justify-center font-black"
             style={{
+              ...tokens.iosIconSize('md'),
               background: tokens.accentBg(accentColor, 0.12),
               color: tokens.accentText(accentColor),
-              fontSize: isCompact ? '13px' : '15px',
+              ...tokens.iosTypography('headline', { fontSize: isCompact ? 13 : 15 }),
             }}
           >
             {sectionNumber}
@@ -281,9 +282,7 @@ function MateriVariantKlasik({
               <h2
                 className="font-black leading-tight"
                 style={{
-                  fontFamily: tokens.fontFamily('display'),
-                  fontSize: isCompact ? '16px' : '1.35rem',
-                  color: tokens.color('text'),
+                  ...tokens.iosTypography('title3', { fontSize: isCompact ? 16 : 22, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -295,9 +294,7 @@ function MateriVariantKlasik({
               <p
                 className="mt-1 leading-relaxed"
                 style={{
-                  fontSize: isCompact ? '11px' : '13px',
-                  lineHeight: 1.7,
-                  color: tokens.muted(0.85),
+                  ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13, color: tokens.muted(0.85), lineHeight: 1.7 }),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -335,7 +332,7 @@ function MateriVariantKlasik({
         <div
           className="flex flex-col gap-4"
           style={{
-            padding: isCompact ? '12px 14px' : '18px 20px',
+            ...tokens.iosContentPadding(isCompact),
             position: 'relative',
             maxWidth: tokens.contentWidth(),
             lineHeight: 1.7,
@@ -349,7 +346,7 @@ function MateriVariantKlasik({
               {isAccordionMode ? (
                 <div className="rounded-lg overflow-hidden"
                   style={{
-                    border: `1px solid ${accentAlpha(0.15)}`,
+                    border: `1px solid ${tokens.colorAlpha(accentColor, 0.12)}`,
                     borderRadius: tokens.radius('lg') + 'px',
                     background: expandedSections.has(i) ? accentAlpha(0.04) : 'transparent',
                   }}
@@ -361,12 +358,10 @@ function MateriVariantKlasik({
                       padding: isCompact ? '5px 10px' : '7px 12px',
                       cursor: 'pointer',
                       background: expandedSections.has(i) ? accentAlpha(0.06) : 'transparent',
-                      fontSize: isCompact ? '10px' : '12px',
-                      fontWeight: 700,
-                      color: accent,
+                      ...tokens.iosTypography('caption1', { fontWeight: 700, color: accent }),
                     }}
                   >
-                    <span className="flex-shrink-0" style={{ fontSize: isCompact ? '11px' : '13px' }}>
+                    <span className="flex-shrink-0" style={{ ...tokens.iosTypography('caption1', { fontSize: isCompact ? 11 : 13 }) }}>
                       {(childBlock as Record<string, unknown>).icon as string || '📄'}
                     </span>
                     <span className="flex-1 min-w-0 truncate">
@@ -423,11 +418,9 @@ function MateriVariantKlasik({
       {!isCompressed && takeaways.length > 0 && (
         <div
           style={{
+            ...tokens.nestedCardStyle(),
             margin: isCompact ? '0 14px 12px' : '0 20px 16px',
             padding: isCompact ? '10px 12px' : '14px 16px',
-            background: tokens.subtleBg(0.03),
-            border: `1px solid ${tokens.subtleBorder(0.08)}`,
-            borderRadius: tokens.radius('xl') + 'px',
           }}
         >
           <div className="flex items-center gap-2 mb-3">
@@ -442,8 +435,7 @@ function MateriVariantKlasik({
             <span
               className="font-extrabold uppercase tracking-wider"
               style={{
-                color: tokens.color('g'),
-                fontSize: isCompact ? '10px' : '11px',
+                ...tokens.iosTypography('caption2', { color: tokens.color('g') }),
               }}
             >
               Poin Penting
@@ -468,9 +460,7 @@ function MateriVariantKlasik({
                 <span
                   className="leading-relaxed"
                   style={{
-                    fontSize: isCompact ? '12px' : '13px',
-                    lineHeight: 1.7,
-                    color: tokens.color('text'),
+                    ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 13, lineHeight: 1.7, color: tokens.color('text') }),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
                   }}
@@ -488,12 +478,11 @@ function MateriVariantKlasik({
       {!isCompressed && selfCheck && (
         <div
           style={{
+            ...tokens.nestedCardStyle(),
             margin: isCompact ? '0 14px 14px' : '0 20px 20px',
             padding: isCompact ? '10px 12px' : '14px 16px',
             background: tokens.accentBg('y', 0.04),
-            border: `1px solid ${tokens.subtleBorder(0.06)}`,
-            borderRadius: tokens.radius('xl') + 'px',
-            borderLeft: `3px solid ${tokens.color('y')}`,
+            borderLeft: tokens.accentStripe('y', 3),
           }}
         >
           <div className="flex items-start gap-3">
@@ -509,8 +498,7 @@ function MateriVariantKlasik({
               <span
                 className="font-extrabold block mb-1"
                 style={{
-                  color: tokens.color('y'),
-                  fontSize: isCompact ? '10px' : '11px',
+                  ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
                   letterSpacing: '0.04em',
                 }}
               >
@@ -519,9 +507,7 @@ function MateriVariantKlasik({
               <p
                 className="leading-relaxed"
                 style={{
-                  fontSize: isCompact ? '11px' : '13px',
-                  lineHeight: 1.7,
-                  color: tokens.color('text'),
+                  ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13, lineHeight: 1.7, color: tokens.color('text') }),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -545,9 +531,7 @@ function MateriVariantKlasik({
             style={{
               background: tokens.accentBg(accentColor, 0.08),
               color: tokens.accentText(accentColor),
-              fontSize: isCompact ? '9px' : '11px',
-              cursor: 'pointer',
-              fontWeight: 700,
+              ...tokens.iosTypography('caption2', { fontWeight: 700 }),
             }}
           >
             {isExpanded
@@ -653,19 +637,20 @@ function MateriVariantMajalah({
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `3px solid ${accent}`,
+          borderLeft: tokens.accentStripe(accentColor, 3),
           background: tokens.color('card'),
-          padding: isCompact ? '12px 14px' : '18px 20px',
+          ...tokens.iosSectionPadding(isCompact),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
         <div className="flex items-center gap-3">
           <div
-            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-black"
+            className="flex-shrink-0 rounded-lg flex items-center justify-center font-black"
             style={{
+              ...tokens.iosIconSize('sm'),
               background: tokens.accentBg(accentColor, 0.12),
               color: tokens.accentText(accentColor),
-              fontSize: isCompact ? '12px' : '14px',
+              ...tokens.iosTypography('headline', { fontSize: isCompact ? 12 : 14 }),
             }}
           >
             {sectionNumber}
@@ -673,9 +658,7 @@ function MateriVariantMajalah({
           <h2
             className="font-black leading-tight min-w-0"
             style={{
-              fontFamily: tokens.fontFamily('display'),
-              fontSize: isCompact ? '14px' : '1.2rem',
-              color: tokens.color('text'),
+              ...tokens.iosTypography('title3', { fontSize: isCompact ? 14 : 22, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -746,10 +729,8 @@ function MateriVariantMajalah({
           <div
             style={{
               ...(isCompact ? {} : { position: 'sticky', top: '16px', alignSelf: 'start' }),
+              ...tokens.nestedCardStyle(),
               padding: isCompact ? '10px' : '14px',
-              background: tokens.subtleBg(0.03),
-              borderRadius: tokens.radius('xl') + 'px',
-              border: `1px solid ${tokens.subtleBorder(0.08)}`,
             }}
           >
             <div className="flex items-center gap-2 mb-3">
@@ -757,8 +738,7 @@ function MateriVariantMajalah({
               <span
                 className="font-extrabold uppercase tracking-wider"
                 style={{
-                  color: tokens.color('g'),
-                  fontSize: '10px',
+                  ...tokens.iosTypography('caption2', { color: tokens.color('g') }),
                 }}
               >
                 Poin Penting
@@ -781,9 +761,7 @@ function MateriVariantMajalah({
                   <span
                     className="leading-relaxed"
                     style={{
-                      fontSize: '12px',
-                      lineHeight: 1.7,
-                      color: tokens.color('text'),
+                      ...tokens.iosTypography('subheadline', { fontSize: 12, lineHeight: 1.7, color: tokens.color('text') }),
                       wordBreak: 'break-word',
                     }}
                   >
@@ -800,12 +778,11 @@ function MateriVariantMajalah({
       {selfCheck && (
         <div
           style={{
+            ...tokens.nestedCardStyle(),
             margin: isCompact ? '0 14px 14px' : '0 20px 20px',
             padding: isCompact ? '10px 14px' : '12px 18px',
             background: tokens.accentBg('y', 0.04),
-            borderRadius: tokens.radius('lg') + 'px',
-            border: `1px solid ${tokens.subtleBorder(0.06)}`,
-            borderLeft: `3px solid ${tokens.color('y')}`,
+            borderLeft: tokens.accentStripe('y', 3),
           }}
         >
           <div className="flex items-center gap-3">
@@ -814,8 +791,7 @@ function MateriVariantMajalah({
               <span
                 className="font-extrabold"
                 style={{
-                  color: tokens.color('y'),
-                  fontSize: '11px',
+                  ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
                   marginRight: '8px',
                 }}
               >
@@ -824,9 +800,7 @@ function MateriVariantMajalah({
               <span
                 className="leading-relaxed"
                 style={{
-                  fontSize: '12px',
-                  lineHeight: 1.7,
-                  color: tokens.color('text'),
+                  ...tokens.iosTypography('subheadline', { fontSize: 12, lineHeight: 1.7, color: tokens.color('text') }),
                   wordBreak: 'break-word',
                 }}
               >
@@ -925,16 +899,17 @@ function MateriVariantPill({
       <div
         className="flex items-center gap-2.5"
         style={{
-          padding: isCompact ? '8px 12px' : '10px 16px',
-          borderLeft: `3px solid ${accent}`,
+          ...tokens.iosSectionPadding(isCompact),
+          borderLeft: tokens.accentStripe(accentColor, 3),
         }}
       >
         <div
-          className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center font-black"
+          className="flex-shrink-0 rounded-md flex items-center justify-center font-black"
           style={{
+            ...tokens.iosIconSize('sm'),
             background: tokens.accentBg(accentColor, 0.12),
             color: tokens.accentText(accentColor),
-            fontSize: isCompact ? '10px' : '12px',
+            ...tokens.iosTypography('caption1', { fontSize: isCompact ? 10 : 12 }),
           }}
         >
           {sectionNumber}
@@ -942,9 +917,7 @@ function MateriVariantPill({
         <h2
           className="font-bold min-w-0"
           style={{
-            fontFamily: tokens.fontFamily('display'),
-            fontSize: isCompact ? '13px' : '15px',
-            color: tokens.color('text'),
+            ...tokens.iosTypography('headline', { fontSize: isCompact ? 13 : 15, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
             wordBreak: 'break-word',
           }}
         >
@@ -976,7 +949,7 @@ function MateriVariantPill({
         <div
           className="flex flex-col gap-3"
           style={{
-            padding: isCompact ? '8px 12px' : '10px 16px',
+            ...tokens.iosContentPadding(isCompact),
             position: 'relative',
           }}
         >
@@ -1065,8 +1038,7 @@ function MateriVariantPill({
               background: tokens.accentBg('y', 0.06),
               border: `1px solid ${tokens.subtleBorder(0.06)}`,
               color: tokens.color('y'),
-              fontSize: '11px',
-              fontWeight: 700,
+              ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
@@ -1086,15 +1058,14 @@ function MateriVariantPill({
                 padding: isCompact ? '8px 10px' : '10px 14px',
                 background: tokens.accentBg('y', 0.04),
                 borderRadius: '8px',
-                borderLeft: `3px solid ${tokens.color('y')}`,
+                borderLeft: tokens.accentStripe('y', 3),
                 animation: 'fadeIn 0.3s ease',
               }}
             >
               <p
                 className="leading-relaxed"
                 style={{
-                  fontSize: '12px',
-                  color: tokens.color('text'),
+                  ...tokens.iosTypography('subheadline', { fontSize: 12, color: tokens.color('text') }),
                   wordBreak: 'break-word',
                 }}
               >
