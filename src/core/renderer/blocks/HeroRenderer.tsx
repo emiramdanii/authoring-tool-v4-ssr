@@ -71,7 +71,7 @@ function HeroVariantA({
         background: `linear-gradient(135deg, ${tokens.colorAlpha(accentKey, 0.15)}, ${tokens.colorAlpha('c', 0.05)})`,
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
         padding: isCompact ? '14px 16px' : '20px 28px',
-        animation: 'coverReveal 0.5s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}>
 
       {/* Accent bar */}
@@ -130,8 +130,7 @@ function HeroVariantA({
                 background: tokens.accentBg(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
-                // Sprint 3C: stagger entrance animation
-                animation: `blockStaggerIn 0.4s ease ${0.3 + i * 0.08}s both`,
+                ...tokens.iosEntranceStyle(i, 'slideIn'),
               }}>
               {b.icon && <span className="flex-shrink-0">{b.icon}</span>} {b.text}
             </span>
@@ -187,7 +186,7 @@ function HeroVariantB({
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
         borderLeft: tokens.accentStripe(accentKey, 4),
         padding: isCompact ? '12px 14px' : '16px 20px',
-        animation: 'coverReveal 0.5s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}>
 
       {/* Icon */}
@@ -255,8 +254,7 @@ function HeroVariantB({
                 background: tokens.colorAlpha(b.color, 0.1),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
-                // Sprint 3C: stagger entrance
-                animation: `blockStaggerIn 0.4s ease ${0.2 + i * 0.08}s both`,
+                ...tokens.iosEntranceStyle(i, 'slideIn'),
               }}>
               {b.icon && <span>{b.icon}</span>} {b.text}
             </span>
@@ -285,7 +283,7 @@ function HeroVariantC({
     <div className="relative overflow-hidden text-center"
       style={{
         padding: isCompact ? '16px 20px' : '24px 32px',
-        animation: 'coverReveal 0.5s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}>
 
       {/* Accent line */}
@@ -342,8 +340,7 @@ function HeroVariantC({
                 background: tokens.colorAlpha(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.15)}`,
-                // Sprint 3C: stagger entrance
-                animation: `blockStaggerIn 0.4s ease ${0.3 + i * 0.08}s both`,
+                ...tokens.iosEntranceStyle(i, 'slideIn'),
               }}>
               {b.icon && <span>{b.icon}</span>} {b.text}
             </span>

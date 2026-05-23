@@ -122,6 +122,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
   const colorKey = block.borderColor || 'y';
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
+  // Sprint 3C: React-state hover for expand buttons
+  const [isExpandHovered, setIsExpandHovered] = React.useState(false);
+
   const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
   const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
     if (block.id) updateSchemaBlock(block.id, { variant: v });
@@ -245,10 +248,13 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             {isContentCollapsed && (
               <button
                 onClick={expandContent}
+                onMouseEnter={() => setIsExpandHovered(true)}
+                onMouseLeave={() => setIsExpandHovered(false)}
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
                 style={{
                   background: tokens.accentBg(colorKey, 0.06),
                   ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }),
+                  ...tokens.iosHoverBgStyle(isExpandHovered, 0.04),
                 }}
               >
                 <ChevronDown size={isCompact ? 10 : 12} />
@@ -363,8 +369,10 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             )}
             {isContentCollapsed && (
               <button onClick={expandContent}
+                onMouseEnter={() => setIsExpandHovered(true)}
+                onMouseLeave={() => setIsExpandHovered(false)}
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
-                style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }) }}>
+                style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }), ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
                 <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
               </button>
             )}
@@ -434,8 +442,10 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           </div>
           {isContentCollapsed && (
             <button onClick={expandContent}
+              onMouseEnter={() => setIsExpandHovered(true)}
+              onMouseLeave={() => setIsExpandHovered(false)}
               className={`flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}
-              style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { fontSize: isCompact ? 8 : 9, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }) }}>
+              style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { fontSize: isCompact ? 10 : 11, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }), ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
               <ChevronDown size={8} /> Selengkapnya
             </button>
           )}

@@ -66,6 +66,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
   interactive?: boolean;
 }) {
   const [expanded, setExpanded] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   const titleEditor = useInlineEditor({
     blockId,
     fieldKey: `cards.${cardIndex}.title`,
@@ -89,6 +90,8 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
 
   return (
     <div className={`rounded-xl border ${tokens.iosCardTw()} min-w-0 group`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         background: cardBg,
         borderColor: cardBorder,
@@ -97,7 +100,8 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         ...tokens.iosCardPadding(isCompact),
         overflow: 'hidden',
         position: 'relative',
-        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
+        ...tokens.iosEntranceStyle(cardIndex, 'slideIn'),
+        ...tokens.iosHoverBgStyle(isHovered, 0.03),
       }}>
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-xl"
@@ -147,6 +151,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
   interactive?: boolean;
 }) {
   const [expanded, setExpanded] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   const titleEditor = useInlineEditor({
     blockId,
     fieldKey: `cards.${cardIndex}.title`,
@@ -171,6 +176,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
   return (
     <div
       className={`rounded-xl ${tokens.iosCardTw()} min-w-0 group`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         background: cardBg,
         borderColor: cardBorder,
@@ -180,8 +187,9 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
         boxShadow: tokens.iosShadow('whisper'),
         overflow: 'hidden',
         position: 'relative',
-        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
+        ...tokens.iosEntranceStyle(cardIndex, 'slideIn'),
         cursor: 'pointer',
+        ...tokens.iosHoverBgStyle(isHovered, 0.03),
       }}
       onClick={() => { if (isLong) setExpanded(!expanded); }}
     >
@@ -296,10 +304,10 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         alignItems: expanded ? 'flex-start' : 'center',
         gap: isCompact ? '5px' : '7px',
         cursor: 'pointer',
-        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
+        ...tokens.iosEntranceStyle(cardIndex, 'slideIn'),
         maxWidth: '100%',
         // Sprint 3C: border-radius transition for smooth pill→card morph
-        transition: 'background-color 0.15s ease-out, border-color 0.15s ease-out, border-radius 0.2s ease-out',
+        ...tokens.iosTransitionStyle('background-color, border-color, border-radius', 'standard'),
       }}
       onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
       onMouseEnter={() => setIsHovered(true)}

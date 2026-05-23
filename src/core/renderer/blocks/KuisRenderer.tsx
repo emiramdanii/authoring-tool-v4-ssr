@@ -142,6 +142,7 @@ function KuisVariantKartu({
                   overflowWrap: 'break-word',
                   color: tokens.color('text'),
                   cursor: isAnswered ? 'default' : 'pointer',
+                  ...tokens.iosTransitionStyle('background-color, border-color, transform', 'standard'),
                 }}
               >
                 {opt}
@@ -220,10 +221,11 @@ function KuisVariantRingkas({
       <div className="flex items-center gap-1.5 mb-2">
         <div className="h-1 flex-1 rounded-full overflow-hidden" style={{ background: tokens.subtleBg(0.08) }}>
           <div
-            className="h-full rounded-full transition-[width] duration-300 ease-out"
+            className="h-full rounded-full"
             style={{
               width: (totalAnswered / questionsLength) * 100 + '%',
               background: tokens.color('y'),
+              ...tokens.iosTransitionStyle('width', 'slow'),
             }}
           />
         </div>
@@ -271,6 +273,7 @@ function KuisVariantRingkas({
                   color: tokens.color('text'),
                   cursor: isAnswered ? 'default' : 'pointer',
                   whiteSpace: 'nowrap',
+                  ...tokens.iosTransitionStyle('background-color, border-color, transform', 'standard'),
                 }}
               >
                 {opt}
@@ -543,10 +546,11 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       <div className="h-1 rounded-full overflow-hidden"
         style={{ background: tokens.subtleBg(0.08) }}
         role="progressbar" aria-label={`Progres kuis ${totalAnswered} dari ${questions.length}`} aria-valuenow={totalAnswered} aria-valuemin={0} aria-valuemax={questions.length}>
-        <div className="h-full rounded-full transition-[width] duration-300 ease-out"
+        <div className="h-full rounded-full"
           style={{
             width: (totalAnswered / questions.length) * 100 + '%',
             background: tokens.color('y'),
+            ...tokens.iosTransitionStyle('width', 'slow'),
           }} />
       </div>
       )}
@@ -600,6 +604,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                       overflowWrap: 'break-word',
                       color: tokens.color('text'),
                       cursor: isAnswered ? 'default' : 'pointer',
+                      ...tokens.iosTransitionStyle('background-color, border-color, transform', 'standard'),
                     }}>
                     {opt}
                   </button>

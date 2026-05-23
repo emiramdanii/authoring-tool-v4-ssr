@@ -128,10 +128,11 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
               {/* Thin progress bar */}
               <div className="mt-1.5 w-full h-1 rounded-full overflow-hidden"
                 style={{ background: tokens.subtleBg(0.06) }}>
-                <div className="h-full rounded-full transition-[width] duration-1000 ease-out"
+                <div className="h-full rounded-full"
                   style={{
                     width: `${totalPct}%`,
                     background: tokens.color(tierConfig.color),
+                    ...tokens.iosTransitionStyle('width', 'slow'),
                   }} />
               </div>
             </div>

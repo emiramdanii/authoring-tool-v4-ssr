@@ -67,7 +67,7 @@ function CoverVariantA({
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
       style={{
         background: tokens.color('bg'),
-        animation: 'coverReveal 0.6s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
         overflow: 'hidden',
       }}>
 
@@ -181,7 +181,7 @@ function CoverVariantB({
     <div className="absolute inset-0 flex flex-col justify-end p-8 pb-12"
       style={{
         background: tokens.color('bg2'),
-        animation: 'coverReveal 0.6s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
         overflow: 'hidden',
         // Prevent bottom-anchored content from overflowing upward.
         // When title/subtitle/badges stack is tall, justify-end pushes
@@ -253,7 +253,7 @@ function CoverVariantB({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   maxWidth: '100%',
-                  animation: `blockStaggerIn 0.4s ease ${i * 0.1}s both`,
+                  ...tokens.iosEntranceStyle(i, 'slideIn'),
                 }}>
                 {b.icon && <span className="flex-shrink-0">{b.icon}</span>} <span className="min-w-0" style={{ overflow: 'hidden' }}>{b.text}</span>
               </span>
@@ -275,6 +275,7 @@ function CoverVariantB({
 
         {/* CTA */}
         {block.cta && (
+          <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
           <button className={`mt-5 rounded-lg ${tokens.iosButtonTw(interactive)}`}
             style={{
               ...tokens.iosTypography('callToAction'),
@@ -285,6 +286,7 @@ function CoverVariantB({
             }}>
             {block.cta.label}
           </button>
+          </MicroInteraction>
         )}
       </div>
 
@@ -313,7 +315,7 @@ function CoverVariantC({
     <div className="absolute inset-0 flex flex-col justify-center p-10"
       style={{
         background: tokens.color('bg2'),
-        animation: 'coverReveal 0.6s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
         overflow: 'hidden',
       }}>
 
@@ -369,7 +371,7 @@ function CoverVariantC({
                   textOverflow: 'ellipsis',
                   wordBreak: 'break-word',
                   maxWidth: '100%',
-                  animation: `blockStaggerIn 0.4s ease ${i * 0.1}s both`,
+                  ...tokens.iosEntranceStyle(i, 'slideIn'),
                 }}>
                 {b.icon && <span className="flex-shrink-0" style={{ fontSize: '10px' }}>{b.icon}</span>} <span className="min-w-0">{b.text}</span>
               </span>
@@ -389,6 +391,7 @@ function CoverVariantC({
 
         {/* CTA — minimal outline */}
         {block.cta && (
+          <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
           <button className={`mt-6 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
             style={{
               background: 'transparent',
@@ -398,6 +401,7 @@ function CoverVariantC({
             }}>
             {block.cta.label}
           </button>
+          </MicroInteraction>
         )}
       </div>
 

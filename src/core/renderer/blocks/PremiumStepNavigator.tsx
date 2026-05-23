@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
 import { resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from '../types';
+import { IOS_INTERACTION } from '../../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREMIUM STEP NAVIGATOR — Enhanced Step Navigation with Visual FX
@@ -265,7 +266,7 @@ export function PremiumStepNavigator({
             background: `linear-gradient(90deg, ${accentColor}, ${accentSecondary}, ${accentColor}, ${accentSecondary})`,
             backgroundSize: '200% 100%',
             animation: 'shimmer 2s linear infinite',
-            transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: `width ${IOS_INTERACTION.duration.slow}ms ${IOS_INTERACTION.easing.ios}`,
             boxShadow: `0 0 8px ${accentAlpha(0.4)}`,
           }}
         />
@@ -323,7 +324,7 @@ export function PremiumStepNavigator({
                     : 'transparent',
                 color: isActive ? accentColor : isPast ? accentAlpha(0.7) : mutedColor,
                 cursor: 'pointer',
-                transition: 'background, border-color, color, transform, box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: `background, border-color, color, transform, box-shadow ${IOS_INTERACTION.duration.slow}ms ${IOS_INTERACTION.easing.ios}`,
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 transform: isActive ? 'perspective(600px) rotateY(0deg) scale(1.05)' : 'perspective(600px) rotateY(0deg) scale(1)',
@@ -402,7 +403,7 @@ export function PremiumStepNavigator({
             color: activeStep === 0 ? mutedColor : accentColor,
             cursor: activeStep === 0 ? 'default' : 'pointer',
             opacity: activeStep === 0 ? 0.35 : 1,
-            transition: 'background-color, border-color, color, opacity, transform 0.2s ease',
+            transition: `background-color, border-color, color, opacity, transform ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
             animation: hoveredBtn === 'prev' && activeStep > 0 ? 'springBounce 0.4s ease' : 'none',
           } as React.CSSProperties}
         >
@@ -456,7 +457,7 @@ export function PremiumStepNavigator({
             color: activeStep === totalSteps - 1 ? mutedColor : accentColor,
             cursor: activeStep === totalSteps - 1 ? 'default' : 'pointer',
             opacity: activeStep === totalSteps - 1 ? 0.35 : 1,
-            transition: 'background-color, border-color, color, opacity, transform 0.2s ease',
+            transition: `background-color, border-color, color, opacity, transform ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
             animation: hoveredBtn === 'next' && activeStep < totalSteps - 1 ? 'springBounce 0.4s ease' : 'none',
           } as React.CSSProperties}
         >
