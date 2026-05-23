@@ -281,6 +281,7 @@ function TujuanVariantA({
             onShowMore={showMore}
             itemLabel="tujuan lainnya"
             isCompact={isCompact}
+            tokens={tokens}
           />
         </div>
       )}
@@ -572,6 +573,7 @@ function TujuanVariantB({
             onShowMore={showMore}
             itemLabel="tujuan lagi"
             isCompact={isCompact}
+            tokens={tokens}
           />
         )}
       </div>

@@ -709,6 +709,102 @@ export function getCss(ratioW: number, ratioH: number): string {
     .self-check h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
     .self-check p { font-size: 0.78rem; color: #94a3b8; }
 
+    /* ── Light mode support (prefers-color-scheme) ── */
+    @media (prefers-color-scheme: light) {
+      body {
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      #canvas {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+      }
+      .block {
+        background: rgba(0,0,0,0.02);
+        border-color: rgba(0,0,0,0.06);
+      }
+      .block-intro { color: #475569; }
+      .highlight { color: #f59e0b; }
+      .cover-subtitle { color: #475569; }
+      .page-label { color: rgba(0,0,0,0.25); }
+      .empty-page { color: rgba(0,0,0,0.3); }
+      .step-num { background: rgba(62,207,207,0.12); color: #0891b2; }
+      .step-content p { color: #475569; }
+      .tips-box { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.2); color: #f59e0b; }
+      .tp-num { color: #1e293b; }
+      .tp-desc { color: #475569; }
+      .timeline::before { background: rgba(0,0,0,0.1); }
+      .timeline-durasi, .timeline-content p { color: #475569; }
+      .skenario-chapter { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.06); }
+      .dialog { color: #64748b; }
+      .choice-card { background: rgba(0,0,0,0.03); }
+      .choice-detail { color: #475569; }
+      .nc-card { background: rgba(0,0,0,0.02); }
+      .nc-card p { color: #475569; }
+      .nk-label { color: #475569; }
+      .nk-sanksi h4 { color: #dc2626; }
+      .nk-contoh { background: rgba(52,211,153,0.06); color: #16a34a; }
+      .flashcard-front { background: #ffffff; border-color: rgba(0,0,0,0.08); }
+      .flashcard-back { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.2); }
+      .flashcard-num { color: #475569; }
+      .q-opt { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); color: #0f172a; }
+      .q-opt:hover { background: rgba(0,0,0,0.04); }
+      .q-opt.correct { background: rgba(52,211,153,0.1) !important; border-color: rgba(22,163,74,0.3) !important; color: #16a34a !important; }
+      .q-opt.wrong { background: rgba(255,107,107,0.1) !important; border-color: rgba(220,38,38,0.3) !important; color: #dc2626 !important; }
+      .q-letter { background: rgba(0,0,0,0.06); }
+      .diskusi-petunjuk, .refleksi-petunjuk { color: #475569; }
+      .penutup-item { background: rgba(0,0,0,0.02); }
+      .penutup-item p { color: #475569; }
+      .accord-header { background: rgba(0,0,0,0.03); }
+      .accord-arrow { color: #475569; }
+      .accord-body { background: rgba(0,0,0,0.015); }
+      .step-card { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.06); }
+      .nk-contoh { background: rgba(52,211,153,0.06); color: #16a34a; }
+      #nav-bar {
+        background: rgba(255,255,255,0.95);
+        border-top-color: rgba(0,0,0,0.06);
+      }
+      #nav-bar button { color: #0f172a; }
+      #prev-btn { background: rgba(0,0,0,0.06); }
+      #prev-btn:hover { background: rgba(0,0,0,0.1); }
+      #next-btn { background: rgba(62,207,207,0.15); color: #0891b2; }
+      #next-btn:hover { background: rgba(62,207,207,0.25); }
+      #fullscreen-btn { background: rgba(0,0,0,0.04); }
+      #fullscreen-btn:hover { background: rgba(0,0,0,0.08); }
+      #page-counter { color: #475569; }
+      .game-instruction { color: #64748b; }
+      .game-score { background: rgba(0,0,0,0.03); }
+      .text-muted { color: #475569; }
+      .ws-cell { background: rgba(0,0,0,0.03); color: #475569; }
+      .ws-cell:hover { background: rgba(0,0,0,0.06); }
+      .ws-word { background: rgba(0,0,0,0.02); }
+      .memory-card-front { background: rgba(62,207,207,0.1); border-color: rgba(62,207,207,0.2); }
+      .memory-card-back { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.2); color: #0f172a; }
+      .match-item { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); color: #0f172a; }
+      .match-item:hover { background: rgba(0,0,0,0.04); }
+      .dd-pool { background: rgba(0,0,0,0.015); border-color: rgba(0,0,0,0.08); }
+      .dd-item { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); color: #0f172a; }
+      .dd-target { border-color: rgba(0,0,0,0.1); }
+      .cw-input { color: #f59e0b; }
+      .cw-input:focus { background: rgba(251,191,36,0.06); }
+      .cw-input.correct { color: #16a34a; background: rgba(22,163,74,0.06); }
+      .cw-input.wrong { color: #dc2626; background: rgba(220,38,38,0.06); }
+      .cw-clue { color: #475569; }
+      .cw-clue-dir { color: #64748b; }
+      .fb-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #f59e0b; }
+      .fb-input.correct { border-color: rgba(22,163,74,0.3); background: rgba(22,163,74,0.06); color: #16a34a; }
+      .fb-input.wrong { border-color: rgba(220,38,38,0.3); background: rgba(220,38,38,0.06); color: #dc2626; }
+      .takeaways { background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.15); }
+      .takeaways h3 { color: #f59e0b; }
+      .takeaway-item { color: #16a34a; }
+      .self-check { background: rgba(167,139,250,0.05); border-color: rgba(167,139,250,0.15); }
+      .self-check p { color: #64748b; }
+      .tp-item { background: rgba(0,0,0,0.02); }
+      .tujuan-item { background: rgba(0,0,0,0.02); }
+      .profil-box { background: rgba(0,0,0,0.02); }
+      .game-check-btn { background: rgba(62,207,207,0.1); border-color: rgba(62,207,207,0.2); color: #0891b2; }
+      .game-check-btn:hover { background: rgba(62,207,207,0.15); }
+    }
+
     /* ── Confetti ── */
     .confetti-piece {
       position: fixed;

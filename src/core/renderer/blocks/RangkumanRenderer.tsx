@@ -670,6 +670,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             onShowMore={showMore}
             itemLabel="konsep lainnya"
             isCompact={isCompact}
+            tokens={tokens}
           />
         </div>
       )}

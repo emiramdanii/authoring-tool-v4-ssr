@@ -236,6 +236,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
           onShowMore={showMore}
           itemLabel="ringkasan lagi"
           isCompact={isCompact}
+          tokens={tokens}
         />
       )}
     </div>

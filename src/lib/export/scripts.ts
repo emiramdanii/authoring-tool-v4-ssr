@@ -48,6 +48,8 @@ export function getJs(): string {
 
       // Enter new
       currentPage = idx;
+      var liveEl = document.getElementById('a11y-live');
+      if (liveEl) liveEl.textContent = 'Halaman ' + (idx+1) + ' dari ' + pages.length;
       pages[currentPage]?.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right');
       pages[currentPage]?.classList.add(direction > 0 ? 'enter-right' : 'enter-left');
 

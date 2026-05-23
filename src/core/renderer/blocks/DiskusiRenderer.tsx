@@ -668,6 +668,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           onShowMore={showMore}
           itemLabel="pertanyaan lagi"
           isCompact={isCompact}
+          tokens={tokens}
         />
       )}
     </div>

@@ -60,7 +60,7 @@ function VariantSelector({
       {variants.map((v) => (
         <button
           key={v.key}
-          className={`variant-pill ${active === v.key ? 'active' : ''}`}
+          className={`variant-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent ${active === v.key ? 'active' : ''}`}
           onClick={() => onChange(v.key)}
           aria-label={`Varian ${v.label}`}
           title={`Varian ${v.label}`}
@@ -552,6 +552,7 @@ function MateriVariantKlasik({
             onShowMore={showMore}
             itemLabel="bagian materi lagi"
             isCompact={isCompact}
+            tokens={tokens}
           />
         </div>
       )}

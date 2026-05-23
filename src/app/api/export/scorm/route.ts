@@ -233,10 +233,11 @@ export async function POST(request: NextRequest) {
         'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Export gagal';
     console.error('[SCORM Export API] Error:', error);
     return NextResponse.json(
-      { error: 'SCORM export gagal. Silakan coba lagi.' },
+      { error: message },
       { status: 500 }
     );
   }

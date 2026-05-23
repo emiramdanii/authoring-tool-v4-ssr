@@ -316,8 +316,8 @@ export const PremiumBadge = React.memo(function PremiumBadge({
         fontWeight: 800,
         letterSpacing: '0.05em',
         whiteSpace: 'nowrap',
-        // Sprint 3C: Use IOS_INTERACTION tokens for transition timing
-        transition: `all ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
+        // Sprint 4: Targeted transition instead of 'all'
+        transition: `background-color, border-color, color, box-shadow ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
         ...variantStyles[variant],
       }}
     >

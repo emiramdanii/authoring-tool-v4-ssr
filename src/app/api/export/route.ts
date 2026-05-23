@@ -110,11 +110,12 @@ export async function POST(request: NextRequest) {
         'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log full error server-side, return generic message to client
+    const message = error instanceof Error ? error.message : 'Export gagal';
     console.error('[Export API] Error:', error);
     return NextResponse.json(
-      { error: 'Export failed. Please try again.' },
+      { error: message },
       { status: 500 }
     );
   }

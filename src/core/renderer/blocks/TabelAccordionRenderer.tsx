@@ -169,6 +169,7 @@ export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer
           onShowMore={showMore}
           itemLabel="baris lagi"
           isCompact={isCompact}
+          tokens={tokens}
         />
       )}
     </div>

@@ -37,7 +37,7 @@ function VariantSelector({
       {(['A', 'B', 'C'] as const).map(v => (
         <button
           key={v}
-          className={`variant-pill ${current === v ? 'active' : ''}`}
+          className={`variant-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent ${current === v ? 'active' : ''}`}
           onClick={(e) => { e.stopPropagation(); onChange(v); }}
           type="button"
           aria-label={`Varian ${v}`}

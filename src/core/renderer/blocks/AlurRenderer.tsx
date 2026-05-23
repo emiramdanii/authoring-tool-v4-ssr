@@ -71,6 +71,7 @@ export const AlurRenderer = React.memo(function AlurRenderer({ block, tokens, is
             onShowMore={showMore}
             itemLabel="langkah lainnya"
             isCompact={isCompact}
+            tokens={tokens}
           />
         )}
     </div>

@@ -289,6 +289,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             onShowMore={showMore}
             itemLabel="petunjuk lainnya"
             isCompact={isCompact}
+            tokens={tokens}
           />
         )}
 

@@ -323,7 +323,7 @@ export function PremiumStepNavigator({
                     : 'transparent',
                 color: isActive ? accentColor : isPast ? accentAlpha(0.7) : mutedColor,
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'background, border-color, color, transform, box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 transform: isActive ? 'perspective(600px) rotateY(0deg) scale(1.05)' : 'perspective(600px) rotateY(0deg) scale(1)',
@@ -402,7 +402,7 @@ export function PremiumStepNavigator({
             color: activeStep === 0 ? mutedColor : accentColor,
             cursor: activeStep === 0 ? 'default' : 'pointer',
             opacity: activeStep === 0 ? 0.35 : 1,
-            transition: 'all 0.2s ease',
+            transition: 'background-color, border-color, color, opacity, transform 0.2s ease',
             animation: hoveredBtn === 'prev' && activeStep > 0 ? 'springBounce 0.4s ease' : 'none',
           } as React.CSSProperties}
         >
@@ -456,7 +456,7 @@ export function PremiumStepNavigator({
             color: activeStep === totalSteps - 1 ? mutedColor : accentColor,
             cursor: activeStep === totalSteps - 1 ? 'default' : 'pointer',
             opacity: activeStep === totalSteps - 1 ? 0.35 : 1,
-            transition: 'all 0.2s ease',
+            transition: 'background-color, border-color, color, opacity, transform 0.2s ease',
             animation: hoveredBtn === 'next' && activeStep < totalSteps - 1 ? 'springBounce 0.4s ease' : 'none',
           } as React.CSSProperties}
         >

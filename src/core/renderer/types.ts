@@ -222,8 +222,8 @@ export class TokenResolver {
       borderRadius: `${IOS_CARD.interactive.style.borderRadius}px`,
       border: `1px solid ${this.colorAlpha(accentKey, 0.15)}`,
       boxShadow: 'none',
-      // Sprint 3C: Use IOS_INTERACTION tokens for transition timing
-      transition: `all ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
+      // Sprint 4: Targeted transition properties instead of 'all'
+      transition: `background-color, border-color, color, transform, box-shadow ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
       cursor: 'pointer',
     };
   }

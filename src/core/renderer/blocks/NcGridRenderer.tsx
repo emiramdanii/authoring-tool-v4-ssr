@@ -43,7 +43,7 @@ function VariantSelector({
       {variants.map((v) => (
         <button
           key={v.key}
-          className={`variant-pill ${active === v.key ? 'active' : ''}`}
+          className={`variant-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent ${active === v.key ? 'active' : ''}`}
           onClick={(e) => { e.stopPropagation(); onChange(v.key); }}
           aria-label={`Varian ${v.label}`}
           title={`Varian ${v.label}`}

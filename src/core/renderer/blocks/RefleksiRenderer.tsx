@@ -243,6 +243,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           onShowMore={showMore}
           itemLabel="pertanyaan lagi"
           isCompact={isCompact}
+          tokens={tokens}
         />
       )}
     </div>

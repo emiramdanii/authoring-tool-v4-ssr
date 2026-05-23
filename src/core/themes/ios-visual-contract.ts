@@ -32,7 +32,7 @@ export const IOS_CARD = {
       border: '1px solid rgba(15,23,42,0.06)',
       boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
     },
-    tw: 'rounded-3xl border border-black/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]',
+    tw: 'rounded-3xl border border-black/5 dark:border-white/5 bg-white dark:bg-[#182d45] shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.15)]',
     accentStripeWidth: 3,
   },
 
@@ -43,7 +43,7 @@ export const IOS_CARD = {
       border: '1px solid rgba(15,23,42,0.08)',
       boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
     },
-    tw: 'rounded-3xl border border-black/[0.08] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]',
+    tw: 'rounded-3xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#182d45] shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)]',
   },
 
   /** Nested card — inset areas, takeaways, self-check, badges */
@@ -53,7 +53,7 @@ export const IOS_CARD = {
       border: '1px solid rgba(15,23,42,0.06)',
       boxShadow: 'none',
     },
-    tw: 'rounded-2xl border border-black/5 bg-slate-50',
+    tw: 'rounded-2xl border border-black/5 dark:border-white/5 bg-slate-50 dark:bg-white/[0.04]',
   },
 
   /** Interactive card — buttons, options, tabs, accordions */
@@ -61,10 +61,10 @@ export const IOS_CARD = {
     style: {
       borderRadius: 12,
       boxShadow: 'none',
-      transition: 'all 0.2s ease',
+      transition: 'background-color, border-color, color, transform, box-shadow 0.2s ease',
       cursor: 'pointer',
     },
-    tw: 'rounded-xl transition-all duration-200 cursor-pointer',
+    tw: 'rounded-xl transition-[background-color,border-color,color,transform,box-shadow] duration-200 ease-out cursor-pointer',
   },
 
   /** Pill — badges, compact labels, NcGrid variant C */
@@ -82,7 +82,7 @@ export const IOS_CARD = {
       height: 1,
       background: 'rgba(15,23,42,0.06)',
     },
-    tw: 'h-px bg-black/5',
+    tw: 'h-px bg-black/5 dark:bg-white/5',
   },
 
   /** Accent stripe — left border on cards, takeaways, self-check */

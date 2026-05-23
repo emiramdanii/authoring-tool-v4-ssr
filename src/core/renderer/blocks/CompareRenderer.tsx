@@ -7,7 +7,6 @@ import type { TokenResolver } from '../types';
 import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInteraction } from './PremiumBlockEffects';
 import { RichText } from './RichText';
 import { useBlockCompression } from '../../layout/useBlockCompression';
-import { ShowMoreButton } from '../../layout/ShowMoreButton';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 
 // ═══════════════════════════════════════════════════════════════════

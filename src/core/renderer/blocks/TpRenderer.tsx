@@ -166,6 +166,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
           onShowMore={showMore}
           itemLabel="tujuan lainnya"
           isCompact={isCompact}
+          tokens={tokens}
         />
       )}
 

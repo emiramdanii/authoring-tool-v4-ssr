@@ -46,7 +46,7 @@ function VariantSelector({
       {variants.map((v) => (
         <button
           key={v.key}
-          className={`variant-pill ${active === v.key ? 'active' : ''}`}
+          className={`variant-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent ${active === v.key ? 'active' : ''}`}
           onClick={() => onChange(v.key)}
           aria-label={`Varian ${v.label}`}
           title={`Varian ${v.label}`}
@@ -57,7 +57,7 @@ function VariantSelector({
             ...tokens.iosTypography('caption1', { fontWeight: 700 }),
             border: 'none',
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color, color 0.15s ease',
             background: active === v.key ? tokens.accentBg('y', 0.12) : 'transparent',
             color: active === v.key ? tokens.color('y') : tokens.muted(0.65),
           }}
