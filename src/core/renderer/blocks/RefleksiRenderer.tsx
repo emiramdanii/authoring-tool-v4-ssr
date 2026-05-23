@@ -146,18 +146,17 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]?.trim().length > 0;
         return (
-          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl mb-10 min-w-0
-              transition-[background-color,border-color,box-shadow] duration-200 ease-out
-              hover:shadow-[0_2px_8px_rgba(15,23,42,0.04)]"
+          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl mb-10 min-w-0"
             style={{
               ...tokens.iosCardPadding(isCompact),
               background: tokens.color('card'),
               border: `1px solid ${tokens.subtleBorder(0.08)}`,
               borderLeft: tokens.accentStripe(hasResponse ? 'g' : qColor, 3),
-              // Sprint 3C: border-left color transition for response state change
-              transition: 'background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out, border-left-color 0.3s ease-out',
-              // Sprint 3C: subtle entrance animation
-              animation: `blockStaggerIn 0.4s ease ${i * 0.1}s both`,
+              // Sprint 3C: border-left-color transition for response state change
+              // Uses iosTransitionStyle for token-driven timing
+              ...tokens.iosTransitionStyle('background-color, border-color, box-shadow, border-left-color', 'standard'),
+              // Sprint 3C: Subtle entrance animation via iosEntranceStyle
+              ...tokens.iosEntranceStyle(i, 'slideIn'),
             }}>
             <label className={`font-bold block mb-2 ${isCompact ? 'canvas-truncate-2' : ''}`}
               style={{ ...tokens.iosTypography('headline', { fontSize: isCompact ? 12 : 14, color: tokens.color(qColor) }), lineHeight: '1.8' }}>
@@ -165,13 +164,14 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             </label>
             {interactive ? (
               <div className="relative">
-                <textarea className="w-full rounded-lg p-2.5 resize-y focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
+                <textarea className={`w-full rounded-lg p-2.5 resize-y ${tokens.iosFocusRing()}`}
                   style={{
                     ...tokens.iosTypography('subheadline', { color: tokens.color('text') }),
                     background: tokens.color('card'),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
                     minHeight: isCompact ? '40px' : '50px',
-                    transition: 'border-color 0.2s',
+                    // Sprint 3C: Use iosTransitionStyle for focus border transition
+                    ...tokens.iosTransitionStyle('border-color, box-shadow'),
                   }}
                   placeholder={q.petunjuk}
                   value={responses[i] || ''}
@@ -217,7 +217,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       )}
 
       {block.penugasan && !isCompressed && (
-        <div className="mt-4 rounded-xl"
+        <div className="mt-4 rounded-xl ios-entrance-card"
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosNestedPadding(isCompact),

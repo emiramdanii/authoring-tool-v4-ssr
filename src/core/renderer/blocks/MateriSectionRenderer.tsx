@@ -376,7 +376,8 @@ function MateriVariantKlasik({
                   <div style={{
                     maxHeight: expandedSections.has(i) ? 2000 : 0,
                     overflow: 'hidden',
-                    transition: 'max-height 0.25s ease-out',
+                    // Sprint 3C: Use iosTransitionStyle for accordion expand
+                    ...tokens.iosTransitionStyle('max-height', 'slow'),
                   }}>
                     <div style={{ padding: isCompact ? '2px 10px 6px' : '4px 12px 8px' }}>
                       <SchemaBlockRenderer
@@ -418,6 +419,7 @@ function MateriVariantKlasik({
        *  Takeaways are supplementary — core content is the content blocks. */}
       {!isCompressed && takeaways.length > 0 && (
         <div
+          className="ios-entrance-card"
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosInnerMargin(isCompact),
@@ -478,6 +480,7 @@ function MateriVariantKlasik({
        *  Hidden when compressed to save vertical space. */}
       {!isCompressed && selfCheck && (
         <div
+          className="ios-entrance-card"
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosInnerMargin(isCompact),
@@ -778,6 +781,7 @@ function MateriVariantMajalah({
       {/* ═══ SELF-CHECK — bottom banner ══════════════════════════ */}
       {selfCheck && (
         <div
+          className="ios-entrance-card"
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosInnerMargin(isCompact),

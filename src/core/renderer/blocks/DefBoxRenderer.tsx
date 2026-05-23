@@ -219,7 +219,8 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
                 maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                 overflow: isContentCollapsed ? 'hidden' : undefined,
-                transition: 'max-height 0.3s ease-out',
+                // Sprint 3C: Use iosTransitionStyle for collapse/expand
+                ...tokens.iosTransitionStyle('max-height', 'slow'),
                 position: 'relative',
               }}>
                 <InlineTextEditor
@@ -343,7 +344,8 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                   borderLeft: tokens.accentStripe(colorKey, 3),
                   maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                   overflow: isContentCollapsed ? 'hidden' : undefined,
-                  transition: 'max-height 0.3s ease-out',
+                  // Sprint 3C: Use iosTransitionStyle for collapse/expand
+                  ...tokens.iosTransitionStyle('max-height', 'slow'),
                   position: 'relative',
                 }}
               >
@@ -414,7 +416,8 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
               maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,
               overflow: isContentCollapsed ? 'hidden' : undefined,
-              transition: 'max-height 0.3s ease-out',
+              // Sprint 3C: Use iosTransitionStyle for collapse/expand
+              ...tokens.iosTransitionStyle('max-height', 'slow'),
               position: 'relative',
             }}
           >

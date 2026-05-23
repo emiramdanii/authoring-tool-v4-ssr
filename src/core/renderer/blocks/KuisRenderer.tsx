@@ -150,9 +150,9 @@ function KuisVariantKartu({
         })}
       </div>
 
-      {/* Answer feedback */}
+      {/* Answer feedback — Sprint 3C: ios-entrance-reveal for smooth reveal */}
       {isAnswered && (
-        <div className="mt-4 p-4 rounded-xl leading-relaxed"
+        <div className="mt-4 p-4 rounded-xl leading-relaxed ios-entrance-reveal"
           style={{
             ...tokens.iosTypography('footnote', {}),
             background: answers[current] === q.ans
@@ -279,9 +279,9 @@ function KuisVariantRingkas({
         })}
       </div>
 
-      {/* Answer feedback — minimal */}
+      {/* Answer feedback — minimal. Sprint 3C: ios-entrance-reveal */}
       {isAnswered && (
-        <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug"
+        <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug ios-entrance-reveal"
           style={{
             ...tokens.iosTypography('footnote', {}),
             background: answers[current] === q.ans
@@ -608,8 +608,9 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           </div>
 
           {/* ── Answer feedback ──────────────── */}
+          {/* Sprint 3C: ios-entrance-reveal for smooth answer reveal animation */}
           {answers[current] !== undefined && (
-            <div className="mt-3 p-3 rounded-xl leading-relaxed"
+            <div className="mt-3 p-3 rounded-xl leading-relaxed ios-entrance-reveal"
               style={{
                 ...tokens.iosTypography('footnote', {}),
                 background: answers[current] === q.ans
@@ -666,9 +667,9 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
         />
       )}
 
-      {/* ── Next button — premium spring ─────────────────────────── */}
+      {/* ── Next button — premium spring. Sprint 3C: ios-entrance-reveal for smooth appear */}
       {answers[current] !== undefined && current < questions.length - 1 && (
-          <button className={`rounded-xl font-bold ${tokens.iosButtonTw(true)}`}
+          <button className={`rounded-xl font-bold ios-entrance-reveal ${tokens.iosButtonTw(true)}`}
             aria-label="Lanjut ke soal berikutnya"
             onClick={() => { setCurrent(current + 1); playSound('click'); }}
             style={{

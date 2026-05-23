@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
 import { resolveColor, resolveColorAlpha, resolveSubtleBg } from '../types';
+import { IOS_INTERACTION } from '../../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREMIUM BLOCK EFFECTS — Collection of Visual Effect Wrappers
@@ -73,7 +74,8 @@ export const PremiumBlockWrapper = React.memo(function PremiumBlockWrapper({
         // Disable stagger animation for full-page blocks (cover/hero).
         // The translateY(8px→0) animation causes visual shift that looks
         // like overflow on full-page blocks that fill the entire scene.
-        animation: noAnimation ? 'none' : `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${staggerIndex * 0.08}s both`,
+        // Sprint 3C: Use IOS_INTERACTION tokens for timing instead of hardcoded values.
+        animation: noAnimation ? 'none' : `blockStaggerIn ${IOS_INTERACTION.duration.slow}ms ${IOS_INTERACTION.easing.ios} ${staggerIndex * IOS_INTERACTION.duration.fast}ms both`,
         ...style,
       }}
     >
@@ -314,7 +316,8 @@ export const PremiumBadge = React.memo(function PremiumBadge({
         fontWeight: 800,
         letterSpacing: '0.05em',
         whiteSpace: 'nowrap',
-        transition: 'all 0.2s ease',
+        // Sprint 3C: Use IOS_INTERACTION tokens for transition timing
+        transition: `all ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
         ...variantStyles[variant],
       }}
     >
@@ -384,17 +387,20 @@ export const MicroInteraction = React.memo(function MicroInteraction({
     squish: {
       animation: isPressed ? 'pressDown 0.2s ease' : 'none',
       transform: isPressed ? 'scale(0.96)' : 'scale(1)',
-      transition: 'transform 0.15s ease',
+      // Sprint 3C: Use IOS_INTERACTION tokens for timing
+      transition: `transform ${IOS_INTERACTION.duration.fast}ms ${IOS_INTERACTION.easing.default}`,
     },
     bounce: {
       animation: isPressed ? 'springBounce 0.4s ease' : 'none',
-      transition: 'transform 0.15s ease',
+      // Sprint 3C: Use IOS_INTERACTION tokens for timing
+      transition: `transform ${IOS_INTERACTION.duration.fast}ms ${IOS_INTERACTION.easing.default}`,
     },
     glow: {
       boxShadow: isPressed
         ? `0 0 16px ${accentAlpha(0.4)}, 0 0 32px ${accentAlpha(0.2)}`
         : 'none',
-      transition: 'box-shadow 0.2s ease',
+      // Sprint 3C: Use IOS_INTERACTION tokens for timing
+      transition: `box-shadow ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
     },
   };
 

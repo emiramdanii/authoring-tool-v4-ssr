@@ -30,6 +30,9 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
     tag: 'span',
   });
 
+  // Sprint 3C: React-state hover for theme-aware preview item backgrounds
+  const [hoveredPreviewIndex, setHoveredPreviewIndex] = React.useState<number | null>(null);
+
   // ── Score-based badge (Phase 21) ───────────────────────────────
   const scores = useInteractiveStore(s => s.scores);
   const totalScore = useInteractiveStore(s => s.totalScore());
@@ -96,8 +99,9 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
       </div>
 
       {/* ── Score-based badge (Phase 21) — shown when scores exist ── */}
+      {/* Sprint 3C: ios-entrance-card for smooth entrance */}
       {hasScores && tierConfig && !isCompressed && (
-        <div className="mb-4 rounded-xl"
+        <div className="mb-4 rounded-xl ios-entrance-card"
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosNestedPadding(isCompact),
@@ -149,13 +153,18 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             </div>
           </div>
           {previewItems.map((item, i) => (
-            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 py-2 leading-relaxed min-w-0
-                transition-[background-color] duration-150 ease-out rounded-lg px-1 -mx-1
-                hover:bg-[rgba(0,0,0,0.02)]"
+            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 py-2 leading-relaxed min-w-0 rounded-lg px-1 -mx-1"
               style={{
                 ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }),
                 borderBottom: i < previewItems.length - 1 ? `1px solid ${tokens.subtleBorder(0.06)}` : 'none',
-              }}>
+                // Sprint 3C: Theme-aware hover via iosHoverBgStyle (replaces hardcoded hover:bg-[rgba])
+                ...tokens.iosHoverBgStyle(hoveredPreviewIndex === i, 0.03),
+                // Sprint 3C: Subtle stagger entrance
+                ...tokens.iosEntranceStyle(i, 'slideIn'),
+              }}
+              onMouseEnter={() => setHoveredPreviewIndex(i)}
+              onMouseLeave={() => setHoveredPreviewIndex(null)}
+            >
               <div className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ background: tokens.color(item.warna) }} />
               <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}><RichText content={item.isi ?? ''} /></span></div>

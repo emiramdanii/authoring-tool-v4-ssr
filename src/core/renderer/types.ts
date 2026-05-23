@@ -222,7 +222,8 @@ export class TokenResolver {
       borderRadius: `${IOS_CARD.interactive.style.borderRadius}px`,
       border: `1px solid ${this.colorAlpha(accentKey, 0.15)}`,
       boxShadow: 'none',
-      transition: 'all 0.2s ease',
+      // Sprint 3C: Use IOS_INTERACTION tokens for transition timing
+      transition: `all ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
       cursor: 'pointer',
     };
   }
@@ -322,6 +323,67 @@ export class TokenResolver {
    *  Use for: elements that need focus ring without other interactions */
   iosFocusRing(): string {
     return IOS_INTERACTION.tw.focusRing;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // iOS INTERACTION — Inline style helpers for transition & entrance
+  // ═══════════════════════════════════════════════════════════════════
+  // These replace hardcoded `transition: 'all 0.2s ease'` strings in
+  // renderers with IOS_INTERACTION-token-driven values. All timing
+  // and easing values come from a single source of truth.
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** iOS transition style — returns a CSS transition style object.
+   *  Use for: inline style objects that need transition on specific properties.
+   *  @param properties - CSS properties to transition (default: 'all')
+   *  @param speed - 'fast' (150ms), 'standard' (200ms), or 'slow' (300ms)
+   *  @param curve - 'default' (ease), 'ios' (cubic-bezier), or 'spring' (overshoot) */
+  iosTransitionStyle(
+    properties: string = 'all',
+    speed: 'fast' | 'standard' | 'slow' = 'standard',
+    curve: 'default' | 'ios' | 'spring' = 'default',
+  ): Record<string, string> {
+    const duration = IOS_INTERACTION.duration[speed];
+    const easing = IOS_INTERACTION.easing[curve];
+    return {
+      transition: `${properties} ${duration}ms ${easing}`,
+    };
+  }
+
+  /** iOS entrance animation — returns inline style for stagger entrance.
+   *  Use for: nested cards, takeaways, self-check panels, score badges.
+   *  @param index - stagger index (0-based) for delay calculation
+   *  @param type - 'slideIn' (translateY) or 'scaleIn' (scale) */
+  iosEntranceStyle(
+    index: number = 0,
+    type: 'slideIn' | 'scaleIn' = 'slideIn',
+  ): Record<string, string> {
+    const delay = index * IOS_INTERACTION.duration.fast; // 150ms per item
+    const duration = IOS_INTERACTION.duration.slow; // 300ms entrance
+    const easing = IOS_INTERACTION.easing.ios;
+    if (type === 'scaleIn') {
+      return {
+        animation: `blockEntrance ${duration}ms ${easing} ${delay}ms both`,
+      };
+    }
+    return {
+      animation: `blockStaggerIn ${duration}ms ${easing} ${delay}ms both`,
+    };
+  }
+
+  /** iOS hover background — theme-aware subtle hover background.
+   *  Returns { background, transition } for use in React state-driven hover.
+   *  Use for: Penutup preview items, Refleksi question cards.
+   *  @param isHovered - current hover state
+   *  @param opacity - hover bg opacity (default 0.03, very subtle) */
+  iosHoverBgStyle(
+    isHovered: boolean,
+    opacity: number = 0.03,
+  ): Record<string, string> {
+    return {
+      background: isHovered ? this.subtleBg(opacity) : 'transparent',
+      transition: `background-color ${IOS_INTERACTION.duration.fast}ms ${IOS_INTERACTION.easing.default}`,
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════

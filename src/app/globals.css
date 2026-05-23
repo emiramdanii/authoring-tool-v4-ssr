@@ -868,8 +868,9 @@ select {
 }
 
 /* ── iOS Button — Primary action button ────────────────────── */
+/* Sprint 3C: Use IOS_INTERACTION timing tokens */
 .ios-button {
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.15s cubic-bezier(0.25, 0.1, 0.25, 1), background-color 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .ios-button:hover {
   transform: scale(1.03);
@@ -883,8 +884,9 @@ select {
 }
 
 /* ── iOS Card — Subtle hover lift for interactive cards ────── */
+/* Sprint 3C: Use IOS_INTERACTION timing tokens */
 .ios-card-interactive {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1), border-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .ios-card-interactive:hover {
   transform: translateY(-1px);
@@ -901,9 +903,44 @@ select {
   100% { transform: scale(0.96); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   iOS INTERACTION CONTRACT — Entrance Animation Utilities
+   ═══════════════════════════════════════════════════════════════════
+   Token-driven entrance animations using IOS_INTERACTION timing.
+   These replace scattered hardcoded animation values in renderers.
+   All durations map to IOS_INTERACTION.duration tokens:
+     fast: 150ms, standard: 200ms, slow: 300ms
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── iOS Card Entrance — scale + fade for nested cards ────── */
+.ios-entrance-card {
+  animation: blockEntrance 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+/* ── iOS Slide Entrance — translateY + fade for content blocks */
+.ios-entrance-slide {
+  animation: blockStaggerIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+/* ── iOS Fade Entrance — opacity only, most subtle ────────── */
+.ios-entrance-fade {
+  animation: animEnterFade 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+/* ── iOS Reveal — for answer feedback, expand panels ──────── */
+@keyframes iosReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ios-entrance-reveal {
+  animation: iosReveal 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
 /* ── Premium Card Hover — Subtle lift (iOS-compliant, no glow) */
+/* Sprint 3C: Use IOS_INTERACTION timing tokens (200ms, iOS ease) */
 .premium-card-glow {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .premium-card-glow:hover {
   transform: translateY(-1px);
