@@ -66,3 +66,46 @@ Stage Summary:
 - NcGrid Variant B now has focus-visible (was missing)
 - NcGrid Variant C uses CSS hover instead of JS
 - Commit: 3a14d2c, pushed to origin/main
+---
+Task ID: sprint-3d
+Agent: main
+Task: Sprint 3D — Composition Polish (adaptive spacing, section rhythm, content width discipline)
+
+Work Log:
+- Audited all 8 renderers for hardcoded padding/margin/max-width patterns
+- Found ~35 instances of hardcoded spacing that should use contract tokens
+- Found 5 hardcoded subtitle max-widths (Cover A/B/C, Hero A/C)
+- Found inconsistent inner margin patterns across MateriSection variants
+- Added IOS_COMPOSITION tokens to ios-visual-contract.ts:
+  - innerMargin: compact {14,12}, standard {20,16}
+  - elementGap: iconToTitle, titleToSubtitle, subtitleToBody, contentBlock, majorSection, badgeGap, questionToOptions
+  - subtitleWidth: coverCentered(380), coverLeft(480), coverMinimal(440), hero(500), heroCentered(440)
+  - cardInnerPadding: compact {10,12}, standard {16,20}
+  - nestedCardPadding: compact {10,12}, standard {14,16}
+  - kuisPadding: compact {12,12}, standard {16,20}
+- Added 6 TokenResolver helper methods:
+  - iosInnerMargin(compact?) — for takeaway/self-check margins inside sections
+  - iosElementGap(type) — for sub-element spacing rhythm
+  - iosSubtitleWidth(context) — for subtitle max-width constraints
+  - iosCardPadding(compact?) — for card content area padding
+  - iosNestedPadding(compact?) — for nested card/takeaway padding
+  - iosKuisPadding(compact?) — for kuis interactive card padding
+- Migrated all 8 renderers:
+  - MateriSectionRenderer: 11 replacements (innerMargin + nestedPadding for takeaways/self-check/overflow)
+  - DefBoxRenderer: 2 replacements (cardPadding for Klasik/Kreatif variants)
+  - NcGridRenderer: 2 replacements (cardPadding + paddingLeft override for Klasik/Kreatif)
+  - KuisRenderer: 3 replacements (kuisPadding for A/B/C variant cards)
+  - RefleksiRenderer: 2 replacements (cardPadding for questions, nestedPadding for penugasan)
+  - PenutupRenderer: 3 replacements (nestedPadding for score/preview/next cards)
+  - CoverRenderer: 3 replacements (subtitleWidth for A/B/C subtitle max-widths)
+  - HeroRenderer: 2 replacements (subtitleWidth for A/C subtitle max-widths)
+- Updated iosVisualContract export to include composition
+- Build clean (tsc + next build), pushed as 7752ebd
+
+Stage Summary:
+- 10 files changed, +177/-35
+- All 8 renderers now consume IOS_COMPOSITION tokens via TokenResolver helpers
+- ~28 hardcoded spacing values replaced with contract-driven tokens
+- 5 hardcoded subtitle max-widths replaced with iosSubtitleWidth() tokens
+- Consistent adaptive spacing across compact/standard modes
+- Commit: 7752ebd, pushed to origin/main
