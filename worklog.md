@@ -346,3 +346,35 @@ Stage Summary:
 - Progress bars now use iosTransitionStyle('width', 'slow') instead of transition-all
 - Accordion/expand/tab buttons now use iosAccordionTw()/iosExpandTw()/iosTabTw() for consistent focus + transition
 - Build: TypeScript clean
+
+---
+Task ID: sprint-3c-final
+Agent: Super Z (main)
+Task: Sprint 3C — Interaction Polish: complete elimination of transition-all, hover:scale-105, missing focus-visible across ALL renderers
+
+Work Log:
+- Extended IOS_INTERACTION tokens: duration.instant (75ms), tw.gameButton, tw.textInput, disabled state
+- Added TokenResolver helpers: iosGameButtonTw(), iosTextInputTw(), extended iosTransitionStyle() with 'instant' speed
+- Launched 3 parallel subagents to fix 33 renderer files simultaneously
+- Batch Games (11 files): Sortir, TeamBuzzer, Memory, TrueFalse, Crossword, DragDrop, FillBlank, Matching, WordSearch, Roda, Flashcard
+- Batch Content (15 files): Diskusi, Rangkuman, Hasil, TujuanDisplay, Statistik, Checklist, TabelAccordion, Petunjuk, Reveal, Skenario, Alur, Tp, Tabel, Ftab, Compare + others
+- Batch Infra (2 files): StepNavigator, transition.tsx
+- Manually fixed MotivasiRenderer and OverflowIndicator focus-visible
+- Eliminated ALL 83 transition-all/transition:'all' instances across 23+ files
+- Replaced ALL 14+ hover:scale-105 with contract-compliant hover:scale-[1.03]
+- Added focus-visible ring to ALL interactive buttons across 28+ renderer files
+- Replaced 25+ hardcoded inline transition durations with iosTransitionStyle()
+- Fixed MemoryGame duration-500 → duration-300
+- Fixed StepNavigator: IOS_INTERACTION compliance + focus-visible + targeted transitions
+- Fixed transition.tsx: all durations now IOS_INTERACTION token-driven
+- Build clean, 504/504 tests passing, committed b8f0114, pushed to origin/main
+
+Stage Summary:
+- 32 files changed, +288/-122
+- ZERO remaining transition-all instances
+- ZERO remaining hover:scale-105/110 instances
+- ZERO remaining duration-500 instances
+- ZERO remaining hardcoded inline transition durations in renderer blocks
+- All interactive elements now have focus-visible rings
+- All transition timing now token-driven from IOS_INTERACTION single source of truth
+- Commit: b8f0114, pushed to origin/main
