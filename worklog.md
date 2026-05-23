@@ -584,3 +584,28 @@ Stage Summary:
 - 3 replacements: 1 string→number padding fix, 2 unnecessary padding override removals
 - All remaining hardcoded padding/borderRadius patterns from the task spec were already migrated in prior Sprint 3D work
 - Build: TypeScript clean
+
+---
+Task ID: sprint-3d-final
+Agent: Super Z (main)
+Task: Sprint 3D — Composition Polish: token-driven padding/margin/gap/borderRadius across all renderers
+
+Work Log:
+- Audited all 33+ renderer files for composition violations (212+ instances found)
+- Fixed PremiumBlockEffects ReadingProgressIndicator hardcoded transition → IOS_INTERACTION tokens
+- Batch 1 (7 files): MateriBlok, MateriSection, Motivasi, Rangkuman, TujuanDisplay, Hero, StepNavigator → 64+ padding/margin replacements
+- Batch 2 (14 files): Gambar, Statistik, Studi, DefBox, Tabel, Checklist, Timeline, Reveal, Compare, Alur, NcGrid, PremiumStepNavigator, Kuis, OverflowIndicator → 35+ replacements
+- Batch 3 (HasilRenderer): Content width discipline + padding tokenization
+- Added 'base' (10px) radius token to DesignTokens for PremiumStepNavigator
+- Cleanup pass: MateriBlok + MateriSection remaining fixes
+- Committed: 22754c3 (main batch), 12d4863 (cleanup)
+- Build clean, 504/504 tests passing
+
+Stage Summary:
+- Hardcoded padding isCompact: 82 → 8 (90% reduction, remaining are 3-value edge cases)
+- Hardcoded margin isCompact: 12 → 0 (100% elimination)
+- Hardcoded gap values: 18 → minimal (most tokenized)
+- Hardcoded transitions: All tokenized
+- Content width discipline: HasilRenderer fixed
+- BorderRadius: Major values tokenized, small 8px values left as P2
+- 2 commits, pushed to origin/main
