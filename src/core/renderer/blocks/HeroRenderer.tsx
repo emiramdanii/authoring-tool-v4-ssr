@@ -5,7 +5,7 @@ import type { HeroBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { useCanvaStore } from '../../../store/canva/store';
-import { PremiumBlockWrapper } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, MicroInteraction } from './PremiumBlockEffects';
 
 // ═══════════════════════════════════════════════════════════════════
 // HERO RENDERER — Banner/section header with 3 Creative Variants
@@ -119,7 +119,7 @@ function HeroVariantA({
         placeholder="Ketik subtitle..."
       />
 
-      {/* Badges */}
+      {/* Badges — stagger entrance */}
       {block.badges && block.badges.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-2 max-w-full">
           {block.badges.map((b, i) => (
@@ -130,6 +130,8 @@ function HeroVariantA({
                 background: tokens.accentBg(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
+                // Sprint 3C: stagger entrance animation
+                animation: `blockStaggerIn 0.4s ease ${0.3 + i * 0.08}s both`,
               }}>
               {b.icon && <span className="flex-shrink-0">{b.icon}</span>} {b.text}
             </span>
@@ -137,8 +139,9 @@ function HeroVariantA({
         </div>
       )}
 
-      {/* CTA */}
+      {/* CTA — wrapped in MicroInteraction for tactile feedback */}
       {block.cta && (
+          <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
           <button className={`mt-4 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
             style={{
               ...tokens.iosTypography('callToAction'),
@@ -149,6 +152,7 @@ function HeroVariantA({
             }}>
             {block.cta.label}
           </button>
+          </MicroInteraction>
       )}
 
       {/* Bottom accent dots */}
@@ -225,8 +229,9 @@ function HeroVariantB({
         />
       </div>
 
-      {/* CTA */}
+      {/* CTA — MicroInteraction tactile feedback */}
       {block.cta && (
+        <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`flex-shrink-0 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
           style={{
             ...tokens.iosTypography('callToAction', { fontSize: 12 }),
@@ -236,9 +241,10 @@ function HeroVariantB({
           }}>
           {block.cta.label}
         </button>
+        </MicroInteraction>
       )}
 
-      {/* Badges — inline right */}
+      {/* Badges — inline right with stagger entrance */}
       {block.badges && block.badges.length > 0 && (
         <div className="flex-shrink-0 flex items-center gap-1.5">
           {block.badges.map((b, i) => (
@@ -249,6 +255,8 @@ function HeroVariantB({
                 background: tokens.colorAlpha(b.color, 0.1),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
+                // Sprint 3C: stagger entrance
+                animation: `blockStaggerIn 0.4s ease ${0.2 + i * 0.08}s both`,
               }}>
               {b.icon && <span>{b.icon}</span>} {b.text}
             </span>
@@ -323,7 +331,7 @@ function HeroVariantC({
         placeholder="Ketik subtitle..."
       />
 
-      {/* Badges — centered */}
+      {/* Badges — centered with stagger entrance */}
       {block.badges && block.badges.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2 max-w-full">
           {block.badges.map((b, i) => (
@@ -334,6 +342,8 @@ function HeroVariantC({
                 background: tokens.colorAlpha(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.15)}`,
+                // Sprint 3C: stagger entrance
+                animation: `blockStaggerIn 0.4s ease ${0.3 + i * 0.08}s both`,
               }}>
               {b.icon && <span>{b.icon}</span>} {b.text}
             </span>
@@ -341,8 +351,9 @@ function HeroVariantC({
         </div>
       )}
 
-      {/* CTA */}
+      {/* CTA — MicroInteraction tactile feedback */}
       {block.cta && (
+        <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`mt-4 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
           style={{
             ...tokens.iosTypography('callToAction', { fontSize: 12 }),
@@ -353,6 +364,7 @@ function HeroVariantC({
           }}>
           {block.cta.label}
         </button>
+        </MicroInteraction>
       )}
     </div>
   );

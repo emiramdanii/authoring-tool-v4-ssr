@@ -305,6 +305,7 @@ export function PremiumStepNavigator({
               role="tab"
               aria-selected={isActive}
               onClick={() => handleStepClick(i)}
+              className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -386,7 +387,7 @@ export function PremiumStepNavigator({
           onMouseEnter={() => setHoveredBtn('prev')}
           onMouseLeave={() => setHoveredBtn(null)}
           aria-label="Langkah sebelumnya"
-          className="premium-tooltip"
+          className="premium-tooltip focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
           data-premium-tip="&#8592; Panah Kiri"
           style={{
             display: 'inline-flex',
@@ -440,7 +441,7 @@ export function PremiumStepNavigator({
           onMouseEnter={() => setHoveredBtn('next')}
           onMouseLeave={() => setHoveredBtn(null)}
           aria-label="Langkah berikutnya"
-          className="premium-tooltip"
+          className="premium-tooltip focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
           data-premium-tip="&#8594; Panah Kanan"
           style={{
             display: 'inline-flex',

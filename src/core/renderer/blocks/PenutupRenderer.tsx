@@ -9,7 +9,7 @@ import { RichText } from './RichText';
 import { playSound } from '@/lib/sounds';
 import { useCanvaStore } from '../../../store/canva/store';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
+import { PremiumBlockWrapper, ReadingProgressIndicator, MicroInteraction } from './PremiumBlockEffects';
 import type { CompressionDecision } from '../../layout/CompressionEngine';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
@@ -149,7 +149,9 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             </div>
           </div>
           {previewItems.map((item, i) => (
-            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 py-2 leading-relaxed min-w-0"
+            <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 py-2 leading-relaxed min-w-0
+                transition-[background-color] duration-150 ease-out rounded-lg px-1 -mx-1
+                hover:bg-[rgba(0,0,0,0.02)]"
               style={{
                 ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }),
                 borderBottom: i < previewItems.length - 1 ? `1px solid ${tokens.subtleBorder(0.06)}` : 'none',
@@ -195,6 +197,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
           {/* Call-to-action for next meeting — navigates to next page */}
           {interactive && (
+            <MicroInteraction tokens={tokens} accent="g" effect="squish">
             <button className={`w-full mt-3 py-2.5 rounded-xl font-bold ${tokens.iosButtonTw(interactive)}`}
               onClick={() => {
                 playSound('click');
@@ -213,6 +216,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
               }}>
               <ArrowRight size={14} className="inline mr-1" /> Lanjut ke Pertemuan Berikutnya
             </button>
+            </MicroInteraction>
           )}
         </div>
       )}

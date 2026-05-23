@@ -258,6 +258,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
   interactive?: boolean;
 }) {
   const [expanded, setExpanded] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   const titleEditor = useInlineEditor({
     blockId,
     fieldKey: `cards.${cardIndex}.title`,
@@ -276,14 +277,19 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
   const cardColor = tokens.color(card.color);
   const cardBg = tokens.colorAlpha(card.color, 0.06);
   const cardBorder = tokens.colorAlpha(card.color, 0.18);
+  // Sprint 3C: React-state hover instead of broken dynamic Tailwind classes
+  // Tailwind cannot JIT-compile `hover:bg-[${...}]` at runtime
+  const hoverBg = tokens.colorAlpha(card.color, 0.12);
+  const hoverBorder = tokens.colorAlpha(card.color, 0.35);
 
   return (
     <div
-      className={`${tokens.iosCardTw()} min-w-0 group hover:bg-[${tokens.colorAlpha(card.color, 0.12)}] hover:border-[${tokens.colorAlpha(card.color, 0.35)}]`}
+      className={`${tokens.iosCardTw()} min-w-0 group
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent`}
       style={{
         borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
-        background: cardBg,
-        border: `1px solid ${cardBorder}`,
+        background: isHovered ? hoverBg : cardBg,
+        border: `1px solid ${isHovered ? hoverBorder : cardBorder}`,
         padding: isCompact ? '5px 12px 5px 8px' : '7px 16px 7px 10px',
         display: expanded ? 'flex' : 'inline-flex',
         flexDirection: expanded ? 'column' : 'row',
@@ -292,8 +298,12 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         cursor: 'pointer',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
         maxWidth: '100%',
+        // Sprint 3C: border-radius transition for smooth pill→card morph
+        transition: 'background-color 0.15s ease-out, border-color 0.15s ease-out, border-radius 0.2s ease-out',
       }}
       onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Icon circle */}
       <div
