@@ -938,7 +938,7 @@ function MateriVariantPill({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ ...tokens.iosCardPadding(isCompact), paddingTop: isCompact ? 4 : 6, paddingBottom: 0 }}>
+        <div style={{ ...tokens.iosCardPadding(isCompact), paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}

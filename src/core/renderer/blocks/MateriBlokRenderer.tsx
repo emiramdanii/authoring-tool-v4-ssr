@@ -209,7 +209,7 @@ function RenderTimeline({ block, tokens, isCompact }: { block: MateriBlokBlock; 
               {step.icon || (i + 1)}
             </div>
             {/* Step content */}
-            <div className="flex-1 min-w-0" style={{ paddingBottom: isCompact ? '8px' : '12px' }}>
+            <div className="flex-1 min-w-0" style={{ paddingBottom: isCompact ? 8 : 12 }}>
               <div className="font-bold" style={{ fontSize: isCompact ? '12px' : '13px', color: tokens.color('text') }}>
                 {step.judul}
               </div>
@@ -346,7 +346,7 @@ function RenderStatistik({ block, tokens, isCompact }: { block: MateriBlokBlock;
         {items.map((item, i) => {
           const colorKey = item.warna || 'c';
           return (
-            <div key={i} className="rounded-lg text-center" style={{ background: tokens.colorAlpha(colorKey, 0.08), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, ...tokens.iosCardPadding(isCompact), paddingLeft: isCompact ? 8 : 14, paddingRight: isCompact ? 8 : 14 }}>
+            <div key={i} className="rounded-lg text-center" style={{ background: tokens.colorAlpha(colorKey, 0.08), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, ...tokens.iosCardPadding(isCompact) }}>
               {item.icon && <div style={{ fontSize: isCompact ? '14px' : '20px', marginBottom: '4px' }}>{item.icon}</div>}
               <div className="font-black" style={{ fontSize: isCompact ? '18px' : '28px', color: tokens.color(colorKey), lineHeight: 1.1 }}>
                 {item.angka || '0'}
