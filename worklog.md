@@ -109,3 +109,28 @@ Stage Summary:
 - 5 hardcoded subtitle max-widths replaced with iosSubtitleWidth() tokens
 - Consistent adaptive spacing across compact/standard modes
 - Commit: 7752ebd, pushed to origin/main
+
+---
+Task ID: 3c
+Agent: main
+Task: Sprint 3C — Interaction Polish (hover/focus/transition consistency)
+
+Work Log:
+- Audited all 8 renderers for hover/focus/transition states via Explore agent
+- Identified critical accessibility gaps: ShowMoreButton missing focus ring, PremiumStepNavigator missing focus rings
+- Identified bug: NcGrid Card C dynamic Tailwind classes broken (hover:bg-[${...}])
+- Identified missing interaction polish: Hero no MicroInteraction on CTA, Refleksi no card hover, Penutup minimal interaction
+- Fixed ShowMoreButton: added focus-visible ring, active:scale-[0.97] press state, transition duration-150
+- Fixed PremiumStepNavigator: added focus-visible:outline-2 to step chips + prev/next buttons
+- Fixed NcGrid Card C: replaced broken dynamic Tailwind hover classes with React state hover (isHovered), added smooth bg/border/radius transitions
+- Polished HeroRenderer: MicroInteraction squish wrapper on all CTA buttons (3 variants), stagger entrance animation on badges
+- Polished RefleksiRenderer: hover:shadow on question cards, border-left-color transition for response state, stagger entrance per question
+- Polished PenutupRenderer: hover:bg on preview items with transition, MicroInteraction squish on CTA
+- Build clean (tsc --noEmit + next build), commit d316a3b, pushed to origin/main
+
+Stage Summary:
+- 6 files modified: ShowMoreButton, PremiumStepNavigator, NcGridRenderer, HeroRenderer, RefleksiRenderer, PenutupRenderer
+- All interaction patterns now follow IOS_INTERACTION tokens (150-200ms, ease-out, scale 1.03/0.97)
+- Focus rings use outline-app-accent CSS variable for theme consistency
+- NcGrid Card C hover now works correctly (React state instead of broken dynamic Tailwind)
+- Commit: d316a3b, pushed to origin/main
