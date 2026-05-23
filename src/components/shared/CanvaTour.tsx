@@ -272,11 +272,11 @@ export default function CanvaTour() {
     if (!isOpen) return;
 
     const step = TOUR_STEPS[currentStep];
-    const rect = getTargetRect(step.targetSelector);
+    const rect = getTargetRect(step!.targetSelector);
 
     // Auto-scroll to the element if off-screen
     if (rect) {
-      const el = document.querySelector(step.targetSelector);
+      const el = document.querySelector(step!.targetSelector);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
       }
@@ -284,13 +284,13 @@ export default function CanvaTour() {
 
     // Calculate tooltip position after a frame to allow scroll
     const rafId = requestAnimationFrame(() => {
-      const updatedRect = getTargetRect(step.targetSelector);
+      const updatedRect = getTargetRect(step!.targetSelector);
       setTargetRect(updatedRect);
 
       const tooltipW = 320;
       const tooltipH = 240;
       if (updatedRect) {
-        const pos = calculateTooltipPosition(updatedRect, step.position, tooltipW, tooltipH);
+        const pos = calculateTooltipPosition(updatedRect, step!.position, tooltipW, tooltipH);
         setTooltipPos(pos);
       } else {
         setTooltipPos({
@@ -309,12 +309,12 @@ export default function CanvaTour() {
     if (!isOpen) return;
     const handleResize = () => {
       const step = TOUR_STEPS[currentStep];
-      const rect = getTargetRect(step.targetSelector);
+      const rect = getTargetRect(step!.targetSelector);
       setTargetRect(rect);
       const tooltipW = 320;
       const tooltipH = 240;
       if (rect) {
-        const pos = calculateTooltipPosition(rect, step.position, tooltipW, tooltipH);
+        const pos = calculateTooltipPosition(rect, step!.position, tooltipW, tooltipH);
         setTooltipPos(pos);
       }
     };
@@ -356,14 +356,14 @@ export default function CanvaTour() {
           <div className="bg-app-accent/10 px-5 pt-4 pb-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-app-accent/20 flex items-center justify-center text-app-accent">
-                {step.icon || <LifeBuoy className="h-5 w-5" />}
+                {step!.icon || <LifeBuoy className="h-5 w-5" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[10px] font-medium text-app-accent/70">
                   Langkah {currentStep + 1} dari {TOUR_STEPS.length}
                 </div>
                 <h3 className="text-sm font-bold text-app-primary truncate">
-                  {step.title}
+                  {step!.title}
                 </h3>
               </div>
               {/* Close button */}
@@ -380,7 +380,7 @@ export default function CanvaTour() {
           {/* Description */}
           <div className="px-5 py-4">
             <p className="text-[13px] text-app-secondary leading-relaxed">
-              {step.description}
+              {step!.description}
             </p>
 
             {/* Keyboard shortcuts — shown on the last step */}

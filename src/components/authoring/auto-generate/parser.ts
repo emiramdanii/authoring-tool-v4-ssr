@@ -49,8 +49,8 @@ export function parse(text: string): ParseResult {
   //   "Norma agama bersumber dari..." (not a definition, won't match)
   const defRegexMulti = /([A-Z][a-zA-Z]+(?:\s+[a-z][a-zA-Z]+){0,3})\s+(?:adalah|merupakan|yaitu|ialah)\s+([^.]+)/g;
   while ((m = defRegexMulti.exec(raw)) !== null) {
-    const term = m[1].trim();
-    const meaning = m[2].trim();
+    const term = m[1]!!.trim();
+    const meaning = m[2]!!.trim();
     // Validate: term should be 2-60 chars, meaning should be substantive
     if (term.length >= 2 && term.length <= 60 && meaning.length > 5) {
       // Avoid duplicates (prefer multi-word match over single-word)
@@ -65,8 +65,8 @@ export function parse(text: string): ParseResult {
   // Only adds if not already captured by the multi-word regex
   const defRegexSingle = /([A-Z][^\s,.:;]{1,40})\s+(?:adalah|merupakan|yaitu|ialah)\s+([^.]+)/g;
   while ((m = defRegexSingle.exec(raw)) !== null) {
-    const term = m[1].trim();
-    const meaning = m[2].trim();
+    const term = m[1]!!.trim();
+    const meaning = m[2]!!.trim();
     if (term.length >= 2 && meaning.length > 5) {
       if (!definitions.some((d) => d.term === term)) {
         definitions.push({ term, meaning });
@@ -82,12 +82,12 @@ export function parse(text: string): ParseResult {
   // Strategy 1: "terdiri dari/meliputi/antara lain X, Y, Z"
   const enumRegex1 = /([^.]+?)\s+(?:terdiri dari|meliputi|antara lain)\s+([^.]+)/gi;
   while ((m = enumRegex1.exec(raw)) !== null) {
-    const items = m[2]
+    const items = m[2]!
       .split(/[,;]\s*/)
       .map((s) => s.replace(/^(?:yaitu|yakni|ialah)\s+/i, '').trim())
       .filter(Boolean);
     if (items.length >= 2) {
-      const subject = m[1].trim();
+      const subject = m[1]!!.trim();
       if (!enumerations.some((e) => e.subject === subject)) {
         enumerations.push({ subject, items });
       }
@@ -108,15 +108,15 @@ export function parse(text: string): ParseResult {
   const MAX_CONTINUATION_LINES = 3; // allow up to 3 non-numbered lines between numbered items
 
   for (let lineIdx = 0; lineIdx < textLines.length; lineIdx++) {
-    const line = textLines[lineIdx];
+    const line = textLines[lineIdx]!;
     const numMatch = line.match(/^\s*(\d+)\.\s+(.+)/);
 
     if (numMatch) {
-      const num = parseInt(numMatch[1]);
-      const content = numMatch[2].trim();
+      const num = parseInt(numMatch[1]!);
+      const content = numMatch[2]!.trim();
       // Extract item name (before dash/colon) and optional description
       const itemMatch = content.match(/^([^–\-—:]+?)(?:\s*[-–—:]\s*(.+))?$/);
-      const itemName = itemMatch ? itemMatch[1].trim() : content;
+      const itemName = itemMatch ? itemMatch[1]!.trim() : content;
 
       if (num === 1 && lastNum !== 0) {
         // New group starting — save previous group
@@ -134,7 +134,7 @@ export function parse(text: string): ParseResult {
           // Pattern 1: Line ending with ":"
           const subjectMatch = pl.match(/^(.+?):\s*$/);
           if (subjectMatch) {
-            const rawSubject = subjectMatch[1]
+            const rawSubject = subjectMatch[1]!
               .replace(/^(Jenis|Macam|Kategori|Bentuk|Ciri|Sifat|Contoh|Hambatan|Faktor|Penyebab|Prinsip)\s*-?\s*/i, '$1 ')
               .trim();
             currentGroupSubject = rawSubject;
@@ -143,7 +143,7 @@ export function parse(text: string): ParseResult {
           // Pattern 2: Section header "A. Title" / "B. Title"
           const sectionMatch = pl.match(/^[A-Z]\.\s+(.+)/);
           if (sectionMatch) {
-            currentGroupSubject = sectionMatch[1].trim();
+            currentGroupSubject = sectionMatch[1]!.trim();
             break;
           }
           // Pattern 3: Non-empty text line (use as context, but skip blank lines going up)
@@ -219,8 +219,8 @@ export function parse(text: string): ParseResult {
   // Strategy 3: Bullet/dash lists under a header ending with colon
   const bulletSectionRegex = /([A-Z][^.:\n]+?):\s*\n((?:\s*[-–—•*]\s+.+\n?)+)/gm;
   while ((m = bulletSectionRegex.exec(text)) !== null) {
-    const subject = m[1].trim();
-    const items = m[2]
+    const subject = m[1]!!.trim();
+    const items = m[2]!
       .split('\n')
       .map((l) => l.replace(/^\s*[-–—•*]\s+/, '').trim())
       .filter((l) => l.length > 0);
@@ -241,14 +241,14 @@ export function parse(text: string): ParseResult {
   // Strategy 1: "berfungsi/berperan/berguna/bertujuan untuk X"
   const funcRegex1 = /([^.]+?)\s+(?:berfungsi|berperan|berguna|bertujuan)\s+(?:sebagai|untuk|dalam)?\s*([^.]+)/gi;
   while ((m = funcRegex1.exec(raw)) !== null) {
-    functions.push({ subject: m[1].trim(), desc: m[2].trim() });
+    functions.push({ subject: m[1]!!.trim(), desc: m[2]!!.trim() });
   }
 
   // Strategy 2: "Fungsi X:" or "Tujuan X:" section headers with bullet/dash items below
   const funcSectionRegex = /(?:Fungsi|Tujuan|Peran|Manfaat)\s+([^:\n]+):\s*\n((?:\s*[-–—•*]\s+.+\n?)+)/gim;
   while ((m = funcSectionRegex.exec(text)) !== null) {
-    const subject = m[1].trim();
-    const descLines = m[2]
+    const subject = m[1]!!.trim();
+    const descLines = m[2]!
       .split('\n')
       .map((l) => l.replace(/^\s*[-–—•*]\s+/, '').trim())
       .filter((l) => l.length > 0);
@@ -260,7 +260,7 @@ export function parse(text: string): ParseResult {
   // Strategy 3: Inline "X berfungsi/berperan sebagai Y" without "untuk"
   const funcRegex2 = /([A-Z][^,.]+?)\s+(?:berfungsi|berperan)\s+(?:sebagai|untuk|dalam)\s+([^,.]+)/g;
   while ((m = funcRegex2.exec(raw)) !== null) {
-    const entry = { subject: m[1].trim(), desc: m[2].trim() };
+    const entry = { subject: m[1]!!.trim(), desc: m[2]!!.trim() };
     // Deduplicate
     if (!functions.some((f) => f.subject === entry.subject && f.desc === entry.desc)) {
       functions.push(entry);
@@ -273,13 +273,13 @@ export function parse(text: string): ParseResult {
   const causeRegex = /([^.]*?(?:karena|akibat|menyebabkan|sehingga)[^.]+)/gi;
   const causes: { cause: string; effect: string }[] = [];
   while ((m = causeRegex.exec(raw)) !== null) {
-    const clause = m[1].trim();
+    const clause = m[1]!!.trim();
     const sep = clause.match(/(?:karena|akibat|menyebabkan|sehingga)/i);
     if (sep) {
-      const idx = clause.toLowerCase().indexOf(sep[0].toLowerCase());
+      const idx = clause.toLowerCase().indexOf(sep[0]!.toLowerCase());
       causes.push({
         cause: clause.slice(0, idx).trim(),
-        effect: clause.slice(idx + sep[0].length).trim(),
+        effect: clause.slice(idx + sep[0]!.length).trim(),
       });
     }
   }

@@ -112,7 +112,7 @@ export class PatchHistory {
     const entry = this.entries[this.currentIndex];
     this.currentIndex--;
     this.notify();
-    return entry.inversePatches;
+    return entry!.inversePatches;
   }
 
   /**
@@ -124,7 +124,7 @@ export class PatchHistory {
     this.currentIndex++;
     const entry = this.entries[this.currentIndex];
     this.notify();
-    return entry.patches;
+    return entry!.patches;
   }
 
   /**
@@ -198,14 +198,14 @@ export class PatchHistory {
     if (targetIndex < this.currentIndex) {
       // Going backward: apply inverse patches in reverse order
       for (let i = this.currentIndex; i > targetIndex; i--) {
-        allPatches.push(...this.entries[i].inversePatches);
-        allInverse.push(...this.entries[i].patches);
+        allPatches.push(...this.entries[i]!.inversePatches);
+        allInverse.push(...this.entries[i]!.patches);
       }
     } else {
       // Going forward: apply forward patches in order
       for (let i = this.currentIndex + 1; i <= targetIndex; i++) {
-        allPatches.push(...this.entries[i].patches);
-        allInverse.push(...this.entries[i].inversePatches);
+        allPatches.push(...this.entries[i]!.patches);
+        allInverse.push(...this.entries[i]!.inversePatches);
       }
     }
 
@@ -393,11 +393,11 @@ export function connectHistoryToEditBus(): () => void {
           const lastEntry = entries[lastIdx];
           // Merge: keep the oldest inverse, accumulate forward patches
           patchHistory.replaceEntry(lastIdx, {
-            patches: [...lastEntry.patches, ..._immerPatches.forward],
-            inversePatches: lastEntry.inversePatches, // Keep the OLDEST inverse (pre-group state)
+            patches: [...lastEntry!.patches, ..._immerPatches.forward],
+            inversePatches: lastEntry!.inversePatches, // Keep the OLDEST inverse (pre-group state)
             source: event.patch.source ?? 'user',
-            description: lastEntry.description,
-            timestamp: lastEntry.timestamp, // Keep original timestamp
+            description: lastEntry!.description,
+            timestamp: lastEntry!.timestamp, // Keep original timestamp
             pageIndex,
             blockId,
           });

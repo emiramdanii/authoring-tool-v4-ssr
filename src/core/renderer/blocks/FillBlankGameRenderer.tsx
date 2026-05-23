@@ -125,7 +125,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
     if (answered || !userInput.trim() || currentQ >= validQuestions.length) return;
 
     const userAns = userInput.trim().toLowerCase();
-    const correctAns = (validQuestions[currentQ].answer || '').toLowerCase();
+    const correctAns = (validQuestions[currentQ]!.answer || '').toLowerCase();
     // Support multiple accepted answers separated by '/'
     const acceptList = correctAns.split('/').map(a => a.trim());
     const isCorrect = acceptList.includes(userAns);
@@ -137,7 +137,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
       a11y.announceCorrect();
     } else {
       playSound('incorrect');
-      a11y.announceIncorrect(validQuestions[currentQ].answer);
+      a11y.announceIncorrect(validQuestions[currentQ]!.answer);
     }
     setAnswered(true);
 

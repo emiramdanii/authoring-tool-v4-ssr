@@ -337,8 +337,8 @@ export function genKuisSchema(
   for (const en of enumerations) {
     if (questions.length >= jumlah) break;
     const correctItem = en.items[0];
-    const wrongs = makeWrongOpts(correctItem, en.items);
-    const { opts, ans } = shuffleInsert(correctItem, wrongs);
+    const wrongs = makeWrongOpts!(correctItem, en.items);
+    const { opts, ans } = shuffleInsert!(correctItem, wrongs);
     questions.push({
       q: `Berikut ini yang termasuk ${en.subject.toLowerCase()} adalah ...`,
       opts, ans,

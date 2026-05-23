@@ -192,12 +192,12 @@ export function useExcelImport() {
         for (const sheetName of wb.SheetNames) {
           const normName = normalizeSheetName(sheetName);
           const ws = wb.Sheets[sheetName];
-          const aoa = sheetToAoa(XLSX, ws);
+          const aoa = sheetToAoa(XLSX!, ws);
 
           if (aoa.length === 0) continue;
 
           // Use first row as headers
-          const headers = aoa[0].map((h) => h.trim());
+          const headers = aoa[0]!.map((h) => h.trim());
           const rows = aoa.slice(1);
 
           sheets.push({
@@ -214,7 +214,7 @@ export function useExcelImport() {
 
         setPendingWorkbook(wb);
         setPreviewSheets(sheets);
-        setActivePreviewTab(sheets[0].name);
+        setActivePreviewTab(sheets[0]!.name);
         setPreviewOpen(true);
       } catch (err) {
         logger.error('ExcelImport', err);
@@ -242,14 +242,14 @@ export function useExcelImport() {
     if (metaSheet && metaSheet.rows.length > 0) {
       const r = metaSheet.rows[0];
       updates.meta = {
-        judulPertemuan: r[0] ?? '',
-        subjudul: r[1] ?? '',
-        ikon: r[2] ?? '',
-        durasi: r[3] ?? '',
-        namaBab: r[4] ?? '',
-        mapel: r[5] ?? '',
-        kelas: r[6] ?? '',
-        kurikulum: r[7] ?? '',
+        judulPertemuan: r![0]! ?? '',
+        subjudul: r![1]! ?? '',
+        ikon: r![2]! ?? '',
+        durasi: r![3]! ?? '',
+        namaBab: r![4]! ?? '',
+        mapel: r![5]! ?? '',
+        kelas: r![6]! ?? '',
+        kurikulum: r![7]! ?? '',
       };
     }
 
@@ -257,18 +257,18 @@ export function useExcelImport() {
     const cpSheet = sheetMap.get('CP');
     if (cpSheet && cpSheet.rows.length > 0) {
       const r = cpSheet.rows[0];
-      const profilStr = r[3] ?? '';
+      const profilStr = r![3]! ?? '';
       const profil = profilStr
         .split(/[,;]/)
         .map((s) => s.trim())
         .filter(Boolean);
       updates.cp = {
-        elemen: r[0] ?? '',
-        subElemen: r[1] ?? '',
-        capaianFase: r[2] ?? '',
+        elemen: r![0]! ?? '',
+        subElemen: r![1]! ?? '',
+        capaianFase: r![2]! ?? '',
         profil,
-        fase: r[4] ?? 'D',
-        kelas: r[5] ?? '',
+        fase: r![4]! ?? 'D',
+        kelas: r![5]! ?? '',
       };
     }
 
@@ -289,7 +289,7 @@ export function useExcelImport() {
     // ATP
     const atpSheet = sheetMap.get('ATP');
     if (atpSheet && atpSheet.rows.length > 0) {
-      const namaBab = atpSheet.rows[0][0] ?? '';
+      const namaBab = atpSheet.rows[0]![0] ?? '';
       const pertemuan = atpSheet.rows
         .filter((r) => r.some((c) => c.trim() !== ''))
         .map((r) => ({
@@ -371,12 +371,12 @@ export function useExcelImport() {
     if (files.length === 0) return;
 
     const file = files[0];
-    if (!file.name.match(/\.xlsx?$/i)) {
+    if (!file!.name.match(/\.xlsx?$/i)) {
       toast.error('❌ Hanya file .xlsx yang didukung');
       return;
     }
 
-    parseExcelFile(file);
+    parseExcelFile!(file);
   }, [parseExcelFile]);
 
   const handleExcelFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

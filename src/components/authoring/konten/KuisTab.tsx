@@ -159,7 +159,7 @@ export function KuisTab() {
                       if (newItem) {
                         // Update projection (authoring store)
                         const newKuis = [...kuis];
-                        newKuis[i] = { ...newItem, _id: kuis[i]._id || newItem._id };
+                        newKuis[i]! = { ...newItem, _id: kuis[i]!._id || newItem._id };
                         useAuthoringStore.setState({ kuis: newKuis, dirty: true });
                         // Sync the updated kuis projection to schema (canvas)
                         // Uses syncKuisToSchema which writes all kuis items to the schema block

@@ -65,7 +65,7 @@ export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice
     set((s) => {
       const modules = [...s.modules];
       const [moved] = modules.splice(fromIndex, 1);
-      modules.splice(toIndex, 0, moved);
+      modules.splice(toIndex, 0!, moved);
       return { modules, games: deriveGames(modules), dirty: true };
     });
   },

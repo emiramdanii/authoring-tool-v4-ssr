@@ -634,7 +634,7 @@ function AuthoringToolInner() {
                       Langkah {tourStep + 1} dari {TOUR_STEPS.length}
                     </div>
                     <h3 className="text-base font-bold text-app-primary">
-                      {TOUR_STEPS[tourStep].title}
+                      {TOUR_STEPS[tourStep]!.title}
                     </h3>
                   </div>
                 </div>
@@ -643,7 +643,7 @@ function AuthoringToolInner() {
               {/* Description */}
               <div className="px-5 py-4">
                 <p className="text-sm text-app-secondary leading-relaxed">
-                  {TOUR_STEPS[tourStep].desc}
+                  {TOUR_STEPS[tourStep]!.desc}
                 </p>
               </div>
 

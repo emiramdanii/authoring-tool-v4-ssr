@@ -520,9 +520,9 @@ export default function Dashboard() {
               <button
                 key={action.label}
                 onClick={action.action}
-                className={`flex items-center gap-3.5 bg-app-surface border border-app-border rounded-xl p-3.5 ${colorClasses.hoverBorder} ${colorClasses.hoverBg} transition-colors cursor-pointer text-left`}
+                className={`flex items-center gap-3.5 bg-app-surface border border-app-border rounded-xl p-3.5 ${colorClasses!.hoverBorder} ${colorClasses!.hoverBg} transition-colors cursor-pointer text-left`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClasses.icon}`}>
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClasses!.icon}`}>
                   <Icon size={16} />
                 </div>
                 <div>

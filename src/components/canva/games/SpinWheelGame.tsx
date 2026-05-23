@@ -34,7 +34,7 @@ export function SpinWheelGame({ data, compact, interactive, onComplete }: GameCo
       const normalized = newRot % 360;
       const sliceAngle = 360 / validSoal.length;
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
-      setResult(validSoal[Math.min(idx, validSoal.length - 1)]);
+      setResult!(validSoal[Math.min(idx, validSoal.length - 1)]);
       // SpinWheel is a random picker tool, not a quiz — no scoring contribution
       // Guard: only report once per session to avoid overwriting other game scores
       if (!reported.current && onComplete) { reported.current = true; onComplete(0, 0); }

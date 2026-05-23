@@ -107,7 +107,7 @@ function DefBoxStepMode({
               paddingLeft: isCompact ? '10px' : '12px',
               ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
             }}
-            dangerouslySetInnerHTML={{ __html: step.content }}
+            dangerouslySetInnerHTML={{ __html: step!.content }}
           />
         </div>
       </PremiumStepNavigator>

@@ -46,7 +46,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
   const handleSubmit = useCallback(() => {
     if (answered || !userInput.trim()) return;
     const userAns = userInput.trim().toLowerCase();
-    const correctAns = String(validSoal[currentQ].jawaban || '').toLowerCase();
+    const correctAns = String(validSoal[currentQ]!.jawaban || '').toLowerCase();
     const acceptList = correctAns.split('/').map(a => a.trim());
     const isCorrect = acceptList.includes(userAns);
     setLastCorrect(isCorrect);
@@ -84,7 +84,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
   const prog = ((currentQ + 1) / validSoal.length * 100);
 
   // Format question with blank marker
-  const qText = String(q.teks || '');
+  const qText = String(q!.teks || '');
   const blankMark = '___';
   const parts = qText.split(blankMark);
 
@@ -114,12 +114,12 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
             : 'border-app-border/15 bg-app-elevated/5 text-app-primary focus:border-cyan-400/50 focus:bg-app-elevated/10'
         }`}
       />
-      {String(q.petunjuk || '') && !answered && (
-        <div className="text-[8px] text-amber-400/70 mt-1 italic">💡 Petunjuk: {String(q.petunjuk)}</div>
+      {String(q!.petunjuk || '') && !answered && (
+        <div className="text-[8px] text-amber-400/70 mt-1 italic">💡 Petunjuk: {String(q!.petunjuk)}</div>
       )}
       {answered && (
         <div className={`text-[9px] mt-1 font-bold ${lastCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
-          {lastCorrect ? '✅ Benar!' : `❌ Salah. Jawaban: ${String(q.jawaban)}`}
+          {lastCorrect ? '✅ Benar!' : `❌ Salah. Jawaban: ${String(q!.jawaban)}`}
         </div>
       )}
       {!answered && (

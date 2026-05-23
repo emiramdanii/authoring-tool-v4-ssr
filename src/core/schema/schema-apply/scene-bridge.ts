@@ -75,7 +75,7 @@ export function rebalanceFromScenePlan(
   // Uses capability registry as single source of truth — previously used indirect
   // capability checks (not compressionCapable AND not splittable) which was fragile.
   const hasFullPageBlock = page.schema.blocks.length === 1 &&
-    isFullPageBlockType(page.schema.blocks[0].type);
+    isFullPageBlockType(page.schema.blocks[0]!.type);
   const safeArea = hasFullPageBlock
     ? DEFAULT_SAFE_AREA
     : computeSafeArea({

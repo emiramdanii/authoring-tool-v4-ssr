@@ -56,13 +56,13 @@ export function genTP(parsed: ParseResult, opts: GenSettings): TpItem[] {
   // C1: Definitions → Menyebutkan / Mendefinisikan
   for (const def of definitions) {
     if (idx >= bloomMax) break;
-    const verb = BLOOM_VERBS[1][idx % BLOOM_VERBS[1].length];
+    const verb = BLOOM_VERBS[1]![idx % BLOOM_VERBS[1]!.length]!;
     const pert = Math.min(Math.ceil((idx + 1) / 2), pertemuan);
     tps.push({
       verb,
       desc: `pengertian ${def.term.toLowerCase()} yaitu ${def.meaning.toLowerCase()}`,
       pertemuan: pert,
-      color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+      color: COLOR_PALETTE[idx % COLOR_PALETTE.length]!,
     });
     idx++;
   }
@@ -71,13 +71,13 @@ export function genTP(parsed: ParseResult, opts: GenSettings): TpItem[] {
   if (2 <= bloomMax) {
     for (const en of enumerations) {
       if (idx >= bloomMax) break;
-      const verb = BLOOM_VERBS[2][idx % BLOOM_VERBS[2].length];
+      const verb = BLOOM_VERBS[2]![idx % BLOOM_VERBS[2]!.length]!;
       const pert = Math.min(Math.ceil((idx + 1) / 2), pertemuan);
       tps.push({
         verb,
         desc: `${en.items.slice(0, 3).join(', ')} sebagai bagian dari ${en.subject.toLowerCase()}`,
         pertemuan: pert,
-        color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+        color: COLOR_PALETTE[idx % COLOR_PALETTE.length]!,
       });
       idx++;
     }
@@ -87,13 +87,13 @@ export function genTP(parsed: ParseResult, opts: GenSettings): TpItem[] {
   if (3 <= bloomMax) {
     for (const fn of functions) {
       if (idx >= bloomMax) break;
-      const verb = BLOOM_VERBS[3][idx % BLOOM_VERBS[3].length];
+      const verb = BLOOM_VERBS[3]![idx % BLOOM_VERBS[3]!.length]!;
       const pert = Math.min(Math.ceil((idx + 1) / 2), pertemuan);
       tps.push({
         verb,
         desc: `${fn.desc.toLowerCase()} dalam konteks ${fn.subject.toLowerCase()}`,
         pertemuan: pert,
-        color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+        color: COLOR_PALETTE[idx % COLOR_PALETTE.length]!,
       });
       idx++;
     }
@@ -107,7 +107,7 @@ export function genTP(parsed: ParseResult, opts: GenSettings): TpItem[] {
       verb: 'Menganalisis',
       desc: `pentingnya ${topic} dalam kehidupan sehari-hari`,
       pertemuan: pert,
-      color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+      color: COLOR_PALETTE[idx % COLOR_PALETTE.length]!,
     });
     idx++;
   }
@@ -120,7 +120,7 @@ export function genTP(parsed: ParseResult, opts: GenSettings): TpItem[] {
       verb: 'Mengevaluasi',
       desc: `penerapan ${topic} di lingkungan sekitar`,
       pertemuan: pert,
-      color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+      color: COLOR_PALETTE[idx % COLOR_PALETTE.length]!,
     });
     idx++;
   }
@@ -133,20 +133,20 @@ export function genTP(parsed: ParseResult, opts: GenSettings): TpItem[] {
       verb: 'Menyusun',
       desc: `rangkuman tentang ${topic} berdasarkan hasil pembelajaran`,
       pertemuan: pert,
-      color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+      color: COLOR_PALETTE[idx % COLOR_PALETTE.length]!,
     });
   }
 
   // Fallback: at least 3 TPs
   if (tps.length < 3 && sentences.length > 0) {
     while (tps.length < 3) {
-      const s = sentences[tps.length % sentences.length];
+      const s = sentences[tps.length % sentences.length]!;
       const pert = Math.min(tps.length + 1, pertemuan);
       tps.push({
-        verb: BLOOM_VERBS[Math.min(tps.length + 1, 6)][tps.length % 5],
+        verb: BLOOM_VERBS[Math.min(tps.length + 1, 6)]![tps.length % 5]!,
         desc: s.slice(0, 120).toLowerCase(),
         pertemuan: pert,
-        color: COLOR_PALETTE[tps.length % COLOR_PALETTE.length],
+        color: COLOR_PALETTE[tps.length % COLOR_PALETTE.length]!,
       });
     }
   }
@@ -176,11 +176,11 @@ export function genATP(tps: TpItem[], meta: { namaBab?: string; durasi?: string 
 
     pertemuanList.push({
       judul: group.length > 0
-        ? `${group[0].verb} ${group[0].desc.split(' ').slice(0, 4).join(' ')}...`
+        ? `${group[0]!.verb} ${group[0]!.desc.split(' ').slice(0, 4).join(' ')}...`
         : `Pertemuan ${i}`,
       tp: tpText || `Pertemuan ${i}`,
       durasi: meta.durasi || '2×40 menit',
-      kegiatan: kegiatanTemplates[(i - 1) % kegiatanTemplates.length],
+      kegiatan: kegiatanTemplates[(i - 1) % kegiatanTemplates.length]!,
       penilaian: i % 2 === 0 ? 'Kuis + Observasi' : 'Diskusi + Portofolio',
     });
   }
@@ -200,7 +200,7 @@ export function genAlur(tps: TpItem[], meta: { durasi?: string }, totalMinutes =
     fase: 'Pendahuluan',
     durasi: '10 menit',
     judul: 'Apersepsi & Motivasi',
-    deskripsi: `Guru menyapa peserta didik, memeriksa kesiapan belajar, dan mengajukan pertanyaan pemantik terkait ${tps.length > 0 ? tps[0].desc.slice(0, 60) : 'materi'}.`,
+    deskripsi: `Guru menyapa peserta didik, memeriksa kesiapan belajar, dan mengajukan pertanyaan pemantik terkait ${tps.length > 0 ? tps[0]!.desc.slice(0, 60) : 'materi'}.`,
   });
 
   // Inti steps: distribute time among TPs
@@ -293,7 +293,7 @@ export function genKuis(parsed: ParseResult, jumlah: number, jumlahPertemuan: nu
   // Pattern 2: From enumerations
   for (const en of enumerations) {
     if (kuis.length >= jumlah) break;
-    const correctItem = en.items[0];
+    const correctItem = en.items[0] ?? '';
     const wrongs = makeWrongOpts(correctItem, en.items);
     const { opts, ans } = shuffleInsert(correctItem, wrongs);
     const idx = kuis.length;
@@ -418,7 +418,7 @@ export function genSkenario(parsed: ParseResult, meta: { namaBab?: string }): Sk
       dialog: [
         { speaker: 'Rizki', text: `Halo! Selamat datang di sekolah ini. Kamu harus tahu, di sini kita punya banyak aturan tentang ${topic}.` },
         { speaker: 'Anda', text: `Oh, begitu ya? Apa saja aturannya?` },
-        { speaker: 'Rizki', text: `${definitions.length > 0 ? definitions[0].meaning : `Di sekolah ini, semua siswa wajib memahami ${topic.toLowerCase()}.`}` },
+        { speaker: 'Rizki', text: `${definitions.length > 0 ? definitions[0]!.meaning : `Di sekolah ini, semua siswa wajib memahami ${topic.toLowerCase()}.`}` },
       ],
       choices: [
         { text: 'Saya ingin mempelajari lebih lanjut tentang aturan ini', feedback: `Bagus! Semangat belajar ${topic}!`, correct: true },
@@ -432,7 +432,7 @@ export function genSkenario(parsed: ParseResult, meta: { namaBab?: string }): Sk
       dialog: [
         { speaker: 'Sari', text: `Kamu lihat tidak? Ada siswa yang melanggar aturan tentang ${topic}.` },
         { speaker: 'Anda', text: `Ya, saya melihatnya. Apa yang sebaiknya kita lakukan?` },
-        { speaker: 'Sari', text: `${definitions.length > 1 ? definitions[1].meaning : `Sebaiknya kita ingatkan dengan baik. Setiap tindakan ada konsekuensinya.`}` },
+        { speaker: 'Sari', text: `${definitions.length > 1 ? definitions[1]!.meaning : `Sebaiknya kita ingatkan dengan baik. Setiap tindakan ada konsekuensinya.`}` },
       ],
       choices: [
         { text: 'Mengingatkan siswa tersebut dengan sopan', feedback: 'Mengingatkan secara baik adalah tindakan yang bijak!', correct: true },
@@ -490,7 +490,7 @@ export function genTrueFalse(parsed: ParseResult): TrueFalseItem[] {
 
   // False statements (negate definitions)
   for (let i = 0; i < definitions.length && items.length < definitions.length * 2; i++) {
-    const def = definitions[i];
+    const def = definitions[i]!;
     const wrongWord = topWords.find(
       (w) => !def.meaning.toLowerCase().includes(w) && w !== def.term.toLowerCase(),
     );
@@ -578,8 +578,8 @@ export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { 
   for (const def of definitions.slice(0, 2)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
-      label: labels[pertanyaan.length],
-      icon: icons[pertanyaan.length],
+      label: labels[pertanyaan.length] ?? '',
+      icon: icons[pertanyaan.length] ?? '',
       teks: `Jelaskan apa yang dimaksud dengan ${def.term}! Berikan contoh penerapannya dalam kehidupan sehari-hari.`,
       petunjuk: `Gunakan definisi "${def.term}" sebagai dasar jawaban, lalu hubungkan dengan pengalamanmu sendiri.`,
     });
@@ -589,8 +589,8 @@ export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { 
   for (const en of enumerations.slice(0, 1)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
-      label: labels[pertanyaan.length],
-      icon: icons[pertanyaan.length],
+      label: labels[pertanyaan.length] ?? '',
+      icon: icons[pertanyaan.length] ?? '',
       teks: `Sebutkan dan diskusikan ${en.subject}! Mana yang paling relevan dengan kehidupan kalian? Mengapa?`,
       petunjuk: `Pertimbangkan masing-masing poin, pilih yang paling relevan, dan berikan alasan.`,
     });
@@ -600,8 +600,8 @@ export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { 
   for (const fn of functions.slice(0, 1)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
-      label: labels[pertanyaan.length],
-      icon: icons[pertanyaan.length],
+      label: labels[pertanyaan.length] ?? '',
+      icon: icons[pertanyaan.length] ?? '',
       teks: `Mengapa ${fn.subject} berfungsi untuk ${fn.desc.toLowerCase()}? Apa yang terjadi jika fungsi tersebut tidak berjalan?`,
       petunjuk: `Analisis peran ${fn.subject} dan bayangkan konsekuensi tanpa fungsi tersebut.`,
     });
@@ -611,8 +611,8 @@ export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { 
   for (const c of causes.slice(0, 1)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
-      label: labels[pertanyaan.length],
-      icon: icons[pertanyaan.length],
+      label: labels[pertanyaan.length] ?? '',
+      icon: icons[pertanyaan.length] ?? '',
       teks: `Diskusikan hubungan sebab-akibat: "${c.cause}" menyebabkan "${c.effect}". Apa bisa terjadi sebaliknya?`,
       petunjuk: `Pikirkan apakah hubungan ini selalu satu arah, atau bisa berlaku dua arah.`,
     });
@@ -622,8 +622,8 @@ export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { 
   for (const t of tp.slice(0, 1)) {
     if (pertanyaan.length >= 5) break;
     pertanyaan.push({
-      label: labels[pertanyaan.length],
-      icon: icons[pertanyaan.length],
+      label: labels[pertanyaan.length] ?? '',
+      icon: icons[pertanyaan.length] ?? '',
       teks: `Bagaimana ${t.desc}? Diskusikan dengan teman sekelasmu dan berikan contoh konkret!`,
       petunjuk: `Hubungkan dengan pengalaman pribadimu dan lingkungan sekitarmu.`,
     });
@@ -634,8 +634,8 @@ export function genDiskusi(parsed: ParseResult, tp: { desc: string }[], meta: { 
     const keySentence = sentences.find(s => s.length > 30 && s.length < 120);
     if (keySentence) {
       pertanyaan.push({
-        label: labels[pertanyaan.length],
-        icon: icons[pertanyaan.length],
+        label: labels[pertanyaan.length] ?? '',
+        icon: icons[pertanyaan.length] ?? '',
         teks: `Setuju atau tidak dengan pernyataan berikut? Mengapa? "${keySentence}"`,
         petunjuk: `Berikan argumen yang logis untuk mendukung posisimu, baik setuju maupun tidak.`,
       });
@@ -677,8 +677,8 @@ export function genRefleksi(parsed: ParseResult, meta: { judulPertemuan: string;
   pertanyaan.push({
     teks: `Hal baru apa yang kamu pelajari tentang ${defTerm}? Tuliskan minimal 2 hal yang paling berkesan.`,
     petunjuk: `Fokus pada pemahaman baru yang kamu dapat, bukan sekadar mengulang definisi.`,
-    warna: colors[0],
-    icon: icons[0],
+    warna: colors[0] ?? 'blue',
+    icon: icons[0] ?? '',
   });
 
   // Q2: Transfer + application
@@ -686,25 +686,25 @@ export function genRefleksi(parsed: ParseResult, meta: { judulPertemuan: string;
   pertanyaan.push({
     teks: `Bagaimana kamu akan menerapkan pemahaman tentang ${fnSubject} dalam kehidupan sehari-hari?`,
     petunjuk: `Berikan contoh konkret — di rumah, di sekolah, atau di masyarakat.`,
-    warna: colors[1],
-    icon: icons[1],
+    warna: colors[1] ?? 'green',
+    icon: icons[1] ?? '',
   });
 
   // Q3: Commitment + agency
   pertanyaan.push({
     teks: 'Tulis komitmen pribadimu untuk menerapkan nilai-nilai yang dipelajari!',
     petunjuk: 'Gunakan kalimat "Saya berkomitmen untuk..." dan tuliskan langkah nyata yang akan kamu lakukan.',
-    warna: colors[2],
-    icon: icons[2],
+    warna: colors[2] ?? 'amber',
+    icon: icons[2] ?? '',
   });
 
   // Q4: Metacognitive monitoring — what was challenging?
-  const challengeTopic = definitions.length > 1 ? definitions[1].term : topic;
+  const challengeTopic = definitions.length > 1 ? definitions[1]!.term : topic;
   pertanyaan.push({
     teks: `Bagian mana dari materi ${challengeTopic} yang paling menantang? Mengapa?`,
     petunjuk: `Jelaskan kesulitan yang kamu hadapi dan bagaimana kamu mengatasinya.`,
-    warna: colors[3],
-    icon: icons[3],
+    warna: colors[3] ?? 'purple',
+    icon: icons[3] ?? '',
   });
 
   // Q5: Self-regulation (if content is rich)
@@ -712,8 +712,8 @@ export function genRefleksi(parsed: ParseResult, meta: { judulPertemuan: string;
     pertanyaan.push({
       teks: 'Jika kamu bisa mempelajari materi ini lagi dari awal, apa yang akan kamu lakukan berbeda?',
       petunjuk: 'Pikirkan strategi belajar yang lebih efektif untuk pemahaman yang lebih dalam.',
-      warna: colors[4],
-      icon: icons[4],
+      warna: colors[4] ?? 'red',
+      icon: icons[4] ?? '',
     });
   }
 
@@ -724,7 +724,7 @@ export function genRefleksi(parsed: ParseResult, meta: { judulPertemuan: string;
     penugasan: {
       judul: 'Tugas Refleksi',
       isi: `Tulis refleksi pribadimu tentang ${topic} — apa yang kamu pelajari, mengapa penting, dan bagaimana kamu akan menerapkannya.`,
-      contoh: `Saya belajar bahwa ${definitions[0]?.term || topic} adalah... Saya akan menerapkannya dengan...`,
+      contoh: `Saya belajar bahwa ${definitions[0]?.term ?? topic} adalah... Saya akan menerapkannya dengan...`,
     },
   };
 }

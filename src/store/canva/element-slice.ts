@@ -53,7 +53,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       if (kuis.length > 0) {
         const kuisItem = kuis[0];
         el.dataIdx = 0;
-        el.kuisId = (kuisItem._id as string) || generateKuisId();
+        el.kuisId = (kuisItem!._id as string) || generateKuisId();
         el.label = 'Kuis #1';
       }
     }
@@ -64,8 +64,8 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       const gameIdx = modules.findIndex((m: Record<string, unknown>) => (GAME_TYPES as readonly string[]).includes(m.type as string));
       if (gameIdx >= 0) {
         el.dataIdx = gameIdx;
-        el.moduleId = (modules[gameIdx]._id as string) || undefined;
-        el.label = 'Game: ' + (modules[gameIdx].title as string || modules[gameIdx].type as string);
+        el.moduleId = (modules[gameIdx]!._id as string) || undefined;
+        el.label = 'Game: ' + (modules[gameIdx]!.title as string || modules[gameIdx]!.type as string);
       } else {
         el.label = 'Game Interaktif';
       }
@@ -265,7 +265,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     else if (direction === 'down') newIdx = Math.max(0, idx - 1);
     else if (direction === 'top') newIdx = els.length;
     else if (direction === 'bottom') newIdx = 0;
-    els.splice(newIdx, 0, el);
+    els.splice(newIdx, 0!, el);
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, elements: els };
     set({ pages: newPages });

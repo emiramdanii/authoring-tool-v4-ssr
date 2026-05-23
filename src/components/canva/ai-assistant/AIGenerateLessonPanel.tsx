@@ -86,14 +86,14 @@ function aiLessonToPages(lesson: AIGeneratedLesson): import('@/components/canva/
 
   for (let i = 0; i < lesson.pages.length; i++) {
     const aiPage = lesson.pages[i];
-    const pageType = aiPage.type as PageTemplateType;
+    const pageType = aiPage!.type as PageTemplateType;
     const page = createPageFromPreset(pageType, i);
 
     // Override label with AI title
-    page.label = aiPage.title;
+    page.label = aiPage!.title;
 
     if (page.schema) {
-      const blocks = generateBlocksForAIPage(pageType, parsed, meta, opts, aiPage);
+      const blocks = generateBlocksForAIPage(pageType, parsed, meta, opts!, aiPage);
       if (blocks.length > 0) {
         page.schema.blocks = blocks;
       }
@@ -314,9 +314,9 @@ export default function AIGenerateLessonPanel() {
                   onClick={() => { setPattern(p); setPatternOpen(false); }}
                   className={`w-full px-3 py-2.5 flex items-center gap-2 hover:bg-amber-500/10 transition-colors text-left ${pattern === p ? 'bg-amber-500/10' : ''}`}
                 >
-                  <span className="text-sm">{patternLabels[p].split(' ')[0]}</span>
+                  <span className="text-sm">{patternLabels[p]!.split(' ')[0]!}</span>
                   <div>
-                    <div className="text-[10px] font-semibold text-app-primary">{patternLabels[p].split(' ').slice(1).join(' ')}</div>
+                    <div className="text-[10px]! font-semibold text-app-primary">{patternLabels[p]!.split(' ').slice(1).join(' ')}</div>
                     <div className="text-[8px] text-app-muted">
                       {p === 'standar' ? 'Alur lengkap BSNP' : p === 'interaktif' ? 'Skenario + game' : p === 'eksperimen' ? 'Praktikum + ilmiah' : '4-5 halaman cepat'}
                     </div>

@@ -29,17 +29,17 @@ function generateGridWithPlacements(words: string[], size: number): { grid: stri
       const startC = Math.floor(Math.random() * size);
       let fits = true;
       for (let i = 0; i < word.length; i++) {
-        const r = startR + dir[0] * i;
-        const c = startC + dir[1] * i;
+        const r = startR + dir![0]! * i;
+        const c = startC + dir![1]! * i;
         if (r < 0 || r >= size || c < 0 || c >= size) { fits = false; break; }
-        if (g[r][c] !== '' && g[r][c] !== word[i]) { fits = false; break; }
+        if (g[r]![c] !== '' && g[r]![c] !== word[i]) { fits = false; break; }
       }
       if (fits) {
         const cells: Array<[number, number]> = [];
         for (let i = 0; i < word.length; i++) {
-          const r = startR + dir[0] * i;
-          const c = startC + dir[1] * i;
-          g[r][c] = word[i];
+          const r = startR + dir![0]! * i;
+          const c = startC + dir![1]! * i;
+          g[r]![c] = word[i];
           cells.push([r, c]);
         }
         placements.push({ word, cells });
@@ -50,7 +50,7 @@ function generateGridWithPlacements(words: string[], size: number): { grid: stri
   // Fill empty cells with random letters
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (g[r][c] === '') g[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+      if (g[r]![c] === '') g[r]![c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
     }
   }
   return { grid: g, placements };

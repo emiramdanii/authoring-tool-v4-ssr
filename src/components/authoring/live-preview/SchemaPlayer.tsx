@@ -198,7 +198,7 @@ export default function SchemaPlayer({
   // Cover/hero pages don't show bottom nav — they fill the entire scene.
   // This matches PageFrame behavior where isCoverPage hides navbars.
   const isCoverScreen = currentScreen?.blocks.length === 1 &&
-    isFullPageBlockType(currentScreen.blocks[0].type);
+    isFullPageBlockType(currentScreen.blocks[0]!.type);
   const showBottomNav = showControls && !isCoverScreen;
 
   return (

@@ -535,20 +535,20 @@ export function createProjectFromTemplate(
     const scene = template.scenes[i];
 
     // Use existing PagePresetRegistry to create schema-native pages
-    const page = createPageFromPreset(scene.templateType, i);
+    const page = createPageFromPreset(scene!.templateType, i);
 
     // Override label with the scene's label (immutable — page is fresh, not frozen yet)
-    page.label = scene.label;
+    page.label = scene!.label;
 
     // Set variant if specified
-    if (scene.variant) {
-      page.templateVariant = scene.variant;
+    if (scene!.variant) {
+      page.templateVariant = scene!.variant;
     }
 
     // For the cover page, inject the metadata (title, guru, sekolah)
     // IMPORTANT: Schema may be deepFrozen in dev mode from ensurePageSchema().
     // We must create new objects immutably instead of mutating in place.
-    if (scene.templateType === 'cover' && page.schema?.blocks) {
+    if (scene!.templateType === 'cover' && page.schema?.blocks) {
       page.schema = {
         ...page.schema,
         blocks: page.schema.blocks.map(block => {
@@ -567,7 +567,7 @@ export function createProjectFromTemplate(
     }
 
     // For the penutup page, inject closing info (immutable)
-    if (scene.templateType === 'penutup' && page.schema?.blocks) {
+    if (scene!.templateType === 'penutup' && page.schema?.blocks) {
       page.schema = {
         ...page.schema,
         blocks: page.schema.blocks.map(block => {

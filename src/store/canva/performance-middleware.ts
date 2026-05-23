@@ -49,7 +49,7 @@ function detectStorm(actionName: string): void {
 
   // Prune old entries outside the window
   const cutoff = now - ACTION_STORM_WINDOW_MS;
-  while (recentActions.length > 0 && recentActions[0].timestamp < cutoff) {
+  while (recentActions.length > 0 && recentActions[0]!.timestamp < cutoff) {
     recentActions.shift();
   }
 
@@ -142,7 +142,7 @@ export function withPerformanceMiddleware<T extends AnyState>(
     // Wrap the set function to track performance
     const trackedSet: typeof set = (partial, replace) => {
       const start = performance.now();
-      set(partial, replace);
+      set(partial as Parameters<typeof set>[0], replace as Parameters<typeof set>[1]);
       const duration = performance.now() - start;
 
       // Try to determine the action name from the partial state keys

@@ -189,7 +189,7 @@ function PlayCanvas() {
     if (!el) return;
     const observer = new ResizeObserver(() => {
       setScale(computeSceneScale(
-        { w: ratio.w, h: ratio.h },
+        { w: ratio!.w, h: ratio!.h },
         { w: el.clientWidth || 800, h: el.clientHeight || 500 },
         30, // padding
       ));
@@ -299,8 +299,8 @@ function PlayCanvas() {
           duration={0.35}
           className="relative overflow-hidden shadow-md shadow-black/50 ring-1 ring-app-border/30"
           style={{
-            width: ratio.w,
-            height: ratio.h,
+            width: ratio!.w,
+            height: ratio!.h,
             transform: `scale(${scale})`,
             transformOrigin: 'center center',
           }}
@@ -527,7 +527,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
                   ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
                   : 'ring-1 ring-app-border/40 hover:ring-app-border/60'
               }`}
-              style={{ aspectRatio: `${ratio.w}/${ratio.h}`, animationDelay: `${i * 0.03}s`, animationFillMode: 'both' }}
+              style={{ aspectRatio: `${ratio!.w}/${ratio!.h}`, animationDelay: `${i * 0.03}s`, animationFillMode: 'both' }}
             >
               <div className="absolute inset-0" style={bgStyle}>
                 <div className="absolute inset-0 bg-black/30" />

@@ -101,7 +101,7 @@ export function SceneList() {
                 style={{ ...bgStyle, aspectRatio: `${ratio.w}/${ratio.h}` }}
               >
                 <div className="absolute inset-0 bg-black/30" />
-                <div className="absolute top-0 right-0 text-[6px] p-0.5">{badge.icon}</div>
+                <div className="absolute top-0 right-0 text-[6px]! p-0.5">{badge!.icon}</div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[10px] font-bold text-app-primary truncate flex items-center gap-1">
@@ -110,7 +110,7 @@ export function SceneList() {
                 </div>
                 <div className="text-[8px] mt-0.5 flex items-center gap-1">
                   <span className={`inline-flex items-center px-1.5 py-0 rounded text-[7px] font-bold uppercase tracking-wider border ${badgeColor}`}>
-                    {badge.name}
+                    {badge!.name}
                   </span>
                   {p.label?.includes('— P') && (
                     <span className="inline-flex items-center px-1 py-0 rounded text-[6px] font-bold bg-app-accent/15 text-app-accent border border-app-accent/20">
@@ -133,7 +133,7 @@ export function SceneList() {
             variant="ghost"
             onClick={() => {
               if (pages.length <= 1) return;
-              if (confirm(`Hapus "${pages[currentPageIndex].label}"?`)) deletePage();
+              if (confirm(`Hapus "${pages[currentPageIndex]!.label}"?`)) deletePage();
             }}
             className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-app-error/70 hover:text-app-error hover:bg-app-error/10"
           >

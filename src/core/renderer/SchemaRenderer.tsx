@@ -58,6 +58,9 @@ import { BlockSelectionOverlay } from '../editor/overlay/BlockSelectionOverlay';
 // Import BlockErrorBoundary — per-block crash isolation
 import { BlockErrorBoundary, SafeModeBlockGate } from './BlockErrorBoundary';
 
+// Import BlockSkeleton — content-shaped loading placeholder
+import { BlockSkeleton } from '@/components/shared/BlockSkeleton';
+
 // Import CompressionBoundary — universal compression fallback
 import { CompressionBoundary } from '../layout/CompressionBoundary';
 
@@ -150,7 +153,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   // the "cover + flow blocks" mixed layout where cover is background layer.
   const hasCoverBlock = screen.blocks.some(b => isFullPageBlockType(b.type));
   // Pure cover page: ONLY a full-page block, no flow content
-  const isPureCoverPage = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0].type);
+  const isPureCoverPage = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0]!.type);
 
   // ── FIX: Cover overflow to top ──
   // When a cover/hero block is on a page with flow blocks (mixed layout),
@@ -266,7 +269,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   const effectiveSchema = useMemo(() => {
     if (scenePlan.isSingleScene) return screen;
     const currentScene = Math.min(sceneIndex, scenePlan.totalScenes - 1);
-    return createDerivedSchema(screen, scenePlan.scenes[currentScene] || scenePlan.scenes[0]);
+    return createDerivedSchema(screen!, scenePlan.scenes[currentScene] || scenePlan.scenes[0]);
   }, [screen, scenePlan, sceneIndex]);
 
   // ── FASE 10: Tab filtering ────────────────────────────────────
@@ -303,7 +306,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     const gapMap = new Map<string, number>();
     screen.blocks.forEach((b, i) => {
       if (b.id && i < vcsPerBlockGaps.length) {
-        gapMap.set(b.id, vcsPerBlockGaps[i]);
+        gapMap.set(b.id!, vcsPerBlockGaps[i]);
       }
     });
     // Build gaps for filtered blocks in order, preserving each block's original gap
@@ -346,7 +349,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   const resolvedToSchemaIndex = useMemo(() => {
     const idToIndex = new Map<string, number>();
     for (let i = 0; i < screen.blocks.length; i++) {
-      const id = screen.blocks[i].id;
+      const id = screen.blocks[i]!.id;
       if (id) idToIndex.set(id, i);
     }
     return resolvedBlocks.map(rb => {
@@ -458,6 +461,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
           <img
             src={bg.imageUrl}
             alt=""
+            role="presentation"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ zIndex: 0 }}
           />
@@ -714,7 +718,7 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   const blockContent = (
     <SafeModeBlockGate blockType={block.type}>
       <BlockErrorBoundary blockType={block.type} blockId={blockId}>
-        <React.Suspense fallback={<div className="p-3 rounded-lg animate-pulse" style={{ background: tokens.subtleBg(0.06) }} />}>
+        <React.Suspense fallback={<BlockSkeleton blockType={block.type} />}>
           <BlockComponent block={block} mode={mode} tokens={tokens} interactive={interactive} isCompact={isCompact} isEditing={isEditing} compression={compression} pageIndex={pageIndex} />
         </React.Suspense>
       </BlockErrorBoundary>

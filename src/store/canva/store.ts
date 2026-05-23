@@ -49,7 +49,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
   const set: typeof rawSet = IS_DEV
     ? (partial, replace) => {
         const start = performance.now();
-        rawSet(partial, replace);
+        rawSet(partial as Parameters<typeof rawSet>[0], replace as Parameters<typeof rawSet>[1]);
         const duration = performance.now() - start;
 
         // Infer action name from changed keys
@@ -132,5 +132,5 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
 
 // ═══ DEBUG BRIDGE — Expose store for runtime debugging ════════
 if (typeof window !== 'undefined') {
-  (window as any).__useCanvaStore = useCanvaStore;
+  (window as Window & { __useCanvaStore?: typeof useCanvaStore }).__useCanvaStore = useCanvaStore;
 }

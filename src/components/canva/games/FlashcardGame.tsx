@@ -114,7 +114,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
             }}
           >
             <span className={`${compact ? 'text-[10px]' : 'text-[13px]'} font-bold text-cyan-200 text-center leading-snug`}>
-              {card.depan as string}
+              {card!.depan as string}
             </span>
           </div>
           {/* Back face */}
@@ -128,7 +128,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
             }}
           >
             <span className={`${compact ? 'text-[10px]' : 'text-[13px]'} font-bold text-cyan-100 text-center leading-snug`}>
-              {card.belakang as string}
+              {card!.belakang as string}
             </span>
           </div>
         </div>

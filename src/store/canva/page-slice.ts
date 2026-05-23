@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { CanvaPage, CanvaElement, PageTemplateType } from '@/components/canva/types';
+import type { SchemaBlock } from '@/core/schema/types';
 import { useAuthoringStore } from '@/store/authoring-store';
 import {
   populateTemplateElements,
@@ -74,7 +75,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     saveCrashCheckpoint(pages, get().ratioId, 'duplicate-page');
 
     const orig = pages[currentPageIndex];
-    const clone: CanvaPage = structuredClone(orig);
+    const clone = structuredClone(orig) as CanvaPage;
     clone.id = generatePageId();
     clone.label = orig.label + ' (Salinan)';
     clone.elements.forEach((el: CanvaElement) => {
@@ -98,7 +99,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
         blocks: clone.schema.blocks.map(block => {
           // Deep clone already done by structuredClone — just re-ID
           const reId = { ...block, id: generateBlockId() };
-          regenerateNestedIds(reId as any); // Regenerate nested child IDs
+          regenerateNestedIds(reId as SchemaBlock); // Regenerate nested child IDs
           return reId;
         }),
       };

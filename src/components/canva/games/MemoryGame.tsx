@@ -25,7 +25,7 @@ export function MemoryGame({ data, compact, interactive, onComplete }: GameCompo
     // Fisher-Yates shuffle (unbiased, unlike sort+random)
     for (let i = c.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [c[i], c[j]] = [c[j], c[i]];
+      [c[i]!, c[j]!] = [c[j]!, c[i]!];
     }
     return c;
   }, [pairsKey]);

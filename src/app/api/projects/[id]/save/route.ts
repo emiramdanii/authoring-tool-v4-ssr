@@ -171,22 +171,22 @@ export async function PUT(
           data: {
             projectId: id,
             pageIndex,
-            label: page.label || null,
-            templateType: page.templateType || null,
-            variant: page.templateVariant || null,
-            bgColor: page.bgColor || null,
-            bgImage: page.bgDataUrl || null,
-            bgOverlay: page.overlay !== undefined ? page.overlay / 100 : null, // Convert 0-100 to 0-1
-            schemaData: page.schema ? JSON.stringify(page.schema) : null,
-            navConfig: page.navConfig ? JSON.stringify(page.navConfig) : null,
-            templateData: page.templateData ? JSON.stringify(page.templateData) : null,
-            colorPalette: page.colorPalette ? JSON.stringify(page.colorPalette) : null,
+            label: page!.label || null,
+            templateType: page!.templateType || null,
+            variant: page!.templateVariant || null,
+            bgColor: page!.bgColor || null,
+            bgImage: page!.bgDataUrl || null,
+            bgOverlay: page!.overlay !== undefined ? page!.overlay / 100 : null, // Convert 0-100 to 0-1
+            schemaData: page!.schema ? JSON.stringify(page!.schema) : null,
+            navConfig: page!.navConfig ? JSON.stringify(page!.navConfig) : null,
+            templateData: page!.templateData ? JSON.stringify(page!.templateData) : null,
+            colorPalette: page!.colorPalette ? JSON.stringify(page!.colorPalette) : null,
           },
         });
 
         // Create blocks for this page
-        if (page.blocks && page.blocks.length > 0) {
-          const flatBlocks = flattenBlocks(page.blocks);
+        if (page!.blocks && page!.blocks.length > 0) {
+          const flatBlocks = flattenBlocks(page!.blocks);
 
           for (const block of flatBlocks) {
             await tx.block.create({

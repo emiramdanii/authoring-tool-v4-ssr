@@ -269,10 +269,10 @@ function dotNotationToPatch(key: string, value: string): Record<string, unknown>
   let current = result;
   for (let i = 0; i < parts.length; i++) {
     if (i === parts.length - 1) {
-      current[parts[i]] = value;
+      current[parts[i]!] = value;
     } else {
-      current[parts[i]] = {};
-      current = current[parts[i]] as Record<string, unknown>;
+      current[parts[i]!] = {};
+      current = current[parts[i]!] as Record<string, unknown>;
     }
   }
   return result;

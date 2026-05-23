@@ -84,7 +84,7 @@ export function genTpSchema(
   // C1: Definitions → Menyebutkan / Mendefinisikan
   for (const def of definitions) {
     if (idx >= bloomMax) break;
-    const verb = BLOOM_VERBS[1][idx % BLOOM_VERBS[1].length];
+    const verb = BLOOM_VERBS[1]![idx % BLOOM_VERBS[1]!.length]!;
     items.push({
       num: idx + 1,
       verb,
@@ -98,7 +98,7 @@ export function genTpSchema(
   if (2 <= bloomMax) {
     for (const en of enumerations) {
       if (idx >= bloomMax) break;
-      const verb = BLOOM_VERBS[2][idx % BLOOM_VERBS[2].length];
+      const verb = BLOOM_VERBS[2]![idx % BLOOM_VERBS[2]!.length]!;
       items.push({
         num: idx + 1,
         verb,
@@ -113,7 +113,7 @@ export function genTpSchema(
   if (3 <= bloomMax) {
     for (const fn of functions) {
       if (idx >= bloomMax) break;
-      const verb = BLOOM_VERBS[3][idx % BLOOM_VERBS[3].length];
+      const verb = BLOOM_VERBS[3]![idx % BLOOM_VERBS[3]!.length]!;
       items.push({
         num: idx + 1,
         verb,
@@ -162,7 +162,7 @@ export function genTpSchema(
       items.push({
         num: items.length + 1,
         verb: BLOOM_VERBS[Math.min(items.length + 1, 6)][items.length % 5],
-        desc: s.slice(0, 120).toLowerCase(),
+        desc: s!.slice(0, 120).toLowerCase(),
         color: COLOR_PALETTE[items.length % COLOR_PALETTE.length],
       });
     }

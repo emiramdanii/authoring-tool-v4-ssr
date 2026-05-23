@@ -88,7 +88,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   });
   const questions = isCompressed ? allQuestions.slice(0, visibleCount) : allQuestions;
   const allAnswered = React.useMemo(() =>
-    allQuestions.length > 0 && allQuestions.every((_, i) => responses[i]?.trim().length > 0),
+    allQuestions.length > 0 && allQuestions.every((_, i) => responses[i]!?.trim().length > 0),
     [allQuestions.length, responses]
   );
   const answeredCount = React.useMemo(() =>
@@ -245,7 +245,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Discussion Questions ──────────────────────────────────── */}
       {questions.map((q, i) => {
         const qColor = q.color || 'c';
-        const hasResponse = responses[i]?.trim().length > 0;
+        const hasResponse = responses[i]!?.trim().length > 0;
         return (
         <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-4 rounded-xl p-3 min-w-0"
           style={{
@@ -394,7 +394,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Discussion Questions — Card Style ──────────────────────── */}
       {questions.map((q, i) => {
         const qColor = q.color || 'c';
-        const hasResponse = responses[i]?.trim().length > 0;
+        const hasResponse = responses[i]!?.trim().length > 0;
         return (
         <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-5 rounded-2xl p-5 min-w-0"
           style={{
@@ -548,7 +548,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Discussion Questions — Compact rows ────────────────────── */}
       {questions.map((q, i) => {
         const qColor = q.color || 'c';
-        const hasResponse = responses[i]?.trim().length > 0;
+        const hasResponse = responses[i]!?.trim().length > 0;
         return (
         <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-2 rounded-lg p-2 min-w-0"
           style={{

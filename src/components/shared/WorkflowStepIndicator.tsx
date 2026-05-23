@@ -60,7 +60,7 @@ function saveCompletedSteps(steps: Set<string>) {
 
 function getCurrentStepIndex(activePanel: PanelId): number {
   for (let i = 0; i < STEPS.length; i++) {
-    if (STEPS[i].panelIds.includes(activePanel)) return i;
+    if (STEPS[i]!.panelIds.includes(activePanel)) return i;
   }
   return 0;
 }
@@ -83,7 +83,7 @@ export default function WorkflowStepIndicator() {
   // Mark current step as completed whenever user visits it
   useEffect(() => {
     if (currentStepIndex >= 0 && currentStepIndex < STEPS.length) {
-      markStepCompleted(STEPS[currentStepIndex].id);
+      markStepCompleted(STEPS[currentStepIndex]!.id);
     }
   }, [currentStepIndex, markStepCompleted]);
 

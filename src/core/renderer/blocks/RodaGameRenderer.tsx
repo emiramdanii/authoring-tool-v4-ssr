@@ -258,7 +258,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
         <span id={`roda-instructions-${block.id || 'roda'}`} className="sr-only">Putar roda untuk mendapat soal, lalu pilih jawaban yang benar</span>
         {/* Screen reader live region */}
         <div className="sr-only" aria-live="polite" role="status">
-          {isCurrentAnswered && (q.opts?.[answers[current]]?.correct ? 'Jawaban benar!' : 'Jawaban salah.')}
+          {isCurrentAnswered && (q.opts?.[answers[current]!]?.correct ? 'Jawaban benar!' : 'Jawaban salah.')}
         </div>
         {/* ═══ ENHANCED SPINNING WHEEL ══════════════════════════════ */}
         {!isCurrentAnswered && (
@@ -369,7 +369,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
                             fill={contrastText}
                             fontWeight="900"
                           >
-                            {questions[i]?.opts?.[answers[i]]?.correct ? '✓' : '✗'}
+                            {questions[i]?.opts?.[answers[i]!]?.correct ? '✓' : '✗'}
                           </text>
                         )}
                       </g>
@@ -412,7 +412,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
                 const angle = (360 / questions.length) * i - 90;
                 const rad = angle * Math.PI / 180;
                 const dotRadius = (wheelSize / 2) + 16;
-                const isCorrect = questions[i]?.opts?.[answers[i]]?.correct;
+                const isCorrect = questions[i]?.opts?.[answers[i]!]?.correct;
                 return (
                   <div key={`dot-${block.id}-${i}`} className="absolute w-5 h-5 rounded-full flex items-center justify-center"
                     style={{
@@ -529,17 +529,17 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
         )}
 
         {/* Feedback */}
-        {isCurrentAnswered && q.opts[answers[current]] && (
+        {isCurrentAnswered && q.opts[answers[current]!] && (
           <div className="mt-3 p-3 rounded-xl leading-relaxed font-bold"
             style={{
               fontSize: '12px',
-              background: q.opts[answers[current]].correct ? tokens.colorAlpha('g', 0.1) : tokens.colorAlpha('r', 0.1),
-              border: '1px solid ' + (q.opts[answers[current]].correct ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
-              color: q.opts[answers[current]].correct ? tokens.color('g') : tokens.color('r'),
+              background: q.opts[answers[current]!]!.correct ? tokens.colorAlpha('g', 0.1) : tokens.colorAlpha('r', 0.1),
+              border: '1px solid ' + (q.opts[answers[current]!]!.correct ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('r', 0.3)),
+              color: q.opts[answers[current]!]!.correct ? tokens.color('g') : tokens.color('r'),
               animation: 'fadeIn 0.3s ease',
             }}>
-            {q.opts[answers[current]].correct ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
-            {q.opts[answers[current]].correct ? (q.feedbackCorrect || 'Benar!') : (q.feedbackWrong || 'Kurang tepat.')}
+            {q.opts[answers[current]!]!.correct ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
+            {q.opts[answers[current]!]!.correct ? (q.feedbackCorrect || 'Benar!') : (q.feedbackWrong || 'Kurang tepat.')}
           </div>
         )}
 

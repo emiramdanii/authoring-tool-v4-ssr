@@ -120,7 +120,7 @@ export function PreviewRoda({ mod, compact }: { mod: M; compact: boolean }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {opsi.slice(0, compact ? 3 : 6).map((o, i) => (
-        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: alpha(colors[i % colors.length], 0.12), color: colors[i % colors.length] }}>{String(o)}</span>
+        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px]! font-bold" style={{ background: alpha!(colors[i % colors.length], 0.12), color: colors[i % colors.length] }}>{String(o)}</span>
       ))}
     </div>
   );

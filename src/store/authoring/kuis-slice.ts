@@ -26,7 +26,7 @@ export const createKuisSlice: StateCreator<AuthoringState, [], [], KuisSlice> = 
   updateKuisOpt: (index: number, optIndex: number, value: string) => {
     set((s) => {
       const newKuis = [...s.kuis];
-      const opts = [...(newKuis[index].opts || ['', '', '', ''])];
+      const opts = [...(newKuis[index]!.opts || ['', '', '', '']!)];
       opts[optIndex] = value;
       newKuis[index] = { ...newKuis[index], opts };
       return { kuis: newKuis, dirty: true };
@@ -36,7 +36,7 @@ export const createKuisSlice: StateCreator<AuthoringState, [], [], KuisSlice> = 
     set((s) => {
       const kuis = [...s.kuis];
       const [moved] = kuis.splice(fromIndex, 1);
-      kuis.splice(toIndex, 0, moved);
+      kuis.splice(toIndex, 0!, moved);
       return { kuis, dirty: true };
     });
   },

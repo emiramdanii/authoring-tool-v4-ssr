@@ -66,7 +66,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#6366f1" />
+        <meta name="theme-color" content="#3B82F6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SILSE" />
@@ -81,7 +81,9 @@ export default function RootLayout({
             <A11yProvider>
               <SkipNavLink />
               <StoreInit />
-              {children}
+              <div id="main-content">
+                {children}
+              </div>
               <ShortcutHelpOverlay />
               <LiveAnnouncer />
               <AutoSaveRecovery />

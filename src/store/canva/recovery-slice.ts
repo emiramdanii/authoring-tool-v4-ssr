@@ -162,7 +162,7 @@ export const createRecoverySlice: StateCreator<CanvaState, [], [], RecoverySlice
 
   runIntegrityCheckNow: () => {
     const { pages } = get();
-    const result = validateAndRepairPages(pages as unknown as Array<{ id: string; schema?: any; [k: string]: unknown }>, { autoRepair: true });
+    const result = validateAndRepairPages(pages, { autoRepair: true });
 
     // If repairs were made, update the pages in the store
     if (result.repairedPages > 0) {

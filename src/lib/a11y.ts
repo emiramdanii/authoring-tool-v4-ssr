@@ -168,12 +168,12 @@ export function createFocusTrap(container: HTMLElement): {
       if (e.shiftKey) {
         if (document.activeElement === first) {
           e.preventDefault();
-          last.focus();
+          last!.focus();
         }
       } else {
         if (document.activeElement === last) {
           e.preventDefault();
-          first.focus();
+          first!.focus();
         }
       }
     };
@@ -183,7 +183,7 @@ export function createFocusTrap(container: HTMLElement): {
     // Auto-focus the first focusable element
     const focusable = getFocusableElements();
     if (focusable.length > 0) {
-      focusable[0].focus();
+      focusable[0]!.focus();
     }
   }
 

@@ -249,7 +249,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Validate all page schemas after migration and BEFORE setting state.
         // This catches corruption early and auto-repairs if possible.
         try {
-          const validationResult = validateAndRepairPages(cleanPages as unknown as Array<{ id: string; schema?: any; [k: string]: unknown }>, { autoRepair: true });
+          const validationResult = validateAndRepairPages(cleanPages, { autoRepair: true });
           if (validationResult.repairedPages > 0) {
             logger.warn('Recovery', `Proactive repair: ${validationResult.repairedPages}/${validationResult.totalPages} pages repaired`);
             // Set safe mode flag — some data was corrupted
@@ -331,9 +331,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           // Try to load the repaired data
           const repairedData = JSON.parse(rawForRecovery!);
           // Apply repairs to pages
-          const repairedPages = (repairedData.pages || []).map((p: any, i: number) => {
+          const repairedPages = (repairedData.pages || []).map((p: Record<string, unknown>, _i: number) => {
             if (bootResult.safeMode && p.schema) {
-              const repairResult = repairSchema(p.schema);
+              const repairResult = repairSchema(p.schema as import('@/core/schema/types').ScreenSchema);
               return { ...p, schema: repairResult.schema };
             }
             return p;

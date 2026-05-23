@@ -115,8 +115,8 @@ export function useCanvasBlockDrag(
     let dropAfterIndex = -1; // Before the first block
 
     for (let i = 0; i < midpoints.length; i++) {
-      if (relativeY >= midpoints[i].midY) {
-        dropAfterIndex = midpoints[i].index;
+      if (relativeY >= midpoints[i]!.midY) {
+        dropAfterIndex = midpoints[i]!.index;
       } else {
         break;
       }

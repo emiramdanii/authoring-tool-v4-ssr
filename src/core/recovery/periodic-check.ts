@@ -47,24 +47,24 @@ export function runIntegrityCheck(
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    if (!page.schema) continue;
+    if (!page!.schema) continue;
 
-    const validation = validateSchema(page.schema);
+    const validation = validateSchema(page!.schema);
     if (validation.valid) {
-      report.details.push({ pageId: page.id, pageIndex: i, status: 'healthy' });
+      report.details.push({ pageId: page!.id, pageIndex: i, status: 'healthy' });
       continue;
     }
 
     report.corruptedPages++;
 
     if (options?.autoRepair !== false) {
-      const repairResult = repairSchema(page.schema);
+      const repairResult = repairSchema(page!.schema);
       if (repairResult.repaired) {
         // Apply repair
         (page as Record<string, unknown>).schema = repairResult.schema;
         report.repairedPages++;
         report.details.push({
-          pageId: page.id,
+          pageId: page!.id,
           pageIndex: i,
           status: 'repaired',
           repairs: repairResult.repairs,
@@ -73,14 +73,14 @@ export function runIntegrityCheck(
       } else {
         report.unrecoverablePages++;
         report.details.push({
-          pageId: page.id,
+          pageId: page!.id,
           pageIndex: i,
           status: 'corrupted',
           unrecoverable: repairResult.unrecoverable,
         });
       }
     } else {
-      report.details.push({ pageId: page.id, pageIndex: i, status: 'corrupted' });
+      report.details.push({ pageId: page!.id, pageIndex: i, status: 'corrupted' });
     }
   }
 

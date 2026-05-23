@@ -42,9 +42,9 @@ export function buildNestedUpdate(path: string, value: unknown): Record<string, 
   let result: Record<string, unknown> = {};
   let current = result;
   for (let i = 0; i < keys.length - 1; i++) {
-    current[keys[i]] = {};
-    current = current[keys[i]] as Record<string, unknown>;
+    current[keys[i]!] = {};
+    current = current[keys[i]!] as Record<string, unknown>;
   }
-  current[keys[keys.length - 1]] = value;
+  current[keys[keys.length - 1]!] = value;
   return result;
 }

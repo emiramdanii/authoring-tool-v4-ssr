@@ -221,7 +221,7 @@ export function moveBlock(
   }
   const result = [...blocks];
   const [moved] = result.splice(fromIndex, 1);
-  result.splice(toIndex, 0, moved);
+  result.splice(toIndex, 0!, moved);
   return result;
 }
 
@@ -281,7 +281,7 @@ export function moveBlockNested(
   // Search in top-level
   const topIdx = result.findIndex(b => b.id === blockId);
   if (topIdx >= 0) {
-    movedBlock = result[topIdx];
+    movedBlock = result[topIdx]!;
     result = [...result.slice(0, topIdx), ...result.slice(topIdx + 1)];
   } else {
     // Search in nested containers — extract and return modified tree

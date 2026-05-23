@@ -76,16 +76,16 @@ export const createSyncSlice: StateCreator<CanvaState, [], [], SyncSlice> = (set
               const gameModules = authStore.modules.filter((m: Record<string, unknown>) =>
                 (GAME_TYPES as readonly string[]).includes(m.type as string)
               );
-              if (el.dataIdx < gameModules.length && gameModules[el.dataIdx]._id) {
+              if (el.dataIdx < gameModules.length && gameModules[el.dataIdx]!._id) {
                 changed = true;
-                return { ...el, moduleId: gameModules[el.dataIdx]._id as string };
+                return { ...el, moduleId: gameModules[el.dataIdx]!._id as string };
               }
             }
             // Kuis elements need kuisId re-sync
             if (el.type === 'kuis' && !el.kuisId) {
-              if (el.dataIdx < authStore.kuis.length && authStore.kuis[el.dataIdx]._id) {
+              if (el.dataIdx < authStore.kuis.length && authStore.kuis[el.dataIdx]!._id) {
                 changed = true;
-                return { ...el, kuisId: authStore.kuis[el.dataIdx]._id as string };
+                return { ...el, kuisId: authStore.kuis[el.dataIdx]!._id as string };
               }
             }
           }

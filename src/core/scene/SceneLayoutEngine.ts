@@ -53,7 +53,7 @@ export const SCENE_RESOLUTIONS: Record<string, SceneResolution> = {
 
 /** Get scene resolution by ratio ID */
 export function getSceneResolution(ratioId: string): SceneResolution {
-  return SCENE_RESOLUTIONS[ratioId] || SCENE_RESOLUTIONS['16:9'];
+  return SCENE_RESOLUTIONS[ratioId] ?? SCENE_RESOLUTIONS['16:9']!;
 }
 
 // ── Safe Area System ──────────────────────────────────────────
@@ -516,7 +516,7 @@ export function resolveSceneLayout(
   let currentY = contentTop;
 
   for (let i = 0; i < flowBlocks.length; i++) {
-    const block = flowBlocks[i];
+    const block = flowBlocks[i]!;
     const blockId = block.id || `flow-${block.type}-${i}`;
 
     // ═══ FASE 11A.4 — Per-block gap BEFORE this block ═══
@@ -526,7 +526,7 @@ export function resolveSceneLayout(
     const originalIndex = blocks.indexOf(block);
     const gapBeforeThisBlock = (i === 0) ? 0
       : (perBlockGaps && originalIndex >= 0 && originalIndex < perBlockGaps.length)
-        ? perBlockGaps[originalIndex]
+        ? perBlockGaps[originalIndex]!
         : defaultGap;
     currentY += gapBeforeThisBlock;
 
@@ -647,7 +647,7 @@ export function resolveSceneLayout(
   const absoluteBlocks = blocks.filter(b => b.layout?.position === 'absolute');
 
   for (let i = 0; i < absoluteBlocks.length; i++) {
-    const block = absoluteBlocks[i];
+    const block = absoluteBlocks[i]!;
     const layout = block.layout!;
 
     // Convert percentage coordinates to absolute pixels
@@ -718,7 +718,7 @@ export function resolveSceneLayout(
   const hasFlowBlocks = resolved.some(r => r.position === 'flow');
 
   for (let i = 0; i < legacyFullPageBlocks.length; i++) {
-    const block = legacyFullPageBlocks[i];
+    const block = legacyFullPageBlocks[i]!;
     // In mixed layouts, cover blocks must stay within the safe area
     // to avoid overflowing into navbar space. In pure cover pages,
     // they fill the entire scene (y:0, full bleed).

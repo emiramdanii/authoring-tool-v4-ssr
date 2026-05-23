@@ -339,7 +339,7 @@ export function validateBlock(
   // 10. Validate children recursively
   if (block.children && Array.isArray(block.children)) {
     for (let i = 0; i < block.children.length; i++) {
-      const childResult = validateBlock(block.children[i], {
+      const childResult = validateBlock!(block.children[i], {
         ...options,
         pathPrefix: `${prefix}.children[${i}]`,
         seenIds,
@@ -431,7 +431,7 @@ export function validateSchema(schema: ScreenSchema, options?: { strictTypeCheck
   // Validate each block
   const seenIds = new Set<string>();
   for (let i = 0; i < schema.blocks.length; i++) {
-    const result = validateBlock(schema.blocks[i], {
+    const result = validateBlock!(schema.blocks[i], {
       ...options,
       pathPrefix: `blocks[${i}]`,
       seenIds,
@@ -476,7 +476,7 @@ export function validateBlocks(blocks: SchemaBlock[], options?: { strictTypeChec
 
   const seenIds = new Set<string>();
   for (let i = 0; i < blocks.length; i++) {
-    const result = validateBlock(blocks[i], {
+    const result = validateBlock!(blocks[i], {
       ...options,
       pathPrefix: `[${i}]`,
       seenIds,

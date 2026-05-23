@@ -70,7 +70,7 @@ function ConfigPanel({
       {pageType.options.length > 0 && (
         <div className="space-y-2.5">
           {pageType.options.map((opt) => (
-            <OptionControl key={opt.id} opt={opt} value={config[opt.id]} onChange={(v) => updateConfig(opt.id, v)} />
+            <OptionControl key={opt.id} opt={opt} value={config[opt.id]!} onChange={(v) => updateConfig(opt.id, v)} />
           ))}
         </div>
       )}

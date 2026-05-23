@@ -163,8 +163,8 @@ export default function Stage() {
   } = useStageDrag({
     page,
     effectiveZoom,
-    stageW: ratio.w,
-    stageH: ratio.h,
+    stageW: ratio!.w,
+    stageH: ratio!.h,
     snapEnabled,
     snapValue,
     updateElement,
@@ -189,7 +189,7 @@ export default function Stage() {
       const aW = area.clientWidth;
       const aH = area.clientHeight;
       if (aW > 0 && aH > 0) {
-        const newFitZoom = calcFitZoom(aW, aH, ratio.w, ratio.h);
+        const newFitZoom = calcFitZoom(aW, aH, ratio!.w, ratio!.h);
         // FIX: Set isFitZoomReady FIRST, before any other state updates.
         // Zustand's storeSetFitZoom triggers synchronous re-renders via
         // useSyncExternalStore, which can flush React's batched updates
@@ -222,7 +222,7 @@ export default function Stage() {
       if (retryTimer) clearTimeout(retryTimer);
       observer.disconnect();
     };
-  }, [ratio.w, ratio.h, storeSetFitZoom]);
+  }, [ratio!.w, ratio!.h, storeSetFitZoom]);
 
   // ── Auto-center when zoom fits viewport ───────────────────────
   useEffect(() => {
@@ -403,8 +403,8 @@ export default function Stage() {
           id="cm-stage-wrap"
           className="relative overflow-hidden shadow-md shadow-black/50"
           style={{
-            width: ratio.w,
-            height: ratio.h,
+            width: ratio!.w,
+            height: ratio!.h,
           }}
           onMouseDown={handleStageBgClick}
         >

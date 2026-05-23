@@ -43,7 +43,7 @@ export type HistorySlice = Pick<
 function formatUndoMessage(description?: string): string {
   if (!description) return 'Kembalikan';
   const blockType = description.split('.')[0];
-  const def = getBlockMeta(blockType);
+  const def = getBlockMeta!(blockType);
   if (def) {
     const name = teacherTerm(def.name, true);
     return `Kembalikan · ${name}`;
@@ -54,7 +54,7 @@ function formatUndoMessage(description?: string): string {
 function formatRedoMessage(description?: string): string {
   if (!description) return 'Ulangi';
   const blockType = description.split('.')[0];
-  const def = getBlockMeta(blockType);
+  const def = getBlockMeta!(blockType);
   if (def) {
     const name = teacherTerm(def.name, true);
     return `Ulangi · ${name}`;

@@ -35,10 +35,10 @@ export function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwn
   // 2. Search inside composite blocks using container descriptor
   for (let bi = 0; bi < blocks.length; bi++) {
     const block = blocks[bi];
-    if (!isCompositeBlock(block)) continue;
+    if (!isCompositeBlock!(block)) continue;
 
     // Use descriptor-driven access for known composite types
-    const descriptor = getCompositeContainerDescriptor(block.type);
+    const descriptor = getCompositeContainerDescriptor(block!.type);
     if (descriptor) {
       if (descriptor.structure === 'direct') {
         const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
@@ -52,7 +52,7 @@ export function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwn
       if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
         const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
         for (let ti = 0; ti < (tabs?.length || 0); ti++) {
-          const content = (tabs![ti][descriptor.tabContentKey!]) as SchemaBlock[] | undefined;
+          const content = (tabs![ti]![descriptor.tabContentKey!]) as SchemaBlock[] | undefined;
           const ci = (content || []).findIndex(b => b.id === blockId);
           if (ci !== -1) {
             return { kind: 'ftab-tab', blockIndex: bi, tabIndex: ti, childIndex: ci };
@@ -63,8 +63,8 @@ export function findBlockOwner(blocks: SchemaBlock[], blockId: string): BlockOwn
     }
 
     // Generic BaseBlock.children — fallback for any composite block type
-    if (block.children && Array.isArray(block.children)) {
-      const ci = block.children.findIndex(b => b.id === blockId);
+    if (block!.children && Array.isArray(block!.children)) {
+      const ci = block!.children.findIndex(b => b.id === blockId);
       if (ci !== -1) return { kind: 'children', blockIndex: bi, childIndex: ci };
     }
   }

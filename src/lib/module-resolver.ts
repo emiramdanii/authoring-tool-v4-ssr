@@ -65,7 +65,7 @@ export function resolveKuis(
   // Priority 2: dataIdx (legacy fallback)
   const dataIdx = el.dataIdx ?? -1;
   if (dataIdx >= 0 && dataIdx < allKuis.length) {
-    return [allKuis[dataIdx]];
+    return [allKuis[dataIdx]!];
   }
 
   // No reference found — return empty instead of ALL (was a scoping bug)

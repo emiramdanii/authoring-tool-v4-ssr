@@ -297,7 +297,7 @@ export class Transaction {
     if (!validation.valid) {
       // Auto-rollback
       this.workingSchema = this.steps.length > 0
-        ? this.steps[0].snapshot
+        ? this.steps[0]!.snapshot
         : this.schema;
 
       this.state = 'rolled-back';
@@ -327,7 +327,7 @@ export class Transaction {
 
     return {
       success: false,
-      schema: this.steps.length > 0 ? this.steps[0].snapshot : this.schema,
+      schema: this.steps.length > 0 ? this.steps[0]!.snapshot : this.schema,
       errors: ['Transaction explicitly rolled back'],
       warnings: [],
     };
@@ -413,11 +413,11 @@ export class Transaction {
 
   private removeBlockFromTree(blocks: SchemaBlock[], id: string): [SchemaBlock] | null {
     for (let i = 0; i < blocks.length; i++) {
-      if (blocks[i].id === id) {
+      if (blocks[i]!.id === id) {
         return blocks.splice(i, 1) as [SchemaBlock];
       }
-      if (blocks[i].children) {
-        const found = this.removeBlockFromTree(blocks[i].children!, id);
+      if (blocks[i]!.children) {
+        const found = this.removeBlockFromTree(blocks[i]!.children!, id);
         if (found) return found;
       }
       // Also search in composite containers

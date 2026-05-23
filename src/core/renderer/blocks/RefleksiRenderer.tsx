@@ -32,7 +32,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
   const questions = isCompressed ? allQuestions.slice(0, visibleCount) : allQuestions;
 
   const allAnswered = allQuestions.length > 0 &&
-    allQuestions.every((_, i) => responses[i]?.trim().length > 0);
+    allQuestions.every((_, i) => responses[i]!?.trim().length > 0);
   const answeredCount = Object.values(responses).filter(r => r.trim().length > 0).length;
   const totalQuestions = allQuestions.length;
   const progress = totalQuestions > 0 ? answeredCount / totalQuestions : 0;
@@ -144,7 +144,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {/* Questions */}
       {questions.map((q, i) => {
         const qColor = q.warna || 'p';
-        const hasResponse = responses[i]?.trim().length > 0;
+        const hasResponse = responses[i]!?.trim().length > 0;
         return (
           <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl mb-10 min-w-0"
             style={{

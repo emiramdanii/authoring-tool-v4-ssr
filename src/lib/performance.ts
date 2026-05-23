@@ -55,7 +55,7 @@ export function createProfilerCallback(componentName: string) {
     // Dispatch to the global performance collector
     if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__SILSE_PERF__) {
       const collector = (window as unknown as Record<string, { addRender: (name: string, phase: string, actual: number, base: number, commit: number) => void }>).__SILSE_PERF__;
-      collector.addRender(componentName || id, phase, actualDuration, baseDuration, commitTime);
+      collector!.addRender(componentName || id, phase, actualDuration, baseDuration, commitTime);
     }
 
     // Console warnings for slow renders

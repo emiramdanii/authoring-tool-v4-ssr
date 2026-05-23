@@ -166,17 +166,17 @@ function computeReport(): MemoryReport {
       sampleCount: samples.length,
       isLeaking: false,
       growthRate: 0,
-      currentHeapMB: samples.length > 0 ? samples[samples.length - 1].usedJSHeapSize / 1048576 : 0,
+      currentHeapMB: samples.length > 0 ? samples[samples.length - 1]!.usedJSHeapSize / 1048576 : 0,
       durationMinutes: 0,
     };
   }
 
   const first = samples[0];
   const last = samples[samples.length - 1];
-  const growthBytes = last.usedJSHeapSize - first.usedJSHeapSize;
+  const growthBytes = last!.usedJSHeapSize - first!.usedJSHeapSize;
   const growthMB = growthBytes / 1048576;
 
-  const durationMs = last.timestamp - first.timestamp;
+  const durationMs = last!.timestamp - first!.timestamp;
   const durationMinutes = durationMs / 60000;
 
   // Growth rate in MB/min (avoid division by zero)
@@ -191,8 +191,8 @@ function computeReport(): MemoryReport {
   if (sustainedSamples.length >= 2) {
     const sFirst = sustainedSamples[0];
     const sLast = sustainedSamples[sustainedSamples.length - 1];
-    const sGrowthMB = (sLast.usedJSHeapSize - sFirst.usedJSHeapSize) / 1048576;
-    const sDurationMin = (sLast.timestamp - sFirst.timestamp) / 60000;
+    const sGrowthMB = (sLast!.usedJSHeapSize - sFirst!.usedJSHeapSize) / 1048576;
+    const sDurationMin = (sLast!.timestamp - sFirst!.timestamp) / 60000;
     sustainedGrowthRate = sDurationMin > 0 ? sGrowthMB / sDurationMin : 0;
   }
 
@@ -201,7 +201,7 @@ function computeReport(): MemoryReport {
     sampleCount: samples.length,
     isLeaking: sustainedGrowthRate > LEAK_THRESHOLD_MB_PER_MIN,
     growthRate: Math.round(growthRate * 100) / 100,
-    currentHeapMB: Math.round((last.usedJSHeapSize / 1048576) * 100) / 100,
+    currentHeapMB: Math.round((last!.usedJSHeapSize / 1048576) * 100) / 100,
     durationMinutes: Math.round(durationMinutes * 100) / 100,
   };
 }

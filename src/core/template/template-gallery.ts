@@ -1155,7 +1155,7 @@ export function instantiateTemplateWithConfig(
     if (!config.enabledPages[i]) continue;
 
     const pageType = template.pageTypes[i];
-    const page = createPageFromPreset(pageType, pageIndex);
+    const page = createPageFromPreset!(pageType, pageIndex);
 
     // Set variant
     if (config.variant && page.schema) {
@@ -1163,7 +1163,7 @@ export function instantiateTemplateWithConfig(
     }
 
     if (page.schema) {
-      const blocks = generateBlocksForPageType(pageType, parsed, meta, opts);
+      const blocks = generateBlocksForPageType!(pageType, parsed, meta, opts);
       if (blocks.length > 0) {
         page.schema.blocks = blocks;
       }
@@ -1184,7 +1184,7 @@ export function instantiateTemplateWithConfig(
 
     // Set label from pagePreview if available
     if (template.pagePreview[i]) {
-      page.label = template.pagePreview[i].title;
+      page.label = template.pagePreview[i]!.title;
     }
 
     pages.push(page);

@@ -61,7 +61,7 @@ export default function PreviewMode() {
     if (!el) return;
     const observer = new ResizeObserver(() => {
       setScale(computeSceneScale(
-        { w: ratio.w, h: ratio.h },
+        { w: ratio!.w, h: ratio!.h },
         { w: el.clientWidth || 800, h: el.clientHeight || 500 },
         30,
       ));
@@ -168,8 +168,8 @@ export default function PreviewMode() {
             duration={0.3}
             className="relative overflow-hidden shadow-md shadow-black/50 ring-1 ring-app-border/30"
             style={{
-              width: ratio.w,
-              height: ratio.h,
+              width: ratio!.w,
+              height: ratio!.h,
               transform: `scale(${scale})`,
               transformOrigin: 'center center',
             }}

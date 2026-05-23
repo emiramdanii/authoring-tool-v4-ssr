@@ -29,7 +29,7 @@ export const createTpSlice: StateCreator<AuthoringState, [], [], TpSlice> = (set
     set((s) => {
       const tp = [...s.tp];
       const [moved] = tp.splice(fromIndex, 1);
-      tp.splice(toIndex, 0, moved);
+      tp.splice(toIndex, 0!, moved);
       return { tp, dirty: true };
     });
   },

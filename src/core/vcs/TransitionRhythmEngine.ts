@@ -246,7 +246,7 @@ export function resolveScreenRhythm(
   for (let i = 1; i < blocks.length; i++) {
     const prev = blocks[i - 1];
     const next = blocks[i];
-    const kind = classifyTransition(prev, next, i - 1, i);
+    const kind = classifyTransition!(prev, next, i - 1, i);
     const gap = computeTransitionGap(kind, rhythm);
 
     transitions.push({
@@ -368,7 +368,7 @@ function generateRhythmWarnings(
   // 1. Long repetition streak
   let streak = 0;
   for (let i = 0; i < transitions.length; i++) {
-    if (transitions[i].kind === 'repetition') {
+    if (transitions[i]!.kind === 'repetition') {
       streak++;
       if (streak >= 4) {
         warnings.push({

@@ -104,7 +104,7 @@ export class MeasurementCommitQueue {
     // If this blockId was already pending, update it (latest measurement wins)
     const existing = this.pending.findIndex(m => m.blockId === blockId);
     if (existing >= 0) {
-      this.pending[existing].height = height;
+      this.pending[existing]!.height = height;
     } else {
       this.pending.push({ blockId, height });
     }

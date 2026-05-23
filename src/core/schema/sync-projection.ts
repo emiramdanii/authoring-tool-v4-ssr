@@ -45,16 +45,16 @@ function updateSchemaBlock(
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    if (page.templateType !== templateType) continue;
-    if (!page.schema) continue;
+    if (page!.templateType !== templateType) continue;
+    if (!page!.schema) continue;
 
-    const blockIdx = page.schema.blocks.findIndex(b => b.type === blockType);
+    const blockIdx = page!.schema.blocks.findIndex(b => b.type === blockType);
     if (blockIdx < 0) continue;
 
-    const newBlocks = [...page.schema.blocks];
-    newBlocks[blockIdx] = updater(newBlocks[blockIdx]);
+    const newBlocks = [...page!.schema.blocks];
+    newBlocks[blockIdx]! = updater!(newBlocks[blockIdx]);
 
-    const newSchema: ScreenSchema = { ...page.schema, blocks: newBlocks };
+    const newSchema: ScreenSchema = { ...page!.schema, blocks: newBlocks };
     assertDocumentPurity(newSchema, 'syncFieldToSchema');
 
     pages[i] = { ...page, schema: newSchema };

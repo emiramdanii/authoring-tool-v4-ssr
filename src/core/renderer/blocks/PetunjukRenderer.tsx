@@ -187,10 +187,10 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                 <div key={`petunjuk-acc-${block.id || 'pet'}-${i}`}
                   className="rounded-xl overflow-hidden transition-[background-color,border-color]"
                   style={{
-                    background: tokens.colorAlpha(itemColor, 0.06),
-                    border: `1px solid ${tokens.colorAlpha(itemColor, isExpanded ? 0.3 : 0.15)}`,
+                    background: tokens.colorAlpha!(itemColor, 0.06),
+                    border: `1px solid ${tokens.colorAlpha!(itemColor, isExpanded ? 0.3 : 0.15)}`,
                     borderLeftWidth: '3px',
-                    borderLeftColor: tokens.color(itemColor),
+                    borderLeftColor: tokens.color!(itemColor),
                     borderRadius: tokens.radius('lg') + 'px',
                   }}
                 >
@@ -201,12 +201,12 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     style={{
                       ...tokens.iosNestedPadding(isCompact),
                       cursor: 'pointer',
-                      background: isExpanded ? tokens.colorAlpha(itemColor, 0.08) : 'transparent',
+                      background: isExpanded ? tokens.colorAlpha!(itemColor, 0.08) : 'transparent',
                     }}
                   >
                     <span style={{ fontSize: isCompact ? '13px' : '16px' }}>{item.icon}</span>
                     <span className="font-bold flex-1 min-w-0" style={{
-                      color: tokens.color(itemColor),
+                      color: tokens.color!(itemColor),
                       fontSize: isCompact ? '11px' : '13px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -214,13 +214,13 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     }}>{item.title}</span>
                     <span className="flex-shrink-0 font-black" style={{
                       fontSize: isCompact ? '8px' : '10px',
-                      color: tokens.colorAlpha(itemColor, 0.5),
+                      color: tokens.colorAlpha!(itemColor, 0.5),
                       minWidth: '16px',
                       textAlign: 'center',
                     }}>{i + 1}</span>
                     {isExpanded
-                      ? <ChevronUp size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha(itemColor, 0.5) }} />
-                      : <ChevronDown size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha(itemColor, 0.5) }} />
+                      ? <ChevronUp size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha!(itemColor, 0.5) }} />
+                      : <ChevronDown size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha!(itemColor, 0.5) }} />
                     }
                   </button>
                   {/* Accordion content — expandable */}
@@ -246,10 +246,10 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             return (
               <div key={`petunjuk-item-${block.id || 'pet'}-${i}`} className="rounded-xl text-center transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 min-w-0"
                 style={{
-                  background: tokens.colorAlpha(itemColor, 0.1),
-                  border: '1px solid ' + tokens.colorAlpha(itemColor, 0.2),
+                  background: tokens.colorAlpha!(itemColor, 0.1),
+                  border: '1px solid ' + tokens.colorAlpha!(itemColor, 0.2),
                   borderLeftWidth: '3px',
-                  borderLeftColor: tokens.color(itemColor),
+                  borderLeftColor: tokens.color!(itemColor),
                   borderRadius: tokens.radius('xl') + 'px',
                   boxShadow: tokens.raw.shadow.card,
                   ...tokens.iosCardPadding(isCompact),
@@ -257,14 +257,14 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                 }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2 relative"
                   style={{
-                    background: tokens.colorAlpha(itemColor, 0.2),
+                    background: tokens.colorAlpha!(itemColor, 0.2),
                     boxShadow: 'none',
                   }}>
                   <span style={{ fontSize: isCompact ? '15px' : '20px' }}>{item.icon}</span>
                   {/* Step number badge */}
                   <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
                     style={{
-                      background: tokens.color(itemColor),
+                      background: tokens.color!(itemColor),
                       fontSize: '8px',
                       fontWeight: 900,
                       color: tokens.color('bg'),
@@ -273,7 +273,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     {i + 1}
                   </div>
                 </div>
-                <div className="font-extrabold mb-1.5" style={{ color: tokens.color(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
+                <div className="font-extrabold mb-1.5" style={{ color: tokens.color!(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
                 <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={item.body ?? ''} /></div>
               </div>
             );

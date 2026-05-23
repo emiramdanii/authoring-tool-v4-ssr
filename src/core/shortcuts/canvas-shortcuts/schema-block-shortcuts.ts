@@ -301,8 +301,8 @@ export function getSchemaBlockShortcuts(deps: CanvaShortcutDeps): ShortcutDefini
           if (allBlockIds.length > 0) {
             const firstBlock = page.schema.blocks[0];
             setCanvaState({
-              selectedBlockId: firstBlock.id ?? null,
-              selectedBlockType: firstBlock.type ?? null,
+              selectedBlockId: firstBlock!.id ?? null,
+              selectedBlockType: firstBlock!.type ?? null,
               selectedBlockIds: allBlockIds,
             });
           }

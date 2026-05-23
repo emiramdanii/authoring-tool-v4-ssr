@@ -458,18 +458,18 @@ export class SceneTransaction {
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       // Skip absolute-positioned blocks
-      if (block.layout?.position === 'absolute') continue;
+      if (block!.layout?.position === 'absolute') continue;
 
-      const measuredH = this.measurements.get(block.id || '');
+      const measuredH = this.measurements.get(block!.id || '')!;
       if (measuredH != null) {
         totalHeight += measuredH + (measuredCount > 0 ? blockGap : 0);
         measuredCount++;
 
-        if (compressionFirst && block.compression?.strategy !== 'none') {
+        if (compressionFirst && block!.compression?.strategy !== 'none') {
           flowBlocks.push({
             index: i,
             height: measuredH,
-            priority: block.compression?.priority === 'high' ? 3 : block.compression?.priority === 'medium' ? 2 : 1,
+            priority: block!.compression?.priority === 'high' ? 3 : block!.compression?.priority === 'medium' ? 2 : 1,
           });
         }
       }
@@ -489,7 +489,7 @@ export class SceneTransaction {
         if (remainingOverflow <= 0) break;
 
         const block = blocks[fb.index];
-        const minHeight = block.compression?.minFragmentHeight ?? 80;
+        const minHeight = block!.compression?.minFragmentHeight ?? 80;
         const maxCompression = fb.height - minHeight;
         const compression = Math.min(remainingOverflow, maxCompression);
 
@@ -499,13 +499,13 @@ export class SceneTransaction {
           // _compressedHeight was removed from CompressionHints because it
           // leaked derived data into localStorage. The caller writes this
           // to the session interaction state's compressedHeightCache.
-          const blockId = block.id || `block-${fb.index}`;
+          const blockId = block!.id || `block-${fb.index}`;
           this.compressedHeights.set(blockId, compressedHeight);
           // DO NOT write _compressedHeight to block.compression
           blocks[fb.index] = {
             ...block,
             compression: {
-              ...block.compression!,
+              ...block!.compression!,
             },
           };
           remainingOverflow -= compression;

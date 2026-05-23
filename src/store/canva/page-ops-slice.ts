@@ -59,9 +59,9 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     get()._pushHistory();
 
     const movedBlock = sourceSchema.blocks[blockIdx];
-    const blockName = ((movedBlock as unknown) as Record<string, unknown>).title as string || movedBlock.type || 'Block';
+    const blockName = ((movedBlock as unknown) as Record<string, unknown>).title as string || movedBlock!.type || 'Block';
     const newSourceBlocks = sourceSchema.blocks.filter((_, i) => i !== blockIdx);
-    const newTargetBlock = produce(movedBlock, (draft) => { draft.id = generateBlockId(); });
+    const newTargetBlock = produce(movedBlock, (draft) => { draft!.id = generateBlockId(); });
     const newTargetBlocks = [...targetSchema.blocks, newTargetBlock];
 
     const newPages = [...pages];
@@ -73,8 +73,8 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
       type: 'cross-page',
       operation: 'moveBlockToPage',
       pageIndex: targetPageIndex,
-      blockId: newTargetBlock.id ?? blockId,
-      blockType: movedBlock.type,
+      blockId: newTargetBlock!.id ?? blockId,
+      blockType: movedBlock!.type,
       details: { _movedToPage: targetPageIndex },
     });
 
@@ -164,8 +164,8 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     }
     const sourcePage = pages[currentPageIndex];
     const targetPage = pages[currentPageIndex + 1];
-    const sourceSchema = ensurePageSchema(sourcePage);
-    const targetSchema = ensurePageSchema(targetPage);
+    const sourceSchema = ensurePageSchema!(sourcePage);
+    const targetSchema = ensurePageSchema!(targetPage);
     if (!sourceSchema || !targetSchema) { toast.warning('Tidak bisa merge — salah satu halaman tidak memiliki schema'); return; }
 
     get()._pushHistory();

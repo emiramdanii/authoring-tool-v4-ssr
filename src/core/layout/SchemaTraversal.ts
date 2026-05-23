@@ -191,10 +191,10 @@ export function traverseSchema(schema: ScreenSchema): BlockPath[] {
       paths.push(path);
 
       // Recurse into composite blocks
-      if (isCompositeBlock(block)) {
-        const childContainers = getChildBlocks(block);
+      if (isCompositeBlock!(block)) {
+        const childContainers = getChildBlocks!(block);
         for (const cc of childContainers) {
-          visitBlocks(cc.children, block, depth + 1, cc.container, cc.tabIndex);
+          visitBlocks(cc.children!, block, depth + 1, cc.container, cc.tabIndex);
         }
       }
     }

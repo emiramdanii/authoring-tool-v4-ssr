@@ -137,7 +137,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
     if (answered || currentQ >= validQuestions.length) return;
 
     const q = validQuestions[currentQ];
-    const isCorrect = userChoice === q.correct;
+    const isCorrect = userChoice === q!.correct;
 
     setSelected(userChoice);
     setAnswered(true);
@@ -148,7 +148,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
       a11y.announceCorrect();
     } else {
       playSound('incorrect');
-      a11y.announceIncorrect(q.correct ? 'Benar' : 'Salah');
+      a11y.announceIncorrect(q!.correct ? 'Benar' : 'Salah');
     }
 
     // Auto-advance after brief delay

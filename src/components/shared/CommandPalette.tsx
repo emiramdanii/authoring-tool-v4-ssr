@@ -204,8 +204,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           const idx = schema.blocks.findIndex(b => b.id === selectedBlockId);
           if (idx !== -1) {
             insertAfterIndex = idx;
-            const meta = getBlockMeta(schema.blocks[idx].type);
-            selectedBlockName = meta?.name || schema.blocks[idx].type;
+            const meta = getBlockMeta(schema.blocks[idx]!.type);
+            selectedBlockName = meta?.name || schema.blocks[idx]!.type;
           }
         }
       }
@@ -534,7 +534,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       const page = pages[i];
       commands.push({
         id: `nav-page-${i}`,
-        label: `Ke ${page.label || `Halaman ${i + 1}`}`,
+        label: `Ke ${page!.label || `Halaman ${i + 1}`}`,
         description: `Pergi ke halaman ${i + 1}`,
         icon: <Hash size={16} className="text-purple-400" />,
         category: 'navigation',
@@ -718,7 +718,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
               // Find the starting index for this group in the flat list
               let startIdx = 0;
               for (let g = 0; g < groupIdx; g++) {
-                startIdx += groupedCommands[g].items.length;
+                startIdx += groupedCommands[g]!.items.length;
               }
 
               return (

@@ -40,7 +40,7 @@ export const createMateriSlice: StateCreator<AuthoringState, [], [], MateriSlice
     set((s) => {
       const blok = [...s.materi.blok];
       const [moved] = blok.splice(fromIndex, 1);
-      blok.splice(toIndex, 0, moved);
+      blok.splice(toIndex, 0!, moved);
       return { materi: { blok }, dirty: true };
     });
   },

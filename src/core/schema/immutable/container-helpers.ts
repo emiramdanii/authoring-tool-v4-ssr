@@ -46,7 +46,7 @@ export function extractBlockFromNested(
       const updated = processCompositeChildren(block, (children) => {
         const idx = children.findIndex(b => b.id === blockId);
         if (idx >= 0) {
-          extracted = children[idx];
+          extracted = children[idx]!;
           return [...children.slice(0, idx), ...children.slice(idx + 1)];
         }
         return children; // No change
@@ -58,7 +58,7 @@ export function extractBlockFromNested(
     if (block.children) {
       const idx = block.children.findIndex(b => b.id === blockId);
       if (idx >= 0) {
-        extracted = block.children[idx];
+        extracted = block.children[idx]!;
         return { ...block, children: [...block.children.slice(0, idx), ...block.children.slice(idx + 1)] };
       }
     }

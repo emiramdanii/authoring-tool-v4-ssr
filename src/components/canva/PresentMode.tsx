@@ -73,7 +73,7 @@ export default function PresentMode() {
       // Prefer inner container dimensions (excludes SceneTabBar height)
       const measureEl = innerEl || el;
       setScale(computeSceneScale(
-        { w: ratio.w, h: ratio.h },
+        { w: ratio!.w, h: ratio!.h },
         { w: measureEl.clientWidth || 800, h: measureEl.clientHeight || 500 },
         0,
       ));
@@ -151,14 +151,14 @@ export default function PresentMode() {
         const currentTabs = currentPage?.schema?.tabs;
         if (currentTabs && currentTabs.length >= 2) {
           if (!activeTabId) {
-            setActiveTabId(currentTabs[0].id);
+            setActiveTabId(currentTabs[0]!.id);
           } else {
             const currentIdx = currentTabs.findIndex(t => t.id === activeTabId);
             if (currentIdx === -1 || currentIdx >= currentTabs.length - 1) {
               // Wrap around: back to showing all
               setActiveTabId(null);
             } else {
-              setActiveTabId(currentTabs[currentIdx + 1].id);
+              setActiveTabId(currentTabs[currentIdx + 1]!.id);
             }
           }
         }
@@ -203,8 +203,8 @@ export default function PresentMode() {
           duration={0.35}
           className="relative overflow-hidden"
           style={{
-            width: ratio.w,
-            height: ratio.h,
+            width: ratio!.w,
+            height: ratio!.h,
             transform: `scale(${scale})`,
             transformOrigin: 'center center',
           }}

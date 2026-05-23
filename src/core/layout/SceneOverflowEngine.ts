@@ -147,12 +147,12 @@ export function computeScenePlan(
   }
 
   // Full-page block (cover/hero) fills the entire scene
-  if (blocks.length === 1 && isFullPageBlockType(blocks[0].type)) {
+  if (blocks.length === 1 && isFullPageBlockType(blocks[0]!.type)) {
     return {
       sourceSchemaId: schema.id,
       scenes: [{
         sceneIndex: 0,
-        blockIds: [blocks[0].id || 'block-0'],
+        blockIds: [blocks[0]!.id || 'block-0']!,
         totalHeight: availableHeight,
         hasOverflow: false,
       }],
@@ -177,13 +177,13 @@ export function computeScenePlan(
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
-    const blockId = block.id || `block-${i}`;
+    const blockId = block!.id || `block-${i}`;
 
     // Skip absolute-positioned blocks and full-page blocks (cover, hero, etc.)
     // Full-page blocks fill the entire scene — they should never be split
     // or counted as flow content. Legacy cover blocks from genCoverSchema()
     // have no `layout` property, so we detect them by type via isFullPageBlockType().
-    const isFullPageBlock = isFullPageBlockType(block.type) || block.layout?.position === 'absolute';
+    const isFullPageBlock = isFullPageBlockType(block!.type) || block!.layout?.position === 'absolute';
     if (isFullPageBlock) {
       // Absolute/full-page blocks are included in the first scene only
       if (sceneIndex === 0) {
@@ -197,7 +197,7 @@ export function computeScenePlan(
     // and represents a deliberate layout decision that should take precedence.
     // Without this, the engine would recompute compression independently,
     // potentially producing different results than the transaction intended.
-    const compressedH = block.id ? getCompressedHeight(block.id) : undefined;
+    const compressedH = block!.id ? getCompressedHeight(block!.id) : undefined;
     let blockHeight: number;
     let measuredH: number | undefined;
 
@@ -206,10 +206,10 @@ export function computeScenePlan(
       // Skip recompression since the transaction already determined the layout.
       blockHeight = compressedH;
     } else {
-      measuredH = block.id ? getMeasuredHeight(block.id) : undefined;
-      const { height: estimatedH } = estimateBlockHeight(block, {
+      measuredH = block!.id ? getMeasuredHeight(block!.id) : undefined;
+      const { height: estimatedH } = estimateBlockHeight!(block, {
         isCompact,
-        variant: block.variant || 'A',
+        variant: block!.variant || 'A',
         availableWidth: scene.w - safeArea.left - safeArea.right,
         sceneH: scene.h,
       });
@@ -224,12 +224,12 @@ export function computeScenePlan(
     // (the transaction already made this decision).
     // FASE 11A.4 — Use per-block gap from rhythm engine when available
     const gap = (perBlockGaps && i < perBlockGaps.length) ? perBlockGaps[i] : blockGap;
-    let prospectiveHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? gap : 0);
+    let prospectiveHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? gap : 0)!;
     let compressionDecision: CompressionDecision | undefined;
 
-    if (compressedH == null && prospectiveHeight > availableHeight && measuredH != null && isBlockTypeCompressionCapable(block.type)) {
-      const remainingSpace = availableHeight - currentHeight - (currentBlockIds.length > 0 ? gap : 0);
-      const decision = computeCompressionDecision(block, measuredH, remainingSpace);
+    if (compressedH == null && prospectiveHeight > availableHeight && measuredH != null && isBlockTypeCompressionCapable(block!.type)) {
+      const remainingSpace = availableHeight - currentHeight - (currentBlockIds.length > 0 ? gap : 0)!;
+      const decision = computeCompressionDecision!(block, measuredH, remainingSpace);
       if (decision) {
         blockHeight = decision.compressedHeight;
         compressionDecision = decision;
@@ -239,7 +239,7 @@ export function computeScenePlan(
 
     // Check if adding this block would exceed available height
     // (Recompute with potentially compressed blockHeight)
-    const finalHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? gap : 0);
+    const finalHeight = currentHeight + blockHeight + (currentBlockIds.length > 0 ? gap : 0)!;
 
     const isSplittable = sceneSplittableIds.has(blockId);
 

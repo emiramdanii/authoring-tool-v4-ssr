@@ -124,8 +124,8 @@ export class SchemaHistory {
     const entry = this.state.entries[this.state.pointer];
 
     return {
-      schema: deepClone(entry.schema),
-      description: `Undo: ${entry.description}`,
+      schema: deepClone(entry!.schema),
+      description: `Undo: ${entry!.description}`,
       success: true,
     };
   }
@@ -143,8 +143,8 @@ export class SchemaHistory {
     const entry = this.state.entries[this.state.pointer];
 
     return {
-      schema: deepClone(entry.schema),
-      description: `Redo: ${entry.description}`,
+      schema: deepClone(entry!.schema),
+      description: `Redo: ${entry!.description}`,
       success: true,
     };
   }
@@ -162,7 +162,7 @@ export class SchemaHistory {
   /** Get the current schema (at pointer position) */
   getCurrentSchema(): ScreenSchema | null {
     if (this.state.pointer < 0 || this.state.entries.length === 0) return null;
-    return deepClone(this.state.entries[this.state.pointer].schema);
+    return deepClone(this.state.entries[this.state.pointer]!.schema);
   }
 
   /** Get the current history entry */
@@ -205,8 +205,8 @@ export class SchemaHistory {
       pointer: this.state.pointer,
       canUndo: this.canUndo(),
       canRedo: this.canRedo(),
-      undoDescription: this.canUndo() ? this.state.entries[this.state.pointer - 1].description : null,
-      redoDescription: this.canRedo() ? this.state.entries[this.state.pointer + 1].description : null,
+      undoDescription: this.canUndo()! ? this.state.entries[this.state.pointer - 1].description : null,
+      redoDescription: this.canRedo()! ? this.state.entries[this.state.pointer + 1].description : null,
     };
   }
 

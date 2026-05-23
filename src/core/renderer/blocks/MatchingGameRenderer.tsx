@@ -33,7 +33,7 @@ function shuffleRightItems(pairs: Array<{ left: string; right: string }>): Shuff
   // Fisher-Yates (Durstenfeld) shuffle
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
+    [items[i]!, items[j]!] = [items[j]!!, items[i]];
   }
   return items;
 }

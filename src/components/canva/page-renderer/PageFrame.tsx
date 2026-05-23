@@ -415,7 +415,7 @@ export const PageFrame = React.memo(function PageFrame({
         <>
           <div className="absolute inset-0" style={{ background: page.bgColor || tokens.color('bg') }} />
           {page.bgDataUrl && (
-            <img src={page.bgDataUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={page.bgDataUrl} alt="" role="presentation" className="absolute inset-0 w-full h-full object-cover" />
           )}
           <div
             className="absolute inset-0 pointer-events-none"
@@ -439,6 +439,7 @@ export const PageFrame = React.memo(function PageFrame({
                 <img
                   src={schemaBg.imageUrl}
                   alt=""
+                  role="presentation"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div
@@ -457,7 +458,7 @@ export const PageFrame = React.memo(function PageFrame({
           ref={topNavRef}
           className="absolute top-0 left-0 right-0 z-50 flex items-center gap-2 overflow-hidden"
           style={{
-            ...theme.topBg(tokens),
+            ...theme!.topBg(tokens),
             padding: isCompact ? '4px 10px' : '8px 16px',
           }}
         >
@@ -470,8 +471,8 @@ export const PageFrame = React.memo(function PageFrame({
 
           {/* Progress bar — takes remaining space */}
           {showProgress && (
-            <div className="flex-1 min-w-[40px] rounded-full overflow-hidden" style={theme.progressTrack(tokens, isCompact)}>
-              <div className="h-full transition-[width] duration-300" style={theme.progressBar(tokens, progressPct, isCompact)} />
+            <div className="flex-1 min-w-[40px]! rounded-full overflow-hidden" style={theme!.progressTrack(tokens, isCompact)}>
+              <div className="h-full transition-[width]! duration-300" style={theme!.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
 
@@ -511,11 +512,11 @@ export const PageFrame = React.memo(function PageFrame({
       {/* ══ Bottom Navbar ═════════════════════════════════════ */}
       {showBottomNav && (
         <div ref={bottomNavRef} className="absolute bottom-0 left-0 right-0 z-50 overflow-hidden"
-          style={theme.bottomBg(tokens)}>
+          style={theme!.bottomBg(tokens)}>
           {/* Progress bar */}
           {showProgress && (
-            <div style={theme.progressTrack(tokens, isCompact)}>
-              <div className="h-full transition-[width] duration-300" style={theme.progressBar(tokens, progressPct, isCompact)} />
+            <div style={theme!.progressTrack(tokens, isCompact)}>
+              <div className="h-full transition-[width]! duration-300" style={theme!.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
 
@@ -535,7 +536,7 @@ export const PageFrame = React.memo(function PageFrame({
                     ? 'cursor-pointer hover:opacity-80'
                     : 'opacity-30 cursor-not-allowed'
                 }`}
-                style={theme.prevBtn(tokens, currentPageIndex <= 0)}
+                style={theme!.prevBtn(tokens, currentPageIndex <= 0)}
               >
                 {navbarStyle === 'minimal' ? '‹' : '←'}
               </button>
@@ -562,7 +563,7 @@ export const PageFrame = React.memo(function PageFrame({
                       width: dotSize,
                       height: dotSize,
                       fontSize: isCompact ? 7 : (isActive ? 12 : 9),
-                      ...theme.dotStyle(tokens, isActive, isComplete),
+                      ...theme!.dotStyle(tokens, isActive, isComplete),
                     }}
                   >
                     {navbarStyle === 'minimal' ? (
@@ -604,7 +605,7 @@ export const PageFrame = React.memo(function PageFrame({
                   } ${
                     isCompact ? 'text-[9px]' : 'text-xs'
                   }`}
-                  style={theme.nextBtn(tokens, isLastPage, isCompact)}
+                  style={theme!.nextBtn(tokens, isLastPage, isCompact)}
                 >
                   {isLastPage
                     ? (navbarStyle === 'glass' ? '✨ Selesai' : '🎉 Selesai')
@@ -628,7 +629,7 @@ export const PageFrame = React.memo(function PageFrame({
               <button
                 onClick={handleReset}
                 className="flex items-center gap-1 text-[10px] transition-[transform,box-shadow,background-color] active:scale-95 whitespace-nowrap"
-                style={theme.resetBtn(tokens)}
+                style={theme!.resetBtn(tokens)}
               >
                 ↩ Ulangi
               </button>

@@ -210,13 +210,13 @@ describe('Generator pipeline with real PPKn content', () => {
 
     it('should start with an intro/teks block', () => {
       const materi = genMateri(parsed, PPKN_GEN_META);
-      expect(materi[0].tipe).toBe('teks');
+      expect(materi[0]!.tipe).toBe('teks');
     });
 
     it('should end with an infobox/summary block', () => {
       const materi = genMateri(parsed, PPKN_GEN_META);
       const lastBlock = materi[materi.length - 1];
-      expect(lastBlock.tipe).toBe('infobox');
+      expect(lastBlock!.tipe).toBe('infobox');
     });
   });
 
@@ -248,7 +248,7 @@ describe('Generator pipeline with real PPKn content', () => {
       const kuis = genKuis(parsed, 10, 2);
       for (const item of kuis) {
         expect(item.opts[item.ans]).toBeDefined();
-        expect(item.opts[item.ans].length).toBeGreaterThan(0);
+        expect(item.opts[item.ans]!.length).toBeGreaterThan(0);
       }
     });
 

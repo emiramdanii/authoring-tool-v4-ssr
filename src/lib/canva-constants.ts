@@ -124,22 +124,22 @@ export function populateTemplateElements(page: CanvaPage, createElId: () => stri
     if (page.templateType === 'kuis') {
       const kuisArr = td.kuis as Array<Record<string, unknown>> | undefined;
       if (kuisArr && kuisArr.length > 0) {
-        if (!kuisId) kuisId = (kuisArr[0]._id as string) || undefined;
+        if (!kuisId) kuisId = (kuisArr[0]!._id as string) || undefined;
         kuisIds = kuisArr.map(k => k._id as string).filter(Boolean);
       }
     }
 
     if (page.templateType === 'game') {
       const gamesArr = td.games as Array<Record<string, unknown>> | undefined;
-      if (gamesArr && gamesArr.length > 0 && gamesArr[0]._id) {
-        if (!moduleId) moduleId = gamesArr[0]._id as string;
+      if (gamesArr && gamesArr.length > 0 && gamesArr[0]!._id) {
+        if (!moduleId) moduleId = gamesArr[0]!._id as string;
       }
     }
 
     if (page.templateType === 'materi') {
       const modulesArr = td.modules as Array<Record<string, unknown>> | undefined;
-      if (modulesArr && modulesArr.length > 0 && modulesArr[0]._id) {
-        if (!moduleId) moduleId = modulesArr[0]._id as string;
+      if (modulesArr && modulesArr.length > 0 && modulesArr[0]!._id) {
+        if (!moduleId) moduleId = modulesArr[0]!._id as string;
       }
     }
   }

@@ -162,24 +162,24 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
       {/* Question text */}
       <div className="px-2 py-1.5 flex-1 min-h-0 overflow-y-auto">
         <p className={`font-bold text-app-accent leading-snug ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
-          {q.q}
+          {q!.q}
         </p>
       </div>
 
       {/* Options */}
       <div className="px-1.5 pb-1.5 space-y-1">
-        {q.opts.map((opt, idx) => {
+        {q!.opts.map((opt, idx) => {
           if (!opt.trim()) return null;
           let bg = 'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10';
           let textCol = 'text-app-accent/90';
           let icon: React.ReactNode = null;
 
           if (answered) {
-            if (idx === q.ans) {
+            if (idx === q!.ans) {
               bg = 'bg-emerald-500/20 border-emerald-400/40';
               textCol = 'text-emerald-300';
               icon = <CheckCircle2 size={12} className="inline ml-1" />;
-            } else if (idx === selectedOpt && idx !== q.ans) {
+            } else if (idx === selectedOpt && idx !== q!.ans) {
               bg = 'bg-red-500/20 border-red-400/40';
               textCol = 'text-red-300';
               icon = <XCircle size={12} className="inline ml-1" />;
@@ -204,11 +204,11 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
       </div>
 
       {/* Explanation */}
-      {answered && q.ex && (
+      {answered && q!.ex && (
         <div className="px-2 pb-1.5">
           <div className="bg-blue-500/10 border border-blue-400/20 rounded px-2 py-1">
             <span className={`font-bold text-blue-300 ${compact ? 'text-[8px]' : 'text-[9px]'}`}>
-              <Lightbulb size={12} className="inline" /> {q.ex}
+              <Lightbulb size={12} className="inline" /> {q!.ex}
             </span>
           </div>
         </div>

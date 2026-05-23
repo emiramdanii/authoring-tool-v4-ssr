@@ -88,7 +88,7 @@ function renderMemoryGame(b: Record<string, unknown>): string {
   const seed = cardId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   for (let i = cards.length - 1; i > 0; i--) {
     const j = (seed * (i + 1) + i) % (i + 1);
-    [cards[i], cards[j]] = [cards[j], cards[i]];
+    [cards[i]!, cards[j]!] = [cards[j]!!, cards[i]];
   }
   return `
     <div class="block memory-game-block" data-game="${cardId}">
@@ -118,7 +118,7 @@ function renderMatchingGame(b: Record<string, unknown>): string {
   const rightIndices = pairs.map((_, i) => i);
   for (let i = rightIndices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [rightIndices[i], rightIndices[j]] = [rightIndices[j], rightIndices[i]];
+    [rightIndices[i]!, rightIndices[j]!] = [rightIndices[j], rightIndices[i]];
   }
   return `
     <div class="block matching-game-block" data-game="${matchId}">
@@ -134,7 +134,7 @@ function renderMatchingGame(b: Record<string, unknown>): string {
         </div>
         <div class="matching-col matching-right">
           ${rightIndices.map(ri => `
-            <button class="match-item match-right" data-idx="${ri}" data-game="${matchId}" onclick="selectMatchRight(this)">${escapeHtml(pairs[ri].right)}</button>`).join('')}
+            <button class="match-item match-right" data-idx="${ri}" data-game="${matchId}" onclick="selectMatchRight(this)">${escapeHtml(pairs[ri]!.right)}</button>`).join('')}
         </div>
       </div>
       <div class="game-score" id="match-score-${matchId}">🔗 0/${pairs.length} cocok</div>
@@ -160,10 +160,10 @@ function renderWordSearchGame(b: Record<string, unknown>): string {
         const col = Math.floor(Math.random() * (gridSize - w.length + 1));
         let canPlace = true;
         for (let c = 0; c < w.length; c++) {
-          if (grid[row][col + c] !== '' && grid[row][col + c] !== w[c]) { canPlace = false; break; }
+          if (grid[row]![col + c] !== '' && grid[row]![col + c] !== w[c]) { canPlace = false; break; }
         }
         if (canPlace) {
-          for (let c = 0; c < w.length; c++) grid[row][col + c] = w[c];
+          for (let c = 0; c < w.length; c++) grid[row]![col + c] = w[c];
           placed = true; placedWords.push(w);
         }
       } else {
@@ -171,10 +171,10 @@ function renderWordSearchGame(b: Record<string, unknown>): string {
         const col = Math.floor(Math.random() * gridSize);
         let canPlace = true;
         for (let r = 0; r < w.length; r++) {
-          if (grid[row + r][col] !== '' && grid[row + r][col] !== w[r]) { canPlace = false; break; }
+          if (grid[row + r]![col] !== '' && grid[row + r]![col] !== w[r]) { canPlace = false; break; }
         }
         if (canPlace) {
-          for (let r = 0; r < w.length; r++) grid[row + r][col] = w[r];
+          for (let r = 0; r < w.length; r++) grid[row + r]![col] = w[r];
           placed = true; placedWords.push(w);
         }
       }
@@ -184,7 +184,7 @@ function renderWordSearchGame(b: Record<string, unknown>): string {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   for (let r = 0; r < gridSize; r++) {
     for (let c = 0; c < gridSize; c++) {
-      if (!grid[r][c]) grid[r][c] = alphabet[Math.floor(Math.random() * 26)];
+      if (!grid[r]![c]!) grid[r]![c] = alphabet[Math.floor(Math.random() * 26)];
     }
   }
   return `
@@ -216,7 +216,7 @@ function renderDragDropGame(b: Record<string, unknown>): string {
   const shuffledItems = [...items];
   for (let i = shuffledItems.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+    [shuffledItems[i]!, shuffledItems[j]!] = [shuffledItems[j]!, shuffledItems[i]];
   }
   return `
     <div class="block drag-drop-block" data-game="${ddId}">
@@ -266,7 +266,7 @@ function renderCrosswordGame(b: Record<string, unknown>): string {
       const r = arah === 'down' ? startRow + ci : startRow;
       const c = arah === 'across' ? startCol + ci : startCol;
       if (r < gridSize && c < gridSize) {
-        cwGrid[r][c] = word[ci];
+        cwGrid[r]![c] = word[ci]!;
         // Assign number to start cell
         if (ci === 0) {
           const key = `${r}-${c}`;

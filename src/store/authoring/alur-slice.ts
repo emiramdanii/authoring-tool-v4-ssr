@@ -26,7 +26,7 @@ export const createAlurSlice: StateCreator<AuthoringState, [], [], AlurSlice> = 
     set((s) => {
       const alur = [...s.alur];
       const [moved] = alur.splice(fromIndex, 1);
-      alur.splice(toIndex, 0, moved);
+      alur.splice(toIndex, 0!, moved);
       return { alur, dirty: true };
     });
   },

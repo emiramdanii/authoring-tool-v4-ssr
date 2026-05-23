@@ -201,7 +201,7 @@ function MateriVariantKlasik({
   const sectionNumber = React.useMemo(() => {
     if (block.id) {
       const match = block.id.match(/(\d+)$/);
-      if (match) return parseInt(match[1], 10);
+      if (match) return parseInt!(match[1], 10);
     }
     return 1;
   }, [block.id]);
@@ -608,7 +608,7 @@ function MateriVariantMajalah({
   const sectionNumber = React.useMemo(() => {
     if (block.id) {
       const match = block.id.match(/(\d+)$/);
-      if (match) return parseInt(match[1], 10);
+      if (match) return parseInt!(match[1], 10);
     }
     return 1;
   }, [block.id]);
@@ -868,7 +868,7 @@ function MateriVariantPill({
   const sectionNumber = React.useMemo(() => {
     if (block.id) {
       const match = block.id.match(/(\d+)$/);
-      if (match) return parseInt(match[1], 10);
+      if (match) return parseInt!(match[1], 10);
     }
     return 1;
   }, [block.id]);

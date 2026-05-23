@@ -71,7 +71,7 @@ function buildCrosswordGrid(
   for (let r = 0; r < size; r++) {
     grid[r] = [];
     for (let c = 0; c < size; c++) {
-      grid[r][c] = { letter: '', num: 0, wordIds: [] };
+      grid[r]![c] = { letter: '', num: 0, wordIds: [] };
     }
   }
 
@@ -99,7 +99,7 @@ function buildCrosswordGrid(
           const nr = td === 'down' ? tr + i : tr;
           const nc = td === 'across' ? tc + i : tc;
           if (nr >= size || nc >= size) { fits = false; break; }
-          if (grid[nr][nc].letter !== '' && grid[nr][nc].letter !== text[i]) { fits = false; break; }
+          if (grid[nr]![nc]!.letter !== '' && grid[nr]![nc]!.letter !== text[i]!) { fits = false; break; }
         }
         if (fits) { startR = tr; startC = tc; dir = td; break; }
       }
@@ -111,9 +111,9 @@ function buildCrosswordGrid(
       const nr = dir === 'down' ? startR! + i : startR!;
       const nc = dir === 'across' ? startC! + i : startC!;
       if (nr >= size || nc >= size) break;
-      grid[nr][nc].letter = text[i];
-      grid[nr][nc].wordIds.push(wid);
-      if (i === 0 && grid[nr][nc].num === 0) grid[nr][nc].num = clueNum;
+      grid[nr]![nc]!.letter = text[i]!;
+      grid[nr]![nc]!.wordIds.push(wid);
+      if (i === 0 && grid[nr]![nc]!.num === 0) grid[nr]![nc]!.num = clueNum;
     }
     const clue: ClueEntry = { num: clueNum, hint: hint || text.charAt(0) + '...', text, startR: startR!, startC: startC! };
     if (dir === 'across') acrossClues.push(clue); else downClues.push(clue);
@@ -221,7 +221,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
     let filled = 0, total = 0;
     for (let r = 0; r < SIZE; r++) {
       for (let c = 0; c < SIZE; c++) {
-        if (grid[r][c].letter) {
+        if (grid[r]![c]!.letter) {
           total++;
           if (userGrid[`${r},${c}`]) filled++;
         }
@@ -301,7 +301,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
     (ug: Record<string, string>): boolean => {
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
-          if (grid[r][c].letter && ug[`${r},${c}`] !== grid[r][c].letter) return false;
+          if (grid[r]![c]!.letter && ug[`${r},${c}`] !== grid[r]![c]!.letter) return false;
         }
       }
       return true;
@@ -322,24 +322,24 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
         setUserGrid(newGrid);
         setChecked(false);
         // Move to previous cell
-        if (c > 0 && grid[r][c - 1].letter) {
+        if (c > 0 && grid[r]![c - 1]!.letter) {
           setActiveCell({ r, c: c - 1 });
-        } else if (r > 0 && grid[r - 1][c].letter) {
+        } else if (r > 0 && grid[r - 1]![c]!.letter) {
           setActiveCell({ r: r - 1, c });
         }
         return;
       }
 
-      if (e.key === 'ArrowLeft' && c > 0 && grid[r][c - 1].letter) {
+      if (e.key === 'ArrowLeft' && c > 0 && grid[r]![c - 1]!.letter) {
         setActiveCell({ r, c: c - 1 }); return;
       }
-      if (e.key === 'ArrowRight' && c < SIZE - 1 && grid[r][c + 1].letter) {
+      if (e.key === 'ArrowRight' && c < SIZE - 1 && grid[r]![c + 1]!.letter) {
         setActiveCell({ r, c: c + 1 }); return;
       }
-      if (e.key === 'ArrowUp' && r > 0 && grid[r - 1][c].letter) {
+      if (e.key === 'ArrowUp' && r > 0 && grid[r - 1]![c]!.letter) {
         setActiveCell({ r: r - 1, c }); return;
       }
-      if (e.key === 'ArrowDown' && r < SIZE - 1 && grid[r + 1][c].letter) {
+      if (e.key === 'ArrowDown' && r < SIZE - 1 && grid[r + 1]![c]!.letter) {
         setActiveCell({ r: r + 1, c }); return;
       }
       if (e.key === 'Tab' || e.key === 'Enter') {
@@ -347,7 +347,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
         // Move to next empty cell
         for (let nr = r, nc = c + 1; nr < SIZE; nr++, nc = 0) {
           for (; nc < SIZE; nc++) {
-            if (grid[nr][nc].letter && (!userGrid[`${nr},${nc}`] || userGrid[`${nr},${nc}`] === '') && (nr !== r || nc !== c)) {
+            if (grid[nr]![nc]!.letter && (!userGrid[`${nr},${nc}`] || userGrid[`${nr},${nc}`] === '') && (nr !== r || nc !== c)) {
               setActiveCell({ r: nr, c: nc }); return;
             }
           }
@@ -365,11 +365,11 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
 
         // Auto-advance — direction-aware
         const dir = getActiveWordDir(activeCell) || 'across';
-        if (dir === 'down' && r < SIZE - 1 && grid[r + 1][c].letter) {
+        if (dir === 'down' && r < SIZE - 1 && grid[r + 1]![c]!.letter) {
           setActiveCell({ r: r + 1, c });
-        } else if (dir === 'across' && c < SIZE - 1 && grid[r][c + 1].letter) {
+        } else if (dir === 'across' && c < SIZE - 1 && grid[r]![c + 1]!.letter) {
           setActiveCell({ r, c: c + 1 });
-        } else if (r < SIZE - 1 && grid[r + 1][0].letter) {
+        } else if (r < SIZE - 1 && grid[r + 1]![0]!.letter) {
           setActiveCell({ r: r + 1, c: 0 });
         }
 
@@ -389,9 +389,9 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
         setUserGrid(newGrid);
         setChecked(false);
         const dir = getActiveWordDir(activeCell) || 'across';
-        if (dir === 'down' && r < SIZE - 1 && grid[r + 1][c].letter) setActiveCell({ r: r + 1, c });
-        else if (dir === 'across' && c < SIZE - 1 && grid[r][c + 1].letter) setActiveCell({ r, c: c + 1 });
-        else if (r < SIZE - 1 && grid[r + 1][0].letter) setActiveCell({ r: r + 1, c: 0 });
+        if (dir === 'down' && r < SIZE - 1 && grid[r + 1]![c]!.letter) setActiveCell({ r: r + 1, c });
+        else if (dir === 'across' && c < SIZE - 1 && grid[r]![c + 1]!.letter) setActiveCell({ r, c: c + 1 });
+        else if (r < SIZE - 1 && grid[r + 1]![0]!.letter) setActiveCell({ r: r + 1, c: 0 });
         if (checkComplete(newGrid)) setPhase('done');
       }
       e.target.value = '';
@@ -416,20 +416,20 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
     const empties: string[] = [];
     for (let r = 0; r < SIZE; r++) {
       for (let c = 0; c < SIZE; c++) {
-        if (grid[r][c].letter && userGrid[`${r},${c}`] !== grid[r][c].letter && !revealed.has(`${r},${c}`)) {
+        if (grid[r]![c]!.letter && userGrid[`${r},${c}`] !== grid[r]![c]!.letter && !revealed.has(`${r},${c}`)) {
           empties.push(`${r},${c}`);
         }
       }
     }
     if (empties.length > 0) {
-      const pick = empties[Math.floor(Math.random() * empties.length)];
+      const pick = empties[Math.floor(Math.random() * empties.length)]!;
       const newRevealed = new Set(revealed);
       newRevealed.add(pick);
       setRevealed(newRevealed);
       const parts = pick.split(',');
       const r = Number(parts[0]);
       const c = Number(parts[1]);
-      const newGrid = { ...userGrid, [`${r},${c}`]: grid[r][c].letter };
+      const newGrid = { ...userGrid, [`${r},${c}`]: grid[r]![c]!.letter };
       setUserGrid(newGrid);
       if (checkComplete(newGrid)) setPhase('done');
     }

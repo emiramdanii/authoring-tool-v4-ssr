@@ -383,8 +383,8 @@ export function safeBootFromStorage(rawStorageData: string | null): SafeBootResu
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    if (page.schema && typeof page.schema === 'object') {
-      const repairResult = repairSchema(page.schema as ScreenSchema);
+    if (page!.schema && typeof page!.schema === 'object') {
+      const repairResult = repairSchema(page!.schema as ScreenSchema);
       if (repairResult.repaired) {
         pages[i] = { ...page, schema: repairResult.schema };
         hasRepairs = true;
@@ -392,8 +392,8 @@ export function safeBootFromStorage(rawStorageData: string | null): SafeBootResu
         warnings.push(...repairResult.unrecoverable.map(r => `Page ${i}: ${r}`));
       }
     }
-    if (!page.id) { pages[i] = { ...pages[i], id: generateBlockId() }; hasRepairs = true; repairs.push(`Page ${i}: generated missing id`); }
-    if (!page.templateType) { pages[i] = { ...pages[i], templateType: 'custom' }; hasRepairs = true; repairs.push(`Page ${i}: set missing templateType`); }
+    if (!page!.id) { pages[i] = { ...pages[i], id: generateBlockId() }; hasRepairs = true; repairs.push(`Page ${i}: generated missing id`); }
+    if (!page!.templateType) { pages[i] = { ...pages[i], templateType: 'custom' }; hasRepairs = true; repairs.push(`Page ${i}: set missing templateType`); }
   }
 
   return { booted: true, safeMode: hasRepairs || warnings.length > 0, repairs, warnings };
@@ -472,8 +472,8 @@ export interface PageValidationResult {
  * This is non-throwing — all errors are caught and reported.
  * Returns a detailed report of what was found/fixed.
  */
-export function validateAndRepairPages(
-  pages: Array<{ id: string; schema?: ScreenSchema; [k: string]: unknown }>,
+export function validateAndRepairPages<T extends { id: string; schema?: ScreenSchema }>(
+  pages: T[],
   options?: { autoRepair?: boolean },
 ): PageValidationResult {
   const result: PageValidationResult = {
@@ -491,12 +491,12 @@ export function validateAndRepairPages(
     const page = pages[i];
 
     // Page without schema — skip (might be a legacy page without schema yet)
-    if (!page.schema) {
+    if (!page!.schema) {
       result.validPages++;
       continue;
     }
 
-    const validation = validateSchema(page.schema);
+    const validation = validateSchema(page!.schema);
     if (validation.valid) {
       result.validPages++;
       continue;
@@ -506,28 +506,28 @@ export function validateAndRepairPages(
     result.corruptedPages++;
 
     if (shouldRepair) {
-      const repairResult = repairSchema(page.schema);
+      const repairResult = repairSchema(page!.schema);
       if (repairResult.repaired) {
         // Apply the repaired schema back to the page
         (page as Record<string, unknown>).schema = repairResult.schema;
         result.repairedPages++;
         result.repairs.push({
           pageIndex: i,
-          pageId: page.id,
+          pageId: page!.id,
           details: repairResult.repairs,
         });
         // Also track unrecoverable issues from repaired pages
         if (repairResult.unrecoverable.length > 0) {
           result.unrecoverable.push({
             pageIndex: i,
-            pageId: page.id,
+            pageId: page!.id,
             details: repairResult.unrecoverable,
           });
         }
       } else {
         result.unrecoverable.push({
           pageIndex: i,
-          pageId: page.id,
+          pageId: page!.id,
           details: repairResult.unrecoverable,
         });
       }
@@ -545,11 +545,13 @@ export function validateAndRepairPages(
  */
 export function computePagesHash(pages: unknown[]): string {
   // Only hash schema blocks (the single source of truth)
-  const schemasOnly = pages.map((p: any) => {
-    if (p?.schema?.blocks) {
-      return { id: p.id, blocks: p.schema.blocks };
+  const schemasOnly = pages.map((p) => {
+    const page = p as Record<string, unknown> | null | undefined;
+    const schema = page?.schema as Record<string, unknown> | undefined;
+    if (schema?.blocks) {
+      return { id: page?.id, blocks: schema.blocks };
     }
-    return { id: p?.id };
+    return { id: page?.id };
   });
   return computeSchemaHash(schemasOnly);
 }

@@ -74,8 +74,8 @@ export default function AddBlockPanel() {
     if (!schema) return { insertAfterIndex: undefined, selectedBlockName: null };
     const idx = schema.blocks.findIndex(b => b.id === selectedBlockId);
     if (idx === -1) return { insertAfterIndex: undefined, selectedBlockName: null };
-    const blockDef = getBlockDefinition(schema.blocks[idx].type);
-    const name = blockDef?.name || schema.blocks[idx].type;
+    const blockDef = getBlockDefinition(schema.blocks[idx]!.type);
+    const name = blockDef?.name || schema.blocks[idx]!.type;
     return { insertAfterIndex: idx, selectedBlockName: isSederhana ? teacherTerm(name, 'sederhana') : name };
   }, [selectedBlockId, page, isSederhana]);
 

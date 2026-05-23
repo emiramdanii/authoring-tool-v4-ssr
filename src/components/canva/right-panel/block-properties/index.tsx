@@ -25,7 +25,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
-import { getBlockCapabilities as getDerivedCapabilities, isBlockTypeInteractive, isBlockTypeCompressionCapable, isBlockTypeSplittable, isBlockTypeMeasurable, isBlockTypeRendererHandlesCompression } from '@/core/schema/capability-registry';
+import { getBlockCapabilities as getDerivedCapabilities, isBlockTypeInteractive, isBlockTypeCompressionCapable, isBlockTypeSplittable, isBlockTypeMeasurable, isBlockTypeRendererHandlesCompression, type BlockCapabilityInfo } from '@/core/schema/capability-registry';
 import { Settings2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './use-selected-block';
@@ -164,7 +164,7 @@ export default function BlockPropertiesPanel() {
             {/* Source traceability — show where each capability was derived from */}
             <div className="mt-1 space-y-0.5">
               {(() => {
-                const info = getDerivedCapabilities({ type: selectedBlockType } as any);
+                const info: BlockCapabilityInfo = getDerivedCapabilities({ type: selectedBlockType } as import('@/core/schema/types').SchemaBlock);
                 return Object.entries(info.sources).map(([cap, source]) => (
                   <div key={cap} className="flex items-center gap-1 text-[8px] text-app-muted">
                     <span className={`w-1.5 h-1.5 rounded-full ${

@@ -148,7 +148,7 @@ function deriveCoverToProjection(block: SchemaBlock, projection: SchemaProjectio
 
   // Extract namaBab and kelas from first badge if present
   if (cover.badges && cover.badges.length > 0) {
-    const badgeText = cover.badges[0].text;
+    const badgeText = cover.badges[0]!.text;
     // Badge format: "NamaBab • Kelas VII" or just "NamaBab"
     const parts = badgeText.split(' • ');
     if (parts[0]) projection.meta.namaBab = parts[0];

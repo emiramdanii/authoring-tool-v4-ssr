@@ -49,7 +49,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
     const grid: Array<Array<{ letter: string; num: number; wordIds: number[] }>> = [];
     for (let r = 0; r < SIZE; r++) {
       grid[r] = [];
-      for (let c = 0; c < SIZE; c++) grid[r][c] = { letter: '', num: 0, wordIds: [] };
+      for (let c = 0; c < SIZE; c++) grid[r]![c] = { letter: '', num: 0, wordIds: [] };
     }
     let wordId = 0, clueNum = 1;
     const acrossClues: Array<{ num: number; hint: string; text: string; startR: number; startC: number }> = [];
@@ -74,7 +74,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             const nr = td === 'down' ? tr + i : tr;
             const nc = td === 'across' ? tc + i : tc;
             if (nr >= SIZE || nc >= SIZE) { fits = false; break; }
-            if (grid[nr][nc].letter !== '' && grid[nr][nc].letter !== text[i]) { fits = false; break; }
+            if (grid[nr]![nc]!.letter !== '' && grid[nr]![nc]!.letter !== text[i]!) { fits = false; break; }
           }
           if (fits) { startR = tr; startC = tc; dir = td; break; }
         }
@@ -87,9 +87,9 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
         const nr = dir === 'down' ? startR! + i : startR!;
         const nc = dir === 'across' ? startC! + i : startC!;
         if (nr >= SIZE || nc >= SIZE) break;
-        grid[nr][nc].letter = text[i];
-        grid[nr][nc].wordIds.push(wid);
-        if (i === 0 && grid[nr][nc].num === 0) grid[nr][nc].num = clueNum;
+        grid[nr]![nc]!.letter = text[i]!;
+        grid[nr]![nc]!.wordIds.push(wid);
+        if (i === 0 && grid[nr]![nc]!.num === 0) grid[nr]![nc]!.num = clueNum;
       }
       const clue = { num: clueNum, hint: hint || text.charAt(0) + '...', text, startR: startR!, startC: startC! };
       if (dir === 'across') acrossClues.push(clue); else downClues.push(clue);
@@ -148,24 +148,24 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       setUserGrid(newGrid);
       setChecked(false);
       // Move to previous cell
-      if (c > 0 && grid[r][c - 1].letter) {
+      if (c > 0 && grid[r]![c - 1]!.letter) {
         setActiveCell({ r, c: c - 1 });
-      } else if (r > 0 && grid[r - 1][c].letter) {
+      } else if (r > 0 && grid[r - 1]![c]!.letter) {
         setActiveCell({ r: r - 1, c });
       }
       return;
     }
 
-    if (e.key === 'ArrowLeft' && c > 0 && grid[r][c - 1].letter) {
+    if (e.key === 'ArrowLeft' && c > 0 && grid[r]![c - 1]!.letter) {
       setActiveCell({ r, c: c - 1 }); return;
     }
-    if (e.key === 'ArrowRight' && c < gridSize - 1 && grid[r][c + 1].letter) {
+    if (e.key === 'ArrowRight' && c < gridSize - 1 && grid[r]![c + 1]!.letter) {
       setActiveCell({ r, c: c + 1 }); return;
     }
-    if (e.key === 'ArrowUp' && r > 0 && grid[r - 1][c].letter) {
+    if (e.key === 'ArrowUp' && r > 0 && grid[r - 1]![c]!.letter) {
       setActiveCell({ r: r - 1, c }); return;
     }
-    if (e.key === 'ArrowDown' && r < gridSize - 1 && grid[r + 1][c].letter) {
+    if (e.key === 'ArrowDown' && r < gridSize - 1 && grid[r + 1]![c]!.letter) {
       setActiveCell({ r: r + 1, c }); return;
     }
     if (e.key === 'Tab' || e.key === 'Enter') {
@@ -173,7 +173,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
       // Move to next empty cell
       for (let nr = r, nc = c + 1; nr < gridSize; nr++, nc = 0) {
         for (; nc < gridSize; nc++) {
-          if (grid[nr][nc].letter && (!userGrid[`${nr},${nc}`] || userGrid[`${nr},${nc}`] === '') && (nr !== r || nc !== c)) {
+          if (grid[nr]![nc]!.letter && (!userGrid[`${nr},${nc}`] || userGrid[`${nr},${nc}`] === '') && (nr !== r || nc !== c)) {
             setActiveCell({ r: nr, c: nc }); return;
           }
         }
@@ -191,11 +191,11 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
 
       // Auto-advance to next cell — direction-aware
       const dir = getActiveWordDir(activeCell) || 'across';
-      if (dir === 'down' && r < gridSize - 1 && grid[r + 1][c].letter) {
+      if (dir === 'down' && r < gridSize - 1 && grid[r + 1]![c]!.letter) {
         setActiveCell({ r: r + 1, c });
-      } else if (dir === 'across' && c < gridSize - 1 && grid[r][c + 1].letter) {
+      } else if (dir === 'across' && c < gridSize - 1 && grid[r]![c + 1]!.letter) {
         setActiveCell({ r, c: c + 1 });
-      } else if (r < gridSize - 1 && grid[r + 1][0].letter) {
+      } else if (r < gridSize - 1 && grid[r + 1]![0]!.letter) {
         // Fallback: wrap to next row
         setActiveCell({ r: r + 1, c: 0 });
       }
@@ -210,7 +210,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
   const checkComplete = (ug: Record<string, string> = userGrid) => {
     for (let r = 0; r < gridSize; r++) {
       for (let c = 0; c < gridSize; c++) {
-        if (grid[r][c].letter && ug[`${r},${c}`] !== grid[r][c].letter) return false;
+        if (grid[r]![c]!.letter && ug[`${r},${c}`] !== grid[r]![c]!.letter) return false;
       }
     }
     return true;
@@ -227,7 +227,7 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
     const empties: string[] = [];
     for (let r = 0; r < gridSize; r++) {
       for (let c = 0; c < gridSize; c++) {
-        if (grid[r][c].letter && userGrid[`${r},${c}`] !== grid[r][c].letter && !revealed.has(`${r},${c}`)) {
+        if (grid[r]![c]!.letter && userGrid[`${r},${c}`] !== grid[r]![c]!.letter && !revealed.has(`${r},${c}`)) {
           empties.push(`${r},${c}`);
         }
       }
@@ -235,10 +235,10 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
     if (empties.length > 0) {
       const pick = empties[Math.floor(Math.random() * empties.length)];
       const newRevealed = new Set(revealed);
-      newRevealed.add(pick);
+      newRevealed.add!(pick);
       setRevealed(newRevealed);
-      const [r, c] = pick.split(',').map(Number);
-      const newGrid = { ...userGrid, [`${r},${c}`]: grid[r][c].letter };
+      const [r, c] = pick!.split(',').map(Number);
+      const newGrid = { ...userGrid, [`${r},${c}`]: grid[r]![c]!.letter };
       setUserGrid(newGrid);
       if (checkComplete(newGrid)) setPhase('done');
     }
@@ -343,9 +343,9 @@ export function CrosswordGame({ data, compact, interactive, onComplete }: GameCo
             setChecked(false);
             // Auto-advance — direction-aware (same as handleKeyDown)
             const dir = getActiveWordDir(activeCell) || 'across';
-            if (dir === 'down' && r < gridSize - 1 && grid[r + 1][c].letter) setActiveCell({ r: r + 1, c });
-            else if (dir === 'across' && c < gridSize - 1 && grid[r][c + 1].letter) setActiveCell({ r, c: c + 1 });
-            else if (r < gridSize - 1 && grid[r + 1][0].letter) setActiveCell({ r: r + 1, c: 0 });
+            if (dir === 'down' && r < gridSize - 1 && grid[r + 1]![c]!.letter) setActiveCell({ r: r + 1, c });
+            else if (dir === 'across' && c < gridSize - 1 && grid[r]![c + 1]!.letter) setActiveCell({ r, c: c + 1 });
+            else if (r < gridSize - 1 && grid[r + 1]![0]!.letter) setActiveCell({ r: r + 1, c: 0 });
             if (checkComplete(newGrid)) setPhase('done');
           }
           e.target.value = '';

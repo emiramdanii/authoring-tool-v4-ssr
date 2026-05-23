@@ -15,8 +15,10 @@ import { pipeline } from 'stream/promises';
 import { Readable } from 'stream';
 
 // Check if archiver is available for ZIP creation
-let archiver: any = null;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+let archiver: (typeof import('archiver')) | null = null;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   archiver = require('archiver');
 } catch {
   // archiver not installed — SCORM export will return an error
@@ -204,7 +206,7 @@ export async function POST(request: NextRequest) {
     const manifest = generateManifest(title, identifier);
 
     // Create ZIP using archiver
-    const archive = archiver('zip', { zlib: { level: 6 } });
+    const archive = archiver!('zip', { zlib: { level: 6 } });
 
     // Add files to archive
     archive.append(manifest, { name: 'imsmanifest.xml' });

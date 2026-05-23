@@ -212,7 +212,7 @@ function _promoteSceneSplitToPageInner(
 
   // Get blocks for the target scene
   const targetScene = scenePlan.scenes[sceneIndex];
-  const targetBlockIds = new Set(targetScene.blockIds);
+  const targetBlockIds = new Set(targetScene!.blockIds);
 
   // Split the schema at the scene boundary
   const originalBlocks = page.schema.blocks.filter(b => !targetBlockIds.has(b.id || ''));
@@ -234,7 +234,7 @@ function _promoteSceneSplitToPageInner(
   const tx = createTransaction(page.schema);
 
   // Remove all blocks that belong to the new page
-  for (const blockId of targetScene.blockIds) {
+  for (const blockId of targetScene!.blockIds) {
     tx.remove(blockId);
   }
 

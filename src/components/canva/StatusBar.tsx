@@ -114,7 +114,7 @@ export default function StatusBar() {
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
         <Ratio size={11} className="text-app-muted" />
-        <span className="font-mono">{ratio.w}×{ratio.h}</span>
+        <span className="font-mono">{ratio!.w}×{ratio!.h}</span>
       </span>
 
       {/* Element count — teacher-friendly label */}

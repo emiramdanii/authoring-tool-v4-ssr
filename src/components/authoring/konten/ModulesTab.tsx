@@ -206,7 +206,7 @@ export function ModulesTab() {
   }, [addModule]);
 
   const handleRemove = useCallback((i: number) => {
-    if (confirm(`Hapus modul "${modules[i].title || moduleTypeInfo(modules[i].type).label}"?`)) {
+    if (confirm(`Hapus modul "${modules[i]!.title || moduleTypeInfo(modules[i]!.type).label}"?`)) {
       removeModule(i);
       if (editorIndex === i) setEditorIndex(null);
     }

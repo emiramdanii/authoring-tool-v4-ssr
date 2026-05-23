@@ -122,7 +122,7 @@ export function ImageUploader({ value, onUpload, onClear, className }: ImageUplo
 
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        uploadFile(files[0]);
+        uploadFile!(files[0]);
       }
     },
     [uploadFile],
@@ -133,7 +133,7 @@ export function ImageUploader({ value, onUpload, onClear, className }: ImageUplo
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (files && files.length > 0) {
-        uploadFile(files[0]);
+        uploadFile!(files[0]);
       }
       // Reset input so same file can be selected again
       if (fileInputRef.current) {

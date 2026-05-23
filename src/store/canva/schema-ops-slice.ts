@@ -54,7 +54,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
       const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
       block = ms.content?.[owner.childIndex];
     } else {
-      block = blocks[owner.blockIndex].children?.[owner.childIndex];
+      block = blocks[owner.blockIndex]!.children?.[owner.childIndex];
     }
     if (!block) return;
 
@@ -135,14 +135,14 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
         } else if (owner.kind === 'ftab-tab') {
           const ft = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
           const block = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex];
-          if (block) { const nudged = nudgeBlock(block as SchemaBlock); if (nudged !== block) Object.assign(ft.tabs![owner.tabIndex].content![owner.childIndex], nudged); }
+          if (block) { const nudged = nudgeBlock(block as SchemaBlock); if (nudged !== block) Object.assign(ft.tabs![owner.tabIndex]!.content![owner.childIndex], nudged); }
         } else if (owner.kind === 'materi-section') {
           const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
           const block = ms.content?.[owner.childIndex];
           if (block) { const nudged = nudgeBlock(block as SchemaBlock); if (nudged !== block) Object.assign(ms.content![owner.childIndex], nudged); }
         } else if (owner.kind === 'children') {
-          const block = draft[owner.blockIndex].children?.[owner.childIndex];
-          if (block) { const nudged = nudgeBlock(block as SchemaBlock); if (nudged !== block) Object.assign(draft[owner.blockIndex].children![owner.childIndex], nudged); }
+          const block = draft[owner.blockIndex]!.children?.[owner.childIndex];
+          if (block) { const nudged = nudgeBlock(block as SchemaBlock); if (nudged !== block) Object.assign(draft[owner.blockIndex]!.children![owner.childIndex], nudged); }
         }
       }
     });
@@ -250,7 +250,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
 
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       const [moved] = draft.splice(fromIndex, 1);
-      draft.splice(toIndex, 0, moved);
+      draft.splice(toIndex, 0!, moved);
     });
 
     editBus.emit({
@@ -350,8 +350,8 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       if (axis === 'horizontal') {
         const sorted = [...absoluteBlocks].sort((a, b) => toNum(a.block.layout!.x, 0) - toNum(b.block.layout!.x, 0));
-        const min = toNum(sorted[0].block.layout!.x, 0);
-        const max = toNum(sorted[sorted.length - 1].block.layout!.x, 0) + toNum(sorted[sorted.length - 1].block.layout!.width, 100);
+        const min = toNum(sorted[0]!.block.layout!.x, 0);
+        const max = toNum(sorted[sorted.length - 1]!.block.layout!.x, 0) + toNum(sorted[sorted.length - 1]!.block.layout!.width, 100);
         const totalW = sorted.reduce((s, b) => s + toNum(b.block.layout!.width, 100), 0);
         const gap = (max - min - totalW) / (sorted.length - 1);
         let current = min;
@@ -362,8 +362,8 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
         }
       } else {
         const sorted = [...absoluteBlocks].sort((a, b) => toNum(a.block.layout!.y, 0) - toNum(b.block.layout!.y, 0));
-        const min = toNum(sorted[0].block.layout!.y, 0);
-        const max = toNum(sorted[sorted.length - 1].block.layout!.y, 0) + toNum(sorted[sorted.length - 1].block.layout!.height, 100);
+        const min = toNum(sorted[0]!.block.layout!.y, 0);
+        const max = toNum(sorted[sorted.length - 1]!.block.layout!.y, 0) + toNum(sorted[sorted.length - 1]!.block.layout!.height, 100);
         const totalH = sorted.reduce((s, b) => s + toNum(b.block.layout!.height, 100), 0);
         const gap = (max - min - totalH) / (sorted.length - 1);
         let current = min;
@@ -474,8 +474,8 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     for (const idx of indices) {
       const newIdx = idx + delta;
       if (newIdx < 0 || newIdx >= blocks.length) continue;
-      if (blockIds.includes(blocks[newIdx].id || '')) continue;
-      const temp = blocks[idx]; blocks[idx] = blocks[newIdx]; blocks[newIdx] = temp;
+      if (blockIds.includes(blocks[newIdx]!.id || '')) continue;
+      const temp = blocks[idx]!; blocks[idx] = blocks[newIdx]!; blocks[newIdx] = temp;
     }
 
     const newPages = [...pages];

@@ -120,7 +120,7 @@ export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, toke
             animation: 'fadeIn 0.3s ease',
           }}>
           {(tab.content || []).map((b, i) => (
-            <React.Suspense key={`ftab-content-${b.id || b.type}-${i}`} fallback={null}>
+            <React.Suspense key={`ftab-content-${b.id || b.type}-${i}`} fallback={<div className="p-2 rounded-lg" style={{ background: tokens.subtleBg(0.04), minHeight: 32 }} />}>
               <SchemaBlockRenderer block={b} mode={mode} tokens={tokens} interactive={interactive} />
             </React.Suspense>
           ))}

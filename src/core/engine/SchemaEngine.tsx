@@ -62,9 +62,9 @@ export function SchemaEngine({
   // correct scene dimensions and safe area, matching the canvas path.
   const isCompact = mode === 'canvas';
   const hasCoverBlock = schema.screens[0]?.blocks.length === 1 &&
-    isFullPageBlockType(schema.screens[0].blocks[0].type);
+    isFullPageBlockType(schema.screens[0].blocks[0]!.type);
   const isCoverScreen = screen?.blocks.length === 1 &&
-    isFullPageBlockType(screen.blocks[0].type);
+    isFullPageBlockType(screen.blocks[0]!.type);
   const sceneResolution = getSceneResolution(ratioId);
   const safeArea = computeSafeArea({
     showTopNav,

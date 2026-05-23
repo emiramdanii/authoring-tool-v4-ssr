@@ -74,7 +74,7 @@ export function useDragSort<T>(
       if (from === to || from === null || to === null) return;
       const newItems = [...items];
       const [moved] = newItems.splice(from, 1);
-      newItems.splice(to, 0, moved);
+      newItems.splice(to, 0!, moved);
       onReorder(newItems);
     },
     [items, onReorder],

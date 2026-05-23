@@ -554,7 +554,7 @@ export function useAutoGenerate() {
 
           if (allPreviews.length === types.length) {
             setPreviews(allPreviews);
-            setActivePreview(allPreviews[0]);
+            setActivePreview!(allPreviews[0]);
             setLoading(new Set());
             toast.success(`⚡ Semua ${allPreviews.length} konten berhasil digenerate!`);
           }

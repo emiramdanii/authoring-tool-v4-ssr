@@ -222,16 +222,16 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
         if (descriptor.structure === 'direct') {
           const children = (block as Record<string, unknown>)[descriptor.accessor] as SchemaBlock[] | undefined;
           for (let j = 0; j < (children?.length || 0); j++) {
-            checkBlock(children![j], `${path}.${descriptor.accessor}[${j}]`);
+            checkBlock!(children![j], `${path}.${descriptor.accessor}[${j}]`);
           }
         }
         if (descriptor.structure === 'tabular' && descriptor.tabContentKey) {
           const tabs = (block as Record<string, unknown>)[descriptor.accessor] as Array<Record<string, unknown>> | undefined;
           for (let t = 0; t < (tabs?.length || 0); t++) {
             const tab = tabs![t];
-            const content = tab[descriptor.tabContentKey!] as SchemaBlock[] | undefined;
+            const content = tab![descriptor.tabContentKey!] as SchemaBlock[] | undefined;
             for (let j = 0; j < (content?.length || 0); j++) {
-              checkBlock(content![j], `${path}.${descriptor.accessor}[${t}].${descriptor.tabContentKey}[${j}]`);
+              checkBlock!(content![j], `${path}.${descriptor.accessor}[${t}].${descriptor.tabContentKey}[${j}]`);
             }
           }
         }
@@ -241,13 +241,13 @@ export function isDocumentPure(doc: DocumentState): { pure: boolean; violations:
     // Check children
     if (block.children) {
       for (let j = 0; j < block.children.length; j++) {
-        checkBlock(block.children[j], `${path}.children[${j}]`);
+        checkBlock!(block.children[j], `${path}.children[${j}]`);
       }
     }
   }
 
   for (let i = 0; i < doc.blocks.length; i++) {
-    checkBlock(doc.blocks[i], `blocks[${i}]`);
+    checkBlock!(doc.blocks[i], `blocks[${i}]!`);
   }
 
   return { pure: violations.length === 0, violations, violationStrings };

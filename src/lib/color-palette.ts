@@ -100,17 +100,17 @@ export async function extractColorPalette(
       const pixels: number[][] = [];
 
       for (let i = 0; i < imageData.data.length; i += 4) {
-        const r = imageData.data[i];
-        const g = imageData.data[i + 1];
-        const b = imageData.data[i + 2];
-        const a = imageData.data[i + 3];
+        const r = imageData.data[i]!;
+        const g = imageData.data[i + 1]!;
+        const b = imageData.data[i + 2]!;
+        const a = imageData.data[i + 3]!;
 
         // Skip transparent, near-white, near-black pixels
         if (a < 128) continue;
         if (r > 240 && g > 240 && b > 240) continue;
         if (r < 15 && g < 15 && b < 15) continue;
 
-        pixels.push([r, g, b]);
+        pixels.push([r!, g!, b!]);
       }
 
       if (pixels.length === 0) {
@@ -125,7 +125,7 @@ export async function extractColorPalette(
 
       // Sort by saturation (vivid first)
       const sorted = result
-        .map((c) => rgbToHex(c[0], c[1], c[2]))
+        .map((c) => rgbToHex(c[0]!, c[1]!, c[2]!))
         .sort((a, b) => getSaturation(b) - getSaturation(a));
 
       // Deduplicate similar colors (hex distance < 30)
@@ -159,24 +159,24 @@ function autoMapColors(colors: string[]): Record<string, string> {
   if (colors.length === 0) return mapping;
 
   // Most vivid → primary accent (--y)
-  mapping['--y'] = colors[0] || '#f9c82e';
+  mapping['--y'] = colors[0] ?? '#f9c82e';
 
   // Second vivid → secondary accent (--c)
-  mapping['--c'] = colors[1] || '#3ecfcf';
+  mapping['--c'] = colors[1] ?? '#3ecfcf';
 
   // Third → green accent (--g)
-  mapping['--g'] = colors[2] || '#34d399';
+  mapping['--g'] = colors[2] ?? '#34d399';
 
   // Fourth → red accent (--r)
-  mapping['--r'] = colors[3] || '#f87171';
+  mapping['--r'] = colors[3] ?? '#f87171';
 
   // Darkest → background (--bg)
   const darkest = [...colors].sort((a, b) => getLightness(a) - getLightness(b))[0];
-  mapping['--bg'] = darkest || '#f8fafc';
+  mapping['--bg'] = darkest ?? '#f8fafc';
 
   // Lightest → card (--card)
   const lightest = [...colors].sort((a, b) => getLightness(b) - getLightness(a))[0];
-  mapping['--card'] = adjustLight(lightest, 0.15) || '#f8fafc';
+  mapping['--card'] = lightest ? adjustLight(lightest, 0.15) : '#f8fafc';
 
   return mapping;
 }
@@ -187,7 +187,7 @@ function kmeansInit(pixels: number[][], k: number): number[][] {
   const centroids: number[][] = [];
   const step = Math.floor(pixels.length / k);
   for (let i = 0; i < k; i++) {
-    centroids.push([...pixels[i * step]]);
+    centroids.push([...pixels[i * step]!]);
   }
   return centroids;
 }
@@ -207,26 +207,26 @@ function kmeansIterate(
       let minDist = Infinity;
       let minIdx = 0;
       for (let c = 0; c < current.length; c++) {
-        const d = colorDist(pixel, current[c]);
+        const d = colorDist(pixel, current[c]!);
         if (d < minDist) {
           minDist = d;
           minIdx = c;
         }
       }
-      clusters[minIdx].push(pixel);
+      clusters[minIdx]!.push(pixel);
     }
 
     // Recompute centroids
     current = clusters.map((cluster, i) => {
-      if (cluster.length === 0) return current[i];
+      if (cluster.length === 0) return current[i]!;
       const sum = cluster.reduce(
-        (acc, p) => [acc[0] + p[0], acc[1] + p[1], acc[2] + p[2]],
+        (acc, p) => [acc[0]! + p[0]!, acc[1]! + p[1]!, acc[2]! + p[2]!],
         [0, 0, 0]
       );
       return [
-        Math.round(sum[0] / cluster.length),
-        Math.round(sum[1] / cluster.length),
-        Math.round(sum[2] / cluster.length),
+        Math.round(sum[0]! / cluster.length),
+        Math.round(sum[1]! / cluster.length),
+        Math.round(sum[2]! / cluster.length),
       ];
     });
   }
@@ -236,7 +236,7 @@ function kmeansIterate(
 
 function colorDist(a: number[], b: number[]): number {
   return Math.sqrt(
-    (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2
+    (a[0]! - b[0]!) ** 2 + (a[1]! - b[1]!) ** 2 + (a[2]! - b[2]!) ** 2
   );
 }
 

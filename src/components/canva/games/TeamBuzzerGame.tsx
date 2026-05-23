@@ -75,10 +75,10 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
       <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
         <span className="font-bold">Soal {currentQ + 1}/{validSoal.length}</span>
-        <span>+{(q.poin as number) || 10} poin</span>
+        <span>+{(q!.poin as number) || 10} poin</span>
       </div>
       <p className={`text-cyan-100 font-bold flex-1 min-h-0 overflow-y-auto mb-1 ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
-        {q.teks as string}
+        {q!.teks as string}
       </p>
       <div className="flex gap-2 mb-1">
         <button onClick={() => handleBuzz('A')} disabled={!!buzzed || correct === 'wrong'}

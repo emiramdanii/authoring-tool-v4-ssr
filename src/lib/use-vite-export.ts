@@ -112,9 +112,9 @@ export function useViteExport() {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
       toast.success(`Export selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-ssr' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Vite Export', err);
-      toast.error(`Gagal export: ${err.message}`, { id: 'export-ssr' });
+      toast.error(`Gagal export: ${err instanceof Error ? err.message : String(err)}`, { id: 'export-ssr' });
       throw err; // Re-throw so caller can fall back
     }
   }, [pages, ratioId]);
@@ -162,9 +162,9 @@ export function useViteExport() {
         win.document.close();
       }
       toast.success(`Preview dibuka (${pages.length} halaman)`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Vite Export Preview', err);
-      toast.error(`Gagal preview: ${err.message}`);
+      toast.error(`Gagal preview: ${err instanceof Error ? err.message : String(err)}`);
       throw err;
     }
   }, [pages, ratioId]);
@@ -198,9 +198,9 @@ export function useViteExport() {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
       toast.success(`Export client-side selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-client' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Client Export', err);
-      toast.error(`Gagal export client-side: ${err.message}`, { id: 'export-client' });
+      toast.error(`Gagal export client-side: ${err instanceof Error ? err.message : String(err)}`, { id: 'export-client' });
     }
   }, [pages, ratioId, buildPayload]);
 
@@ -218,9 +218,9 @@ export function useViteExport() {
         win.document.close();
       }
       toast.success(`Preview client-side dibuka (${pages.length} halaman)`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Client Preview', err);
-      toast.error(`Gagal preview client-side: ${err.message}`);
+      toast.error(`Gagal preview client-side: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [pages, ratioId, buildPayload]);
 
@@ -256,9 +256,9 @@ export function useViteExport() {
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
         toast.success(`Export fallback selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-fallback' });
-      } catch (clientErr: any) {
+      } catch (clientErr: unknown) {
         logger.error('Export', clientErr);
-        toast.error(`Export gagal total: ${clientErr.message}`, { id: 'export-fallback' });
+        toast.error(`Export gagal total: ${clientErr instanceof Error ? clientErr.message : String(clientErr)}`, { id: 'export-fallback' });
       }
     }
   }, [exportHTML, buildPayload, pages]);

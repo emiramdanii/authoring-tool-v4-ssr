@@ -674,8 +674,8 @@ function TujuanVariantC({
     // Center is at (50%, 68%) approximately
     const cx = 50;
     const cy = 65;
-    const sx = parseFloat(pos.left);
-    const sy = parseFloat(pos.top);
+    const sx = parseFloat(pos!.left);
+    const sy = parseFloat(pos!.top);
 
     // Calculate line from center to satellite
     const dx = sx - cx;
@@ -744,8 +744,8 @@ function TujuanVariantC({
               className=""
               style={{
                 position: 'absolute',
-                left: pos.left,
-                top: pos.top,
+                left: pos!.left,
+                top: pos!.top,
                 transform: 'translate(-50%, -50%)',
                 zIndex: 2,
                 minWidth: isCompact ? '80px' : '110px',

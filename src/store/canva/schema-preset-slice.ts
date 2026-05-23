@@ -63,9 +63,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       }));
 
       // Cover pages should hide the top navbar
-      if (pages.length > 0 && pages[0].templateType === 'cover') {
-        pages[0].navConfig = {
-          ...pages[0].navConfig,
+      if (pages.length > 0 && pages[0]!.templateType === 'cover') {
+        pages[0]!.navConfig = {
+          ...pages[0]!.navConfig,
           showNavbar: true,
           showProgress: true,
         };
@@ -124,9 +124,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       }));
 
       // Cover pages should show navbar + progress
-      if (pages.length > 0 && pages[0].templateType === 'cover') {
-        pages[0].navConfig = {
-          ...pages[0].navConfig,
+      if (pages.length > 0 && pages[0]!.templateType === 'cover') {
+        pages[0]!.navConfig = {
+          ...pages[0]!.navConfig,
           showNavbar: true,
           showProgress: true,
         };

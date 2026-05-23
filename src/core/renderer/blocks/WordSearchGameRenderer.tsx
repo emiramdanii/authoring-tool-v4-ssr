@@ -110,14 +110,14 @@ function generateGridWithPlacements(
         const c = startC + dc * i;
         // Bounds check (should always pass given start range, but be safe)
         if (r < 0 || r >= size || c < 0 || c >= size) { fits = false; break; }
-        if (grid[r][c] !== '' && grid[r][c] !== upper[i]) { fits = false; break; }
+        if (grid[r]![c] !== '' && grid[r]![c] !== upper[i]) { fits = false; break; }
         cells.push([r, c]);
       }
 
       if (fits) {
         // Place the word
         for (let i = 0; i < upper.length; i++) {
-          grid[cells[i][0]][cells[i][1]] = upper[i];
+          grid[cells[i]![0]!]![cells[i]![1]] = upper[i];
         }
         placements.push({ word: upper, cells });
         placed = true;
@@ -132,8 +132,8 @@ function generateGridWithPlacements(
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (grid[r][c] === '') {
-        grid[r][c] = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+      if (grid[r]![c] === '') {
+        grid[r]![c] = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
       }
     }
   }
@@ -310,7 +310,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
       }
 
       // Read the letters along the selected line
-      const selectedWord = lineCells.map(([lr, lc]) => grid[lr][lc]).join('');
+      const selectedWord = lineCells.map(([lr, lc]) => grid[lr]![lc]).join('');
       const reversedWord = selectedWord.split('').reverse().join('');
 
       // Check if the selected word matches any unfound placement
@@ -732,7 +732,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         <h3>Kunci Jawaban: Teka-Teki Kata</h3>
         <ul>
           {placements.map((p, i) => (
-            <li key={`ws-ans-${block.id || 'ws'}-${i}`}><strong>{p.word}</strong> — baris {p.cells[0][0] + 1}, kolom {p.cells[0][1] + 1}</li>
+            <li key={`ws-ans-${block.id || 'ws'}-${i}`}><strong>{p.word}</strong> — baris {p.cells[0]![0] + 1}, kolom {p.cells[0]![1] + 1}</li>
           ))}
         </ul>
       </div>

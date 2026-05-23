@@ -80,18 +80,18 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
   const handleChoice = (choiceIdx: number) => {
     if (!ch || !interactive) return;
     const choice = ch.choices[choiceIdx];
-    setHistory(prev => [...prev, { chapterIdx: chapter, choiceIdx, good: choice.good, pts: choice.pts }]);
+    setHistory(prev => [...prev, { chapterIdx: chapter, choiceIdx, good: choice!.good, pts: choice!.pts }]);
     setSelectedChoice({ choiceIdx, choice });
     setShowFeedback(true);
 
     // Play sound based on choice quality
-    if (choice.good) playSound('correct');
+    if (choice!.good) playSound('correct');
     else playSound('incorrect');
 
     const timer = setTimeout(() => {
       setShowFeedback(false);
       setSelectedChoice(null);
-      const nextCh = choice.nextChapter != null ? choice.nextChapter : chapter + 1;
+      const nextCh = choice!.nextChapter != null ? choice!.nextChapter : chapter + 1;
       setChapter(nextCh);
       playSound('click');
     }, 3000);

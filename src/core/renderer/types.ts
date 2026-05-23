@@ -475,8 +475,17 @@ export class TokenResolver {
 //   resolveSubtleBg(tokens, 0.06)
 // ═══════════════════════════════════════════════════════════════════
 
-/** Detect if the user prefers dark mode. Defaults to `false` (education-first, light default). */
+/** Detect if the user is in dark mode.
+ *  Checks the `.dark` class on <html> (set by next-themes ThemeProvider)
+ *  which respects both system preference AND manual toggle via ThemeToggle.
+ *  Falls back to `prefers-color-scheme` if the class is not yet applied
+ *  (e.g., during SSR or before hydration). */
 function prefersDarkMode(): boolean {
+  if (typeof document !== 'undefined') {
+    // Primary: check the .dark class set by next-themes (respects manual toggle)
+    if (document.documentElement.classList.contains('dark')) return true;
+    // If no theme class yet (before hydration), fall back to system preference
+  }
   if (typeof window !== 'undefined' && window.matchMedia) {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }

@@ -92,11 +92,11 @@ export default function ExportApp() {
       // (games, quizzes, textareas, inputs) to prevent conflicts
       const target = e.target as HTMLElement;
       startedOnInteractive = !!target.closest('textarea, input, [data-game], [data-quiz], [data-interactive], [contenteditable="true"]');
-      startX = e.changedTouches[0].screenX;
+      startX = e.changedTouches[0]!.screenX;
     };
     const onTouchEnd = (e: TouchEvent) => {
       if (startedOnInteractive) return; // Don't navigate when touching interactive elements
-      const dx = e.changedTouches[0].screenX - startX;
+      const dx = e.changedTouches[0]!.screenX - startX;
       if (Math.abs(dx) > 50) {
         if (dx < 0) handleNext();
         else handlePrev();
@@ -129,8 +129,8 @@ export default function ExportApp() {
       <div className="min-h-screen bg-slate-900 text-white select-none" style={{ fontFamily: "'Nunito', sans-serif" }}>
         {/* ── Aspect-Ratio Scaling Container ── */}
         <ExportScaleContainer
-          designW={ratio.w}
-          designH={ratio.h}
+          designW={ratio!.w}
+          designH={ratio!.h}
         >
           {/* ══ Use PageRenderer for consistent rendering ══════ */}
           <CanvasErrorBoundary name="Export">

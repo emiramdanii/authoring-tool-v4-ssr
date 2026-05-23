@@ -49,7 +49,7 @@ export const CANVAS_AREA_ID = 'cm-canvas-area';
  * Falls back to 16:9 (1280×720) if not found.
  */
 export function getRatioById(ratioId: string): Ratio {
-  return RATIOS.find(r => r.id === ratioId) || RATIOS[0];
+  return RATIOS.find(r => r.id === ratioId)! || RATIOS[0];
 }
 
 /** Get the default ratio (16:9) */

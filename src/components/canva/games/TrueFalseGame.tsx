@@ -83,7 +83,7 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
         <span>Skor: {score}</span>
       </div>
       <p className={`text-cyan-100 font-bold flex-1 min-h-0 overflow-y-auto ${compact ? 'text-[9px]' : 'text-[11px]'}`}>
-        {q.teks as string}
+        {q!.teks as string}
       </p>
       <div className="flex gap-2 mt-2">
         <button onClick={() => handleAnswer(true)} disabled={answered}

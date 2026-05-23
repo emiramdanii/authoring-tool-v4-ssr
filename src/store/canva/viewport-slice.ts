@@ -70,7 +70,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
       const slot = preset.slots[slotIdx];
       const sharedCount = Math.max(0, i - slotIdx);
       const offset = sharedCount * 2;
-      return { ...el, x: slot.x + offset, y: slot.y + offset, w: slot.w, h: slot.h };
+      return { ...el, x: slot!.x + offset, y: slot!.y + offset, w: slot!.w, h: slot!.h };
     });
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, elements: updated };
@@ -90,8 +90,8 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
       for (let i = 0; i < els.length; i++) {
         const s = preset.slots[i];
         const e = els[i];
-        if (Math.abs(e.x - s.x) > 3 || Math.abs(e.y - s.y) > 3 ||
-            Math.abs(e.w - s.w) > 3 || Math.abs(e.h - s.h) > 3) {
+        if (Math.abs(e!.x - s!.x) > 3 || Math.abs(e!.y - s!.y) > 3 ||
+            Math.abs(e!.w - s!.w) > 3 || Math.abs(e!.h - s!.h) > 3) {
           match = false; break;
         }
       }
@@ -208,8 +208,8 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
 
     if (axis === 'horizontal') {
       const sorted = [...targets].sort((a, b) => a.x - b.x);
-      const min = sorted[0].x;
-      const max = sorted[sorted.length - 1].x + sorted[sorted.length - 1].w;
+      const min = sorted[0]!.x;
+      const max = sorted[sorted.length - 1]!.x + sorted[sorted.length - 1]!.w;
       const totalW = sorted.reduce((s, e) => s + e.w, 0);
       const gap = (max - min - totalW) / (sorted.length - 1);
       let current = min;
@@ -223,8 +223,8 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
       set({ pages: newPages });
     } else {
       const sorted = [...targets].sort((a, b) => a.y - b.y);
-      const min = sorted[0].y;
-      const max = sorted[sorted.length - 1].y + sorted[sorted.length - 1].h;
+      const min = sorted[0]!.y;
+      const max = sorted[sorted.length - 1]!.y + sorted[sorted.length - 1]!.h;
       const totalH = sorted.reduce((s, e) => s + e.h, 0);
       const gap = (max - min - totalH) / (sorted.length - 1);
       let current = min;

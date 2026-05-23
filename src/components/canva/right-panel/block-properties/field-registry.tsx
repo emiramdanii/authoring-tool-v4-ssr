@@ -511,7 +511,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
     const newItems = [...items];
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= newItems.length) return;
-    [newItems[idx], newItems[targetIdx]] = [newItems[targetIdx], newItems[idx]];
+    [newItems[idx]!, newItems[targetIdx]!] = [newItems[targetIdx]!, newItems[idx]];
     onUpdate(newItems);
   };
 
@@ -695,7 +695,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
     const newItems = [...items];
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= newItems.length) return;
-    [newItems[idx], newItems[targetIdx]] = [newItems[targetIdx], newItems[idx]];
+    [newItems[idx]!, newItems[targetIdx]!] = [newItems[targetIdx]!, newItems[idx]];
     onUpdate(newItems);
   };
 
@@ -880,7 +880,7 @@ function StringArrayEditor({ label, items, onChange }: {
     const newItems = [...items];
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= newItems.length) return;
-    [newItems[idx], newItems[targetIdx]] = [newItems[targetIdx], newItems[idx]];
+    [newItems[idx]!, newItems[targetIdx]!] = [newItems[targetIdx], newItems[idx]];
     onChange(newItems);
   };
 
@@ -978,7 +978,7 @@ function ObjectArrayEditor({ label, items, onChange }: {
     const newItems = [...items];
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= newItems.length) return;
-    [newItems[idx], newItems[targetIdx]] = [newItems[targetIdx], newItems[idx]];
+    [newItems[idx]!, newItems[targetIdx]!] = [newItems[targetIdx]!, newItems[idx]];
     onChange(newItems);
   };
 
@@ -987,7 +987,7 @@ function ObjectArrayEditor({ label, items, onChange }: {
     const template: Record<string, unknown> = {};
     if (items.length > 0) {
       for (const key of Object.keys(items[0])) {
-        template[key] = typeof items[0][key] === 'number' ? 0 : '';
+        template[key] = typeof items[0]![key] === 'number' ? 0 : '';
       }
     }
     onChange([...items, template]);

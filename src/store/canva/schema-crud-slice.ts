@@ -64,7 +64,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
         type: 'patch',
         patch: {
           blockId,
-          blockType: blocks[owner.index].type,
+          blockType: blocks[owner.index]!.type,
           pageIndex: currentPageIndex,
           patch: updates,
           timestamp: Date.now(),
@@ -87,7 +87,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
           const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
           target = ms.content?.[owner.childIndex];
         } else if (owner.kind === 'children') {
-          target = draft[owner.blockIndex].children?.[owner.childIndex];
+          target = draft[owner.blockIndex]!.children?.[owner.childIndex];
         }
         if (target) {
           Object.assign(target, deepMergeBlock(target, updates));
@@ -102,7 +102,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
         const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
         nestedBlockType = ms.content?.[owner.childIndex]?.type || 'unknown';
       } else if (owner.kind === 'children') {
-        nestedBlockType = blocks[owner.blockIndex].children?.[owner.childIndex]?.type || 'unknown';
+        nestedBlockType = blocks[owner.blockIndex]!.children?.[owner.childIndex]?.type || 'unknown';
       }
 
       editBus.emit({
@@ -159,8 +159,8 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
         deletedBlock = ms.content?.[owner.childIndex] as SchemaBlock;
         ms.content?.splice(owner.childIndex, 1);
       } else {
-        deletedBlock = draft[owner.blockIndex].children?.[owner.childIndex] as SchemaBlock;
-        draft[owner.blockIndex].children?.splice(owner.childIndex, 1);
+        deletedBlock = draft[owner.blockIndex]!.children?.[owner.childIndex] as SchemaBlock;
+        draft[owner.blockIndex]!.children?.splice(owner.childIndex, 1);
       }
     });
 
@@ -202,21 +202,21 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       if (owner.kind === 'top-level') {
         if (owner.index <= 0) return;
-        [draft[owner.index - 1], draft[owner.index]] = [draft[owner.index], draft[owner.index - 1]];
+        [draft[owner.index - 1]!, draft[owner.index]!] = [draft[owner.index]!, draft[owner.index - 1]];
       } else if (owner.kind === 'ftab-tab') {
         const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
         if (content && owner.childIndex > 0) {
-          [content[owner.childIndex - 1], content[owner.childIndex]] = [content[owner.childIndex], content[owner.childIndex - 1]];
+          [content[owner.childIndex - 1]!, content[owner.childIndex]!] = [content[owner.childIndex]!, content[owner.childIndex - 1]];
         }
       } else if (owner.kind === 'materi-section') {
         const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
         if (content && owner.childIndex > 0) {
-          [content[owner.childIndex - 1], content[owner.childIndex]] = [content[owner.childIndex], content[owner.childIndex - 1]];
+          [content[owner.childIndex - 1]!, content[owner.childIndex]!] = [content[owner.childIndex]!, content[owner.childIndex - 1]];
         }
       } else if (owner.kind === 'children') {
-        const children = draft[owner.blockIndex].children;
+        const children = draft[owner.blockIndex]!.children;
         if (children && owner.childIndex > 0) {
-          [children[owner.childIndex - 1], children[owner.childIndex]] = [children[owner.childIndex], children[owner.childIndex - 1]];
+          [children[owner.childIndex - 1]!, children[owner.childIndex]!] = [children[owner.childIndex]!, children[owner.childIndex - 1]];
         }
       }
     });
@@ -224,7 +224,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     editBus.emit({
       type: 'patch',
       patch: {
-        blockId, blockType: owner.kind === 'top-level' ? blocks[owner.index].type : 'unknown',
+        blockId, blockType: owner.kind === 'top-level' ? blocks[owner.index]!.type : 'unknown',
         pageIndex: currentPageIndex, patch: { _movedUp: true }, timestamp: Date.now(), source: 'user',
         _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
       },
@@ -251,21 +251,21 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       if (owner.kind === 'top-level') {
         if (owner.index >= blocks.length - 1) return;
-        [draft[owner.index], draft[owner.index + 1]] = [draft[owner.index + 1], draft[owner.index]];
+        [draft[owner.index]!, draft[owner.index + 1]!] = [draft[owner.index + 1]!, draft[owner.index]];
       } else if (owner.kind === 'ftab-tab') {
         const content = (draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> }).tabs?.[owner.tabIndex]?.content;
         if (content && owner.childIndex < content.length - 1) {
-          [content[owner.childIndex], content[owner.childIndex + 1]] = [content[owner.childIndex + 1], content[owner.childIndex]];
+          [content[owner.childIndex]!, content[owner.childIndex + 1]!] = [content[owner.childIndex + 1], content[owner.childIndex]];
         }
       } else if (owner.kind === 'materi-section') {
         const content = (draft[owner.blockIndex] as { content?: SchemaBlock[] }).content;
         if (content && owner.childIndex < content.length - 1) {
-          [content[owner.childIndex], content[owner.childIndex + 1]] = [content[owner.childIndex + 1], content[owner.childIndex]];
+          [content[owner.childIndex]!, content[owner.childIndex + 1]!] = [content[owner.childIndex + 1], content[owner.childIndex]];
         }
       } else if (owner.kind === 'children') {
-        const children = draft[owner.blockIndex].children;
+        const children = draft[owner.blockIndex]!.children;
         if (children && owner.childIndex < children.length - 1) {
-          [children[owner.childIndex], children[owner.childIndex + 1]] = [children[owner.childIndex + 1], children[owner.childIndex]];
+          [children[owner.childIndex]!, children[owner.childIndex + 1]!] = [children[owner.childIndex + 1], children[owner.childIndex]];
         }
       }
     });
@@ -273,7 +273,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     editBus.emit({
       type: 'patch',
       patch: {
-        blockId, blockType: owner.kind === 'top-level' ? blocks[owner.index].type : 'unknown',
+        blockId, blockType: owner.kind === 'top-level' ? blocks[owner.index]!.type : 'unknown',
         pageIndex: currentPageIndex, patch: { _movedDown: true }, timestamp: Date.now(), source: 'user',
         _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
       },

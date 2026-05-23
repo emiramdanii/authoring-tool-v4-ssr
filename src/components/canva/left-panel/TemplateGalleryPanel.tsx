@@ -494,7 +494,7 @@ function TemplateCard({
 
   return (
     <div
-      className={`rounded-xl border ${colors.border} ${colors.bg} overflow-hidden transition-[background-color,border-color] ${colors.hoverBg}`}
+      className={`rounded-xl border ${colors!.border} ${colors!.bg} overflow-hidden transition-[background-color,border-color]! ${colors!.hoverBg}`}
     >
       {/* Card header with icon and title */}
       <div className="p-3">
@@ -509,7 +509,7 @@ function TemplateCard({
             <div className="text-[11px] font-bold text-app-primary truncate">
               {template.title}
             </div>
-            <div className={`text-[9px] ${colors.text} font-semibold truncate`}>
+            <div className={`text-[9px]! ${colors!.text} font-semibold truncate`}>
               {template.subtitle}
             </div>
           </div>
@@ -529,10 +529,10 @@ function TemplateCard({
         {/* Badges */}
         <div className="flex flex-wrap gap-1 mt-2">
           {/* Pattern badge */}
-          <span className={`text-[7px] px-1.5 py-0 rounded border font-bold ${colors.badge}`}>
+          <span className={`text-[7px] px-1.5 py-0 rounded border font-bold ${colors!.badge}`}>
             {patternConfig.icon} {patternConfig.label}
           </span>
-          <span className={`text-[7px] px-1.5 py-0 rounded border font-bold ${colors.badge}`}>
+          <span className={`text-[7px] px-1.5 py-0 rounded border font-bold ${colors!.badge}`}>
             {template.mapel}
           </span>
           <span className="text-[7px] px-1.5 py-0 rounded bg-app-elevated/40 text-app-muted border border-app-border/30 font-bold">
@@ -596,7 +596,7 @@ function TemplateCard({
             disabled={isAnyLoading}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95 disabled:opacity-50 disabled:pointer-events-none ${
               isLoading
-                ? `${colors.bg} ${colors.text} border ${colors.border}`
+                ? `${colors!.bg} ${colors!.text} border ${colors!.border}`
                 : hasExistingPages
                   ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-300'
                   : 'bg-app-accent/10 border border-app-accent/20 hover:bg-app-accent/20 text-app-accent'

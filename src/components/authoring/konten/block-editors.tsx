@@ -110,7 +110,7 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
   const updateCell = useCallback(
     (r: number, c: number, val: string) => {
       const next = baris.map((row) => [...row]);
-      next[r][c] = val;
+      next[r]![c] = val;
       update(idx, 'baris', next);
     },
     [idx, baris, update],
@@ -458,7 +458,7 @@ function InfoboxEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
           ))}
         </div>
         {/* Preview swatch */}
-        <div className="mt-2 h-1.5 rounded-full" style={{ backgroundColor: currentStyleInfo.color }} />
+        <div className="mt-2 h-1.5 rounded-full" style={{ backgroundColor: currentStyleInfo!.color }} />
       </div>
       <div>
         <FieldLabel>Isi Pesan</FieldLabel>

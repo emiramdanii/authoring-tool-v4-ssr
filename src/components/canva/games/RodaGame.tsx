@@ -33,7 +33,7 @@ export function RodaGame({ data, compact, interactive, onComplete }: GameCompone
       const normalized = newRot % 360;
       const sliceAngle = 360 / opsi.length;
       const idx = Math.floor(((360 - normalized + sliceAngle / 2) % 360) / sliceAngle);
-      setResult(opsi[Math.min(idx, opsi.length - 1)]);
+      setResult!(opsi[Math.min(idx, opsi.length - 1)]);
       // Roda Putar is a random picker tool, not a quiz — no scoring contribution
       if (!reported.current && onComplete) { reported.current = true; onComplete(0, 0); }
     }, 2500);

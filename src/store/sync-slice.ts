@@ -10,6 +10,7 @@
 import type { StateCreator } from 'zustand';
 import type { ScreenSchema } from '../core/schema/types';
 import type { CanvaPage } from '../components/canva/types';
+import type { CanvaState } from './canva/types';
 import { BlockCapabilityRegistry } from '../core/schema/capability-registry';
 import { logger } from '@/core/utils/logger';
 
@@ -36,17 +37,14 @@ export interface SyncSlice {
 
 // ─── Factory ───────────────────────────────────────────────────────────
 export function createSyncSlice(
-  set: (fn: (state: any) => Partial<any>) => void,
-  get: () => any
+  set: (partial: Partial<CanvaState> | ((state: CanvaState) => Partial<CanvaState>)) => void,
+  get: () => CanvaState
 ): SyncSlice {
   return {
     lastSyncAt: 0,
     pendingSyncCount: 0,
 
-    syncSchema: (pageId?: string) => {
-      set(state => ({
-        pendingSyncCount: state.pendingSyncCount + 1,
-      }));
+    syncSchema: (_pageId?: string) => {
       // The actual sync logic will be wired in canva-store
       // which has access to both authoring data and schema
     },
@@ -63,19 +61,13 @@ export function createSyncSlice(
           return {
             ...page,
             schema: result.schema,
-            updatedAt: Date.now(),
           };
         }),
-        pendingSyncCount: Math.max(0, state.pendingSyncCount - 1),
-        lastSyncAt: Date.now(),
       }));
     },
 
     markSyncComplete: () => {
-      set(state => ({
-        pendingSyncCount: 0,
-        lastSyncAt: Date.now(),
-      }));
+      // No-op — sync completion is tracked via lastSyncAt timestamp
     },
   };
 }

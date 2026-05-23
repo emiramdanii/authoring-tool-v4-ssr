@@ -158,8 +158,8 @@ function LayerList({
         (b, i) => (b.id || `${b.type}-${i}`) === selectedBlockId
       );
       if (blockIdx > 0) {
-        const definition = getBlockDefinition(schema.blocks[blockIdx].type);
-        const blockName = definition?.name || schema.blocks[blockIdx].type;
+        const definition = getBlockDefinition(schema.blocks[blockIdx]!.type);
+        const blockName = definition?.name || schema.blocks[blockIdx]!.type;
         announceToScreenReader(`Block ${blockName} dipindahkan ke posisi ${blockIdx}`);
       }
     } else if (e.altKey && e.key === 'ArrowDown') {
@@ -169,8 +169,8 @@ function LayerList({
         (b, i) => (b.id || `${b.type}-${i}`) === selectedBlockId
       );
       if (blockIdx >= 0 && blockIdx < schema.blocks.length - 1) {
-        const definition = getBlockDefinition(schema.blocks[blockIdx].type);
-        const blockName = definition?.name || schema.blocks[blockIdx].type;
+        const definition = getBlockDefinition(schema.blocks[blockIdx]!.type);
+        const blockName = definition?.name || schema.blocks[blockIdx]!.type;
         announceToScreenReader(`Block ${blockName} dipindahkan ke posisi ${blockIdx + 2}`);
       }
     }
@@ -231,8 +231,8 @@ function LayerList({
       if (fromIdx !== null && toIdx !== null && fromIdx !== toIdx) {
         reorderSchemaBlocks(fromIdx, toIdx);
         const block = schema.blocks[fromIdx];
-        const definition = getBlockDefinition(block.type);
-        const blockName = definition?.name || block.type;
+        const definition = getBlockDefinition(block!.type);
+        const blockName = definition?.name || block!.type;
         announceToScreenReader(`Block ${blockName} dipindahkan ke posisi ${toIdx + 1}`);
       }
 

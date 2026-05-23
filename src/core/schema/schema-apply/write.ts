@@ -130,12 +130,12 @@ export function applyBlocksToPages(
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    if (page.templateType !== templateType) continue;
+    if (page!.templateType !== templateType) continue;
 
     // Update this page's schema
-    if (page.schema) {
+    if (page!.schema) {
       const newSchema: ScreenSchema = {
-        ...page.schema,
+        ...page!.schema,
         blocks: blocksWithIds,
       };
       // Dev-mode purity guard: ensure no runtime state leaked into schema
@@ -149,7 +149,7 @@ export function applyBlocksToPages(
     } else {
       // Page has no schema yet — create one
       const newSchema: ScreenSchema = {
-        id: page.id,
+        id: page!.id,
         version: 1,
         templateType,
         blocks: blocksWithIds,
@@ -204,11 +204,11 @@ export function applyBlockToPages(
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    if (page.templateType !== templateType) continue;
-    if (!page.schema) continue;
+    if (page!.templateType !== templateType) continue;
+    if (!page!.schema) continue;
 
     // For each new block, find and replace existing block of same type, or append
-    let updatedBlocks = [...page.schema.blocks];
+    let updatedBlocks = [...page!.schema.blocks];
     for (const blockWithId of blocksWithIds) {
       const existingIdx = updatedBlocks.findIndex(b => b.type === blockWithId.type);
       if (existingIdx >= 0) {
@@ -218,7 +218,7 @@ export function applyBlockToPages(
       }
     }
 
-    const newSchema: ScreenSchema = { ...page.schema, blocks: updatedBlocks };
+    const newSchema: ScreenSchema = { ...page!.schema, blocks: updatedBlocks };
     assertDocumentPurity(newSchema, 'applyBlockToPages');
     pages[i] = {
       ...page,
@@ -283,8 +283,8 @@ export function setPageSchemaBlocks(
     id: b.id || generateBlockId(),
   }));
 
-  if (page.schema) {
-    const newSchema: ScreenSchema = { ...page.schema, blocks: blocksWithIds };
+  if (page!.schema) {
+    const newSchema: ScreenSchema = { ...page!.schema, blocks: blocksWithIds };
     assertDocumentPurity(newSchema, 'setPageSchemaBlocks');
     pages[idx] = {
       ...page,
@@ -294,9 +294,9 @@ export function setPageSchemaBlocks(
     };
   } else {
     const newSchema: ScreenSchema = {
-      id: page.id,
+      id: page!.id,
       version: 1,
-      templateType: page.templateType || 'custom',
+      templateType: page!.templateType || 'custom',
       blocks: blocksWithIds,
     };
     assertDocumentPurity(newSchema, 'setPageSchemaBlocks (new)');

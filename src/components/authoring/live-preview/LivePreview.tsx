@@ -122,7 +122,7 @@ export default function LivePreview() {
     } else {
       // For schema/unified — navigate iframe or screens
       const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
-      if (currentIdx > 0) handleScreenSelect(SCREEN_OPTIONS[currentIdx - 1].id);
+      if (currentIdx > 0) handleScreenSelect(SCREEN_OPTIONS[currentIdx - 1]!.id);
     }
   }, [previewMode, activeSlide, activeScreen, handleSlideSelect, handleScreenSelect]);
 
@@ -131,7 +131,7 @@ export default function LivePreview() {
       if (activeSlide < canvaPages.length - 1) handleSlideSelect(activeSlide + 1);
     } else {
       const currentIdx = SCREEN_OPTIONS.findIndex(s => s.id === activeScreen);
-      if (currentIdx < SCREEN_OPTIONS.length - 1) handleScreenSelect(SCREEN_OPTIONS[currentIdx + 1].id);
+      if (currentIdx < SCREEN_OPTIONS.length - 1) handleScreenSelect(SCREEN_OPTIONS[currentIdx + 1]!.id);
     }
   }, [previewMode, activeSlide, activeScreen, canvaPages.length, handleSlideSelect, handleScreenSelect]);
 
@@ -539,7 +539,7 @@ export default function LivePreview() {
             </span>
             {deviceMode !== 'desktop' && (
               <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
-                {currentDevice.icon && <currentDevice.icon size={10} className="inline -mt-0.5" />} {currentDevice.width}px
+                {currentDevice!.icon && <currentDevice.icon size={10} className="inline -mt-0.5" />} {currentDevice!.width}px
               </span>
             )}
             <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
@@ -552,27 +552,27 @@ export default function LivePreview() {
         <div className="flex-1 flex items-start justify-center overflow-auto p-4">
           <div
             className={`transition-all duration-300 overflow-hidden relative ${
-              currentDevice.width > 0
+              currentDevice!.width > 0
                 ? 'rounded-[2rem] border-[3px] border-app-border/50 shadow-2xl shadow-black/30'
                 : 'rounded-xl border border-app-border/50'
             }`}
             style={{
-              width: currentDevice.width > 0 ? `${currentDevice.width}px` : '100%',
-              maxWidth: currentDevice.width > 0 ? `${currentDevice.width}px` : '100%',
-              height: currentDevice.width > 0
+              width: currentDevice!.width > 0 ? `${currentDevice!.width}px` : '100%',
+              maxWidth: currentDevice!.width > 0 ? `${currentDevice!.width}px` : '100%',
+              height: currentDevice!.width > 0
                 ? `min(720px, calc(100vh - 200px))`
                 : 'calc(100vh - 200px)',
             }}
           >
             {/* Mobile notch indicator */}
-            {currentDevice.width > 0 && currentDevice.id === 'mobile' && (
+            {currentDevice!.width > 0 && currentDevice!.id === 'mobile' && (
               <div className="flex justify-center py-1 bg-app-surface">
                 <div className="w-20 h-4 bg-app-elevated rounded-b-xl" />
               </div>
             )}
 
             {/* Tablet camera indicator */}
-            {currentDevice.width > 0 && currentDevice.id === 'tablet' && (
+            {currentDevice!.width > 0 && currentDevice!.id === 'tablet' && (
               <div className="flex justify-center py-0.5 bg-app-surface">
                 <div className="w-3 h-3 bg-app-elevated rounded-full border border-app-border/50" />
               </div>
@@ -607,10 +607,10 @@ export default function LivePreview() {
             )}
 
             {/* Watermark for device frame */}
-            {currentDevice.width > 0 && (
+            {currentDevice!.width > 0 && (
               <div className="absolute bottom-2 left-0 right-0 text-center">
                 <span className="text-[0.55rem] text-app-muted bg-app-surface/80 px-2 py-0.5 rounded-full">
-                  {currentDevice.label} · {currentDevice.width}px
+                  {currentDevice!.label} · {currentDevice!.width}px
                 </span>
               </div>
             )}
