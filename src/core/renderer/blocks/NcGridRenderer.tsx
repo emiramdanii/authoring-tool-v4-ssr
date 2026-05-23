@@ -207,7 +207,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
           className="flex-shrink-0 flex items-center justify-center"
           style={{
             ...tokens.iosIconSize('lg'),
-            borderRadius: '12px',
+            borderRadius: tokens.radius('md'),
             background: tokens.colorAlpha(card.color, 0.1),
             boxShadow: 'none',
           }}
@@ -298,7 +298,10 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
         background: isHovered ? hoverBg : cardBg,
         border: `1px solid ${isHovered ? hoverBorder : cardBorder}`,
-        padding: isCompact ? '5px 12px 5px 8px' : '7px 16px 7px 10px',
+        ...tokens.iosCardPadding(isCompact),
+        paddingTop: isCompact ? 5 : 7,
+        paddingBottom: isCompact ? 5 : 7,
+        paddingLeft: isCompact ? 8 : 10,
         display: expanded ? 'flex' : 'inline-flex',
         flexDirection: expanded ? 'column' : 'row',
         alignItems: expanded ? 'flex-start' : 'center',
@@ -397,9 +400,9 @@ function NcGridStepMode({ block, tokens, isCompact, interactive, variant }: {
 
   // Variant B uses full-width vertical stack, C uses flex-wrap pills
   const contentStyle: React.CSSProperties = variant === 'B'
-    ? { display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0, padding: '8px 0' }
+    ? { display: 'flex', flexDirection: 'column', gap: tokens.iosElementGap('contentBlock'), minWidth: 0, padding: '8px 0' }
     : variant === 'C'
-      ? { display: 'flex', flexWrap: 'wrap', gap: '8px', minWidth: 0, padding: '8px 0' }
+      ? { display: 'flex', flexWrap: 'wrap', gap: tokens.iosElementGap('badgeGap'), minWidth: 0, padding: '8px 0' }
       : { minWidth: 0 };
 
   return (
@@ -488,9 +491,9 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
 
   // Non-step mode (cards <= 2)
   const containerStyle: React.CSSProperties = variant === 'B'
-    ? { display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0 }
+    ? { display: 'flex', flexDirection: 'column', gap: tokens.iosElementGap('contentBlock'), minWidth: 0 }
     : variant === 'C'
-      ? { display: 'flex', flexWrap: 'wrap', gap: '8px', minWidth: 0 }
+      ? { display: 'flex', flexWrap: 'wrap', gap: tokens.iosElementGap('badgeGap'), minWidth: 0 }
       : { minWidth: 0 };
 
   return (

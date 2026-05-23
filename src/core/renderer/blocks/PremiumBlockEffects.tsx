@@ -132,7 +132,7 @@ export const ReadingProgressIndicator = React.memo(function ReadingProgressIndic
           background: `linear-gradient(90deg, ${accentColor}, ${accentSecondary}, ${accentColor})`,
           backgroundSize: '200% 100%',
           borderRadius: 'inherit',
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: `width ${IOS_INTERACTION.duration.slow}ms ${IOS_INTERACTION.easing.ios}`,
           boxShadow: `0 0 6px ${accentAlpha(0.4)}`,
           animation: 'shimmer 2s linear infinite',
         }}

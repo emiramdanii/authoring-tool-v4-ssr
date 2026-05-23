@@ -96,7 +96,7 @@ function DefBoxStepMode({
       >
         <div
           style={{
-            padding: isCompact ? '10px 12px' : '13px 15px',
+            ...tokens.iosSectionPadding(isCompact),
             maxHeight: isCompact ? '180px' : '300px',
             overflowY: 'auto',
           }}
@@ -396,7 +396,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
       <div
         className="flex items-start gap-2"
         style={{
-          padding: isCompact ? '6px 10px' : '8px 14px',
+          ...tokens.iosNestedPadding(isCompact),
           borderRadius: tokens.radius('lg'),
           background: tokens.accentBg(colorKey, 0.04),
           borderLeft: tokens.accentStripe(colorKey, 3),

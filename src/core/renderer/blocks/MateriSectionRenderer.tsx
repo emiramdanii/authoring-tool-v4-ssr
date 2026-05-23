@@ -127,9 +127,9 @@ function OverflowIndicator({
 
   return (
     <div style={{
-      padding: isCompact ? '6px 10px' : '10px 16px',
+      ...tokens.iosNestedPadding(isCompact),
       marginTop: 4,
-      borderRadius: 12,
+      borderRadius: tokens.radius('md'),
       background: tokens.colorAlpha('y', 0.08),
       border: `1px dashed ${tokens.colorAlpha('y', 0.3)}`,
       display: 'flex',
@@ -145,8 +145,8 @@ function OverflowIndicator({
           onClick={onSplit}
           className={`hover:opacity-80 active:scale-[0.97] ${tokens.iosFocusRing()}`}
           style={{
-            padding: isCompact ? '3px 8px' : '4px 12px',
-            borderRadius: 8,
+            ...tokens.iosButtonPadding('md'),
+            borderRadius: tokens.radius('sm'),
             fontSize: isCompact ? 10 : 12,
             fontWeight: 600,
             background: tokens.colorAlpha('p', 0.15),
@@ -316,7 +316,7 @@ function MateriVariantKlasik({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ padding: isCompact ? '8px 14px 0' : '12px 20px 0' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact), paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}
@@ -356,7 +356,7 @@ function MateriVariantKlasik({
             onClick={() => toggleSection(i)}
             className={`w-full flex items-center gap-2 text-left ${tokens.iosAccordionTw(interactive)}`}
                     style={{
-                      padding: isCompact ? '5px 10px' : '7px 12px',
+                      ...tokens.iosNestedPadding(isCompact),
                       cursor: 'pointer',
                       background: expandedSections.has(i) ? accentAlpha(0.06) : 'transparent',
                       ...tokens.iosTypography('caption1', { fontWeight: 700, color: accent }),
@@ -379,7 +379,7 @@ function MateriVariantKlasik({
                     // Sprint 3C: Use iosTransitionStyle for accordion expand
                     ...tokens.iosTransitionStyle('max-height', 'slow'),
                   }}>
-                    <div style={{ padding: isCompact ? '2px 10px 6px' : '4px 12px 8px' }}>
+                    <div style={{ ...tokens.iosNestedPadding(isCompact), paddingTop: isCompact ? 2 : 4, paddingBottom: isCompact ? 6 : 8 }}>
                       <SchemaBlockRenderer
                         block={childBlock}
                         mode={mode}
@@ -680,7 +680,7 @@ function MateriVariantMajalah({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ padding: isCompact ? '8px 14px 0' : '12px 20px 0' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact), paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}
@@ -696,7 +696,7 @@ function MateriVariantMajalah({
       <div
         className={isCompact ? undefined : 'variant-magazine-layout'}
         style={{
-          padding: isCompact ? '12px 14px' : '16px 20px',
+          ...tokens.iosSectionPadding(isCompact),
           ...(isCompact ? { display: 'flex', flexDirection: 'column', gap: '12px' } : {}),
         }}
       >
@@ -938,7 +938,7 @@ function MateriVariantPill({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ padding: isCompact ? '4px 12px 0' : '6px 16px 0' }}>
+        <div style={{ ...tokens.iosCardPadding(isCompact), paddingTop: isCompact ? 4 : 6, paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}
@@ -991,7 +991,9 @@ function MateriVariantPill({
       {takeaways.length > 0 && (
         <div
           style={{
-            padding: isCompact ? '4px 12px 8px' : '6px 16px 10px',
+            ...tokens.iosCardPadding(isCompact),
+            paddingTop: isCompact ? 4 : 6,
+            paddingBottom: isCompact ? 8 : 10,
           }}
         >
           <div className="flex flex-wrap gap-1.5">
@@ -1030,7 +1032,9 @@ function MateriVariantPill({
       {selfCheck && (
         <div
           style={{
-            padding: isCompact ? '4px 12px 8px' : '6px 16px 12px',
+            ...tokens.iosCardPadding(isCompact),
+            paddingTop: isCompact ? 4 : 6,
+            paddingBottom: isCompact ? 8 : 12,
           }}
         >
           <MicroInteraction tokens={tokens} accent="y" effect="bounce">
@@ -1039,8 +1043,8 @@ function MateriVariantPill({
             type="button"
             className={`flex items-center gap-1.5 w-full text-left ${tokens.iosExpandTw(interactive)}`}
             style={{
-              padding: isCompact ? '4px 8px' : '6px 10px',
-              borderRadius: '8px',
+              ...tokens.iosNestedPadding(isCompact),
+              borderRadius: tokens.radius('sm'),
               background: tokens.accentBg('y', 0.06),
               border: `1px solid ${tokens.subtleBorder(0.06)}`,
               color: tokens.color('y'),
@@ -1060,9 +1064,9 @@ function MateriVariantPill({
             <div
               style={{
                 marginTop: '6px',
-                padding: isCompact ? '8px 10px' : '10px 14px',
+                ...tokens.iosNestedPadding(isCompact),
                 background: tokens.accentBg('y', 0.04),
-                borderRadius: '8px',
+                borderRadius: tokens.radius('sm'),
                 borderLeft: tokens.accentStripe('y', 3),
                 animation: 'fadeIn 0.3s ease',
               }}

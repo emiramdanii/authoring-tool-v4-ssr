@@ -199,7 +199,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     onClick={() => toggleAccordion(i)}
                     className={`w-full flex items-center gap-2.5 text-left ${tokens.iosAccordionTw()}`}
                     style={{
-                      padding: isCompact ? '6px 10px' : '8px 12px',
+                      ...tokens.iosNestedPadding(isCompact),
                       cursor: 'pointer',
                       background: isExpanded ? tokens.colorAlpha(itemColor, 0.08) : 'transparent',
                     }}
@@ -229,7 +229,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     overflow: 'hidden',
                   ...tokens.iosTransitionStyle('max-height', 'standard'),
                   }}>
-                    <div style={{ padding: isCompact ? '4px 10px 8px' : '6px 12px 10px' }}>
+                    <div style={{ ...tokens.iosNestedPadding(isCompact), paddingTop: isCompact ? 4 : 6, paddingBottom: isCompact ? 8 : 10 }}>
                       <div className="leading-relaxed" style={{
                         color: tokens.muted(0.8),
                         fontSize: isCompact ? '11px' : '12px',
@@ -252,7 +252,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   borderLeftColor: tokens.color(itemColor),
                   borderRadius: tokens.radius('xl') + 'px',
                   boxShadow: tokens.raw.shadow.card,
-                  padding: isCompact ? '10px' : '14px',
+                  ...tokens.iosCardPadding(isCompact),
                   overflow: 'hidden',
                 }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2 relative"

@@ -39,7 +39,7 @@ export const AlurRenderer = React.memo(function AlurRenderer({ block, tokens, is
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
     <div className="mt-3 rounded-xl premium-card-glow"
       style={{
-        padding: isCompact ? '8px' : '14px',
+        ...tokens.iosCardPadding(isCompact),
         background: tokens.colorAlpha('c', 0.08),
         border: '1px solid ' + tokens.colorAlpha('c', 0.2),
         boxShadow: tokens.raw.shadow.card,

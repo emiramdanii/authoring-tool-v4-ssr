@@ -70,7 +70,7 @@ function HeroVariantA({
       style={{
         background: `linear-gradient(135deg, ${tokens.colorAlpha(accentKey, 0.15)}, ${tokens.colorAlpha('c', 0.05)})`,
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
-        padding: isCompact ? '14px 16px' : '20px 28px',
+        ...tokens.iosSectionPadding(isCompact),
         ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}>
 
@@ -185,7 +185,7 @@ function HeroVariantB({
         background: tokens.color('bg'),
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
         borderLeft: tokens.accentStripe(accentKey, 4),
-        padding: isCompact ? '12px 14px' : '16px 20px',
+        ...tokens.iosSectionPadding(isCompact),
         ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}>
 
@@ -282,7 +282,7 @@ function HeroVariantC({
   return (
     <div className="relative overflow-hidden text-center"
       style={{
-        padding: isCompact ? '16px 20px' : '24px 32px',
+        ...tokens.iosSectionPadding(isCompact),
         ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}>
 

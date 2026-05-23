@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
 import { resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from '../types';
-import { IOS_INTERACTION } from '../../themes/ios-visual-contract';
+import { IOS_INTERACTION, IOS_SPACING } from '../../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // PREMIUM STEP NAVIGATOR — Enhanced Step Navigation with Visual FX
@@ -144,8 +144,8 @@ function SelesaiBadge({ tokens, isCompact }: { tokens?: TokenResolver; isCompact
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '6px',
-        padding: isCompact ? '4px 14px' : '6px 18px',
+        gap: tokens ? tokens.iosElementGap('badgeGap') : '6px',
+        padding: `${isCompact ? IOS_SPACING.tabPadding.py - 2 : IOS_SPACING.tabPadding.py}px ${isCompact ? IOS_SPACING.tabPadding.px : IOS_SPACING.tabPadding.px + 4}px`,
         borderRadius: '9999px',
         background: `linear-gradient(135deg, ${accentBg}, ${accentBgStrong})`,
         border: `1px solid ${accentColor}`,
@@ -289,8 +289,8 @@ export function PremiumStepNavigator({
       <div
         style={{
           display: 'flex',
-          gap: isCompact ? '4px' : '6px',
-          padding: isCompact ? '8px 10px 0' : '10px 14px 0',
+          gap: isCompact ? (tokens ? tokens.iosElementGap('iconToTitle') : '4px') : (tokens ? tokens.iosElementGap('badgeGap') : '6px'),
+          padding: isCompact ? `${IOS_SPACING.tabPadding.py / 2}px ${IOS_SPACING.tabPadding.px / 2}px 0` : `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px 0`,
           overflowX: 'auto',
           scrollbarWidth: 'none',
           perspective: '600px',
@@ -310,8 +310,8 @@ export function PremiumStepNavigator({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px',
-                padding: isCompact ? '4px 12px' : '5px 16px',
+                gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px',
+                ...(tokens ? tokens.iosButtonPadding('md') : {}),
                 borderRadius: '9999px',
                 fontSize: isCompact ? '10px' : '11px',
                 fontWeight: 700,
@@ -371,7 +371,7 @@ export function PremiumStepNavigator({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: isCompact ? '6px 10px 8px' : '8px 14px 10px',
+          padding: isCompact ? `${IOS_SPACING.tabPadding.py / 2}px ${IOS_SPACING.tabPadding.px}px ${IOS_SPACING.tabPadding.py / 2}px` : `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px + 2}px ${IOS_SPACING.tabPadding.py}px`,
           borderTop: `1px solid ${resolveSubtleBorder(tokens, 0.08)}`,
           position: 'relative',
         }}
@@ -393,9 +393,9 @@ export function PremiumStepNavigator({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
-            padding: isCompact ? '5px 12px' : '7px 16px',
-            borderRadius: '10px',
+            gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px',
+            ...(tokens ? tokens.iosButtonPadding('md') : {}),
+            borderRadius: tokens ? tokens.radius('base') : '10px',
             fontSize: isCompact ? '10px' : '11px',
             fontWeight: 700,
             border: `1px solid ${activeStep === 0 ? 'transparent' : accentAlpha(0.3)}`,
@@ -447,9 +447,9 @@ export function PremiumStepNavigator({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
-            padding: isCompact ? '5px 12px' : '7px 16px',
-            borderRadius: '10px',
+            gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px',
+            ...(tokens ? tokens.iosButtonPadding('md') : {}),
+            borderRadius: tokens ? tokens.radius('base') : '10px',
             fontSize: isCompact ? '10px' : '11px',
             fontWeight: 700,
             border: `1px solid ${activeStep === totalSteps - 1 ? 'transparent' : accentAlpha(0.3)}`,

@@ -378,3 +378,165 @@ Stage Summary:
 - All interactive elements now have focus-visible rings
 - All transition timing now token-driven from IOS_INTERACTION single source of truth
 - Commit: b8f0114, pushed to origin/main
+
+---
+Task ID: 3d-p1-batch2
+Agent: Main Agent
+Task: Fix COMPOSITION POLISH issues — replace hardcoded inline padding/margin/gap/borderRadius with TokenResolver helpers
+
+Work Log:
+- Added `base: number` (value 10) to DesignTokens radius interface and all 4 theme definitions (default, dark-safari, dark-ocean, preset-merge)
+- Fixed 14 renderer files to replace hardcoded spacing values with TokenResolver composition helpers:
+
+1. GambarRenderer: `padding: isCompact ? '10px 12px' : '13px 15px'` → `tokens.iosSectionPadding(isCompact)`; `padding: isCompact ? '24px 16px' : '36px 24px'` → `tokens.iosContentPadding(isCompact)`
+2. StatistikRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; stat card padding → `tokens.iosCardPadding(isCompact)`
+3. StudiRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; 3× nested padding (Situasi, Pertanyaan, Pesan) → `tokens.iosNestedPadding(isCompact)`
+4. DefBoxRenderer: step mode padding → `tokens.iosSectionPadding(isCompact)`; Variant C padding → `tokens.iosNestedPadding(isCompact)`
+5. TabelRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; th padding → `tokens.iosCardPadding(isCompact)`; td padding → `tokens.iosNestedPadding(isCompact)`
+6. ChecklistRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; item padding → `tokens.iosNestedPadding(isCompact)`
+7. TimelineRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; step card padding → `tokens.iosNestedPadding(isCompact)`
+8. RevealRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; cover button → `tokens.iosCardPadding(isCompact)`; revealed content → `tokens.iosCardPadding(isCompact)`
+9. CompareRenderer: section padding → `tokens.iosSectionPadding(isCompact)`; 2× column padding (kiri, kanan) → `tokens.iosNestedPadding(isCompact)`
+10. AlurRenderer: card padding → `tokens.iosCardPadding(isCompact)`
+11. NcGridRenderer: Card C 4-value padding → `...tokens.iosCardPadding(isCompact)` + overrides; `borderRadius: '12px'` → `tokens.radius('md')`; 4× gap values → `tokens.iosElementGap('contentBlock'/'badgeGap')`
+12. PremiumStepNavigator: SelesaiBadge padding → `IOS_SPACING.tabPadding` reference; step chip padding → `tokens.iosButtonPadding('md')`; SelesaiBadge gap → `tokens.iosElementGap('badgeGap')`; chip container gap → `tokens.iosElementGap('iconToTitle'/'badgeGap')`; 3× gap: '4px' → `tokens.iosElementGap('iconToTitle')`; 2× borderRadius: '10px' → `tokens.radius('base')`; added IOS_SPACING import
+13. KuisRenderer: VariantSelector gap → `tokens.iosElementGap('iconToTitle')`; pill padding → `IOS_SPACING.tabPadding` reference; transition → `tokens.iosTransitionStyle('background-color, color', 'fast')`; added IOS_SPACING import
+14. OverflowIndicator: action buttons gap → `tokens.iosElementGap('iconToTitle')`
+
+- All replacements use spread pattern: `style={{ ...tokens.iosXxxPadding(isCompact), otherProp: value }}`
+- For 4-value padding (NcGridCardC), used spread + longhand overrides for custom sides
+- For PremiumStepNavigator/KuisRenderer where tokens is optional, added null-safe fallbacks
+- For KuisRenderer pill padding, used `IOS_SPACING.tabPadding` with py-3/px-4 arithmetic for compact pill variant
+- TypeScript check: clean (0 errors)
+
+Stage Summary:
+- 15 files changed (tokens.ts + 14 renderer files)
+- ~35 hardcoded spacing values replaced with TokenResolver composition helpers
+- Added `base` radius token (value 10) for `tokens.radius('base')` support
+- All spacing now flows: IOS_COMPOSITION/IOS_SPACING → TokenResolver helpers → renderers
+- Build: TypeScript clean
+
+---
+Task ID: 3d-p1-batch1
+Agent: Main Agent
+Task: Composition Polish — Replace hardcoded inline padding/margin values with TokenResolver helpers
+
+Work Log:
+- Audited 7 renderer files for hardcoded inline padding/margin/borderRadius values that should use IOS_COMPOSITION token helpers
+- Found ~59 instances across 7 files that needed replacement with token-driven values
+
+Fixes applied per file:
+
+1. MateriBlokRenderer.tsx (22 instances):
+   - 6× `padding: isCompact ? '10px 12px 6px' : '14px 18px 8px'` → `...tokens.iosCardPadding(isCompact), paddingBottom: isCompact ? 6 : 8`
+   - 5× `padding: isCompact ? '6px 12px 10px' : '8px 18px 14px'` → `...tokens.iosContentPadding(isCompact), paddingTop: isCompact ? 6 : 8, paddingBottom: isCompact ? 10 : 14`
+   - 5× `padding: isCompact ? '10px 12px' : '14px 18px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `padding: isCompact ? '0 12px 10px' : '0 18px 14px'` → `...tokens.iosContentPadding(isCompact), paddingTop: 0, paddingBottom: isCompact ? 10 : 14`
+   - 1× `padding: isCompact ? '12px 14px' : '18px 22px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `padding: isCompact ? '6px 10px' : '8px 14px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `padding: isCompact ? '10px 12px' : '16px 20px'` → `...tokens.iosCardPadding(isCompact)`
+   - 2× `padding: isCompact ? '6px 8px' : '8px 12px'` → `...tokens.iosNestedPadding(isCompact)`
+
+2. MateriSectionRenderer.tsx (9 instances):
+   - 1× `padding: isCompact ? '6px 10px' : '10px 16px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `padding: isCompact ? '3px 8px' : '4px 12px'` → `...tokens.iosButtonPadding('md')`
+   - 2× `padding: isCompact ? '8px 14px 0' : '12px 20px 0'` → `...tokens.iosSectionPadding(isCompact), paddingBottom: 0`
+   - 1× `padding: isCompact ? '5px 10px' : '7px 12px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `padding: isCompact ? '12px 14px' : '16px 20px'` → `...tokens.iosSectionPadding(isCompact)`
+   - 1× `padding: isCompact ? '4px 8px' : '6px 10px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 2× `padding: isCompact ? '8px 10px' : '10px 14px'` → `...tokens.iosNestedPadding(isCompact)`
+
+3. MotivasiRenderer.tsx (10 instances):
+   - 2× `padding: isCompact ? '10px 12px' : '14px 18px'` → `...tokens.iosSectionPadding(isCompact)`
+   - 2× `padding: isCompact ? '14px 16px' : '20px 24px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `padding: isCompact ? '20px 16px' : '32px 24px'` → `...tokens.iosContentPadding(isCompact)`
+   - 1× `padding: isCompact ? '8px 14px' : '10px 18px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `margin: isCompact ? '10px 12px' : '14px 18px'` → `...tokens.iosInnerMargin(isCompact)`
+   - 1× `margin: isCompact ? '0 12px 12px' : '0 18px 16px'` → `...tokens.iosInnerMargin(isCompact), marginTop: 0`
+   - 2× `borderRadius: '8px'` → `borderRadius: tokens.radius('sm')`
+
+4. RangkumanRenderer.tsx (9 instances):
+   - 1× `padding: isCompact ? '10px 12px' : '14px 16px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `padding: isCompact ? '8px 12px' : '10px 14px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `padding: isCompact ? '0 12px 10px' : '0 14px 14px'` → `...tokens.iosContentPadding(isCompact), paddingTop: 0`
+   - 3× `padding: isCompact ? '10px 12px' : '14px 18px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `padding: isCompact ? '10px 14px' : '14px 18px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `margin: isCompact ? '8px 12px' : '10px 18px'` → `...tokens.iosInnerMargin(isCompact)`
+   - 1× `margin: isCompact ? '0 12px 12px' : '0 18px 16px'` → `...tokens.iosInnerMargin(isCompact), marginTop: 0`
+
+5. TujuanDisplayRenderer.tsx (11 instances):
+   - 2× `padding: isCompact ? '10px 12px' : '14px 18px'` → `...tokens.iosSectionPadding(isCompact)`
+   - 1× `padding: isCompact ? '8px 12px' : '12px 16px'` → `...tokens.iosCardPadding(isCompact)`
+   - 2× `padding: isCompact ? '10px 14px' : '14px 20px'` → `...tokens.iosCardPadding(isCompact)`
+   - 1× `padding: isCompact ? '8px 10px' : '10px 14px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `padding: isCompact ? '8px 12px' : '10px 14px'` → `...tokens.iosNestedPadding(isCompact)`
+   - 1× `padding: isCompact ? '16px' : '24px'` → `...tokens.iosSectionPadding(isCompact)`
+   - 3× `margin: isCompact ? '0 12px 8px' : '0 18px 12px'` → `...tokens.iosInnerMargin(isCompact), marginBottom: isCompact ? 8 : 12`
+   - 1× `margin: isCompact ? '0 12px 12px' : '0 18px 16px'` → `...tokens.iosInnerMargin(isCompact), marginTop: 0`
+   - 1× `margin: isCompact ? '0 14px 12px' : '0 20px 16px'` → `...tokens.iosInnerMargin(isCompact), marginTop: 0`
+
+6. HeroRenderer.tsx (3 instances):
+   - 1× `padding: isCompact ? '14px 16px' : '20px 28px'` → `...tokens.iosSectionPadding(isCompact)`
+   - 1× `padding: isCompact ? '12px 14px' : '16px 20px'` → `...tokens.iosSectionPadding(isCompact)`
+   - 1× `padding: isCompact ? '16px 20px' : '24px 32px'` → `...tokens.iosSectionPadding(isCompact)`
+
+7. StepNavigator.tsx (7 instances):
+   - 1× `padding: isCompact ? '3px 10px' : '5px 14px'` → IOS_SPACING.tabPadding-driven compact/standard
+   - 1× `margin: isCompact ? '6px 8px' : '8px 12px'` → `...tokens.iosInnerMargin(isCompact)` with null fallback
+   - 2× `borderRadius: '8px'` → `tokens.radius('sm')` with null fallback
+   - 1× `transition: 'background-color, border-color, color 150ms ease'` → `tokens.iosTransitionStyle('background-color, border-color, color', 'fast')` with fallback
+   - 2× `transition: 'background-color, border-color, color, opacity 150ms ease'` → `tokens.iosTransitionStyle('background-color, border-color, color, opacity', 'fast')` with fallback
+   - Added IOS_SPACING to import
+
+Verification:
+- tsc --noEmit: clean (0 errors)
+- No new lint errors in modified files
+
+Stage Summary:
+- 7 files changed, ~64 hardcoded padding/margin/borderRadius values replaced with TokenResolver composition helpers
+- All spacing now flows: IOS_COMPOSITION → TokenResolver → renderers (single source of truth)
+- 3-value padding patterns use spread + override pattern (e.g., `...tokens.iosCardPadding(isCompact), paddingBottom: isCompact ? 6 : 8`)
+- 3-value margin patterns use spread + override pattern (e.g., `...tokens.iosInnerMargin(isCompact), marginTop: 0`)
+- borderRadius: '8px' replaced with tokens.radius('sm') in MotivasiRenderer and StepNavigator
+- StepNavigator uses null-safe token access with fallback values
+- Build: TypeScript clean
+
+---
+Task ID: 3d-p1-width
+Agent: main
+Task: Composition Polish — HasilRenderer content width discipline + remaining hardcoded transitions/padding/borderRadius
+
+Work Log:
+- Audited HasilRenderer.tsx for hardcoded max-widths, transition strings, padding/margin patterns, and borderRadius
+- Found 3 hardcoded Tailwind max-widths: max-w-[320px] (×2, subtitle + ActivityBreakdown), max-w-[300px] (motivational message)
+- Found 5 hardcoded Tailwind padding classes: p-6 (Variant A), p-5 (Variant B), p-3 (Variant C), p-3.5 (motivational A), p-3 (motivational B)
+- Found zero hardcoded transition strings (all already tokenized via iosTransitionStyle/iosAccordionTw)
+- Found zero inline style borderRadius values (all via Tailwind classes)
+- maxWidth: '140px' on activity label left as-is (semantically correct for small stat/card value)
+
+Fixes applied:
+1. Content Width Discipline (3 replacements):
+   - Variant A subtitle max-w-[320px] → maxWidth: tokens.iosSubtitleWidth('coverCentered') (380px)
+   - Variant A motivational message max-w-[300px] → maxWidth: tokens.iosSubtitleWidth('coverCentered') (380px)
+   - ActivityBreakdown max-w-[320px] → maxWidth: tokens.iosSubtitleWidth('coverCentered') (380px)
+2. Hardcoded Padding → Token-driven (5 replacements):
+   - Variant A wrapper p-6 → ...tokens.iosCardPadding(isCompact) spread into style
+   - Variant B wrapper p-5 → ...tokens.iosCardPadding(isCompact) spread into style
+   - Variant C wrapper p-3 → ...tokens.iosCardPadding(isCompact) spread into style
+   - Variant A motivational message p-3.5 → ...tokens.iosNestedPadding(isCompact) spread into style
+   - Variant B motivational message p-3 → ...tokens.iosNestedPadding(isCompact) spread into style
+3. Hardcoded Transitions: None found (already clean)
+4. Hardcoded borderRadius: None found (all Tailwind classes)
+
+Verification:
+- tsc --noEmit: clean (0 errors)
+- Zero remaining max-w-[NNNpx] hardcoded widths
+- Zero remaining hardcoded padding classes on wrapper/nested elements
+- All padding now adaptive to isCompact mode via token helpers
+
+Stage Summary:
+- 1 file changed: HasilRenderer.tsx
+- 3 hardcoded max-widths replaced with tokens.iosSubtitleWidth('coverCentered') (380px)
+- 5 hardcoded padding values replaced with tokens.iosCardPadding/iosNestedPadding (adaptive to isCompact)
+- All content width and padding now flows from IOS_COMPOSITION tokens (single source of truth)
+- Build: TypeScript clean

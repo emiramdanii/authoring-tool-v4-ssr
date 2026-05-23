@@ -97,7 +97,7 @@ function TujuanVariantA({
         style={{
           borderLeft: `4px solid ${tokens.color('y')}`,
           background: `linear-gradient(135deg, ${tokens.colorAlpha('y', 0.1)}, ${tokens.colorAlpha('y', 0.03)})`,
-          padding: isCompact ? '10px 12px' : '14px 18px',
+          ...tokens.iosSectionPadding(isCompact),
         }}
       >
         <div className="flex items-center justify-between gap-3">
@@ -167,7 +167,7 @@ function TujuanVariantA({
       {/* ═══ OBJECTIVES LIST ═════════════════════════════════════ */}
       <div
         className="flex flex-col gap-2.5"
-        style={{ padding: isCompact ? '10px 12px' : '14px 18px' }}
+        style={{ ...tokens.iosSectionPadding(isCompact) }}
       >
         {objectives.map((obj, i) => (
           
@@ -223,7 +223,7 @@ function TujuanVariantA({
        *  COLLAPSIBLE: "Selengkapnya" / "Ringkas" toggle
        *  Other strategies: Generic ShowMoreButton */}
       {isCompressed && isRevealSetMode && !block.profil && (
-        <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px', position: 'relative' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact), marginBottom: isCompact ? 8 : 12, position: 'relative' }}>
           {/* Fade gradient when not fully revealed */}
           {!isExpanded && (
             <div
@@ -255,7 +255,7 @@ function TujuanVariantA({
         </div>
       )}
       {isCompressed && isCollapsibleMode && (
-        <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact), marginBottom: isCompact ? 8 : 12 }}>
           <button
             onClick={showMore}
             className={`flex items-center justify-center gap-1 w-full py-2 rounded-xl ${tokens.iosExpandTw()} `}
@@ -275,7 +275,7 @@ function TujuanVariantA({
         </div>
       )}
       {hasMore && !isRevealSetMode && !isCollapsibleMode && !block.profil && (
-        <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact), marginBottom: isCompact ? 8 : 12 }}>
           <ShowMoreButton
             hiddenCount={hiddenCount}
             onShowMore={showMore}
@@ -289,8 +289,8 @@ function TujuanVariantA({
       {block.profil && (
         <div
           style={{
-            margin: isCompact ? '0 12px 12px' : '0 18px 16px',
-            padding: isCompact ? '8px 12px' : '12px 16px',
+            ...tokens.iosInnerMargin(isCompact), marginTop: 0,
+            ...tokens.iosCardPadding(isCompact),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.1),
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.25)}`,
             borderLeft: `4px solid ${tokens.color(block.profilColor || 'g')}`,
@@ -373,7 +373,7 @@ function TujuanVariantB({
       {/* Header — compact */}
       <div
         style={{
-          padding: isCompact ? '10px 14px' : '14px 20px',
+          ...tokens.iosCardPadding(isCompact),
           borderBottom: `1px solid ${tokens.colorAlpha('c', 0.1)}`,
           background: tokens.colorAlpha('y', 0.04),
         }}
@@ -424,7 +424,7 @@ function TujuanVariantB({
       {/* Checklist items */}
       <div
         style={{
-          padding: isCompact ? '10px 14px' : '14px 20px',
+          ...tokens.iosCardPadding(isCompact),
         }}
       >
         <div className="flex flex-col gap-1">
@@ -435,7 +435,7 @@ function TujuanVariantB({
               <div
                 className="flex items-start gap-3 rounded-lg transition-[background-color,border-color,color]"
                 style={{
-                  padding: isCompact ? '8px 10px' : '10px 14px',
+                  ...tokens.iosNestedPadding(isCompact),
                   background: isChecked
                     ? tokens.colorAlpha(obj.color, 0.06)
                     : 'transparent',
@@ -582,8 +582,8 @@ function TujuanVariantB({
       {block.profil && (
         <div
           style={{
-            margin: isCompact ? '0 14px 12px' : '0 20px 16px',
-            padding: isCompact ? '8px 12px' : '10px 14px',
+            ...tokens.iosInnerMargin(isCompact), marginTop: 0,
+            ...tokens.iosNestedPadding(isCompact),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.06),
             borderRadius: tokens.radius('lg') + 'px',
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.15)}`,
@@ -722,7 +722,7 @@ function TujuanVariantC({
         style={{
           position: 'relative',
           minHeight: isCompact ? '240px' : '320px',
-          padding: isCompact ? '16px' : '24px',
+          ...tokens.iosSectionPadding(isCompact),
           overflow: 'hidden',
         }}
       >
@@ -750,7 +750,7 @@ function TujuanVariantC({
                 zIndex: 2,
                 minWidth: isCompact ? '80px' : '110px',
                 maxWidth: isCompact ? '140px' : '180px',
-                padding: isCompact ? '6px 10px' : '8px 14px',
+                ...tokens.iosNestedPadding(isCompact),
                 borderRadius: tokens.radius('lg') + 'px',
                 background: tokens.colorAlpha(obj.color, 0.1),
                 border: `1.5px solid ${tokens.colorAlpha(obj.color, 0.3)}`,
@@ -839,8 +839,9 @@ function TujuanVariantC({
       {block.profil && (
         <div
           style={{
-            margin: isCompact ? '0 12px 10px' : '0 18px 14px',
-            padding: isCompact ? '6px 12px' : '8px 14px',
+            ...tokens.iosInnerMargin(isCompact),
+            marginTop: 0,
+            ...tokens.iosNestedPadding(isCompact),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.06),
             borderRadius: tokens.radius('lg') + 'px',
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.15)}`,

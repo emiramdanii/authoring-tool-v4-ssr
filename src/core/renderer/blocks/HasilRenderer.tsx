@@ -64,8 +64,8 @@ function VariantAKlasik({
   resetAllScores: () => void;
 }) {
   return (
-    <div className="relative flex flex-col items-center justify-center text-center p-6 overflow-hidden"
-      style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
+    <div className="relative flex flex-col items-center justify-center text-center overflow-hidden"
+      style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...tokens.iosCardPadding(isCompact) }}>
       {/* ── Performance Tier Badge ──────────────── */}
       <div className="mb-4">
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold"
@@ -119,8 +119,8 @@ function VariantAKlasik({
       </h2>
       <InlineTextEditor
         {...subtitleEditor}
-        className={`mt-1 max-w-[320px] ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        className={`mt-1 ${isCompact ? 'canvas-truncate-2' : ''}`}
+        style={{ fontSize: '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: tokens.iosSubtitleWidth('coverCentered') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -161,12 +161,14 @@ function VariantAKlasik({
       </div>
 
       {/* ── Motivational message ──────────── */}
-      <div className="mt-4 p-3.5 rounded-xl max-w-[300px]"
+      <div className="mt-4 rounded-xl"
         style={{
           background: tokens.accentBg(tierColor, 0.04),
           border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
           borderLeft: `3px solid ${tokens.color(tierColor)}`,
           boxShadow: tokens.raw.shadow.card,
+          ...tokens.iosNestedPadding(isCompact),
+          maxWidth: tokens.iosSubtitleWidth('coverCentered'),
         }}>
         <div className="flex items-start gap-2">
           <Sparkles size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
@@ -245,7 +247,7 @@ function VariantBMajalah({
         : 'Jangan menyerah! Pelajari kembali materi dan coba lagi. Kamu pasti bisa!';
 
   return (
-    <div className="relative p-5 overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
+    <div className="relative overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...tokens.iosCardPadding(isCompact) }}>
       {/* ── Header: Tier badge + Title side by side ──────────────── */}
       <div className="flex items-center gap-3 mb-4">
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold"
@@ -355,11 +357,12 @@ function VariantBMajalah({
         </div>
 
         {/* Right: Motivational message */}
-        <div className="flex-1 p-3 rounded-xl"
+        <div className="flex-1 rounded-xl"
           style={{
             background: tokens.accentBg(tierColor, 0.04),
             border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
             borderLeft: `3px solid ${tokens.color(tierColor)}`,
+            ...tokens.iosNestedPadding(isCompact),
           }}>
           <div className="flex items-start gap-2">
             <Sparkles size={13} className="flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
@@ -421,7 +424,7 @@ function VariantCRingkas({
         : 'Terus berlatih, kamu pasti bisa!';
 
   return (
-    <div className="relative p-3 overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
+    <div className="relative overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...tokens.iosCardPadding(isCompact) }}>
       {/* ── Inline: Tier badge + Percentage + Title ──────────────── */}
       <div className="flex items-center gap-2 mb-1">
         <span className="px-2 py-0.5 rounded-md font-bold text-[11px]"
@@ -559,7 +562,7 @@ function ActivityBreakdown({
   const getBarColor = (pct: number) => pct >= 90 ? 'y' : pct >= 75 ? 'g' : pct >= 50 ? 'c' : 'o';
 
   return (
-    <div className="mt-4 w-full max-w-[320px]">
+    <div className="mt-4 w-full" style={{ maxWidth: tokens.iosSubtitleWidth('coverCentered') }}>
       <button
         onClick={() => setExpanded(!expanded)}
         className={`flex items-center gap-2 w-full mb-2 ${tokens.iosAccordionTw()}`}

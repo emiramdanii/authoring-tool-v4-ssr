@@ -38,6 +38,7 @@ export interface DesignTokens {
   };
   radius: {
     sm: number;   // 8
+    base: number; // 10
     md: number;   // 11
     lg: number;   // 13
     xl: number;   // 16
@@ -109,6 +110,7 @@ export const DEFAULT_TOKENS: DesignTokens = {
   },
   radius: {
     sm: 8,
+    base: 10,
     md: 11,
     lg: 13,
     xl: 16,
@@ -188,7 +190,7 @@ export const THEME_PRESETS: ThemePreset[] = [
         xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28,
       },
       radius: {
-        sm: 10, md: 14, lg: 18, xl: 24, full: 99,
+        sm: 10, base: 10, md: 14, lg: 18, xl: 24, full: 99,
       },
       shadow: {
         card: '0 1px 2px rgba(0,0,0,0.04)',
@@ -248,7 +250,7 @@ export const THEME_PRESETS: ThemePreset[] = [
         xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28,
       },
       radius: {
-        sm: 10, md: 14, lg: 18, xl: 24, full: 99,
+        sm: 10, base: 10, md: 14, lg: 18, xl: 24, full: 99,
       },
       shadow: {
         card: '0 1px 2px rgba(0,0,0,0.04)',

@@ -9,6 +9,7 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge } from './P
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { useBlockCompression } from '../../layout/useBlockCompression';
+import { IOS_SPACING } from '../../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // KUIS RENDERER — Premium Quiz with Full Visual FX + Variant A/B/C
@@ -42,7 +43,7 @@ function VariantSelector({
   ];
 
   return (
-    <div className="variant-selector" style={{ display: 'flex', gap: '4px', background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
+    <div className="variant-selector" style={{ display: 'flex', gap: tokens.iosElementGap('iconToTitle'), background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
       {variants.map((v) => (
         <button
           key={v.key}
@@ -52,12 +53,12 @@ function VariantSelector({
           title={`Varian ${v.label}`}
           type="button"
           style={{
-            padding: '3px 10px',
+            padding: `${IOS_SPACING.tabPadding.py - 3}px ${IOS_SPACING.tabPadding.px - 4}px`,
             borderRadius: '9999px',
             ...tokens.iosTypography('caption1', { fontWeight: 700 }),
             border: 'none',
             cursor: 'pointer',
-            transition: 'background-color, color 0.15s ease',
+            ...tokens.iosTransitionStyle('background-color, color', 'fast'),
             background: active === v.key ? tokens.accentBg('y', 0.12) : 'transparent',
             color: active === v.key ? tokens.color('y') : tokens.muted(0.65),
           }}

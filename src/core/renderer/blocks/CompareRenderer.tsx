@@ -54,7 +54,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -97,7 +97,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
             <div
               className="flex-1 min-w-0 rounded-lg"
               style={{
-                padding: isCompact ? '8px 10px' : '10px 14px',
+                ...tokens.iosNestedPadding(isCompact),
                 background: tokens.color('card'),
                 border: `1px solid ${accentAlpha(0.15)}`,
                 borderLeft: `${isCompact ? 3 : 4}px solid ${accentColor}`,
@@ -169,7 +169,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
             <div
               className="flex-1 min-w-0 rounded-lg"
               style={{
-                padding: isCompact ? '8px 10px' : '10px 14px',
+                ...tokens.iosNestedPadding(isCompact),
                 background: tokens.color('card'),
                 border: `1px solid ${accentAlpha(0.15)}`,
                 borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color('r')}`,

@@ -102,7 +102,7 @@ function MotivasiVariantKlasik({
         style={{
           borderLeft: `4px solid ${tokens.color(gradientFrom)}`,
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.1)}, ${tokens.colorAlpha(gradientTo, 0.03)})`,
-          padding: isCompact ? '10px 12px' : '14px 18px',
+          ...tokens.iosSectionPadding(isCompact),
         }}
       >
         <div className="flex items-center justify-between gap-3">
@@ -153,8 +153,8 @@ function MotivasiVariantKlasik({
       {/* ═══ HOOK QUESTION ═══════════════════════════════════════ */}
       <div
         style={{
-          margin: isCompact ? '10px 12px' : '14px 18px',
-          padding: isCompact ? '14px 16px' : '20px 24px',
+          ...tokens.iosInnerMargin(isCompact),
+          ...tokens.iosCardPadding(isCompact),
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.12)}, ${tokens.colorAlpha(gradientTo, 0.08)})`,
           border: `2px solid ${tokens.colorAlpha(gradientFrom, 0.25)}`,
           borderRadius: tokens.radius('xl'),
@@ -214,7 +214,7 @@ function MotivasiVariantKlasik({
 
       {/* ═══ CONNECTIONS — hidden when compressed ══════════════════ */}
       {!isCompressed && connections.length > 0 && (
-        <div style={{ padding: isCompact ? '0 12px 10px' : '0 18px 14px' }}>
+        <div style={{ ...tokens.iosContentPadding(isCompact), paddingTop: 0, paddingBottom: isCompact ? 10 : 14 }}>
           <div
             className="font-extrabold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
             style={{
@@ -273,8 +273,8 @@ function MotivasiVariantKlasik({
       {!isCompressed && block.transition && (
         <div
           style={{
-            margin: isCompact ? '0 12px 12px' : '0 18px 16px',
-            padding: isCompact ? '8px 14px' : '10px 18px',
+            ...tokens.iosInnerMargin(isCompact), marginTop: 0,
+            ...tokens.iosNestedPadding(isCompact),
             background: `linear-gradient(90deg, ${tokens.colorAlpha(gradientTo, 0.12)}, ${tokens.colorAlpha(gradientTo, 0.04)})`,
             borderRadius: tokens.radius('xl') + 'px',
             borderLeft: `3px solid ${tokens.color(gradientTo)}`,
@@ -340,7 +340,7 @@ function MotivasiVariantKartuHook({
       {/* ═══ HOOK HERO CARD ═════════════════════════════════════ */}
       <div
         style={{
-          padding: isCompact ? '20px 16px' : '32px 24px',
+          ...tokens.iosContentPadding(isCompact),
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.1)}, ${tokens.colorAlpha(gradientTo, 0.05)})`,
           position: 'relative',
           overflow: 'hidden',
@@ -409,7 +409,7 @@ function MotivasiVariantKartuHook({
       {!isCompressed && connections.length > 0 && (
         <div
           style={{
-            padding: isCompact ? '10px 12px' : '14px 18px',
+            ...tokens.iosSectionPadding(isCompact),
             borderTop: `1px solid ${tokens.subtleBorder(0.08)}`,
           }}
         >
@@ -445,10 +445,11 @@ function MotivasiVariantKartuHook({
       {!isCompressed && block.transition && (
         <div
           style={{
-            margin: isCompact ? '0 12px 10px' : '0 18px 14px',
-            padding: isCompact ? '6px 12px' : '8px 16px',
+            ...tokens.iosInnerMargin(isCompact),
+            marginTop: 0,
+            ...tokens.iosNestedPadding(isCompact),
             background: tokens.colorAlpha(gradientTo, 0.06),
-            borderRadius: '8px',
+            borderRadius: tokens.radius('sm'),
           }}
         >
           <div className="flex items-center gap-2">
@@ -496,7 +497,7 @@ function MotivasiVariantKutipan({
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.12)}`,
         animation: 'fadeIn 0.4s ease',
-        padding: isCompact ? '14px 16px' : '20px 24px',
+        ...tokens.iosCardPadding(isCompact),
       }}
     >
       {/* Reading progress indicator */}
@@ -556,9 +557,9 @@ function MotivasiVariantKutipan({
         <div
           style={{
             marginTop: isCompact ? '10px' : '14px',
-            padding: isCompact ? '6px 12px' : '8px 16px',
+            ...tokens.iosNestedPadding(isCompact),
             background: tokens.colorAlpha(gradientFrom, 0.05),
-            borderRadius: '8px',
+            borderRadius: tokens.radius('sm'),
             borderLeft: `3px solid ${tokens.colorAlpha(gradientFrom, 0.3)}`,
           }}
         >

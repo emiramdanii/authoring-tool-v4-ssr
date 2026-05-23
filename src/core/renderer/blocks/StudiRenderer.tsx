@@ -44,7 +44,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -107,7 +107,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
           {/* Situasi section */}
           <div
             style={{
-              padding: isCompact ? '8px 10px' : '10px 14px',
+              ...tokens.iosNestedPadding(isCompact),
               borderRadius: tokens.radius('lg') + 'px',
               background: tokens.color('card'),
               border: `1px solid ${accentAlpha(0.15)}`,
@@ -141,7 +141,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
           {/* Pertanyaan callout */}
           <div
             style={{
-              padding: isCompact ? '8px 10px' : '10px 14px',
+              ...tokens.iosNestedPadding(isCompact),
               borderRadius: tokens.radius('lg') + 'px',
               background: accentAlpha(0.1),
               border: `1px solid ${accentAlpha(0.25)}`,
@@ -178,7 +178,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <MicroInteraction tokens={tokens} accent="g" effect="bounce">
               <div
                 style={{
-                  padding: isCompact ? '7px 10px' : '9px 12px',
+                  ...tokens.iosNestedPadding(isCompact),
                   borderRadius: tokens.radius('lg') + 'px',
                   background: tokens.colorAlpha('g', 0.08),
                   border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,

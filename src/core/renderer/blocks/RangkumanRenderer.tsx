@@ -207,7 +207,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
           background: tokens.colorAlpha(concept.color, 0.06),
           border: `1px solid ${tokens.colorAlpha(concept.color, 0.15)}`,
           borderRadius: tokens.radius('xl') + 'px',
-          padding: isCompact ? '10px 12px' : '14px 16px',
+          ...tokens.iosCardPadding(isCompact),
           boxShadow: tokens.raw.shadow.card,
           ...tokens.iosTransitionStyle('background-color, border-color, color', 'fast'),
           marginBottom: isLast ? 0 : (isCompact ? '6px' : '10px'),
@@ -284,7 +284,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 display: 'flex',
                 alignItems: 'center',
                 gap: isCompact ? '8px' : '10px',
-                padding: isCompact ? '8px 12px' : '10px 14px',
+                ...tokens.iosNestedPadding(isCompact),
                 background: 'none',
                 border: 'none',
                 textAlign: 'left',
@@ -348,7 +348,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 id={`rangkuman-panel-${i}`}
                 role="region"
                 style={{
-                  padding: isCompact ? '0 12px 10px' : '0 14px 14px',
+                  ...tokens.iosContentPadding(isCompact), paddingTop: 0,
                   paddingLeft: isCompact ? '42px' : '52px',
                   animation: 'fadeIn 0.25s ease',
                 }}
@@ -393,7 +393,7 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
       <div
         className="grid gap-2.5"
         style={{
-          padding: isCompact ? '10px 12px' : '14px 18px',
+          ...tokens.iosCardPadding(isCompact),
           gridTemplateColumns: isCompact ? '1fr' : (concepts.length <= 2 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))'),
         }}
       >
@@ -414,7 +414,7 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
   return (
     <div
       style={{
-        padding: isCompact ? '10px 12px' : '14px 18px',
+        ...tokens.iosCardPadding(isCompact),
       }}
     >
       {concepts.map((concept, i) => (
@@ -547,7 +547,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
         style={{
           borderLeft: variant === 'B' ? 'none' : `4px solid ${accent}`,
           background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.03)})`,
-          padding: isCompact ? '10px 12px' : '14px 18px',
+          ...tokens.iosCardPadding(isCompact),
           position: 'relative',
         }}
       >
@@ -664,7 +664,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
 
       {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
       {hasMore && (
-        <div style={{ margin: isCompact ? '8px 12px' : '10px 18px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact) }}>
           <ShowMoreButton
             hiddenCount={hiddenCount}
             onShowMore={showMore}
@@ -679,8 +679,8 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
       {block.closingStatement && (
         <div
           style={{
-            margin: isCompact ? '0 12px 12px' : '0 18px 16px',
-            padding: isCompact ? '10px 14px' : '14px 18px',
+            ...tokens.iosInnerMargin(isCompact), marginTop: 0,
+            ...tokens.iosCardPadding(isCompact),
             background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.05)})`,
             border: `1px solid ${accentAlpha(0.2)}`,
             borderRadius: tokens.radius('xl') + 'px',

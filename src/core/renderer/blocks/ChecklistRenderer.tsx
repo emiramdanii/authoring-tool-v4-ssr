@@ -64,7 +64,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-1">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -118,7 +118,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                   <div
                     className="flex items-center gap-3 rounded-lg transition-[background-color,border-color,opacity]"
                     style={{
-                      padding: isCompact ? '7px 10px' : '9px 12px',
+                      ...tokens.iosNestedPadding(isCompact),
                       background: isChecked
                         ? accentAlpha(0.1)
                         : tokens.color('card'),

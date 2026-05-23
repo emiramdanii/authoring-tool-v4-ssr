@@ -49,7 +49,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -99,7 +99,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                   <div
                     className="flex flex-col items-center text-center"
                     style={{
-                      padding: isCompact ? '12px 8px' : '16px 12px',
+                      ...tokens.iosCardPadding(isCompact),
                       background: itemAlpha(0.08),
                       border: `1px solid ${itemAlpha(0.2)}`,
                       borderRadius: tokens.radius('xl') + 'px',

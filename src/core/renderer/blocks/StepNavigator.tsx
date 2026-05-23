@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
 import { resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from '../types';
-import { IOS_INTERACTION } from '../../themes/ios-visual-contract';
+import { IOS_INTERACTION, IOS_SPACING } from '../../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // STEP NAVIGATOR — Reusable Step/Tab Navigation Component
@@ -136,7 +136,7 @@ export function StepNavigator({
         style={{
           display: 'flex',
           gap: isCompact ? '4px' : '6px',
-          padding: isCompact ? '8px 8px 0' : '10px 12px 0',
+          padding: isCompact ? `${IOS_SPACING.tabPadding.py / 2}px ${IOS_SPACING.tabPadding.px / 2}px 0` : `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px 0`,
           overflowX: 'auto',
           scrollbarWidth: 'none',
         }}
@@ -155,7 +155,7 @@ export function StepNavigator({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                padding: isCompact ? '3px 10px' : '5px 14px',
+                padding: isCompact ? `${IOS_SPACING.tabPadding.py / 2}px ${IOS_SPACING.tabPadding.px / 2}px` : `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px`,
                 borderRadius: '9999px',
                 fontSize: isCompact ? '10px' : '11px',
                 fontWeight: 700,
@@ -165,7 +165,7 @@ export function StepNavigator({
                 color: isActive ? accentColor : isPast ? resolveColorAlpha(tokens, accent, 0.6, 'rgba(251,191,36,0.6)', 'rgba(251,191,36,0.6)') : mutedColor,
                 cursor: 'pointer',
                 outline: 'none',
-                transition: 'background-color, border-color, color 150ms ease',
+                ...(tokens ? tokens.iosTransitionStyle('background-color, border-color, color', 'fast') : { transition: 'background-color, border-color, color 150ms ease' }),
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
               }}
@@ -182,7 +182,7 @@ export function StepNavigator({
       {/* ── Progress Bar ────────────────────────────────────────── */}
       <div
         style={{
-          margin: isCompact ? '6px 8px' : '8px 12px',
+          ...(tokens ? tokens.iosInnerMargin(isCompact) : { margin: '6px 8px' }),
           height: isCompact ? '2px' : '3px',
           borderRadius: '9999px',
           background: resolveSubtleBg(tokens, 0.06),
@@ -223,7 +223,7 @@ export function StepNavigator({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: isCompact ? '6px 8px 8px' : '8px 12px 10px',
+          padding: isCompact ? `${IOS_SPACING.tabPadding.py / 2}px ${IOS_SPACING.tabPadding.px}px ${IOS_SPACING.tabPadding.py / 2}px` : `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px + 2}px ${IOS_SPACING.tabPadding.py}px`,
           borderTop: `1px solid ${resolveSubtleBorder(tokens, 0.08)}`,
         }}
       >
@@ -237,7 +237,7 @@ export function StepNavigator({
             alignItems: 'center',
             gap: '4px',
             padding: isCompact ? '4px 10px' : '6px 14px',
-            borderRadius: '8px',
+            borderRadius: tokens ? tokens.radius('sm') : '8px',
             fontSize: isCompact ? '10px' : '11px',
             fontWeight: 700,
             border: `1px solid ${activeStep === 0 ? 'transparent' : accentBorder}`,
@@ -246,7 +246,7 @@ export function StepNavigator({
             cursor: activeStep === 0 ? 'default' : 'pointer',
             opacity: activeStep === 0 ? 0.4 : 1,
             outline: 'none',
-            transition: 'background-color, border-color, color, opacity 150ms ease',
+            ...(tokens ? tokens.iosTransitionStyle('background-color, border-color, color, opacity', 'fast') : { transition: 'background-color, border-color, color, opacity 150ms ease' }),
           }}
         >
           <span style={{ fontSize: isCompact ? '10px' : '12px' }}>&#8592;</span>
@@ -275,7 +275,7 @@ export function StepNavigator({
             alignItems: 'center',
             gap: '4px',
             padding: isCompact ? '4px 10px' : '6px 14px',
-            borderRadius: '8px',
+            borderRadius: tokens ? tokens.radius('sm') : '8px',
             fontSize: isCompact ? '10px' : '11px',
             fontWeight: 700,
             border: `1px solid ${activeStep === totalSteps - 1 ? 'transparent' : accentBorder}`,
@@ -284,7 +284,7 @@ export function StepNavigator({
             cursor: activeStep === totalSteps - 1 ? 'default' : 'pointer',
             opacity: activeStep === totalSteps - 1 ? 0.4 : 1,
             outline: 'none',
-            transition: 'background-color, border-color, color, opacity 150ms ease',
+            ...(tokens ? tokens.iosTransitionStyle('background-color, border-color, color, opacity', 'fast') : { transition: 'background-color, border-color, color, opacity 150ms ease' }),
           }}
         >
           <span>Berikutnya</span>

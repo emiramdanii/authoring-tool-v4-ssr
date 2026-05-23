@@ -59,7 +59,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -120,7 +120,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
                 borderRadius: tokens.radius('lg') + 'px',
                 background: accentAlpha(0.06),
                 border: `2px dashed ${accentAlpha(0.25)}`,
-                padding: isCompact ? '24px 16px' : '36px 24px',
+                ...tokens.iosContentPadding(isCompact),
                 minHeight: isCompact ? '100px' : '140px',
               }}
             >

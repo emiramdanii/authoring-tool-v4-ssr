@@ -104,7 +104,7 @@ export const OverflowIndicator = React.memo(function OverflowIndicator({
       </PremiumBadge>
 
       {/* Action buttons — disabled in safe mode for gated features */}
-      <div style={{ display: 'flex', gap: '4px' }}>
+      <div style={{ display: 'flex', gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px' }}>
         {actions.map((action) => (
           <button
             key={action.key}

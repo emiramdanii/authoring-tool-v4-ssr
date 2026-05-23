@@ -71,7 +71,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ padding: isCompact ? '10px 12px' : '13px 15px' }}>
+        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -111,7 +111,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 onClick={handleReveal}
                 className={`w-full text-center rounded-lg cursor-pointer ${tokens.iosButtonTw()}  hover:scale-[1.01]`}
                 style={{
-                  padding: isCompact ? '16px 12px' : '22px 16px',
+                  ...tokens.iosCardPadding(isCompact),
                   background: `linear-gradient(135deg, ${accentAlpha(0.12)}, ${accentAlpha(0.04)})`,
                   border: `2px dashed ${accentAlpha(0.4)}`,
                   outline: 'none',
@@ -167,7 +167,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
           {showRevealed && (
             <div
               style={{
-                padding: isCompact ? '10px 12px' : '14px 16px',
+                ...tokens.iosCardPadding(isCompact),
                 borderRadius: tokens.radius('lg') + 'px',
                 background: tokens.color('card'),
                 border: `1px solid ${accentAlpha(0.25)}`,
