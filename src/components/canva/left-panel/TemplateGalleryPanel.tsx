@@ -310,7 +310,7 @@ export default function TemplateGalleryPanel() {
       <div className="flex gap-1">
         <button
           onClick={() => setActiveView('prebuilt')}
-          className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] flex items-center justify-center gap-1 ${
             activeView === 'prebuilt'
               ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -321,7 +321,7 @@ export default function TemplateGalleryPanel() {
         </button>
         <button
           onClick={() => setActiveView('ai')}
-          className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] flex items-center justify-center gap-1 ${
             activeView === 'ai'
               ? 'bg-violet-500/15 border border-violet-500/30 text-violet-300'
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -353,7 +353,7 @@ export default function TemplateGalleryPanel() {
       <div className="flex gap-1 overflow-x-auto custom-scrollbar">
         <button
           onClick={() => setActivePattern(null)}
-          className={`flex-shrink-0 px-2 py-1 rounded-lg text-[8px] font-bold transition-all flex items-center gap-1 ${
+          className={`flex-shrink-0 px-2 py-1 rounded-lg text-[8px] font-bold transition-[background-color,border-color,color] flex items-center gap-1 ${
             activePattern === null
               ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -366,7 +366,7 @@ export default function TemplateGalleryPanel() {
           <button
             key={key}
             onClick={() => setActivePattern(activePattern === key ? null : key)}
-            className={`flex-shrink-0 px-2 py-1 rounded-lg text-[8px] font-bold transition-all flex items-center gap-1 ${
+            className={`flex-shrink-0 px-2 py-1 rounded-lg text-[8px] font-bold transition-[background-color,border-color,color] flex items-center gap-1 ${
               activePattern === key
                 ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
                 : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -382,7 +382,7 @@ export default function TemplateGalleryPanel() {
       <div className="flex flex-wrap gap-1">
         <button
           onClick={() => setActiveMapel(null)}
-          className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
+          className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] ${
             activeMapel === null
               ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -397,7 +397,7 @@ export default function TemplateGalleryPanel() {
             <button
               key={mapel}
               onClick={() => setActiveMapel(isActive ? null : mapel)}
-              className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] flex items-center gap-1 ${
                 isActive
                   ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
                   : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -494,7 +494,7 @@ function TemplateCard({
 
   return (
     <div
-      className={`rounded-xl border ${colors.border} ${colors.bg} overflow-hidden transition-all ${colors.hoverBg}`}
+      className={`rounded-xl border ${colors.border} ${colors.bg} overflow-hidden transition-[background-color,border-color] ${colors.hoverBg}`}
     >
       {/* Card header with icon and title */}
       <div className="p-3">
@@ -594,7 +594,7 @@ function TemplateCard({
           <button
             onClick={() => onQuickApply(template)}
             disabled={isAnyLoading}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95 disabled:opacity-50 disabled:pointer-events-none ${
               isLoading
                 ? `${colors.bg} ${colors.text} border ${colors.border}`
                 : hasExistingPages
@@ -619,7 +619,7 @@ function TemplateCard({
           <button
             onClick={onCustomize}
             disabled={isAnyLoading}
-            className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-bold border border-app-border/30 bg-app-elevated/40 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+            className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-bold border border-app-border/30 bg-app-elevated/40 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[transform,box-shadow,background-color] active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
             <Settings2 size={10} />
             Sesuaikan

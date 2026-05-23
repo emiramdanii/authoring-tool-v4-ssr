@@ -143,7 +143,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
       {!compact && (
         <div className="h-1 bg-app-accent/20">
           <div
-            className="h-full bg-app-accent transition-all duration-500 ease-out"
+            className="h-full bg-app-accent transition-[width] duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -194,7 +194,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
               key={idx}
               onClick={() => handleAnswer(idx)}
               disabled={answered}
-              className={`w-full text-left px-2 py-1.5 rounded-md border transition-all duration-300 ${compact ? 'text-[8px] py-1 px-1.5' : 'text-[10px]'} ${bg} ${textCol} ${!answered ? 'cursor-pointer' : 'cursor-default'}`}
+              className={`w-full text-left px-2 py-1.5 rounded-md border transition-[background-color,border-color,color] duration-300 ${compact ? 'text-[8px] py-1 px-1.5' : 'text-[10px]'} ${bg} ${textCol} ${!answered ? 'cursor-pointer' : 'cursor-default'}`}
             >
               <span className="font-bold text-app-accent/80 mr-1">{LETTERS[idx]}.</span>
               {opt}{icon}

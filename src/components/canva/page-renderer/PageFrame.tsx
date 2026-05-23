@@ -470,7 +470,7 @@ export const PageFrame = React.memo(function PageFrame({
           {/* Progress bar — takes remaining space */}
           {showProgress && (
             <div className="flex-1 min-w-[40px] rounded-full overflow-hidden" style={theme.progressTrack(tokens, isCompact)}>
-              <div className="h-full transition-all duration-500" style={theme.progressBar(tokens, progressPct, isCompact)} />
+              <div className="h-full transition-[width] duration-300" style={theme.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
 
@@ -514,7 +514,7 @@ export const PageFrame = React.memo(function PageFrame({
           {/* Progress bar */}
           {showProgress && (
             <div style={theme.progressTrack(tokens, isCompact)}>
-              <div className="h-full transition-all duration-500" style={theme.progressBar(tokens, progressPct, isCompact)} />
+              <div className="h-full transition-[width] duration-300" style={theme.progressBar(tokens, progressPct, isCompact)} />
             </div>
           )}
 
@@ -527,7 +527,7 @@ export const PageFrame = React.memo(function PageFrame({
               <button
                 onClick={handlePrev}
                 disabled={currentPageIndex <= 0}
-                className={`font-bold transition-all active:scale-95 flex-shrink-0 ${
+                className={`font-bold transition-[transform,box-shadow,background-color] active:scale-95 flex-shrink-0 ${
                   isCompact ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-1'
                 } ${
                   currentPageIndex > 0
@@ -556,7 +556,7 @@ export const PageFrame = React.memo(function PageFrame({
                     key={p.id}
                     onClick={() => handleNav(i)}
                     title={`${p.label || `Halaman ${i + 1}`} (${i + 1}/${totalPages})${isComplete ? ' ✓' : ''}`}
-                    className="relative flex-shrink-0 flex items-center justify-center cursor-pointer transition-all duration-200"
+                    className="relative flex-shrink-0 flex items-center justify-center cursor-pointer transition-[background-color,border-color] duration-200"
                     style={{
                       width: dotSize,
                       height: dotSize,
@@ -598,7 +598,7 @@ export const PageFrame = React.memo(function PageFrame({
                 <button
                   onClick={handleNext}
                   disabled={isLastPage}
-                  className={`transition-all active:scale-95 whitespace-nowrap ${
+                  className={`transition-[transform,box-shadow,background-color] active:scale-95 whitespace-nowrap ${
                     isLastPage ? 'cursor-not-allowed' : 'cursor-pointer hover:-translate-y-0.5'
                   } ${
                     isCompact ? 'text-[9px]' : 'text-xs'
@@ -626,7 +626,7 @@ export const PageFrame = React.memo(function PageFrame({
               )}
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1 text-[10px] transition-all active:scale-95 whitespace-nowrap"
+                className="flex items-center gap-1 text-[10px] transition-[transform,box-shadow,background-color] active:scale-95 whitespace-nowrap"
                 style={theme.resetBtn(tokens)}
               >
                 ↩ Ulangi

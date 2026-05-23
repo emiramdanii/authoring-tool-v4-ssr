@@ -87,7 +87,7 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
       </p>
       <div className="flex gap-2 mt-2">
         <button onClick={() => handleAnswer(true)} disabled={answered}
-          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all ${
+          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-[transform,box-shadow,background-color,border-color] ${
             answered
               ? (correct === true ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-300' : 'bg-app-elevated/5 text-white/30')
               : 'bg-emerald-500/20 hover:bg-emerald-500/40 border-emerald-400/30 text-emerald-300 cursor-pointer'
@@ -95,7 +95,7 @@ export function TrueFalseGame({ data, compact, interactive, onComplete }: GameCo
           ✅ Benar
         </button>
         <button onClick={() => handleAnswer(false)} disabled={answered}
-          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all ${
+          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-[transform,box-shadow,background-color,border-color] ${
             answered
               ? (correct === false ? 'bg-red-500/30 border-red-400/40 text-red-300' : 'bg-app-elevated/5 text-white/30')
               : 'bg-red-500/20 hover:bg-red-500/40 border-red-400/30 text-red-300 cursor-pointer'

@@ -209,7 +209,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-60 border border-app-border shadow-xl rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
+          className="w-60 border border-app-border shadow-md rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
         >
           {availablePresets.length > 0 && (
             <>
@@ -266,7 +266,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
 
       <button
         onClick={onOpenWizard}
-        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-app-success/10 border border-app-success/20 hover:border-app-success/40 hover:bg-app-success/20 text-app-success text-[10px] font-bold transition-all active:scale-95"
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-app-success/10 border border-app-success/20 hover:border-app-success/40 hover:bg-app-success/20 text-app-success text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95"
       >
         <Sparkles size={10} className="inline" />
         Buat dari Template Wizard

@@ -93,7 +93,7 @@ export default function BackgroundSection() {
               <button
                 key={t.id}
                 onClick={() => setSchemaThemeId(t.id)}
-                className={`py-1.5 px-1 rounded-lg text-[8px] font-bold transition-all border ${
+                className={`py-1.5 px-1 rounded-lg text-[8px] font-bold transition-[background-color,border-color,color] border ${
                   schemaThemeId === t.id || (!schemaThemeId && t.id === 'default')
                     ? 'border-app-accent bg-app-accent/20 text-app-accent'
                     : 'border-app-border bg-app-elevated text-app-muted hover:border-app-border-strong'
@@ -114,7 +114,7 @@ export default function BackgroundSection() {
               <button
                 key={t}
                 onClick={() => handleBgTypeChange(t)}
-                className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-all ${
+                className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] ${
                   schemaBg?.type === t
                     ? 'bg-app-accent/20 text-app-accent border border-app-accent/40'
                     : 'bg-app-elevated text-app-muted border border-app-border hover:border-app-border-strong'
@@ -292,7 +292,7 @@ export default function BackgroundSection() {
             <button
               key={g.id}
               onClick={() => setBgColor(g.css)}
-              className={`w-full aspect-square rounded-lg border transition-all hover:scale-110 ${
+              className={`w-full aspect-square rounded-lg border transition-[transform,background-color,border-color] hover:scale-[1.05] ${
                 page?.bgColor === g.css
                   ? 'border-amber-400 ring-1 ring-amber-400/50'
                   : 'border-app-border hover:border-app-border-strong'

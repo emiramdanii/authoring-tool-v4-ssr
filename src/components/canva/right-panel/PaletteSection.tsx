@@ -27,7 +27,7 @@ export default function PaletteSection() {
         {colorPalette.colors.map((color: string, i: number) => (
           <div
             key={i}
-            className="w-7 h-7 rounded-lg border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+            className="w-7 h-7 rounded-lg border border-white/20 cursor-pointer hover:scale-[1.05] transition-transform"
             style={{ background: color }}
             title={color}
           />

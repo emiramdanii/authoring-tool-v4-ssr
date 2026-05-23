@@ -599,7 +599,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {/* ══ GHOST BADGE — follows cursor during canvas drag ═════ */}
       {ghostInfo && isCompact && (
         <div
-          className="absolute pointer-events-none px-2 py-0.5 rounded bg-app-accent/90 text-black text-[9px] font-bold whitespace-nowrap shadow-lg z-[1000]"
+          className="absolute pointer-events-none px-2 py-0.5 rounded bg-app-accent/90 text-black text-[9px] font-bold whitespace-nowrap shadow-md z-[1000]"
           style={{
             left: ghostInfo.x,
             top: ghostInfo.y,

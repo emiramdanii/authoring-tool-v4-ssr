@@ -98,7 +98,7 @@ export function FlashcardGame({ data, compact, interactive, onComplete }: GameCo
         onClick={handleFlip}
       >
         <div
-          className="w-full h-full relative transition-transform duration-500"
+          className="w-full h-full relative transition-transform duration-300"
           style={{
             transformStyle: 'preserve-3d',
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',

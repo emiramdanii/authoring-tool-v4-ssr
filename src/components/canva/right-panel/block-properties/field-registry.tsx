@@ -246,7 +246,7 @@ function TextField({ label, value, icon, onChange, multiline = false, rows = 3, 
           placeholder={placeholder}
           rows={rows}
           aria-describedby={describedBy}
-          className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary resize-y focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary resize-y focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
         />
       ) : (
         <input
@@ -256,7 +256,7 @@ function TextField({ label, value, icon, onChange, multiline = false, rows = 3, 
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           aria-describedby={describedBy}
-          className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
         />
       )}
       {helpText && (
@@ -292,7 +292,7 @@ function NumberField({ label, value, min, max, step, onChange, fieldId, helpId, 
         step={step || 1}
         onChange={e => onChange(Number(e.target.value))}
         aria-describedby={helpId}
-        className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+        className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
       />
       {helpText && (
         <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
@@ -334,7 +334,7 @@ function ColorTokenField({ label, value, onChange, fieldId }: {
           <button
             key={key}
             onClick={() => onChange(key)}
-            className={`px-1.5 py-0.5 rounded text-[8px] font-bold transition-all border ${
+            className={`px-1.5 py-0.5 rounded text-[8px] font-bold transition-[background-color,border-color,color] border ${
               value === key
                 ? `${bg} ${text} border-current/30`
                 : 'bg-app-elevated/40 text-app-muted border-app-border/20 hover:bg-app-elevated/60'
@@ -368,7 +368,7 @@ function SelectField({ label, value, options, onChange, fieldId, helpId, helpTex
         value={value}
         onChange={e => onChange(e.target.value)}
         aria-describedby={helpId}
-        className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all"
+        className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color]"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -402,9 +402,9 @@ function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
         aria-checked={value}
         aria-label={label}
         aria-describedby={helpId}
-        className={`w-8 h-4 rounded-full transition-all relative ${value ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+        className={`w-8 h-4 rounded-full transition-[background-color,transform] relative ${value ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
       >
-        <div className={`absolute top-0.5 w-3 h-3 rounded-full transition-all ${value ? 'left-4.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+        <div className={`absolute top-0.5 w-3 h-3 rounded-full transition-[background-color,transform] ${value ? 'left-4.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
       </button>
       {helpText && (
         <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
@@ -433,7 +433,7 @@ function VariantField({ label, value, onChange, fieldId }: {
             role="radio"
             aria-checked={value === v}
             aria-label={`Varian ${v}`}
-            className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${
+            className={`px-2 py-0.5 rounded text-[9px] font-bold transition-[background-color,border-color,color] ${
               value === v
                 ? 'bg-blue-500/30 text-blue-300 border border-blue-500/40'
                 : 'bg-app-elevated/40 text-app-muted border border-app-border/20 hover:bg-app-elevated/60'
@@ -559,9 +559,9 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                     <span className="text-[8px] text-app-muted">{fieldDef.label}</span>
                     <button
                       onClick={() => updateItem(idx, fieldDef.key, !item[fieldDef.key])}
-                      className={`w-7 h-3.5 rounded-full transition-all relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+                      className={`w-7 h-3.5 rounded-full transition-[background-color,transform] relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
                     >
-                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all ${item[fieldDef.key] ? 'left-3.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full transition-[background-color,transform] ${item[fieldDef.key] ? 'left-3.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
                     </button>
                   </div>
                 ) : fieldDef.type === 'array' && fieldDef.fields ? (
@@ -585,13 +585,13 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
                         rows={2}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0 resize-y"
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0 resize-y"
                       />
                     ) : fieldDef.type === 'select' && fieldDef.options ? (
                       <select
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
                       >
                         {fieldDef.options.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -603,7 +603,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
                         placeholder={fieldDef.placeholder}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
                       />
                     )}
                   </div>
@@ -640,8 +640,8 @@ function InlineColorTokenField({ value, onChange }: {
         <button
           key={t}
           onClick={() => onChange(t)}
-          className={`w-4 h-4 rounded-full transition-all border ${
-            value === t ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-app-surface' : 'border-app-border/30 hover:scale-110'
+          className={`w-4 h-4 rounded-full transition-[background-color,border-color,transform] border ${
+            value === t ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-app-surface' : 'border-app-border/30 hover:scale-[1.05]'
           } ${TOKEN_COLORS[t] || 'bg-app-elevated'}`}
           title={t}
         />
@@ -742,9 +742,9 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                     <span className="text-[7px] text-app-muted">{fieldDef.label}</span>
                     <button
                       onClick={() => updateNestedItem(idx, fieldDef.key, !item[fieldDef.key])}
-                      className={`w-6 h-3 rounded-full transition-all relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+                      className={`w-6 h-3 rounded-full transition-[background-color,transform] relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
                     >
-                      <div className={`absolute top-0.5 w-2 h-2 rounded-full transition-all ${item[fieldDef.key] ? 'left-3 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+                      <div className={`absolute top-0.5 w-2 h-2 rounded-full transition-[background-color,transform] ${item[fieldDef.key] ? 'left-3 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
                     </button>
                   </div>
                 ) : (
@@ -760,7 +760,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
                         rows={1}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0 resize-y"
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0 resize-y"
                       />
                     ) : (
                       <input
@@ -768,7 +768,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
                         placeholder={fieldDef.placeholder}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
                       />
                     )}
                   </div>
@@ -943,7 +943,7 @@ function StringArrayEditor({ label, items, onChange }: {
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ketik lalu Enter untuk menambah..."
-          className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
         />
         <button
           onClick={addItem}
@@ -1037,7 +1037,7 @@ function ObjectArrayEditor({ label, items, onChange }: {
                     const newVal = typeof val === 'number' ? Number(e.target.value) : e.target.value;
                     updateItem(idx, key, newVal);
                   }}
-                  className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-all min-w-0"
+                  className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
                 />
               </div>
             ))}
@@ -1088,7 +1088,7 @@ function JsonTextarea({ label, value, onChange, fieldId, helpId, helpText }: {
         onChange={e => handleChange(e.target.value)}
         rows={4}
         aria-describedby={helpId}
-        className={`w-full bg-app-surface/60 border rounded px-2 py-1 text-[9px] text-app-primary font-mono resize-y focus:outline-none focus:ring-1 transition-all ${
+        className={`w-full bg-app-surface/60 border rounded px-2 py-1 text-[9px] text-app-primary font-mono resize-y focus:outline-none focus:ring-1 transition-[background-color,border-color] ${
           error ? 'border-red-500/40 focus:ring-red-500/20' : 'border-app-border/30 focus:border-blue-500/40 focus:ring-blue-500/20'
         }`}
       />

@@ -92,7 +92,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
     <div className="h-full flex flex-col bg-cyan-500/10 p-2">
       {/* Progress bar */}
       <div className="h-1 bg-cyan-500/15 rounded-full overflow-hidden mb-2">
-        <div className="h-full bg-cyan-400 transition-all duration-300" style={{ width: `${prog}%` }} />
+        <div className="h-full bg-cyan-400 transition-[background-color,border-color,color] duration-300" style={{ width: `${prog}%` }} />
       </div>
       <div className="flex justify-between text-[9px] text-cyan-400 mb-1">
         <span className="font-bold">Soal {currentQ + 1}/{validSoal.length}</span>
@@ -108,7 +108,7 @@ export function FillBlankGame({ data, compact, interactive, onComplete }: GameCo
         onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
         disabled={answered}
         placeholder="Ketik jawaban..."
-        className={`w-full px-3 py-2 rounded-lg border text-[11px] font-semibold outline-none transition-all ${
+        className={`w-full px-3 py-2 rounded-lg border text-[11px] font-semibold outline-none transition-[background-color,border-color] ${
           answered
             ? lastCorrect ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300' : 'border-red-400/40 bg-red-500/10 text-red-300'
             : 'border-app-border/15 bg-app-elevated/5 text-app-primary focus:border-cyan-400/50 focus:bg-app-elevated/10'

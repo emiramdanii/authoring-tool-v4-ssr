@@ -27,7 +27,7 @@ export function QuickActions() {
       <button
         onClick={undo}
         disabled={!canUndo()}
-        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-all ${
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-[background-color,border-color,color] ${
           canUndo()
             ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated/50'
             : 'text-app-muted/30 cursor-not-allowed'
@@ -39,7 +39,7 @@ export function QuickActions() {
       <button
         onClick={redo}
         disabled={!canRedo()}
-        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-all ${
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-[background-color,border-color,color] ${
           canRedo()
             ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated/50'
             : 'text-app-muted/30 cursor-not-allowed'
@@ -63,7 +63,7 @@ export function QuickActions() {
       {/* Toggle Right Panel */}
       <button
         onClick={toggleRightPanel}
-        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-all ${
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-[background-color,border-color,color] ${
           rightPanelOpen
             ? 'bg-app-accent/10 text-app-accent hover:bg-app-accent/20'
             : 'text-app-muted hover:text-app-secondary hover:bg-app-elevated/50'
@@ -77,7 +77,7 @@ export function QuickActions() {
       <button
         onClick={exportHtml}
         disabled={isExporting}
-        className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-app-success/90 hover:bg-app-success text-white text-[10px] font-bold transition-all shadow-sm hover:shadow disabled:opacity-50"
+        className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-app-success/90 hover:bg-app-success text-white text-[10px] font-bold transition-[background-color,border-color] shadow-sm hover:shadow disabled:opacity-50"
         title="Unduh HTML — siap dibagikan ke siswa"
       >
         {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}

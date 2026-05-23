@@ -344,7 +344,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
               }`} />
             )}
             <div className="flex items-center gap-1.5">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-[background-color,border-color] ${
                 isCompleted
                   ? 'bg-app-accent/20 text-app-accent border border-app-accent/40'
                   : isCurrent
@@ -386,7 +386,7 @@ function StepSubject({ selected, onSelect }: {
             <button
               key={sub.id}
               onClick={() => onSelect(sub.id)}
-              className={`rounded-xl p-4 text-center transition-all cursor-pointer border ${
+              className={`rounded-xl p-4 text-center transition-[transform,background-color,border-color] cursor-pointer border ${
                 isSelected
                   ? 'border-app-accent/60 bg-app-accent/10 ring-2 ring-app-accent/20'
                   : 'border-app-border/40 bg-app-elevated/30 hover:border-app-accent/30 hover:bg-app-accent/5'
@@ -493,7 +493,7 @@ function StepTemplate({ templates, selectedId, onSelect }: {
             <button
               key={tmpl.id}
               onClick={() => onSelect(tmpl.id)}
-              className={`w-full text-left rounded-xl p-4 transition-all cursor-pointer border ${
+              className={`w-full text-left rounded-xl p-4 transition-[transform,background-color,border-color] cursor-pointer border ${
                 isSelected
                   ? 'border-app-accent/60 bg-app-accent/10 ring-2 ring-app-accent/20'
                   : 'border-app-border/40 bg-app-elevated/30 hover:border-app-accent/30 hover:bg-app-accent/5'

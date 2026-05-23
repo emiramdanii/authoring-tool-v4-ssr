@@ -126,7 +126,7 @@ export default function BatchOperationsBar() {
         {/* Duplicate */}
         <button
           onClick={handleDuplicate}
-          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 transition-all"
+          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 transition-[background-color,border-color]"
           title="Duplikasi semua yang dipilih"
         >
           <Copy size={10} />
@@ -143,7 +143,7 @@ export default function BatchOperationsBar() {
             <button
               key={v}
               onClick={() => handleSetVariant(v)}
-              className="px-2 py-0.5 rounded-md text-[9px] font-bold border border-app-border/30 bg-app-elevated/40 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all"
+              className="px-2 py-0.5 rounded-md text-[9px] font-bold border border-app-border/30 bg-app-elevated/40 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[background-color,border-color]"
             >
               V{v}
             </button>
@@ -165,7 +165,7 @@ export default function BatchOperationsBar() {
         {/* Delete button */}
         <button
           onClick={handleDeleteAll}
-          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-all"
+          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-[background-color,border-color]"
         >
           <Trash2 size={10} />
           Hapus
@@ -190,20 +190,20 @@ export default function BatchOperationsBar() {
             <span className="text-[8px] text-app-muted font-semibold">Prioritas:</span>
             <button
               onClick={() => handleSetCompression('high')}
-              className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-amber-500/20 bg-amber-500/5 text-amber-300 hover:bg-amber-500/15 transition-all"
+              className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-amber-500/20 bg-amber-500/5 text-amber-300 hover:bg-amber-500/15 transition-[background-color,border-color]"
             >
               <Maximize2 size={8} className="inline mr-0.5" />
               Tinggi
             </button>
             <button
               onClick={() => handleSetCompression('medium')}
-              className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-sky-500/20 bg-sky-500/5 text-sky-300 hover:bg-sky-500/15 transition-all"
+              className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-sky-500/20 bg-sky-500/5 text-sky-300 hover:bg-sky-500/15 transition-[background-color,border-color]"
             >
               Sedang
             </button>
             <button
               onClick={() => handleSetCompression('low')}
-              className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-emerald-500/20 bg-emerald-500/5 text-emerald-300 hover:bg-emerald-500/15 transition-all"
+              className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-emerald-500/20 bg-emerald-500/5 text-emerald-300 hover:bg-emerald-500/15 transition-[background-color,border-color]"
             >
               <Minimize2 size={8} className="inline mr-0.5" />
               Rendah

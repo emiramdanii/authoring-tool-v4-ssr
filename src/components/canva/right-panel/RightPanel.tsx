@@ -105,7 +105,7 @@ export default function RightPanel() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1 px-3 py-2 text-[10px] font-bold transition-all relative ${
+              className={`flex items-center gap-1 px-3 py-2 text-[10px] font-bold transition-[background-color,border-color,color] relative ${
                 isActive
                   ? 'text-app-accent'
                   : 'text-app-muted hover:text-app-secondary'

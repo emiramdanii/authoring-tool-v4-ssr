@@ -110,7 +110,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
         <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
           {validPairs.map((p, i) => (
             <button key={`match-left-${i}`} onClick={() => handleLeftClick(i)}
-              className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-all ${
+              className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-[background-color,border-color] ${
                 matchedLeft.has(i) ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 line-through opacity-60' :
                 selectedLeft === i ? 'bg-cyan-500/30 border-cyan-400/50 text-cyan-200' :
                 'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10 text-cyan-200 cursor-pointer'
@@ -123,7 +123,7 @@ export function MatchingGame({ data, compact, interactive, onComplete }: GameCom
         <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
           {shuffledRight.map(r => (
             <button key={r.idx} onClick={() => handleRightClick(r.idx)}
-              className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-all ${
+              className={`px-1.5 py-1.5 rounded border text-[9px] text-left transition-[background-color,border-color] ${
                 matchedRight.has(r.idx) ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 line-through opacity-60' :
                 wrongRightIdx === r.idx ? 'bg-red-500/30 border-red-400/40 text-red-300' :
                 'bg-app-elevated/5 hover:bg-app-elevated/10 border-app-border/10 text-cyan-200 cursor-pointer'

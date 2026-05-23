@@ -26,7 +26,7 @@ import { patchHistory } from '@/core/editor/patch-history';
 import type { SchemaBlock } from '@/core/schema/types';
 import type { CanvaPage } from '@/components/canva/types';
 import { showUndoRedoToast } from '@/components/shared/StatusToast';
-import { getBlockDefinition } from '@/core/registry/SceneRegistry';
+import { getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import { logger } from '@/core/utils/logger';
 
@@ -43,7 +43,7 @@ export type HistorySlice = Pick<
 function formatUndoMessage(description?: string): string {
   if (!description) return 'Kembalikan';
   const blockType = description.split('.')[0];
-  const def = getBlockDefinition(blockType);
+  const def = getBlockMeta(blockType);
   if (def) {
     const name = teacherTerm(def.name, true);
     return `Kembalikan · ${name}`;
@@ -54,7 +54,7 @@ function formatUndoMessage(description?: string): string {
 function formatRedoMessage(description?: string): string {
   if (!description) return 'Ulangi';
   const blockType = description.split('.')[0];
-  const def = getBlockDefinition(blockType);
+  const def = getBlockMeta(blockType);
   if (def) {
     const name = teacherTerm(def.name, true);
     return `Ulangi · ${name}`;

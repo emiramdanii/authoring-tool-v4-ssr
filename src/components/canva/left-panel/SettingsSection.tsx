@@ -25,7 +25,7 @@ export function SettingsSection() {
               <button
                 key={r.id}
                 onClick={() => setRatio(r.id)}
-                className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
+                className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] ${
                   isActive
                     ? 'bg-app-accent/10 border border-app-accent/30 text-app-accent'
                     : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
@@ -45,7 +45,7 @@ export function SettingsSection() {
             resetCanvas();
           }
         }}
-        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-app-elevated border border-app-border-subtle hover:border-app-error/30 text-app-secondary hover:text-app-error text-[10px] font-bold transition-all active:scale-95"
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-app-elevated border border-app-border-subtle hover:border-app-error/30 text-app-secondary hover:text-app-error text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95"
       >
         <RefreshCw size={10} className="inline" />
         Reset Canvas

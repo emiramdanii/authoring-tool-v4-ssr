@@ -321,7 +321,7 @@ export default function PageTypeCreator() {
           onClick={() => setActiveCategory(null)}
           aria-pressed={!activeCategory}
           aria-label="Tampilkan semua kategori"
-          className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
+          className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color] ${
             !activeCategory
               ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
               : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
@@ -335,7 +335,7 @@ export default function PageTypeCreator() {
             onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
             aria-pressed={activeCategory === cat.id}
             aria-label={`Filter kategori ${cat.label}`}
-            className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
+            className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color] ${
               activeCategory === cat.id
                 ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
                 : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
@@ -356,7 +356,7 @@ export default function PageTypeCreator() {
                 onClick={() => handleSelectType(pt)}
                 aria-expanded={isSelected}
                 aria-label={`${pt.name} — ${pt.description}`}
-                className={`card-hover w-full flex items-center gap-2 p-2 rounded-xl transition-all active:scale-95 ${
+                className={`card-hover w-full flex items-center gap-2 p-2 rounded-xl transition-[transform,box-shadow,background-color] active:scale-95 ${
                   isSelected
                     ? 'bg-app-accent/10 border border-app-accent/30 ring-1 ring-app-accent/20'
                     : 'bg-app-elevated/40 border border-app-border/20 hover:border-app-border'

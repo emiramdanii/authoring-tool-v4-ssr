@@ -67,7 +67,7 @@ export function BlockVariantSwitcher({ block }: BlockVariantSwitcherProps) {
             <button
               key={v}
               onClick={() => handleVariantChange(v)}
-              className={`px-2 py-0.5 rounded-md text-[9px] font-bold border transition-all ${
+              className={`px-2 py-0.5 rounded-md text-[9px] font-bold border transition-[background-color,border-color,color] ${
                 isActive
                   ? VARIANT_COLORS[v]
                   : 'bg-app-elevated/40 text-app-muted border-app-border/20 hover:bg-app-elevated/60 hover:text-app-secondary'

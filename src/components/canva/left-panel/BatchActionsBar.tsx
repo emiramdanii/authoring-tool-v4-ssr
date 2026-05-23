@@ -98,7 +98,7 @@ export default function BatchActionsBar() {
         {/* Duplicate */}
         <button
           onClick={handleBatchDuplicate}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all active:scale-95"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[transform,box-shadow,background-color] active:scale-95"
           title="Duplikat semua yang dipilih"
         >
           <Copy size={10} />
@@ -109,7 +109,7 @@ export default function BatchActionsBar() {
         <div className="relative">
           <button
             onClick={() => setShowVariantPicker(!showVariantPicker)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all active:scale-95"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[transform,box-shadow,background-color] active:scale-95"
             title="Atur tampilan variant"
           >
             <Palette size={10} />
@@ -117,12 +117,12 @@ export default function BatchActionsBar() {
           </button>
 
           {showVariantPicker && (
-            <div className="absolute bottom-full left-0 mb-1 bg-app-surface border border-app-border/30 rounded-lg shadow-xl p-1.5 flex gap-1 z-10">
+            <div className="absolute bottom-full left-0 mb-1 bg-app-surface border border-app-border/30 rounded-lg shadow-md p-1.5 flex gap-1 z-10">
               {(['A', 'B', 'C'] as const).map(v => (
                 <button
                   key={v}
                   onClick={() => handleSetVariant(v)}
-                  className="px-2 py-1 rounded-md text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-all"
+                  className="px-2 py-1 rounded-md text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[background-color,border-color,color]"
                 >
                   {isSederhana
                     ? v === 'A' ? 'Standar' : v === 'B' ? 'Kompak' : 'Lebar'
@@ -136,7 +136,7 @@ export default function BatchActionsBar() {
         {/* Delete (destructive) */}
         <button
           onClick={handleBatchDelete}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all active:scale-95"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-[transform,box-shadow,background-color] active:scale-95"
           title="Hapus semua yang dipilih"
         >
           <Trash2 size={10} />

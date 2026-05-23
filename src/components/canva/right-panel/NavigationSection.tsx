@@ -97,7 +97,7 @@ export default function NavigationSection() {
               <button
                 key={style.value}
                 onClick={() => updateNavConfig({ navbarStyle: style.value })}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all text-left ${
+                className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-[background-color,border-color] text-left ${
                   isActive
                     ? 'bg-amber-500/10 border border-amber-500/30'
                     : 'bg-app-elevated/50 border border-transparent hover:border-app-border/30'

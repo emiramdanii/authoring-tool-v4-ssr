@@ -60,7 +60,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
         <TooltipTrigger asChild>
           <button
             onClick={() => onTabChange(item.id)}
-            className={`relative w-10 h-10 flex items-center justify-center rounded-lg transition-all duration-200 ${
+            className={`relative w-10 h-10 flex items-center justify-center rounded-lg transition-[background-color,border-color,color] duration-200 ${
               isActive
                 ? 'bg-app-accent/10 text-app-accent'
                 : 'text-app-muted hover:text-app-secondary hover:bg-app-elevated/50'

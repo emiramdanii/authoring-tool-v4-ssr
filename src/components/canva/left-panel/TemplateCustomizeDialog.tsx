@@ -147,7 +147,7 @@ export default function TemplateCustomizeDialog({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-[380px] max-h-[85vh] bg-app-surface border border-app-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="w-[380px] max-h-[85vh] bg-app-surface border border-app-border rounded-2xl shadow-md flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-app-border/30">
           <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function TemplateCustomizeDialog({
             <div className="grid grid-cols-2 gap-1.5">
               <button
                 onClick={() => setApplyMode('replace')}
-                className={`px-2.5 py-2.5 rounded-lg border text-left transition-all ${
+                className={`px-2.5 py-2.5 rounded-lg border text-left transition-[transform,background-color,border-color] ${
                   applyMode === 'replace'
                     ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
                     : 'bg-app-elevated/40 border-app-border/20 text-app-secondary hover:border-app-border-strong'
@@ -214,7 +214,7 @@ export default function TemplateCustomizeDialog({
               <button
                 onClick={() => setApplyMode('insert')}
                 disabled={existingPageCount === 0}
-                className={`px-2.5 py-2.5 rounded-lg border text-left transition-all ${
+                className={`px-2.5 py-2.5 rounded-lg border text-left transition-[transform,background-color,border-color] ${
                   applyMode === 'insert'
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                     : 'bg-app-elevated/40 border-app-border/20 text-app-secondary hover:border-app-border-strong'
@@ -251,7 +251,7 @@ export default function TemplateCustomizeDialog({
                   <button
                     key={i}
                     onClick={() => togglePage(i)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-all text-left ${
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-[background-color,border-color] text-left ${
                       isEnabled
                         ? 'bg-app-elevated/40 border-app-border/30 hover:border-app-accent/30'
                         : 'bg-app-elevated/10 border-app-border/10 opacity-50'
@@ -319,7 +319,7 @@ export default function TemplateCustomizeDialog({
                 <button
                   key={v}
                   onClick={() => setVariant(v)}
-                  className={`flex-1 py-2 rounded-lg text-[10px] font-bold border transition-all ${
+                  className={`flex-1 py-2 rounded-lg text-[10px] font-bold border transition-[background-color,border-color,color] ${
                     config.variant === v
                       ? 'bg-app-accent/15 border-app-accent/30 text-app-accent'
                       : 'bg-app-elevated/40 border-app-border/20 text-app-muted hover:border-app-border-strong'
@@ -383,7 +383,7 @@ export default function TemplateCustomizeDialog({
           <button
             onClick={handleApply}
             disabled={isLoading || enabledCount < 2}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-[transform,box-shadow,background-color] active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
               applyMode === 'insert'
                 ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
                 : 'bg-app-accent/15 border border-app-accent/30 text-app-accent hover:bg-app-accent/25'

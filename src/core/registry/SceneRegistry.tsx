@@ -58,48 +58,106 @@ export interface BlockDefinition extends BlockDefinitionMeta {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// BLOCK RENDERER IMPORTS
+// BLOCK RENDERER IMPORTS — ALL LAZY
 // ═══════════════════════════════════════════════════════════════════
-// Each renderer is now in its own file under ../renderer/blocks/
-// The registry maps block types directly to these renderers.
-//
-// PERFORMANCE: Heavy game renderers are lazy-loaded via React.lazy()
-// to reduce initial bundle size. Light renderers are eagerly imported.
+// ALL block renderers are lazy-loaded via React.lazy() to minimize
+// the initial bundle. SchemaBlockRenderer wraps each block in
+// <React.Suspense>, so this is a drop-in optimization.
 // ═══════════════════════════════════════════════════════════════════
 
-// ── Eager imports (lightweight, frequently used) ─────────────────
-import {
-  CoverRenderer,
-  HeroRenderer,
-  PetunjukRenderer,
-  TpRenderer,
-  AlurRenderer,
-  DefBoxRenderer,
-  NcGridRenderer,
-  FlashcardRenderer,
-  FtabRenderer,
-  NormaKartuRenderer,
-  DiskusiRenderer,
-  KuisRenderer,
-  HasilRenderer,
-  RefleksiRenderer,
-  PenutupRenderer,
-  TabelAccordionRenderer,
-  TujuanDisplayRenderer,
-  MotivasiRenderer,
-  RangkumanRenderer,
-  MateriBlokRenderer,
-  GambarRenderer,
-  TimelineRenderer,
-  CompareRenderer,
-  RevealRenderer,
-  TabelRenderer,
-  ChecklistRenderer,
-  StatistikRenderer,
-  StudiRenderer,
-} from '../renderer/blocks';
+// ── Content & structure renderers ────────────────────────────────
+const CoverRenderer = React.lazy(() =>
+  import('../renderer/blocks/CoverRenderer').then(m => ({ default: m.CoverRenderer }))
+);
+const HeroRenderer = React.lazy(() =>
+  import('../renderer/blocks/HeroRenderer').then(m => ({ default: m.HeroRenderer }))
+);
+const PetunjukRenderer = React.lazy(() =>
+  import('../renderer/blocks/PetunjukRenderer').then(m => ({ default: m.PetunjukRenderer }))
+);
+const TpRenderer = React.lazy(() =>
+  import('../renderer/blocks/TpRenderer').then(m => ({ default: m.TpRenderer }))
+);
+const AlurRenderer = React.lazy(() =>
+  import('../renderer/blocks/AlurRenderer').then(m => ({ default: m.AlurRenderer }))
+);
+const SkenarioRenderer = React.lazy(() =>
+  import('../renderer/blocks/SkenarioRenderer').then(m => ({ default: m.SkenarioRenderer }))
+);
+const DefBoxRenderer = React.lazy(() =>
+  import('../renderer/blocks/DefBoxRenderer').then(m => ({ default: m.DefBoxRenderer }))
+);
+const NcGridRenderer = React.lazy(() =>
+  import('../renderer/blocks/NcGridRenderer').then(m => ({ default: m.NcGridRenderer }))
+);
+const FlashcardRenderer = React.lazy(() =>
+  import('../renderer/blocks/FlashcardRenderer').then(m => ({ default: m.FlashcardRenderer }))
+);
+const FtabRenderer = React.lazy(() =>
+  import('../renderer/blocks/FtabRenderer').then(m => ({ default: m.FtabRenderer }))
+);
+const NormaKartuRenderer = React.lazy(() =>
+  import('../renderer/blocks/NormaKartuRenderer').then(m => ({ default: m.NormaKartuRenderer }))
+);
+const DiskusiRenderer = React.lazy(() =>
+  import('../renderer/blocks/DiskusiRenderer').then(m => ({ default: m.DiskusiRenderer }))
+);
+const KuisRenderer = React.lazy(() =>
+  import('../renderer/blocks/KuisRenderer').then(m => ({ default: m.KuisRenderer }))
+);
+const HasilRenderer = React.lazy(() =>
+  import('../renderer/blocks/HasilRenderer').then(m => ({ default: m.HasilRenderer }))
+);
+const RefleksiRenderer = React.lazy(() =>
+  import('../renderer/blocks/RefleksiRenderer').then(m => ({ default: m.RefleksiRenderer }))
+);
+const PenutupRenderer = React.lazy(() =>
+  import('../renderer/blocks/PenutupRenderer').then(m => ({ default: m.PenutupRenderer }))
+);
+const TabelAccordionRenderer = React.lazy(() =>
+  import('../renderer/blocks/TabelAccordionRenderer').then(m => ({ default: m.TabelAccordionRenderer }))
+);
+const MateriSectionRenderer = React.lazy(() =>
+  import('../renderer/blocks/MateriSectionRenderer').then(m => ({ default: m.MateriSectionRenderer }))
+);
+const TujuanDisplayRenderer = React.lazy(() =>
+  import('../renderer/blocks/TujuanDisplayRenderer').then(m => ({ default: m.TujuanDisplayRenderer }))
+);
+const MotivasiRenderer = React.lazy(() =>
+  import('../renderer/blocks/MotivasiRenderer').then(m => ({ default: m.MotivasiRenderer }))
+);
+const RangkumanRenderer = React.lazy(() =>
+  import('../renderer/blocks/RangkumanRenderer').then(m => ({ default: m.RangkumanRenderer }))
+);
+const MateriBlokRenderer = React.lazy(() =>
+  import('../renderer/blocks/MateriBlokRenderer').then(m => ({ default: m.MateriBlokRenderer }))
+);
+const GambarRenderer = React.lazy(() =>
+  import('../renderer/blocks/GambarRenderer').then(m => ({ default: m.GambarRenderer }))
+);
+const TimelineRenderer = React.lazy(() =>
+  import('../renderer/blocks/TimelineRenderer').then(m => ({ default: m.TimelineRenderer }))
+);
+const CompareRenderer = React.lazy(() =>
+  import('../renderer/blocks/CompareRenderer').then(m => ({ default: m.CompareRenderer }))
+);
+const RevealRenderer = React.lazy(() =>
+  import('../renderer/blocks/RevealRenderer').then(m => ({ default: m.RevealRenderer }))
+);
+const TabelRenderer = React.lazy(() =>
+  import('../renderer/blocks/TabelRenderer').then(m => ({ default: m.TabelRenderer }))
+);
+const ChecklistRenderer = React.lazy(() =>
+  import('../renderer/blocks/ChecklistRenderer').then(m => ({ default: m.ChecklistRenderer }))
+);
+const StatistikRenderer = React.lazy(() =>
+  import('../renderer/blocks/StatistikRenderer').then(m => ({ default: m.StatistikRenderer }))
+);
+const StudiRenderer = React.lazy(() =>
+  import('../renderer/blocks/StudiRenderer').then(m => ({ default: m.StudiRenderer }))
+);
 
-// ── Lazy imports (heavy game renderers — all games are lazy-loaded) ──
+// ── Game renderers (heavy — lazy-loaded) ─────────────────────────
 const SortirGameRenderer = React.lazy(() =>
   import('../renderer/blocks/SortirGameRenderer').then(m => ({ default: m.SortirGameRenderer }))
 );
@@ -129,12 +187,6 @@ const CrosswordGameRenderer = React.lazy(() =>
 );
 const TeamBuzzerGameRenderer = React.lazy(() =>
   import('../renderer/blocks/TeamBuzzerGameRenderer').then(m => ({ default: m.TeamBuzzerGameRenderer }))
-);
-const MateriSectionRenderer = React.lazy(() =>
-  import('../renderer/blocks/MateriSectionRenderer').then(m => ({ default: m.MateriSectionRenderer }))
-);
-const SkenarioRenderer = React.lazy(() =>
-  import('../renderer/blocks/SkenarioRenderer').then(m => ({ default: m.SkenarioRenderer }))
 );
 
 import { BLOCK_DEFINITIONS, DEFAULT_CAPABILITIES } from './BlockDefinitionRegistry';

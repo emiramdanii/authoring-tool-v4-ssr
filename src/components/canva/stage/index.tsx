@@ -401,7 +401,7 @@ export default function Stage() {
         <div
           ref={stageWrapRef}
           id="cm-stage-wrap"
-          className="relative overflow-hidden shadow-2xl shadow-black/50"
+          className="relative overflow-hidden shadow-md shadow-black/50"
           style={{
             width: ratio.w,
             height: ratio.h,

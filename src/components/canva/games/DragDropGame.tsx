@@ -97,7 +97,7 @@ export function DragDropGame({ data, compact, interactive, onComplete }: GameCom
           const origIdx = items.indexOf(it);
           return (
           <button key={origIdx} onClick={() => handleItemSelect(origIdx)}
-            className={`text-[9px] px-2 py-1 rounded-md border font-semibold transition-all ${
+            className={`text-[9px] px-2 py-1 rounded-md border font-semibold transition-[background-color,border-color] ${
               selectedIdx === origIdx
                 ? 'bg-cyan-500/30 border-cyan-400/50 text-cyan-200 ring-1 ring-cyan-400/30'
                 : 'bg-cyan-500/15 border-cyan-500/25 text-cyan-300 hover:bg-cyan-500/30 cursor-pointer'
@@ -117,7 +117,7 @@ export function DragDropGame({ data, compact, interactive, onComplete }: GameCom
           return (
             <div key={`target-${tid}`}
               onClick={() => handleDrop(tid)}
-              className={`rounded-lg border-2 border-dashed p-2 min-h-[32px] transition-all ${
+              className={`rounded-lg border-2 border-dashed p-2 min-h-[32px] transition-[background-color,border-color] ${
                 isActive ? 'border-cyan-400/30 bg-cyan-500/5 cursor-pointer hover:border-cyan-400/50' : 'border-app-border/10 bg-app-elevated/5'
               }`}>
               <div className="text-[9px] font-bold text-app-primary/50 mb-1">{String(tgt.label || tid)}</div>

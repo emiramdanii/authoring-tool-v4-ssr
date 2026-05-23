@@ -45,7 +45,7 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
         aria-selected={activeTabId === null}
         onClick={() => setActiveTabId(null)}
         className={`
-          flex items-center gap-1.5 rounded-full transition-all whitespace-nowrap
+          flex items-center gap-1.5 rounded-full transition-[background-color,border-color,color] whitespace-nowrap
           ${isCompact ? 'px-2.5 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]'}
           font-bold
           ${activeTabId === null
@@ -71,7 +71,7 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
             aria-selected={isActive}
             onClick={() => setActiveTabId(isActive ? null : tab.id)}
             className={`
-              flex items-center gap-1.5 rounded-full transition-all whitespace-nowrap
+              flex items-center gap-1.5 rounded-full transition-[background-color,border-color,color] whitespace-nowrap
               ${isCompact ? 'px-2.5 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]'}
               font-bold
               ${isActive

@@ -297,7 +297,7 @@ function PlayCanvas() {
           pageKey={`play-page-${interactivePageIdx}`}
           direction={direction as PageDirection}
           duration={0.35}
-          className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
+          className="relative overflow-hidden shadow-md shadow-black/50 ring-1 ring-app-border/30"
           style={{
             width: ratio.w,
             height: ratio.h,
@@ -347,7 +347,7 @@ function PlayCanvas() {
                         useInteractiveStore.getState().goInteractivePage(i);
                         goPage(i);
                       }}
-                      className={`flex-shrink-0 transition-all duration-200 ${
+                      className={`flex-shrink-0 transition-[width,height,background-color,box-shadow] duration-200 ${
                         i === interactivePageIdx
                           ? 'w-6 h-2 rounded-full'
                           : 'w-2 h-2 rounded-full'
@@ -522,7 +522,7 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
             <button
               key={p.id}
               onClick={() => handleSelect(i)}
-              className={`relative rounded-xl overflow-hidden transition-all hover:scale-105 anim-enter-slide-up ${
+              className={`relative rounded-xl overflow-hidden transition-[transform,background-color,border-color] hover:scale-[1.03] anim-enter-slide-up ${
                 isActive
                   ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
                   : 'ring-1 ring-app-border/40 hover:ring-app-border/60'

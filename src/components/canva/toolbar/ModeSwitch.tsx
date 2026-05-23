@@ -37,7 +37,7 @@ export function ModeSwitch({ appMode, setAppMode }: ModeSwitchProps) {
             variant="ghost"
             size="sm"
             onClick={() => setAppMode(m.id)}
-            className={`h-6 px-2.5 gap-1 text-[10px] font-bold transition-all rounded-full ${
+            className={`h-6 px-2.5 gap-1 text-[10px] font-bold transition-[background-color,border-color] rounded-full ${
               isActive
                 ? 'bg-app-accent text-app-inverse shadow-sm'
                 : 'text-app-muted hover:text-app-secondary'

@@ -132,7 +132,7 @@ export default function PreviewMode() {
           /* Mobile phone frame — constrains to phone-like aspect ratio */
           <div className="flex items-center justify-center w-full h-full">
             <div
-              className="relative bg-black rounded-[2.5rem] p-3 shadow-2xl shadow-black/60 ring-1 ring-white/10"
+              className="relative bg-black rounded-[2.5rem] p-3 shadow-md shadow-black/60 ring-1 ring-white/10"
               style={{ maxWidth: 430, aspectRatio: '9/16', height: '90%' }}
             >
               {/* Phone notch indicator */}
@@ -166,7 +166,7 @@ export default function PreviewMode() {
             pageKey={`preview-page-${currentPageIndex}`}
             direction={direction as PageDirection}
             duration={0.3}
-            className="relative overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-app-border/30"
+            className="relative overflow-hidden shadow-md shadow-black/50 ring-1 ring-app-border/30"
             style={{
               width: ratio.w,
               height: ratio.h,
@@ -188,7 +188,7 @@ export default function PreviewMode() {
 
       {/* Floating navigation bar at bottom */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
-        <div className="bg-app-surface border-b border-app-border rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-xl">
+        <div className="bg-app-surface border-b border-app-border rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-md">
           {/* Back to Edit */}
           <Button
             variant="ghost"

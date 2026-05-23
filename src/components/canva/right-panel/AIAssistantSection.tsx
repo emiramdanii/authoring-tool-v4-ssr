@@ -148,7 +148,7 @@ export default function AIAssistantSection() {
         <div className="flex gap-0.5 mb-3 bg-app-elevated/30 rounded-lg p-0.5">
           <button
             onClick={() => setActiveTab('generate')}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'generate'
                 ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
                 : 'text-app-muted hover:text-app-secondary border border-transparent'
@@ -159,7 +159,7 @@ export default function AIAssistantSection() {
           </button>
           <button
             onClick={() => setActiveTab('content')}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'content'
                 ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
                 : 'text-app-muted hover:text-app-secondary border border-transparent'
@@ -170,7 +170,7 @@ export default function AIAssistantSection() {
           </button>
           <button
             onClick={() => setActiveTab('refine')}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[8px] font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[8px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'refine'
                 ? 'bg-violet-500/15 text-violet-300 border border-violet-500/20'
                 : 'text-app-muted hover:text-app-secondary border border-transparent'
@@ -194,7 +194,7 @@ export default function AIAssistantSection() {
       {/* Floating hint */}
       {showHint && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed z-[150] animate-in fade-in slide-in-from-right-4 duration-500"
+          className="fixed z-[150] animate-in fade-in slide-in-from-right-4 duration-300"
           style={{
             right: '300px',
             top: '50%',

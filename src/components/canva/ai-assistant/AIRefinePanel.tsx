@@ -249,7 +249,7 @@ export default function AIRefinePanel() {
               key={option.id}
               onClick={() => handleRefine(option)}
               disabled={loading}
-              className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-all text-left active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none ${
+              className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-[transform,box-shadow,background-color] text-left active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none ${
                 isActive
                   ? 'bg-violet-500/15 border-violet-500/30 text-violet-300'
                   : 'bg-app-elevated/30 border-app-border/15 text-app-secondary hover:border-violet-500/20 hover:text-app-primary'
@@ -320,7 +320,7 @@ export default function AIRefinePanel() {
             <button
               onClick={handleApply}
               disabled={applied}
-              className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
+              className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
                 applied
                   ? 'bg-emerald-500/20 text-emerald-400/60 border border-emerald-500/20'
                   : 'bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25'
@@ -346,7 +346,7 @@ export default function AIRefinePanel() {
       {(selectedRefinement || result) && (
         <button
           onClick={handleClear}
-          className="w-full py-1.5 rounded-lg text-[9px] text-app-muted hover:text-app-secondary bg-app-elevated/20 border border-app-border/15 hover:border-app-border/30 transition-all"
+          className="w-full py-1.5 rounded-lg text-[9px] text-app-muted hover:text-app-secondary bg-app-elevated/20 border border-app-border/15 hover:border-app-border/30 transition-[background-color,border-color]"
         >
           Reset Refinement
         </button>

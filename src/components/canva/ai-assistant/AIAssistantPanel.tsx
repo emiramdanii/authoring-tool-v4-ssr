@@ -192,7 +192,7 @@ export default function AIAssistantPanel() {
           <ChevronDown size={12} className={`text-app-muted transition-transform ${actionDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
         {actionDropdownOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 rounded-xl bg-app-surface border border-app-border shadow-xl z-50 max-h-64 overflow-hidden flex flex-col">
+          <div className="absolute top-full left-0 right-0 mt-1 rounded-xl bg-app-surface border border-app-border shadow-md z-50 max-h-64 overflow-hidden flex flex-col">
             <div className="p-2 border-b border-app-border/20">
               <input type="text" value={actionSearch} onChange={(e) => setActionSearch(e.target.value)} placeholder="Cari jenis konten..." className="w-full h-6 px-2 text-[9px] bg-app-elevated/60 border border-app-border/30 rounded-md focus:border-amber-500/50 focus:outline-none placeholder:text-app-muted" autoFocus />
             </div>

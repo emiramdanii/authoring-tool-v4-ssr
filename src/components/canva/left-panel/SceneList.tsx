@@ -84,7 +84,7 @@ export function SceneList() {
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`w-full text-left card-hover relative rounded-xl overflow-hidden transition-all ${
+            className={`w-full text-left card-hover relative rounded-xl overflow-hidden transition-[transform,background-color,border-color] ${
               dragIdx === i
                 ? 'opacity-40 scale-95'
                 : dragOverIdx === i
@@ -145,7 +145,7 @@ export function SceneList() {
       {/* Add page button */}
       <button
         onClick={() => addPage()}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-app-border/40 hover:border-app-accent/40 bg-app-elevated/20 hover:bg-app-accent/5 text-app-muted hover:text-app-accent text-[10px] font-medium transition-all active:scale-[0.97]"
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-app-border/40 hover:border-app-accent/40 bg-app-elevated/20 hover:bg-app-accent/5 text-app-muted hover:text-app-accent text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
       >
         <Plus size={12} /> Tambah Halaman
       </button>

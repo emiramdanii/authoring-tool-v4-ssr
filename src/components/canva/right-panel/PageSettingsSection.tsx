@@ -164,7 +164,7 @@ export default function PageSettingsSection() {
                 <button
                   key={p.id}
                   onClick={() => applyLayoutPreset(p.id)}
-                  className={`card-hover flex flex-col items-center gap-0.5 rounded-xl p-2 border text-center transition-all ${
+                  className={`card-hover flex flex-col items-center gap-0.5 rounded-xl p-2 border text-center transition-[transform,background-color,border-color] ${
                     isActive
                       ? 'bg-app-accent/15 border-app-accent/30 text-app-accent'
                       : 'border-app-border/20 text-app-secondary'

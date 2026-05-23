@@ -110,7 +110,7 @@ export default function CanvasEmptyState() {
               <button
                 key={card.id}
                 onClick={card.action}
-                className={`anim-enter-slide-up flex-1 min-w-0 p-5 rounded-xl border bg-app-elevated/30 text-left transition-all hover:-translate-y-0.5 active:scale-[0.98] focus-ring ${card.borderClass} ${card.hoverBorderClass}`}
+                className={`anim-enter-slide-up flex-1 min-w-0 p-5 rounded-xl border bg-app-elevated/30 text-left transition-[transform,background-color,border-color] hover:-translate-y-0.5 active:scale-[0.98] focus-ring ${card.borderClass} ${card.hoverBorderClass}`}
                 style={{ animationDelay: `${i * 0.08}s`, animationFillMode: 'both' }}
               >
                 <div className={`w-10 h-10 rounded-lg ${card.iconBgClass} flex items-center justify-center mb-3`}>

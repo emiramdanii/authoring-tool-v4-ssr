@@ -82,7 +82,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
       </p>
       <div className="flex gap-2 mb-1">
         <button onClick={() => handleBuzz('A')} disabled={!!buzzed || correct === 'wrong'}
-          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all border ${
+          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-[transform,box-shadow,background-color,border-color] border ${
             correct === 'A' ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-300' :
             buzzed === 'A' ? 'bg-blue-500/30 border-blue-400/40 text-blue-300' :
             'bg-blue-500/15 hover:bg-blue-500/30 border-blue-400/20 text-blue-300 cursor-pointer'
@@ -90,7 +90,7 @@ export function TeamBuzzerGame({ data, compact, interactive, onComplete }: GameC
           {timA} ({scoreA})
         </button>
         <button onClick={() => handleBuzz('B')} disabled={!!buzzed || correct === 'wrong'}
-          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all border ${
+          className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-[transform,box-shadow,background-color,border-color] border ${
             correct === 'B' ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-300' :
             buzzed === 'B' ? 'bg-orange-500/30 border-orange-400/40 text-orange-300' :
             'bg-orange-500/15 hover:bg-orange-500/30 border-orange-400/20 text-orange-300 cursor-pointer'

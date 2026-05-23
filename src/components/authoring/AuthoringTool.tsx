@@ -32,7 +32,7 @@ import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager'
 import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import RecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/RecoveryDialog';
-import PerformanceMonitor from '@/components/shared/PerformanceMonitor';
+const PerformanceMonitor = dynamic(() => import('@/components/shared/PerformanceMonitor'), { ssr: false });
 
 // Lazy-load panels — each panel is only loaded when first rendered
 const Dashboard = React.lazy(() => import('./Dashboard'));
@@ -405,6 +405,7 @@ function AuthoringToolInner() {
                     return (
                       <button
                         key={item.id}
+                        data-testid={`nav-${item.id}`}
                         onClick={() => setActivePanel(item.id)}
                         onMouseEnter={() => handleNavHover(item.id)}
                         className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
@@ -434,6 +435,7 @@ function AuthoringToolInner() {
                 return (
                   <button
                     key={item.id}
+                    data-testid={`nav-${item.id}`}
                     onClick={() => setActivePanel(item.id)}
                     onMouseEnter={() => handleNavHover(item.id)}
                     className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${

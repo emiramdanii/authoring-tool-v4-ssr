@@ -230,10 +230,10 @@ export default function AddBlockPanel() {
               <button
                 key={fragment.id}
                 onClick={() => handleInsertFragment(fragment.id)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-accent/20 bg-app-accent/5 hover:bg-app-accent/10 text-left transition-all active:scale-[0.98] group"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-accent/20 bg-app-accent/5 hover:bg-app-accent/10 text-left transition-[transform,box-shadow,background-color] active:scale-[0.98] group"
                 title={fragment.description}
               >
-                <span className="text-base flex-shrink-0 group-hover:scale-110 transition-transform">{fragment.icon}</span>
+                <span className="text-base flex-shrink-0 group-hover:scale-[1.05] transition-transform">{fragment.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[9px] font-bold text-app-accent truncate group-hover:text-app-primary transition-colors">
                     {fragment.title}
@@ -251,7 +251,7 @@ export default function AddBlockPanel() {
         <div className="flex flex-wrap gap-1">
           <button
             onClick={() => setFragmentFilter('all')}
-            className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-all ${
+            className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-[background-color,border-color,color] ${
               fragmentFilter === 'all'
                 ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
                 : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
@@ -265,7 +265,7 @@ export default function AddBlockPanel() {
               <button
                 key={catKey}
                 onClick={() => setFragmentFilter(catKey)}
-                className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-all flex items-center gap-0.5 ${
+                className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-[background-color,border-color,color] flex items-center gap-0.5 ${
                   fragmentFilter === catKey
                     ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
                     : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
@@ -286,10 +286,10 @@ export default function AddBlockPanel() {
               <button
                 key={fragment.id}
                 onClick={() => handleInsertFragment(fragment.id)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border/15 bg-app-elevated/20 hover:bg-app-elevated/40 hover:border-app-accent/25 text-left transition-all active:scale-[0.98] group"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border/15 bg-app-elevated/20 hover:bg-app-elevated/40 hover:border-app-accent/25 text-left transition-[transform,box-shadow,background-color] active:scale-[0.98] group"
                 title={fragment.description}
               >
-                <span className="text-base flex-shrink-0 group-hover:scale-110 transition-transform">{fragment.icon}</span>
+                <span className="text-base flex-shrink-0 group-hover:scale-[1.05] transition-transform">{fragment.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[9px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
                     {fragment.title}
@@ -377,7 +377,7 @@ export default function AddBlockPanel() {
                       aria-label={`Tambah ${teacherTerm(block.name, 'sederhana')} — ${block.description}`}
                       className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
                     >
-                      <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform" aria-hidden="true">
+                      <span className="text-lg flex-shrink-0 group-hover:scale-[1.05] transition-transform" aria-hidden="true">
                         {block.icon}
                       </span>
                       <div className="flex-1 min-w-0">
@@ -429,7 +429,7 @@ export default function AddBlockPanel() {
                       aria-label={`Tambah ${block.name} — ${block.description}`}
                       className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
                     >
-                      <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform" aria-hidden="true">
+                      <span className="text-lg flex-shrink-0 group-hover:scale-[1.05] transition-transform" aria-hidden="true">
                         {block.icon}
                       </span>
                       <div className="flex-1 min-w-0">

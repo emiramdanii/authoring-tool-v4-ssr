@@ -55,7 +55,7 @@ export function ZoomControls() {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-36 bg-app-surface border border-app-border shadow-xl rounded-xl overflow-hidden"
+          className="w-36 bg-app-surface border border-app-border shadow-md rounded-xl overflow-hidden"
         >
           {RATIOS_LIST.map((r) => (
             <DropdownMenuItem

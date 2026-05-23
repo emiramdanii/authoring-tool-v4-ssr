@@ -83,7 +83,7 @@ export function ThemePresetPicker() {
                 key={preset.id}
                 onClick={() => handleSelect(preset.id)}
                 className={`
-                  w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all text-[11px]
+                  w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-[background-color,border-color] text-[11px]
                   ${
                     isActive
                       ? 'bg-app-accent/15 text-app-accent border border-app-accent/25'

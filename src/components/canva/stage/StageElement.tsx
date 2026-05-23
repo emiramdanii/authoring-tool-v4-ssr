@@ -86,7 +86,7 @@ export const StageElement = memo(function StageElement({
       {/* Handle bar */}
       {!isInteractiveMode && (
       <div
-        className={`absolute left-0 right-0 flex items-center justify-between px-1 rounded-t text-[9px] font-bold z-20 transition-all ${
+        className={`absolute left-0 right-0 flex items-center justify-between px-1 rounded-t text-[9px] font-bold z-20 transition-[background-color,border-color] ${
           isSelected
             ? isMultiSelected
               ? '-top-5 bg-amber-400/90 text-amber-950'

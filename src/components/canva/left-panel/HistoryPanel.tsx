@@ -154,7 +154,7 @@ export default function HistoryPanel() {
               <button
                 onClick={() => handleJumpTo(i)}
                 data-active={isCurrent}
-                className={`w-full text-left flex items-start gap-2.5 px-2 py-2 rounded-lg transition-all group ${
+                className={`w-full text-left flex items-start gap-2.5 px-2 py-2 rounded-lg transition-[background-color,border-color] group ${
                   isCurrent
                     ? 'bg-blue-500/15 border border-blue-500/30 ring-1 ring-blue-400/20'
                     : isFuture
@@ -166,7 +166,7 @@ export default function HistoryPanel() {
                 {/* Timeline dot + connector */}
                 <div className="flex flex-col items-center flex-shrink-0 mt-0.5">
                   <div
-                    className={`rounded-full transition-all ${
+                    className={`rounded-full transition-[background-color,transform] ${
                       isCurrent
                         ? 'w-3 h-3 bg-blue-400 shadow-md shadow-blue-500/40'
                         : isFuture

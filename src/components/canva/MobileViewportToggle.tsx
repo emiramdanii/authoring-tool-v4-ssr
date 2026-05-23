@@ -18,7 +18,7 @@ export function MobileViewportToggle() {
     <div className="flex items-center rounded-lg border border-app-border/50 bg-app-elevated/50 p-0.5">
       <button
         onClick={() => setPreviewViewport('desktop')}
-        className={`flex items-center justify-center rounded-md p-1 transition-all duration-150 ${
+        className={`flex items-center justify-center rounded-md p-1 transition-[background-color,border-color,color] duration-150 ${
           previewViewport === 'desktop'
             ? 'bg-app-surface text-app-primary shadow-sm'
             : 'text-app-muted hover:text-app-secondary'
@@ -29,7 +29,7 @@ export function MobileViewportToggle() {
       </button>
       <button
         onClick={() => setPreviewViewport('mobile')}
-        className={`flex items-center justify-center rounded-md p-1 transition-all duration-150 ${
+        className={`flex items-center justify-center rounded-md p-1 transition-[background-color,border-color,color] duration-150 ${
           previewViewport === 'mobile'
             ? 'bg-app-surface text-app-primary shadow-sm'
             : 'text-app-muted hover:text-app-secondary'

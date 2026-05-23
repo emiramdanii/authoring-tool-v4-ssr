@@ -193,7 +193,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
       <div className="flex items-center gap-1">
         {(['form', 'preview', 'apply'] as const).map((s, i) => (
           <div key={s} className="flex items-center gap-1">
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold transition-all ${
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold transition-[background-color,border-color] ${
               step === s
                 ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40'
                 : i < ['form', 'preview', 'apply'].indexOf(step)
@@ -288,7 +288,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
                   <button
                     key={key}
                     onClick={() => setPattern(key)}
-                    className={`px-2.5 py-2 rounded-lg border text-left transition-all ${
+                    className={`px-2.5 py-2 rounded-lg border text-left transition-[background-color,border-color] ${
                       pattern === key
                         ? 'bg-violet-500/15 border-violet-500/30 text-violet-300'
                         : 'bg-app-elevated/40 border-app-border/20 text-app-secondary hover:border-app-border-strong'
@@ -316,7 +316,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
                   <button
                     key={key}
                     onClick={() => setPattern(key)}
-                    className={`flex-1 py-1.5 rounded-lg border text-[9px] font-bold transition-all ${
+                    className={`flex-1 py-1.5 rounded-lg border text-[9px] font-bold transition-[background-color,border-color,color] ${
                       pattern === key
                         ? 'bg-violet-500/15 border-violet-500/30 text-violet-300'
                         : 'bg-app-elevated/40 border-app-border/20 text-app-muted hover:border-app-border-strong'
@@ -351,7 +351,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           <button
             onClick={handleGenerate}
             disabled={loading || !topik.trim()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-[transform,box-shadow,background-color] active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25"
           >
             {loading ? (
               <>
@@ -452,13 +452,13 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           <div className="flex gap-1.5">
             <button
               onClick={() => { setStep('form'); setGeneratedTemplate(null); clear(); }}
-              className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-app-elevated/40 border border-app-border/30 text-app-secondary hover:text-app-primary hover:border-app-border-strong transition-all"
+              className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-app-elevated/40 border border-app-border/30 text-app-secondary hover:text-app-primary hover:border-app-border-strong transition-[background-color,border-color,color]"
             >
               ← Ubah
             </button>
             <button
               onClick={() => setStep('apply')}
-              className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25 transition-all flex items-center justify-center gap-1"
+              className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25 transition-[transform,box-shadow,background-color] flex items-center justify-center gap-1"
             >
               Lanjut
               <ChevronRight size={10} />
@@ -480,13 +480,13 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           <div className="flex gap-1.5">
             <button
               onClick={() => setStep('preview')}
-              className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-app-elevated/40 border border-app-border/30 text-app-secondary hover:text-app-primary hover:border-app-border-strong transition-all"
+              className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-app-elevated/40 border border-app-border/30 text-app-secondary hover:text-app-primary hover:border-app-border-strong transition-[background-color,border-color,color]"
             >
               ← Preview
             </button>
             <button
               onClick={handleApply}
-              className="flex-1 py-2.5 rounded-xl text-[11px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25 transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 rounded-xl text-[11px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25 transition-[transform,box-shadow,background-color] active:scale-[0.97] flex items-center justify-center gap-1.5"
             >
               <Sparkles size={12} />
               Terapkan Template

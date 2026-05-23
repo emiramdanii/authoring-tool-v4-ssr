@@ -275,7 +275,7 @@ function LayerList({
             aria-selected={isSelected || isInMultiSelect}
             aria-label={`Block ${blockName}, posisi ${idx + 1} dari ${schema.blocks.length}`}
             tabIndex={isSelected ? 0 : -1}
-            className={`w-full flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-left transition-all ${
+            className={`w-full flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-left transition-[background-color,border-color] ${
               isDragging
                 ? 'opacity-40 bg-blue-500/10 border border-blue-500/20'
                 : isDragOver

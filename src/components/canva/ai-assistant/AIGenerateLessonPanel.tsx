@@ -307,7 +307,7 @@ export default function AIGenerateLessonPanel() {
             <ChevronDown size={12} className={`text-app-muted transition-transform ${patternOpen ? 'rotate-180' : ''}`} />
           </button>
           {patternOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 rounded-xl bg-app-surface border border-app-border shadow-xl z-50 overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-1 rounded-xl bg-app-surface border border-app-border shadow-md z-50 overflow-hidden">
               {(['standar', 'interaktif', 'eksperimen', 'mini'] as const).map(p => (
                 <button
                   key={p}
@@ -332,7 +332,7 @@ export default function AIGenerateLessonPanel() {
       <button
         onClick={handleGenerate}
         disabled={loading || !topik.trim()}
-        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
+        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-[transform,box-shadow,background-color] active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${
           loading
             ? 'bg-amber-500/20 text-amber-400/60 border border-amber-500/20'
             : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30'
@@ -405,7 +405,7 @@ export default function AIGenerateLessonPanel() {
           <button
             onClick={handleApply}
             disabled={applied}
-            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all active:scale-[0.97] disabled:opacity-50 ${
+            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-[0.97] disabled:opacity-50 ${
               applied
                 ? 'bg-emerald-500/20 text-emerald-400/60 border border-emerald-500/20'
                 : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'

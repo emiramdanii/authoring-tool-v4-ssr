@@ -263,7 +263,7 @@ export default function PresentMode() {
             </span>
             <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
               <div
-                className="h-full rounded-full bg-white/60 transition-all duration-300 ease-out"
+                className="h-full rounded-full bg-white/60 transition-[width] duration-300 ease-out"
                 style={{ width: `${((currentPageIndex + 1) / totalPages) * 100}%` }}
               />
             </div>
