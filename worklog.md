@@ -696,3 +696,40 @@ Stage Summary:
 - Sandbox-only build settings removed for better production performance
 - Export HTML interactive elements now keyboard-accessible (flashcard, accordion, reveal)
 - Export navigation buttons now have aria-labels for screen readers
+
+---
+Task ID: sprint-4
+Agent: main
+Task: Sprint 4 — Release Candidate (E2E, Export, Performance, Token Sweep)
+
+Work Log:
+- Audited all 15 E2E data-testid references — all exist in source code
+- Added data-testid to 6 secondary nav buttons in AuthoringTool.tsx
+- Created e2e/navigation.spec.ts (6 tests for sidebar navigation)
+- Created e2e/renderer-smoke.spec.ts (4 tests for template rendering + console errors)
+- Created e2e/export-flow.spec.ts (4 tests for export API validation)
+- Total E2E: 41 tests across 9 spec files
+- Validated HTML export route: XSS sanitization, size guard, filename cleanup
+- Validated SCORM 1.2 export: manifest generation, ZIP creation
+- Created src/__tests__/export-validation.test.ts (16 unit tests)
+- Converted ALL 40 renderers from eager imports to React.lazy() in SceneRegistry.tsx
+- Eliminated 637K monolith chunk (all renderers now code-split on demand)
+- Fixed history-slice.ts circular dep: SceneRegistry → BlockDefinitionRegistry
+- Dynamic-import PerformanceMonitor in AuthoringTool.tsx (dev-only code removed from prod bundle)
+- Batch-fixed 181 transition-all → targeted transitions across renderers + canva components
+- Replaced 26 hover:scale-105 → hover:scale-[1.03] (IOS_INTERACTION token)
+- Replaced 4 hover:scale-110 → hover:scale-[1.05]
+- Replaced 11 duration-500 → duration-300
+- Replaced 19 shadow-xl/2xl → shadow-md (iOS Visual Contract compliant)
+- SchemaRenderer shadow-lg → shadow-md
+- BlockContextMenu shadow-2xl → shadow-md
+- Build: clean (0 TS errors), 520 tests passing, 41 E2E tests
+- Commit: fbdb1c3, pushed to origin/main
+
+Stage Summary:
+- Sprint 4 COMPLETE — Release Candidate ready
+- E2E test coverage: 41 tests across 9 spec files (app-launch, block-ops, page-ops, save-recovery, template-gallery, undo-redo, navigation, renderer-smoke, export-flow)
+- Unit tests: 520 passed (14 test files, +16 new export validation tests)
+- Performance: All 40 renderers lazy-loaded, main bundle no longer includes renderer monolith
+- Token consistency: 0 violations (transition-all, hover:scale-105, duration-500, shadow-xl/2xl)
+- Export pipeline: HTML export + SCORM 1.2 validated, XSS-safe, size-guarded
