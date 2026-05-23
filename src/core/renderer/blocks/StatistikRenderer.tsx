@@ -104,7 +104,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                       border: `1px solid ${itemAlpha(0.2)}`,
                       borderRadius: tokens.radius('xl') + 'px',
                       boxShadow: tokens.raw.shadow.card,
-                      animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${i * 0.08}s both`,
+                      ...tokens.iosEntranceStyle(i, 'slideIn'),
                       transition: 'all 0.2s ease',
                     }}
                   >

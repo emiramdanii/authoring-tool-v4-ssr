@@ -90,7 +90,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                   key={`timeline-step-${i}`}
                   className="flex"
                   style={{
-                    animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${i * 0.1}s both`,
+                    ...tokens.iosEntranceStyle(i, 'slideIn'),
                   }}
                 >
                   {/* Left column: dot + line */}

@@ -361,9 +361,10 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full"
           style={{
             width: `${progress}%`,
+            ...tokens.iosTransitionStyle('width', 'slow'),
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
             backgroundSize: '200% 100%',
             animation: 'shimmer 2s linear infinite',

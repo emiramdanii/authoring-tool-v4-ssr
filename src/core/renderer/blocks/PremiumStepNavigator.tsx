@@ -358,7 +358,7 @@ export function PremiumStepNavigator({
         <div
           key={`step-content-${activeStep}`}
           style={{
-            animation: activeStep > 0 ? 'pageSlideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1)' : 'blockStaggerIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            animation: activeStep > 0 ? 'pageSlideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1)' : `blockStaggerIn ${IOS_INTERACTION.duration.slow}ms ${IOS_INTERACTION.easing.ios} both`,
           }}
         >
           {children}

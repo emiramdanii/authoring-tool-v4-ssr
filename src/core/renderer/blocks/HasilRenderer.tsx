@@ -289,10 +289,11 @@ function VariantBMajalah({
         </div>
         <div className="w-full h-2.5 rounded-full overflow-hidden"
           style={{ background: tokens.subtleBg(0.06) }}>
-          <div className="h-full rounded-full transition-all duration-1000 ease-out"
+          <div className="h-full rounded-full"
             style={{
               width: `${displayPct}%`,
               background: tokens.color(tierColor),
+              ...tokens.iosTransitionStyle('width', 'slow'),
             }} />
         </div>
         <div className="text-[10px] mt-1 font-bold" style={{ color: tokens.muted(0.5) }}>
@@ -600,9 +601,10 @@ function ActivityBreakdown({
                     <span className="text-[10px] font-black flex-shrink-0" style={{ color: tokens.color(barColor) }}>{act.pct}%</span>
                   </div>
                   <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: tokens.subtleBg(0.06) }}>
-                    <div className="h-full rounded-full transition-all duration-700 ease-out" style={{
+                    <div className="h-full rounded-full" style={{
                       width: `${act.pct}%`,
                       background: tokens.color(barColor),
+                      ...tokens.iosTransitionStyle('width', 'slow'),
                     }} />
                   </div>
                 </div>

@@ -286,9 +286,10 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
       <div className="h-1.5 rounded-full overflow-hidden relative"
         {...a11y.progressAria('Kemajuan Isian', currentQ + (answered ? 1 : 0), validQuestions.length)}
         style={{ background: tokens.subtleBg(0.08) }}>
-        <div className="h-full rounded-full transition-all duration-500"
+        <div className="h-full rounded-full"
           style={{
             width: `${progress}%`,
+            ...tokens.iosTransitionStyle('width', 'slow'),
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
             backgroundSize: '200% 100%',
             animation: 'shimmer 2s linear infinite',

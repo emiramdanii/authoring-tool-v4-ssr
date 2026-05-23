@@ -89,7 +89,7 @@ function TujuanVariantA({
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
-        animation: 'coverReveal 0.6s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}
     >
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
@@ -179,7 +179,7 @@ function TujuanVariantA({
               borderLeft: `4px solid ${tokens.color(obj.color)}`,
               borderRadius: tokens.radius('xl') + 'px',
               boxShadow: tokens.raw.shadow.card,
-              animation: `blockStaggerIn 0.5s ease ${i * 0.08}s both`,
+              ...tokens.iosEntranceStyle(i, 'slideIn'),
             }}
           >
             {/* Number badge */}
@@ -367,7 +367,7 @@ function TujuanVariantB({
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${tokens.colorAlpha('y', 0.12)}`,
-        animation: 'coverReveal 0.6s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}
     >
       {/* Header — compact */}
@@ -439,7 +439,7 @@ function TujuanVariantB({
                   background: isChecked
                     ? tokens.colorAlpha(obj.color, 0.06)
                     : 'transparent',
-                  animation: `blockStaggerIn 0.5s ease ${i * 0.08}s both`,
+                  ...tokens.iosEntranceStyle(i, 'slideIn'),
                   cursor: isEditing ? 'default' : 'pointer',
                 }}
                 onClick={() => { if (!isEditing) toggleCheck(i); }}
@@ -704,7 +704,7 @@ function TujuanVariantC({
         background: tokens.color('card'),
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${tokens.colorAlpha('y', 0.12)}`,
-        animation: 'coverReveal 0.6s ease-out',
+        ...tokens.iosEntranceStyle(0, 'scaleIn'),
       }}
     >
       {/* BSNP Badge */}
@@ -756,7 +756,7 @@ function TujuanVariantC({
                 border: `1.5px solid ${tokens.colorAlpha(obj.color, 0.3)}`,
                 boxShadow: 'none',
                 textAlign: 'center',
-                animation: `blockStaggerIn 0.5s ease ${i * 0.1 + 0.3}s both`,
+                ...tokens.iosEntranceStyle(i, 'slideIn'),
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
               }}
             >
@@ -798,7 +798,7 @@ function TujuanVariantC({
             flexDirection: 'column',
             alignItems: 'center',
             gap: '6px',
-            animation: 'blockStaggerIn 0.5s ease both',
+            ...tokens.iosEntranceStyle(0, 'slideIn'),
           }}
         >
           <div

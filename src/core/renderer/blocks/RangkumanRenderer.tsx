@@ -84,7 +84,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         borderLeft: `4px solid ${tokens.color(concept.color)}`,
         borderRadius: tokens.radius('xl') + 'px',
         boxShadow: tokens.raw.shadow.card,
-        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.08}s both`,
+        ...tokens.iosEntranceStyle(index, 'slideIn'),
         transition: 'all 0.2s ease',
       }}
     >
@@ -157,7 +157,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
       className="flex gap-3"
       style={{
         position: 'relative',
-        animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.08}s both`,
+        ...tokens.iosEntranceStyle(index, 'slideIn'),
       }}
     >
       {/* Timeline column: vertical line + numbered circle */}
@@ -271,7 +271,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
               border: `1px solid ${isOpen ? tokens.colorAlpha(concept.color, 0.3) : tokens.colorAlpha(concept.color, 0.12)}`,
               background: isOpen ? tokens.colorAlpha(concept.color, 0.08) : tokens.colorAlpha(concept.color, 0.03),
               overflow: 'hidden',
-              animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${i * 0.08}s both`,
+              ...tokens.iosEntranceStyle(i, 'slideIn'),
               transition: 'all 0.2s ease',
             }}
           >

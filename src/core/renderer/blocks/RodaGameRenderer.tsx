@@ -574,9 +574,10 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
               aria-valuemin={0}
               aria-valuemax={questions.length}
               style={{ background: tokens.subtleBg(0.08) }}>
-              <div className="h-full rounded-full transition-all duration-500"
+              <div className="h-full rounded-full"
                 style={{
                   width: `${questions.length > 0 ? (totalAnswered / questions.length) * 100 : 0}%`,
+                  ...tokens.iosTransitionStyle('width', 'slow'),
                   background: `linear-gradient(90deg, ${tokens.color('c')}, ${tokens.color('y')})`,
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 2s linear infinite',
