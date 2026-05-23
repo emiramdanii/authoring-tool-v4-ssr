@@ -188,7 +188,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           }}
         >
           {/* Icon row */}
-          <div style={{ padding: isCompact ? '10px 12px' : '16px 20px' }}>
+          <div style={{ ...tokens.iosCardPadding(isCompact) }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: tokens.colorAlpha(colorKey, 0.12) }}>
@@ -281,7 +281,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('xl'),
             boxShadow: tokens.iosShadow('whisper'),
-            padding: isCompact ? '16px' : '20px',
+            ...tokens.iosCardPadding(isCompact),
             position: 'relative',
             overflow: 'hidden',
           }}

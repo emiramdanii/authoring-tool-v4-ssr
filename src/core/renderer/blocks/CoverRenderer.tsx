@@ -107,8 +107,8 @@ function CoverVariantA({
       {/* Subtitle */}
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-5 max-w-[380px] overflow-hidden"
-        style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }) }}
+        className="mt-5 overflow-hidden"
+        style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }), maxWidth: tokens.iosSubtitleWidth('coverCentered') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -234,8 +234,8 @@ function CoverVariantB({
         {/* Subtitle */}
         <InlineTextEditor
           {...subtitleEditor}
-          className="mt-5 max-w-[480px] overflow-hidden"
-          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }) }}
+          className="mt-5 overflow-hidden"
+          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }), maxWidth: tokens.iosSubtitleWidth('coverLeft') }}
           placeholder="Ketik subtitle..."
         />
 
@@ -350,8 +350,8 @@ function CoverVariantC({
         {/* Subtitle */}
         <InlineTextEditor
           {...subtitleEditor}
-          className="mt-5 max-w-[440px] overflow-hidden"
-          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }) }}
+          className="mt-5 overflow-hidden"
+          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }), maxWidth: tokens.iosSubtitleWidth('coverMinimal') }}
           placeholder="Ketik subtitle..."
         />
 

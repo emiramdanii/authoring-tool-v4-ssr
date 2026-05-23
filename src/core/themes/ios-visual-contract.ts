@@ -328,6 +328,79 @@ export const IOS_INTERACTION = {
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════
+// IOS_COMPOSITION — Adaptive spacing, rhythm, and width discipline
+// ═══════════════════════════════════════════════════════════════════
+// These tokens formalize the composition patterns that all renderers
+// MUST follow for consistent layout rhythm and content width discipline.
+//
+// Every hardcoded padding/margin/width value in renderers should be
+// replaced with a call to a TokenResolver helper that consumes these
+// tokens. This ensures a single source of truth for spacing rhythm.
+// ═══════════════════════════════════════════════════════════════════
+
+export const IOS_COMPOSITION = {
+  /** Inner margin — space between card edge and nested content
+   *  Usage: takeaways, self-check, nested cards inside a section */
+  innerMargin: {
+    compact: { x: 14, y: 12 },
+    standard: { x: 20, y: 16 },
+  },
+
+  /** Element gap — spacing between sub-elements within a block
+   *  These map to the rhythm tokens in IOS_SPACING but are more granular */
+  elementGap: {
+    /** Icon to title — tight, just enough to separate */
+    iconToTitle: 8,
+    /** Title to subtitle — slightly more breathing room */
+    titleToSubtitle: 8,
+    /** Subtitle to body — starts a new content zone */
+    subtitleToBody: 16,
+    /** Between list items / content blocks */
+    contentBlock: 12,
+    /** Between major sections (header → content → footer) */
+    majorSection: 16,
+    /** Between badges / tags */
+    badgeGap: 8,
+    /** Between question and options */
+    questionToOptions: 16,
+  },
+
+  /** Subtitle max-widths — readable line lengths for subtitle text
+   *  Different contexts need different widths */
+  subtitleWidth: {
+    /** Cover centered subtitle — narrow for readability */
+    coverCentered: 380,
+    /** Cover left-aligned subtitle — wider for left-aligned text */
+    coverLeft: 480,
+    /** Cover minimal subtitle — moderate */
+    coverMinimal: 440,
+    /** Hero subtitle — moderate */
+    hero: 500,
+    /** Hero centered subtitle (Variant C) */
+    heroCentered: 440,
+  },
+
+  /** Card inner padding — standard padding for card content areas
+   *  Used by DefBox, NcGrid cards, Kuis question card, etc. */
+  cardInnerPadding: {
+    compact: { block: 10, inline: 12 },
+    standard: { block: 16, inline: 20 },
+  },
+
+  /** Nested card inner padding — for takeaways, self-check, etc. */
+  nestedCardPadding: {
+    compact: { block: 10, inline: 12 },
+    standard: { block: 14, inline: 16 },
+  },
+
+  /** Kuis card padding — slightly more generous for interactive areas */
+  kuisPadding: {
+    compact: { block: 12, inline: 12 },
+    standard: { block: 16, inline: 20 },
+  },
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════
 // HELPER — Build a typography style object from a level
 // ═══════════════════════════════════════════════════════════════════
 
@@ -356,4 +429,5 @@ export const iosVisualContract = {
   shadow: IOS_SHADOW,
   surface: IOS_SURFACE,
   interaction: IOS_INTERACTION,
+  composition: IOS_COMPOSITION,
 } as const;

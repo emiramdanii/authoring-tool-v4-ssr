@@ -420,8 +420,8 @@ function MateriVariantKlasik({
         <div
           style={{
             ...tokens.nestedCardStyle(),
-            margin: isCompact ? '0 14px 12px' : '0 20px 16px',
-            padding: isCompact ? '10px 12px' : '14px 16px',
+            ...tokens.iosInnerMargin(isCompact),
+            ...tokens.iosNestedPadding(isCompact),
           }}
         >
           <div className="flex items-center gap-2 mb-3">
@@ -480,8 +480,8 @@ function MateriVariantKlasik({
         <div
           style={{
             ...tokens.nestedCardStyle(),
-            margin: isCompact ? '0 14px 14px' : '0 20px 20px',
-            padding: isCompact ? '10px 12px' : '14px 16px',
+            ...tokens.iosInnerMargin(isCompact),
+            ...tokens.iosNestedPadding(isCompact),
             background: tokens.accentBg('y', 0.04),
             borderLeft: tokens.accentStripe('y', 3),
           }}
@@ -525,7 +525,7 @@ function MateriVariantKlasik({
        *  Collapsible mode: "Selengkapnya" / "Ringkas" toggle.
        *  Other strategies: Generic ShowMoreButton. */}
       {isCompressed && isCollapsibleMode && (
-        <div style={{ margin: isCompact ? '0 14px 8px' : '0 20px 12px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact) }}>
           <button
             onClick={showMore}
             className={`flex items-center justify-center gap-1 w-full py-2 rounded-xl ${tokens.iosExpandTw(interactive)}`}
@@ -543,7 +543,7 @@ function MateriVariantKlasik({
         </div>
       )}
       {hasMore && !isAccordionMode && !isCollapsibleMode && (
-        <div style={{ margin: isCompact ? '0 14px 8px' : '0 20px 12px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact) }}>
           <ShowMoreButton
             hiddenCount={hiddenCount}
             onShowMore={showMore}
@@ -555,7 +555,7 @@ function MateriVariantKlasik({
 
       {/* ═══ OVERFLOW INDICATOR — Auto-split prompt (canvas/edit mode only) */}
       {mode === 'canvas' && (
-        <div style={{ margin: isCompact ? '0 14px 14px' : '0 20px 20px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact) }}>
           <OverflowIndicator
             overflowCount={effectiveOverflowCount}
             onSplit={onSplit}
@@ -731,7 +731,7 @@ function MateriVariantMajalah({
             style={{
               ...(isCompact ? {} : { position: 'sticky', top: '16px', alignSelf: 'start' }),
               ...tokens.nestedCardStyle(),
-              padding: isCompact ? '10px' : '14px',
+              ...tokens.iosNestedPadding(isCompact),
             }}
           >
             <div className="flex items-center gap-2 mb-3">
@@ -780,8 +780,8 @@ function MateriVariantMajalah({
         <div
           style={{
             ...tokens.nestedCardStyle(),
-            margin: isCompact ? '0 14px 14px' : '0 20px 20px',
-            padding: isCompact ? '10px 14px' : '12px 18px',
+            ...tokens.iosInnerMargin(isCompact),
+            ...tokens.iosNestedPadding(isCompact),
             background: tokens.accentBg('y', 0.04),
             borderLeft: tokens.accentStripe('y', 3),
           }}
@@ -814,7 +814,7 @@ function MateriVariantMajalah({
 
       {/* ═══ OVERFLOW INDICATOR — Auto-split prompt (canvas/edit mode only) */}
       {mode === 'canvas' && (
-        <div style={{ margin: isCompact ? '0 14px 14px' : '0 20px 20px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact) }}>
           <OverflowIndicator
             overflowCount={effectiveOverflowCount}
             onSplit={onSplit}
@@ -1078,7 +1078,7 @@ function MateriVariantPill({
 
       {/* ═══ OVERFLOW INDICATOR — Auto-split prompt (canvas/edit mode only) */}
       {mode === 'canvas' && (
-        <div style={{ padding: isCompact ? '4px 12px 8px' : '6px 16px 10px' }}>
+        <div style={{ ...tokens.iosInnerMargin(isCompact) }}>
           <OverflowIndicator
             overflowCount={effectiveOverflowCount}
             onSplit={onSplit}

@@ -97,8 +97,9 @@ function KuisVariantKartu({
 
   return (
     <div
-      className="p-6 rounded-2xl"
+      className="rounded-2xl"
       style={{
+        ...tokens.iosKuisPadding(isCompact),
         ...tokens.cardStyle(),
         overflow: 'hidden',
         position: 'relative',
@@ -207,8 +208,9 @@ function KuisVariantRingkas({
 
   return (
     <div
-      className="p-3 rounded-xl"
+      className="rounded-xl"
       style={{
+        ...tokens.iosKuisPadding(isCompact),
         ...tokens.cardStyle(),
         overflow: 'hidden',
         position: 'relative',
@@ -553,8 +555,9 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
 
       {/* ── Variant A: Klasik — the original 2-column grid layout ── */}
       {effectiveVariant === 'A' && (
-        <div className="p-4 rounded-xl"
+        <div className="rounded-xl"
           style={{
+            ...tokens.iosKuisPadding(isCompact),
             ...tokens.cardStyle(),
             overflow: 'hidden',
             position: 'relative',

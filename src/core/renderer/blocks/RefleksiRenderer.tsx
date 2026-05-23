@@ -146,8 +146,9 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]?.trim().length > 0;
         return (
-          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl p-3.5 mb-10 min-w-0"
+          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl mb-10 min-w-0"
             style={{
+              ...tokens.iosCardPadding(isCompact),
               background: tokens.color('card'),
               border: `1px solid ${tokens.subtleBorder(0.08)}`,
               borderLeft: tokens.accentStripe(hasResponse ? 'g' : qColor, 3),
@@ -210,9 +211,10 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       )}
 
       {block.penugasan && !isCompressed && (
-        <div className="mt-4 p-4 rounded-xl"
+        <div className="mt-4 rounded-xl"
           style={{
             ...tokens.nestedCardStyle(),
+            ...tokens.iosNestedPadding(isCompact),
             borderLeft: tokens.accentStripe('p', 3),
           }}>
           <div className="flex items-center gap-2 mb-2">

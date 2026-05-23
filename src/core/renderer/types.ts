@@ -7,7 +7,7 @@
 import { alpha } from '@/lib/color-palette';
 import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
-import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
+import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -322,6 +322,65 @@ export class TokenResolver {
    *  Use for: elements that need focus ring without other interactions */
   iosFocusRing(): string {
     return IOS_INTERACTION.tw.focusRing;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // iOS COMPOSITION — Adaptive spacing, rhythm, width discipline
+  // ═══════════════════════════════════════════════════════════════════
+  // These helpers replace hardcoded padding/margin/max-width values
+  // in renderers with contract-driven tokens for consistent rhythm.
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Inner margin — space between card edge and nested content.
+   *  Use for: takeaway margins, self-check margins, nested card margins
+   *  inside MateriSection. Returns a CSS margin string. */
+  iosInnerMargin(compact?: boolean): Record<string, string> {
+    const spec = compact ? IOS_COMPOSITION.innerMargin.compact : IOS_COMPOSITION.innerMargin.standard;
+    return {
+      margin: `${spec.y}px ${spec.x}px`,
+    };
+  }
+
+  /** Element gap — spacing between sub-elements within a block.
+   *  Use for: icon→title, title→subtitle, subtitle→body, etc.
+   *  Returns a CSS value in px. */
+  iosElementGap(type: keyof typeof IOS_COMPOSITION.elementGap): string {
+    return `${IOS_COMPOSITION.elementGap[type]}px`;
+  }
+
+  /** Subtitle max-width — readable line lengths for subtitle text.
+   *  Use for: Cover, Hero subtitle max-width constraints.
+   *  Returns a CSS value in px. */
+  iosSubtitleWidth(context: keyof typeof IOS_COMPOSITION.subtitleWidth): string {
+    return `${IOS_COMPOSITION.subtitleWidth[context]}px`;
+  }
+
+  /** Card inner padding — standard padding for card content areas.
+   *  Use for: DefBox, NcGrid card content, Kuis question area.
+   *  Returns a CSS padding string. */
+  iosCardPadding(compact?: boolean): Record<string, string> {
+    const spec = compact ? IOS_COMPOSITION.cardInnerPadding.compact : IOS_COMPOSITION.cardInnerPadding.standard;
+    return {
+      padding: `${spec.block}px ${spec.inline}px`,
+    };
+  }
+
+  /** Nested card inner padding — for takeaways, self-check, penugasan.
+   *  Returns a CSS padding string. */
+  iosNestedPadding(compact?: boolean): Record<string, string> {
+    const spec = compact ? IOS_COMPOSITION.nestedCardPadding.compact : IOS_COMPOSITION.nestedCardPadding.standard;
+    return {
+      padding: `${spec.block}px ${spec.inline}px`,
+    };
+  }
+
+  /** Kuis card padding — slightly more generous for interactive areas.
+   *  Returns a CSS padding string. */
+  iosKuisPadding(compact?: boolean): Record<string, string> {
+    const spec = compact ? IOS_COMPOSITION.kuisPadding.compact : IOS_COMPOSITION.kuisPadding.standard;
+    return {
+      padding: `${spec.block}px ${spec.inline}px`,
+    };
   }
 }
 

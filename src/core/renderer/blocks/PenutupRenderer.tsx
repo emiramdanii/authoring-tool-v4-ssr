@@ -97,9 +97,10 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
       {/* ── Score-based badge (Phase 21) — shown when scores exist ── */}
       {hasScores && tierConfig && !isCompressed && (
-        <div className="mb-4 p-3 rounded-xl"
+        <div className="mb-4 rounded-xl"
           style={{
             ...tokens.nestedCardStyle(),
+            ...tokens.iosNestedPadding(isCompact),
           }}>
           <div className="flex items-center gap-3">
             <span style={{ fontSize: isCompact ? '16px' : '18px' }}>{tierConfig.emoji}</span>
@@ -136,9 +137,10 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
       {/* Preview items - improved with card styling */}
       {previewItems.length > 0 && (
-        <div className="mb-4 p-4 rounded-xl"
+        <div className="mb-4 rounded-xl"
           style={{
             ...tokens.nestedCardStyle(),
+            ...tokens.iosNestedPadding(isCompact),
           }}>
           <div className="flex items-center gap-2 mb-3">
             <BookOpen size={14} style={{ color: tokens.color('c') }} />
@@ -162,9 +164,10 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
       {/* Next pertemuan preview — hidden when compressed */}
       {!isCompressed && block.nextPertemuan && (
-        <div className="mt-4 p-4 rounded-xl"
+        <div className="mt-4 rounded-xl"
           style={{
             ...tokens.nestedCardStyle(),
+            ...tokens.iosNestedPadding(isCompact),
             borderLeft: tokens.accentStripe('g', 3),
           }}>
           <div className="flex items-center gap-2 mb-2">

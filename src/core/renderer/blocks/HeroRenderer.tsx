@@ -114,8 +114,8 @@ function HeroVariantA({
       {/* Subtitle */}
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-2 max-w-[500px] overflow-hidden"
-        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.7) }), lineHeight: 1.6 }}
+        className="mt-2 overflow-hidden"
+        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.7) }), lineHeight: 1.6, maxWidth: tokens.iosSubtitleWidth('hero') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -318,8 +318,8 @@ function HeroVariantC({
       {/* Subtitle */}
       <InlineTextEditor
         {...subtitleEditor}
-        className="mt-2 mx-auto max-w-[440px] overflow-hidden"
-        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.6) }), lineHeight: 1.6 }}
+        className="mt-2 mx-auto overflow-hidden"
+        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.6) }), lineHeight: 1.6, maxWidth: tokens.iosSubtitleWidth('heroCentered') }}
         placeholder="Ketik subtitle..."
       />
 

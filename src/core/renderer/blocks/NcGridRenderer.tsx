@@ -94,7 +94,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         borderColor: cardBorder,
         borderRadius: tokens.radius('xl') + 'px',
         boxShadow: tokens.iosShadow('whisper'),
-        padding: isCompact ? '10px' : '15px',
+        ...tokens.iosCardPadding(isCompact),
         overflow: 'hidden',
         position: 'relative',
         animation: `blockStaggerIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${cardIndex * 0.08}s both`,
@@ -190,7 +190,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
       <div
         className="flex items-start gap-3"
         style={{
-          padding: isCompact ? '12px 14px 12px 16px' : '16px 20px 16px 22px',
+          ...tokens.iosCardPadding(isCompact),
+          paddingLeft: isCompact ? '16px' : '22px',
         }}
       >
         {/* Icon on the left */}
