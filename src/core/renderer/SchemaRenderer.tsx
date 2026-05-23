@@ -545,7 +545,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
             {resolved.compression && isCompact && (
               <div
                 className="absolute -top-0.5 left-1 text-[7px] font-bold px-1.5 py-0.5 rounded-b-md flex items-center gap-0.5 shadow-sm"
-                style={{ zIndex: 100, background: 'rgba(245, 158, 11, 0.85)', color: '#000' }}
+                style={{ zIndex: 100, background: tokens.colorAlpha('y', 0.85), color: tokens.color('text') }}
               >
                 {resolved.compression.strategy === 'accordion' ? '⊞' : resolved.compression.strategy === 'reveal-set' ? '⋯' : resolved.compression.strategy === 'step-reveal' ? '▸' : '▾'}
                 {' '}{resolved.compression.strategy}
@@ -592,7 +592,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
             zIndex: 999,
           }}
         >
-          <div className="w-full h-full rounded-full bg-app-accent shadow-[0_0_10px_rgba(245,158,11,0.5)] drop-indicator-pulse" />
+          <div className="w-full h-full rounded-full bg-app-accent drop-indicator-pulse" style={{ boxShadow: `0 0 10px ${tokens.colorAlpha('y', 0.5)}` }} />
         </div>
       )}
 

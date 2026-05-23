@@ -31,7 +31,12 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
 
   return (
     <div onClick={onKolomClick}
-      className="rounded-xl p-3.5 min-h-[70px] border-2 transition-[background-color,border-color,box-shadow] cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={kolomDef.label || 'Kolom'}
+      aria-pressed={selected === kolomDef.id}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onKolomClick?.(); } }}
+      className="rounded-xl p-3.5 min-h-[70px] border-2 transition-[background-color,border-color,box-shadow] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
       style={{
         borderColor: selected ? tokens.colorAlpha(kolomDef.color, 0.5) : tokens.colorAlpha(kolomDef.color, 0.2),
         background: selected ? tokens.colorAlpha(kolomDef.color, 0.08) : tokens.colorAlpha(kolomDef.color, 0.04),

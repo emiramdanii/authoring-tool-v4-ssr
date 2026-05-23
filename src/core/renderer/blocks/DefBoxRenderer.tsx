@@ -248,6 +248,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             {isContentCollapsed && (
               <button
                 onClick={expandContent}
+                aria-expanded={isExpanded}
                 onMouseEnter={() => setIsExpandHovered(true)}
                 onMouseLeave={() => setIsExpandHovered(false)}
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
@@ -369,6 +370,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             )}
             {isContentCollapsed && (
               <button onClick={expandContent}
+                aria-expanded={isExpanded}
                 onMouseEnter={() => setIsExpandHovered(true)}
                 onMouseLeave={() => setIsExpandHovered(false)}
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
@@ -442,6 +444,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           </div>
           {isContentCollapsed && (
             <button onClick={expandContent}
+              aria-expanded={isExpanded}
               onMouseEnter={() => setIsExpandHovered(true)}
               onMouseLeave={() => setIsExpandHovered(false)}
               className={`flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}

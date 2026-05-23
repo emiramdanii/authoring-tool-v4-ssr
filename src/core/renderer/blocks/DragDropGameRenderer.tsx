@@ -449,7 +449,11 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
             <div
               key={`dd-target-${block.id || 'dd'}-${tid}`}
               onClick={() => handleTargetClick(tid)}
-              className="rounded-xl p-3.5 min-h-[60px] border-2 transition-[background-color,border-color,box-shadow] cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={`Target ${tid + 1}`}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTargetClick(tid); } }}
+              className="rounded-xl p-3.5 min-h-[60px] border-2 transition-[background-color,border-color,box-shadow] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
               style={{
                 borderStyle,
                 borderColor,

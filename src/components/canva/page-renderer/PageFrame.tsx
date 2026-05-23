@@ -76,11 +76,12 @@ function getNextLabel(currentType: string, nextType: string): string {
 }
 
 // ── Score tier label + color ──
-export function getScoreTier(pct: number): { label: string; color: string; glow: string } {
-  if (pct >= 90) return { label: 'Luar Biasa', color: '#fbbf24', glow: 'rgba(251,191,36,0.4)' };
-  if (pct >= 75) return { label: 'Hebat', color: '#34d399', glow: 'rgba(52,211,153,0.3)' };
-  if (pct >= 50) return { label: 'Cukup Baik', color: '#22d3ee', glow: 'rgba(34,211,238,0.25)' };
-  return { label: 'Terus Berlatih', color: '#fb923c', glow: 'rgba(251,146,60,0.25)' };
+// Token-aware: when tokens available, resolves from palette; otherwise falls back to safe defaults
+export function getScoreTier(pct: number, tokens?: { color: (k: string) => string; colorAlpha: (k: string, a: number) => string }): { label: string; color: string; glow: string } {
+  if (pct >= 90) return { label: 'Luar Biasa', color: tokens?.color('y') ?? '#fbbf24', glow: tokens?.colorAlpha('y', 0.4) ?? 'rgba(251,191,36,0.4)' };
+  if (pct >= 75) return { label: 'Hebat', color: tokens?.color('g') ?? '#34d399', glow: tokens?.colorAlpha('g', 0.3) ?? 'rgba(52,211,153,0.3)' };
+  if (pct >= 50) return { label: 'Cukup Baik', color: tokens?.color('c') ?? '#22d3ee', glow: tokens?.colorAlpha('c', 0.25) ?? 'rgba(34,211,238,0.25)' };
+  return { label: 'Terus Berlatih', color: tokens?.color('o') ?? '#fb923c', glow: tokens?.colorAlpha('o', 0.25) ?? 'rgba(251,146,60,0.25)' };
 }
 
 // ── Helpers ───────────────────────────────────────────────────

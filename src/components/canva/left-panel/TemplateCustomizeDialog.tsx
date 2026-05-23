@@ -147,7 +147,7 @@ export default function TemplateCustomizeDialog({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-[380px] max-h-[85vh] bg-app-surface border border-app-border rounded-2xl shadow-md flex flex-col overflow-hidden">
+      <div className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[85vh] bg-app-surface border border-app-border rounded-2xl shadow-md flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-app-border/30">
           <div className="flex items-center gap-2">

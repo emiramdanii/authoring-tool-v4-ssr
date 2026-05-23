@@ -239,9 +239,9 @@ function TujuanVariantA({
             onClick={showMore}
             className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl transition-[background-color,border-color,color]"
             style={{
-              background: tokens.isDark() ? 'rgba(52, 211, 153, 0.12)' : 'rgba(52, 211, 153, 0.08)',
-              border: `1px dashed ${tokens.isDark() ? 'rgba(52, 211, 153, 0.4)' : 'rgba(52, 211, 153, 0.3)'}`,
-              color: tokens.isDark() ? 'rgba(52, 211, 153, 1)' : 'rgba(52, 211, 153, 0.9)',
+              background: tokens.colorAlpha('g', tokens.isDark() ? 0.12 : 0.08),
+              border: `1px dashed ${tokens.colorAlpha('g', tokens.isDark() ? 0.4 : 0.3)}`,
+              color: tokens.colorAlpha('g', tokens.isDark() ? 1 : 0.9),
               fontSize: isCompact ? '9px' : '11px',
               fontWeight: 700,
               cursor: 'pointer',
@@ -260,8 +260,8 @@ function TujuanVariantA({
             onClick={showMore}
             className={`flex items-center justify-center gap-1 w-full py-2 rounded-xl ${tokens.iosExpandTw()} `}
             style={{
-              background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
-              color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
+              background: tokens.colorAlpha('p', tokens.isDark() ? 0.15 : 0.1),
+              color: tokens.colorAlpha('p', tokens.isDark() ? 1 : 0.9),
               fontSize: isCompact ? '9px' : '11px',
               cursor: 'pointer',
               fontWeight: 700,
@@ -535,9 +535,9 @@ function TujuanVariantB({
             onClick={showMore}
             className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl transition-[background-color,border-color,color] mt-2"
             style={{
-              background: tokens.isDark() ? 'rgba(52, 211, 153, 0.12)' : 'rgba(52, 211, 153, 0.08)',
-              border: `1px dashed ${tokens.isDark() ? 'rgba(52, 211, 153, 0.4)' : 'rgba(52, 211, 153, 0.3)'}`,
-              color: tokens.isDark() ? 'rgba(52, 211, 153, 1)' : 'rgba(52, 211, 153, 0.9)',
+              background: tokens.colorAlpha('g', tokens.isDark() ? 0.12 : 0.08),
+              border: `1px dashed ${tokens.colorAlpha('g', tokens.isDark() ? 0.4 : 0.3)}`,
+              color: tokens.colorAlpha('g', tokens.isDark() ? 1 : 0.9),
               fontSize: isCompact ? '9px' : '11px',
               fontWeight: 700,
               cursor: 'pointer',
@@ -554,8 +554,8 @@ function TujuanVariantB({
             onClick={showMore}
             className={`flex items-center justify-center gap-1 w-full py-1.5 rounded-xl ${tokens.iosExpandTw()} mt-2`}
             style={{
-              background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
-              color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
+              background: tokens.colorAlpha('p', tokens.isDark() ? 0.15 : 0.1),
+              color: tokens.colorAlpha('p', tokens.isDark() ? 1 : 0.9),
               fontSize: isCompact ? '9px' : '11px',
               cursor: 'pointer',
               fontWeight: 700,

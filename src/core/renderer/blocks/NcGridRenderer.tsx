@@ -133,7 +133,8 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
       {isLong && isCompact && (
         <button className={`mt-1 font-bold ${tokens.iosExpandTw()}`}
           style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
-          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          aria-expanded={expanded}>
           {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
         </button>
       )}
@@ -176,6 +177,11 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
   return (
     <div
       className={`rounded-xl ${tokens.iosCardTw()} min-w-0 group`}
+      role={isLong ? 'button' : undefined}
+      tabIndex={isLong ? 0 : undefined}
+      aria-expanded={isLong ? expanded : undefined}
+      aria-label={isLong ? (expanded ? 'Sembunyikan' : 'Selengkapnya') : undefined}
+      onKeyDown={isLong ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } } : undefined}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -246,6 +252,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
               className={`mt-1 font-bold ${tokens.iosExpandTw()}`}
               style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+              aria-expanded={expanded}
             >
               {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
             </button>
@@ -294,6 +301,11 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
     <div
       className={`${tokens.iosCardTw()} min-w-0 group
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent`}
+      role="button"
+      tabIndex={0}
+      aria-expanded={expanded}
+      aria-label={card.title || 'Kartu'}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } }}
       style={{
         borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
         background: isHovered ? hoverBg : cardBg,
