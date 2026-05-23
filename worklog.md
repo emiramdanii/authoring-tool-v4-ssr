@@ -134,3 +134,28 @@ Stage Summary:
 - Focus rings use outline-app-accent CSS variable for theme consistency
 - NcGrid Card C hover now works correctly (React state instead of broken dynamic Tailwind)
 - Commit: d316a3b, pushed to origin/main
+---
+Task ID: 3c
+Agent: Main Agent
+Task: Sprint 3C — Interaction Polish
+
+Work Log:
+- Audited all 8 renderers for current hover/focus/transition states
+- Added 3 new TokenResolver helpers: iosTransitionStyle(), iosEntranceStyle(), iosHoverBgStyle()
+- Added 4 CSS entrance animation utilities: .ios-entrance-card, .ios-entrance-slide, .ios-entrance-fade, .ios-entrance-reveal
+- Updated PremiumBlockWrapper to use IOS_INTERACTION tokens for stagger timing
+- Updated MicroInteraction and PremiumBadge to use IOS_INTERACTION tokens
+- Updated CSS classes (ios-button, ios-card-interactive, premium-card-glow) to use iOS easing curve
+- KuisRenderer: added ios-entrance-reveal to all 3 variant answer feedback panels + Next button
+- PenutupRenderer: replaced hardcoded hover:bg-[rgba] with theme-aware iosHoverBgStyle() + added entrance animations
+- RefleksiRenderer: replaced hardcoded transition/animation with iosTransitionStyle() + iosEntranceStyle() + iosFocusRing()
+- DefBoxRenderer: replaced hardcoded transition with iosTransitionStyle('max-height')
+- MateriSectionRenderer: added ios-entrance-card to takeaways/self-check + replaced accordion transition with iosTransitionStyle()
+- Updated interactiveCardStyle() to use IOS_INTERACTION tokens
+
+Stage Summary:
+- Commit: 5e9cac6 "Sprint 3C — Interaction Polish"
+- All timing now flows: IOS_INTERACTION → TokenResolver → renderers (single source of truth)
+- Build: clean | Tests: 504/504 pass | TS: no errors
+- 8 files changed, 157 insertions, 35 deletions
+- Key fix: PenutupRenderer preview items now dark-mode safe (was broken before)
