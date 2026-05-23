@@ -609,3 +609,90 @@ Stage Summary:
 - Content width discipline: HasilRenderer fixed
 - BorderRadius: Major values tokenized, small 8px values left as P2
 - 2 commits, pushed to origin/main
+
+---
+Task ID: 4-p1-export-tests
+Agent: Main Agent
+Task: Write unit tests for the export pipeline (src/lib/export/)
+
+Work Log:
+- Read all 6 export pipeline source files: block-renderers.ts, quiz-renderers.ts, navigation-renderers.ts, game-renderers.ts, utils.ts, html-templates.ts
+- Created src/__tests__/export-pipeline.test.ts with 28 tests across 6 describe blocks:
+  1. renderContentBlock() — Block renderer dispatch (5 tests)
+     - kuis/alur/skenario return null (fall through to other modules)
+     - cover renders with title, def-box renders with content
+  2. renderQuizBlock() — Quiz renderer dispatch (4 tests)
+     - kuis renders with title, true-false-game returns non-null, fill-blank-game returns non-null
+     - unknown type returns null
+  3. renderNavigationBlock() — Navigation renderer dispatch (3 tests)
+     - alur renders with title, skenario renders with title
+     - unknown type returns null
+  4. escapeHtml() — XSS protection (6 tests)
+     - Strips <script> tags, escapes & → &amp;, escapes " → &quot;
+     - Escapes angle brackets, empty string, safe content unchanged
+  5. resolveColor() — Color resolution (5 tests)
+     - Resolves 'y' token, returns fallback for undefined, passes hex/rgb through
+     - Returns fallback for unknown token
+  6. Renderer dispatch chain — integration (5 tests)
+     - kuis ends up in quiz-renderers (q-opt, q-text CSS classes)
+     - cover in content renderers (cover-block class)
+     - unknown type falls to generic fallback (generic-block class)
+     - alur in navigation renderers (alur-block class)
+     - sortir-game in game renderers (sortir-block class)
+
+Verification:
+- npx vitest run: 28/28 tests pass (532/532 total, no regressions)
+- npx tsc --noEmit: clean (0 errors)
+
+Stage Summary:
+- 1 new test file: src/__tests__/export-pipeline.test.ts
+- 28 tests covering all 6 export pipeline modules
+- Zero test coverage → full dispatch + utility + integration coverage
+- All existing 504 tests still passing (532 total across 14 files)
+
+---
+Task ID: 4-p1-infra
+Agent: Main Agent
+Task: Fix multiple P1 infrastructure issues for Sprint 4 RC
+
+Work Log:
+- Task 1: Fixed `<html lang="en">` → `"id"` in src/app/layout.tsx (line 67)
+  - Correct language code for Indonesian, critical for screen reader pronunciation
+- Task 2: Gated console.log statements in production code
+  - Audited 5 files for ungated console.log calls
+  - offline-sync.ts line 161: already gated ✓
+  - performance.ts line 124: already gated (inside `else if (process.env.NODE_ENV === 'development')`) ✓
+  - subscription-manager.ts line 89: already gated ✓
+  - persistence-slice.ts line 153: already gated ✓
+  - persistence-slice.ts line 228: fixed — changed `process.env.NODE_ENV !== 'production'` to `process.env.NODE_ENV === 'development'`
+  - history-slice.ts line 117: already gated ✓
+- Task 3: Moved `@types/archiver` from dependencies to devDependencies in package.json
+  - Version `"^7.0.0"` preserved
+- Task 4: Enabled reactStrictMode in next.config.js
+  - Changed `reactStrictMode: false` to `reactStrictMode: true`
+- Task 5: Removed sandbox-only build settings from next.config.js
+  - Removed `workerThreads: false`
+  - Removed `cpus: 1`
+  - These hurt production build performance
+- Task 6: Fixed export HTML accessibility in block-renderers.ts
+  - Flashcard: added `role="button"`, `tabindex="0"`, `onkeydown` handler for Enter/Space
+  - Accordion rows: added `role="button"`, `tabindex="0"`, `onkeydown` handler for Enter/Space
+  - Reveal block: added `role="button"`, `tabindex="0"`, `onkeydown` handler for Enter/Space
+- Task 7: Fixed export nav buttons aria-label in src/lib/export/index.ts
+  - Added `aria-label="Halaman sebelumnya"` to prev-btn
+  - Added `aria-label="Halaman berikutnya"` to next-btn
+
+Verification:
+- tsc --noEmit: clean (0 errors)
+- vitest run: 504/504 tests passing (13 test files)
+- All 7 infrastructure tasks completed
+
+Stage Summary:
+- 7 files changed: layout.tsx, persistence-slice.ts, package.json, next.config.js, block-renderers.ts, export/index.ts
+- HTML lang attribute now correct for Indonesian (screen reader fix)
+- All console.log calls properly gated for development-only
+- @types/archiver correctly in devDependencies (not shipped to production)
+- reactStrictMode enabled for catching React anti-patterns
+- Sandbox-only build settings removed for better production performance
+- Export HTML interactive elements now keyboard-accessible (flashcard, accordion, reveal)
+- Export navigation buttons now have aria-labels for screen readers

@@ -5,6 +5,11 @@
 //          flashcard-set, ftab, materi-section, tujuan-display,
 //          motivasi, rangkuman, diskusi, hasil, refleksi,
 //          penutup, tabel-accord, generic fallback
+//
+// NOTE: 'kuis', 'alur', 'skenario' are NOT handled here — they fall
+// through to their dedicated renderer modules (quiz-renderers.ts,
+// navigation-renderers.ts) which have richer, CSS-class-based output
+// with proper interactivity and accessibility support.
 // ═══════════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock } from '@/core/schema/types';
@@ -42,9 +47,9 @@ export function renderContentBlock(
     case 'reveal': return renderReveal(b);
     case 'materi-blok': return renderMateriBlok(b);
     case 'hero': return renderCover(b); // Hero shares Cover data model
-    case 'alur': return renderAlur(b);
-    case 'skenario': return renderSkenario(b);
-    case 'kuis': return renderKuisExport(b);
+    // 'kuis', 'alur', 'skenario' intentionally NOT handled here —
+    // they fall through to dedicated quiz-renderers.ts and navigation-renderers.ts
+    // which provide richer CSS-class-based output with interactivity.
     default: return null;
   }
 }
@@ -201,7 +206,7 @@ function renderFlashcardSet(b: Record<string, unknown>): string {
       </div>
       <div class="flashcard-grid">
         ${cards.map((c, i) => `
-          <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="flashcard" role="button" tabindex="0" onclick="this.classList.toggle('flipped')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
             <div class="flashcard-inner">
               <div class="flashcard-front">
                 <span class="flashcard-num">${i + 1}</span>
@@ -447,7 +452,7 @@ function renderTabelAccord(b: Record<string, unknown>): string {
   return `
     <div class="block tabel-accord-block">
       ${rows.map(r => `
-        <div class="accord-row" onclick="this.classList.toggle('open')">
+        <div class="accord-row" role="button" tabindex="0" onclick="this.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('open')}">
           <div class="accord-header" style="border-left: 3px solid ${resolveColor(r.color, '#3ecfcf')};">
             <span>${r.icon}</span>
             <strong>${escapeHtml(r.title)}</strong>
@@ -532,7 +537,7 @@ function renderReveal(b: Record<string, unknown>): string {
   return `
     <div class="block reveal-block" style="border-left: 3px solid ${accentColor};">
       ${title ? `<div class="block-header"><span class="block-icon">🎁</span><h2>${escapeHtml(title)}</h2></div>` : ''}
-      <div id="${revealId}" onclick="this.classList.toggle('revealed')" style="cursor: pointer; border-radius: 12px; overflow: hidden;">
+      <div id="${revealId}" role="button" tabindex="0" onclick="this.classList.toggle('revealed')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('revealed')}" style="cursor: pointer; border-radius: 12px; overflow: hidden;">
         <div class="reveal-cover" style="background: linear-gradient(135deg, ${accentColor}1a, ${accentColor}0d); border: 2px dashed ${accentColor}40; border-radius: 12px; padding: 20px; text-align: center;">
           <span style="font-size: 28px;">${coverIcon}</span>
           <p style="font-size: 13px; font-weight: 700; color: ${accentColor}; margin-top: 8px;">${escapeHtml(coverText)}</p>
@@ -597,66 +602,8 @@ function renderMateriBlok(b: Record<string, unknown>): string {
   }
 }
 
-function renderAlur(b: Record<string, unknown>): string {
-  const title = b.title as string || 'Alur Kegiatan';
-  const steps = (b.steps as Array<{ dot: string; durasi: string; judul: string; deskripsi: string }>) || [];
-  return `
-    <div class="block alur-block">
-      <div class="block-header">
-        <span class="block-icon">⏱️</span>
-        <h2>${escapeHtml(title)}</h2>
-      </div>
-      <div class="timeline-steps" style="display: flex; flex-direction: column; gap: 8px;">
-        ${steps.map((s, i) => `
-          <div class="timeline-step" style="display: flex; align-items: flex-start; gap: 10px; padding: 8px; background: ${resolveColor(s.dot, '#3ecfcf')}0d; border-radius: 8px; border-left: 3px solid ${resolveColor(s.dot, '#3ecfcf')};">
-            <div style="font-size: 10px; font-weight: 800; color: ${resolveColor(s.dot, '#3ecfcf')};">${s.durasi || ''}</div>
-            <div>
-              <strong style="font-size: 13px; color: #f1f5f9;">${escapeHtml(s.judul)}</strong>
-              <p style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${escapeHtml(s.deskripsi)}</p>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
-}
-
-function renderSkenario(b: Record<string, unknown>): string {
-  const title = b.title as string || 'Skenario';
-  const chapters = (b.chapters as Array<{ title: string; charEmoji: string; choices: Array<{ icon: string; label: string; detail: string; good: boolean; pts: number }> }>) || [];
-  return `
-    <div class="block skenario-block">
-      <div class="block-header">
-        <span class="block-icon">🎭</span>
-        <h2>${escapeHtml(title)}</h2>
-      </div>
-      ${chapters.map((ch, ci) => `
-        <div class="skenario-chapter" style="margin-bottom: 12px; padding: 12px; background: #1e293b; border-radius: 10px;">
-          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;"><span style="font-size: 20px;">${ch.charEmoji || '🎭'}</span><strong style="color: #f1f5f9;">${escapeHtml(ch.title)}</strong></div>
-          ${ch.choices.map(c => `
-            <div style="padding: 8px; margin: 4px 0; border-left: 3px solid ${c.good ? '#34d399' : '#ff6b6b'}; background: ${c.good ? '#34d3990d' : '#ff6b6b0d'}; border-radius: 6px;">
-              <span>${c.icon}</span> <strong style="font-size: 12px; color: #f1f5f9;">${escapeHtml(c.label)}</strong>
-              ${c.detail ? `<p style="font-size: 10px; color: #94a3b8; margin-top: 2px;">${escapeHtml(c.detail)}</p>` : ''}
-            </div>`).join('')}
-        </div>`).join('')}
-    </div>`;
-}
-
-function renderKuisExport(b: Record<string, unknown>): string {
-  const title = b.title as string || 'Kuis';
-  const questions = (b.questions as Array<{ q: string; opts: string[]; ans: number; ex: string }>) || [];
-  return `
-    <div class="block kuis-block">
-      <div class="block-header">
-        <span class="block-icon">❓</span>
-        <h2>${escapeHtml(title)}</h2>
-      </div>
-      ${questions.map((q, qi) => `
-        <div class="kuis-question" style="margin-bottom: 12px; padding: 12px; background: #1e293b; border-radius: 10px;">
-          <p style="font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px;">${qi + 1}. ${escapeHtml(q.q)}</p>
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            ${q.opts.map((opt, oi) => `
-              <button class="q-opt" onclick="checkAnswer(this,${qi},${oi},${q.ans})" style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 12px; text-align: left; cursor: pointer;">${String.fromCharCode(65 + oi)}. ${escapeHtml(opt)}</button>`).join('')}
-          </div>
-          <div id="qfb-${qi}" style="margin-top: 6px; font-size: 11px;"></div>
-        </div>`).join('')}
-    </div>`;
-}
+// NOTE: renderAlur, renderSkenario, renderKuisExport were previously defined
+// here but have been moved to dedicated renderer modules:
+//   - renderAlur → navigation-renderers.ts
+//   - renderSkenario → navigation-renderers.ts
+//   - renderKuis → quiz-renderers.ts

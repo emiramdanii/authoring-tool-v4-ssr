@@ -92,9 +92,9 @@ export function generateClientExportHtml(payload: ClientExportPayload): string {
     </div>
     <div id="a11y-live" class="sr-only" aria-live="polite" role="status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)"></div>
     <div id="nav-bar" role="navigation" aria-label="Navigasi halaman">
-      <button id="prev-btn" onclick="prevPage()" title="Halaman sebelumnya (←)">← Sebelumnya</button>
+      <button id="prev-btn" onclick="prevPage()" title="Halaman sebelumnya (←)" aria-label="Halaman sebelumnya">← Sebelumnya</button>
       <span id="page-counter">1/${pages.length}</span>
-      <button id="next-btn" onclick="nextPage()" title="Halaman berikutnya (→)">Selanjutnya →</button>
+      <button id="next-btn" onclick="nextPage()" title="Halaman berikutnya (→)" aria-label="Halaman berikutnya">Selanjutnya →</button>
       <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Layar penuh (F)">⛶</button>
     </div>
   </div>

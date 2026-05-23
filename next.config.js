@@ -12,7 +12,7 @@ const nextConfig = {
     // Skip type-checking during build for faster compilation
     ignoreBuildErrors: true,
   },
-  reactStrictMode: false, // Disable strict mode to reduce re-renders
+  reactStrictMode: true,
 
   // ── Standalone output for minimal memory footprint ───────────
   output: 'standalone',
@@ -33,9 +33,6 @@ const nextConfig = {
       '@radix-ui/react-tooltip',
       '@radix-ui/react-scroll-area',
     ],
-    // Reduce memory usage during build
-    workerThreads: false,
-    cpus: 1,
     // Optimize CSS
     optimizeCss: true,
   },

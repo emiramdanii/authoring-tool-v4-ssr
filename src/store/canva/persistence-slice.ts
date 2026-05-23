@@ -224,7 +224,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
         // Apply schema version migrations (v0→v1, etc.)
         const { migratedCount } = migrateAllSchemas(pages);
-        if (migratedCount > 0 && process.env.NODE_ENV !== 'production') {
+        if (migratedCount > 0 && process.env.NODE_ENV === 'development') {
           console.log(`[Persistence] Migrated ${migratedCount} page schemas to latest version`);
         }
 
