@@ -358,7 +358,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
         {/* Replay button */}
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
-          <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+          <button className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={handleRestart}
             style={{
               fontSize: '13px',
@@ -419,9 +419,10 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
       <div className="h-1.5 rounded-full overflow-hidden relative"
         {...a11y.progressAria('Kemajuan Cocokkan Kartu', matched.size / 2, validPairsLen)}
         style={{ background: tokens.subtleBg(0.08) }}>
-        <div className="h-full rounded-full transition-all"
+        <div className="h-full rounded-full"
           style={{
             width: validPairsLen > 0 ? (matched.size / cards.length) * 100 + '%' : '0%',
+            ...tokens.iosTransitionStyle('width', 'slow'),
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
             backgroundSize: '200% 100%',
             animation: 'shimmer 2s linear infinite',
@@ -465,7 +466,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
               key={`mem-card-${block.id || 'mem'}-${card.id}`}
               onClick={() => handleCardClick(card.id)}
               disabled={!interactive || isMatched}
-              className="relative w-full rounded-xl transition-transform duration-500 cursor-pointer"
+              className={"relative w-full rounded-xl transition-transform duration-300 cursor-pointer " + tokens.iosFocusRing()}
               aria-label={isRevealed ? card.text : 'Kartu tersembunyi'}
               aria-pressed={isRevealed}
               style={{
@@ -476,7 +477,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
             >
               {/* Card inner wrapper — rotates on flip */}
               <div
-                className="absolute inset-0 transition-transform duration-500"
+                className="absolute inset-0 transition-transform duration-300"
                 style={{
                   transformStyle: 'preserve-3d',
                   transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',

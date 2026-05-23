@@ -127,7 +127,7 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
                       background: ri % 2 === 0
                         ? tokens.color('card')
                         : accentAlpha(0.04),
-                      transition: 'background 0.15s ease',
+                      ...tokens.iosTransitionStyle('background-color', 'fast'),
                     }}
                   >
                     {row.map((cell, ci) => (

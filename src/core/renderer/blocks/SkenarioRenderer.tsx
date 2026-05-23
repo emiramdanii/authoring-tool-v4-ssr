@@ -156,7 +156,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
           </div>
           {interactive && (
             <MicroInteraction tokens={tokens} accent="y" effect="squish">
-            <button className="mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold transition-all hover:scale-105"
+            <button className={`mt-4 px-5 py-2 rounded-xl text-[11px] font-extrabold ${tokens.iosButtonTw()}`}
               onClick={() => { setChapter(0); setHistory([]); hasReportedRef.current = false; playSound('click'); }}
               style={{
                 background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
@@ -208,7 +208,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
             {ch.choices.map((c, j) => (
               interactive ? (
                 <button key={`skenario-choice-${c.label?.slice(0,8)}-${j}`} onClick={() => handleChoice(j)}
-                  className="w-full flex items-start gap-2.5 px-4 py-3 rounded-xl text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className={`w-full flex items-start gap-2.5 px-4 py-3 rounded-xl text-left ${tokens.iosQuizOptionTw(interactive)} hover:scale-[1.02] active:scale-[0.98]`}
                   style={{
                     background: tokens.subtleBg(0.05),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
@@ -306,7 +306,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
         <div className="flex gap-1 p-3 border-t"
           style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.15) }}>
           {chapters.map((_, i) => (
-            <div key={`skenario-prog-${block.id || 'sk'}-${i}`} className="flex-1 h-1.5 rounded-full transition-all"
+            <div key={`skenario-prog-${block.id || 'sk'}-${i}`} className="flex-1 h-1.5 rounded-full transition-[background-color,box-shadow]"
               style={{
                 background: i < chapter ? green : i === chapter ? yellow : tokens.colorAlpha('muted', 0.2),
                 boxShadow: i === chapter ? '0 0 8px ' + yellow : i < chapter ? '0 0 4px ' + tokens.colorAlpha('g', 0.3) : 'none',

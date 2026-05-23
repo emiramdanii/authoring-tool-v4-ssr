@@ -272,6 +272,7 @@ export const IOS_SURFACE = {
 export const IOS_INTERACTION = {
   /** Transition timing — iOS uses 150-200ms for most interactions */
   duration: {
+    instant: 75,   // micro-feedback (button ripple ack, tooltip show)
     fast: 150,    // hover bg change, cursor swap
     standard: 200, // card lift, option highlight
     slow: 300,    // accordion expand, progress bar
@@ -306,6 +307,13 @@ export const IOS_INTERACTION = {
     outlineColor: 'var(--semantic-accent)',
   },
 
+  /** Disabled state — for buttons/options that are non-interactive */
+  disabled: {
+    opacity: 0.4,
+    cursor: 'default',
+    scale: 1, // no transform
+  },
+
   /** Tailwind class compositions for common patterns
  *  Every renderer MUST use these via TokenResolver helpers instead of
  *  hand-coding hover/focus/active/transition classes. */
@@ -316,12 +324,17 @@ export const IOS_INTERACTION = {
     card: 'transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)] active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
     /** Quiz option — subtle scale (1.02) for multi-option grids */
     quizOption: 'transition-[transform,background-color,border-color] duration-200 ease-out hover:scale-[1.02] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
+    /** Game button — for game renderers (cards, tiles, drag handles)
+     *  Uses 1.03 scale (contract-compliant) instead of old 1.05 */
+    gameButton: 'transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
     /** Tab/pill toggle — bg/border/color transition + focus ring */
     tab: 'transition-[background-color,border-color,color] duration-150 ease-out hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
     /** Accordion toggle — bg/color transition + focus ring */
     accordion: 'transition-[background-color,color,opacity] duration-150 ease-out hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
     /** Expand/collapse button — opacity hover + scale press + focus ring */
     expandButton: 'transition-[background-color,color,opacity] duration-150 ease-out hover:opacity-80 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
+    /** Text input — focus ring + border transition */
+    textInput: 'transition-[border-color,box-shadow] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
     /** Focus ring only — for elements that only need accessibility ring */
     focusRing: 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
   },

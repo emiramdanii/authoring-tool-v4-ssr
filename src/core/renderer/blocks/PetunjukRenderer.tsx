@@ -185,7 +185,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
               const isExpanded = expandedAccordions.has(i);
               return (
                 <div key={`petunjuk-acc-${block.id || 'pet'}-${i}`}
-                  className="rounded-xl overflow-hidden transition-all"
+                  className="rounded-xl overflow-hidden transition-[background-color,border-color]"
                   style={{
                     background: tokens.colorAlpha(itemColor, 0.06),
                     border: `1px solid ${tokens.colorAlpha(itemColor, isExpanded ? 0.3 : 0.15)}`,
@@ -197,7 +197,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   {/* Accordion header — always visible */}
                   <button
                     onClick={() => toggleAccordion(i)}
-                    className="w-full flex items-center gap-2.5 text-left transition-colors"
+                    className={`w-full flex items-center gap-2.5 text-left ${tokens.iosAccordionTw()}`}
                     style={{
                       padding: isCompact ? '6px 10px' : '8px 12px',
                       cursor: 'pointer',
@@ -227,7 +227,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   <div style={{
                     maxHeight: isExpanded ? 500 : 0,
                     overflow: 'hidden',
-                    transition: 'max-height 0.25s ease-out',
+                  ...tokens.iosTransitionStyle('max-height', 'standard'),
                   }}>
                     <div style={{ padding: isCompact ? '4px 10px 8px' : '6px 12px 10px' }}>
                       <div className="leading-relaxed" style={{
@@ -244,7 +244,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
 
             // ── Normal (non-accordion) mode: full card rendering ──
             return (
-              <div key={`petunjuk-item-${block.id || 'pet'}-${i}`} className="rounded-xl text-center transition-all hover:-translate-y-0.5 min-w-0"
+              <div key={`petunjuk-item-${block.id || 'pet'}-${i}`} className="rounded-xl text-center transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 min-w-0"
                 style={{
                   background: tokens.colorAlpha(itemColor, 0.1),
                   border: '1px solid ' + tokens.colorAlpha(itemColor, 0.2),

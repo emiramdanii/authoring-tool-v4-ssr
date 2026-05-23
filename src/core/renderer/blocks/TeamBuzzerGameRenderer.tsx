@@ -306,7 +306,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
-            className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={handleRestart}
             style={{
               fontSize: '13px',
@@ -407,7 +407,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
             onClick={() => handleBuzz('A')}
             disabled={!interactive || !!buzzed || correct === 'wrong'}
             aria-label={`${teamA} buzzer, skor ${scoreA}`}
-            className="p-3 rounded-xl font-extrabold text-center transition-all min-w-0"
+            className="p-3 rounded-xl font-extrabold text-center transition-[background-color,border-color,color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0"
             style={{
               fontSize: '13px',
               background: correct === 'A'
@@ -445,7 +445,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
             onClick={() => handleBuzz('B')}
             disabled={!interactive || !!buzzed || correct === 'wrong'}
             aria-label={`${teamB} buzzer, skor ${scoreB}`}
-            className="p-3 rounded-xl font-extrabold text-center transition-all min-w-0"
+            className="p-3 rounded-xl font-extrabold text-center transition-[background-color,border-color,color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0"
             style={{
               fontSize: '13px',
               background: correct === 'B'
@@ -493,7 +493,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
                 key={`tb-judge-${block.id || 'tb'}-${currentQ}-correct`}
                 onClick={() => handleCorrect(buzzed)}
                 aria-label="Benar"
-                className="py-2 rounded-lg font-extrabold transition-all"
+                className="py-2 rounded-lg font-extrabold transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                 style={{
                   fontSize: '11px',
                   background: tokens.colorAlpha('g', 0.15),
@@ -509,7 +509,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
                 key={`tb-judge-${block.id || 'tb'}-${currentQ}-wrong`}
                 onClick={handleWrong}
                 aria-label="Salah"
-                className="py-2 rounded-lg font-extrabold transition-all"
+                className="py-2 rounded-lg font-extrabold transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                 style={{
                   fontSize: '11px',
                   background: tokens.colorAlpha('r', 0.15),

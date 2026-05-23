@@ -529,7 +529,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
-            className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={handleRestart}
             style={{
               fontSize: '13px',
@@ -650,7 +650,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                     role="gridcell"
                     onClick={() => { if (interactive && phase === 'play') setActiveCell({ r, c }); }}
                     disabled={!interactive || phase !== 'play'}
-                    className="flex items-center justify-center font-bold transition-all rounded"
+                    className="flex items-center justify-center font-bold transition-[background-color,border-color,color,box-shadow] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                     style={{
                       width: cellSize,
                       height: cellSize,
@@ -703,7 +703,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                     <button
                       key={`cw-across-${block.id || 'cw'}-${cl.num}-${i}`}
                       onClick={() => { if (interactive && phase === 'play') setActiveCell({ r: cl.startR, c: cl.startC }); }}
-                      className="block text-left w-full px-1.5 py-0.5 rounded transition-colors"
+                      className="block text-left w-full px-1.5 py-0.5 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                       style={{
                         fontSize: '9px',
                         color: tokens.muted(0.6),
@@ -729,7 +729,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                     <button
                       key={`cw-down-${block.id || 'cw'}-${cl.num}-${i}`}
                       onClick={() => { if (interactive && phase === 'play') setActiveCell({ r: cl.startR, c: cl.startC }); }}
-                      className="block text-left w-full px-1.5 py-0.5 rounded transition-colors"
+                      className="block text-left w-full px-1.5 py-0.5 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
                       style={{
                         fontSize: '9px',
                         color: tokens.muted(0.6),
@@ -752,7 +752,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
           onClick={handleCheck}
           disabled={!interactive || phase !== 'play'}
           aria-label="Cek jawaban"
-          className="px-3 py-1.5 rounded-lg font-extrabold transition-all"
+          className={"px-3 py-1.5 rounded-lg font-extrabold " + tokens.iosGameButtonTw(interactive && phase === 'play')}
           style={{
             fontSize: '10px',
             background: tokens.colorAlpha('c', 0.15),
@@ -768,7 +768,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
           onClick={handleReveal}
           disabled={!interactive || phase !== 'play'}
           aria-label="Buka satu huruf"
-          className="px-3 py-1.5 rounded-lg font-extrabold transition-all"
+          className={"px-3 py-1.5 rounded-lg font-extrabold " + tokens.iosGameButtonTw(interactive && phase === 'play')}
           style={{
             fontSize: '10px',
             background: tokens.colorAlpha('o', 0.15),

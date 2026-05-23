@@ -116,7 +116,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
               return (
                 <MicroInteraction key={`checklist-item-${i}`} tokens={tokens} accent={colorKey} effect="squish">
                   <div
-                    className="flex items-center gap-3 rounded-lg transition-all"
+                    className="flex items-center gap-3 rounded-lg transition-[background-color,border-color,opacity]"
                     style={{
                       padding: isCompact ? '7px 10px' : '9px 12px',
                       background: isChecked
@@ -150,7 +150,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                         background: isChecked
                           ? `linear-gradient(135deg, ${accentColor}, ${accentAlpha(0.7)})`
                           : 'transparent',
-                        transition: 'all 0.2s ease',
+                        ...tokens.iosTransitionStyle('background-color, border-color, color, transform', 'fast'),
                         boxShadow: isChecked ? `0 2px 6px ${accentAlpha(0.3)}` : 'none',
                       }}
                     >
@@ -179,7 +179,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                         lineHeight: 1.5,
                         color: isChecked ? tokens.muted(0.6) : tokens.color('text'),
                         textDecoration: isChecked ? 'line-through' : 'none',
-                        transition: 'all 0.2s ease',
+                        ...tokens.iosTransitionStyle('color, text-decoration-color', 'fast'),
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word',
                       }}

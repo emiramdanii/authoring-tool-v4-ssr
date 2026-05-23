@@ -108,7 +108,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
         </div>
         <div>
           <MicroInteraction tokens={tokens} accent="g" effect="squish">
-          <button className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+          <button className={"px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={() => {
               setIdx(0);
               setFlipped(false);
@@ -233,7 +233,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
 
       {/* Nav */}
       <div className="flex items-center justify-between mt-3">
-        <button className="px-3 py-1.5 rounded-full font-bold transition-all hover:scale-105"
+        <button className={"px-3 py-1.5 rounded-full font-bold " + tokens.iosButtonTw(interactive)}
           style={{
             fontSize: '12px',
             background: tokens.colorAlpha('y', 0.15),
@@ -245,14 +245,14 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
         </button>
         <div className="flex gap-1.5">
           {cards.map((_, i) => (
-            <div key={`nav-dot-${block.id || 'fc'}-${i}`} className="w-2 h-2 rounded-full transition-all"
+            <div key={`nav-dot-${block.id || 'fc'}-${i}`} className="w-2 h-2 rounded-full transition-[background-color,box-shadow]"
               style={{
                 background: i === idx ? tokens.color('y') : viewedCards.has(i) ? tokens.color('g') : tokens.subtleBg(0.12),
                 boxShadow: i === idx ? '0 0 8px ' + tokens.colorAlpha('y', 0.5) : 'none',
               }} />
           ))}
         </div>
-        <button className="px-3 py-1.5 rounded-full font-bold transition-all hover:scale-105"
+        <button className={"px-3 py-1.5 rounded-full font-bold " + tokens.iosButtonTw(interactive)}
           style={{
             fontSize: '12px',
             background: tokens.colorAlpha('y', 0.15),

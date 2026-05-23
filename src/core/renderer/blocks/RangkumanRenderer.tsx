@@ -77,7 +77,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
 }) {
   return (
     <div
-      className="rounded-xl p-3 transition-all hover:-translate-y-0.5"
+      className="rounded-xl p-3 transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5"
       style={{
         background: tokens.colorAlpha(concept.color, 0.08),
         border: `1px solid ${tokens.colorAlpha(concept.color, 0.2)}`,
@@ -85,7 +85,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         borderRadius: tokens.radius('xl') + 'px',
         boxShadow: tokens.raw.shadow.card,
         ...tokens.iosEntranceStyle(index, 'slideIn'),
-        transition: 'all 0.2s ease',
+        ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'fast'),
       }}
     >
       {/* Icon + Title row */}
@@ -209,7 +209,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
           borderRadius: tokens.radius('xl') + 'px',
           padding: isCompact ? '10px 12px' : '14px 16px',
           boxShadow: tokens.raw.shadow.card,
-          transition: 'all 0.2s ease',
+          ...tokens.iosTransitionStyle('background-color, border-color, color', 'fast'),
           marginBottom: isLast ? 0 : (isCompact ? '6px' : '10px'),
         }}
       >
@@ -272,12 +272,13 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
               background: isOpen ? tokens.colorAlpha(concept.color, 0.08) : tokens.colorAlpha(concept.color, 0.03),
               overflow: 'hidden',
               ...tokens.iosEntranceStyle(i, 'slideIn'),
-              transition: 'all 0.2s ease',
+              ...tokens.iosTransitionStyle('background-color, border-color, color', 'fast'),
             }}
           >
             {/* Accordion header */}
             <button
               onClick={() => setOpenIndex(isOpen ? null : i)}
+              className={tokens.iosAccordionTw()}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -286,7 +287,6 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 padding: isCompact ? '8px 12px' : '10px 14px',
                 background: 'none',
                 border: 'none',
-                cursor: 'pointer',
                 textAlign: 'left',
                 color: 'inherit',
                 fontSize: 'inherit',
@@ -311,7 +311,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   fontSize: isCompact ? '11px' : '11px',
                   fontWeight: 900,
                   color: isOpen ? tokens.color('bg') : conceptColor,
-                  transition: 'all 0.2s ease',
+                  ...tokens.iosTransitionStyle('background-color, border-color, color, transform', 'fast'),
                 }}
               >
                 {i + 1}

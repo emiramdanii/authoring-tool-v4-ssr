@@ -172,7 +172,7 @@ function TujuanVariantA({
         {objectives.map((obj, i) => (
           
           <div
-            className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5"
+            className="flex items-start gap-3 rounded-xl p-3 transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5"
             style={{
               background: tokens.colorAlpha(obj.color, 0.08),
               border: `1px solid ${tokens.colorAlpha(obj.color, 0.2)}`,
@@ -237,7 +237,7 @@ function TujuanVariantA({
           )}
           <button
             onClick={showMore}
-            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all"
+            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl transition-[background-color,border-color,color]"
             style={{
               background: tokens.isDark() ? 'rgba(52, 211, 153, 0.12)' : 'rgba(52, 211, 153, 0.08)',
               border: `1px dashed ${tokens.isDark() ? 'rgba(52, 211, 153, 0.4)' : 'rgba(52, 211, 153, 0.3)'}`,
@@ -258,7 +258,7 @@ function TujuanVariantA({
         <div style={{ margin: isCompact ? '0 12px 8px' : '0 18px 12px' }}>
           <button
             onClick={showMore}
-            className="flex items-center justify-center gap-1 w-full py-2 rounded-xl transition-colors"
+            className={`flex items-center justify-center gap-1 w-full py-2 rounded-xl ${tokens.iosExpandTw()} `}
             style={{
               background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
               color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
@@ -433,7 +433,7 @@ function TujuanVariantB({
             return (
               
               <div
-                className="flex items-start gap-3 rounded-lg transition-all"
+                className="flex items-start gap-3 rounded-lg transition-[background-color,border-color,color]"
                 style={{
                   padding: isCompact ? '8px 10px' : '10px 14px',
                   background: isChecked
@@ -460,7 +460,7 @@ function TujuanVariantB({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s ease',
+                    ...tokens.iosTransitionStyle('background-color, border-color, color, transform', 'fast'),
                   }}
                 >
                   {isChecked && (
@@ -486,7 +486,7 @@ function TujuanVariantB({
                       textDecoration: isChecked ? 'line-through' : 'none',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
-                      transition: 'all 0.2s ease',
+                      ...tokens.iosTransitionStyle('color, text-decoration-color', 'fast'),
                     }}
                   >
                     {obj.text}
@@ -519,7 +519,7 @@ function TujuanVariantB({
                   width: `${(Object.values(checked).filter(Boolean).length / allObjectives.length) * 100}%`,
                   borderRadius: '99px',
                   background: `linear-gradient(90deg, ${tokens.color('y')}, ${tokens.color('g')})`,
-                  transition: 'width 0.4s ease',
+                  ...tokens.iosTransitionStyle('width', 'slow'),
                 }}
               />
             </div>
@@ -533,7 +533,7 @@ function TujuanVariantB({
         {isCompressed && isRevealSetMode && (
           <button
             onClick={showMore}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl transition-all mt-2"
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl transition-[background-color,border-color,color] mt-2"
             style={{
               background: tokens.isDark() ? 'rgba(52, 211, 153, 0.12)' : 'rgba(52, 211, 153, 0.08)',
               border: `1px dashed ${tokens.isDark() ? 'rgba(52, 211, 153, 0.4)' : 'rgba(52, 211, 153, 0.3)'}`,
@@ -552,7 +552,7 @@ function TujuanVariantB({
         {isCompressed && isCollapsibleMode && (
           <button
             onClick={showMore}
-            className="flex items-center justify-center gap-1 w-full py-1.5 rounded-xl transition-colors mt-2"
+            className={`flex items-center justify-center gap-1 w-full py-1.5 rounded-xl ${tokens.iosExpandTw()} mt-2`}
             style={{
               background: tokens.isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
               color: tokens.isDark() ? 'rgba(99, 102, 241, 1)' : 'rgba(99, 102, 241, 0.9)',
@@ -757,7 +757,7 @@ function TujuanVariantC({
                 boxShadow: 'none',
                 textAlign: 'center',
                 ...tokens.iosEntranceStyle(i, 'slideIn'),
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                ...tokens.iosTransitionStyle('transform, box-shadow', 'fast'),
               }}
             >
               {/* Small icon */}

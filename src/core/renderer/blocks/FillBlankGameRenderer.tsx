@@ -228,7 +228,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
         </div>
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
-          <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+          <button className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={handleRestart}
             style={{
               fontSize: '13px',
@@ -388,7 +388,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
           disabled={answered}
           placeholder="Ketik jawaban..."
           aria-label="Jawaban isian"
-          className="w-full px-3 py-2 rounded-lg font-semibold outline-none transition-all"
+          className={"w-full px-3 py-2 rounded-lg font-semibold outline-none " + tokens.iosTextInputTw()}
           style={{
             fontSize: '12px',
             border: '2px solid ' + (
@@ -452,7 +452,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
             onClick={handleSubmit}
             disabled={!userInput.trim()}
             aria-label="Kirim jawaban"
-            className="mt-3 px-4 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            className={"mt-3 px-4 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(!!userInput.trim())}
             style={{
               fontSize: '12px',
               background: userInput.trim()

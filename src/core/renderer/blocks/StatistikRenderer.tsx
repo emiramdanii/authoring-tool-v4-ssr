@@ -105,7 +105,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                       borderRadius: tokens.radius('xl') + 'px',
                       boxShadow: tokens.raw.shadow.card,
                       ...tokens.iosEntranceStyle(i, 'slideIn'),
-                      transition: 'all 0.2s ease',
+                      ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'fast'),
                     }}
                   >
                     {/* Top accent dot */}

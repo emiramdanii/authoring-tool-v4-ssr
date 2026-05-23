@@ -31,7 +31,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
 
   return (
     <div onClick={onKolomClick}
-      className="rounded-xl p-3.5 min-h-[70px] border-2 transition-all cursor-pointer"
+      className="rounded-xl p-3.5 min-h-[70px] border-2 transition-[background-color,border-color,box-shadow] cursor-pointer"
       style={{
         borderColor: selected ? tokens.colorAlpha(kolomDef.color, 0.5) : tokens.colorAlpha(kolomDef.color, 0.2),
         background: selected ? tokens.colorAlpha(kolomDef.color, 0.08) : tokens.colorAlpha(kolomDef.color, 0.04),
@@ -224,7 +224,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
         )}
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
-          <button className="mt-3 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+          <button className={"mt-3 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={() => {
               setPoolState(pool.map(p => ({ ...p, placed: false })));
               const init: Record<string, string[]> = {};
@@ -289,7 +289,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
         {unplacedPoolItems.map(p => (
           <button key={p.id} onClick={() => handlePoolClick(p.id)}
             aria-selected={selected === p.id}
-            className={`px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+            className={`px-3.5 py-2 rounded-full font-extrabold ${tokens.iosGameButtonTw(interactive)} min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               background: selected === p.id ? tokens.colorAlpha('y', 0.2) : tokens.subtleBg(0.07),
               border: '2px solid ' + (selected === p.id ? tokens.color('y') : tokens.subtleBorder(0.15)),

@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { TokenResolver } from '../types';
 import { resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from '../types';
+import { IOS_INTERACTION } from '../../themes/ios-visual-contract';
 
 // ═══════════════════════════════════════════════════════════════════
 // STEP NAVIGATOR — Reusable Step/Tab Navigation Component
@@ -149,6 +150,7 @@ export function StepNavigator({
               role="tab"
               aria-selected={isActive}
               onClick={() => onStepChange(i)}
+              className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -162,7 +164,8 @@ export function StepNavigator({
                 background: isActive ? accentBg : isPast ? resolveColorAlpha(tokens, accent, 0.05, 'rgba(251,191,36,0.05)', 'rgba(251,191,36,0.05)') : 'transparent',
                 color: isActive ? accentColor : isPast ? resolveColorAlpha(tokens, accent, 0.6, 'rgba(251,191,36,0.6)', 'rgba(251,191,36,0.6)') : mutedColor,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                outline: 'none',
+                transition: 'background-color, border-color, color 150ms ease',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
               }}
@@ -192,7 +195,7 @@ export function StepNavigator({
             width: `${progress * 100}%`,
             borderRadius: '9999px',
             background: `linear-gradient(90deg, ${accentColor}, ${resolveColorAlpha(tokens, accent, 0.6, 'rgba(251,191,36,0.6)', 'rgba(251,191,36,0.6)')})`,
-            transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: `width ${IOS_INTERACTION.duration.slow}ms ${IOS_INTERACTION.easing.ios}`,
           }}
         />
       </div>
@@ -207,7 +210,7 @@ export function StepNavigator({
         <div
           style={{
             animation: activeStep > 0 ? 'pageSlideInRight 0.3s ease' : 'pageSlideInLeft 0s ease',
-            transition: 'transform 0.3s ease, opacity 0.3s ease',
+            transition: `transform ${IOS_INTERACTION.duration.slow}ms ease, opacity ${IOS_INTERACTION.duration.slow}ms ease`,
           }}
         >
           {children}
@@ -228,6 +231,7 @@ export function StepNavigator({
           onClick={() => onStepChange(activeStep - 1)}
           disabled={activeStep === 0}
           aria-label="Langkah sebelumnya"
+          className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -241,7 +245,8 @@ export function StepNavigator({
             color: activeStep === 0 ? mutedColor : accentColor,
             cursor: activeStep === 0 ? 'default' : 'pointer',
             opacity: activeStep === 0 ? 0.4 : 1,
-            transition: 'all 0.2s ease',
+            outline: 'none',
+            transition: 'background-color, border-color, color, opacity 150ms ease',
           }}
         >
           <span style={{ fontSize: isCompact ? '10px' : '12px' }}>&#8592;</span>
@@ -264,6 +269,7 @@ export function StepNavigator({
           onClick={() => onStepChange(activeStep + 1)}
           disabled={activeStep === totalSteps - 1}
           aria-label="Langkah berikutnya"
+          className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -277,7 +283,8 @@ export function StepNavigator({
             color: activeStep === totalSteps - 1 ? mutedColor : accentColor,
             cursor: activeStep === totalSteps - 1 ? 'default' : 'pointer',
             opacity: activeStep === totalSteps - 1 ? 0.4 : 1,
-            transition: 'all 0.2s ease',
+            outline: 'none',
+            transition: 'background-color, border-color, color, opacity 150ms ease',
           }}
         >
           <span>Berikutnya</span>

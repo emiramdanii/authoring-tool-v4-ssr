@@ -76,14 +76,14 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
   });
 
   return (
-    <div className="rounded-xl overflow-hidden premium-card-glow transition-all"
+    <div className="rounded-xl overflow-hidden premium-card-glow transition-[background-color,border-color]"
       style={{
         border: '1px solid ' + (isOpen ? tokens.colorAlpha(row.color, 0.35) : tokens.colorAlpha(row.color, 0.12)),
         background: isOpen ? tokens.colorAlpha(row.color, 0.08) : tokens.colorAlpha(row.color, 0.04),
         boxShadow: tokens.raw.shadow.card,
       }}>
       <MicroInteraction tokens={tokens} accent={row.color} effect="squish">
-      <button className="w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer transition-all"
+      <button className={`w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer ${tokens.iosAccordionTw()}`}
         style={{
           fontSize: '13px',
           background: isOpen ? tokens.colorAlpha(row.color, 0.04) : 'transparent',
@@ -104,7 +104,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
           style={{ color: tokens.color(row.color), fontSize: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}
           placeholder="Ketik judul baris..."
         />
-        <span className="ml-auto transition-transform duration-300 flex-shrink-0"
+        <span className={`ml-auto ${tokens.iosTransitionStyle('transform', 'standard').transition} flex-shrink-0`}
           style={{ fontSize: '12px', transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
       </button>
       </MicroInteraction>

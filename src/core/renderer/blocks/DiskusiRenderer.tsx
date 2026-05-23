@@ -173,7 +173,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         </div>
 
         {/* Replay button — premium spring */}
-          <button className="px-5 py-2.5 rounded-xl font-extrabold transition-all hover:scale-105"
+          <button className={`px-5 py-2.5 rounded-xl font-extrabold ${tokens.iosButtonTw(interactive)}`}
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
               fontSize: '13px',
@@ -231,11 +231,11 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {interactive && questions.length > 0 && (
         <div className="h-1.5 rounded-full overflow-hidden mb-4"
           style={{ background: tokens.subtleBg(0.08) }}>
-          <div className="h-full rounded-full transition-all"
+          <div className="h-full rounded-full"
             style={{
               width: progress * 100 + '%',
               background: tokens.color('c'),
-              
+              ...tokens.iosTransitionStyle('width', 'slow'),
               boxShadow: 'none',
               animation: 'none',
             }} />
@@ -255,7 +255,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             border: `1px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.35 : 0.15)}`,
             borderLeft: `3px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
             boxShadow: hasResponse ? `0 2px 12px ${tokens.colorAlpha('g', 0.1)}` : 'none',
-            transition: 'all 0.3s ease',
+            ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
           <div className="flex items-center gap-2">
             <span style={{ fontSize: isCompact ? '14px' : '16px' }}>{q.icon}</span>
@@ -279,7 +279,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           </div>
           <RichText content={q.teks ?? ''} tag="p" className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
-            <textarea className="w-full mt-2 rounded-lg p-2.5 resize-y transition-all"
+            <textarea className={`w-full mt-2 rounded-lg p-2.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
                 fontSize: isCompact ? '11px' : '13px',
                 color: tokens.color('text'),
@@ -288,7 +288,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                   : tokens.subtleBg(0.06),
                 border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.35 : 0.2)}`,
                 minHeight: isCompact ? '40px' : '60px',
-                transition: 'all 0.2s ease',
+                ...tokens.iosTransitionStyle('background-color, border-color, color, box-shadow', 'fast'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 boxShadow: hasResponse ? `0 0 8px ${tokens.colorAlpha('g', 0.1)}` : 'none',
@@ -315,7 +315,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Submit button — premium spring bounce ──────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
           <button
-            className="w-full mt-4 py-2.5 rounded-xl font-extrabold transition-all hover:scale-[1.02]"
+            className={`w-full mt-4 py-2.5 rounded-xl font-extrabold ${tokens.iosButtonTw(allAnswered)}`}
             onClick={handleSubmit}
             disabled={!allAnswered}
             style={{
@@ -380,11 +380,11 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {interactive && questions.length > 0 && (
         <div className="h-2 rounded-full overflow-hidden mb-5"
           style={{ background: tokens.subtleBg(0.08) }}>
-          <div className="h-full rounded-full transition-all"
+          <div className="h-full rounded-full"
             style={{
               width: progress * 100 + '%',
               background: tokens.color('c'),
-              
+              ...tokens.iosTransitionStyle('width', 'slow'),
               boxShadow: 'none',
               animation: 'none',
             }} />
@@ -406,7 +406,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             boxShadow: hasResponse
               ? `0 4px 16px ${tokens.colorAlpha('g', 0.15)}`
               : `0 2px 8px ${tokens.colorAlpha(qColor, 0.08)}`,
-            transition: 'all 0.3s ease',
+            ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -437,7 +437,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           </div>
           <RichText content={q.teks ?? ''} tag="p" className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
-            <textarea className="w-full rounded-xl p-3.5 resize-y transition-all"
+            <textarea className={`w-full rounded-xl p-3.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
                 fontSize: isCompact ? '12px' : '14px',
                 color: tokens.color('text'),
@@ -446,7 +446,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                   : tokens.subtleBg(0.06),
                 border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.35 : 0.2)}`,
                 minHeight: isCompact ? '50px' : '80px',
-                transition: 'all 0.2s ease',
+                ...tokens.iosTransitionStyle('background-color, border-color, color, box-shadow', 'fast'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 boxShadow: hasResponse ? `0 0 8px ${tokens.colorAlpha('g', 0.1)}` : 'none',
@@ -473,7 +473,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Submit button — premium spring bounce ──────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
           <button
-            className="w-full mt-5 py-3 rounded-2xl font-extrabold transition-all hover:scale-[1.02]"
+            className={`w-full mt-5 py-3 rounded-2xl font-extrabold ${tokens.iosButtonTw(allAnswered)}`}
             onClick={handleSubmit}
             disabled={!allAnswered}
             style={{
@@ -534,11 +534,11 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {interactive && questions.length > 0 && (
         <div className="h-1 rounded-full overflow-hidden mb-2"
           style={{ background: tokens.subtleBg(0.08) }}>
-          <div className="h-full rounded-full transition-all"
+          <div className="h-full rounded-full"
             style={{
               width: progress * 100 + '%',
               background: tokens.color('c'),
-              
+              ...tokens.iosTransitionStyle('width', 'slow'),
               boxShadow: 'none',
               animation: 'none',
             }} />
@@ -558,7 +558,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             border: `1px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.25 : 0.1)}`,
             borderLeft: `2px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
             boxShadow: hasResponse ? `0 1px 6px ${tokens.colorAlpha('g', 0.08)}` : 'none',
-            transition: 'all 0.3s ease',
+            ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
           <div className="flex items-center gap-1.5">
             <span style={{ fontSize: isCompact ? '12px' : '13px' }}>{q.icon}</span>
@@ -579,7 +579,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           </div>
           <RichText content={q.teks ?? ''} tag="p" className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
-            <textarea className="w-full mt-1.5 rounded-md p-1.5 resize-y transition-all"
+            <textarea className={`w-full mt-1.5 rounded-md p-1.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
                 fontSize: '12px',
                 color: tokens.color('text'),
@@ -588,7 +588,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                   : tokens.subtleBg(0.04),
                 border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.25 : 0.15)}`,
                 minHeight: isCompact ? '28px' : '36px',
-                transition: 'all 0.2s ease',
+                ...tokens.iosTransitionStyle('background-color, border-color, color, box-shadow', 'fast'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 boxShadow: hasResponse ? `0 0 4px ${tokens.colorAlpha('g', 0.08)}` : 'none',
@@ -615,7 +615,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {/* ── Submit button — compact ─────────────────────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
           <button
-            className="w-full mt-3 py-1.5 rounded-lg font-extrabold transition-all hover:scale-[1.01]"
+            className={`w-full mt-3 py-1.5 rounded-lg font-extrabold ${tokens.iosButtonTw(allAnswered)}`}
             onClick={handleSubmit}
             disabled={!allAnswered}
             style={{

@@ -236,7 +236,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
         </div>
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
-          <button className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+          <button className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={handleRestart}
             style={{
               fontSize: '13px',
@@ -347,7 +347,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             onClick={() => { if (interactive) handleAnswer(true); }}
             aria-pressed={selected === true}
             aria-label="Benar"
-            className="p-3 rounded-xl font-extrabold text-center transition-all hover:scale-[1.02] min-w-0"
+            className={"p-3 rounded-xl font-extrabold text-center " + tokens.iosQuizOptionTw(!answered && interactive) + " min-w-0"}
             style={{
               fontSize: '14px',
               background: !answered
@@ -393,7 +393,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             onClick={() => { if (interactive) handleAnswer(false); }}
             aria-pressed={selected === false}
             aria-label="Salah"
-            className="p-3 rounded-xl font-extrabold text-center transition-all hover:scale-[1.02] min-w-0"
+            className={"p-3 rounded-xl font-extrabold text-center " + tokens.iosQuizOptionTw(!answered && interactive) + " min-w-0"}
             style={{
               fontSize: '14px',
               background: !answered

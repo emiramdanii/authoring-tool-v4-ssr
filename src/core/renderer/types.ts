@@ -319,6 +319,20 @@ export class TokenResolver {
     return IOS_INTERACTION.tw.expandButton + ' cursor-pointer';
   }
 
+  /** iOS game button — scale hover/press for game tiles, cards, drag handles.
+   *  Uses 1.03 scale (contract-compliant) instead of old 1.05.
+   *  Use for: game renderer buttons, tiles, draggable items */
+  iosGameButtonTw(interactive?: boolean): string {
+    if (!interactive) return 'cursor-default';
+    return IOS_INTERACTION.tw.gameButton + ' cursor-pointer';
+  }
+
+  /** iOS text input — focus ring + border transition.
+   *  Use for: textarea, text input fields */
+  iosTextInputTw(): string {
+    return IOS_INTERACTION.tw.textInput;
+  }
+
   /** iOS focus ring — accessible outline only.
    *  Use for: elements that need focus ring without other interactions */
   iosFocusRing(): string {
@@ -336,11 +350,11 @@ export class TokenResolver {
   /** iOS transition style — returns a CSS transition style object.
    *  Use for: inline style objects that need transition on specific properties.
    *  @param properties - CSS properties to transition (default: 'all')
-   *  @param speed - 'fast' (150ms), 'standard' (200ms), or 'slow' (300ms)
+   *  @param speed - 'instant' (75ms), 'fast' (150ms), 'standard' (200ms), or 'slow' (300ms)
    *  @param curve - 'default' (ease), 'ios' (cubic-bezier), or 'spring' (overshoot) */
   iosTransitionStyle(
     properties: string = 'all',
-    speed: 'fast' | 'standard' | 'slow' = 'standard',
+    speed: 'instant' | 'fast' | 'standard' | 'slow' = 'standard',
     curve: 'default' | 'ios' | 'spring' = 'default',
   ): Record<string, string> {
     const duration = IOS_INTERACTION.duration[speed];

@@ -22,6 +22,7 @@ import React, {
   type ReactNode,
   type CSSProperties,
 } from 'react';
+import { IOS_INTERACTION } from '@/core/themes/ios-visual-contract';
 
 // ── Page Transition CSS Classes ──────────────────────────────────
 
@@ -123,7 +124,7 @@ export const motion = {
     }
 
     // Determine CSS animation class based on transition
-    const duration = (transition?.duration as number) ?? 0.2;
+    const duration = (transition?.duration as number) ?? IOS_INTERACTION.duration.standard / 1000;
     const ease = (transition?.ease as string) ?? 'ease-out';
     const animClass = getAnimationClass(initial, animate, duration);
 
@@ -201,7 +202,7 @@ export function PageTransition({
   direction,
   className = '',
   style,
-  duration = 0.22,
+  duration = IOS_INTERACTION.duration.standard / 1000,
 }: PageTransitionProps) {
   const prevKeyRef = useRef(pageKey);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -340,7 +341,7 @@ interface CollapseProps {
   duration?: number;
 }
 
-export function Collapse({ open, children, className = '', duration = 0.25 }: CollapseProps) {
+export function Collapse({ open, children, className = '', duration = IOS_INTERACTION.duration.slow / 1000 }: CollapseProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | 'auto'>(open ? 'auto' : 0);
 
@@ -390,7 +391,7 @@ interface StaggerChildrenProps {
 
 export function StaggerChildren({
   children,
-  staggerDelay = 0.05,
+  staggerDelay = IOS_INTERACTION.duration.instant / 1000 / 2,
   className = '',
   style,
 }: StaggerChildrenProps) {
@@ -435,7 +436,7 @@ export function ShowTransition({
   children,
   enterClass = 'anim-enter-fade',
   exitClass = 'anim-exit-fade',
-  duration = 0.2,
+  duration = IOS_INTERACTION.duration.standard / 1000,
   className = '',
   style,
 }: ShowTransitionProps) {

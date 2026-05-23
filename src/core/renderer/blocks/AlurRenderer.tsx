@@ -50,7 +50,7 @@ export const AlurRenderer = React.memo(function AlurRenderer({ block, tokens, is
       </div>
       <div className="flex flex-col gap-2">
         {(isCompressed ? allSteps.slice(0, visibleCount) : allSteps).map((step, i) => (
-          <div key={`alur-step-${step.judul?.slice(0,8)}-${i}`} className="flex gap-2.5 items-start p-3 rounded-lg transition-all hover:-translate-y-0.5 min-w-0"
+          <div key={`alur-step-${step.judul?.slice(0,8)}-${i}`} className="flex gap-2.5 items-start p-3 rounded-lg transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 min-w-0"
             style={{
               background: tokens.colorAlpha(step.dot, 0.08),
               border: '1px solid ' + tokens.colorAlpha(step.dot, 0.15),

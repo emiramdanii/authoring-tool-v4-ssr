@@ -448,7 +448,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
-            className="mt-4 px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={handleRestart}
             style={{
               fontSize: '13px',
@@ -508,12 +508,13 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
-          className="h-full rounded-full transition-all"
+          className="h-full rounded-full"
           style={{
             width:
               placements.length > 0
                 ? (found.size / placements.length) * 100 + '%'
                 : '0%',
+            ...tokens.iosTransitionStyle('width', 'slow'),
             background:
               'linear-gradient(90deg, ' +
               tokens.color('y') +
@@ -608,7 +609,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
                     data-ws-cell={`${block.id || 'ws'}-${r}-${c}`}
                     disabled={!interactive || phase !== 'play'}
                     aria-label={`Baris ${r + 1} Kolom ${c + 1}, huruf ${letter}${isFound ? ', ditemukan' : ''}`}
-                    className="flex items-center justify-center rounded-lg font-extrabold transition-all hover:scale-105 select-none"
+                    className={"flex items-center justify-center rounded-lg font-extrabold " + tokens.iosGameButtonTw(interactive && phase === 'play') + " select-none"}
                     style={{
                       width: cellSize,
                       height: cellSize,
@@ -650,7 +651,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
                 return (
                   <div
                     key={`ws-word-${block.id || 'ws'}-${p.word}-${i}`}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all"
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-[background-color,border-color]"
                     style={{
                       background: isWordFound
                         ? tokens.colorAlpha('g', 0.12)

@@ -202,7 +202,7 @@ function VariantAKlasik({
       {/* ── Reset button ─────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-5">
-            <button className="px-5 py-2.5 rounded-xl font-extrabold transition-all hover:scale-105"
+            <button className={`px-5 py-2.5 rounded-xl font-extrabold ${tokens.iosButtonTw()}`}
               onClick={() => {
                 resetAllScores();
                 playSound('click');
@@ -378,7 +378,7 @@ function VariantBMajalah({
       {/* ── Reset button ──────────────────────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-4 flex justify-end">
-            <button className="px-4 py-2 rounded-lg font-extrabold transition-all hover:scale-105"
+            <button className={`px-4 py-2 rounded-lg font-extrabold ${tokens.iosButtonTw()}`}
               onClick={() => {
                 resetAllScores();
                 playSound('click');
@@ -490,7 +490,7 @@ function VariantCRingkas({
       {/* ── Reset button (compact) ────────────────────────────────── */}
       {interactive && allComplete && (
         <div className="mt-2">
-          <button className="px-3 py-1 rounded-md font-extrabold transition-all hover:scale-105"
+          <button className={`px-3 py-1 rounded-md font-extrabold ${tokens.iosButtonTw()}`}
             onClick={() => {
               resetAllScores();
               playSound('click');
@@ -562,7 +562,7 @@ function ActivityBreakdown({
     <div className="mt-4 w-full max-w-[320px]">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-2 w-full mb-2 cursor-pointer"
+        className={`flex items-center gap-2 w-full mb-2 ${tokens.iosAccordionTw()}`}
         type="button"
       >
         <span className="font-extrabold text-[11px] uppercase tracking-wider" style={{ color: tokens.color(tierColor) }}>
@@ -579,7 +579,7 @@ function ActivityBreakdown({
           {activities.map((act, i) => {
             const barColor = getBarColor(act.pct);
             return (
-              <div key={`act-${i}`} className="flex items-center gap-2.5 p-2 rounded-lg transition-all"
+              <div key={`act-${i}`} className="flex items-center gap-2.5 p-2 rounded-lg transition-[background-color,border-color]"
                 style={{
                   background: tokens.accentBg(barColor, 0.04),
                   border: `1px solid ${tokens.colorAlpha(barColor, 0.12)}`,

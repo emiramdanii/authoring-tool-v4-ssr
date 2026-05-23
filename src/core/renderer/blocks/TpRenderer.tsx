@@ -108,7 +108,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
           const connector = i < items.length - 1;
           return (
             <div key={`tp-item-${item.num || i}-${item.verb?.slice(0,8) || ''}`}>
-              <div className="flex items-start gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5 min-w-0"
+              <div className="flex items-start gap-3 rounded-xl p-3 transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 min-w-0"
                 style={{
                   background: tokens.colorAlpha(item.color, 0.1),
                   border: '1px solid ' + tokens.colorAlpha(item.color, 0.25),
@@ -133,7 +133,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
                 {interactive && !isCompact && (
                   <button
                     onClick={() => toggleUnderstood(i)}
-                    className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
+                    className={`flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg ${tokens.iosTabTw()}`}
                     style={{
                       background: understood.has(i) ? tokens.colorAlpha('g', 0.15) : tokens.colorAlpha('c', 0.06),
                       border: `1px solid ${understood.has(i) ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('c', 0.15)}`,

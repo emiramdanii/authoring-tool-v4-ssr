@@ -243,7 +243,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
-            className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            className={"px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={() => {
               setPlaced({});
               setSelectedIdx(null);
@@ -347,9 +347,10 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
-          className="h-full rounded-full transition-all"
+          className="h-full rounded-full"
           style={{
             width: `${totalItems > 0 ? (totalPlaced / totalItems) * 100 : 0}%`,
+            ...tokens.iosTransitionStyle('width', 'slow'),
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
             backgroundSize: '200% 100%',
             animation: 'shimmer 2s linear infinite',
@@ -396,7 +397,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
               onClick={() => handleItemClick(origIdx)}
               aria-pressed={selectedIdx === origIdx}
               aria-label={`Item: ${item.text}${selectedIdx === origIdx ? ', dipilih' : ''}`}
-              className={`px-3.5 py-2 rounded-full font-extrabold transition-all hover:scale-105 min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+              className={`px-3.5 py-2 rounded-full font-extrabold ${tokens.iosGameButtonTw(interactive)} min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
               style={{
                 background: bg,
                 border: '2px solid ' + border,
@@ -448,7 +449,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
             <div
               key={`dd-target-${block.id || 'dd'}-${tid}`}
               onClick={() => handleTargetClick(tid)}
-              className="rounded-xl p-3.5 min-h-[60px] border-2 transition-all cursor-pointer"
+              className="rounded-xl p-3.5 min-h-[60px] border-2 transition-[background-color,border-color,box-shadow] cursor-pointer"
               style={{
                 borderStyle,
                 borderColor,
@@ -483,7 +484,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
                         e.stopPropagation();
                         handlePlacedItemClick(tid, it.idx);
                       }}
-                      className="px-2.5 py-1 rounded-full font-bold transition-all hover:scale-105 min-w-0"
+                      className={"px-2.5 py-1 rounded-full font-bold " + tokens.iosGameButtonTw(interactive) + " min-w-0"}
                       style={{
                         fontSize: '11px',
                         background: tokens.colorAlpha(targetColor, 0.2),

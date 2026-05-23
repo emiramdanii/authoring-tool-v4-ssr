@@ -39,7 +39,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
   return (
     <MicroInteraction tokens={tokens} accent="y" effect="squish">
     <button onClick={onActivate}
-      className={`relative px-3.5 py-1.5 rounded-full font-extrabold transition-all ${
+      className={`relative px-3.5 py-1.5 rounded-full font-extrabold ${tokens.iosTabTw()} ${
         isActive ? 'scale-105' : 'opacity-60 hover:opacity-90'
       }`}
       style={{
@@ -132,10 +132,11 @@ export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, toke
         <div className="mt-3 flex items-center gap-2">
           <div className="flex-1 h-1.5 rounded-full overflow-hidden"
             style={{ background: tokens.subtleBg(0.08) }}>
-            <div className="h-full rounded-full transition-all"
+            <div className="h-full rounded-full"
               style={{
                 width: (readTabs.size / tabs.length) * 100 + '%',
                 background: tokens.color('g'),
+                ...tokens.iosTransitionStyle('width', 'slow'),
                 boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.4),
               }} />
           </div>

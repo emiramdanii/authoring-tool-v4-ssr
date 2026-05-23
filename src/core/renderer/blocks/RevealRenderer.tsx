@@ -109,7 +109,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
               <button
                 type="button"
                 onClick={handleReveal}
-                className="w-full text-center rounded-lg cursor-pointer transition-all hover:scale-[1.01]"
+                className={`w-full text-center rounded-lg cursor-pointer ${tokens.iosButtonTw()}  hover:scale-[1.01]`}
                 style={{
                   padding: isCompact ? '16px 12px' : '22px 16px',
                   background: `linear-gradient(135deg, ${accentAlpha(0.12)}, ${accentAlpha(0.04)})`,
@@ -221,7 +221,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                   <button
                     type="button"
                     onClick={handleHide}
-                    className="mt-3 px-4 py-1.5 rounded-lg font-bold transition-all hover:scale-[1.02]"
+                    className={`mt-3 px-4 py-1.5 rounded-lg font-bold ${tokens.iosExpandTw()}  hover:scale-[1.02]`}
                     style={{
                       fontSize: isCompact ? '10px' : '11px',
                       background: accentAlpha(0.1),

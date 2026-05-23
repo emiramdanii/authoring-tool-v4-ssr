@@ -301,7 +301,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
         {interactive && (
           <MicroInteraction tokens={tokens} accent="y" effect="squish">
           <button
-            className="px-5 py-2 rounded-xl font-extrabold transition-all hover:scale-105"
+            className={"px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
             onClick={() => {
               setSelectedLeft(null);
               setMatchedLeft(new Set());
@@ -401,9 +401,10 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
         style={{ background: tokens.subtleBg(0.08) }}
       >
         <div
-          className="h-full rounded-full transition-all"
+          className="h-full rounded-full"
           style={{
             width: `${totalPairs > 0 ? (matchedCount / totalPairs) * 100 : 0}%`,
+            ...tokens.iosTransitionStyle('width', 'slow'),
             background: 'linear-gradient(90deg, ' + tokens.color('y') + ', ' + tokens.color('g') + ')',
             backgroundSize: '200% 100%',
             animation: 'shimmer 2s linear infinite',
@@ -508,7 +509,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
                     onClick={() => handleLeftClick(i)}
                     disabled={isMatched || !interactive}
                     aria-label={`Soal: ${pair.left}${isMatched ? ', sudah cocok' : isSelected ? ', dipilih' : ''}`}
-                    className={`p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+                    className={`p-2.5 rounded-xl font-bold text-center ${tokens.iosQuizOptionTw(!isMatched && interactive)} min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
                       fontSize: '12px',
                       background: bg,
@@ -561,7 +562,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
                     onClick={() => handleRightClick(r, si)}
                     disabled={isMatched || selectedLeft === null || !interactive}
                     aria-label={`Jawaban: ${r.text}${isMatched ? ', sudah cocok' : ''}`}
-                    className={`p-2.5 rounded-xl font-bold text-center transition-all hover:scale-[1.02] min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
+                    className={`p-2.5 rounded-xl font-bold text-center ${tokens.iosQuizOptionTw(!isMatched && interactive)} min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
                       fontSize: '12px',
                       background: bg,
@@ -584,7 +585,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                       animation: isWrong ? 'shake 0.4s ease-in-out' : 'none',
-                      transition: 'all 0.2s ease',
+                      transition: tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'fast').transition,
                       // Green left border indicator for matched right items
                       borderLeft: isMatched ? '3px solid ' + tokens.color('g') : undefined,
                     }}

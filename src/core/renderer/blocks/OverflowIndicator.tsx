@@ -108,7 +108,7 @@ export const OverflowIndicator = React.memo(function OverflowIndicator({
         {actions.map((action) => (
           <button
             key={action.key}
-            className="overflow-action-btn"
+            className="overflow-action-btn focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
             onClick={() => !action.disabled && onAction(action.key)}
             aria-label={action.label}
             type="button"
