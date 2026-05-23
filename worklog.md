@@ -195,3 +195,28 @@ Stage Summary:
 - Export pipeline now uses PRIMITIVES as single source of truth (was duplicated)
 - Export now announces page changes to screen readers
 - Commit: 7e4a847, pushed to origin/main
+---
+Task ID: sprint-3c
+Agent: Super Z (main)
+Task: Sprint 3C — Interaction Polish: replace all hardcoded animation durations with IOS_INTERACTION token-driven values, add React-state hover for canvas reliability, ensure consistent MicroInteraction usage, fix accessibility issues
+
+Work Log:
+- Audited all 8 core renderers + additional renderers for current hover/focus/transition states
+- Found Sprint 3C changes already in working directory from previous session (uncommitted)
+- Verified all changes, committed and pushed first batch (7 files, 53 insertions, 27 deletions)
+- Extended interaction polish to 10 additional renderer files (TujuanDisplay, Rangkuman, Timeline, Statistik, PremiumStepNavigator, Hasil, FillBlankGame, TrueFalseGame, RodaGame, TeamBuzzerGame)
+- All hardcoded coverReveal/blockStaggerIn animations replaced with iosEntranceStyle()
+- All TW duration-N classes for progress bars replaced with iosTransitionStyle('width', 'slow')
+- React-state hover added to NcGrid A/B cards and DefBox expand buttons
+- MicroInteraction wrapper added to Cover B/C CTA buttons
+- DefBox Variant C expand button font size increased for accessibility (8→10, 9→11)
+- Kuis option buttons got iosTransitionStyle for smooth disabled-state transitions
+- PremiumStepNavigator transitions migrated to IOS_INTERACTION constants
+- Verified: 504 tests passing, TypeScript clean, Next.js build clean
+
+Stage Summary:
+- Commit 1: be68cdd — Core 8 renderers + PremiumStepNavigator interaction polish
+- Commit 2: 4c3ef2d — Extended interaction polish across 10 additional renderers
+- Zero remaining hardcoded blockStaggerIn/coverReveal animation durations in renderer blocks
+- Zero remaining TW duration classes for progress bar animations
+- All 504 tests passing
