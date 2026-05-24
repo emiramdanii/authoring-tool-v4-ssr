@@ -849,3 +849,35 @@ Stage Summary:
 - A11y: ESLint jsx-a11y rules added for future regression prevention
 - Performance: JSON.parse on keystroke debounced
 - Commit: 24cd41c on origin/main
+
+---
+Task ID: RC-Stabilization
+Agent: Main Agent
+Task: RC Stabilization Phase — Post-Sprint 6 production readiness
+
+Work Log:
+- Audited entire codebase: 545 files, 128K LOC, 197 components, 46 renderers, 11 API routes, 60 store slices
+- Identified and removed 3 orphaned files (SceneLayoutEngine, BsnpCompliancePanel, sync-slice.ts)
+- Cleaned 23 debug screenshots from project root (2.2MB saved)
+- Enabled Teacher Mode + BSNP Compliance + Dashboard-first landing
+- Fixed overflow in 11 renderer blocks (RichText, Timeline, Studi, Tabel, Checklist, Reveal, Memory, TeamBuzzer, Crossword, TrueFalse, FillBlank)
+- Added MAX_NESTING_DEPTH=5 guard in SchemaRenderer
+- Added 4 missing export renderers (tabel, checklist, statistik, studi) + renderHero()
+- Fixed sortir-game (data-game attributes + check button)
+- Fixed memory-game shuffle (was no-op — LCG PRNG now)
+- Fixed accent color bugs in materi-blok sub-types (compare, timeline, gambar)
+- Deduplicated .bsnp-badge CSS
+- Fixed FlashcardRenderer + RodaGameRenderer transition duration violations (0.6s/0.5s → 300ms)
+- Fixed SceneNavigator transition-all
+- Created token-compliance.ts build-time checker (5 violation types)
+- Created 3 PJOK presets (SD Kelas 4, SMP Kelas 7, SMA Kelas 10)
+- Added 28 new tests (token compliance + RC regression)
+
+Stage Summary:
+- Commit: de27e31 pushed to origin/main
+- 637 tests passing (up from 609)
+- 0 TypeScript errors
+- Export parity: 40/40 blocks (was 36/40)
+- 0 critical token violations in renderer blocks
+- Teacher Mode + BSNP Compliance + Dashboard-first now enabled
+- PJOK presets fill the largest gap in curriculum coverage
