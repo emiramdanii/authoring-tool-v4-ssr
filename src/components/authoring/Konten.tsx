@@ -45,6 +45,13 @@ export default function Konten() {
 
   const currentTab = tabs.find(t => t.id === activeTab)!;
 
+  // Cross-panel continuity: show project context from Dokumen
+  const meta = useAuthoringStore((s) => s.meta);
+  const tp = useAuthoringStore((s) => s.tp);
+  const projectContext = meta.judulPertemuan
+    ? `${meta.mapel || 'Mapel'} ${meta.kelas ? '· Kelas ' + meta.kelas : ''} · ${tp.length} TP`
+    : null;
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -55,6 +62,15 @@ export default function Konten() {
         <p className="text-sm text-app-secondary mt-1">
           {currentTab.desc}
         </p>
+        {/* Cross-panel context badge */}
+        {projectContext && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-app-accent/5 border border-app-accent/15 rounded-lg text-xs text-app-accent">
+            <span className="w-1.5 h-1.5 rounded-full bg-app-accent/60" />
+            {meta.judulPertemuan}
+            <span className="text-app-muted">·</span>
+            <span className="text-app-secondary">{projectContext.split(' · ').pop()}</span>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

@@ -59,13 +59,13 @@ function MetaSection() {
   const { isSederhana } = useTeacherMode();
 
   // In sederhana mode, show only essential fields (no ikon, kurikulum, namaBab)
-  const allFields: { key: keyof typeof meta; label: string; placeholder: string; type?: string; maxLength?: number; sederhanaOnly?: boolean; lengkapOnly?: boolean }[] = [
-    { key: 'judulPertemuan', label: 'Judul Pertemuan', placeholder: 'Pertemuan 1 – Hakikat Norma' },
+  const allFields: { key: keyof typeof meta; label: string; placeholder: string; type?: string; maxLength?: number; sederhanaOnly?: boolean; lengkapOnly?: boolean; required?: boolean }[] = [
+    { key: 'judulPertemuan', label: 'Judul Pertemuan', placeholder: 'Pertemuan 1 – Hakikat Norma', required: true },
     { key: 'subjudul', label: 'Subjudul / Pertanyaan Pemantik', placeholder: 'Mengapa manusia membutuhkan norma?' },
     { key: 'ikon', label: 'Ikon Cover (emoji)', placeholder: '🧑‍🤝‍🧑', maxLength: 8, lengkapOnly: true },
     { key: 'durasi', label: 'Durasi', placeholder: '2 × 40 menit' },
-    { key: 'mapel', label: 'Mata Pelajaran', placeholder: 'PPKn' },
-    { key: 'kelas', label: 'Kelas', placeholder: 'VII' },
+    { key: 'mapel', label: 'Mata Pelajaran', placeholder: 'PPKn', required: true },
+    { key: 'kelas', label: 'Kelas', placeholder: 'VII', required: true },
     { key: 'kurikulum', label: 'Kurikulum', placeholder: 'Kurikulum Merdeka', lengkapOnly: true },
     { key: 'namaBab', label: 'Nama Bab (navbar)', placeholder: 'Hakikat Norma', lengkapOnly: true },
   ];
@@ -81,7 +81,10 @@ function MetaSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {fields.map((f) => (
           <div key={f.key}>
-            <label className={fieldLabel}>{f.label}</label>
+            <label className={fieldLabel}>
+              {f.label}
+              {f.required && <span className="text-red-400 ml-0.5">*</span>}
+            </label>
             <input
               type={f.type || 'text'}
               className={fieldInput}
@@ -209,6 +212,7 @@ function TpSection() {
   const deleteTp = useAuthoringStore((s) => s.deleteTp);
   const updateTp = useAuthoringStore((s) => s.updateTp);
   const reorderTp = useAuthoringStore((s) => s.reorderTp);
+  const { isSederhana } = useTeacherMode();
 
   const handleReorder = useCallback((newItems: typeof tp) => {
     const fromIndex = tp.findIndex((item, i) => newItems[i] !== item);
@@ -266,7 +270,7 @@ function TpSection() {
           {/* Verb & Pertemuan */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className={fieldLabel}>Kata Kerja Operasional</label>
+              <label className={fieldLabel}>{isSederhana ? 'Kata Kerja' : 'Kata Kerja Operasional'}</label>
               <select
                 className={fieldInput}
                 value={item.verb}
@@ -302,23 +306,25 @@ function TpSection() {
             />
           </div>
 
-          {/* Color Picker */}
-          <div>
-            <label className={fieldLabel}>Warna Aksen</label>
-            <div className="flex gap-2 flex-wrap">
-              {COLOR_OPTIONS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => updateTp(i, 'color', c)}
-                  className="w-6 h-6 rounded-full transition-all hover:scale-110"
-                  style={{
-                    background: c,
-                    border: item.color === c ? '2px solid #fff' : '2px solid transparent',
-                  }}
-                />
-              ))}
+          {/* Color Picker — hidden in Sederhana mode (auto-assign) */}
+          {!isSederhana && (
+            <div>
+              <label className={fieldLabel}>Warna Aksen</label>
+              <div className="flex gap-2 flex-wrap">
+                {COLOR_OPTIONS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => updateTp(i, 'color', c)}
+                    className="w-6 h-6 rounded-full transition-all hover:scale-110"
+                    style={{
+                      background: c,
+                      border: item.color === c ? '2px solid #fff' : '2px solid transparent',
+                    }}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
 

@@ -233,6 +233,17 @@ export const PageRenderer = React.memo(function PageRenderer({
         />
       )}
 
+      {/* Empty schema page hint — when page has schema but 0 blocks (canvas mode only) */}
+      {useSchemaRenderer && adaptedSchema && adaptedSchema.blocks.length === 0 && mode === 'canvas' && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: 30 }}>
+          <div className="text-center px-6 py-4 rounded-xl bg-app-surface/80 backdrop-blur-sm border border-dashed border-app-accent/20 max-w-[240px]">
+            <div className="text-lg mb-1 opacity-60">📝</div>
+            <div className="text-[10px] font-medium text-app-primary/70 mb-1">Halaman ini kosong</div>
+            <div className="text-[8px] text-app-muted leading-relaxed">Tambah konten dari panel kiri — klik tab Tambah Konten</div>
+          </div>
+        </div>
+      )}
+
       {/* Template without schema data — user-friendly placeholder */}
       {isTemplate && !useSchemaRenderer && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white/30 text-sm">
