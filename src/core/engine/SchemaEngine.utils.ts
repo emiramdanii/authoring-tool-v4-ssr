@@ -36,6 +36,10 @@ const PRESET_MAP: Record<string, () => Promise<LessonSchema>> = {
   'sistem-pernapasan': () => import('@/presets/ipa/sistem-pernapasan-schema').then(m => m.SISTEM_PERNAPASAN_LESSON),
   // MTK
   'persamaan-linear': () => import('@/presets/mtk/persamaan-linear-schema').then(m => m.PERSAMAAN_LINEAR_LESSON),
+  // PJOK
+  'gerak-dasar-lokomotor': () => import('@/presets/pjok/gerak-dasar-lokomotor-schema').then(m => m.GERAK_DASAR_LOKOMOTOR_LESSON),
+  'permainan-bola-besar': () => import('@/presets/pjok/permainan-bola-besar-schema').then(m => m.PERMAINAN_BOLA_BESAR_LESSON),
+  'kebugaran-jasmani': () => import('@/presets/pjok/kebugaran-jasmani-schema').then(m => m.KEBUGARAN_JASMANI_LESSON),
 };
 
 export function getAvailablePresets(): string[] {

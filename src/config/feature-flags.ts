@@ -155,13 +155,13 @@ export const FEATURE_FLAGS: Record<string, FeatureFlagConfig> = {
 
   // ── ADVANCED FEATURES (disabled during stabilization) ───────
   bsnpCompliance: {
-    enabled: false,
+    enabled: true,
     label: 'BSNP Compliance Checker',
     category: 'advanced',
     description: 'Kurikulum Merdeka compliance checking panel',
   },
   teacherMode: {
-    enabled: false,
+    enabled: true,
     label: 'Teacher Mode (Simple UI)',
     category: 'advanced',
     description: 'Simplified UI mode for non-technical teachers',

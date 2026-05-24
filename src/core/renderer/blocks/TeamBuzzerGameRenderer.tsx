@@ -393,21 +393,21 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
         }}
       >
         <p
-          className={`font-bold leading-relaxed mb-4 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
-          style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+          className={`font-bold leading-relaxed mb-4 ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompact ? 'canvas-truncate-2' : ''}`}
+          style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word', overflow: 'hidden' }}
         >
           {q.teks}
         </p>
 
         {/* ── Buzzer buttons ─────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Team A buzzer */}
+          {/* Team A buzzer — truncasi nama tim saat compact */}
           <button
             key={`tb-buzz-${block.id || 'tb'}-${currentQ}-A`}
             onClick={() => handleBuzz('A')}
             disabled={!interactive || !!buzzed || correct === 'wrong'}
             aria-label={`${teamA} buzzer, skor ${scoreA}`}
-            className="p-3 rounded-xl font-extrabold text-center transition-[background-color,border-color,color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0"
+            className={`p-3 rounded-xl font-extrabold text-center transition-[background-color,border-color,color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               fontSize: '13px',
               background: correct === 'A'
@@ -439,13 +439,13 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
             {teamA} ({scoreA})
           </button>
 
-          {/* Team B buzzer */}
+          {/* Team B buzzer — truncasi nama tim saat compact */}
           <button
             key={`tb-buzz-${block.id || 'tb'}-${currentQ}-B`}
             onClick={() => handleBuzz('B')}
             disabled={!interactive || !!buzzed || correct === 'wrong'}
             aria-label={`${teamB} buzzer, skor ${scoreB}`}
-            className="p-3 rounded-xl font-extrabold text-center transition-[background-color,border-color,color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0"
+            className={`p-3 rounded-xl font-extrabold text-center transition-[background-color,border-color,color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               fontSize: '13px',
               background: correct === 'B'

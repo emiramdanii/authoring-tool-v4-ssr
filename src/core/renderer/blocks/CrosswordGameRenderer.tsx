@@ -582,8 +582,8 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
 
       {/* ── Main layout: Grid + Clues ─────────────────────────────── */}
       <div className="flex gap-3">
-        {/* ── Crossword Grid ── */}
-        <div className="flex-shrink-0">
+        {/* ── Crossword Grid — constraint saat compact ── */}
+        <div className="flex-shrink-0" style={{ ...(isCompact ? { maxHeight: '240px', maxWidth: '240px', overflow: 'hidden' } : {}) }}>
           <div
             className="grid"
             style={{
@@ -680,10 +680,10 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
           </div>
         </div>
 
-        {/* ── Clues panel ── */}
+        {/* ── Clues panel — overflow protection ── */}
         <div className="flex-1 min-w-0">
           <div
-            className="rounded-xl p-3 max-h-64 overflow-y-auto premium-card-glow"
+            className={`rounded-xl p-3 premium-card-glow ${isCompact ? 'max-h-48 overflow-y-auto' : 'max-h-64 overflow-y-auto'}`}
             style={{
               background: tokens.colorAlpha('card', 0.4),
               border: '1px solid ' + tokens.subtleBorder(0.1),
@@ -708,6 +708,8 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                         fontSize: '9px',
                         color: tokens.muted(0.6),
                         cursor: interactive && phase === 'play' ? 'pointer' : 'default',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
                       }}
                     >
                       {cl.num}. {cl.hint}
@@ -734,6 +736,8 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
                         fontSize: '9px',
                         color: tokens.muted(0.6),
                         cursor: interactive && phase === 'play' ? 'pointer' : 'default',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
                       }}
                     >
                       {cl.num}. {cl.hint}

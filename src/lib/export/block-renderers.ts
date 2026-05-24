@@ -46,7 +46,11 @@ export function renderContentBlock(
     case 'compare': return renderCompare(b);
     case 'reveal': return renderReveal(b);
     case 'materi-blok': return renderMateriBlok(b);
-    case 'hero': return renderCover(b); // Hero shares Cover data model
+    case 'tabel': return renderTabel(b);
+    case 'checklist': return renderChecklist(b);
+    case 'statistik': return renderStatistik(b);
+    case 'studi': return renderStudi(b);
+    case 'hero': return renderHero(b);
     // 'kuis', 'alur', 'skenario' intentionally NOT handled here —
     // they fall through to dedicated quiz-renderers.ts and navigation-renderers.ts
     // which provide richer CSS-class-based output with interactivity.
@@ -551,6 +555,100 @@ function renderReveal(b: Record<string, unknown>): string {
     </div>`;
 }
 
+// ── Missing export renderers (RC Stabilization) ────────────────────
+
+function renderTabel(b: Record<string, unknown>): string {
+  const title = b.title as string || '';
+  const headers = (b.headers as string[]) || [];
+  const rows = (b.rows as string[][]) || [];
+  const accentColor = resolveColor(b.accentColor as string, '#3ecfcf');
+  return `
+    <div class="block tabel-block" style="border-left: 3px solid ${accentColor};">
+      ${title ? `<div class="block-header"><span class="block-icon">📊</span><h2>${escapeHtml(title)}</h2></div>` : ''}
+      <div style="overflow-x: auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          ${headers.length > 0 ? `<thead><tr>${headers.map(h => `<th style="padding:8px 10px;border:1px solid #334155;background:#1e293b;color:#f1f5f9;font-weight:700;text-align:left;">${escapeHtml(h)}</th>`).join('')}</tr></thead>` : ''}
+          <tbody>${rows.map(r => `<tr>${r.map(c => `<td style="padding:6px 10px;border:1px solid #334155;color:#94a3b8;">${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderChecklist(b: Record<string, unknown>): string {
+  const title = b.title as string || 'Checklist';
+  const items = (b.items as Array<{ teks: string; diconteng?: boolean; icon?: string; warna?: string }>) || [];
+  const accentColor = resolveColor(b.accentColor as string, '#34d399');
+  return `
+    <div class="block checklist-block" style="border-left: 3px solid ${accentColor};">
+      <div class="block-header">
+        <span class="block-icon">✅</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      <div class="checklist-items" style="display: flex; flex-direction: column; gap: 6px;">
+        ${items.map(it => `
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:${resolveColor(it.warna, accentColor)}0d;border-radius:8px;">
+            <input type="checkbox" ${it.diconteng ? 'checked' : ''} disabled style="accent-color:${resolveColor(it.warna, accentColor)};" />
+            <span style="font-size:12px;color:#f1f5f9;">${it.icon || ''} ${escapeHtml(it.teks)}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderStatistik(b: Record<string, unknown>): string {
+  const title = b.title as string || 'Statistik';
+  const items = (b.items as Array<{ icon?: string; angka: string; satuan?: string; label: string; warna?: string }>) || [];
+  const accentColor = resolveColor(b.accentColor as string, '#3ecfcf');
+  return `
+    <div class="block statistik-block" style="border-left: 3px solid ${accentColor};">
+      <div class="block-header">
+        <span class="block-icon">📈</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;">
+        ${items.map(it => `
+          <div style="text-align:center;padding:12px;background:${resolveColor(it.warna, accentColor)}1a;border-radius:10px;border:1px solid ${resolveColor(it.warna, accentColor)}20;">
+            ${it.icon ? `<span style="font-size:18px;">${it.icon}</span>` : ''}
+            <div style="font-size:22px;font-weight:900;color:${resolveColor(it.warna, accentColor)};">${escapeHtml(it.angka)}</div>
+            ${it.satuan ? `<div style="font-size:9px;color:#64748b;">${escapeHtml(it.satuan)}</div>` : ''}
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${escapeHtml(it.label)}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderStudi(b: Record<string, unknown>): string {
+  const title = b.title as string || 'Studi Kasus';
+  const situasi = b.situasi as string || '';
+  const pertanyaan = (b.pertanyaan as string[]) || [];
+  const accentColor = resolveColor(b.accentColor as string, '#fbbf24');
+  return `
+    <div class="block studi-block" style="border-left: 4px solid ${accentColor};">
+      <div class="block-header">
+        <span class="block-icon">📑</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      ${situasi ? `<div style="padding:12px;background:${accentColor}0d;border-radius:10px;border:1px solid ${accentColor}20;margin-bottom:10px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:${accentColor};margin-bottom:6px;">Situasi</div><p style="font-size:12px;color:#f1f5f9;line-height:1.6;">${escapeHtml(situasi)}</p></div>` : ''}
+      ${pertanyaan.length > 0 ? `
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Pertanyaan</div>
+          ${pertanyaan.map((p, i) => `<div style="padding:8px 10px;background:#1e293b;border-radius:8px;border-left:3px solid ${accentColor};"><strong style="color:${accentColor};font-size:11px;">${i + 1}.</strong> <span style="font-size:11px;color:#f1f5f9;">${escapeHtml(p)}</span></div>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+
+function renderHero(b: Record<string, unknown>): string {
+  const icon = b.icon as string || '⚡';
+  const title = b.title as string || '';
+  const subtitle = b.subtitle as string || '';
+  const accentColor = resolveColor(b.accentColor as string, '#3b82f6');
+  return `
+    <div class="block hero-block" style="background:linear-gradient(135deg,${accentColor}1a,${accentColor}0d);border-radius:12px;padding:24px;text-align:center;border:1px solid ${accentColor}20;">
+      <div style="font-size:36px;margin-bottom:8px;">${icon}</div>
+      <h1 style="font-size:20px;font-weight:900;color:#f1f5f9;margin-bottom:6px;">${escapeHtml(title)}</h1>
+      ${subtitle ? `<p style="font-size:13px;color:#94a3b8;">${escapeHtml(subtitle)}</p>` : ''}
+    </div>`;
+}
+
 function renderMateriBlok(b: Record<string, unknown>): string {
   const tipe = b.tipe as string || 'teks';
   const judul = b.judul as string || '';
@@ -582,7 +680,7 @@ function renderMateriBlok(b: Record<string, unknown>): string {
     case 'highlight':
       return `<div class="block materi-blok" style="border-left: 4px solid ${warna || '#fbbf24'}; padding: 12px; background: ${warna || '#fbbf24'}0d; border-radius: 10px;">${icon ? `<span style="font-size: 16px;">${icon}</span>` : ''}${judul ? `<h3 style="color: ${warna || '#fbbf24'}; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
     case 'compare':
-      return renderCompare({ title: judul, kiri, kanan, accentColor: 'c' });
+      return renderCompare({ title: judul, kiri, kanan, accentColor: warna || 'c' });
     case 'infobox': {
       const ic = infoboxStyle === 'warning' ? '#fbbf24' : infoboxStyle === 'tip' ? '#34d399' : '#3ecfcf';
       return `<div class="block materi-blok" style="border-left: 4px solid ${ic}; padding: 12px; background: ${ic}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${ic}; font-size: 13px;">ℹ️ ${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
@@ -594,9 +692,9 @@ function renderMateriBlok(b: Record<string, unknown>): string {
     case 'studi':
       return `<div class="block materi-blok" style="border-left: 4px solid #fbbf24; padding: 12px; background: #fbbf240d; border-radius: 10px;">${judul ? `<h3 style="color: #fbbf24; font-size: 13px;">📑 ${escapeHtml(judul)}</h3>` : ''}${situasi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(situasi)}</p>` : ''}${pertanyaan ? `<p style="font-size: 11px; color: #fbbf24; margin-top: 6px;">❓ ${escapeHtml(pertanyaan)}</p>` : ''}</div>`;
     case 'timeline':
-      return renderTimeline({ title: judul, steps: langkah.map(s => ({ icon: s.icon, label: s.judul, description: s.isi, color: 'c' })), accentColor: 'c' });
+      return renderTimeline({ title: judul, steps: langkah.map(s => ({ icon: s.icon, label: s.judul, description: s.isi, color: warna || 'c' })), accentColor: warna || 'c' });
     case 'gambar':
-      return renderGambar({ title: judul, url: isi, caption: '', accentColor: 'c' });
+      return renderGambar({ title: judul, url: isi, caption: '', accentColor: warna || 'c' });
     default:
       return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px;">${judul ? `<h3>${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
   }

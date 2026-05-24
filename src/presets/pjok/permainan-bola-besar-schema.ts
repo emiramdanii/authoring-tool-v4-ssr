@@ -1,0 +1,401 @@
+import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
+
+export const PERMAINAN_BOLA_BESAR_LESSON: LessonSchema = {
+  id: 'permainan-bola-besar',
+  version: 1,
+  title: 'Permainan Bola Besar',
+  mapel: 'PJOK',
+  kelas: 'VII',
+  themeId: 'bhinneka-tunggal-ika',
+  navbar: {
+    logoText: '🏐 Permainan Bola Besar',
+    logoColor: 'c',
+    progressGradient: ['c', 'y'],
+  },
+  screens: [
+    // ──────────────────────── COVER ────────────────────────
+    {
+      id: 's-cover',
+      templateType: 'cover',
+      background: { type: 'radial', color1: 'c', color2: 'bg' },
+      blocks: [
+        {
+          type: 'cover',
+          icon: '🏐',
+          title: 'Permainan Bola Besar',
+          subtitle: 'PJOK Kelas VII SMP — Pertemuan 1',
+          badges: [
+            { icon: '📋', text: 'TP 3', color: 'y' },
+            { icon: '📖', text: '2 Materi', color: 'c' },
+            { icon: '💬', text: 'Diskusi', color: 'g' },
+            { icon: '🎮', text: 'Kuis 5 Soal', color: 'p' },
+          ],
+          meta: { durasi: '80 Menit', fase: 'Fase D', elemen: 'Permainan Bola Besar' },
+          cta: { label: '▶ Mulai Pembelajaran', action: 's-tp' },
+          background: { type: 'gradient', color1: 'c', color2: 'bg' },
+        } as SchemaBlock,
+      ],
+      nav: { next: 's-tp', nextLabel: 'Tujuan Pembelajaran' },
+    },
+
+    // ──────────────────────── TP ────────────────────────
+    {
+      id: 's-tp',
+      templateType: 'tp',
+      sectionLabel: '🎯 Tujuan Pembelajaran',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'tp',
+          title: 'Yang Akan Kamu',
+          titleHighlight: 'Kuasai Hari Ini',
+          items: [
+            { num: 1, verb: 'Menjelaskan', desc: 'pengertian permainan bola besar, karakteristik, serta perbedaan antara permainan bola voli dan bola basket', color: 'y' },
+            { num: 2, verb: 'Mendemonstrasikan', desc: 'teknik dasar permainan bola voli (servis bawah, passing bawah) dan bola basket (dribble, chest pass)', color: 'c' },
+            { num: 3, verb: 'Menganalisis', desc: 'peraturan dasar dan taktik sederhana dalam permainan bola voli dan bola basket', color: 'g' },
+          ],
+          profil: '🔗 Profil Pelajar Pancasila: Bergotong Royong · Bernalar Kritis · Mandiri',
+          profilColor: 'c',
+        },
+        {
+          type: 'alur',
+          title: '⏱️ Alur Kegiatan 80 Menit',
+          totalDurasi: '80',
+          steps: [
+            { dot: 'p', durasi: '±10\'', judul: 'Tujuan & Motivasi', deskripsi: 'TP + motivasi mengenal permainan bola besar' },
+            { dot: 'y', durasi: '±20\'', judul: 'Materi 1', deskripsi: 'Bola voli: teknik servis bawah & passing bawah' },
+            { dot: 'c', durasi: '±20\'', judul: 'Materi 2', deskripsi: 'Bola basket: teknik dribble & chest pass' },
+            { dot: 'g', durasi: '±10\'', judul: 'Diskusi', deskripsi: 'Perbandingan & taktik sederhana' },
+            { dot: 'o', durasi: '±10\'', judul: 'Kuis', deskripsi: 'Uji pemahaman 5 soal permainan bola besar' },
+            { dot: 'r', durasi: '±10\'', judul: 'Penutup', deskripsi: 'Rangkuman & tugas praktik' },
+          ],
+        },
+      ],
+      nav: { prev: 's-cover', next: 's-motivasi', nextLabel: 'Motivasi' },
+    },
+
+    // ──────────────────────── MOTIVASI ────────────────────────
+    {
+      id: 's-motivasi',
+      templateType: 'motivasi',
+      sectionLabel: '💪 Motivasi · ±5 Menit',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'motivasi',
+          title: 'Pernahkah Kamu Bermain Bola Besar?',
+          hookQuestion: 'Siapa di antara kalian yang pernah bermain bola voli atau bola basket? Apa yang terasa paling sulit?',
+          visual: { emoji: '🏐', bgGradient: ['c', 'y'] },
+          connections: [
+            { icon: '🚶', label: 'Gerak Lokomotor', description: 'Berlari, melompat, dan bergerak di lapangan', color: 'y' },
+            { icon: '🤝', label: 'Kerja Sama Tim', description: 'Olahraga bola besar tidak bisa dimainkan sendiri!', color: 'c' },
+            { icon: '🧠', label: 'Strategi & Taktik', description: 'Menentukan kapan menyerang dan bertahan', color: 'g' },
+          ],
+          transition: 'Sekarang mari kita pelajari teknik dasar dua permainan bola besar yang populer di Indonesia: bola voli dan bola basket!',
+        },
+      ],
+      nav: { prev: 's-tp', next: 's-materi1', nextLabel: 'Materi: Bola Voli' },
+    },
+
+    // ──────────────────────── MATERI 1: Bola Voli ────────────────────────
+    {
+      id: 's-materi1',
+      templateType: 'materi',
+      sectionLabel: '📖 Materi 1 · ±20 Menit',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'def-box',
+          borderColor: 'y',
+          content: '<strong>Permainan bola besar</strong> adalah permainan yang menggunakan bola berukuran besar dan dimainkan oleh dua tim dalam area lapangan tertentu. Termasuk di dalamnya: bola voli, bola basket, sepak bola, dan futsal. Hari ini kita fokus pada <strong>bola voli</strong> dan <strong>bola basket</strong>.',
+        },
+        {
+          type: 'materi-blok',
+          tipe: 'definisi',
+          judul: 'Permainan Bola Voli',
+          icon: '🏐',
+          warna: 'y',
+          isi: 'Bola voli adalah permainan yang dimainkan oleh dua tim masing-masing 6 pemain di lapangan yang dipisahkan oleh net. Tujuannya adalah mengembalikan bola ke area lawan melewati atas net agar lawan tidak bisa mengembalikannya. Diciptakan oleh William G. Morgan pada tahun 1895.',
+          butir: [
+            'Jumlah pemain: 6 orang per tim',
+            'Lapangan: 18m × 9m, net setinggi 2,43m (putra) / 2,24m (putri)',
+            'Permainan menggunakan sistem rally point (setiap rally menghasilkan poin)',
+            'Set dimenangkan oleh tim yang pertama mencapai 25 poin (selisih minimal 2 poin)',
+            'Pertandingan menggunakan sistem best of 5 set',
+          ],
+        } as SchemaBlock,
+        {
+          type: 'ftab',
+          showReadMarker: true,
+          showProgress: true,
+          tabs: [
+            {
+              icon: '🤲',
+              label: 'Servis Bawah',
+              content: [
+                {
+                  type: 'def-box',
+                  borderColor: 'y',
+                  content: '<strong>Servis bawah</strong> adalah teknik memukul bola untuk memulai permainan dengan posisi tangan di bawah bahu. Ini adalah servis yang paling mudah untuk pemula.',
+                },
+                {
+                  type: 'nc-grid',
+                  cards: [
+                    { icon: '🧍', title: 'Sikap Awal', body: 'Berdiri menghadap net, kaki kiri di depan (untuk tangan kanan), pegang bola dengan tangan kiri setinggi pinggang', color: 'y' },
+                    { icon: '🤲', title: 'Pukulan', body: 'Ayunkan tangan kanan ke belakang, lalu pukul bola di bagian bawah dengan tangan mengepal atau tumit tangan terbuka', color: 'c' },
+                    { icon: '🎯', title: 'Target', body: 'Pukul bola tepat di tengah bawah agar bola terbang lurus dan tinggi melewati net', color: 'g' },
+                    { icon: '⚠️', title: 'Kesalahan Umum', body: 'Melempar bola terlalu tinggi sebelum memukul, lengan tidak lurus saat memukul, berat badan tidak berpindah', color: 'p' },
+                  ],
+                },
+              ],
+            },
+            {
+              icon: '🤝',
+              label: 'Passing Bawah',
+              content: [
+                {
+                  type: 'def-box',
+                  borderColor: 'c',
+                  content: '<strong>Passing bawah</strong> adalah teknik menerima dan mengoper bola dengan kedua lengan rapat dari bawah. Ini adalah teknik paling dasar dan penting dalam bola voli.',
+                },
+                {
+                  type: 'nc-grid',
+                  cards: [
+                    { icon: '🧎', title: 'Sikap Awal', body: 'Kaki dibuka selebar bahu, lutut sedikit ditekuk, badan sedikit condong ke depan, lengan direntangkan ke bawah', color: 'y' },
+                    { icon: '💪', title: 'Posisi Lengan', body: 'Kedua lengan rapat dan sejajar, tangan saling menggenggam, lengan lurus dari bahu hingga pergelangan tangan', color: 'c' },
+                    { icon: '⚽', title: 'Kontak Bola', body: 'Bola mengenai lengan antara pergelangan tangan dan siku (forearm). Dorongan datang dari lutut dan pinggul, bukan mengayun lengan', color: 'g' },
+                    { icon: '🎯', title: 'Arahkan Bola', body: 'Arahkan bola ke setter dengan mengatur sudut lengan. Lengan lebih tinggi → bola lebih tinggi, lengan lebih rendah → bola lebih rendah', color: 'p' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'flashcard-set',
+          cards: [
+            { q: 'Berapa jumlah pemain bola voli dalam satu tim?', a: '6 pemain per tim. Mereka memiliki posisi: setter, libero, outside hitter, middle blocker, opposite hitter, dan defensive specialist.' },
+            { q: 'Apa perbedaan servis bawah dan servis atas?', a: 'Servis bawah: tangan memukul dari bawah bahu, bola dilambungkan rendah. Servis atas: tangan memukul dari atas kepala, bola lebih cepat dan berputar.' },
+            { q: 'Dari mana dorongan saat passing bawah berasal?', a: 'Dorongan datang dari lutut dan pinggul (ekstensi kaki), BUKAN dari mengayunkan lengan. Lengan hanya sebagai bidang pantulan.' },
+          ],
+        },
+      ],
+      nav: { prev: 's-motivasi', next: 's-materi2', nextLabel: 'Lanjut: Bola Basket' },
+    },
+
+    // ──────────────────────── MATERI 2: Bola Basket ────────────────────────
+    {
+      id: 's-materi2',
+      templateType: 'materi',
+      sectionLabel: '📖 Materi 2 · ±20 Menit',
+      sectionColor: 'c',
+      blocks: [
+        {
+          type: 'materi-blok',
+          tipe: 'definisi',
+          judul: 'Permainan Bola Basket',
+          icon: '🏀',
+          warna: 'c',
+          isi: 'Bola basket adalah permainan yang dimainkan oleh dua tim masing-masing 5 pemain di lapangan persegi panjang. Tujuannya mencetak poin dengan memasukkan bola ke ring lawan. Diciptakan oleh James Naismith pada tahun 1891 di Springfield, Massachusetts, AS.',
+          butir: [
+            'Jumlah pemain: 5 orang per tim di lapangan',
+            'Lapangan: 28m × 15m, ring setinggi 3,05m dari lantai',
+            'Poin: tembakan biasa = 2 poin, luar garis tiga angka = 3 poin, lemparan bebas = 1 poin',
+            'Permainan 4 quarter, masing-masing 10 menit (FIBA)',
+            'Pelanggaran: travelling, double dribble, personal foul, technical foul',
+          ],
+        } as SchemaBlock,
+        {
+          type: 'ftab',
+          showReadMarker: true,
+          showProgress: true,
+          tabs: [
+            {
+              icon: '⛹️',
+              label: 'Dribble',
+              content: [
+                {
+                  type: 'def-box',
+                  borderColor: 'c',
+                  content: '<strong>Dribble</strong> (menggiring bola) adalah teknik membawa bola sambil bergerak dengan cara memantulkan bola ke lantai menggunakan ujung-ujung jari secara berulang.',
+                },
+                {
+                  type: 'nc-grid',
+                  cards: [
+                    { icon: '✋', title: 'Posisi Tangan', body: 'Gunakan ujung-ujung jari (bukan telapak tangan). Jari-jari terbuka menutupi bagian atas bola, pergelangan tangan lentur', color: 'y' },
+                    { icon: '🏀', title: 'Pantulan', body: 'Pantulkan bola setinggi pinggang hingga dada. Semakin rendah pantulan, semakin mudah dikontrol', color: 'c' },
+                    { icon: '🏃', title: 'Gerakan Kaki', body: 'Berjalan/berlari sambil mendribel. Langkah kaki harus selaras dengan pantulan bola', color: 'g' },
+                    { icon: '👀', title: 'Pandangan', body: 'Pandangan ke depan mengawasi lapangan, BUKAN menatap bola! Ini butuh latihan', color: 'p' },
+                  ],
+                },
+              ],
+            },
+            {
+              icon: '🤾',
+              label: 'Chest Pass',
+              content: [
+                {
+                  type: 'def-box',
+                  borderColor: 'g',
+                  content: '<strong>Chest pass</strong> adalah teknik melempar bola dari depan dada menggunakan kedua tangan. Ini adalah operan paling umum dan cepat dalam bola basket.',
+                },
+                {
+                  type: 'nc-grid',
+                  cards: [
+                    { icon: '🧍', title: 'Sikap Awal', body: 'Pegang bola setinggi dada dengan kedua tangan, siku ditekuk di samping badan, kaki selebar bahu', color: 'y' },
+                    { icon: '💪', title: 'Dorongan', body: 'Dorong bola lurus ke depan dengan kedua tangan secara bersamaan. Lengan lurus sepenuhnya saat melepas bola', color: 'c' },
+                    { icon: '🔄', title: 'Follow Through', body: 'Setelah melepas bola, pergelangan tangan melentik ke bawah (snap) agar bola berputar dan stabil di udara', color: 'g' },
+                    { icon: '🦶', title: 'Langkah Kaki', body: 'Langkah maju satu kaki saat melempar untuk menambah tenaga. Kaki berlawanan dengan tangan lempar', color: 'p' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'compare',
+          title: 'Perbandingan Bola Voli vs Bola Basket',
+          kiri: {
+            icon: '🏐',
+            judul: 'Bola Voli',
+            isi: '6 pemain per tim • Bola tidak boleh menyentuh lantai • Tidak ada dribble • Net sebagai pembatas • Poin dari rally • Servis memulai permainan',
+          },
+          kanan: {
+            icon: '🏀',
+            judul: 'Bola Basket',
+            isi: '5 pemain per tim • Bola dipantulkan ke lantai (dribble) • Contact sport • Ring sebagai target • Poin dari tembakan ke ring • Dribble & passing sebagai gerakan dasar',
+          },
+          accentColor: 'c',
+        },
+        {
+          type: 'flashcard-set',
+          cards: [
+            { q: 'Berapa jumlah pemain basket di lapangan per tim?', a: '5 pemain per tim di lapangan. Posisi: point guard, shooting guard, small forward, power forward, dan center.' },
+            { q: 'Bagaimana cara mendribel yang benar?', a: 'Gunakan ujung-ujung jari (bukan telapak tangan), pantulkan bola setinggi pinggang-dada, pandangan ke depan mengawasi lapangan.' },
+            { q: 'Apa itu travelling dalam bola basket?', a: 'Travelling adalah pelanggaran ketika pemain bergerak lebih dari 2 langkah tanpa mendribel bola setelah berhenti mendribel.' },
+          ],
+        },
+      ],
+      nav: { prev: 's-materi1', next: 's-diskusi', nextLabel: 'Lanjut ke Diskusi' },
+    },
+
+    // ──────────────────────── DISKUSI ────────────────────────
+    {
+      id: 's-diskusi',
+      templateType: 'diskusi',
+      sectionLabel: '💬 Diskusi · ±10 Menit',
+      sectionColor: 'g',
+      blocks: [
+        {
+          type: 'diskusi',
+          title: 'Diskusi Permainan Bola Besar',
+          intro: 'Berpikirlah kritis dan gunakan pengetahuanmu!',
+          questions: [
+            {
+              label: 'Pertanyaan 1',
+              icon: '🤔',
+              teks: 'Mengapa kerja sama tim sangat penting dalam permainan bola besar? Apa yang terjadi jika satu pemain bermain egois?',
+              petunjuk: 'Tuliskan pendapatmu di sini… (jawabanmu akan tampil lagi di Refleksi)',
+              color: 'y',
+            },
+            {
+              label: 'Pertanyaan 2',
+              icon: '💡',
+              teks: 'Jika kamu melihat pertandingan bola voli, kapan sebaiknya tim menggunakan servis bawah dan kapan menggunakan servis atas? Jelaskan alasannya!',
+              petunjuk: 'Pikirkan situasi dalam permainan…',
+              color: 'c',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-materi2', next: 's-kuis', nextLabel: 'Lanjut ke Kuis' },
+    },
+
+    // ──────────────────────── KUIS ────────────────────────
+    {
+      id: 's-kuis',
+      templateType: 'game',
+      sectionLabel: '🎮 Kuis · ±10 Menit',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'kuis',
+          title: 'Kuis Permainan Bola Besar!',
+          questions: [
+            {
+              q: 'Berapa jumlah pemain bola voli dalam satu tim yang bermain di lapangan?',
+              opts: ['4 pemain', '5 pemain', '6 pemain', '7 pemain'],
+              ans: 2,
+              ex: 'Bola voli dimainkan oleh 6 pemain per tim di lapangan. Posisi mereka berputar searah jarum jam setiap perpindahan servis.',
+            },
+            {
+              q: 'Dalam passing bawah bola voli, dorongan bola sebaiknya berasal dari...',
+              opts: ['Mengayunkan lengan ke atas', 'Ekstensi lutut dan pinggul', 'Menekuk pergelangan tangan', 'Melompat setinggi-tingginya'],
+              ans: 1,
+              ex: 'Dorongan saat passing bawah berasal dari ekstensi lutut dan pinggul (mendorong dengan kaki). Lengan hanya sebagai bidang pantulan, tidak diayunkan.',
+            },
+            {
+              q: 'Teknik membawa bola sambil memantulkannya ke lantai dalam bola basket disebut...',
+              opts: ['Passing', 'Dribble', 'Shooting', 'Rebound'],
+              ans: 1,
+              ex: 'Dribble adalah teknik membawa bola sambil memantulkannya ke lantai menggunakan ujung-ujung jari. Ini adalah keterampilan dasar wajib dalam bola basket.',
+            },
+            {
+              q: 'Siapa yang menciptakan permainan bola basket?',
+              opts: ['William G. Morgan', 'James Naismith', 'Thomas Edison', 'Pierre de Coubertin'],
+              ans: 1,
+              ex: 'James Naismith menciptakan bola basket pada tahun 1891 di Springfield, Massachusetts. William G. Morgan adalah pencipta bola voli.',
+            },
+            {
+              q: 'Berapa poin yang didapat dari tembakan di luar garis tiga angka dalam bola basket?',
+              opts: ['1 poin', '2 poin', '3 poin', '4 poin'],
+              ans: 2,
+              ex: 'Tembakan dari luar garis tiga angka (three-point line) bernilai 3 poin. Tembakan biasa di dalam garis bernilai 2 poin, dan lemparan bebas bernilai 1 poin.',
+            },
+          ],
+        },
+      ],
+      nav: { prev: 's-diskusi', next: 's-hasil', nextLabel: 'Lihat Hasil' },
+    },
+
+    // ──────────────────────── HASIL ────────────────────────
+    {
+      id: 's-hasil',
+      templateType: 'hasil',
+      sectionLabel: '🏆 Hasil',
+      sectionColor: 'c',
+      background: { type: 'radial', color1: 'c', color2: 'bg' },
+      blocks: [
+        { type: 'hasil', title: 'Permainan Bola Besar', subtitle: 'Pertemuan 1 Selesai! 🎉' },
+      ],
+      nav: { prev: 's-kuis', next: 's-penutup', nextLabel: 'Penutup' },
+    },
+
+    // ──────────────────────── PENUTUP ────────────────────────
+    {
+      id: 's-penutup',
+      templateType: 'penutup',
+      background: { type: 'radial', color1: 'c', color2: 'bg' },
+      blocks: [
+        {
+          type: 'penutup',
+          title: 'Pertemuan 1',
+          subtitle: 'Permainan Bola Besar — Berhasil Diselesaikan!',
+          preview: [
+            { icon: '🏐', judul: 'Bola Voli', isi: 'Servis bawah & passing bawah', warna: 'y' },
+            { icon: '🏀', judul: 'Bola Basket', isi: 'Dribble & chest pass', warna: 'c' },
+          ],
+          nextPertemuan: {
+            judul: 'Pertemuan 2: Teknik Lanjutan Permainan Bola Besar',
+            deskripsi: 'Pertemuan berikutnya kita akan mempraktikkan teknik servis atas bola voli dan lay-up bola basket, serta belajar taktik sederhana dalam permainan!',
+            items: [
+              { icon: '🏐', judul: 'Servis Atas', isi: 'Teknik servis dengan daya dan spin lebih besar', warna: 'y' },
+              { icon: '🏀', judul: 'Lay-up', isi: 'Tembakan sambil berlari ke ring', warna: 'c' },
+              { icon: '🧠', judul: 'Taktik Dasar', isi: 'Formasi dan strategi sederhana', warna: 'g' },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};

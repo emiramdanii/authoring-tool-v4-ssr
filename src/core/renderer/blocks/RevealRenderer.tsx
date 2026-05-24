@@ -172,6 +172,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 background: tokens.color('card'),
                 border: `1px solid ${accentAlpha(0.25)}`,
                 borderLeft: `${isCompact ? 3 : 4}px solid ${accentColor}`,
+                overflow: 'hidden',
               }}
             >
               {/* Reveal icon + label */}
@@ -202,8 +203,9 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 </span>
               </div>
 
-              {/* Reveal content */}
+              {/* Reveal content — truncasi saat compact */}
               <div
+                className={isCompact ? 'canvas-truncate-2' : ''}
                 style={{
                   fontSize: isCompact ? '12px' : '14px',
                   lineHeight: 1.7,

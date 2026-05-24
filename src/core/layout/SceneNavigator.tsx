@@ -96,7 +96,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
           <button
             key={i}
             onClick={() => onSceneChange(i)}
-            className="rounded-full transition-all"
+            className="rounded-full transition-[width,background-color,opacity]"
             style={{
               width: i === currentScene ? (isCompact ? 14 : 18) : (isCompact ? 6 : 8),
               height: isCompact ? 6 : 8,

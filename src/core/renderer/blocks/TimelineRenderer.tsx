@@ -78,8 +78,8 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
             </div>
           )}
 
-          {/* Timeline steps */}
-          <div className="flex flex-col" style={{ gap: '0px' }}>
+          {/* Timeline steps — overflow protection saat mode canvas */}
+          <div className="flex flex-col" style={{ gap: '0px', ...(isCompact ? { maxHeight: '280px', overflow: 'hidden' as const } : {}) }}>
             {steps.map((step, i) => {
               const stepColor = tokens.color(step.color);
               const stepAlpha = (a: number) => tokens.colorAlpha(step.color, a);
@@ -156,6 +156,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                         <RichText content={step.label} />
                       </div>
                       <div
+                        className={isCompact ? 'canvas-truncate-2' : ''}
                         style={{
                           color: tokens.color('text'),
                           fontSize: isCompact ? '11px' : '13px',

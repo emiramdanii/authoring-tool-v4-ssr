@@ -79,9 +79,9 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
             </div>
           )}
 
-          {/* Table */}
+          {/* Table — max-height + scroll saat mode canvas untuk mencegah overflow */}
           <div
-            className="overflow-x-auto"
+            className={`overflow-x-auto ${isCompact ? 'max-h-80 overflow-y-auto' : ''}`}
             style={{
               borderRadius: tokens.radius('lg') + 'px',
               border: `1px solid ${accentAlpha(0.15)}`,
@@ -110,6 +110,9 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
                         background: `linear-gradient(135deg, ${accentColor}, ${accentAlpha(0.8)})`,
                         borderBottom: `2px solid ${accentAlpha(0.4)}`,
                         whiteSpace: 'nowrap',
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 1,
                       }}
                     >
                       <RichText content={header} />

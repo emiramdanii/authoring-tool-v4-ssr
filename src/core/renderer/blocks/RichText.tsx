@@ -95,12 +95,21 @@ export const RichText = React.memo(function RichText({
   const hasHtml = useMemo(() => hasHtmlTags(content || ''), [content]);
   const sanitizedHtml = useMemo(() => sanitizeHtml(displayContent), [displayContent]);
 
+  // Baseline overflow protection — prevents long words/URLs from
+  // breaking layout in all modes (canvas, preview, export).
+  // Parent components can override via style prop if needed.
+  const baselineStyle: React.CSSProperties = {
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    ...style,
+  };
+
   if (hasHtml) {
     // Content contains HTML — sanitize and render as HTML
     return (
       <Tag
         className={className}
-        style={style}
+        style={baselineStyle}
         dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
     );
@@ -108,7 +117,7 @@ export const RichText = React.memo(function RichText({
 
   // Plain text — render as React children (safe, no XSS risk)
   return (
-    <Tag className={className} style={style}>
+    <Tag className={className} style={baselineStyle}>
       {displayContent}
     </Tag>
   );

@@ -330,8 +330,8 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
           boxShadow: tokens.raw.shadow.card,
           overflow: 'hidden',
         }}>
-        {/* Question text with blank marker */}
-        <p className={`font-bold leading-relaxed mb-3 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
+        {/* Question text with blank marker — truncasi saat compact */}
+        <p className={`font-bold leading-relaxed mb-3 ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompact ? 'canvas-truncate-2' : ''}`}
           style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           {parts.length > 1 ? (
             <>

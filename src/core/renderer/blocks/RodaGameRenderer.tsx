@@ -270,7 +270,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
                   boxShadow: spinning
                     ? `0 0 50px ${tokens.colorAlpha('c', 0.5)}, 0 0 100px ${tokens.colorAlpha('c', 0.2)}`
                     : `0 0 24px ${tokens.colorAlpha('c', 0.15)}`,
-                  transition: 'box-shadow 0.5s ease',
+                  transition: tokens.iosTransitionStyle('box-shadow', 'slow').transition,
                 }} />
 
               {/* Pointer arrow at top — enhanced triangle */}

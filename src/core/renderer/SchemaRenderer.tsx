@@ -21,6 +21,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // ── Stable noop callbacks — prevent re-renders from new function refs ──
 // These are module-level constants so React.memo sees the same reference.
 const NOOP_FN = () => {};
+
+// ═══ MAX NESTING DEPTH GUARD ═════════════════════════════════════
+// Prevents infinite recursion when block renderers nest SchemaBlockRenderer
+// calls (e.g., container blocks rendering children). If depth exceeds
+// this limit, a warning is rendered instead of recursing further.
+const MAX_NESTING_DEPTH = 5;
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
 import {
   resolveSceneLayout,
@@ -681,12 +687,15 @@ export interface BlockRenderProps {
   onDuplicate?: (blockId: string) => void;
   /** Callback: drag grip handle pointerdown (initiates canvas drag-reorder) */
   onDragHandleDown?: (e: React.PointerEvent, blockIndex: number) => void;
+  /** Current nesting depth — guarded by MAX_NESTING_DEPTH */
+  depth?: number;
 }
 
-export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, blockIndex, pageIndex, isBeingDragged, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate, onDragHandleDown }: BlockRenderProps) {
+export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ block, mode, tokens, interactive = false, compression, blockIndex, pageIndex, isBeingDragged, isSelected = false, isMultiSelected = false, isHovered = false, isEditing = false, onSelect, onHover, onEdit, onDelete, onMoveUp, onMoveDown, onDuplicate, onDragHandleDown, depth = 0 }: BlockRenderProps) {
   const isCompact = mode === 'canvas';
   const blockId = block.id || block.type;
 
+  // Hooks must be called unconditionally (Rules of Hooks)
   const { BlockComponent, handlesCompression } = useMemo(() => {
     const definition = SCENE_REGISTRY[block.type];
     return {
@@ -703,6 +712,18 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
     const b = block as Record<string, unknown>;
     return (b.title as string) || (b.label as string) || block.type;
   }, [block]);
+
+  // ── MAX_NESTING_DEPTH guard ──────────────────────────────────────
+  // Prevents infinite recursion when block renderers nest further
+  // SchemaBlockRenderer calls. Render a warning instead.
+  // MUST be after hooks (Rules of Hooks compliance).
+  if (depth > MAX_NESTING_DEPTH) {
+    return (
+      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 text-[10px] font-bold">
+        ⚠ Kedalaman bersarang melebihi batas ({MAX_NESTING_DEPTH}) — blok "{block.type}" tidak dirender
+      </div>
+    );
+  }
 
   if (!BlockComponent) {
     return (

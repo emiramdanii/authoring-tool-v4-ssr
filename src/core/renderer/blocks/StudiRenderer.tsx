@@ -104,7 +104,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             </div>
           )}
 
-          {/* Situasi section */}
+          {/* Situasi section — overflow protection saat mode canvas */}
           <div
             style={{
               ...tokens.iosNestedPadding(isCompact),
@@ -113,6 +113,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
               border: `1px solid ${accentAlpha(0.15)}`,
               borderLeft: `${isCompact ? 3 : 4}px solid ${accentColor}`,
               marginBottom: '10px',
+              overflow: 'hidden',
             }}
           >
             <div
@@ -126,6 +127,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
               Situasi
             </div>
             <div
+              className={isCompact ? 'canvas-truncate-2' : ''}
               style={{
                 fontSize: isCompact ? '12px' : '14px',
                 lineHeight: 1.7,
@@ -138,7 +140,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             </div>
           </div>
 
-          {/* Pertanyaan callout */}
+          {/* Pertanyaan callout — overflow protection saat mode canvas */}
           <div
             style={{
               ...tokens.iosNestedPadding(isCompact),
@@ -147,6 +149,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
               border: `1px solid ${accentAlpha(0.25)}`,
               borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color('y')}`,
               marginBottom: block.pesan ? '10px' : '0',
+              overflow: 'hidden',
             }}
           >
             <div
@@ -160,6 +163,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
               Pertanyaan
             </div>
             <div
+              className={isCompact ? 'canvas-truncate-2' : ''}
               style={{
                 fontSize: isCompact ? '12px' : '14px',
                 lineHeight: 1.7,

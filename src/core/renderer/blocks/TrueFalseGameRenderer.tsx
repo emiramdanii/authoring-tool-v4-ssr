@@ -332,22 +332,22 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
           boxShadow: tokens.raw.shadow.card,
           overflow: 'hidden',
         }}>
-        {/* Question text */}
-        <p className={`font-bold leading-relaxed mb-4 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
+        {/* Question text — truncasi saat compact */}
+        <p className={`font-bold leading-relaxed mb-4 ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompact ? 'canvas-truncate-2' : ''}`}
           style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           {q.text}
         </p>
 
         {/* ── Benar / Salah buttons ────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
-          {/* ✅ Benar button */}
+          {/* ✅ Benar button — truncasi saat compact */}
           <button
             key={`tf-opt-${block.id || 'tf'}-${currentQ}-benar`}
             disabled={answered}
             onClick={() => { if (interactive) handleAnswer(true); }}
             aria-pressed={selected === true}
             aria-label="Benar"
-            className={"p-3 rounded-xl font-extrabold text-center " + tokens.iosQuizOptionTw(!answered && interactive) + " min-w-0"}
+            className={`p-3 rounded-xl font-extrabold text-center ${tokens.iosQuizOptionTw(!answered && interactive)} min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               fontSize: '14px',
               background: !answered
@@ -386,14 +386,14 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
             ✅ Benar
           </button>
 
-          {/* ❌ Salah button */}
+          {/* ❌ Salah button — truncasi saat compact */}
           <button
             key={`tf-opt-${block.id || 'tf'}-${currentQ}-salah`}
             disabled={answered}
             onClick={() => { if (interactive) handleAnswer(false); }}
             aria-pressed={selected === false}
             aria-label="Salah"
-            className={"p-3 rounded-xl font-extrabold text-center " + tokens.iosQuizOptionTw(!answered && interactive) + " min-w-0"}
+            className={`p-3 rounded-xl font-extrabold text-center ${tokens.iosQuizOptionTw(!answered && interactive)} min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`}
             style={{
               fontSize: '14px',
               background: !answered

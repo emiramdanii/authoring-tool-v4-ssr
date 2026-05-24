@@ -446,9 +446,9 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
         />
       </div>
 
-      {/* Card grid */}
+      {/* Card grid — constraint saat compact untuk mencegah overflow scene */}
       <div
-        className="grid gap-2.5 premium-card-glow"
+        className={`grid gap-2.5 premium-card-glow ${isCompact ? 'max-h-72 overflow-hidden' : ''}`}
         style={{
           gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
           perspective: '1000px',

@@ -33,21 +33,23 @@ function renderSortirGame(b: Record<string, unknown>): string {
   const title = b.title as string || 'Game Sortir';
   const pool = (b.pool as Array<{ id: string; text: string; category: string }>) || [];
   const kolom = (b.kolom as Array<{ id: string; label: string; color: string }>) || [];
+  const sortId = `sortir-${Math.random().toString(36).slice(2, 8)}`;
   return `
-    <div class="block sortir-block">
+    <div class="block sortir-block" data-game="${sortId}">
       <div class="block-header">
         <span class="block-icon">🔄</span>
         <h2>${escapeHtml(title)}</h2>
       </div>
-      <div class="sortir-pool">
-        ${pool.map(p => `<span class="sortir-item" draggable="true" data-cat="${escapeHtml(p.category)}">${escapeHtml(p.text)}</span>`).join('')}
+      <div class="sortir-pool" data-game="${sortId}">
+        ${pool.map(p => `<span class="sortir-item" draggable="true" data-cat="${escapeHtml(p.category)}" data-game="${sortId}">${escapeHtml(p.text)}</span>`).join('')}
       </div>
-      <div class="sortir-kolom">
+      <div class="sortir-kolom" data-game="${sortId}">
         ${kolom.map(k => `
-          <div class="sortir-kolom-box" style="border: 2px dashed ${resolveColor(k.color, '#3ecfcf')}44;">
+          <div class="sortir-kolom-box" data-kid="${escapeHtml(k.id)}" data-game="${sortId}" style="border: 2px dashed ${resolveColor(k.color, '#3ecfcf')}44;">
             <h4 style="color:${resolveColor(k.color, '#3ecfcf')};">${escapeHtml(k.label)}</h4>
           </div>`).join('')}
       </div>
+      <button class="game-check-btn" onclick="checkSortir('${sortId}')">✅ Periksa Jawaban</button>
     </div>`;
 }
 
@@ -86,9 +88,11 @@ function renderMemoryGame(b: Record<string, unknown>): string {
   });
   // Shuffle (Fisher-Yates seeded by cardId hash for determinism)
   const seed = cardId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  let rngState = seed;
   for (let i = cards.length - 1; i > 0; i--) {
-    const j = (seed * (i + 1) + i) % (i + 1);
-    [cards[i]!, cards[j]!] = [cards[j]!!, cards[i]];
+    rngState = (rngState * 1103515245 + 12345) & 0x7fffffff;
+    const j = rngState % (i + 1);
+    [cards[i]!, cards[j]!] = [cards[j]!, cards[i]!];
   }
   return `
     <div class="block memory-game-block" data-game="${cardId}">

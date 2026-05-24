@@ -108,8 +108,8 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
             </div>
           )}
 
-          {/* Checklist items */}
-          <div className="flex flex-col gap-2">
+          {/* Checklist items — overflow protection saat mode canvas */}
+          <div className={`flex flex-col gap-2 ${isCompact ? 'max-h-64 overflow-y-auto' : ''}`}>
             {items.map((item, i) => {
               const isChecked = checkedState[i] ?? false;
 
@@ -172,8 +172,9 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                       )}
                     </div>
 
-                    {/* Text */}
+                    {/* Text — truncasi saat compact */}
                     <span
+                      className={isCompact ? 'canvas-truncate-1' : ''}
                       style={{
                         fontSize: isCompact ? '12px' : '14px',
                         lineHeight: 1.5,

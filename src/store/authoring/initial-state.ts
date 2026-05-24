@@ -14,7 +14,7 @@ import type {
   SuaraConfig,
 } from './types';
 
-export const DEFAULT_PANEL: PanelId = 'canva';
+export const DEFAULT_PANEL: PanelId = 'dashboard';
 
 export const DEFAULT_META: MetaState = {
   judulPertemuan: '', subjudul: '', ikon: '\uD83D\uDCDA', durasi: '',

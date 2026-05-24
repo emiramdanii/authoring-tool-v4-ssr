@@ -429,6 +429,52 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
   },
 
+  // ── PJOK IV (SD) — Gerak Dasar ──────────────────────────────
+  {
+    id: 'modul-pjok-iv',
+    name: 'Modul PJOK Kelas IV SD',
+    description: 'Alur pembelajaran PJOK SD kelas IV: Cover → Petunjuk → Tujuan → Materi ×3 → Kuis → Refleksi → Penutup',
+    subject: 'PJOK',
+    grade: '4',
+    semester: '1',
+    theme: 'nilai-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
+      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A' },
+      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['materi-section'], variant: 'A' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+    ],
+    metadata: { icon: '🏃', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PJOK X (SMA) — Kebugaran ────────────────────────────────
+  {
+    id: 'modul-pjok-x',
+    name: 'Modul PJOK Kelas X SMA',
+    description: 'Alur pembelajaran PJOK SMA kelas X: Cover → Tujuan → Materi ×2 → Studi Kasus → Kuis → Refleksi → Rangkuman → Penutup',
+    subject: 'PJOK',
+    grade: '10',
+    semester: '1',
+    theme: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A' },
+      { templateType: 'materi', label: 'Materi 2 — Prinsip Latihan', suggestedBlocks: ['materi-section'], variant: 'A' },
+      { templateType: 'diskusi', label: 'Studi Kasus', suggestedBlocks: ['diskusi'], variant: 'A' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+    ],
+    metadata: { icon: '💪', author: 'SILSE', version: '1.0.0' },
+  },
+
   // ── Template Kosong — Universal (subject='*', grade='*') ────
   {
     id: 'template-kosong',

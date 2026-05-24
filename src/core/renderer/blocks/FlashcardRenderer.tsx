@@ -159,7 +159,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
             minHeight: isCompact ? 80 : 130,
             transformStyle: 'preserve-3d',
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: tokens.iosTransitionStyle('transform', 'slow', 'ios').transition,
           }}
           onClick={handleFlip}
         >

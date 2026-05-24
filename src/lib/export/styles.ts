@@ -349,15 +349,7 @@ export function getCss(ratioW: number, ratioH: number): string {
     .materi-section-header h2 { font-size: 1.1rem; font-weight: 800; }
     .materi-subtitle { font-size: 0.78rem; color: #6e90b5; }
     .materi-content { margin-bottom: 10px; }
-    .bsnp-badge {
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.6rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: #1e293b;
-      letter-spacing: 0.05em;
-    }
+    /* .bsnp-badge defined later in file to avoid duplication */
     .takeaways {
       margin-top: 10px;
       padding: 12px;
