@@ -787,3 +787,37 @@ Stage Summary:
 - Accessibility: SkipNavLink target, decorative image roles
 - Bundle: xlsx dynamic, lucide tree-shakeable
 
+
+---
+Task ID: 6
+Agent: main
+Task: Sprint 6 — Production Security & Infrastructure
+
+Work Log:
+- Audited full project state: 541 files, 548 tests, clean codebase, node_modules missing
+- Fixed xlsx version compatibility (0.19.3 → 0.18.5), installed dependencies
+- Created rate limiting middleware (src/lib/rate-limit.ts): token bucket algorithm with 4 tiers (AI 10/min, Export 10/min, Project 60/min, General 120/min)
+- Created Zod v4 validation schemas (src/lib/api-validation.ts): 11 schemas covering all API routes
+- Created Next.js middleware (src/middleware.ts): rate limiting on all /api/* routes with 429 responses
+- Updated all 11 API routes with Zod validation (ai, lesson, refine, projects, projects/[id], projects/[id]/save, export, export/scorm, projects/[id]/export, templates, health)
+- Created error pages: error.tsx (route-level), global-error.tsx (root-level with emergency save), not-found.tsx (custom 404)
+- Moved CI config from devops/ to .github/workflows/ (excluded from git due to PAT workflow scope)
+- Removed || true from CI lint, typecheck, test stages
+- Tightened ESLint: no-console=warn, no-unused-vars=warn
+- Enabled MobileGuard feature flag (prevents unusable mobile experience)
+- Enabled PWA feature flag and re-enabled @ducanh2912/next-pwa plugin
+- Added security headers: X-XSS-Protection, Referrer-Policy, Permissions-Policy
+- Created .env.example
+- Added 61 new tests: rate-limit (25), api-validation (36)
+- Fixed Zod v4 compatibility: z.record(z.unknown()) → z.record(z.string(), z.unknown()), errorMap → message, saveBlockSchema typing
+- Fixed semester field: string → Int (matching Prisma schema)
+
+Stage Summary:
+- 609 tests passing (was 548, +61 new)
+- 0 TypeScript errors
+- All 11 API routes now Zod-validated
+- All API routes rate-limited via middleware
+- 3 new error pages (error.tsx, global-error.tsx, not-found.tsx)
+- MobileGuard enabled
+- PWA re-enabled
+- Commit: 6cfcf50 on origin/main
