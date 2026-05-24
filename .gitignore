@@ -76,3 +76,4 @@ db/
 
 # Download outputs
 download/
+.github/workflows/
