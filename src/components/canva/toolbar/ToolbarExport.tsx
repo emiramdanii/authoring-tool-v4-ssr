@@ -66,7 +66,7 @@ export function ToolbarExport() {
             className={`focus-ring flex items-center gap-1 h-7 px-2 ${isExporting ? 'opacity-50' : ''}`}
           >
             {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Share2 size={13} />}
-            <span className="hidden sm:inline text-[10px] font-semibold">Bagikan</span>
+            <span className="hidden sm:inline text-[10px] font-semibold">Ekspor</span>
             <ChevronDown size={8} />
           </Button>
         </DropdownMenuTrigger>

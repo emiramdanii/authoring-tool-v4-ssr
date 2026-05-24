@@ -5,11 +5,11 @@ import { useExportActions } from './use-export-actions';
 import { AutoSaveIndicator, SaveNowButton } from '@/components/shared/StatusToast';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import { ToolbarExport } from './ToolbarExport';
-import { Download, Loader2, PanelRightOpen, PanelRightClose, Undo2, Redo2 } from 'lucide-react';
+import { Download, Loader2, PanelRightOpen, PanelRightClose, Undo2, Redo2, HelpCircle } from 'lucide-react';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
-// ═══════════════════════════════════════════════════════════════
-// QUICK ACTIONS — Undo/Redo, Save, Export, Command palette button
-// ═══════════════════════════════════════════════════════════════
+import { triggerCanvaTour } from '@/components/shared/CanvaTour';
+import { triggerCanvaOrientation } from '@/components/shared/CanvaOrientationTooltip';
 
 export function QuickActions() {
   const { exportHtml, isExporting } = useExportActions();
@@ -20,6 +20,7 @@ export function QuickActions() {
   const canUndo = useCanvaStore((s) => s.canUndo);
   const canRedo = useCanvaStore((s) => s.canRedo);
   const teacherMode = useCanvaStore((s) => s.teacherMode);
+  const { isSederhana } = useTeacherMode();
 
   return (
     <div className="flex items-center gap-1">
@@ -71,6 +72,21 @@ export function QuickActions() {
         title={rightPanelOpen ? 'Tutup panel properti' : 'Buka panel properti'}
       >
         {rightPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+      </button>
+
+      {/* Bantuan / Help — re-trigger Canva Tour or Orientation */}
+      <button
+        onClick={() => {
+          if (isSederhana) {
+            triggerCanvaOrientation();
+          } else {
+            triggerCanvaTour();
+          }
+        }}
+        className="flex items-center justify-center h-7 w-7 rounded-lg text-app-muted hover:text-app-accent hover:bg-app-accent/10 transition-[background-color,border-color,color]"
+        title={isSederhana ? 'Bantuan — tampilkan panduan' : 'Help — restart tour'}
+      >
+        <HelpCircle size={14} />
       </button>
 
       {/* One-click HTML Export — prominent CTA for teachers */}

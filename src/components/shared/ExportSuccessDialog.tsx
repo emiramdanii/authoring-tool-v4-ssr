@@ -86,8 +86,8 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
             onClick={onClose}
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
           >
-            <ExternalLink size={12} />
-            Buka Folder Unduhan
+            <CheckCircle2 size={12} />
+            Selesai
           </Button>
         </DialogFooter>
       </DialogContent>

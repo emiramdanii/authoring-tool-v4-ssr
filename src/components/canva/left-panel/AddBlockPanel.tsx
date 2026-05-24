@@ -14,7 +14,7 @@
 // and "Block" terminology is replaced with "Konten".
 
 import { useState, useMemo, useCallback } from 'react';
-import { Search, Plus, Blocks, ArrowDownToLine, Zap } from 'lucide-react';
+import { Search, Plus, Blocks, ArrowDownToLine, Zap, Star } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
@@ -58,6 +58,12 @@ export default function AddBlockPanel() {
   // Terminology helpers based on teacher mode
   const blockLabel = isSederhana ? 'Konten' : 'Block';
 
+  // ── Most-used blocks for Sederhana mode — reduces choice overload ──
+  const POPULAR_BLOCK_TYPES = useMemo(() => [
+    'cover', 'tp', 'materi-blok', 'materi-section', 'gambar',
+    'kuis', 'diskusi', 'refleksi', 'penutup',
+  ], []);
+
   // Check if current page can accept schema blocks
   // addSchemaBlock() auto-creates an empty schema for pages that
   // don't have one yet, so ANY page can accept blocks.
@@ -81,6 +87,14 @@ export default function AddBlockPanel() {
 
   // Get all block definitions, filter by search, exclude non-addable (internal) blocks
   const allBlocks = useMemo(() => getAllBlockDefinitions().filter(b => b.addable !== false), []);
+
+  // Popular blocks derived from allBlocks (must come after allBlocks declaration)
+  const popularBlocks = useMemo(() => {
+    if (!isSederhana) return [];
+    return POPULAR_BLOCK_TYPES
+      .map(type => allBlocks.find(b => b.type === type))
+      .filter((b): b is BlockDefinition => b != null);
+  }, [isSederhana, allBlocks, POPULAR_BLOCK_TYPES]);
 
   // ── Add block handler with screen reader announcement ──────────
   const handleAddBlock = useCallback((block: BlockDefinition) => {
@@ -212,6 +226,31 @@ export default function AddBlockPanel() {
         <span className="text-app-muted">({allBlocks.length})</span>
       </div>
 
+      {/* ── Paling Sering Digunakan (Sederhana only) ── */}
+      {isSederhana && popularBlocks.length > 0 && !search.trim() && (
+        <div className="space-y-1.5">
+          <div className="text-[8px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+            <Star size={8} />
+            Paling Sering Digunakan
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {popularBlocks.map((block) => (
+              <button
+                key={block.type}
+                onClick={() => handleAddBlock(block)}
+                className="flex flex-col items-center gap-1 p-2 rounded-lg border border-app-accent/15 bg-app-accent/5 hover:bg-app-accent/10 hover:border-app-accent/30 transition-[background-color,border-color] active:scale-[0.96] text-center group"
+                title={`${teacherTerm(block.name, 'sederhana')} — ${block.description}`}
+              >
+                <span className="text-lg group-hover:scale-[1.1] transition-transform" aria-hidden="true">{block.icon}</span>
+                <span className="text-[8px] font-semibold text-app-primary leading-tight line-clamp-2 group-hover:text-app-accent transition-colors">
+                  {teacherTerm(block.name, 'sederhana')}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Quick Insert Fragments — Phase F.4 */}
       <div className="space-y-2">
         <div className="text-[8px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
@@ -303,7 +342,7 @@ export default function AddBlockPanel() {
                     {cat?.label.split(' ')[0] || fragment.category}
                   </span>
                   <span className="text-[6px] text-app-muted">
-                    {fragment.blockCount} block
+                    {fragment.blockCount} {isSederhana ? 'konten' : 'block'}
                   </span>
                 </div>
               </button>

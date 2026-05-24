@@ -10,6 +10,15 @@ import {
   Users, ScrollText, Scale, Smartphone, Palette, Monitor, Layout, BarChart3,
   BookOpen, GraduationCap, Download, FolderOpen, Upload, Wand2, Save, Check,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
@@ -55,6 +64,17 @@ function getNextStep(
 
 export default function Dashboard() {
   const [wizardOpen, setWizardOpen] = useState(false);
+  // ── Styled confirm dialog state ──
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ open: false, title: '', message: '', onConfirm: () => {} });
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmState({ open: true, title, message, onConfirm });
+  };
   const meta = useAuthoringStore((s) => s.meta);
   const cp = useAuthoringStore((s) => s.cp);
   const tp = useAuthoringStore((s) => s.tp);
@@ -109,9 +129,7 @@ export default function Dashboard() {
   };
 
   // ── Template click handler ─────────────────────────────────────
-  const handleTemplateClick = (pKey: string) => {
-    if (hasData && !confirm('Template akan menimpa data saat ini. Lanjutkan?')) return;
-
+  const applyTemplate = (pKey: string) => {
     if (SCHEMA_DRIVEN_PRESETS.has(pKey)) {
       applyFullPreset(pKey);
       setTimeout(async () => {
@@ -120,7 +138,6 @@ export default function Dashboard() {
       }, 100);
     } else if (pKey === 'blank') {
       useAuthoringStore.getState().newProject();
-      // Use setActivePanel from hook to override newProject()'s reset to 'dashboard'
       setTimeout(() => {
         useCanvaStore.getState().resetCanvas();
         setActivePanel('canva');
@@ -132,6 +149,18 @@ export default function Dashboard() {
         setActivePanel('canva');
       }, 300);
     }
+  };
+
+  const handleTemplateClick = (pKey: string) => {
+    if (hasData) {
+      showConfirm(
+        'Timpa Data?',
+        'Template akan menimpa data saat ini. Lanjutkan?',
+        () => applyTemplate(pKey),
+      );
+      return;
+    }
+    applyTemplate(pKey);
   };
 
   // ── Template data with lucide icons ────────────────────────────
@@ -296,7 +325,7 @@ export default function Dashboard() {
               : 'bg-app-elevated/30 border border-app-border text-app-muted'
         }`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          {isPresetMode ? `Preset: ${presetLabels[activePreset || ''] || activePreset}` : hasData ? 'Proyek Aktif' : 'Belum Ada Data'}
+          {isPresetMode ? `Preset: ${presetLabels[activePreset || ''] || activePreset}` : hasData ? 'Proyek Aktif' : 'Belum Ada Proyek'}
         </div>
         {hasData && (
           <div className="flex items-center gap-2 flex-1">
@@ -604,8 +633,15 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                if (hasData && !confirm('Buat proyek baru? Data yang belum disimpan akan hilang.')) return;
-                newProject();
+                if (hasData) {
+                  showConfirm(
+                    'Buat Proyek Baru?',
+                    'Data yang belum disimpan akan hilang.',
+                    () => newProject(),
+                  );
+                } else {
+                  newProject();
+                }
               }}
               className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated/50 rounded-lg transition-colors"
               title="Proyek Baru"
@@ -650,6 +686,34 @@ export default function Dashboard() {
 
       {/* Template Wizard Modal */}
       <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+
+      {/* Styled Confirm Dialog — replaces native confirm() */}
+      <Dialog open={confirmState.open} onOpenChange={(v) => !v && setConfirmState(s => ({ ...s, open: false }))}>
+        <DialogContent className="sm:max-w-sm bg-app-surface border-app-border">
+          <DialogHeader>
+            <DialogTitle className="text-app-primary">{confirmState.title}</DialogTitle>
+            <DialogDescription className="text-app-secondary">{confirmState.message}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmState(s => ({ ...s, open: false }))}
+              className="text-xs"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={() => {
+                confirmState.onConfirm();
+                setConfirmState({ open: false, title: '', message: '', onConfirm: () => {} });
+              }}
+              className="bg-amber-600 hover:bg-amber-700 text-white text-xs"
+            >
+              Lanjutkan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export default function TeacherModeToggle() {
           ? 'bg-emerald-500/20 text-emerald-300'
           : 'bg-app-elevated text-app-muted'
       }`}>
-        {isSederhana ? 'Guru' : 'Dev'}
+        {isSederhana ? 'Guru' : 'Lanjut'}
       </span>
     </button>
   );

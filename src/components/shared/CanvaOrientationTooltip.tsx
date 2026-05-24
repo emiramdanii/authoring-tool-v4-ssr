@@ -19,6 +19,16 @@ import { X, ArrowLeft, ArrowRight, MousePointer2, Sparkles } from 'lucide-react'
 
 const CANVA_ORIENTATION_KEY = 'silse_canva_orientation_done';
 
+// ── Re-trigger helper — called from Bantuan button or keyboard shortcut ──
+export function triggerCanvaOrientation() {
+  try {
+    localStorage.removeItem(CANVA_ORIENTATION_KEY);
+  } catch {
+    // ignore
+  }
+  window.dispatchEvent(new CustomEvent('start-canva-orientation'));
+}
+
 export function CanvaOrientationTooltip() {
   const { isSederhana } = useTeacherMode();
   const [visible, setVisible] = useState(false);
@@ -27,17 +37,29 @@ export function CanvaOrientationTooltip() {
     if (!isSederhana) return;
     // Only show in teacher mode
     let timer: ReturnType<typeof setTimeout> | null = null;
-    try {
-      const done = localStorage.getItem(CANVA_ORIENTATION_KEY);
-      if (done !== '1') {
-        // Small delay so the Canva layout has time to render
-        timer = setTimeout(() => setVisible(true), 800);
+    const checkAndShow = () => {
+      try {
+        const done = localStorage.getItem(CANVA_ORIENTATION_KEY);
+        if (done !== '1') {
+          // Small delay so the Canva layout has time to render
+          timer = setTimeout(() => setVisible(true), 800);
+        }
+      } catch {
+        // localStorage not available, skip
       }
-    } catch {
-      // localStorage not available, skip
-    }
+    };
+    checkAndShow();
+
+    // Listen for re-trigger events
+    const handleRetrigger = () => {
+      setVisible(false);
+      timer = setTimeout(() => setVisible(true), 200);
+    };
+    window.addEventListener('start-canva-orientation', handleRetrigger);
+
     return () => {
       if (timer) clearTimeout(timer);
+      window.removeEventListener('start-canva-orientation', handleRetrigger);
     };
   }, [isSederhana]);
 

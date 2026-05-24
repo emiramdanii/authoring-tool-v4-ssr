@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '404 — Halaman Tidak Ditemukan',
@@ -33,7 +34,7 @@ export default function NotFound() {
         </p>
 
         <div className="flex gap-3 justify-center">
-          <a
+          <Link
             href="/"
             className="px-6 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-xl
               hover:bg-primary/90 active:bg-primary/80
@@ -41,16 +42,16 @@ export default function NotFound() {
               shadow-[0_1px_3px_rgba(15,23,42,0.06),0_1px_2px_rgba(15,23,42,0.04)]"
           >
             Ke Beranda
-          </a>
+          </Link>
 
-          <button
-            onClick={() => window.history.back()}
+          <a
+            href="javascript:history.back()"
             className="px-6 py-2.5 bg-card text-card-foreground text-sm font-medium rounded-xl
               border border-border hover:bg-accent active:bg-accent/80
               transition-colors duration-200"
           >
             Kembali
-          </button>
+          </a>
         </div>
       </div>
     </div>

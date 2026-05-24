@@ -5,6 +5,7 @@ import { FadeIn, ScaleIn, SlideIn, StaggerChildren } from '@/lib/transition';
 import { Sparkles, FileText, Plus, Lightbulb } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
 
 // Lazy-load TemplateWizard — it's a modal dialog, not always visible
@@ -33,6 +34,7 @@ interface ActionCard {
 
 export default function CanvasEmptyState() {
   const [wizardOpen, setWizardOpen] = useState(false);
+  const { isSederhana } = useTeacherMode();
 
   const handleAutoGenerate = useCallback(() => {
     useAuthoringStore.getState().setActivePanel('autogen');
@@ -49,7 +51,7 @@ export default function CanvasEmptyState() {
   const cards: ActionCard[] = [
     {
       id: 'autogen',
-      title: 'Auto-Generate',
+      title: isSederhana ? 'Buat dengan AI' : 'Auto-Generate',
       description: 'Tempel materi, AI buatkan untuk Anda',
       icon: Sparkles,
       colorClass: 'text-purple-400',
@@ -60,7 +62,7 @@ export default function CanvasEmptyState() {
     },
     {
       id: 'template',
-      title: 'Dari Template',
+      title: isSederhana ? 'Template Siap Pakai' : 'Dari Template',
       description: 'Pilih template siap pakai',
       icon: FileText,
       colorClass: 'text-app-accent',
@@ -72,7 +74,7 @@ export default function CanvasEmptyState() {
     {
       id: 'blank',
       title: 'Halaman Kosong',
-      description: 'Buat halaman baru dari nol',
+      description: isSederhana ? 'Buat halaman, lalu tambah konten' : 'Buat halaman baru dari nol',
       icon: Plus,
       colorClass: 'text-cyan-400',
       iconBgClass: 'bg-cyan-500/15',
@@ -131,7 +133,10 @@ export default function CanvasEmptyState() {
         <FadeIn delay={0.4} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-app-elevated/40 border border-app-border/30 max-w-md">
           <Lightbulb size={14} className="text-amber-400 flex-shrink-0" />
           <span className="text-xs text-app-secondary">
-            Tip: Auto-Generate paling cepat — tempel materi, edit sedikit, selesai!
+            {isSederhana
+              ? 'Tip: Buat dengan AI paling cepat — tempel materi, edit sedikit, selesai!'
+              : 'Tip: Auto-Generate paling cepat — tempel materi, edit sedikit, selesai!'
+            }
           </span>
         </FadeIn>
       </div>
