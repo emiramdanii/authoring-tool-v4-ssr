@@ -28,6 +28,10 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "@next/next/no-img-element": "off",
     "@next/next/no-html-link-for-pages": "off",
     
+    // Accessibility rules
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    
     // General JavaScript rules
     "prefer-const": "off",
     "no-unused-vars": "off",

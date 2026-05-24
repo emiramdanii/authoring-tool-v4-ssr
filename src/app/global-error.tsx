@@ -8,6 +8,9 @@
 // IMPORTANT: This component replaces the ENTIRE root layout,
 // so it must include its own <html> and <body> tags.
 // It does NOT inherit layout.tsx styles or providers.
+//
+// Dark mode: Uses inline media query for @media (prefers-color-scheme: dark)
+// since we can't rely on CSS variables without the theme provider.
 // ═══════════════════════════════════════════════════════════════════════
 
 'use client';
@@ -41,6 +44,36 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <html lang="id">
+      <head>
+        <style>{`
+          :root {
+            --ge-bg: #F5F7FB;
+            --ge-surface: #FFFFFF;
+            --ge-text: #0F172A;
+            --ge-muted: #64748B;
+            --ge-faint: #94A3B8;
+            --ge-icon-bg: #FEF2F2;
+            --ge-icon-stroke: #EF4444;
+            --ge-btn-bg: #0F172A;
+            --ge-btn-text: #FFFFFF;
+            --ge-border: #E2E8F0;
+          }
+          @media (prefers-color-scheme: dark) {
+            :root {
+              --ge-bg: #0F172A;
+              --ge-surface: #1E293B;
+              --ge-text: #F1F5F9;
+              --ge-muted: #94A3B8;
+              --ge-faint: #64748B;
+              --ge-icon-bg: rgba(127,29,29,0.3);
+              --ge-icon-stroke: #F87171;
+              --ge-btn-bg: #3B82F6;
+              --ge-btn-text: #FFFFFF;
+              --ge-border: #334155;
+            }
+          }
+        `}</style>
+      </head>
       <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
         <div
           style={{
@@ -48,7 +81,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#F5F7FB',
+            backgroundColor: 'var(--ge-bg)',
             padding: '24px',
           }}
         >
@@ -60,7 +93,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 height: '72px',
                 margin: '0 auto 24px',
                 borderRadius: '50%',
-                backgroundColor: '#FEF2F2',
+                backgroundColor: 'var(--ge-icon-bg)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -71,7 +104,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 height="36"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#EF4444"
+                stroke="var(--ge-icon-stroke)"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -86,7 +119,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               style={{
                 fontSize: '20px',
                 fontWeight: 600,
-                color: '#0F172A',
+                color: 'var(--ge-text)',
                 marginBottom: '8px',
               }}
             >
@@ -96,7 +129,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             <p
               style={{
                 fontSize: '14px',
-                color: '#64748B',
+                color: 'var(--ge-muted)',
                 lineHeight: '1.6',
                 marginBottom: '24px',
               }}
@@ -109,7 +142,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               <p
                 style={{
                   fontSize: '12px',
-                  color: '#94A3B8',
+                  color: 'var(--ge-faint)',
                   marginBottom: '16px',
                   fontFamily: 'monospace',
                 }}
@@ -123,8 +156,8 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 onClick={reset}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#0F172A',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--ge-btn-bg)',
+                  color: 'var(--ge-btn-text)',
                   fontSize: '14px',
                   fontWeight: 500,
                   border: 'none',

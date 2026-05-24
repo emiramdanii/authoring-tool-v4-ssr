@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   Type, AlignLeft, List, Palette, LayoutGrid, HelpCircle, Hash, ToggleLeft, ChevronDown,
   Plus, Trash2, GripVertical, X, RotateCcw,
@@ -1065,17 +1065,27 @@ function JsonTextarea({ label, value, onChange, fieldId, helpId, helpText }: {
     catch { return String(value || ''); }
   });
   const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleChange = (newText: string) => {
+  const handleChange = useCallback((newText: string) => {
     setText(newText);
+
+    // Validate immediately for error feedback
+    let parsed: unknown;
     try {
-      const parsed = JSON.parse(newText);
+      parsed = JSON.parse(newText);
       setError(null);
-      onChange(parsed);
     } catch {
       setError('JSON tidak valid');
+      return; // Don't propagate invalid JSON
     }
-  };
+
+    // Debounce onChange to avoid excessive updates on every keystroke
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onChange(parsed);
+    }, 300);
+  }, [onChange]);
 
   return (
     <div className="space-y-0.5">

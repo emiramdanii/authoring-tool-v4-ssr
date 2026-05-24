@@ -65,7 +65,7 @@ function PlayOverlayHeader() {
 
   // TokenResolver-like interface for ScoreDisplay
   const headerTokens = {
-    color: (token: string) => token === 'muted' ? '#94a3b8' : '#ffffff',
+    color: (token: string) => token === 'muted' ? 'var(--color-app-muted, #94a3b8)' : 'var(--color-app-primary, #ffffff)',
     colorAlpha: (token: string, a: number) => token === 'muted' ? `rgba(148,163,184,${a})` : `rgba(255,255,255,${a})`,
   };
 
@@ -375,7 +375,7 @@ function PlayCanvas() {
                   isCompact={true}
                   showDetail={false}
                   tokens={{
-                    color: (token: string) => token === 'muted' ? '#94a3b8' : '#ffffff',
+                    color: (token: string) => token === 'muted' ? 'var(--color-app-muted, #94a3b8)' : 'var(--color-app-primary, #ffffff)',
                     colorAlpha: (token: string, a: number) => token === 'muted' ? `rgba(148,163,184,${a})` : `rgba(255,255,255,${a})`,
                   }}
                   variant="bottom"

@@ -50,11 +50,13 @@ export const metadata: Metadata = {
     title: "Authoring Tool v4 — Media Pembelajaran Interaktif",
     description: "Aplikasi authoring tool untuk membuat media pembelajaran interaktif PPKn.",
     type: "website",
+    images: ['/og.png'],
   },
   twitter: {
     card: "summary_large_image",
     title: "Authoring Tool v4 — Media Pembelajaran Interaktif",
     description: "Aplikasi authoring tool untuk membuat media pembelajaran interaktif PPKn.",
+    images: ['/og.png'],
   },
 };
 
@@ -71,6 +73,35 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SILSE" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'SILSE — Media Pembelajaran Interaktif',
+              description: 'Aplikasi authoring tool untuk membuat media pembelajaran interaktif sesuai standar BSNP dan Kurikulum Merdeka.',
+              applicationCategory: 'EducationalApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'IDR',
+              },
+              author: {
+                '@type': 'Person',
+                name: 'emiramdanii',
+              },
+              featureList: [
+                '40+ jenis blok interaktif',
+                'Kuis, game, dan skenario',
+                'Export HTML dan SCORM',
+                'AI content generation',
+                'BSNP compliance checker',
+              ],
+            }),
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${nunito.variable} antialiased bg-background text-foreground`}
