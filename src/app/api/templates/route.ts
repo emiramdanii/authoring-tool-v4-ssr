@@ -3,22 +3,30 @@
 // ═══════════════════════════════════════════════════════════════════════
 // GET  /api/templates       — List templates with filtering
 // POST /api/templates       — Create a new template
+//
+// SECURITY: Rate limited (120 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { createTemplateSchema, listTemplatesQuerySchema, zodErrorResponse } from '@/lib/api-validation';
 
 // ── GET: List templates ───────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category') || undefined;
-    const subject = searchParams.get('subject') || undefined;
-    const search = searchParams.get('search') || undefined;
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
 
+    // ── Zod validation for query params ──
+    const parsed = listTemplatesQuerySchema.safeParse(Object.fromEntries(searchParams.entries()));
+    if (!parsed.success) {
+      return NextResponse.json(
+        zodErrorResponse(parsed.error),
+        { status: 400 }
+      );
+    }
+
+    const { page, limit, category, subject, search } = parsed.data;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -66,22 +74,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const rawBody = await request.json();
 
-    // Validate required fields
-    if (!body.name || typeof body.name !== 'string') {
+    // ── Zod validation ──
+    const parsed = createTemplateSchema.safeParse(rawBody);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Name is required' },
+        zodErrorResponse(parsed.error),
         { status: 400 }
       );
     }
 
-    if (!body.schemaData) {
-      return NextResponse.json(
-        { success: false, error: 'schemaData is required' },
-        { status: 400 }
-      );
-    }
+    const body = parsed.data;
 
     // Serialize schemaData to JSON string if it's an object
     const schemaDataStr = typeof body.schemaData === 'string'

@@ -15,55 +15,13 @@
 //
 // All content is contextualized for Indonesian SMP (junior high school)
 // and follows BSNP guidelines for media pembelajaran interaktif.
+//
+// SECURITY: Rate limited (10 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
-
-// ── Request Types ────────────────────────────────────────────────────
-
-interface AIRequest {
-  /** What type of content to generate */
-  action: AIAction;
-  /** The subject/mata pelajaran */
-  mapel: string;
-  /** The class level (e.g., 'Kelas VII') */
-  kelas: string;
-  /** The topic/chapter */
-  topik: string;
-  /** Existing content as context (materi text, etc.) */
-  konteks?: string;
-  /** How many items to generate (default: 5) */
-  jumlah?: number;
-  /** Additional instructions */
-  instruksi?: string;
-}
-
-type AIAction =
-  | 'kuis'
-  | 'matching'
-  | 'fill-blank'
-  | 'word-search'
-  | 'crossword'
-  | 'true-false'
-  | 'drag-drop'
-  | 'memory'
-  | 'roda'
-  | 'sortir'
-  | 'diskusi'
-  | 'refleksi'
-  | 'materi-summary'
-  | 'tp'
-  | 'petunjuk'
-  | 'motivasi';
-
-// ── Response Types ───────────────────────────────────────────────────
-
-interface AIResponse {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-}
+import { aiRequestSchema, zodErrorResponse } from '@/lib/api-validation';
 
 // ── Prompt Templates ─────────────────────────────────────────────────
 
@@ -76,7 +34,7 @@ Kamu SELALU menghasilkan output dalam format JSON yang valid, TANPA markdown cod
 Kamu memastikan konten sesuai dengan tingkat kognitif siswa SMP (kelas 7-9).`;
 }
 
-function buildUserPrompt(req: AIRequest): string {
+function buildUserPrompt(req: { action: string; mapel: string; kelas: string; topik: string; konteks?: string; jumlah?: number; instruksi?: string }): string {
   const base = `Mata Pelajaran: ${req.mapel}
 Kelas: ${req.kelas}
 Topik: ${req.topik}`;
@@ -387,28 +345,18 @@ Buat konten pembelajaran interaktif yang sesuai.`;
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as AIRequest;
+    const rawBody = await request.json();
 
-    // Validate request
-    if (!body.action || !body.mapel || !body.kelas || !body.topik) {
+    // ── Zod validation ──
+    const parsed = aiRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Parameter wajib: action, mapel, kelas, topik' },
+        zodErrorResponse(parsed.error),
         { status: 400 }
       );
     }
 
-    const validActions: AIAction[] = [
-      'kuis', 'matching', 'fill-blank', 'word-search', 'crossword',
-      'true-false', 'drag-drop', 'memory', 'roda', 'sortir',
-      'diskusi', 'refleksi', 'materi-summary', 'tp', 'petunjuk', 'motivasi'
-    ];
-
-    if (!validActions.includes(body.action)) {
-      return NextResponse.json(
-        { success: false, error: `Action tidak valid. Pilihan: ${validActions.join(', ')}` },
-        { status: 400 }
-      );
-    }
+    const body = parsed.data;
 
     // Initialize ZAI SDK
     const zai = await ZAI.create();
@@ -437,17 +385,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse JSON from AI response — handle potential markdown wrapping
-    let parsed: unknown;
+    let parsed_response: unknown;
     try {
-      // Strip markdown code blocks if present
       const cleaned = content
         .replace(/^```json\s*/i, '')
         .replace(/^```\s*/i, '')
         .replace(/\s*```$/i, '')
         .trim();
-      parsed = JSON.parse(cleaned);
+      parsed_response = JSON.parse(cleaned);
     } catch {
-      // Return raw content if JSON parsing fails — UI can handle it
       return NextResponse.json({
         success: false,
         error: 'AI menghasilkan format yang tidak valid. Silakan coba lagi.',
@@ -457,7 +403,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: parsed,
+      data: parsed_response,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';

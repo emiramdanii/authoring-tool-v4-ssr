@@ -179,13 +179,13 @@ export const FEATURE_FLAGS: Record<string, FeatureFlagConfig> = {
     description: 'Ctrl+K command palette for power users',
   },
   mobileGuard: {
-    enabled: false,
+    enabled: true,
     label: 'Mobile Guard',
     category: 'advanced',
-    description: 'Mobile viewport detection and guard',
+    description: 'Mobile viewport detection and guard — prevents unusable mobile experience',
   },
   pwa: {
-    enabled: false,
+    enabled: true,
     label: 'PWA (Progressive Web App)',
     category: 'advanced',
     description: 'Offline-first PWA with service worker',

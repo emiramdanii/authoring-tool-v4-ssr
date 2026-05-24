@@ -8,83 +8,45 @@
 // The strategy is: delete all existing pages/blocks for the project,
 // then re-create them from the provided data. This is simpler and
 // more reliable than incremental updates for a full-state save.
+//
+// SECURITY: Rate limited (60 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { saveProjectSchema, zodErrorResponse } from '@/lib/api-validation';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// ── Types for save payload ────────────────────────────────────────
+// ── Flatten nested blocks (children) for DB storage ───────────────
 
-interface SaveBlock {
+interface FlatBlock {
+  blockType: string;
+  blockIndex: number;
+  content: string;
+  layout: string | null;
+}
+
+interface NestedBlock {
   type: string;
   id?: string;
   content?: Record<string, unknown>;
   layout?: Record<string, unknown>;
   variant?: string;
   style?: Record<string, string>;
-  children?: SaveBlock[];
+  children?: NestedBlock[];
 }
 
-interface SavePage {
-  id: string;
-  label?: string;
-  templateType?: string;
-  templateVariant?: string;
-  bgColor?: string;
-  bgDataUrl?: string | null;
-  overlay?: number;
-  schema?: Record<string, unknown> | null;
-  navConfig?: Record<string, unknown>;
-  templateData?: Record<string, unknown>;
-  colorPalette?: Record<string, unknown> | null;
-  blocks?: SaveBlock[];
-}
-
-interface SavePayload {
-  pages: SavePage[];
-  ratioId?: string;
-  meta?: {
-    title?: string;
-    description?: string;
-    subject?: string;
-    grade?: string;
-    semester?: number;
-    teacherName?: string;
-    schoolName?: string;
-    templateId?: string;
-    themeId?: string;
-    schemaPreset?: string;
-  };
-  authoringData?: Record<string, unknown>;
-}
-
-// ── Flatten nested blocks (children) for DB storage ───────────────
-
-function flattenBlocks(blocks: SaveBlock[], startIndex: number = 0): Array<{
-  blockType: string;
-  blockIndex: number;
-  content: string;
-  layout: string | null;
-}> {
-  const result: Array<{
-    blockType: string;
-    blockIndex: number;
-    content: string;
-    layout: string | null;
-  }> = [];
-
+function flattenBlocks(blocks: NestedBlock[], startIndex: number = 0): FlatBlock[] {
+  const result: FlatBlock[] = [];
   let currentIndex = startIndex;
 
   for (const block of blocks) {
     const { type, content, layout, children, ...rest } = block;
 
-    // Merge extra fields (variant, style, id, etc.) into content JSON
     const contentData: Record<string, unknown> = { ...rest, ...(content || {}) };
-    // Remove children from content data (stored separately)
     delete contentData.children;
 
     result.push({
@@ -96,7 +58,6 @@ function flattenBlocks(blocks: SaveBlock[], startIndex: number = 0): Array<{
 
     currentIndex++;
 
-    // Recursively flatten children
     if (children && children.length > 0) {
       const childResults = flattenBlocks(children, currentIndex);
       result.push(...childResults);
@@ -115,7 +76,18 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body: SavePayload = await request.json();
+    const rawBody = await request.json();
+
+    // ── Zod validation ──
+    const parsed = saveProjectSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        zodErrorResponse(parsed.error),
+        { status: 400 }
+      );
+    }
+
+    const body = parsed.data;
 
     // Validate project exists
     const existing = await prisma.project.findUnique({ where: { id } });
@@ -123,14 +95,6 @@ export async function PUT(
       return NextResponse.json(
         { success: false, error: 'Project not found' },
         { status: 404 }
-      );
-    }
-
-    // Validate pages array
-    if (!body.pages || !Array.isArray(body.pages)) {
-      return NextResponse.json(
-        { success: false, error: 'pages array is required' },
-        { status: 400 }
       );
     }
 
@@ -153,7 +117,6 @@ export async function PUT(
       if (body.meta?.themeId !== undefined) projectUpdateData.themeId = body.meta.themeId;
       if (body.meta?.schemaPreset !== undefined) projectUpdateData.schemaPreset = body.meta.schemaPreset;
 
-      // 2b. Store authoring data if provided
       if (body.authoringData) {
         projectUpdateData.authoringData = JSON.stringify(body.authoringData);
       }
@@ -171,22 +134,21 @@ export async function PUT(
           data: {
             projectId: id,
             pageIndex,
-            label: page!.label || null,
-            templateType: page!.templateType || null,
-            variant: page!.templateVariant || null,
-            bgColor: page!.bgColor || null,
-            bgImage: page!.bgDataUrl || null,
-            bgOverlay: page!.overlay !== undefined ? page!.overlay / 100 : null, // Convert 0-100 to 0-1
-            schemaData: page!.schema ? JSON.stringify(page!.schema) : null,
-            navConfig: page!.navConfig ? JSON.stringify(page!.navConfig) : null,
-            templateData: page!.templateData ? JSON.stringify(page!.templateData) : null,
-            colorPalette: page!.colorPalette ? JSON.stringify(page!.colorPalette) : null,
+            label: page.label || null,
+            templateType: page.templateType || null,
+            variant: page.templateVariant || null,
+            bgColor: page.bgColor || null,
+            bgImage: page.bgDataUrl || null,
+            bgOverlay: page.overlay !== undefined ? page.overlay / 100 : null,
+            schemaData: page.schema ? JSON.stringify(page.schema) : null,
+            navConfig: page.navConfig ? JSON.stringify(page.navConfig) : null,
+            templateData: page.templateData ? JSON.stringify(page.templateData) : null,
+            colorPalette: page.colorPalette ? JSON.stringify(page.colorPalette) : null,
           },
         });
 
-        // Create blocks for this page
-        if (page!.blocks && page!.blocks.length > 0) {
-          const flatBlocks = flattenBlocks(page!.blocks);
+        if (page.blocks && page.blocks.length > 0) {
+          const flatBlocks = flattenBlocks(page.blocks as NestedBlock[]);
 
           for (const block of flatBlocks) {
             await tx.block.create({

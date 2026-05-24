@@ -4,10 +4,13 @@
 // GET    /api/projects/[id]   — Get project with pages and blocks
 // PUT    /api/projects/[id]   — Update project metadata
 // DELETE /api/projects/[id]   — Delete project and all related data
+//
+// SECURITY: Rate limited (60 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { updateProjectSchema, zodErrorResponse } from '@/lib/api-validation';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -65,7 +68,18 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
+    const rawBody = await request.json();
+
+    // ── Zod validation ──
+    const parsed = updateProjectSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        zodErrorResponse(parsed.error),
+        { status: 400 }
+      );
+    }
+
+    const body = parsed.data;
 
     // Check project exists
     const existing = await prisma.project.findUnique({ where: { id } });
@@ -76,19 +90,8 @@ export async function PUT(
       );
     }
 
-    // Build update data — only update provided fields
-    const updateData: Record<string, unknown> = {};
-    const allowedFields = [
-      'title', 'description', 'subject', 'grade', 'semester',
-      'teacherName', 'schoolName', 'templateId', 'themeId',
-      'schemaPreset', 'ratioId', 'isPublished',
-    ];
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
-    }
+    // Build update data — only update provided fields (Zod already strips undefined)
+    const updateData: Record<string, unknown> = { ...body };
 
     // Handle publishedAt when isPublished changes
     if (body.isPublished === true && !existing.isPublished) {

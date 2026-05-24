@@ -87,16 +87,23 @@ const nextConfig = {
       headers: [
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        { key: 'X-XSS-Protection', value: '1; mode=block' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
       ],
     }];
   },
 };
 
 // ── PWA Configuration ────────────────────────────────────────────
-// DISABLED for lightweight testing — re-enable for production
+// Re-enabled for production — generates service worker with Workbox
 /* eslint-disable @typescript-eslint/no-require-imports */
 
-/** @type {(config: import('next').NextConfig) => import('next').NextConfig} */
-const withPWA = (config) => config; // PWA disabled for testing
+const withPWA = require('@ducanh2912/next-pwa').default({
+  dest: 'public',
+  disable: !isProd, // Only generate SW in production
+  register: true,
+  skipWaiting: true,
+});
 
 module.exports = withPWA(nextConfig);

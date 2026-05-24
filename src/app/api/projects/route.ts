@@ -3,22 +3,30 @@
 // ═══════════════════════════════════════════════════════════════════════
 // GET  /api/projects          — List all projects with pagination
 // POST /api/projects          — Create a new project
+//
+// SECURITY: Rate limited (60 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { createProjectSchema, listProjectsQuerySchema, zodErrorResponse } from '@/lib/api-validation';
 
 // ── GET: List projects ────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
-    const subject = searchParams.get('subject') || undefined;
-    const grade = searchParams.get('grade') || undefined;
-    const search = searchParams.get('search') || undefined;
 
+    // ── Zod validation for query params ──
+    const parsed = listProjectsQuerySchema.safeParse(Object.fromEntries(searchParams.entries()));
+    if (!parsed.success) {
+      return NextResponse.json(
+        zodErrorResponse(parsed.error),
+        { status: 400 }
+      );
+    }
+
+    const { page, limit, subject, grade, search } = parsed.data;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -70,15 +78,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const rawBody = await request.json();
 
-    // Validate required fields
-    if (!body.title || typeof body.title !== 'string') {
+    // ── Zod validation ──
+    const parsed = createProjectSchema.safeParse(rawBody);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Title is required' },
+        zodErrorResponse(parsed.error),
         { status: 400 }
       );
     }
+
+    const body = parsed.data;
 
     const project = await prisma.project.create({
       data: {

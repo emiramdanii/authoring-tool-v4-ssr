@@ -6,23 +6,12 @@
 //   - Key concepts and definitions for the topic
 //   - Pedagogically sound flow following Kurikulum Merdeka
 //
-// The generated structure can be fed to instantiateTemplateWithConfig()
-// or used directly to create pages with AI-generated content.
+// SECURITY: Rate limited (10 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
-
-// ── Request Types ────────────────────────────────────────────────────
-
-interface LessonRequest {
-  topik: string;
-  mapel: string;
-  kelas: string;
-  semester?: string;
-  konteks?: string;
-  pattern?: 'standar' | 'interaktif' | 'eksperimen' | 'mini';
-}
+import { lessonRequestSchema, zodErrorResponse } from '@/lib/api-validation';
 
 // ── Prompt Builder ───────────────────────────────────────────────────
 
@@ -35,7 +24,7 @@ Kamu merancang alur pembelajaran yang sesuai dengan tingkat kognitif siswa SMP (
 Setiap halaman harus memiliki tujuan yang jelas dan terkait dengan tujuan pembelajaran.`;
 }
 
-function buildUserPrompt(req: LessonRequest): string {
+function buildUserPrompt(req: { topik: string; mapel: string; kelas: string; semester?: string; konteks?: string; pattern?: string }): string {
   const base = `Mata Pelajaran: ${req.mapel}
 Kelas: ${req.kelas}
 Topik: ${req.topik}`;
@@ -43,7 +32,6 @@ Topik: ${req.topik}`;
   const semester = req.semester ? `\nSemester: ${req.semester}` : '';
   const konteks = req.konteks ? `\nKonteks tambahan:\n${req.konteks.substring(0, 1000)}` : '';
 
-  // Determine page count based on pattern
   const patternGuidance = (() => {
     switch (req.pattern) {
       case 'mini':
@@ -93,15 +81,18 @@ PENTING:
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as LessonRequest;
+    const rawBody = await request.json();
 
-    // Validate request
-    if (!body.topik || !body.mapel || !body.kelas) {
+    // ── Zod validation ──
+    const parsed = lessonRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Parameter wajib: topik, mapel, kelas' },
-        { status: 400 },
+        zodErrorResponse(parsed.error),
+        { status: 400 }
       );
     }
+
+    const body = parsed.data;
 
     // Initialize ZAI SDK
     const zai = await ZAI.create();
@@ -125,19 +116,19 @@ export async function POST(request: NextRequest) {
     if (!content) {
       return NextResponse.json(
         { success: false, error: 'AI tidak menghasilkan respons' },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     // Parse JSON from AI response
-    let parsed: unknown;
+    let parsed_response: unknown;
     try {
       const cleaned = content
         .replace(/^```json\s*/i, '')
         .replace(/^```\s*/i, '')
         .replace(/\s*```$/i, '')
         .trim();
-      parsed = JSON.parse(cleaned);
+      parsed_response = JSON.parse(cleaned);
     } catch {
       return NextResponse.json({
         success: false,
@@ -147,7 +138,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Basic validation of the generated structure
-    const data = parsed as Record<string, unknown>;
+    const data = parsed_response as Record<string, unknown>;
     if (!Array.isArray(data.pages) || data.pages.length < 3) {
       return NextResponse.json({
         success: false,
@@ -158,14 +149,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: parsed,
+      data: parsed_response,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('[AI Lesson API] Error:', message);
     return NextResponse.json(
       { success: false, error: 'Gagal menghasilkan struktur pembelajaran. Silakan coba lagi.' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

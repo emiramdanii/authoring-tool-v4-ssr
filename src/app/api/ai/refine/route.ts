@@ -4,44 +4,16 @@
 // Takes an existing SchemaBlock's content and a refinement mode,
 // asks the AI to improve it while preserving the block's structure.
 //
-// Unlike /api/ai which generates NEW content from scratch,
-// this endpoint takes EXISTING content and refines it.
-//
-// Refinement modes:
-//   - 'menarik'   → Make more engaging/interesting
-//   - 'detail'    → Add more detail/depth
-//   - 'sederhana' → Simplify for easier understanding
-//   - 'contoh'    → Add concrete examples
-//   - 'bsnp'      → Improve BSNP compliance
-//   - 'kuis-more' → Add more questions (for kuis/game blocks)
-//   - 'custom'    → Free-form instruction
+// SECURITY: Rate limited (10 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
-
-// ── Request Types ────────────────────────────────────────────────────
-
-export type RefineMode = 'menarik' | 'detail' | 'sederhana' | 'contoh' | 'bsnp' | 'kuis-more' | 'custom';
-
-interface RefineRequest {
-  /** The block type being refined */
-  blockType: string;
-  /** The current block content as JSON */
-  blockContent: Record<string, unknown>;
-  /** Refinement mode */
-  mode: RefineMode;
-  /** Subject/mata pelajaran */
-  mapel: string;
-  /** Class level */
-  kelas: string;
-  /** Custom instruction (only for mode='custom') */
-  customInstruction?: string;
-}
+import { refineRequestSchema, zodErrorResponse } from '@/lib/api-validation';
 
 // ── Mode Descriptions ────────────────────────────────────────────────
 
-const MODE_PROMPTS: Record<RefineMode, string> = {
+const MODE_PROMPTS: Record<string, string> = {
   menarik: `Buat konten ini lebih menarik dan engaging untuk siswa SMP. 
 Tambahkan bahasa yang lebih hidup, contoh relatable, dan hook yang menarik perhatian.
 Pertahankan struktur data yang sama tetapi perbaiki isinya.`,
@@ -68,7 +40,7 @@ Pastikan soal baru bervariasi tingkat kesulitannya (C1-C6 Bloom).
 Jaga kualitas dan relevansi soal dengan topik.
 Pertahankan soal yang sudah ada dan tambahkan yang baru.`,
 
-  custom: '', // Will be replaced by customInstruction
+  custom: '',
 };
 
 // ── Block-type-specific instructions ─────────────────────────────────
@@ -77,64 +49,44 @@ function getBlockTypeInstruction(blockType: string): string {
   const instructions: Record<string, string> = {
     'def-box': `Konten ini adalah kotak definisi (def-box). Field utama: "content" (string HTML).
 Perbaiki konten di field "content" saja. Pertahankan tag HTML yang ada (<strong>, <em>, dll).`,
-
     'nc-grid': `Konten ini adalah kartu grid (nc-grid). Field utama: "cards" (array of {icon, title, body, color}).
 Perbaiki isi setiap kartu. Bisa tambah kartu baru jika sesuai.`,
-
     'kuis': `Konten ini adalah kuis pilihan ganda. Field utama: "questions" (array of {q, opts, ans, ex}).
 Perbaiki soal yang ada. Pastikan jawaban benar di index "ans" dan penjelasan di "ex".`,
-
     'diskusi': `Konten ini adalah pertanyaan diskusi. Field utama: "questions" (array of {label, icon, teks, petunjuk, color}).
 Perbaiki pertanyaan agar lebih memicu pemikiran kritis dan kolaborasi.`,
-
     'refleksi': `Konten ini adalah pertanyaan refleksi. Field utama: "questions" (array of {teks, petunjuk, warna, icon}).
 Perbaiki agar lebih mendorong siswa merefleksikan pembelajaran mereka secara mendalam.`,
-
     'skenario': `Konten ini adalah skenario interaktif. Field utama: "chapters" (array dengan setup, choices).
 Perbaiki dialog dan pilihan agar lebih realistis dan mendidik.`,
-
     'tp': `Konten ini adalah Tujuan Pembelajaran. Field utama: "items" (array of {num, verb, desc, color}).
 Perbaiki agar menggunakan KKO (Kata Kerja Operasional) tingkat tinggi (C4-C6).`,
-
     'motivasi': `Konten ini adalah motivasi/apersepsi. Field utama: "hookQuestion", "connections", "transition".
 Perbaiki agar lebih menarik perhatian dan menghubungkan dengan pengetahuan sebelumnya.`,
-
     'rangkuman': `Konten ini adalah rangkuman. Field utama: "concepts" (array of {icon, title, body, color}).
 Perbaiki agar konsep kunci lebih jelas dan mudah diingat.`,
-
     'flashcard-set': `Konten ini adalah flashcard. Field utama: "cards" (array of {q, a}).
 Perbaiki pertanyaan dan jawaban agar lebih efektif untuk review.`,
-
     'materi-section': `Konten ini adalah section materi. Field utama: "content" (array SchemaBlock), "takeaways", "selfCheck".
 Perbaiki konten di dalam "content" dan "takeaways".`,
-
     'petunjuk': `Konten ini adalah petunjuk penggunaan. Field utama: "items" (array of {icon, title, body}).
 Perbaiki agar lebih jelas dan mudah diikuti siswa.`,
-
     'matching-game': `Konten ini adalah game mencocokkan. Field utama: "pairs" (array of {left, right}).
 Perbaiki pasangan agar lebih relevan dan mendidik.`,
-
     'true-false-game': `Konten ini adalah game benar/salah. Field utama: "questions" (array of {text, correct, explanation}).
 Perbaiki pernyataan dan penjelasan.`,
-
     'memory-game': `Konten ini adalah game memory. Field utama: "pairs" (array of {left, right}).
 Perbaiki pasangan kartu.`,
-
     'fill-blank-game': `Konten ini adalah game isian. Field utama: "questions" (array of {text, answer, hint}).
 Perbaiki soal isian.`,
-
     'sortir-game': `Konten ini adalah game sortir. Field utama: "pool", "kolom".
 Perbaiki item dan kategori.`,
-
     'roda-game': `Konten ini adalah game roda putar. Field utama: "questions".
 Perbaiki pertanyaan roda.`,
-
     'drag-drop-game': `Konten ini adalah game drag & drop. Field utama: "items", "targets".
 Perbaiki item dan target.`,
-
     'word-search-game': `Konten ini adalah game cari kata. Field utama: "words".
 Perbaiki kata-kata.`,
-
     'crossword-game': `Konten ini adalah game teka silang. Field utama: "words".
 Perbaiki kata dan petunjuk.`,
   };
@@ -156,7 +108,7 @@ JANGAN hapus field yang sudah ada. JANGAN ubah nama field. JANGAN tambah field b
 
 // ── User Prompt ──────────────────────────────────────────────────────
 
-function buildUserPrompt(req: RefineRequest): string {
+function buildUserPrompt(req: { blockType: string; blockContent: Record<string, unknown>; mode: string; mapel: string; kelas: string; customInstruction?: string }): string {
   const modeInstruction = req.mode === 'custom'
     ? req.customInstruction || 'Perbaiki konten ini'
     : MODE_PROMPTS[req.mode];
@@ -183,30 +135,18 @@ Silakan perbaiki konten di atas sesuai instruksi. Hasilkan JSON dengan STRUKTUR 
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as RefineRequest;
+    const rawBody = await request.json();
 
-    // Validate request
-    if (!body.blockType || !body.blockContent || !body.mode) {
+    // ── Zod validation ──
+    const parsed = refineRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Parameter wajib: blockType, blockContent, mode' },
+        zodErrorResponse(parsed.error),
         { status: 400 }
       );
     }
 
-    const validModes: RefineMode[] = ['menarik', 'detail', 'sederhana', 'contoh', 'bsnp', 'kuis-more', 'custom'];
-    if (!validModes.includes(body.mode)) {
-      return NextResponse.json(
-        { success: false, error: `Mode tidak valid. Pilihan: ${validModes.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    if (body.mode === 'custom' && !body.customInstruction?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Mode "custom" memerlukan customInstruction' },
-        { status: 400 }
-      );
-    }
+    const body = parsed.data;
 
     // Initialize ZAI SDK
     const zai = await ZAI.create();
@@ -235,14 +175,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse JSON from AI response
-    let parsed: unknown;
+    let parsed_response: unknown;
     try {
       const cleaned = content
         .replace(/^```json\s*/i, '')
         .replace(/^```\s*/i, '')
         .replace(/\s*```$/i, '')
         .trim();
-      parsed = JSON.parse(cleaned);
+      parsed_response = JSON.parse(cleaned);
     } catch {
       return NextResponse.json({
         success: false,
@@ -252,11 +192,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Merge: preserve the block's id, type, compression, semantic from original
-    // Only replace the content fields that AI improved
     const original = body.blockContent;
-    const refined = parsed as Record<string, unknown>;
+    const refined = parsed_response as Record<string, unknown>;
 
-    // Always preserve these meta fields from the original
     const preservedFields = ['id', 'type', 'compression', 'semantic', 'layout', 'variant', 'style', 'interactive', 'showIf'];
     for (const field of preservedFields) {
       if (field in original && !(field in refined)) {
@@ -264,7 +202,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Ensure type matches
     if (refined.type !== original.type) {
       refined.type = original.type;
     }

@@ -1,18 +1,22 @@
 // ═══════════════════════════════════════════════════════════════════════
 // EXPORT API ROUTE — Generates standalone HTML for exported media
+// ═══════════════════════════════════════════════════════════════════════
 // Strategy: Inject export data into pre-built Vite SSR template.
 // The client-side entry-client.tsx reads window.__EXPORT_DATA__
 // and pre-populates Zustand stores, then React renders the same
 // template components used in preview mode.
+//
+// SECURITY: Rate limited (10 req/min via middleware), Zod-validated input
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { exportRequestSchema, zodErrorResponse } from '@/lib/api-validation';
 
 const TEMPLATE_PATH = path.resolve(process.cwd(), 'export-output', 'index.html');
 
-// Maximum export payload size (20 MB JSON ≈ ~30 MB HTML after injection)
+// Maximum export payload size (20 MB JSON)
 const MAX_EXPORT_SIZE = 20_000_000;
 
 // Cache template with mtime-based invalidation (no fs.watchFile leak)
@@ -37,13 +41,18 @@ function getTemplateBuffer(): Buffer | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { pages, ratioId, meta, allKuis, allModules, games,
-            cp, tp, atp, alur, materi, skenario, petunjuk, diskusi, refleksi, penutup, suara } = body;
+    const rawBody = await request.json();
 
-    if (!pages || !Array.isArray(pages) || pages.length === 0) {
-      return NextResponse.json({ error: 'No pages provided' }, { status: 400 });
+    // ── Zod validation ──
+    const parsed = exportRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        zodErrorResponse(parsed.error),
+        { status: 400 }
+      );
     }
+
+    const body = parsed.data;
 
     // Get cached template
     const templateBuf = getTemplateBuffer();
@@ -56,15 +65,15 @@ export async function POST(request: NextRequest) {
 
     // Build export data JSON string
     const exportData = {
-      pages, ratioId: ratioId || '16:9', meta: meta || {},
-      allKuis: allKuis || [], allModules: allModules || [], games: games || [],
-      cp: cp || {}, tp: tp || [], atp: atp || { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
-      alur: alur || [], materi: materi || { blok: [] },
-      skenario: skenario || [], petunjuk: petunjuk || { title:'',intro:'',langkah:[] },
-      diskusi: diskusi || { title:'',intro:'',pertanyaan:[] },
-      refleksi: refleksi || { title:'',intro:'',pertanyaan:[] },
-      penutup: penutup || { title:'',subjudul:'',preview:[] },
-      suara: suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+      pages: body.pages, ratioId: body.ratioId || '16:9', meta: body.meta || {},
+      allKuis: body.allKuis || [], allModules: body.allModules || [], games: body.games || [],
+      cp: body.cp || {}, tp: body.tp || [], atp: body.atp || { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
+      alur: body.alur || [], materi: body.materi || { blok: [] },
+      skenario: body.skenario || [], petunjuk: body.petunjuk || { title:'',intro:'',langkah:[] },
+      diskusi: body.diskusi || { title:'',intro:'',pertanyaan:[] },
+      refleksi: body.refleksi || { title:'',intro:'',pertanyaan:[] },
+      penutup: body.penutup || { title:'',subjudul:'',preview:[] },
+      suara: body.suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
     const dataJson = JSON.stringify(exportData)
@@ -83,6 +92,7 @@ export async function POST(request: NextRequest) {
     const dataScript = `<script>window.__EXPORT_DATA__=${dataJson};</script>\n`;
     
     // Title replacement with XSS-safe encoding
+    const meta = body.meta as Record<string, string> | undefined;
     const title = `${meta?.judulPertemuan || 'Media Pembelajaran Interaktif'} | ${meta?.mapel || ''} ${meta?.kelas || ''}`;
     const safeTitle = title.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     
@@ -111,7 +121,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    // Log full error server-side, return generic message to client
     const message = error instanceof Error ? error.message : 'Export gagal';
     console.error('[Export API] Error:', error);
     return NextResponse.json(
