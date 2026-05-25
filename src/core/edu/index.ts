@@ -19,3 +19,4 @@ export { EDU_COMPONENTS, getEduComponentForBlock, type EduComponentRole, type Ed
 export { EDU_DENSITY, EDU_GRAMMAR, EDU_PRINT_SAFE } from './education-layout-rules';
 export { EDU_MOTION, eduTransitionStyle, eduEntranceStyle } from './education-motion';
 export { EduRenderingContext, createEduContext } from './EduRenderingContext';
+export { EduComponentShell, EduInlineSection, type EduComponentShellProps, type EduInlineSectionProps } from './EduComponentShell';
