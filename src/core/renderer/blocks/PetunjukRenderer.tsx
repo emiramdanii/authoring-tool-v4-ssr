@@ -69,7 +69,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
     <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}>
     <div className={`${isCompact ? 'p-1' : 'p-2'}`}
       style={{
-        background: tokens.color('card'),
+        background: edu.cardBg(),
         borderRadius: tokens.radius('xl') + 'px',
         border: `1px solid ${tokens.colorAlpha('c', 0.15)}`,
         borderLeft: `4px solid ${tokens.color('c')}`,

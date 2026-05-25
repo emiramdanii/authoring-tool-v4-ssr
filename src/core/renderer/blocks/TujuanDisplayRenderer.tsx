@@ -229,7 +229,7 @@ function TujuanVariantA({
               className="absolute bottom-8 left-0 right-0 pointer-events-none"
               style={{
                 height: 40,
-                background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.9)})`,
+                background: `linear-gradient(transparent, ${tokens.eduPageBg()})`,
                 zIndex: 2,
               }}
             />

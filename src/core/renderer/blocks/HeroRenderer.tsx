@@ -195,7 +195,7 @@ function HeroVariantB({
   return (
     <div className="relative overflow-hidden rounded-2xl flex items-center gap-4"
       style={{
-        background: tokens.color('bg'),
+        background: edu.cardBg(),
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
         borderLeft: tokens.accentStripe(accentKey, 4),
         ...edu.sectionPadding(),

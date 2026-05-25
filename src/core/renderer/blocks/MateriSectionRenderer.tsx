@@ -261,7 +261,7 @@ function MateriVariantKlasik({
       <div
         style={{
           borderLeft: tokens.accentStripe(accentColor, 3),
-          background: tokens.color('card'),
+          background: edu.cardBg(),
           ...tokens.iosSectionPadding(isCompact),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
@@ -420,7 +420,7 @@ function MateriVariantKlasik({
               left: 0,
               right: 0,
               height: 40,
-              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              background: `linear-gradient(transparent, ${edu.cardBg()})`,
               pointerEvents: 'none',
             }} />
           )}
@@ -662,7 +662,7 @@ function MateriVariantMajalah({
       <div
         style={{
           borderLeft: tokens.accentStripe(accentColor, 3),
-          background: tokens.color('card'),
+          background: edu.cardBg(),
           ...tokens.iosSectionPadding(isCompact),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
@@ -744,7 +744,7 @@ function MateriVariantMajalah({
               left: 0,
               right: 0,
               height: 40,
-              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              background: `linear-gradient(transparent, ${edu.cardBg()})`,
               pointerEvents: 'none',
             }} />
           )}
@@ -1008,7 +1008,7 @@ function MateriVariantPill({
               left: 0,
               right: 0,
               height: 40,
-              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              background: `linear-gradient(transparent, ${edu.cardBg()})`,
               pointerEvents: 'none',
             }} />
           )}

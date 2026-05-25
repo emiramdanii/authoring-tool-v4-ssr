@@ -533,7 +533,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
+        background: edu.cardBg(),
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${accentAlpha(0.15)}`,
         animation: 'fadeIn 0.4s ease',

@@ -73,7 +73,7 @@ function CoverVariantA({
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
       style={{
-        background: tokens.color('bg'),
+        background: edu.pageBg(),
         ...edu.entrance(0, 'fadeIn'),
         overflow: 'hidden',
       }}>
@@ -190,7 +190,7 @@ function CoverVariantB({
   return (
     <div className="absolute inset-0 flex flex-col justify-end p-8 pb-12"
       style={{
-        background: tokens.color('bg2'),
+        background: edu.pageBg2(),
         ...edu.entrance(0, 'fadeIn'),
         overflow: 'hidden',
         // Prevent bottom-anchored content from overflowing upward.
@@ -328,7 +328,7 @@ function CoverVariantC({
   return (
     <div className="absolute inset-0 flex flex-col justify-center p-10"
       style={{
-        background: tokens.color('bg2'),
+        background: edu.pageBg2(),
         ...edu.entrance(0, 'fadeIn'),
         overflow: 'hidden',
       }}>
