@@ -1573,3 +1573,32 @@ Stage Summary:
 - Full pipeline: Store(displayMode) → TokenResolver → EduRenderingContext → all 43 block renderers
 - EduComponentShell available for new renderer standardization
 - Build: TypeScript clean, pushed to origin/main
+---
+Task ID: 2
+Agent: Main Agent
+Task: Create comprehensive SILSE Educational Visual Philosophy Design Specification document
+
+Work Log:
+- Audited current codebase: display mode store exists, TokenResolver has edu helpers, all 43 renderers migrated to edu tokens
+- Identified anti-patterns: holographic/aurora effects, permanent labels, border-everything, flat typography, card stack layout
+- Created comprehensive design specification document covering:
+  - Product Identity (what SILSE is and isn't)
+  - 10 Guided Focus Design principles
+  - Educational Typography Spec (8-level scale, weight hierarchy, line height, letter spacing, rhythm rules, per-section treatment, display mode adjustments)
+  - Spatial Layout System (8 Learning Sections with atmosphere, composition rules, spatial storytelling techniques, layout grammar, whitespace budget, content density rules)
+  - Interaction Language (hover states, 5 reveal patterns, quiz feedback, section transitions, motion rules, interactive component states, attention steering)
+  - Anti-Patterns catalog with diagnosis of current problems
+  - 5-phase migration plan (Phase A through E)
+- Generated document using docx skill with WM-1 Warm Teal palette and R4 cover recipe
+- Fixed TOC placeholders using add_toc_placeholders.py
+- Post-check passed: 7/9 checks, 0 errors
+
+Stage Summary:
+- Produced: /home/z/my-project/download/SILSE-Educational-Visual-Philosophy-v2.0.docx
+- Document is ~30 pages comprehensive design specification
+- Key design pivot: from "slide projector" to "Educational Interactive Experience"
+- Core philosophy: Guided Focus Design — one slide = one focus, content dominant, editor hidden
+- Typography: dramatic scale (hero 48-56px down to micro 12-13px) with weight contrast
+- Layout: 8 Learning Sections each with unique atmosphere, not generic cards
+- Interaction: functional motion only, no decorative effects
+- Migration: 5 phases over ~8 weeks
