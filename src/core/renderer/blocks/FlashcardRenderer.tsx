@@ -13,6 +13,9 @@ import { fireConfetti } from '@/lib/confetti';
 export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, tokens, isCompact, interactive, isEditing, pageIndex }: {
   block: FlashcardSetBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
+  // ── Edu rendering context ────────────────────────────────────
+  const edu = tokens.edu('flashcard-set', isCompact);
+
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
   const [viewedCards, setViewedCards] = React.useState<Set<number>>(new Set());
@@ -91,7 +94,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
         <div className="font-black text-lg mb-1" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('g') }}>
           Semua Kartu Dipelajari!
         </div>
-        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
+        <div className="mb-4" style={{ ...edu.caption(), color: edu.mutedText(0.8) }}>
           Kamu telah mempelajari semua {cards.length} kartu kilat.
         </div>
         <div className="inline-flex items-center gap-2 mb-4">
@@ -116,7 +119,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
               playSound('click');
             }}
             style={{
-              fontSize: '13px',
+              ...edu.caption(),
               background: 'linear-gradient(135deg, ' + tokens.color('g') + ', ' + tokens.color('c') + ')',
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('g', 0.35),
@@ -144,7 +147,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
       <div className="flex items-center justify-between mb-3">
         <PremiumBadge tokens={tokens} accent="y" variant="glass">🃏 Kartu Kilat</PremiumBadge>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold" style={{ color: tokens.muted(0.6) }}>
+          <span className="font-bold" style={{ ...edu.micro(), color: edu.mutedText(0.6) }}>
             {viewedCards.size}/{cards.length}
           </span>
           {flipped ? <EyeOff size={12} style={{ color: tokens.color('g') }} /> : <Eye size={12} style={{ color: tokens.muted(0.5) }} />}
@@ -180,18 +183,18 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
                 style={{ background: tokens.colorAlpha('y', 0.2) }}>
                 <span style={{ fontSize: '12px' }}>❓</span>
               </div>
-              <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color: tokens.color('y') }}>Pertanyaan</div>
+              <div className="font-extrabold uppercase tracking-wider" style={{ ...edu.caption(), color: edu.accent() }}>Pertanyaan</div>
             </div>
             <InlineTextEditor
               {...qEditor}
-              className={`font-extrabold text-[12px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+              className={`font-extrabold leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
+              style={{ ...edu.bodyLg(), wordBreak: 'break-word', overflowWrap: 'break-word' }}
               placeholder="Ketik pertanyaan..."
             />
             {interactive && (
               <div className="mt-3 text-center">
-                <span className="text-[10px] font-bold px-2 py-1 rounded-full"
-                  style={{ background: tokens.colorAlpha('y', 0.1), color: tokens.color('y'), border: '1px solid ' + tokens.colorAlpha('y', 0.2) }}>
+                <span className="font-bold px-2 py-1 rounded-full"
+                  style={{ ...edu.micro(), background: edu.accentAlpha(0.1), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
                   👆 Ketuk untuk membalik
                 </span>
               </div>
@@ -216,12 +219,12 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
                 style={{ background: tokens.colorAlpha('g', 0.2) }}>
                 <CheckCircle2 size={10} className="inline" />
               </div>
-              <div className="font-extrabold uppercase tracking-wider" style={{ fontSize: '12px', color: tokens.color('g') }}>Jawaban</div>
+              <div className="font-extrabold uppercase tracking-wider" style={{ ...edu.caption(), color: tokens.color('g') }}>Jawaban</div>
             </div>
             <InlineTextEditor
               {...aEditor}
-              className={`text-[11px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ color: tokens.color('g'), fontSize: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+              className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
+              style={{ ...edu.body(), color: tokens.color('g'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
               placeholder="Ketik jawaban..."
             />
           </div>
@@ -235,10 +238,10 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
       <div className="flex items-center justify-between mt-3">
         <button className={"px-3 py-1.5 rounded-full font-bold " + tokens.iosButtonTw(interactive)}
           style={{
-            fontSize: '12px',
-            background: tokens.colorAlpha('y', 0.15),
-            color: tokens.color('y'),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
+            ...edu.caption(),
+            background: edu.accentAlpha(0.15),
+            color: edu.accent(),
+            border: `1px solid ${edu.accentAlpha(0.3)}`,
           }}
           onClick={() => { setIdx(Math.max(0, idx - 1)); setFlipped(false); playSound('click'); }} disabled={idx === 0}>
           ← Prev
@@ -247,17 +250,17 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
           {cards.map((_, i) => (
             <div key={`nav-dot-${block.id || 'fc'}-${i}`} className="w-2 h-2 rounded-full transition-[background-color,box-shadow]"
               style={{
-                background: i === idx ? tokens.color('y') : viewedCards.has(i) ? tokens.color('g') : tokens.subtleBg(0.12),
-                boxShadow: i === idx ? '0 0 8px ' + tokens.colorAlpha('y', 0.5) : 'none',
+                background: i === idx ? edu.accent() : viewedCards.has(i) ? tokens.color('g') : tokens.subtleBg(0.12),
+                boxShadow: i === idx ? '0 0 8px ' + edu.accentAlpha(0.5) : 'none',
               }} />
           ))}
         </div>
         <button className={"px-3 py-1.5 rounded-full font-bold " + tokens.iosButtonTw(interactive)}
           style={{
-            fontSize: '12px',
-            background: tokens.colorAlpha('y', 0.15),
-            color: tokens.color('y'),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
+            ...edu.caption(),
+            background: edu.accentAlpha(0.15),
+            color: edu.accent(),
+            border: `1px solid ${edu.accentAlpha(0.3)}`,
           }}
           onClick={() => { setIdx(Math.min(cards.length - 1, idx + 1)); setFlipped(false); playSound('click'); }}
           disabled={idx >= cards.length - 1}>

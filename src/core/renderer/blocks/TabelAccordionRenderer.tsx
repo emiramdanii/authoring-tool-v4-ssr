@@ -11,7 +11,7 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 import { ShowMoreButton } from '../../layout/ShowMoreButton';
 
 /** Inner detail item component so hooks are not called in loops */
-function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tokens, isCompact }: {
+function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tokens, isCompact, edu }: {
   detail: { label: string; value: string };
   rowIndex: number;
   detailIndex: number;
@@ -19,6 +19,7 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
   rowColor: string;
   tokens: TokenResolver;
   isCompact?: boolean;
+  edu: ReturnType<typeof tokens.edu>;
 }) {
   const labelEditor = useInlineEditor({
     blockId,
@@ -37,20 +38,20 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
   return (
     <div className="rounded-xl p-2.5 min-w-0"
       style={{
-        fontSize: '12px',
+        ...edu.body(),
         background: tokens.colorAlpha(rowColor, 0.08),
         border: '1px solid ' + tokens.colorAlpha(rowColor, 0.12),
       }}>
       <InlineTextEditor
         {...labelEditor}
-        className="text-[10px] font-extrabold uppercase tracking-wider mb-1"
-        style={{ color: tokens.color(rowColor), fontSize: 'inherit' }}
+        className="font-extrabold uppercase tracking-wider mb-1"
+        style={{ ...edu.caption(), color: tokens.color(rowColor) }}
         placeholder="Ketik label..."
       />
       <InlineTextEditor
         {...valueEditor}
-        className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ fontSize: 'inherit', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`}
+        style={{ ...edu.body(), color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik nilai..."
       />
     </div>
@@ -58,7 +59,7 @@ function AccordionDetail({ detail, rowIndex, detailIndex, blockId, rowColor, tok
 }
 
 /** Inner row component so hooks are not called in loops */
-function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, interactive, isCompact }: {
+function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, interactive, isCompact, edu }: {
   row: TabelAccordionBlock['rows'][number];
   rowIndex: number;
   blockId: string;
@@ -67,6 +68,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
   onToggle: () => void;
   interactive?: boolean;
   isCompact?: boolean;
+  edu: ReturnType<typeof tokens.edu>;
 }) {
   const titleEditor = useInlineEditor({
     blockId,
@@ -85,7 +87,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
       <MicroInteraction tokens={tokens} accent={row.color} effect="squish">
       <button className={`w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer ${tokens.iosAccordionTw()}`}
         style={{
-          fontSize: '13px',
+          ...edu.body(),
           background: isOpen ? tokens.colorAlpha(row.color, 0.04) : 'transparent',
         }}
         aria-expanded={isOpen}
@@ -100,12 +102,12 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
         </div>
         <InlineTextEditor
           {...titleEditor}
-          className="font-extrabold text-[11px] text-left min-w-0"
-          style={{ color: tokens.color(row.color), fontSize: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}
+          className="font-extrabold text-left min-w-0"
+          style={{ ...edu.bodyLg(), color: tokens.color(row.color), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}
           placeholder="Ketik judul baris..."
         />
         <span className={`ml-auto ${tokens.iosTransitionStyle('transform', 'standard').transition} flex-shrink-0`}
-          style={{ fontSize: '12px', transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
+          style={{ ...edu.caption(), transform: isOpen ? 'rotate(180deg)' : 'none', color: tokens.color(row.color) }}>▼</span>
       </button>
       </MicroInteraction>
       {isOpen && (
@@ -122,6 +124,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
                 rowColor={row.color}
                 tokens={tokens}
                 isCompact={isCompact}
+                edu={edu}
               />
             ))}
           </div>
@@ -134,6 +137,9 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
 export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
   block: TabelAccordionBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
+  // ── Edu rendering context ────────────────────────────────────
+  const edu = tokens.edu('tabel-accord', isCompact);
+
   const [openIdx, setOpenIdx] = React.useState<number | null>(null);
 
   const allRows = block.rows || [];
@@ -160,6 +166,7 @@ export const TabelAccordionRenderer = React.memo(function TabelAccordionRenderer
           onToggle={() => setOpenIdx(openIdx === i ? null : i)}
           interactive={interactive}
           isCompact={isCompact}
+          edu={edu}
         />
       ))}
       {/* ═══ COMPRESSION: Show More button ════════════════════════ */}
