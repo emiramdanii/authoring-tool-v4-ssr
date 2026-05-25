@@ -70,6 +70,7 @@ function DefBoxStepMode({
   isCompact: boolean;
   colorKey: string;
 }) {
+  const edu = tokens.edu('def-box', isCompact);
   const totalSteps = steps.length;
   const { activeStep, ...nav } = usePremiumStepNavigator(totalSteps);
 
@@ -96,7 +97,7 @@ function DefBoxStepMode({
       >
         <div
           style={{
-            ...tokens.iosSectionPadding(isCompact),
+            ...edu.sectionPadding(),
             maxHeight: isCompact ? '180px' : '300px',
             overflowY: 'auto',
           }}
@@ -105,7 +106,10 @@ function DefBoxStepMode({
             style={{
               borderLeft: tokens.accentStripe(colorKey, isCompact ? 3 : 4),
               paddingLeft: isCompact ? '10px' : '12px',
-              ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
+              ...edu.body(),
+              color: tokens.color('text'),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}
             dangerouslySetInnerHTML={{ __html: step!.content }}
           />
@@ -121,6 +125,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
 }) {
   const colorKey = block.borderColor || 'y';
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
+  const edu = tokens.edu('def-box', isCompact);
 
   // Sprint 3C: React-state hover for expand buttons
   const [isExpandHovered, setIsExpandHovered] = React.useState(false);
@@ -191,7 +196,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           }}
         >
           {/* Icon row */}
-          <div style={{ ...tokens.iosCardPadding(isCompact) }}>
+          <div style={{ ...edu.componentPadding() }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: tokens.colorAlpha(colorKey, 0.12) }}>
@@ -199,7 +204,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               </div>
               <span
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), textTransform: 'uppercase' }),
+                  ...edu.caption(),
+                  color: tokens.accentText(colorKey),
+                  textTransform: 'uppercase',
                 }}
               >
                 Definisi
@@ -219,11 +226,13 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               <div style={{
                 borderLeft: tokens.accentStripe(colorKey, isCompact ? 3 : 4),
                 paddingLeft: isCompact ? '10px' : '12px',
-                ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
+                ...edu.body(),
+                color: tokens.color('text'),
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
                 maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                 overflow: isContentCollapsed ? 'hidden' : undefined,
-                // Sprint 3C: Use iosTransitionStyle for collapse/expand
-                ...tokens.iosTransitionStyle('max-height', 'slow'),
+                ...edu.transition('max-height', 'slow'),
                 position: 'relative',
               }}>
                 <InlineTextEditor
@@ -254,7 +263,10 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
                 style={{
                   background: tokens.accentBg(colorKey, 0.06),
-                  ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }),
+                  ...edu.caption(),
+                  color: tokens.accentText(colorKey),
+                  cursor: 'pointer',
+                  border: 'none',
                   ...tokens.iosHoverBgStyle(isExpandHovered, 0.04),
                 }}
               >
@@ -289,7 +301,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('xl'),
             boxShadow: tokens.iosShadow('whisper'),
-            ...tokens.iosCardPadding(isCompact),
+            ...edu.componentPadding(),
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -329,7 +341,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               </div>
               <span
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), textTransform: 'uppercase' }),
+                  ...edu.caption(),
+                  color: tokens.accentText(colorKey),
+                  textTransform: 'uppercase',
                 }}
               >
                 Definisi
@@ -346,13 +360,15 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             ) : (
               <div
                 style={{
-                  ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
+                  ...edu.body(),
+                  color: tokens.color('text'),
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                   paddingLeft: isCompact ? '8px' : '12px',
                   borderLeft: tokens.accentStripe(colorKey, 3),
                   maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                   overflow: isContentCollapsed ? 'hidden' : undefined,
-                  // Sprint 3C: Use iosTransitionStyle for collapse/expand
-                  ...tokens.iosTransitionStyle('max-height', 'slow'),
+                  ...edu.transition('max-height', 'slow'),
                   position: 'relative',
                 }}
               >
@@ -374,7 +390,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 onMouseEnter={() => setIsExpandHovered(true)}
                 onMouseLeave={() => setIsExpandHovered(false)}
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
-                style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }), ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
+                style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.caption(), color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
                 <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
               </button>
             )}
@@ -398,7 +414,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
       <div
         className="flex items-start gap-2"
         style={{
-          ...tokens.iosNestedPadding(isCompact),
+          ...edu.nestedPadding(),
           borderRadius: tokens.radius('lg'),
           background: tokens.accentBg(colorKey, 0.04),
           borderLeft: tokens.accentStripe(colorKey, 3),
@@ -416,18 +432,22 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         <div className="min-w-0 flex-1">
           <span
             style={{
-              ...tokens.iosTypography('caption2', { fontSize: isCompact ? 9 : 10, color: tokens.accentText(colorKey), textTransform: 'uppercase' }),
+              ...edu.micro(),
+              color: tokens.accentText(colorKey),
+              textTransform: 'uppercase',
             }}
           >
             Definisi
           </span>
           <div
             style={{
-              ...tokens.iosTypography('body', { fontSize: isCompact ? 12 : 15, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }),
+              ...edu.body(),
+              color: tokens.color('text'),
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
               maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,
               overflow: isContentCollapsed ? 'hidden' : undefined,
-              // Sprint 3C: Use iosTransitionStyle for collapse/expand
-              ...tokens.iosTransitionStyle('max-height', 'slow'),
+              ...edu.transition('max-height', 'slow'),
               position: 'relative',
             }}
           >
@@ -448,7 +468,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               onMouseEnter={() => setIsExpandHovered(true)}
               onMouseLeave={() => setIsExpandHovered(false)}
               className={`flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}
-              style={{ background: tokens.accentBg(colorKey, 0.06), ...tokens.iosTypography('caption2', { fontSize: isCompact ? 10 : 11, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none' }), ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
+              style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.micro(), color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
               <ChevronDown size={8} /> Selengkapnya
             </button>
           )}

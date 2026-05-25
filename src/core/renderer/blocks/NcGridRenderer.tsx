@@ -65,6 +65,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
   isCompact: boolean;
   interactive?: boolean;
 }) {
+  const edu = tokens.edu('nc-grid', isCompact);
   const [expanded, setExpanded] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const titleEditor = useInlineEditor({
@@ -100,7 +101,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         ...tokens.iosCardPadding(isCompact),
         overflow: 'hidden',
         position: 'relative',
-        ...tokens.iosEntranceStyle(cardIndex, 'slideIn'),
+        ...edu.entrance(cardIndex),
         ...tokens.iosHoverBgStyle(isHovered, 0.03),
       }}>
       {/* Top accent line */}
@@ -119,20 +120,20 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         <InlineTextEditor
           {...titleEditor}
           className="font-extrabold min-w-0"
-          style={{ ...tokens.iosTypography('headline', { fontSize: isCompact ? 12 : 14 }), color: cardColor, wordBreak: 'break-word', overflowWrap: 'break-word' }}
+          style={{ ...edu.bodyLg(), fontWeight: 700, color: cardColor, wordBreak: 'break-word', overflowWrap: 'break-word' }}
         />
       </div>
       <InlineTextEditor
         {...bodyEditor}
         className={`leading-relaxed ${isCompact ? 'line-clamp-3' : ''}`}
-        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }), color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.body(), color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik deskripsi kartu..."
         allowHtml={true}
       />
       {/* Expand toggle for long text in compact mode */}
       {isLong && isCompact && (
         <button className={`mt-1 font-bold ${tokens.iosExpandTw()}`}
-          style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
+          style={{ ...edu.caption(), color: cardColor }}
           onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
           aria-expanded={expanded}>
           {expanded ? 'Sembunyikan ↑' : 'Selengkapnya ↓'}
@@ -151,6 +152,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
   isCompact: boolean;
   interactive?: boolean;
 }) {
+  const edu = tokens.edu('nc-grid', isCompact);
   const [expanded, setExpanded] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const titleEditor = useInlineEditor({
@@ -193,7 +195,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
         boxShadow: tokens.iosShadow('whisper'),
         overflow: 'hidden',
         position: 'relative',
-        ...tokens.iosEntranceStyle(cardIndex, 'slideIn'),
+        ...edu.entrance(cardIndex),
         cursor: 'pointer',
         ...tokens.iosHoverBgStyle(isHovered, 0.03),
       }}
@@ -227,7 +229,8 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
             {...titleEditor}
             className="font-extrabold min-w-0"
             style={{
-              ...tokens.iosTypography('headline', { fontSize: isCompact ? 13 : 15 }),
+              ...edu.bodyLg(),
+              fontWeight: 700,
               color: cardColor,
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
@@ -238,7 +241,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
             {...bodyEditor}
             className="leading-relaxed"
             style={{
-              ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }),
+              ...edu.body(),
               color: tokens.muted(0.85),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
@@ -250,7 +253,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
           {isLong && (
             <button
               className={`mt-1 font-bold ${tokens.iosExpandTw()}`}
-              style={{ ...tokens.iosTypography('caption2', {}), color: cardColor }}
+              style={{ ...edu.caption(), color: cardColor }}
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
               aria-expanded={expanded}
             >
@@ -272,6 +275,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
   isCompact: boolean;
   interactive?: boolean;
 }) {
+  const edu = tokens.edu('nc-grid', isCompact);
   const [expanded, setExpanded] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const titleEditor = useInlineEditor({
@@ -319,7 +323,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         alignItems: expanded ? 'flex-start' : 'center',
         gap: isCompact ? '5px' : '7px',
         cursor: 'pointer',
-        ...tokens.iosEntranceStyle(cardIndex, 'slideIn'),
+        ...edu.entrance(cardIndex),
         maxWidth: '100%',
         // Sprint 3C: border-radius transition for smooth pill→card morph
         ...tokens.iosTransitionStyle('background-color, border-color, border-radius', 'standard'),
@@ -345,7 +349,8 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         {...titleEditor}
         className="font-bold min-w-0"
         style={{
-          ...tokens.iosTypography('footnote', { fontSize: isCompact ? 11 : 12, fontWeight: 700 }),
+          ...edu.caption(),
+          fontWeight: 700,
           color: cardColor,
           wordBreak: 'break-word',
           overflowWrap: 'break-word',
@@ -369,7 +374,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
             {...bodyEditor}
             className="leading-relaxed"
             style={{
-              ...tokens.iosTypography('caption1', { fontSize: isCompact ? 10 : 11 }),
+              ...edu.body(),
               color: tokens.muted(0.85),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
@@ -451,6 +456,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
   block: NcGridBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
   const cards = block.cards || [];
+  const edu = tokens.edu('nc-grid', isCompact);
   const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
     (block.variant as 'A' | 'B' | 'C') || 'A'
   );
@@ -480,7 +486,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
       <div style={{ position: 'relative' }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-            style={{ ...tokens.iosTypography('caption2', {}), background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
+            style={{ ...edu.micro(), background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
             Norma
           </span>
         </div>
@@ -516,7 +522,7 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
       >
         <div className="flex items-center gap-2 mb-2">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-            style={{ ...tokens.iosTypography('caption2', {}), background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
+            style={{ ...edu.micro(), background: tokens.accentBg('c', 0.08), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.2)}` }}>
             Norma
           </span>
         </div>

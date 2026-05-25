@@ -51,10 +51,10 @@ function VariantSelector({
 // VARIANT A "Klasik" — Clean light surface, centered layout, soft accent icon
 // ═══════════════════════════════════════════════════════════════════
 function CoverVariantA({
-  block, tokens, interactive, isEditing,
+  block, tokens, interactive, isEditing, isCompact,
   titleEditor, subtitleEditor,
 }: {
-  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean;
+  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean; isCompact?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
@@ -62,12 +62,13 @@ function CoverVariantA({
   const c = tokens.color('c');
   const g = tokens.color('g');
   const accentKey = block.accentColor || 'y';
+  const edu = tokens.edu('cover', isCompact);
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
       style={{
         background: tokens.color('bg'),
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        ...edu.entrance(0, 'fadeIn'),
         overflow: 'hidden',
       }}>
 
@@ -79,7 +80,8 @@ function CoverVariantA({
       <div className="mb-6 relative">
         <div className="rounded-2xl flex items-center justify-center"
           style={{
-            ...tokens.iosIconSize('xl'),
+            width: edu.iconSize('xl'),
+            height: edu.iconSize('xl'),
             background: tokens.accentBg(accentKey, 0.1),
             boxShadow: tokens.iosShadow('whisper'),
           }}>
@@ -90,7 +92,7 @@ function CoverVariantA({
       </div>
 
       <div className="tracking-widest uppercase truncate"
-        style={{ ...tokens.iosTypography('caption2', { color: tokens.accentText(accentKey) }) }}>
+        style={{ ...edu.caption(), color: tokens.accentText(accentKey) }}>
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
@@ -108,7 +110,7 @@ function CoverVariantA({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-5 overflow-hidden"
-        style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }), maxWidth: tokens.iosSubtitleWidth('coverCentered') }}
+        style={{ ...edu.body(), color: tokens.textSecondary(0.85), maxWidth: tokens.iosSubtitleWidth('coverCentered') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -129,7 +131,7 @@ function CoverVariantA({
         <div className="mt-6 px-4 py-2.5 flex-wrap min-w-0"
           style={{
             ...tokens.nestedCardStyle(),
-            fontSize: '12px',
+            ...edu.caption(),
             color: tokens.muted(0.8),
           }}>
           ⏱️ {block.meta.durasi} | 🎯 Fase {block.meta.fase} | 📚 Elemen: {block.meta.elemen}
@@ -166,22 +168,23 @@ function CoverVariantA({
 // VARIANT B "Sinematik" — Elegant light with subtle gradient accent, watermark
 // ═══════════════════════════════════════════════════════════════════
 function CoverVariantB({
-  block, tokens, interactive, isEditing,
+  block, tokens, interactive, isEditing, isCompact,
   titleEditor, subtitleEditor,
 }: {
-  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean;
+  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean; isCompact?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
   const y = tokens.color('y');
   const c = tokens.color('c');
   const accentKey = block.accentColor || 'y';
+  const edu = tokens.edu('cover', isCompact);
 
   return (
     <div className="absolute inset-0 flex flex-col justify-end p-8 pb-12"
       style={{
         background: tokens.color('bg2'),
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        ...edu.entrance(0, 'fadeIn'),
         overflow: 'hidden',
         // Prevent bottom-anchored content from overflowing upward.
         // When title/subtitle/badges stack is tall, justify-end pushes
@@ -214,7 +217,7 @@ function CoverVariantB({
       <div className="relative z-1 max-w-[90%]">
         {/* Meta label */}
         <div className="tracking-widest uppercase mb-2 truncate"
-          style={{ ...tokens.iosTypography('caption2', { color: tokens.accentText(accentKey) }) }}>
+          style={{ ...edu.caption(), color: tokens.accentText(accentKey) }}>
           {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
         </div>
 
@@ -235,7 +238,7 @@ function CoverVariantB({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-5 overflow-hidden"
-          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }), maxWidth: tokens.iosSubtitleWidth('coverLeft') }}
+          style={{ ...edu.body(), color: tokens.textSecondary(0.85), maxWidth: tokens.iosSubtitleWidth('coverLeft') }}
           placeholder="Ketik subtitle..."
         />
 
@@ -246,14 +249,15 @@ function CoverVariantB({
               <span key={`badge-b-${b.text?.slice(0,10)}-${i}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold min-w-0"
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.color(b.color) }),
+                  ...edu.micro(),
+                  color: tokens.color(b.color),
                   background: tokens.accentBg(b.color, 0.1),
                   border: '1px solid ' + tokens.colorAlpha(b.color, 0.2),
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   maxWidth: '100%',
-                  ...tokens.iosEntranceStyle(i, 'slideIn'),
+                  ...edu.entrance(i, 'slideUp'),
                 }}>
                 {b.icon && <span className="flex-shrink-0">{b.icon}</span>} <span className="min-w-0" style={{ overflow: 'hidden' }}>{b.text}</span>
               </span>
@@ -264,7 +268,7 @@ function CoverVariantB({
         {/* Meta — compact row */}
         {block.meta && (
           <div className="mt-4 flex items-center gap-3 flex-wrap min-w-0"
-            style={{ ...tokens.iosTypography('caption1', { color: tokens.muted(0.7) }) }}>
+            style={{ ...edu.caption(), color: tokens.muted(0.7) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span style={{ color: tokens.subtleBorder(0.15) }}>|</span>
             <span>🎯 Fase {block.meta.fase}</span>
@@ -301,21 +305,22 @@ function CoverVariantB({
 // VARIANT C "Minimalis" — Pure white, thin accent line, maximum whitespace
 // ═══════════════════════════════════════════════════════════════════
 function CoverVariantC({
-  block, tokens, interactive, isEditing,
+  block, tokens, interactive, isEditing, isCompact,
   titleEditor, subtitleEditor,
 }: {
-  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean;
+  block: CoverBlock; tokens: TokenResolver; interactive?: boolean; isEditing?: boolean; isCompact?: boolean;
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
   const y = tokens.color('y');
   const accentKey = block.accentColor || 'y';
+  const edu = tokens.edu('cover', isCompact);
 
   return (
     <div className="absolute inset-0 flex flex-col justify-center p-10"
       style={{
         background: tokens.color('bg2'),
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        ...edu.entrance(0, 'fadeIn'),
         overflow: 'hidden',
       }}>
 
@@ -331,7 +336,7 @@ function CoverVariantC({
             {block.icon}
           </span>
           <div className="tracking-widest uppercase truncate"
-            style={{ ...tokens.iosTypography('caption2', { color: tokens.muted(0.7) }) }}>
+            style={{ ...edu.caption(), color: tokens.muted(0.7) }}>
             {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
           </div>
         </div>
@@ -353,7 +358,7 @@ function CoverVariantC({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-5 overflow-hidden"
-          style={{ ...tokens.iosTypography('body', { color: tokens.textSecondary(0.85) }), maxWidth: tokens.iosSubtitleWidth('coverMinimal') }}
+          style={{ ...edu.body(), color: tokens.textSecondary(0.85), maxWidth: tokens.iosSubtitleWidth('coverMinimal') }}
           placeholder="Ketik subtitle..."
         />
 
@@ -364,14 +369,15 @@ function CoverVariantC({
               <span key={`badge-c-${b.text?.slice(0,10)}-${i}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold min-w-0"
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.color(b.color) }),
+                  ...edu.micro(),
+                  color: tokens.color(b.color),
                   background: tokens.colorAlpha(b.color, 0.08),
                   border: '1px solid ' + tokens.colorAlpha(b.color, 0.15),
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   wordBreak: 'break-word',
                   maxWidth: '100%',
-                  ...tokens.iosEntranceStyle(i, 'slideIn'),
+                  ...edu.entrance(i, 'slideUp'),
                 }}>
                 {b.icon && <span className="flex-shrink-0" style={{ fontSize: '10px' }}>{b.icon}</span>} <span className="min-w-0">{b.text}</span>
               </span>
@@ -382,7 +388,7 @@ function CoverVariantC({
         {/* Meta — minimal inline */}
         {block.meta && (
           <div className="mt-5 flex items-center gap-4 flex-wrap min-w-0"
-            style={{ ...tokens.iosTypography('caption1', { color: tokens.muted(0.7) }) }}>
+            style={{ ...edu.caption(), color: tokens.muted(0.7) }}>
             <span>⏱️ {block.meta.durasi}</span>
             <span>🎯 Fase {block.meta.fase}</span>
             <span>📚 {block.meta.elemen}</span>
@@ -444,6 +450,7 @@ export const CoverRenderer = React.memo(function CoverRenderer({ block, tokens, 
     tokens,
     interactive,
     isEditing,
+    isCompact,
     titleEditor,
     subtitleEditor,
   };

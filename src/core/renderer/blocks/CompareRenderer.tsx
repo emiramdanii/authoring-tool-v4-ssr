@@ -24,6 +24,7 @@ import type { CompressionDecision } from '../../layout/CompressionEngine';
 export const CompareRenderer = React.memo(function CompareRenderer({ block, tokens, isCompact, interactive, isEditing, compression }: {
   block: CompareBlock; tokens: TokenResolver; isCompact: boolean; interactive?: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
+  const edu = tokens.edu('compare', isCompact);
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
@@ -54,7 +55,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -76,8 +77,9 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
               className="font-extrabold mb-3"
               style={{
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                ...edu.bodyLg(),
+                fontWeight: 700,
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -97,10 +99,10 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
             <div
               className="flex-1 min-w-0 rounded-lg"
               style={{
-                ...tokens.iosNestedPadding(isCompact),
+                ...edu.nestedPadding(),
                 background: tokens.color('card'),
                 border: `1px solid ${accentAlpha(0.15)}`,
-                borderLeft: `${isCompact ? 3 : 4}px solid ${accentColor}`,
+                borderLeft: `${edu.stripeWidth()}px solid ${accentColor}`,
               }}
             >
               {/* Icon circle + Judul */}
@@ -122,7 +124,8 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
                   className="font-extrabold min-w-0 truncate"
                   style={{
                     color: accentColor,
-                    fontSize: isCompact ? '12px' : '14px',
+                    ...edu.caption(),
+                    fontWeight: 700,
                     fontFamily: tokens.fontFamily('display'),
                   }}
                 >
@@ -133,9 +136,8 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
               {/* Isi / body text */}
               <div
                 style={{
-                  fontSize: isCompact ? '12px' : '14px',
-                  lineHeight: 1.7,
-                  color: tokens.color('text'),
+                  ...edu.body(),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -154,7 +156,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
                   borderRadius: '50%',
                   background: `linear-gradient(135deg, ${accentColor}, ${accentAlpha(0.6)})`,
                   boxShadow: `0 4px 14px ${accentAlpha(0.35)}`,
-                  fontSize: isCompact ? '9px' : '11px',
+                  ...edu.micro(),
                   fontWeight: 900,
                   color: tokens.color('bg'),
                   letterSpacing: '0.04em',
@@ -169,10 +171,10 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
             <div
               className="flex-1 min-w-0 rounded-lg"
               style={{
-                ...tokens.iosNestedPadding(isCompact),
+                ...edu.nestedPadding(),
                 background: tokens.color('card'),
                 border: `1px solid ${accentAlpha(0.15)}`,
-                borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color('r')}`,
+                borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('r')}`,
               }}
             >
               {/* Icon circle + Judul */}
@@ -194,7 +196,8 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
                   className="font-extrabold min-w-0 truncate"
                   style={{
                     color: tokens.color('r'),
-                    fontSize: isCompact ? '12px' : '14px',
+                    ...edu.caption(),
+                    fontWeight: 700,
                     fontFamily: tokens.fontFamily('display'),
                   }}
                 >
@@ -205,9 +208,8 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
               {/* Isi / body text */}
               <div
                 style={{
-                  fontSize: isCompact ? '12px' : '14px',
-                  lineHeight: 1.7,
-                  color: tokens.color('text'),
+                  ...edu.body(),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}

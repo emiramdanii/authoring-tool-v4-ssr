@@ -17,6 +17,7 @@ import { ShowMoreButton } from '../../layout/ShowMoreButton';
 export const PenutupRenderer = React.memo(function PenutupRenderer({ block, tokens, isCompact, isEditing, interactive, compression }: {
   block: PenutupBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; interactive?: boolean; compression?: CompressionDecision;
 }) {
+  const edu = tokens.edu('penutup', isCompact);
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',
@@ -74,7 +75,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
           <CheckCircle2 size={18} style={{ color: tokens.color('g') }} />
         </div>
         <div>
-          <h2 className="font-black" style={{ fontFamily: tokens.fontFamily('display'), ...tokens.iosTypography('title3', { fontSize: isCompact ? 14 : 18, color: tokens.color('text') }) }}>
+          <h2 className="font-black" style={{ ...edu.heading(), color: edu.textColor() }}>
             <InlineTextEditor
               {...titleEditor}
               className="font-black"
@@ -104,13 +105,13 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
         <div className="mb-4 rounded-xl ios-entrance-card"
           style={{
             ...tokens.nestedCardStyle(),
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
           }}>
           <div className="flex items-center gap-3">
             <span style={{ fontSize: isCompact ? '16px' : '18px' }}>{tierConfig.emoji}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-bold" style={{ ...tokens.iosTypography('headline', { color: tokens.color(tierConfig.color), fontSize: isCompact ? 13 : 15 }) }}>
+                <span className="font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color(tierConfig.color) }}>
                   {tierConfig.label}
                 </span>
                 <span className="font-black text-lg" style={{ color: tokens.color(tierConfig.color) }}>
@@ -118,10 +119,10 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span style={{ ...tokens.iosTypography('caption1', { color: tokens.muted(0.65) }) }}>
+                <span style={{ ...edu.caption(), color: tokens.muted(0.65) }}>
                   {totalScore}/{totalMax} poin
                 </span>
-                <span style={{ ...tokens.iosTypography('caption1', { color: tokens.muted(0.55), fontSize: 10 }) }}>
+                <span style={{ ...edu.caption(), color: tokens.muted(0.55) }}>
                   · {scores.filter(s => s.completed).length} aktivitas
                 </span>
               </div>
@@ -132,7 +133,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
                   style={{
                     width: `${totalPct}%`,
                     background: tokens.color(tierConfig.color),
-                    ...tokens.iosTransitionStyle('width', 'slow'),
+                    ...edu.transition('width', 'slow'),
                   }} />
               </div>
             </div>
@@ -145,23 +146,23 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
         <div className="mb-4 rounded-xl"
           style={{
             ...tokens.nestedCardStyle(),
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
           }}>
           <div className="flex items-center gap-2 mb-3">
             <BookOpen size={14} style={{ color: tokens.color('c') }} />
-            <div className="font-bold uppercase tracking-wider" style={{ ...tokens.iosTypography('caption2', { color: tokens.color('c'), fontSize: isCompact ? 10 : 12, textTransform: 'uppercase' }) }}>
+            <div className="font-bold uppercase tracking-wider" style={{ ...edu.caption(), color: tokens.color('c'), textTransform: 'uppercase' }}>
               Ringkasan Pembelajaran
             </div>
           </div>
           {previewItems.map((item, i) => (
             <div key={`penutup-preview-${item.judul?.slice(0,8)}-${i}`} className="flex items-start gap-2.5 py-2 leading-relaxed min-w-0 rounded-lg px-1 -mx-1"
               style={{
-                ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }),
+                ...edu.body(),
                 borderBottom: i < previewItems.length - 1 ? `1px solid ${tokens.subtleBorder(0.06)}` : 'none',
                 // Sprint 3C: Theme-aware hover via iosHoverBgStyle (replaces hardcoded hover:bg-[rgba])
                 ...tokens.iosHoverBgStyle(hoveredPreviewIndex === i, 0.03),
                 // Sprint 3C: Subtle stagger entrance
-                ...tokens.iosEntranceStyle(i, 'slideIn'),
+                ...edu.entrance(i, 'slideUp'),
               }}
               onMouseEnter={() => setHoveredPreviewIndex(i)}
               onMouseLeave={() => setHoveredPreviewIndex(null)}
@@ -179,22 +180,22 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
         <div className="mt-4 rounded-xl"
           style={{
             ...tokens.nestedCardStyle(),
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             borderLeft: tokens.accentStripe('g', 3),
           }}>
           <div className="flex items-center gap-2 mb-2">
             <ArrowRight size={14} style={{ color: tokens.color('g') }} />
-            <div className="font-bold" style={{ ...tokens.iosTypography('headline', { color: tokens.color('g'), fontSize: isCompact ? 12 : 14 }) }}>Pertemuan Berikutnya</div>
+            <div className="font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color('g') }}>Pertemuan Berikutnya</div>
           </div>
-          <div className="mb-3 font-bold" style={{ ...tokens.iosTypography('headline', { color: tokens.color('text'), fontSize: isCompact ? 12 : 14, wordBreak: 'break-word', overflowWrap: 'break-word' }) }}>
+          <div className="mb-3 font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
             <RichText content={block.nextPertemuan.judul ?? ''} />
           </div>
-          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...tokens.iosTypography('subheadline', { color: tokens.muted(0.8), fontSize: isCompact ? 11 : 13, wordBreak: 'break-word', overflowWrap: 'break-word' }) }}><RichText content={block.nextPertemuan.deskripsi ?? ''} /></div>
+          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={block.nextPertemuan.deskripsi ?? ''} /></div>
           <div className="space-y-1.5">
             {(block.nextPertemuan.items || []).map((item, i) => (
               <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="flex items-center gap-2 py-1 min-w-0"
                 style={{
-                  ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13 }),
+                  ...edu.body(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}>
@@ -219,7 +220,9 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
                 }
               }}
               style={{
-                ...tokens.iosTypography('callToAction', { color: tokens.color('g') }),
+                ...edu.body(),
+                fontWeight: 800,
+                color: tokens.color('g'),
                 ...tokens.iosButtonPadding('md'),
                 background: tokens.accentBg('g', 0.1),
                 border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,

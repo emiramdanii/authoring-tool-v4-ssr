@@ -68,6 +68,9 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   const [responses, setResponses] = React.useState<Record<number, string>>({});
   const [submitted, setSubmitted] = React.useState(false);
 
+  // ── Educational design tokens ──────────────────────────────
+  const edu = tokens.edu('diskusi', isCompact);
+
   // ── Variant state (persisted to store) ──────────────────────
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
@@ -128,13 +131,11 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
   // ══ SUBMITTED SCREEN — Premium with StepCompletionOverlay ═══════
   if (submitted && interactive) {
     return (
-      <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
-        <ReadingProgressIndicator progress={1} tokens={tokens} accent="c" height={2} position="top" />
+      <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+        <ReadingProgressIndicator progress={1} tokens={tokens} accent="p" height={2} position="top" />
       <div className="relative rounded-2xl p-5 text-center overflow-hidden"
         style={{
-          background: tokens.color('card'),
-          border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          ...edu.cardStyle(),
         }}>
         {/* Trophy emoji */}
         <div className="text-4xl mb-3">
@@ -142,10 +143,10 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         </div>
 
         {/* Title with gradient */}
-        <div className="font-black text-lg mb-2" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('c') }}>
+        <div className="font-black mb-2" style={{ ...edu.heading(), color: edu.accent() }}>
           Diskusi Selesai!
         </div>
-        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
+        <div className="mb-4" style={{ ...edu.body(), color: edu.mutedText(0.8) }}>
           Terima kasih telah berdiskusi! Pendapatmu sangat berharga untuk pembelajaran bersama.
         </div>
 
@@ -155,32 +156,31 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <div key={`diskusi-dot-${block.id || 'd'}-${i}`}
               className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{
-                background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.2)}, ${tokens.colorAlpha('c', 0.1)})`,
-                border: `1px solid ${tokens.colorAlpha('c', 0.35)}`,
+                background: `linear-gradient(135deg, ${edu.accentAlpha(0.2)}, ${edu.accentAlpha(0.1)})`,
+                border: `1px solid ${edu.accentAlpha(0.35)}`,
                 boxShadow: 'none',
                 animation: 'none',
               }}>
-              <CheckCircle2 size={14} style={{ color: tokens.color('c') }} />
+              <CheckCircle2 size={14} style={{ color: edu.accent() }} />
             </div>
           ))}
         </div>
 
         {/* Participation badge */}
         <div className="mb-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold" style={{ fontSize: '11px', background: tokens.accentBg('c', 0.1), color: tokens.color('c'), border: `1px solid ${tokens.colorAlpha('c', 0.25)}` }}>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold" style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.25)}` }}>
             <Heart size={12} /> Aktif Berdiskusi
           </span>
         </div>
 
-        {/* Replay button — premium spring */}
+        {/* Replay button */}
           <button className={`px-5 py-2.5 rounded-xl font-extrabold ${tokens.iosButtonTw(interactive)}`}
             onClick={() => { setResponses({}); setSubmitted(false); playSound('click'); }}
             style={{
-              fontSize: '13px',
-              background: 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')',
+              ...edu.bodyLg(), fontWeight: 800,
+              background: 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('y') + ')',
               color: tokens.color('bg'),
-              boxShadow: '0 4px 16px ' + tokens.colorAlpha('c', 0.35),
-              animation: 'springBounce 0.4s ease',
+              boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
             }}>
             <RotateCcw size={14} className="inline" /> Diskusi Ulang
           </button>
@@ -196,23 +196,23 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       <div className="flex items-center gap-2.5 mb-3">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.25)}, ${tokens.colorAlpha('c', 0.1)})`,
-            border: `1px solid ${tokens.colorAlpha('c', 0.35)}`,
-            boxShadow: `0 4px 12px ${tokens.colorAlpha('c', 0.25)}`,
+            background: `linear-gradient(135deg, ${edu.accentAlpha(0.25)}, ${edu.accentAlpha(0.1)})`,
+            border: `1px solid ${edu.accentAlpha(0.35)}`,
+            boxShadow: `0 4px 12px ${edu.accentAlpha(0.25)}`,
           }}>
-          <MessageCircle size={16} style={{ color: tokens.color('c') }} />
+          <MessageCircle size={16} style={{ color: edu.accent() }} />
         </div>
-        <div className="font-extrabold min-w-0" style={{ color: tokens.color('c'), fontSize: isCompact ? '13px' : '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
-            style={{ color: tokens.color('c'), fontSize: 'inherit' }}
+            style={{ color: edu.accent(), fontSize: 'inherit' }}
           />
         </div>
         {/* Progress indicator — PremiumBadge */}
         {interactive && questions.length > 0 && (
           <div className="ml-auto">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold" style={{ fontSize: '10px', background: allAnswered ? tokens.accentBg('g', 0.08) : tokens.accentBg('c', 0.08), color: allAnswered ? tokens.color('g') : tokens.color('c'), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : tokens.colorAlpha('c', 0.2)}` }}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold" style={{ ...edu.micro(), background: allAnswered ? tokens.accentBg('g', 0.08) : edu.accentBg(), color: allAnswered ? tokens.color('g') : edu.accent(), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : edu.accentAlpha(0.2)}` }}>
               {answeredCount}/{questions.length}
             </span>
           </div>
@@ -223,7 +223,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`mt-1 leading-relaxed font-bold mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.body(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -234,8 +234,8 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           <div className="h-full rounded-full"
             style={{
               width: progress * 100 + '%',
-              background: tokens.color('c'),
-              ...tokens.iosTransitionStyle('width', 'slow'),
+              background: edu.accent(),
+              ...edu.transition('width', 'slow'),
               boxShadow: 'none',
               animation: 'none',
             }} />
@@ -247,19 +247,20 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         const qColor = q.color || 'c';
         const hasResponse = responses[i]!?.trim().length > 0;
         return (
-        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-4 rounded-xl p-3 min-w-0"
+        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-4 rounded-xl min-w-0"
           style={{
+            ...edu.componentPadding(),
             background: hasResponse
               ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.06)}, ${tokens.colorAlpha(qColor, 0.04)})`
               : tokens.subtleBg(0.05),
             border: `1px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.35 : 0.15)}`,
-            borderLeft: `3px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
+            borderLeft: `${edu.stripeWidth()}px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
             boxShadow: hasResponse ? `0 2px 12px ${tokens.colorAlpha('g', 0.1)}` : 'none',
-            ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'standard'),
+            ...edu.transition('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
           <div className="flex items-center gap-2">
-            <span style={{ fontSize: isCompact ? '14px' : '16px' }}>{q.icon}</span>
-            <span className="font-extrabold min-w-0 truncate" style={{ color: tokens.color(qColor), fontSize: isCompact ? '12px' : '14px' }}>{q.label}</span>
+            <span style={{ ...edu.bodyLg() }}>{q.icon}</span>
+            <span className="font-extrabold min-w-0 truncate" style={{ ...edu.body(), fontWeight: 800, color: tokens.color(qColor) }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
                 <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
@@ -267,8 +268,9 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             )}
             {/* Question number badge */}
             <div className="ml-auto">
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              <span className="font-bold px-1.5 py-0.5 rounded-full"
                 style={{
+                  ...edu.micro(),
                   background: tokens.colorAlpha(qColor, 0.12),
                   color: tokens.color(qColor),
                   border: `1px solid ${tokens.colorAlpha(qColor, 0.25)}`,
@@ -277,18 +279,18 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               </span>
             </div>
           </div>
-          <RichText content={q.teks ?? ''} tag="p" className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
+          <RichText content={q.teks ?? ''} tag="p" className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
             <textarea className={`w-full mt-2 rounded-lg p-2.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
-                fontSize: isCompact ? '11px' : '13px',
-                color: tokens.color('text'),
+                ...edu.body(),
+                color: edu.textColor(),
                 background: hasResponse
                   ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.04)}, ${tokens.subtleBg(0.06)})`
                   : tokens.subtleBg(0.06),
                 border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.35 : 0.2)}`,
                 minHeight: isCompact ? '40px' : '60px',
-                ...tokens.iosTransitionStyle('background-color, border-color, color, box-shadow', 'fast'),
+                ...edu.transition('background-color, border-color, color, box-shadow', 'fast'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 boxShadow: hasResponse ? `0 0 8px ${tokens.colorAlpha('g', 0.1)}` : 'none',
@@ -300,7 +302,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           ) : (
             <div className="w-full mt-2 rounded-lg p-2.5 min-h-[40px]"
               style={{
-                fontSize: isCompact ? '10px' : '12px',
+                ...edu.caption(),
                 color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.03),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
@@ -312,26 +314,26 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         );
       })}
 
-      {/* ── Submit button — premium spring bounce ──────────────────── */}
+      {/* ── Submit button ──────────────────── */}
       {interactive && !submitted && questions.length > 0 && (
           <button
             className={`w-full mt-4 py-2.5 rounded-xl font-extrabold ${tokens.iosButtonTw(allAnswered)}`}
             onClick={handleSubmit}
             disabled={!allAnswered}
             style={{
-              fontSize: '13px',
+              ...edu.bodyLg(), fontWeight: 800,
               background: allAnswered
-                ? 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')'
+                ? 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('y') + ')'
                 : tokens.subtleBg(0.08),
-              color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
-              border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
+              color: allAnswered ? tokens.color('bg') : edu.mutedText(0.4),
+              border: '1px solid ' + (allAnswered ? edu.accentAlpha(0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
                 ? tokens.raw.shadow.card
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
               animation: 'none',
-              '--glow-color': tokens.colorAlpha('c', 0.3),
-              '--glow-color-strong': tokens.colorAlpha('c', 0.6),
+              '--glow-color': edu.accentAlpha(0.3),
+              '--glow-color-strong': edu.accentAlpha(0.6),
             } as React.CSSProperties}>
             <Send size={14} className="inline mr-1" /> Kirim Diskusi
           </button>
@@ -345,23 +347,23 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       <div className="flex items-center gap-3 mb-4">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
           style={{
-            background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.3)}, ${tokens.colorAlpha('c', 0.12)})`,
-            border: `1px solid ${tokens.colorAlpha('c', 0.4)}`,
-            boxShadow: `0 6px 16px ${tokens.colorAlpha('c', 0.3)}`,
+            background: `linear-gradient(135deg, ${edu.accentAlpha(0.3)}, ${edu.accentAlpha(0.12)})`,
+            border: `1px solid ${edu.accentAlpha(0.4)}`,
+            boxShadow: `0 6px 16px ${edu.accentAlpha(0.3)}`,
           }}>
-          <MessageCircle size={22} style={{ color: tokens.color('c') }} />
+          <MessageCircle size={22} style={{ color: edu.accent() }} />
         </div>
-        <div className="font-extrabold min-w-0" style={{ color: tokens.color('c'), fontSize: isCompact ? '15px' : '18px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div className="font-extrabold min-w-0" style={{ ...edu.heading(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
-            style={{ color: tokens.color('c'), fontSize: 'inherit' }}
+            style={{ color: edu.accent(), fontSize: 'inherit' }}
           />
         </div>
         {/* Progress indicator — PremiumBadge */}
         {interactive && questions.length > 0 && (
           <div className="ml-auto">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold" style={{ fontSize: '10px', background: allAnswered ? tokens.accentBg('g', 0.08) : tokens.accentBg('c', 0.08), color: allAnswered ? tokens.color('g') : tokens.color('c'), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : tokens.colorAlpha('c', 0.2)}` }}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold" style={{ ...edu.micro(), background: allAnswered ? tokens.accentBg('g', 0.08) : edu.accentBg(), color: allAnswered ? tokens.color('g') : edu.accent(), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : edu.accentAlpha(0.2)}` }}>
               {answeredCount}/{questions.length}
             </span>
           </div>
@@ -372,7 +374,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`mt-1 leading-relaxed font-bold mb-4 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -383,8 +385,8 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           <div className="h-full rounded-full"
             style={{
               width: progress * 100 + '%',
-              background: tokens.color('c'),
-              ...tokens.iosTransitionStyle('width', 'slow'),
+              background: edu.accent(),
+              ...edu.transition('width', 'slow'),
               boxShadow: 'none',
               animation: 'none',
             }} />
@@ -396,32 +398,34 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         const qColor = q.color || 'c';
         const hasResponse = responses[i]!?.trim().length > 0;
         return (
-        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-5 rounded-2xl p-5 min-w-0"
+        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-5 rounded-2xl min-w-0"
           style={{
+            ...edu.componentPadding(),
             background: hasResponse
               ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.08)}, ${tokens.colorAlpha(qColor, 0.05)})`
               : `linear-gradient(135deg, ${tokens.colorAlpha(qColor, 0.06)}, ${tokens.subtleBg(0.04)})`,
             border: `2px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.4 : 0.2)}`,
-            borderLeft: `4px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
+            borderLeft: `${edu.stripeWidth()}px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
             boxShadow: hasResponse
               ? `0 4px 16px ${tokens.colorAlpha('g', 0.15)}`
               : `0 2px 8px ${tokens.colorAlpha(qColor, 0.08)}`,
-            ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'standard'),
+            ...edu.transition('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{
                 background: `linear-gradient(135deg, ${tokens.colorAlpha(qColor, 0.2)}, ${tokens.colorAlpha(qColor, 0.08)})`,
                 border: `1px solid ${tokens.colorAlpha(qColor, 0.3)}`,
-                fontSize: isCompact ? '16px' : '20px',
+                ...edu.bodyLg(),
               }}>
               {q.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="font-extrabold block min-w-0 truncate" style={{ color: tokens.color(qColor), fontSize: isCompact ? '13px' : '15px' }}>{q.label}</span>
+              <span className="font-extrabold block min-w-0 truncate" style={{ ...edu.bodyLg(), fontWeight: 800, color: tokens.color(qColor) }}>{q.label}</span>
               {/* Question number badge */}
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 inline-block"
+              <span className="font-bold px-1.5 py-0.5 rounded-full mt-0.5 inline-block"
                 style={{
+                  ...edu.micro(),
                   background: tokens.colorAlpha(qColor, 0.12),
                   color: tokens.color(qColor),
                   border: `1px solid ${tokens.colorAlpha(qColor, 0.25)}`,
@@ -435,18 +439,18 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               </div>
             )}
           </div>
-          <RichText content={q.teks ?? ''} tag="p" className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: isCompact ? '13px' : '15px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
+          <RichText content={q.teks ?? ''} tag="p" className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
             <textarea className={`w-full rounded-xl p-3.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
-                fontSize: isCompact ? '12px' : '14px',
-                color: tokens.color('text'),
+                ...edu.body(),
+                color: edu.textColor(),
                 background: hasResponse
                   ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.05)}, ${tokens.subtleBg(0.06)})`
                   : tokens.subtleBg(0.06),
                 border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.35 : 0.2)}`,
                 minHeight: isCompact ? '50px' : '80px',
-                ...tokens.iosTransitionStyle('background-color, border-color, color, box-shadow', 'fast'),
+                ...edu.transition('background-color, border-color, color, box-shadow', 'fast'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 boxShadow: hasResponse ? `0 0 8px ${tokens.colorAlpha('g', 0.1)}` : 'none',
@@ -458,7 +462,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           ) : (
             <div className="w-full rounded-xl p-3.5 min-h-[50px]"
               style={{
-                fontSize: isCompact ? '11px' : '13px',
+                ...edu.body(),
                 color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.03),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.25),
@@ -477,19 +481,19 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             onClick={handleSubmit}
             disabled={!allAnswered}
             style={{
-              fontSize: '14px',
+              ...edu.bodyLg(), fontWeight: 800,
               background: allAnswered
-                ? 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')'
+                ? 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('y') + ')'
                 : tokens.subtleBg(0.08),
-              color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
-              border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
+              color: allAnswered ? tokens.color('bg') : edu.mutedText(0.4),
+              border: '1px solid ' + (allAnswered ? edu.accentAlpha(0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
                 ? tokens.raw.shadow.card
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
               animation: 'none',
-              '--glow-color': tokens.colorAlpha('c', 0.3),
-              '--glow-color-strong': tokens.colorAlpha('c', 0.6),
+              '--glow-color': edu.accentAlpha(0.3),
+              '--glow-color-strong': edu.accentAlpha(0.6),
             } as React.CSSProperties}>
             <Send size={15} className="inline mr-1" /> Kirim Diskusi
           </button>
@@ -504,18 +508,18 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
       {/* ── Compact header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 mb-2">
-        <MessageCircle size={13} style={{ color: tokens.color('c') }} />
-        <span className="font-extrabold min-w-0" style={{ color: tokens.color('c'), fontSize: isCompact ? '12px' : '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <MessageCircle size={13} style={{ color: edu.accent() }} />
+        <span className="font-extrabold min-w-0" style={{ ...edu.caption(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-extrabold"
-            style={{ color: tokens.color('c'), fontSize: 'inherit' }}
+            style={{ color: edu.accent(), fontSize: 'inherit' }}
           />
         </span>
         {/* Progress indicator — PremiumBadge */}
         {interactive && questions.length > 0 && (
           <div className="ml-auto">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold" style={{ fontSize: '9px', background: allAnswered ? tokens.accentBg('g', 0.08) : tokens.accentBg('c', 0.08), color: allAnswered ? tokens.color('g') : tokens.color('c'), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : tokens.colorAlpha('c', 0.2)}` }}>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold" style={{ ...edu.micro(), background: allAnswered ? tokens.accentBg('g', 0.08) : edu.accentBg(), color: allAnswered ? tokens.color('g') : edu.accent(), border: `1px solid ${allAnswered ? tokens.colorAlpha('g', 0.2) : edu.accentAlpha(0.2)}` }}>
               {answeredCount}/{questions.length}
             </span>
           </div>
@@ -526,7 +530,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
       {block.intro && <InlineTextEditor
         {...introEditor}
         className={`leading-relaxed font-bold mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.body(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
 
@@ -537,8 +541,8 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           <div className="h-full rounded-full"
             style={{
               width: progress * 100 + '%',
-              background: tokens.color('c'),
-              ...tokens.iosTransitionStyle('width', 'slow'),
+              background: edu.accent(),
+              ...edu.transition('width', 'slow'),
               boxShadow: 'none',
               animation: 'none',
             }} />
@@ -550,45 +554,47 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         const qColor = q.color || 'c';
         const hasResponse = responses[i]!?.trim().length > 0;
         return (
-        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-2 rounded-lg p-2 min-w-0"
+        <div key={`diskusi-q-${q.teks?.slice(0,8)}-${i}`} className="mt-2 rounded-lg min-w-0"
           style={{
+            ...edu.nestedPadding(),
             background: hasResponse
               ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.04)}, ${tokens.colorAlpha(qColor, 0.02)})`
               : tokens.subtleBg(0.03),
             border: `1px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.25 : 0.1)}`,
             borderLeft: `2px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
             boxShadow: hasResponse ? `0 1px 6px ${tokens.colorAlpha('g', 0.08)}` : 'none',
-            ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'standard'),
+            ...edu.transition('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: isCompact ? '12px' : '13px' }}>{q.icon}</span>
-            <span className="font-bold min-w-0 truncate" style={{ color: tokens.color(qColor), fontSize: '12px' }}>{q.label}</span>
+            <span style={{ ...edu.caption() }}>{q.icon}</span>
+            <span className="font-bold min-w-0 truncate" style={{ ...edu.caption(), fontWeight: 700, color: tokens.color(qColor) }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
                 <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
               </div>
             )}
             {/* Question number */}
-            <span className="ml-auto text-[10px] font-bold px-1 py-0.5 rounded-full"
+            <span className="ml-auto font-bold px-1 py-0.5 rounded-full"
               style={{
+                ...edu.micro(),
                 background: tokens.colorAlpha(qColor, 0.1),
                 color: tokens.color(qColor),
               }}>
               {i + 1}
             </span>
           </div>
-          <RichText content={q.teks ?? ''} tag="p" className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
+          <RichText content={q.teks ?? ''} tag="p" className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), fontWeight: 600, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
           {interactive ? (
             <textarea className={`w-full mt-1.5 rounded-md p-1.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
-                fontSize: '12px',
-                color: tokens.color('text'),
+                ...edu.body(),
+                color: edu.textColor(),
                 background: hasResponse
                   ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.03)}, ${tokens.subtleBg(0.04)})`
                   : tokens.subtleBg(0.04),
                 border: `1px solid ${tokens.colorAlpha(hasResponse ? 'g' : qColor, hasResponse ? 0.25 : 0.15)}`,
                 minHeight: isCompact ? '28px' : '36px',
-                ...tokens.iosTransitionStyle('background-color, border-color, color, box-shadow', 'fast'),
+                ...edu.transition('background-color, border-color, color, box-shadow', 'fast'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 boxShadow: hasResponse ? `0 0 4px ${tokens.colorAlpha('g', 0.08)}` : 'none',
@@ -600,7 +606,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
           ) : (
             <div className="w-full mt-1.5 rounded-md p-1.5 min-h-[24px]"
               style={{
-                fontSize: '11px',
+                ...edu.caption(),
                 color: tokens.textSubtle(0.6),
                 background: tokens.subtleBg(0.02),
                 border: '1px dashed ' + tokens.colorAlpha(qColor, 0.2),
@@ -619,19 +625,19 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             onClick={handleSubmit}
             disabled={!allAnswered}
             style={{
-              fontSize: '11px',
+              ...edu.caption(), fontWeight: 800,
               background: allAnswered
-                ? 'linear-gradient(135deg, ' + tokens.color('c') + ', ' + tokens.color('y') + ')'
+                ? 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('y') + ')'
                 : tokens.subtleBg(0.08),
-              color: allAnswered ? tokens.color('bg') : tokens.muted(0.4),
-              border: '1px solid ' + (allAnswered ? tokens.colorAlpha('c', 0.4) : tokens.subtleBorder(0.1)),
+              color: allAnswered ? tokens.color('bg') : edu.mutedText(0.4),
+              border: '1px solid ' + (allAnswered ? edu.accentAlpha(0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
                 ? tokens.raw.shadow.card
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
               animation: 'none',
-              '--glow-color': tokens.colorAlpha('c', 0.3),
-              '--glow-color-strong': tokens.colorAlpha('c', 0.6),
+              '--glow-color': edu.accentAlpha(0.3),
+              '--glow-color-strong': edu.accentAlpha(0.6),
             } as React.CSSProperties}>
             <Send size={11} className="inline mr-1" /> Kirim
           </button>
@@ -641,13 +647,14 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
   // ══ MAIN DISCUSSION SCREEN — Render based on variant ═════════════
   return (
-    <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
-    <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={3} position="top" />
-    <div className="mt-3 rounded-2xl p-4 relative overflow-hidden"
+    <PremiumBlockWrapper tokens={tokens} accent="p" staggerIndex={0}>
+    <ReadingProgressIndicator progress={progress} tokens={tokens} accent="p" height={3} position="top" />
+    <div className="mt-3 rounded-2xl relative overflow-hidden"
       style={{
-        background: `linear-gradient(135deg, ${tokens.colorAlpha('c', 0.1)}, ${tokens.colorAlpha('c', 0.04)})`,
-        border: `2px solid ${tokens.colorAlpha('c', 0.3)}`,
-        boxShadow: tokens.raw.shadow.card + ', 0 0 24px ' + tokens.colorAlpha('c', 0.08),
+        ...edu.sectionPadding(),
+        background: `linear-gradient(135deg, ${edu.accentAlpha(0.1)}, ${edu.accentAlpha(0.04)})`,
+        border: `2px solid ${edu.accentAlpha(0.3)}`,
+        boxShadow: tokens.raw.shadow.card + ', 0 0 24px ' + edu.accentAlpha(0.08),
       }}>
       {/* Variant selector overlay — only visible when editing */}
       {isEditing && (

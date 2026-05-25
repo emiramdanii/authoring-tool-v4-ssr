@@ -33,6 +33,7 @@ function isValidUrl(url: string): boolean {
 export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: GambarBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
+  const edu = tokens.edu('gambar', isCompact);
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
@@ -59,7 +60,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -81,8 +82,9 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
               className="font-extrabold mb-3"
               style={{
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                ...edu.bodyLg(),
+                fontWeight: 700,
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -140,8 +142,8 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
               </div>
               <span
                 style={{
-                  fontSize: isCompact ? '10px' : '12px',
-                  color: tokens.muted(0.5),
+                  ...edu.caption(),
+                  color: edu.mutedText(0.5),
                   fontWeight: 600,
                 }}
               >
@@ -155,10 +157,9 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
             <div
               className="mt-2 text-center"
               style={{
-                fontSize: isCompact ? '10px' : '12px',
-                color: tokens.muted(0.7),
+                ...edu.caption(),
+                color: edu.mutedText(0.7),
                 fontStyle: 'italic',
-                lineHeight: 1.5,
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}

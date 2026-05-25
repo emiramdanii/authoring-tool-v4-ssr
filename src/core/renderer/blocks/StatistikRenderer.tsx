@@ -23,6 +23,7 @@ import type { CompressionDecision } from '../../layout/CompressionEngine';
 export const StatistikRenderer = React.memo(function StatistikRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: StatistikBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
+  const edu = tokens.edu('statistik', isCompact);
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
@@ -49,7 +50,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -71,8 +72,9 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
               className="font-extrabold mb-3"
               style={{
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                ...edu.bodyLg(),
+                fontWeight: 700,
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -99,13 +101,13 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                   <div
                     className="flex flex-col items-center text-center"
                     style={{
-                      ...tokens.iosCardPadding(isCompact),
+                      ...edu.componentPadding(),
                       background: itemAlpha(0.08),
                       border: `1px solid ${itemAlpha(0.2)}`,
-                      borderRadius: tokens.radius('xl') + 'px',
+                      borderRadius: edu.radius('xl'),
                       boxShadow: tokens.raw.shadow.card,
-                      ...tokens.iosEntranceStyle(i, 'slideIn'),
-                      ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'fast'),
+                      ...edu.entrance(i, 'slideUp'),
+                      ...edu.transition('background-color, border-color, color, transform, box-shadow', 'fast'),
                     }}
                   >
                     {/* Top accent dot */}
@@ -139,7 +141,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                     {item.satuan && (
                       <div
                         style={{
-                          fontSize: isCompact ? '9px' : '11px',
+                          ...edu.micro(),
                           color: itemAlpha(0.7),
                           fontWeight: 700,
                           marginTop: '2px',
@@ -154,11 +156,10 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                     {/* Label */}
                     <div
                       style={{
-                        fontSize: isCompact ? '10px' : '12px',
-                        color: tokens.muted(0.75),
+                        ...edu.caption(),
+                        color: edu.mutedText(0.75),
                         fontWeight: 600,
                         marginTop: isCompact ? '4px' : '6px',
-                        lineHeight: 1.4,
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word',
                       }}

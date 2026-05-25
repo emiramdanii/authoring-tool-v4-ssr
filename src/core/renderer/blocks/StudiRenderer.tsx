@@ -26,6 +26,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
+  const edu = tokens.edu('studi', isCompact);
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent={colorKey} staggerIndex={0} gradientBorder>
@@ -44,7 +45,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -65,9 +66,9 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <div
               className="font-extrabold mb-3"
               style={{
+                ...edu.heading(),
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -95,8 +96,9 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
               <span
                 className="font-bold"
                 style={{
+                  ...edu.caption(),
+                  fontWeight: 700,
                   color: accentColor,
-                  fontSize: isCompact ? '12px' : '14px',
                 }}
               >
                 Karakter
@@ -107,11 +109,11 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
           {/* Situasi section — overflow protection saat mode canvas */}
           <div
             style={{
-              ...tokens.iosNestedPadding(isCompact),
-              borderRadius: tokens.radius('lg') + 'px',
-              background: tokens.color('card'),
+              ...edu.nestedPadding(),
+              borderRadius: edu.radius('lg'),
+              background: edu.cardBg(),
               border: `1px solid ${accentAlpha(0.15)}`,
-              borderLeft: `${isCompact ? 3 : 4}px solid ${accentColor}`,
+              borderLeft: `${edu.stripeWidth()}px solid ${accentColor}`,
               marginBottom: '10px',
               overflow: 'hidden',
             }}
@@ -119,8 +121,8 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <div
               className="font-extrabold uppercase tracking-wider mb-1.5"
               style={{
+                ...edu.micro(),
                 color: accentColor,
-                fontSize: isCompact ? '9px' : '10px',
                 letterSpacing: '0.06em',
               }}
             >
@@ -129,9 +131,8 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <div
               className={isCompact ? 'canvas-truncate-2' : ''}
               style={{
-                fontSize: isCompact ? '12px' : '14px',
-                lineHeight: 1.7,
-                color: tokens.color('text'),
+                ...edu.body(),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -143,11 +144,11 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
           {/* Pertanyaan callout — overflow protection saat mode canvas */}
           <div
             style={{
-              ...tokens.iosNestedPadding(isCompact),
-              borderRadius: tokens.radius('lg') + 'px',
+              ...edu.nestedPadding(),
+              borderRadius: edu.radius('lg'),
               background: accentAlpha(0.1),
               border: `1px solid ${accentAlpha(0.25)}`,
-              borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color('y')}`,
+              borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
               marginBottom: block.pesan ? '10px' : '0',
               overflow: 'hidden',
             }}
@@ -155,8 +156,8 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <div
               className="font-extrabold uppercase tracking-wider mb-1.5"
               style={{
+                ...edu.micro(),
                 color: tokens.color('y'),
-                fontSize: isCompact ? '9px' : '10px',
                 letterSpacing: '0.06em',
               }}
             >
@@ -165,9 +166,8 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <div
               className={isCompact ? 'canvas-truncate-2' : ''}
               style={{
-                fontSize: isCompact ? '12px' : '14px',
-                lineHeight: 1.7,
-                color: tokens.color('text'),
+                ...edu.body(),
+                color: edu.textColor(),
                 fontStyle: 'italic',
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
@@ -182,11 +182,11 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
             <MicroInteraction tokens={tokens} accent="g" effect="bounce">
               <div
                 style={{
-                  ...tokens.iosNestedPadding(isCompact),
-                  borderRadius: tokens.radius('lg') + 'px',
+                  ...edu.nestedPadding(),
+                  borderRadius: edu.radius('lg'),
                   background: tokens.colorAlpha('g', 0.08),
                   border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
-                  borderLeft: `${isCompact ? 3 : 4}px solid ${tokens.color('g')}`,
+                  borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}`,
                 }}
               >
                 <div className="flex items-start gap-2">
@@ -198,9 +198,8 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
                   </span>
                   <div
                     style={{
-                      fontSize: isCompact ? '11px' : '12px',
-                      lineHeight: 1.6,
-                      color: tokens.color('text'),
+                      ...edu.caption(),
+                      color: edu.textColor(),
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                     }}

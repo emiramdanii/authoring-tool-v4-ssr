@@ -65,6 +65,7 @@ function TujuanVariantA({
   compression?: CompressionDecision;
 }) {
   const allObjectives = block.objectives || [];
+  const edu = tokens.edu('tujuan-display', isCompact);
 
   // ── Compression-aware objective visibility (strategy-aware) ──
   const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
@@ -86,38 +87,39 @@ function TujuanVariantA({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
-        border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
+        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `4px solid ${tokens.color('y')}`,
-          background: `linear-gradient(135deg, ${tokens.colorAlpha('y', 0.1)}, ${tokens.colorAlpha('y', 0.03)})`,
-          ...tokens.iosSectionPadding(isCompact),
+          borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
+          background: `linear-gradient(135deg, ${edu.accentBg()}, ${edu.accentAlpha(0.03)})`,
+          ...edu.sectionPadding(),
         }}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              className="rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: tokens.colorAlpha('y', 0.15),
-                border: `1px solid ${tokens.colorAlpha('y', 0.3)}`,
+                width: edu.iconSize('md'),
+                height: edu.iconSize('md'),
+                background: edu.accentAlpha(0.15),
+                border: `1px solid ${edu.accentAlpha(0.3)}`,
                 boxShadow: 'none',
               }}
             >
-              <Target size={16} style={{ color: tokens.color('y') }} />
+              <Target size={16} style={{ color: edu.accent() }} />
             </div>
             <h2
               className="font-black leading-tight min-w-0"
               style={{
-                fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '14px' : '1.2rem',
-                color: tokens.color('text'),
+                ...edu.heading(),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -133,7 +135,7 @@ function TujuanVariantA({
           {/* BSNP Badge */}
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
-              style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+              style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
             </span>
           )}
@@ -144,8 +146,8 @@ function TujuanVariantA({
           <p
             className="mt-1.5 leading-relaxed"
             style={{
-              fontSize: isCompact ? '10px' : '12px',
-              color: tokens.muted(0.85),
+              ...edu.caption(),
+              color: edu.mutedText(0.85),
               marginLeft: isCompact ? '44px' : '52px',
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
@@ -159,7 +161,7 @@ function TujuanVariantA({
         <div
           className="mt-3 h-1 rounded-full"
           style={{
-            background: `linear-gradient(90deg, ${tokens.color('y')}, ${tokens.colorAlpha('c', 0.4)}, transparent)`,
+            background: `linear-gradient(90deg, ${edu.accent()}, ${tokens.colorAlpha('c', 0.4)}, transparent)`,
           }}
         />
       </div>
@@ -167,7 +169,7 @@ function TujuanVariantA({
       {/* ═══ OBJECTIVES LIST ═════════════════════════════════════ */}
       <div
         className="flex flex-col gap-2.5"
-        style={{ ...tokens.iosSectionPadding(isCompact) }}
+        style={{ ...edu.componentPadding() }}
       >
         {objectives.map((obj, i) => (
           
@@ -177,18 +179,18 @@ function TujuanVariantA({
               background: tokens.colorAlpha(obj.color, 0.08),
               border: `1px solid ${tokens.colorAlpha(obj.color, 0.2)}`,
               borderLeft: `4px solid ${tokens.color(obj.color)}`,
-              borderRadius: tokens.radius('xl') + 'px',
-              boxShadow: tokens.raw.shadow.card,
-              ...tokens.iosEntranceStyle(i, 'slideIn'),
+              borderRadius: edu.radius('xl'),
+              boxShadow: edu.shadow('card'),
+              ...edu.entrance(i, 'slideUp'),
             }}
           >
             {/* Number badge */}
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center font-black flex-shrink-0"
               style={{
+                ...edu.caption(),
                 background: tokens.colorAlpha(obj.color, 0.2),
                 color: tokens.color(obj.color),
-                fontSize: isCompact ? '11px' : '12px',
                 boxShadow: 'none',
               }}
             >
@@ -198,15 +200,15 @@ function TujuanVariantA({
             {/* Objective content */}
             <div className="flex items-start gap-2 min-w-0 flex-1">
               {obj.icon && (
-                <span className="flex-shrink-0 mt-0.5" style={{ fontSize: isCompact ? '13px' : '15px' }}>
+                <span className="flex-shrink-0 mt-0.5" style={{ ...edu.bodyLg() }}>
                   {obj.icon}
                 </span>
               )}
               <span
                 className="leading-relaxed"
                 style={{
-                  fontSize: isCompact ? '11px' : '13px',
-                  color: tokens.color('text'),
+                  ...edu.body(),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -242,8 +244,7 @@ function TujuanVariantA({
               background: tokens.colorAlpha('g', tokens.isDark() ? 0.12 : 0.08),
               border: `1px dashed ${tokens.colorAlpha('g', tokens.isDark() ? 0.4 : 0.3)}`,
               color: tokens.colorAlpha('g', tokens.isDark() ? 1 : 0.9),
-              fontSize: isCompact ? '9px' : '11px',
-              fontWeight: 700,
+              ...edu.micro(),
               cursor: 'pointer',
             }}
           >
@@ -262,9 +263,8 @@ function TujuanVariantA({
             style={{
               background: tokens.colorAlpha('p', tokens.isDark() ? 0.15 : 0.1),
               color: tokens.colorAlpha('p', tokens.isDark() ? 1 : 0.9),
-              fontSize: isCompact ? '9px' : '11px',
+              ...edu.micro(),
               cursor: 'pointer',
-              fontWeight: 700,
             }}
           >
             {isExpanded
@@ -294,8 +294,8 @@ function TujuanVariantA({
             background: tokens.colorAlpha(block.profilColor || 'g', 0.1),
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.25)}`,
             borderLeft: `4px solid ${tokens.color(block.profilColor || 'g')}`,
-            borderRadius: tokens.radius('xl') + 'px',
-            boxShadow: tokens.raw.shadow.card,
+            borderRadius: edu.radius('xl'),
+            boxShadow: edu.shadow('card'),
           }}
         >
           <div className="flex items-start gap-2">
@@ -303,8 +303,8 @@ function TujuanVariantA({
             <div className="min-w-0">
               <strong
                 style={{
+                  ...edu.caption(),
                   color: tokens.color(block.profilColor || 'g'),
-                  fontSize: isCompact ? '10px' : '11px',
                 }}
               >
                 Profil Pelajar Pancasila:
@@ -312,8 +312,8 @@ function TujuanVariantA({
               <span
                 className="ml-1"
                 style={{
-                  fontSize: isCompact ? '10px' : '12px',
-                  color: tokens.color('text'),
+                  ...edu.body(),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -339,6 +339,7 @@ function TujuanVariantB({
   compression?: CompressionDecision;
 }) {
   const allObjectives = block.objectives || [];
+  const edu = tokens.edu('tujuan-display', isCompact);
   const [checked, setChecked] = useState<Record<number, boolean>>({});
 
   // ── Compression-aware objective visibility (strategy-aware) ──
@@ -364,29 +365,28 @@ function TujuanVariantB({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
-        border: `1px solid ${tokens.colorAlpha('y', 0.12)}`,
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
+        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* Header — compact */}
       <div
         style={{
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
           borderBottom: `1px solid ${tokens.colorAlpha('c', 0.1)}`,
-          background: tokens.colorAlpha('y', 0.04),
+          background: edu.accentBg(),
         }}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle2 size={18} style={{ color: tokens.color('y') }} />
+            <CheckCircle2 size={edu.iconSize('sm')} style={{ color: edu.accent() }} />
             <h2
               className="font-black leading-tight min-w-0"
               style={{
-                fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '14px' : '1.15rem',
-                color: tokens.color('text'),
+                ...edu.heading(),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
               }}
             >
@@ -400,7 +400,7 @@ function TujuanVariantB({
 
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
-              style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+              style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
             </span>
           )}
@@ -410,8 +410,8 @@ function TujuanVariantB({
           <p
             className="mt-1"
             style={{
-              fontSize: isCompact ? '10px' : '11px',
-              color: tokens.muted(0.85),
+              ...edu.caption(),
+              color: edu.mutedText(0.85),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -424,7 +424,7 @@ function TujuanVariantB({
       {/* Checklist items */}
       <div
         style={{
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
         }}
       >
         <div className="flex flex-col gap-1">
@@ -435,11 +435,11 @@ function TujuanVariantB({
               <div
                 className="flex items-start gap-3 rounded-lg transition-[background-color,border-color,color]"
                 style={{
-                  ...tokens.iosNestedPadding(isCompact),
+                  ...edu.nestedPadding(),
                   background: isChecked
                     ? tokens.colorAlpha(obj.color, 0.06)
                     : 'transparent',
-                  ...tokens.iosEntranceStyle(i, 'slideIn'),
+                  ...edu.entrance(i, 'slideUp'),
                   cursor: isEditing ? 'default' : 'pointer',
                 }}
                 onClick={() => { if (!isEditing) toggleCheck(i); }}
@@ -460,7 +460,7 @@ function TujuanVariantB({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    ...tokens.iosTransitionStyle('background-color, border-color, color, transform', 'fast'),
+                    ...edu.transition('background-color, border-color, color, transform', 'fast'),
                   }}
                 >
                   {isChecked && (
@@ -474,19 +474,19 @@ function TujuanVariantB({
                 {/* Objective text */}
                 <div className="flex items-start gap-1.5 min-w-0 flex-1">
                   {obj.icon && (
-                    <span className="flex-shrink-0 mt-0.5" style={{ fontSize: isCompact ? '12px' : '14px' }}>
+                    <span className="flex-shrink-0 mt-0.5" style={{ ...edu.bodyLg() }}>
                       {obj.icon}
                     </span>
                   )}
                   <span
                     className="leading-relaxed"
                     style={{
-                      fontSize: isCompact ? '11px' : '13px',
-                      color: isChecked ? tokens.muted(0.5) : tokens.color('text'),
+                      ...edu.body(),
+                      color: isChecked ? edu.mutedText(0.5) : edu.textColor(),
                       textDecoration: isChecked ? 'line-through' : 'none',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
-                      ...tokens.iosTransitionStyle('color, text-decoration-color', 'fast'),
+                      ...edu.transition('color, text-decoration-color', 'fast'),
                     }}
                   >
                     {obj.text}
@@ -502,7 +502,7 @@ function TujuanVariantB({
         {objectives.length > 0 && (
           <div
             className="mt-3 flex items-center gap-2"
-            style={{ fontSize: '11px', color: tokens.muted(0.5) }}
+            style={{ ...edu.caption(), color: edu.mutedText(0.5) }}
           >
             <div
               style={{
@@ -518,8 +518,8 @@ function TujuanVariantB({
                   height: '100%',
                   width: `${(Object.values(checked).filter(Boolean).length / allObjectives.length) * 100}%`,
                   borderRadius: '99px',
-                  background: `linear-gradient(90deg, ${tokens.color('y')}, ${tokens.color('g')})`,
-                  ...tokens.iosTransitionStyle('width', 'slow'),
+                  background: `linear-gradient(90deg, ${edu.accent()}, ${tokens.color('g')})`,
+                  ...edu.transition('width', 'slow'),
                 }}
               />
             </div>
@@ -538,8 +538,7 @@ function TujuanVariantB({
               background: tokens.colorAlpha('g', tokens.isDark() ? 0.12 : 0.08),
               border: `1px dashed ${tokens.colorAlpha('g', tokens.isDark() ? 0.4 : 0.3)}`,
               color: tokens.colorAlpha('g', tokens.isDark() ? 1 : 0.9),
-              fontSize: isCompact ? '9px' : '11px',
-              fontWeight: 700,
+              ...edu.micro(),
               cursor: 'pointer',
             }}
           >
@@ -556,9 +555,8 @@ function TujuanVariantB({
             style={{
               background: tokens.colorAlpha('p', tokens.isDark() ? 0.15 : 0.1),
               color: tokens.colorAlpha('p', tokens.isDark() ? 1 : 0.9),
-              fontSize: isCompact ? '9px' : '11px',
+              ...edu.micro(),
               cursor: 'pointer',
-              fontWeight: 700,
             }}
           >
             {isExpanded
@@ -583,9 +581,9 @@ function TujuanVariantB({
         <div
           style={{
             ...tokens.iosInnerMargin(isCompact), marginTop: 0,
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.06),
-            borderRadius: tokens.radius('lg') + 'px',
+            borderRadius: edu.radius('lg'),
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.15)}`,
           }}
         >
@@ -593,8 +591,7 @@ function TujuanVariantB({
             <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g') }} />
             <span
               style={{
-                fontSize: '11px',
-                fontWeight: 700,
+                ...edu.caption(),
                 color: tokens.color(block.profilColor || 'g'),
               }}
             >
@@ -602,8 +599,8 @@ function TujuanVariantB({
             </span>
             <span
               style={{
-                fontSize: isCompact ? '10px' : '11px',
-                color: tokens.color('text'),
+                ...edu.body(),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -628,6 +625,7 @@ function TujuanVariantC({
   compression?: CompressionDecision;
 }) {
   const allObjectives = block.objectives || [];
+  const edu = tokens.edu('tujuan-display', isCompact);
 
   // ── Compression-aware objective visibility (strategy-aware) ──
   const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy, isExpanded } = useBlockCompression({
@@ -691,7 +689,7 @@ function TujuanVariantC({
       height: '2px',
       transformOrigin: '0 0',
       transform: `rotate(${angle}deg)`,
-      background: `linear-gradient(90deg, ${tokens.colorAlpha('y', 0.3)}, ${tokens.colorAlpha('y', 0.08)})`,
+      background: `linear-gradient(90deg, ${edu.accentAlpha(0.3)}, ${edu.accentAlpha(0.08)})`,
       pointerEvents: 'none' as const,
       zIndex: 0,
     };
@@ -701,17 +699,17 @@ function TujuanVariantC({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
-        border: `1px solid ${tokens.colorAlpha('y', 0.12)}`,
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
+        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* BSNP Badge */}
       {block.bsnpRequired && isEditing && (
         <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 5 }}>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
-              style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+              style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
             <Shield size={8} /> WAJIB
           </span>
         </div>
@@ -722,7 +720,7 @@ function TujuanVariantC({
         style={{
           position: 'relative',
           minHeight: isCompact ? '240px' : '320px',
-          ...tokens.iosSectionPadding(isCompact),
+          ...edu.componentPadding(),
           overflow: 'hidden',
         }}
       >
@@ -750,28 +748,27 @@ function TujuanVariantC({
                 zIndex: 2,
                 minWidth: isCompact ? '80px' : '110px',
                 maxWidth: isCompact ? '140px' : '180px',
-                ...tokens.iosNestedPadding(isCompact),
-                borderRadius: tokens.radius('lg') + 'px',
+                ...edu.nestedPadding(),
+                borderRadius: edu.radius('lg'),
                 background: tokens.colorAlpha(obj.color, 0.1),
                 border: `1.5px solid ${tokens.colorAlpha(obj.color, 0.3)}`,
                 boxShadow: 'none',
                 textAlign: 'center',
-                ...tokens.iosEntranceStyle(i, 'slideIn'),
-                ...tokens.iosTransitionStyle('transform, box-shadow', 'fast'),
+                ...edu.entrance(i, 'slideUp'),
+                ...edu.transition('transform, box-shadow', 'fast'),
               }}
             >
               {/* Small icon */}
               {obj.icon && (
-                <span style={{ fontSize: isCompact ? '14px' : '16px', display: 'block', marginBottom: '2px' }}>
+                <span style={{ ...edu.bodyLg(), display: 'block', marginBottom: '2px' }}>
                   {obj.icon}
                 </span>
               )}
               <span
                 style={{
-                  fontSize: '11px',
+                  ...edu.body(),
                   fontWeight: 600,
-                  color: tokens.color('text'),
-                  lineHeight: 1.4,
+                  color: edu.textColor(),
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
@@ -798,7 +795,7 @@ function TujuanVariantC({
             flexDirection: 'column',
             alignItems: 'center',
             gap: '6px',
-            ...tokens.iosEntranceStyle(0, 'slideIn'),
+            ...edu.entrance(0, 'slideUp'),
           }}
         >
           <div
@@ -806,11 +803,11 @@ function TujuanVariantC({
               width: isCompact ? '44px' : '52px',
               height: isCompact ? '44px' : '52px',
               borderRadius: '50%',
-              background: `linear-gradient(135deg, ${tokens.color('y')}, ${tokens.colorAlpha('y', 0.8)})`,
+              background: `linear-gradient(135deg, ${edu.accent()}, ${edu.accentAlpha(0.8)})`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: tokens.raw.shadow.card,
+              boxShadow: edu.shadow('card'),
               animation: 'breathe 4s ease-in-out infinite',
             }}
           >
@@ -819,9 +816,8 @@ function TujuanVariantC({
           <h2
             className="font-black leading-tight text-center"
             style={{
-              fontFamily: tokens.fontFamily('display'),
-              fontSize: isCompact ? '11px' : '13px',
-              color: tokens.color('text'),
+              ...edu.heading(),
+              color: edu.textColor(),
               wordBreak: 'break-word',
               maxWidth: isCompact ? '120px' : '160px',
             }}
@@ -841,9 +837,9 @@ function TujuanVariantC({
           style={{
             ...tokens.iosInnerMargin(isCompact),
             marginTop: 0,
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.06),
-            borderRadius: tokens.radius('lg') + 'px',
+            borderRadius: edu.radius('lg'),
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.15)}`,
             display: 'flex',
             alignItems: 'center',
@@ -853,8 +849,7 @@ function TujuanVariantC({
           <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g'), flexShrink: 0 }} />
           <span
             style={{
-              fontSize: '11px',
-              fontWeight: 700,
+              ...edu.caption(),
               color: tokens.color(block.profilColor || 'g'),
             }}
           >
@@ -862,8 +857,8 @@ function TujuanVariantC({
           </span>
           <span
             style={{
-              fontSize: isCompact ? '10px' : '11px',
-              color: tokens.color('text'),
+              ...edu.body(),
+              color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}

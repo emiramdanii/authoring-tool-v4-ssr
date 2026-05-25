@@ -84,6 +84,7 @@ function MateriTabBar({
   tokens: TokenResolver;
   interactive?: boolean;
 }) {
+  const edu = tokens.edu('materi-section');
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
       {tabs.map((tab, i) => {
@@ -95,7 +96,8 @@ function MateriTabBar({
             type="button"
             className={tokens.iosTabTw(interactive)}
             style={{
-              ...tokens.iosTypography('footnote', { fontWeight: isActive ? 600 : 400 }),
+              ...edu.caption(),
+              fontWeight: isActive ? 600 : 400,
               padding: `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px`,
               borderRadius: tokens.radius('full'),
               border: `1px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.4) : tokens.subtleBorder(0.1)}`,
@@ -123,6 +125,7 @@ function OverflowIndicator({
   interactive: boolean;
   isCompact?: boolean;
 }) {
+  const edu = tokens.edu('materi-section', isCompact);
   if (overflowCount <= 0) return null;
 
   return (
@@ -137,7 +140,7 @@ function OverflowIndicator({
       justifyContent: 'space-between',
       gap: 12,
     }}>
-      <span style={{ ...tokens.iosTypography('caption1', { fontSize: isCompact ? 11 : 13, color: tokens.textSecondary(0.9) }) }}>
+      <span style={{ ...edu.caption(), color: tokens.textSecondary(0.9) }}>
         {overflowCount} blok tidak cukup ruang di halaman ini
       </span>
       {onSplit && interactive && (
@@ -147,7 +150,7 @@ function OverflowIndicator({
           style={{
             ...tokens.iosButtonPadding('md'),
             borderRadius: tokens.radius('sm'),
-            fontSize: isCompact ? 10 : 12,
+            ...edu.micro(),
             fontWeight: 600,
             background: tokens.colorAlpha('p', 0.15),
             color: tokens.color('p'),
@@ -197,6 +200,7 @@ function MateriVariantKlasik({
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
+  const edu = tokens.edu('materi-section', isCompact);
 
   const sectionNumber = React.useMemo(() => {
     if (block.id) {
@@ -266,7 +270,8 @@ function MateriVariantKlasik({
               ...tokens.iosIconSize('md'),
               background: tokens.accentBg(accentColor, 0.12),
               color: tokens.accentText(accentColor),
-              ...tokens.iosTypography('headline', { fontSize: isCompact ? 13 : 15 }),
+              ...edu.caption(),
+              fontWeight: 700,
             }}
           >
             {sectionNumber}
@@ -295,7 +300,8 @@ function MateriVariantKlasik({
               <p
                 className="mt-1 leading-relaxed"
                 style={{
-                  ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13, color: tokens.muted(0.85), lineHeight: 1.7 }),
+                  ...edu.body(),
+                  color: tokens.muted(0.85),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -359,10 +365,12 @@ function MateriVariantKlasik({
                       ...tokens.iosNestedPadding(isCompact),
                       cursor: 'pointer',
                       background: expandedSections.has(i) ? accentAlpha(0.06) : 'transparent',
-                      ...tokens.iosTypography('caption1', { fontWeight: 700, color: accent }),
+                      ...edu.caption(),
+                      fontWeight: 700,
+                      color: accent,
                     }}
                   >
-                    <span className="flex-shrink-0" style={{ ...tokens.iosTypography('caption1', { fontSize: isCompact ? 11 : 13 }) }}>
+                    <span className="flex-shrink-0" style={{ ...edu.caption() }}>
                       {(childBlock as Record<string, unknown>).icon as string || '📄'}
                     </span>
                     <span className="flex-1 min-w-0 truncate">
@@ -438,7 +446,8 @@ function MateriVariantKlasik({
             <span
               className="font-extrabold uppercase tracking-wider"
               style={{
-                ...tokens.iosTypography('caption2', { color: tokens.color('g') }),
+                ...edu.caption(),
+                color: tokens.color('g'),
               }}
             >
               Poin Penting
@@ -463,7 +472,8 @@ function MateriVariantKlasik({
                 <span
                   className="leading-relaxed"
                   style={{
-                    ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 13, lineHeight: 1.7, color: tokens.color('text') }),
+                    ...edu.body(),
+                    color: tokens.color('text'),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
                   }}
@@ -502,7 +512,8 @@ function MateriVariantKlasik({
               <span
                 className="font-extrabold block mb-1"
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
+                  ...edu.caption(),
+                  color: tokens.color('y'),
                   letterSpacing: '0.04em',
                 }}
               >
@@ -511,7 +522,8 @@ function MateriVariantKlasik({
               <p
                 className="leading-relaxed"
                 style={{
-                  ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 11 : 13, lineHeight: 1.7, color: tokens.color('text') }),
+                  ...edu.body(),
+                  color: tokens.color('text'),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -535,7 +547,8 @@ function MateriVariantKlasik({
             style={{
               background: tokens.accentBg(accentColor, 0.08),
               color: tokens.accentText(accentColor),
-              ...tokens.iosTypography('caption2', { fontWeight: 700 }),
+              ...edu.caption(),
+              fontWeight: 700,
             }}
           >
             {isExpanded
@@ -604,6 +617,7 @@ function MateriVariantMajalah({
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
+  const edu = tokens.edu('materi-section', isCompact);
 
   const sectionNumber = React.useMemo(() => {
     if (block.id) {
@@ -655,7 +669,8 @@ function MateriVariantMajalah({
               ...tokens.iosIconSize('sm'),
               background: tokens.accentBg(accentColor, 0.12),
               color: tokens.accentText(accentColor),
-              ...tokens.iosTypography('headline', { fontSize: isCompact ? 12 : 14 }),
+              ...edu.caption(),
+              fontWeight: 700,
             }}
           >
             {sectionNumber}
@@ -743,7 +758,8 @@ function MateriVariantMajalah({
               <span
                 className="font-extrabold uppercase tracking-wider"
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.color('g') }),
+                  ...edu.caption(),
+                  color: tokens.color('g'),
                 }}
               >
                 Poin Penting
@@ -766,7 +782,8 @@ function MateriVariantMajalah({
                   <span
                     className="leading-relaxed"
                     style={{
-                      ...tokens.iosTypography('subheadline', { fontSize: 12, lineHeight: 1.7, color: tokens.color('text') }),
+                      ...edu.body(),
+                      color: tokens.color('text'),
                       wordBreak: 'break-word',
                     }}
                   >
@@ -797,7 +814,8 @@ function MateriVariantMajalah({
               <span
                 className="font-extrabold"
                 style={{
-                  ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
+                  ...edu.caption(),
+                  color: tokens.color('y'),
                   marginRight: '8px',
                 }}
               >
@@ -806,7 +824,8 @@ function MateriVariantMajalah({
               <span
                 className="leading-relaxed"
                 style={{
-                  ...tokens.iosTypography('subheadline', { fontSize: 12, lineHeight: 1.7, color: tokens.color('text') }),
+                  ...edu.body(),
+                  color: tokens.color('text'),
                   wordBreak: 'break-word',
                 }}
               >
@@ -864,6 +883,7 @@ function MateriVariantPill({
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
+  const edu = tokens.edu('materi-section', isCompact);
 
   const sectionNumber = React.useMemo(() => {
     if (block.id) {
@@ -915,7 +935,7 @@ function MateriVariantPill({
             ...tokens.iosIconSize('sm'),
             background: tokens.accentBg(accentColor, 0.12),
             color: tokens.accentText(accentColor),
-            ...tokens.iosTypography('caption1', { fontSize: isCompact ? 10 : 12 }),
+            ...edu.micro(),
           }}
         >
           {sectionNumber}
@@ -923,7 +943,9 @@ function MateriVariantPill({
         <h2
           className="font-bold min-w-0"
           style={{
-            ...tokens.iosTypography('headline', { fontSize: isCompact ? 13 : 15, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+            ...edu.bodyLg(),
+            fontWeight: 700,
+            color: tokens.color('text'),
             wordBreak: 'break-word',
           }}
         >
@@ -1047,8 +1069,8 @@ function MateriVariantPill({
               borderRadius: tokens.radius('sm'),
               background: tokens.accentBg('y', 0.06),
               border: `1px solid ${tokens.subtleBorder(0.06)}`,
+              ...edu.caption(),
               color: tokens.color('y'),
-              ...tokens.iosTypography('caption2', { color: tokens.color('y') }),
               cursor: 'pointer',
             }}
             aria-expanded={showSelfCheck}
@@ -1074,7 +1096,8 @@ function MateriVariantPill({
               <p
                 className="leading-relaxed"
                 style={{
-                  ...tokens.iosTypography('subheadline', { fontSize: 12, color: tokens.color('text') }),
+                  ...edu.body(),
+                  color: tokens.color('text'),
                   wordBreak: 'break-word',
                 }}
               >

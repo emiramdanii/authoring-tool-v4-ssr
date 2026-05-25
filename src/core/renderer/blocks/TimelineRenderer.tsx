@@ -26,6 +26,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
+  const edu = tokens.edu('timeline', isCompact);
 
   const steps = block.steps || [];
 
@@ -67,8 +68,8 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
             <div
               className="font-extrabold mb-3"
               style={{
-                fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
+                ...edu.bodyLg(),
+                fontWeight: 700,
                 color: tokens.color('text'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
@@ -90,7 +91,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                   key={`timeline-step-${i}`}
                   className="flex"
                   style={{
-                    ...tokens.iosEntranceStyle(i, 'slideIn'),
+                    ...edu.entrance(i),
                   }}
                 >
                   {/* Left column: dot + line */}
@@ -147,8 +148,9 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                       <div
                         className="font-extrabold mb-1"
                         style={{
+                          ...edu.body(),
+                          fontWeight: 700,
                           color: stepColor,
-                          fontSize: isCompact ? '11px' : '13px',
                           wordBreak: 'break-word',
                           overflowWrap: 'break-word',
                         }}
@@ -158,9 +160,8 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                       <div
                         className={isCompact ? 'canvas-truncate-2' : ''}
                         style={{
+                          ...edu.body(),
                           color: tokens.color('text'),
-                          fontSize: isCompact ? '11px' : '13px',
-                          lineHeight: 1.6,
                           wordBreak: 'break-word',
                           overflowWrap: 'break-word',
                         }}

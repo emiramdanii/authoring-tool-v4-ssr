@@ -8,6 +8,7 @@ import { alpha } from '@/lib/color-palette';
 import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
 import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
+import { EduRenderingContext } from '../edu/EduRenderingContext';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -457,6 +458,23 @@ export class TokenResolver {
     return {
       padding: `${spec.block}px ${spec.inline}px`,
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // EDUCATIONAL DESIGN SYSTEM — Canvas content tokens
+  // ═══════════════════════════════════════════════════════════════════
+  // The edu() method creates an EduRenderingContext for a block type.
+  // Use this for CANVAS CONTENT only — app chrome keeps iOS VC.
+  //
+  //   const edu = tokens.edu('tujuan-display', isCompact);
+  //   edu.heading()  → { fontSize: '28px', fontWeight: 700, ... }
+  //   edu.accent()   → '#f9c12e'
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Create an educational rendering context for a block type.
+   *  This is the PRIMARY way to access edu tokens in renderers. */
+  edu(blockType: string, isCompact: boolean = false): EduRenderingContext {
+    return new EduRenderingContext(this, blockType, isCompact);
   }
 }
 

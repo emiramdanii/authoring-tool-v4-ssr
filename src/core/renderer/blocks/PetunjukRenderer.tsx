@@ -20,6 +20,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
   const hasNav = block.navigation && block.navigation.length > 0;
   const hasObjectives = block.learningObjectives && block.learningObjectives.length > 0;
   const allItems = block.items || [];
+  const edu = tokens.edu('petunjuk', isCompact);
 
   // ── Compression-aware item visibility ──────────────────────
   const { visibleCount, hasMore, hiddenCount, showMore, isCompressed, strategy } = useBlockCompression({
@@ -88,7 +89,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
           padding: '4px 10px 4px 8px',
           zIndex: 2,
         }}>
-        <span style={{ fontSize: '11px', fontWeight: 800, color: tokens.color('bg'), display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ ...edu.micro(), color: tokens.color('bg'), display: 'flex', alignItems: 'center', gap: 4 }}>
           <Info size={11} /> Petunjuk
         </span>
       </div>
@@ -96,7 +97,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
       {/* BSNP "Wajib" badge — top right */}
       <div className="absolute top-0 right-0" style={{ zIndex: 2, borderRadius: '0 0 0 10px', overflow: 'hidden' }}>
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full font-bold"
-          style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+          style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
           <Shield size={9} /> BSNP Wajib
         </span>
       </div>
@@ -104,7 +105,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
       <div style={{ paddingTop: isCompact ? '24px' : '32px' }}>
         {/* ══ TITLE ════════════════════════════════════════════════ */}
         <h2 className="font-black leading-tight"
-          style={{ fontSize: isCompact ? '16px' : '1.6rem', fontFamily: tokens.fontFamily('display'), color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          style={{ ...edu.heading(), color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
@@ -134,16 +135,15 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                 style={{ background: tokens.colorAlpha('g', 0.2), boxShadow: '0 2px 8px ' + tokens.colorAlpha('g', 0.2) }}>
                 <GraduationCap size={14} style={{ color: tokens.color('g') }} />
               </div>
-              <span className="font-extrabold min-w-0" style={{ fontSize: isCompact ? '12px' : '14px', color: tokens.color('g') }}>
+              <span className="font-extrabold min-w-0" style={{ ...edu.caption(), color: tokens.color('g') }}>
                 Tujuan Pembelajaran
               </span>
               <span className="px-2 py-0.5 rounded-full font-extrabold flex-shrink-0"
                 style={{
-                  fontSize: '11px',
+                  ...edu.micro(),
                   background: tokens.colorAlpha('g', 0.15),
                   color: tokens.color('g'),
                   border: '1px solid ' + tokens.colorAlpha('g', 0.25),
-                  letterSpacing: '0.04em',
                 }}>
                 BSNP WAJIB
               </span>
@@ -152,13 +152,13 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
               {(block.learningObjectives || []).map((obj, i) => (
                 <div key={`obj-${block.id || 'pet'}-${i}`}
                   className="flex items-start gap-2.5"
-                  style={{ fontSize: isCompact ? '11px' : '13px' }}>
+                  style={{ ...edu.body() }}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                     style={{
                       background: tokens.colorAlpha('g', 0.15),
                       border: '1.5px solid ' + tokens.colorAlpha('g', 0.3),
                     }}>
-                    <span className="font-extrabold" style={{ color: tokens.color('g'), fontSize: '10px' }}>{obj.num || i + 1}</span>
+                    <span className="font-extrabold" style={{ ...edu.micro(), color: tokens.color('g') }}>{obj.num || i + 1}</span>
                   </div>
                   <div className={`min-w-0 leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
                     style={{ color: tokens.color('text') }}>
@@ -199,21 +199,21 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     onClick={() => toggleAccordion(i)}
                     className={`w-full flex items-center gap-2.5 text-left ${tokens.iosAccordionTw()}`}
                     style={{
-                      ...tokens.iosNestedPadding(isCompact),
+                      ...edu.nestedPadding(),
                       cursor: 'pointer',
                       background: isExpanded ? tokens.colorAlpha!(itemColor, 0.08) : 'transparent',
                     }}
                   >
                     <span style={{ fontSize: isCompact ? '13px' : '16px' }}>{item.icon}</span>
                     <span className="font-bold flex-1 min-w-0" style={{
+                      ...edu.caption(),
                       color: tokens.color!(itemColor),
-                      fontSize: isCompact ? '11px' : '13px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                     }}>{item.title}</span>
                     <span className="flex-shrink-0 font-black" style={{
-                      fontSize: isCompact ? '8px' : '10px',
+                      ...edu.micro(),
                       color: tokens.colorAlpha!(itemColor, 0.5),
                       minWidth: '16px',
                       textAlign: 'center',
@@ -227,12 +227,12 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   <div style={{
                     maxHeight: isExpanded ? 500 : 0,
                     overflow: 'hidden',
-                  ...tokens.iosTransitionStyle('max-height', 'standard'),
+                  ...edu.transition('max-height', 'standard'),
                   }}>
-                    <div style={{ ...tokens.iosNestedPadding(isCompact), paddingTop: isCompact ? 4 : 6, paddingBottom: isCompact ? 8 : 10 }}>
+                    <div style={{ ...edu.nestedPadding(), paddingTop: isCompact ? 4 : 6, paddingBottom: isCompact ? 8 : 10 }}>
                       <div className="leading-relaxed" style={{
+                        ...edu.body(),
                         color: tokens.muted(0.8),
-                        fontSize: isCompact ? '11px' : '12px',
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word',
                       }}><RichText content={item.body ?? ''} /></div>
@@ -252,7 +252,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   borderLeftColor: tokens.color!(itemColor),
                   borderRadius: tokens.radius('xl') + 'px',
                   boxShadow: tokens.raw.shadow.card,
-                  ...tokens.iosCardPadding(isCompact),
+                  ...edu.componentPadding(),
                   overflow: 'hidden',
                 }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2 relative"
@@ -273,8 +273,8 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     {i + 1}
                   </div>
                 </div>
-                <div className="font-extrabold mb-1.5" style={{ color: tokens.color!(itemColor), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word' }}>{item.title}</div>
-                <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.8), fontSize: isCompact ? '11px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={item.body ?? ''} /></div>
+                <div className="font-extrabold mb-1.5" style={{ ...edu.caption(), color: tokens.color!(itemColor), wordBreak: 'break-word' }}>{item.title}</div>
+                <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={item.body ?? ''} /></div>
               </div>
             );
           })}
@@ -306,7 +306,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             }}>
             <div className="flex items-center gap-2 mb-2">
               <Compass size={14} style={{ color: tokens.color('p') }} />
-              <span className="font-extrabold" style={{ fontSize: isCompact ? '11px' : '13px', color: tokens.color('p') }}>
+              <span className="font-extrabold" style={{ ...edu.caption(), color: tokens.color('p') }}>
                 Navigasi
               </span>
             </div>
@@ -317,12 +317,12 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   style={{
                     background: tokens.colorAlpha('p', 0.08),
                     border: '1px solid ' + tokens.colorAlpha('p', 0.15),
-                    fontSize: isCompact ? '10px' : '12px',
+                    ...edu.caption(),
                   }}>
                   <span>{nav.icon}</span>
                   <div className="min-w-0">
                     <div className="font-bold" style={{ color: tokens.color('p') }}>{nav.label}</div>
-                    {!isCompact && <div style={{ color: tokens.muted(0.85), fontSize: '10px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{nav.description}</div>}
+                    {!isCompact && <div style={{ ...edu.caption(), color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{nav.description}</div>}
                   </div>
                 </div>
               ))}
@@ -340,8 +340,8 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
               border: '1px solid ' + tokens.colorAlpha(accentKey, 0.2),
               borderLeft: `4px solid ${tokens.color(accentKey)}`,
               boxShadow: tokens.raw.shadow.card,
+              ...edu.body(),
               color: tokens.color('text'),
-              fontSize: isCompact ? '11px' : '13px',
             }}>
             <div className="flex items-start gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
@@ -364,7 +364,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
          *  meets BSNP requirements for SMP interactive media.
          *  Shows the required components checkmark. */}
         <div className="mt-3 flex items-center justify-center gap-3 flex-wrap"
-          style={{ fontSize: '11px', color: tokens.muted(0.85) }}>
+          style={{ ...edu.caption(), color: tokens.muted(0.85) }}>
           {['Petunjuk', 'KD/TP', 'Materi', 'Evaluasi', 'Profil'].map(comp => (
             <span key={`bsnp-${comp}`} className="flex items-center gap-0.5">
               <BookOpen size={8} /> {comp}

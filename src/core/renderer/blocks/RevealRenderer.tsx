@@ -28,6 +28,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
   const colorKey = block.accentColor || 'p';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
+  const edu = tokens.edu('reveal', isCompact);
 
   // ── Reveal state ────────────────────────────────────────────
   const [isRevealed, setIsRevealed] = useState(false);
@@ -71,7 +72,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -92,9 +93,9 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
             <div
               className="font-extrabold mb-3"
               style={{
+                ...edu.heading(),
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -111,7 +112,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 onClick={handleReveal}
                 className={`w-full text-center rounded-lg cursor-pointer ${tokens.iosButtonTw()}  hover:scale-[1.01]`}
                 style={{
-                  ...tokens.iosCardPadding(isCompact),
+                  ...edu.componentPadding(),
                   background: `linear-gradient(135deg, ${accentAlpha(0.12)}, ${accentAlpha(0.04)})`,
                   border: `2px dashed ${accentAlpha(0.4)}`,
                   outline: 'none',
@@ -140,7 +141,8 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 <div
                   className="font-bold"
                   style={{
-                    fontSize: isCompact ? '13px' : '15px',
+                    ...edu.bodyLg(),
+                    fontWeight: 700,
                     color: accentColor,
                     fontFamily: tokens.fontFamily('display'),
                   }}
@@ -152,8 +154,8 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 <div
                   className="mt-2"
                   style={{
-                    fontSize: isCompact ? '10px' : '11px',
-                    color: tokens.muted(0.5),
+                    ...edu.caption(),
+                    color: edu.mutedText(0.5),
                     animation: 'float 2.5s ease-in-out infinite',
                   }}
                 >
@@ -167,11 +169,11 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
           {showRevealed && (
             <div
               style={{
-                ...tokens.iosCardPadding(isCompact),
-                borderRadius: tokens.radius('lg') + 'px',
-                background: tokens.color('card'),
+                ...edu.componentPadding(),
+                borderRadius: edu.radius('lg'),
+                background: edu.cardBg(),
                 border: `1px solid ${accentAlpha(0.25)}`,
-                borderLeft: `${isCompact ? 3 : 4}px solid ${accentColor}`,
+                borderLeft: `${edu.stripeWidth()}px solid ${accentColor}`,
                 overflow: 'hidden',
               }}
             >
@@ -194,8 +196,8 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                 <span
                   className="font-extrabold uppercase tracking-wider"
                   style={{
+                    ...edu.micro(),
                     color: accentColor,
-                    fontSize: isCompact ? '9px' : '10px',
                     letterSpacing: '0.06em',
                   }}
                 >
@@ -207,9 +209,8 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
               <div
                 className={isCompact ? 'canvas-truncate-2' : ''}
                 style={{
-                  fontSize: isCompact ? '12px' : '14px',
-                  lineHeight: 1.7,
-                  color: tokens.color('text'),
+                  ...edu.body(),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -225,7 +226,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                     onClick={handleHide}
                     className={`mt-3 px-4 py-1.5 rounded-lg font-bold ${tokens.iosExpandTw()}  hover:scale-[1.02]`}
                     style={{
-                      fontSize: isCompact ? '10px' : '11px',
+                      ...edu.caption(),
                       background: accentAlpha(0.1),
                       color: accentColor,
                       border: `1px solid ${accentAlpha(0.3)}`,

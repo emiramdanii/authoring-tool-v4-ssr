@@ -75,6 +75,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
   tokens: TokenResolver;
   isCompact: boolean;
 }) {
+  const edu = tokens.edu('rangkuman', isCompact);
   return (
     <div
       className="rounded-xl p-3 transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5"
@@ -84,8 +85,8 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         borderLeft: `4px solid ${tokens.color(concept.color)}`,
         borderRadius: tokens.radius('xl') + 'px',
         boxShadow: tokens.raw.shadow.card,
-        ...tokens.iosEntranceStyle(index, 'slideIn'),
-        ...tokens.iosTransitionStyle('background-color, border-color, color, transform, box-shadow', 'fast'),
+        ...edu.entrance(index, 'slideUp'),
+        ...edu.transition('background-color, border-color, color, transform, box-shadow', 'fast'),
       }}
     >
       {/* Icon + Title row */}
@@ -98,8 +99,9 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         <RichText content={concept.title ?? ''}
           className="font-extrabold min-w-0"
           style={{
+            ...edu.bodyLg(),
+            fontWeight: 700,
             color: tokens.color(concept.color),
-            fontSize: isCompact ? '11px' : '13px',
             wordBreak: 'break-word',
           }}
         />
@@ -109,7 +111,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         <RichText content={concept.body ?? ''}
           className="leading-relaxed"
           style={{
-            fontSize: isCompact ? '12px' : '12px',
+            ...edu.body(),
             color: tokens.muted(0.85),
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
@@ -127,9 +129,8 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
         <span
           className="font-bold"
           style={{
-            fontSize: isCompact ? '11px' : '11px',
+            ...edu.micro(),
             color: tokens.colorAlpha(concept.color, 0.65),
-            letterSpacing: '0.05em',
           }}
         >
           Konsep {index + 1}
@@ -150,6 +151,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
   tokens: TokenResolver;
   isCompact: boolean;
 }) {
+  const edu = tokens.edu('rangkuman', isCompact);
   const conceptColor = tokens.color(concept.color);
 
   return (
@@ -157,7 +159,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
       className="flex gap-3"
       style={{
         position: 'relative',
-        ...tokens.iosEntranceStyle(index, 'slideIn'),
+        ...edu.entrance(index, 'slideUp'),
       }}
     >
       {/* Timeline column: vertical line + numbered circle */}
@@ -176,7 +178,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: isCompact ? '10px' : '12px',
+            ...edu.micro(),
             fontWeight: 900,
             color: tokens.color('bg'),
             zIndex: 1,
@@ -207,9 +209,9 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
           background: tokens.colorAlpha(concept.color, 0.06),
           border: `1px solid ${tokens.colorAlpha(concept.color, 0.15)}`,
           borderRadius: tokens.radius('xl') + 'px',
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
           boxShadow: tokens.raw.shadow.card,
-          ...tokens.iosTransitionStyle('background-color, border-color, color', 'fast'),
+          ...edu.transition('background-color, border-color, color', 'fast'),
           marginBottom: isLast ? 0 : (isCompact ? '6px' : '10px'),
         }}
       >
@@ -223,8 +225,9 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
           <RichText content={concept.title ?? ''}
             className="font-extrabold min-w-0"
             style={{
+              ...edu.bodyLg(),
+              fontWeight: 700,
               color: conceptColor,
-              fontSize: isCompact ? '11px' : '13px',
               wordBreak: 'break-word',
             }}
           />
@@ -234,11 +237,10 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
         <RichText content={concept.body ?? ''}
           className="leading-relaxed"
           style={{
-            fontSize: isCompact ? '12px' : '12px',
+            ...edu.body(),
             color: tokens.muted(0.85),
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
-            lineHeight: 1.6,
           }}
         />
       </div>
@@ -255,6 +257,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
   tokens: TokenResolver;
   isCompact: boolean;
 }) {
+  const edu = tokens.edu('rangkuman', isCompact);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
@@ -271,8 +274,8 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
               border: `1px solid ${isOpen ? tokens.colorAlpha(concept.color, 0.3) : tokens.colorAlpha(concept.color, 0.12)}`,
               background: isOpen ? tokens.colorAlpha(concept.color, 0.08) : tokens.colorAlpha(concept.color, 0.03),
               overflow: 'hidden',
-              ...tokens.iosEntranceStyle(i, 'slideIn'),
-              ...tokens.iosTransitionStyle('background-color, border-color, color', 'fast'),
+              ...edu.entrance(i, 'slideUp'),
+              ...edu.transition('background-color, border-color, color', 'fast'),
             }}
           >
             {/* Accordion header */}
@@ -284,7 +287,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 display: 'flex',
                 alignItems: 'center',
                 gap: isCompact ? '8px' : '10px',
-                ...tokens.iosNestedPadding(isCompact),
+                ...edu.nestedPadding(),
                 background: 'none',
                 border: 'none',
                 textAlign: 'left',
@@ -308,10 +311,10 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: isCompact ? '11px' : '11px',
+                  ...edu.micro(),
                   fontWeight: 900,
                   color: isOpen ? tokens.color('bg') : conceptColor,
-                  ...tokens.iosTransitionStyle('background-color, border-color, color, transform', 'fast'),
+                  ...edu.transition('background-color, border-color, color, transform', 'fast'),
                 }}
               >
                 {i + 1}
@@ -319,7 +322,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
 
               {/* Icon */}
               {concept.icon && (
-                <span className="flex-shrink-0" style={{ fontSize: isCompact ? '12px' : '15px' }}>
+                <span className="flex-shrink-0" style={{ fontSize: edu.body().fontSize }}>
                   {concept.icon}
                 </span>
               )}
@@ -328,8 +331,9 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
               <span
                 className="font-bold min-w-0 flex-1"
                 style={{
+                  ...edu.bodyLg(),
+                  fontWeight: 700,
                   color: isOpen ? conceptColor : tokens.color('text'),
-                  fontSize: isCompact ? '12px' : '13px',
                   wordBreak: 'break-word',
                 }}
               >
@@ -356,11 +360,10 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 <RichText content={concept.body ?? ''}
                   className="leading-relaxed"
                   style={{
-                    fontSize: isCompact ? '12px' : '12px',
+                    ...edu.body(),
                     color: tokens.muted(0.85),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
-                    lineHeight: 1.6,
                   }}
                 />
               </div>
@@ -382,6 +385,7 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
   tokens: TokenResolver;
   isCompact: boolean;
 }) {
+  const edu = tokens.edu('rangkuman', isCompact);
   // Variant C — Accordion (has its own internal state)
   if (variant === 'C') {
     return <RangkumanAccordionGroup concepts={concepts} tokens={tokens} isCompact={isCompact} />;
@@ -393,7 +397,7 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
       <div
         className="grid gap-2.5"
         style={{
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
           gridTemplateColumns: isCompact ? '1fr' : (concepts.length <= 2 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))'),
         }}
       >
@@ -414,7 +418,7 @@ function RangkumanConceptList({ concepts, variant, tokens, isCompact }: {
   return (
     <div
       style={{
-        ...tokens.iosCardPadding(isCompact),
+        ...edu.componentPadding(),
       }}
     >
       {concepts.map((concept, i) => (
@@ -486,6 +490,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
   const accentColor = block.accentColor || 'c';
   const accent = tokens.color(accentColor);
   const accentAlpha = (a: number) => tokens.colorAlpha(accentColor, a);
+  const edu = tokens.edu('rangkuman', isCompact);
 
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
@@ -547,7 +552,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
         style={{
           borderLeft: variant === 'B' ? 'none' : `4px solid ${accent}`,
           background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.03)})`,
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
           position: 'relative',
         }}
       >
@@ -585,9 +590,8 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             <h2
               className="font-black leading-tight min-w-0"
               style={{
-                fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '14px' : '1.2rem',
-                color: tokens.color('text'),
+                ...edu.heading(),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -601,7 +605,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           </div>
 
           {block.bsnpRequired && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
             </span>
           )}
@@ -620,9 +624,8 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           <div
             className="mt-2 font-bold"
             style={{
-              fontSize: isCompact ? '11px' : '11px',
+              ...edu.caption(),
               color: accentAlpha(0.5),
-              letterSpacing: '0.05em',
             }}
           >
             Perjalanan Belajar — {concepts.length} Konsep
@@ -634,9 +637,8 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
           <div
             className="mt-2 font-bold"
             style={{
-              fontSize: isCompact ? '11px' : '11px',
+              ...edu.caption(),
               color: accentAlpha(0.5),
-              letterSpacing: '0.05em',
             }}
           >
             Ketuk untuk membuka konsep
@@ -680,7 +682,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
         <div
           style={{
             ...tokens.iosInnerMargin(isCompact), marginTop: 0,
-            ...tokens.iosCardPadding(isCompact),
+            ...edu.componentPadding(),
             background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.05)})`,
             border: `1px solid ${accentAlpha(0.2)}`,
             borderRadius: tokens.radius('xl') + 'px',
@@ -710,7 +712,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
               tag="p"
               className="leading-relaxed italic"
               style={{
-                fontSize: isCompact ? '12px' : '13px',
+                ...edu.body(),
                 color: tokens.color('text'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',

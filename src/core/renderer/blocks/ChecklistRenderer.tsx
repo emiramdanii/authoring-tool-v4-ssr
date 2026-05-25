@@ -26,6 +26,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
+  const edu = tokens.edu('checklist', isCompact);
 
   const items = block.items || [];
   const [checkedState, setCheckedState] = useState<Record<number, boolean>>(() => {
@@ -64,7 +65,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-1">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -81,10 +82,9 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
             {totalCount > 0 && (
               <span
                 style={{
+                  ...edu.micro(),
                   marginLeft: 'auto',
-                  fontSize: isCompact ? '9px' : '10px',
-                  color: tokens.muted(0.6),
-                  fontWeight: 700,
+                  color: edu.mutedText(0.6),
                 }}
               >
                 {checkedCount}/{totalCount}
@@ -97,9 +97,9 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
             <div
               className="font-extrabold mb-3"
               style={{
+                ...edu.heading(),
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -118,13 +118,14 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                   <div
                     className="flex items-center gap-3 rounded-lg transition-[background-color,border-color,opacity]"
                     style={{
-                      ...tokens.iosNestedPadding(isCompact),
+                      ...edu.nestedPadding(),
                       background: isChecked
                         ? accentAlpha(0.1)
-                        : tokens.color('card'),
+                        : edu.cardBg(),
                       border: `1px solid ${isChecked ? accentAlpha(0.25) : accentAlpha(0.1)}`,
                       cursor: interactive ? 'pointer' : 'default',
                       opacity: isChecked ? 0.85 : 1,
+                      ...edu.transition('background-color, border-color, opacity', 'fast'),
                     }}
                     onClick={() => interactive && handleToggle(i)}
                     role={interactive ? 'checkbox' : 'listitem'}
@@ -150,7 +151,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                         background: isChecked
                           ? `linear-gradient(135deg, ${accentColor}, ${accentAlpha(0.7)})`
                           : 'transparent',
-                        ...tokens.iosTransitionStyle('background-color, border-color, color, transform', 'fast'),
+                        ...edu.transition('background-color, border-color, color, transform', 'fast'),
                         boxShadow: isChecked ? `0 2px 6px ${accentAlpha(0.3)}` : 'none',
                       }}
                     >
@@ -176,11 +177,10 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                     <span
                       className={isCompact ? 'canvas-truncate-1' : ''}
                       style={{
-                        fontSize: isCompact ? '12px' : '14px',
-                        lineHeight: 1.5,
-                        color: isChecked ? tokens.muted(0.6) : tokens.color('text'),
+                        ...edu.body(),
+                        color: isChecked ? edu.mutedText(0.6) : edu.textColor(),
                         textDecoration: isChecked ? 'line-through' : 'none',
-                        ...tokens.iosTransitionStyle('color, text-decoration-color', 'fast'),
+                        ...edu.transition('color, text-decoration-color', 'fast'),
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word',
                       }}

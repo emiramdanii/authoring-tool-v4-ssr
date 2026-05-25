@@ -74,6 +74,7 @@ function MotivasiVariantKlasik({
   hookEditor: ReturnType<typeof useInlineEditor>;
   isCompressed?: boolean;
 }) {
+  const edu = tokens.edu('motivasi', isCompact);
   const connections = block.connections || [];
   const visual = block.visual;
   const gradientFrom = visual?.bgGradient?.[0] || 'y';
@@ -102,7 +103,7 @@ function MotivasiVariantKlasik({
         style={{
           borderLeft: `4px solid ${tokens.color(gradientFrom)}`,
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.1)}, ${tokens.colorAlpha(gradientTo, 0.03)})`,
-          ...tokens.iosSectionPadding(isCompact),
+          ...edu.sectionPadding(),
         }}
       >
         <div className="flex items-center justify-between gap-3">
@@ -119,9 +120,8 @@ function MotivasiVariantKlasik({
             <h2
               className="font-black leading-tight min-w-0"
               style={{
-                fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '14px' : '1.2rem',
-                color: tokens.color('text'),
+                ...edu.heading(),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -135,7 +135,7 @@ function MotivasiVariantKlasik({
           </div>
 
           {block.bsnpRequired && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
             </span>
           )}
@@ -154,7 +154,7 @@ function MotivasiVariantKlasik({
       <div
         style={{
           ...tokens.iosInnerMargin(isCompact),
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.12)}, ${tokens.colorAlpha(gradientTo, 0.08)})`,
           border: `2px solid ${tokens.colorAlpha(gradientFrom, 0.25)}`,
           borderRadius: tokens.radius('xl'),
@@ -189,9 +189,8 @@ function MotivasiVariantKlasik({
             <div
               className="font-extrabold uppercase tracking-wider mb-2"
               style={{
+                ...edu.caption(),
                 color: tokens.color(gradientFrom),
-                fontSize: '11px',
-                letterSpacing: '0.08em',
               }}
             >
               Pertanyaan Pemicu
@@ -200,9 +199,9 @@ function MotivasiVariantKlasik({
               {...hookEditor}
               className="font-bold leading-relaxed"
               style={{
-                fontSize: isCompact ? '13px' : '16px',
-                color: tokens.color('text'),
-                fontFamily: tokens.fontFamily('display'),
+                ...edu.bodyLg(),
+                fontWeight: 700,
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -218,9 +217,8 @@ function MotivasiVariantKlasik({
           <div
             className="font-extrabold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
             style={{
+              ...edu.caption(),
               color: tokens.muted(0.85),
-              fontSize: isCompact ? '9px' : '10px',
-              letterSpacing: '0.08em',
             }}
           >
             <Lightbulb size={10} />
@@ -238,15 +236,16 @@ function MotivasiVariantKlasik({
                   borderRadius: tokens.radius('lg') + 'px',
                 }}
               >
-                <span className="flex-shrink-0" style={{ fontSize: isCompact ? '13px' : '15px' }}>
+                <span className="flex-shrink-0" style={{ fontSize: edu.body().fontSize }}>
                   {conn.icon}
                 </span>
                 <div className="min-w-0">
                   <div
                     className="font-extrabold"
                     style={{
+                      ...edu.bodyLg(),
+                      fontWeight: 700,
                       color: tokens.color(conn.color),
-                      fontSize: '12px',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                     }}
@@ -256,7 +255,7 @@ function MotivasiVariantKlasik({
                   <RichText content={conn.description ?? ''}
                     className="leading-relaxed mt-0.5"
                     style={{
-                      fontSize: '12px',
+                      ...edu.body(),
                       color: tokens.muted(0.8),
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
@@ -274,7 +273,7 @@ function MotivasiVariantKlasik({
         <div
           style={{
             ...tokens.iosInnerMargin(isCompact), marginTop: 0,
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: `linear-gradient(90deg, ${tokens.colorAlpha(gradientTo, 0.12)}, ${tokens.colorAlpha(gradientTo, 0.04)})`,
             borderRadius: tokens.radius('xl') + 'px',
             borderLeft: `3px solid ${tokens.color(gradientTo)}`,
@@ -285,7 +284,7 @@ function MotivasiVariantKlasik({
             <RichText content={block.transition ?? ''}
               className="italic leading-relaxed"
               style={{
-                fontSize: isCompact ? '10px' : '12px',
+                ...edu.caption(),
                 color: tokens.color('text'),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
@@ -314,6 +313,7 @@ function MotivasiVariantKartuHook({
   hookEditor: ReturnType<typeof useInlineEditor>;
   isCompressed?: boolean;
 }) {
+  const edu = tokens.edu('motivasi', isCompact);
   const connections = block.connections || [];
   const visual = block.visual;
   const gradientFrom = visual?.bgGradient?.[0] || 'y';
@@ -353,8 +353,8 @@ function MotivasiVariantKartuHook({
             <h2
               className="font-bold leading-tight min-w-0"
               style={{
-                fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '12px' : '14px',
+                ...edu.bodyLg(),
+                fontWeight: 700,
                 color: tokens.muted(0.85),
                 wordBreak: 'break-word',
               }}
@@ -367,7 +367,7 @@ function MotivasiVariantKartuHook({
             </h2>
           </div>
           {block.bsnpRequired && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
               <Shield size={isCompact ? 8 : 10} /> WAJIB
             </span>
           )}
@@ -393,9 +393,9 @@ function MotivasiVariantKartuHook({
             {...hookEditor}
             className="font-bold leading-relaxed"
             style={{
-              fontSize: isCompact ? '15px' : '18px',
-              color: tokens.color('text'),
-              fontFamily: tokens.fontFamily('display'),
+              ...edu.bodyLg(),
+              fontWeight: 700,
+              color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
               textAlign: 'center',
@@ -409,16 +409,15 @@ function MotivasiVariantKartuHook({
       {!isCompressed && connections.length > 0 && (
         <div
           style={{
-            ...tokens.iosSectionPadding(isCompact),
+            ...edu.sectionPadding(),
             borderTop: `1px solid ${tokens.subtleBorder(0.08)}`,
           }}
         >
           <div
             className="font-extrabold uppercase tracking-wider mb-2"
             style={{
+              ...edu.caption(),
               color: tokens.muted(0.85),
-              fontSize: '11px',
-              letterSpacing: '0.08em',
             }}
           >
             Koneksi Pengetahuan
@@ -433,7 +432,7 @@ function MotivasiVariantKartuHook({
                 }}
                 title={conn.description}
               >
-                <span style={{ fontSize: isCompact ? '11px' : '13px' }}>{conn.icon}</span>
+                <span style={{ fontSize: edu.caption().fontSize }}>{conn.icon}</span>
                 <span style={{ fontWeight: 700, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{conn.label}</span>
               </div>
             ))}
@@ -447,7 +446,7 @@ function MotivasiVariantKartuHook({
           style={{
             ...tokens.iosInnerMargin(isCompact),
             marginTop: 0,
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: tokens.colorAlpha(gradientTo, 0.06),
             borderRadius: tokens.radius('sm'),
           }}
@@ -457,7 +456,7 @@ function MotivasiVariantKartuHook({
             <span
               className="italic"
               style={{
-                fontSize: isCompact ? '10px' : '11px',
+                ...edu.caption(),
                 color: tokens.muted(0.85),
               }}
             >
@@ -486,6 +485,7 @@ function MotivasiVariantKutipan({
   hookEditor: ReturnType<typeof useInlineEditor>;
   isCompressed?: boolean;
 }) {
+  const edu = tokens.edu('motivasi', isCompact);
   const visual = block.visual;
   const gradientFrom = visual?.bgGradient?.[0] || 'y';
 
@@ -497,7 +497,7 @@ function MotivasiVariantKutipan({
         boxShadow: tokens.raw.shadow.elevated,
         border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.12)}`,
         animation: 'fadeIn 0.4s ease',
-        ...tokens.iosCardPadding(isCompact),
+        ...edu.componentPadding(),
       }}
     >
       {/* Reading progress indicator */}
@@ -515,8 +515,8 @@ function MotivasiVariantKutipan({
           <h2
             className="font-semibold min-w-0"
             style={{
-              fontFamily: tokens.fontFamily('display'),
-              fontSize: isCompact ? '11px' : '13px',
+              ...edu.bodyLg(),
+              fontWeight: 600,
               color: tokens.muted(0.85),
               wordBreak: 'break-word',
             }}
@@ -529,7 +529,7 @@ function MotivasiVariantKutipan({
           </h2>
         </div>
         {block.bsnpRequired && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ fontSize: '9px', background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
             <Shield size={7} /> WAJIB
           </span>
         )}
@@ -541,9 +541,9 @@ function MotivasiVariantKutipan({
           {...hookEditor}
           className="italic leading-relaxed"
           style={{
-            fontSize: isCompact ? '15px' : '18px',
-            color: tokens.color('text'),
-            fontFamily: tokens.fontFamily('display'),
+            ...edu.bodyLg(),
+            fontWeight: 700,
+            color: edu.textColor(),
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
             lineHeight: 1.7,
@@ -557,7 +557,7 @@ function MotivasiVariantKutipan({
         <div
           style={{
             marginTop: isCompact ? '10px' : '14px',
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: tokens.colorAlpha(gradientFrom, 0.05),
             borderRadius: tokens.radius('sm'),
             borderLeft: `3px solid ${tokens.colorAlpha(gradientFrom, 0.3)}`,
@@ -568,7 +568,7 @@ function MotivasiVariantKutipan({
             <span
               className="italic"
               style={{
-                fontSize: isCompact ? '10px' : '11px',
+                ...edu.caption(),
                 color: tokens.muted(0.85),
               }}
             >

@@ -63,14 +63,15 @@ function VariantAKlasik({
   scores: ScoreEntry[];
   resetAllScores: () => void;
 }) {
+  const edu = tokens.edu('hasil', isCompact);
   return (
     <div className="relative flex flex-col items-center justify-center text-center overflow-hidden"
-      style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...tokens.iosCardPadding(isCompact) }}>
+      style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...edu.componentPadding() }}>
       {/* ── Performance Tier Badge ──────────────── */}
       <div className="mb-4">
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold"
           style={{
-            fontSize: isCompact ? '11px' : '12px',
+            ...edu.micro(),
             background: tokens.accentBg(tierColor, 0.1),
             color: tokens.color(tierColor),
             border: `1px solid ${tokens.colorAlpha(tierColor, 0.25)}`,
@@ -101,7 +102,7 @@ function VariantAKlasik({
                 style={{ color: tokens.color(tierColor) }}>
                 {displayPct}%
               </div>
-              <div className="text-[10px] font-bold" style={{ color: tokens.muted(0.85) }}>
+              <div style={{ ...edu.micro(), color: edu.mutedText(0.85) }}>
                 {displayScore}/{displayMax} poin
               </div>
             </div>
@@ -120,7 +121,7 @@ function VariantAKlasik({
       <InlineTextEditor
         {...subtitleEditor}
         className={`mt-1 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: tokens.iosSubtitleWidth('coverCentered') }}
+        style={{ ...edu.body(), color: edu.mutedText(0.8), wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: tokens.iosSubtitleWidth('coverCentered') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -133,7 +134,7 @@ function VariantAKlasik({
             boxShadow: tokens.raw.shadow.card,
           }}>
           <CheckCircle2 size={14} className="inline mb-0.5" style={{ color: tokens.color('g') }} />
-          <div className="font-extrabold" style={{ color: tokens.color('g'), fontSize: isCompact ? '9px' : '11px' }}>Benar</div>
+          <div className="font-extrabold" style={{ color: tokens.color('g'), ...edu.micro() }}>Benar</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('g') }}>
             {scores.filter(s => s.completed).length}
           </div>
@@ -145,7 +146,7 @@ function VariantAKlasik({
             boxShadow: tokens.raw.shadow.card,
           }}>
           <Star size={14} className="inline mb-0.5" style={{ color: tokens.color('y') }} />
-          <div className="font-extrabold" style={{ color: tokens.color('y'), fontSize: isCompact ? '9px' : '11px' }}>Skor</div>
+          <div className="font-extrabold" style={{ color: tokens.color('y'), ...edu.micro() }}>Skor</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('y') }}>{displayScore}</div>
         </div>
         <div className={`${isCompact ? 'px-3 py-1.5' : 'px-4 py-2.5'} rounded-xl text-center ${isCompact ? 'min-w-[50px]' : 'min-w-[70px]'}`}
@@ -155,7 +156,7 @@ function VariantAKlasik({
             boxShadow: tokens.raw.shadow.card,
           }}>
           <Target size={14} className="inline mb-0.5" style={{ color: tokens.color('c') }} />
-          <div className="font-extrabold" style={{ color: tokens.color('c'), fontSize: isCompact ? '9px' : '11px' }}>Maks</div>
+          <div className="font-extrabold" style={{ color: tokens.color('c'), ...edu.micro() }}>Maks</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('c') }}>{displayMax}</div>
         </div>
       </div>
@@ -167,12 +168,12 @@ function VariantAKlasik({
           border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
           borderLeft: `3px solid ${tokens.color(tierColor)}`,
           boxShadow: tokens.raw.shadow.card,
-          ...tokens.iosNestedPadding(isCompact),
+          ...edu.nestedPadding(),
           maxWidth: tokens.iosSubtitleWidth('coverCentered'),
         }}>
         <div className="flex items-start gap-2">
           <Sparkles size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
-          <div className={`leading-relaxed text-left ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ fontSize: '12px', color: tokens.muted(0.8) }}>
+          <div className={`leading-relaxed text-left ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ ...edu.caption(), color: edu.mutedText(0.8) }}>
             {displayPct >= 90
               ? 'Kamu menguasai materi dengan sangat baik! Pertahankan prestasimu dan terus belajar!'
               : displayPct >= 75
@@ -187,11 +188,11 @@ function VariantAKlasik({
       {/* ── Tier progress indicator badges ────────────────────────── */}
       <div className="mt-3 flex gap-2">
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-          style={{ fontSize: '10px', background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
+          style={{ ...edu.micro(), background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
           <TrendingUp size={10} /> Level {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
         </span>
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-          style={{ fontSize: '10px', background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
+          style={{ ...edu.micro(), background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
           <Award size={10} /> {scores.filter(s => s.completed).length} Aktivitas
         </span>
       </div>
@@ -211,7 +212,7 @@ function VariantAKlasik({
               }}
               aria-label="Ulangi semua"
               style={{
-                fontSize: '13px',
+                ...edu.body(),
                 background: tokens.color('y'),
                 color: tokens.color('bg'),
                 boxShadow: tokens.raw.shadow.card,
@@ -238,6 +239,7 @@ function VariantBMajalah({
   scores: ScoreEntry[];
   resetAllScores: () => void;
 }) {
+  const edu = tokens.edu('hasil', isCompact);
   const motivationalText = displayPct >= 90
     ? 'Kamu menguasai materi dengan sangat baik! Pertahankan prestasimu dan terus belajar!'
     : displayPct >= 75
@@ -247,12 +249,12 @@ function VariantBMajalah({
         : 'Jangan menyerah! Pelajari kembali materi dan coba lagi. Kamu pasti bisa!';
 
   return (
-    <div className="relative overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...tokens.iosCardPadding(isCompact) }}>
+    <div className="relative overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...edu.componentPadding() }}>
       {/* ── Header: Tier badge + Title side by side ──────────────── */}
       <div className="flex items-center gap-3 mb-4">
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold"
           style={{
-            fontSize: '11px',
+            ...edu.micro(),
             background: tokens.accentBg(tierColor, 0.1),
             color: tokens.color(tierColor),
             border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
@@ -275,7 +277,7 @@ function VariantBMajalah({
       <InlineTextEditor
         {...subtitleEditor}
         className={`mb-4 max-w-full ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ fontSize: '13px', color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.body(), color: edu.mutedText(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik subtitle..."
       />
 
@@ -295,10 +297,10 @@ function VariantBMajalah({
             style={{
               width: `${displayPct}%`,
               background: tokens.color(tierColor),
-              ...tokens.iosTransitionStyle('width', 'slow'),
+              ...edu.transition('width', 'slow'),
             }} />
         </div>
-        <div className="text-[10px] mt-1 font-bold" style={{ color: tokens.muted(0.5) }}>
+        <div style={{ ...edu.micro(), color: edu.mutedText(0.5), marginTop: '4px' }}>
           {displayScore} dari {displayMax} poin
         </div>
       </div>
@@ -312,7 +314,7 @@ function VariantBMajalah({
           }}>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
-            <span className="font-extrabold text-[10px]" style={{ color: tokens.color('g') }}>Benar</span>
+            <span className="font-extrabold" style={{ color: tokens.color('g'), ...edu.micro() }}>Benar</span>
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('g') }}>
             {scores.filter(s => s.completed).length}
@@ -325,7 +327,7 @@ function VariantBMajalah({
           }}>
           <div className="flex items-center gap-1.5">
             <Star size={12} style={{ color: tokens.color('y') }} />
-            <span className="font-extrabold text-[10px]" style={{ color: tokens.color('y') }}>Skor</span>
+            <span className="font-extrabold" style={{ color: tokens.color('y'), ...edu.micro() }}>Skor</span>
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('y') }}>{displayScore}</div>
         </div>
@@ -336,7 +338,7 @@ function VariantBMajalah({
           }}>
           <div className="flex items-center gap-1.5">
             <Target size={12} style={{ color: tokens.color('c') }} />
-            <span className="font-extrabold text-[10px]" style={{ color: tokens.color('c') }}>Maks</span>
+            <span className="font-extrabold" style={{ color: tokens.color('c'), ...edu.micro() }}>Maks</span>
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('c') }}>{displayMax}</div>
         </div>
@@ -347,11 +349,11 @@ function VariantBMajalah({
         {/* Left: Level badges */}
         <div className="flex flex-col gap-1.5 flex-shrink-0">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-            style={{ fontSize: '10px', background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
+            style={{ ...edu.micro(), background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
             <TrendingUp size={10} /> {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
-            style={{ fontSize: '10px', background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
+            style={{ ...edu.micro(), background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
             <Award size={10} /> {scores.filter(s => s.completed).length} Aktivitas
           </span>
         </div>
@@ -362,11 +364,11 @@ function VariantBMajalah({
             background: tokens.accentBg(tierColor, 0.04),
             border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
             borderLeft: `3px solid ${tokens.color(tierColor)}`,
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
           }}>
           <div className="flex items-start gap-2">
             <Sparkles size={13} className="flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
-            <div className="leading-relaxed text-left" style={{ fontSize: '12px', color: tokens.muted(0.8) }}>
+            <div className="leading-relaxed text-left" style={{ ...edu.caption(), color: edu.mutedText(0.8) }}>
               {motivationalText}
             </div>
           </div>
@@ -388,7 +390,7 @@ function VariantBMajalah({
               }}
               aria-label="Ulangi semua"
               style={{
-                fontSize: '12px',
+                ...edu.body(),
                 background: tokens.color('y'),
                 color: tokens.color('bg'),
                 boxShadow: tokens.raw.shadow.card,
@@ -415,6 +417,7 @@ function VariantCRingkas({
   scores: ScoreEntry[];
   resetAllScores: () => void;
 }) {
+  const edu = tokens.edu('hasil', isCompact);
   const motivationalText = displayPct >= 90
     ? 'Luar biasa! Pertahankan!'
     : displayPct >= 75
@@ -424,11 +427,12 @@ function VariantCRingkas({
         : 'Terus berlatih, kamu pasti bisa!';
 
   return (
-    <div className="relative overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...tokens.iosCardPadding(isCompact) }}>
+    <div className="relative overflow-hidden" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...edu.componentPadding() }}>
       {/* ── Inline: Tier badge + Percentage + Title ──────────────── */}
       <div className="flex items-center gap-2 mb-1">
-        <span className="px-2 py-0.5 rounded-md font-bold text-[11px]"
+        <span className="px-2 py-0.5 rounded-md font-bold"
           style={{
+            ...edu.micro(),
             background: tokens.accentBg(tierColor, 0.1),
             color: tokens.color(tierColor),
             border: `1px solid ${tokens.colorAlpha(tierColor, 0.25)}`,
@@ -453,12 +457,12 @@ function VariantCRingkas({
       <InlineTextEditor
         {...subtitleEditor}
         className="canvas-truncate-2 max-w-full"
-        style={{ fontSize: '11px', color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.caption(), color: edu.mutedText(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik subtitle..."
       />
 
       {/* ── Score breakdown as simple inline text ─────────────────── */}
-      <div className="mt-2 flex items-center gap-3 text-[10px] font-bold" style={{ color: tokens.muted(0.85) }}>
+      <div className="mt-2 flex items-center gap-3" style={{ ...edu.micro(), color: edu.mutedText(0.85), fontWeight: 700 }}>
         <span className="flex items-center gap-1">
           <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
           <span style={{ color: tokens.color('g') }}>{scores.filter(s => s.completed).length}</span> benar
@@ -481,7 +485,7 @@ function VariantCRingkas({
       </div>
 
       {/* ── Mini motivational text ────────────────────────────────── */}
-      <div className="mt-2 text-[11px]" style={{ color: tokens.muted(0.85) }}>
+      <div className="mt-2" style={{ ...edu.caption(), color: edu.mutedText(0.85) }}>
         {motivationalText}
       </div>
 
@@ -500,7 +504,7 @@ function VariantCRingkas({
             }}
             aria-label="Ulangi semua"
             style={{
-              fontSize: '10px',
+              ...edu.micro(),
               background: tokens.accentBg('y', 0.1),
               color: tokens.color('y'),
               border: `1px solid ${tokens.colorAlpha('y', 0.25)}`,
@@ -522,6 +526,7 @@ function ActivityBreakdown({
   tokens: TokenResolver; isCompact: boolean; tierColor: string;
   scores: ScoreEntry[];
 }) {
+  const edu = tokens.edu('hasil', isCompact);
   const [expanded, setExpanded] = React.useState(true);
 
   // Group scores by pageIndex
@@ -568,7 +573,7 @@ function ActivityBreakdown({
         className={`flex items-center gap-2 w-full mb-2 ${tokens.iosAccordionTw()}`}
         type="button"
       >
-        <span className="font-extrabold text-[11px] uppercase tracking-wider" style={{ color: tokens.color(tierColor) }}>
+        <span className="font-extrabold uppercase tracking-wider" style={{ ...edu.micro(), color: tokens.color(tierColor) }}>
           Skor Per Aktivitas
         </span>
         {expanded
@@ -600,19 +605,19 @@ function ActivityBreakdown({
                 {/* Label + bar */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[10px] font-bold truncate" style={{ color: tokens.color('text'), maxWidth: '140px' }}>{act.label}</span>
-                    <span className="text-[10px] font-black flex-shrink-0" style={{ color: tokens.color(barColor) }}>{act.pct}%</span>
+                    <span className="font-bold truncate" style={{ ...edu.micro(), color: tokens.color('text'), maxWidth: '140px' }}>{act.label}</span>
+                    <span className="font-black flex-shrink-0" style={{ ...edu.micro(), color: tokens.color(barColor) }}>{act.pct}%</span>
                   </div>
                   <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: tokens.subtleBg(0.06) }}>
                     <div className="h-full rounded-full" style={{
                       width: `${act.pct}%`,
                       background: tokens.color(barColor),
-                      ...tokens.iosTransitionStyle('width', 'slow'),
+                      ...edu.transition('width', 'slow'),
                     }} />
                   </div>
                 </div>
                 {/* Score */}
-                <span className="text-[9px] font-bold flex-shrink-0" style={{ color: tokens.muted(0.5) }}>{act.score}/{act.maxScore}</span>
+                <span className="font-bold flex-shrink-0" style={{ ...edu.micro(), color: edu.mutedText(0.5) }}>{act.score}/{act.maxScore}</span>
               </div>
             );
           })}

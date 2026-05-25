@@ -10,6 +10,7 @@ import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { IOS_SPACING } from '../../themes/ios-visual-contract';
+import type { EduRenderingContext } from '../../edu/EduRenderingContext';
 
 // ═══════════════════════════════════════════════════════════════════
 // KUIS RENDERER — Premium Quiz with Full Visual FX + Variant A/B/C
@@ -70,6 +71,7 @@ function VariantSelector({
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════
 // ── Variant B: Kartu — standalone card with larger text & single column ──
 function KuisVariantKartu({
   q,
@@ -82,6 +84,7 @@ function KuisVariantKartu({
   questionEditor,
   explanationEditor,
   onAnswer,
+  edu,
 }: {
   q: NonNullable<KuisBlock['questions']>[number];
   current: number;
@@ -93,6 +96,7 @@ function KuisVariantKartu({
   questionEditor: ReturnType<typeof useInlineEditor>;
   explanationEditor: ReturnType<typeof useInlineEditor>;
   onAnswer: (current: number, i: number) => void;
+  edu: EduRenderingContext;
 }) {
   const isAnswered = answers[current] !== undefined;
 
@@ -100,8 +104,8 @@ function KuisVariantKartu({
     <div
       className="rounded-2xl"
       style={{
-        ...tokens.iosKuisPadding(isCompact),
-        ...tokens.cardStyle(),
+        ...edu.componentPadding(),
+        ...edu.cardStyle(),
         overflow: 'hidden',
         position: 'relative',
       }}
@@ -110,7 +114,7 @@ function KuisVariantKartu({
       <InlineTextEditor
         {...questionEditor}
         className={`font-bold leading-relaxed mb-5 ${isCompact ? 'canvas-truncate-2' : ''}`}
-        style={{ ...tokens.iosTypography('body', { fontWeight: 700 }), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.bodyLg(), fontWeight: 700, wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik pertanyaan..."
       />
 
@@ -136,14 +140,14 @@ function KuisVariantKartu({
                 aria-pressed={answers[current] === i}
                 className={`p-4 rounded-xl font-bold text-left min-w-0 ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
-                  ...tokens.iosTypography('body', { fontWeight: 700 }),
+                  ...edu.bodyLg(), fontWeight: 700,
                   background: bg,
                   border: `1px solid ${bdr}`,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                   color: tokens.color('text'),
                   cursor: isAnswered ? 'default' : 'pointer',
-                  ...tokens.iosTransitionStyle('background-color, border-color, transform', 'standard'),
+                  ...edu.transition('background-color, border-color, transform', 'standard'),
                 }}
               >
                 {opt}
@@ -156,11 +160,11 @@ function KuisVariantKartu({
       {isAnswered && (
         <div className="mt-4 p-4 rounded-xl leading-relaxed ios-entrance-reveal"
           style={{
-            ...tokens.iosTypography('footnote', {}),
+            ...edu.body(),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
               : tokens.accentBg('r', 0.06),
-            borderLeft: tokens.accentStripe(answers[current] === q.ans ? 'g' : 'r', 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
             color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             overflow: 'hidden',
             wordBreak: 'break-word',
@@ -192,6 +196,7 @@ function KuisVariantRingkas({
   questionEditor,
   explanationEditor,
   onAnswer,
+  edu,
 }: {
   q: NonNullable<KuisBlock['questions']>[number];
   current: number;
@@ -205,6 +210,7 @@ function KuisVariantRingkas({
   questionEditor: ReturnType<typeof useInlineEditor>;
   explanationEditor: ReturnType<typeof useInlineEditor>;
   onAnswer: (current: number, i: number) => void;
+  edu: EduRenderingContext;
 }) {
   const isAnswered = answers[current] !== undefined;
 
@@ -212,8 +218,8 @@ function KuisVariantRingkas({
     <div
       className="rounded-xl"
       style={{
-        ...tokens.iosKuisPadding(isCompact),
-        ...tokens.cardStyle(),
+        ...edu.componentPadding(),
+        ...edu.cardStyle(),
         overflow: 'hidden',
         position: 'relative',
       }}
@@ -225,12 +231,12 @@ function KuisVariantRingkas({
             className="h-full rounded-full"
             style={{
               width: (totalAnswered / questionsLength) * 100 + '%',
-              background: tokens.color('y'),
-              ...tokens.iosTransitionStyle('width', 'slow'),
+              background: edu.accent(),
+              ...edu.transition('width', 'slow'),
             }}
           />
         </div>
-        <span style={{ ...tokens.iosTypography('caption2', {}), color: tokens.muted(0.65) }}>
+        <span style={{ ...edu.micro(), color: tokens.muted(0.65) }}>
           {current + 1}/{questionsLength}
         </span>
       </div>
@@ -239,7 +245,7 @@ function KuisVariantRingkas({
       <InlineTextEditor
         {...questionEditor}
         className={`font-bold leading-snug mb-2 ${isCompact ? 'canvas-truncate-1' : ''}`}
-        style={{ ...tokens.iosTypography('caption1', { fontWeight: 700 }), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.body(), fontWeight: 700, wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik pertanyaan..."
       />
 
@@ -265,7 +271,7 @@ function KuisVariantRingkas({
                 aria-pressed={answers[current] === i}
                 className={`px-3 py-1.5 rounded-full font-bold ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
-                  ...tokens.iosTypography('caption1', { fontWeight: 700 }),
+                  ...edu.caption(), fontWeight: 700,
                   background: bg,
                   border: `1px solid ${bdr}`,
                   overflow: 'hidden',
@@ -274,7 +280,7 @@ function KuisVariantRingkas({
                   color: tokens.color('text'),
                   cursor: isAnswered ? 'default' : 'pointer',
                   whiteSpace: 'nowrap',
-                  ...tokens.iosTransitionStyle('background-color, border-color, transform', 'standard'),
+                  ...edu.transition('background-color, border-color, transform', 'standard'),
                 }}
               >
                 {opt}
@@ -287,11 +293,11 @@ function KuisVariantRingkas({
       {isAnswered && (
         <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug ios-entrance-reveal"
           style={{
-            ...tokens.iosTypography('footnote', {}),
+            ...edu.body(),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
               : tokens.accentBg('r', 0.06),
-            borderLeft: tokens.accentStripe(answers[current] === q.ans ? 'g' : 'r', 2),
+            borderLeft: `${edu.stripeWidth()}px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
             color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             overflow: 'hidden',
             wordBreak: 'break-word',
@@ -314,6 +320,9 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
   const [current, setCurrent] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
   const [showExplanation, setShowExplanation] = React.useState(false);
+
+  // ── Educational design tokens ──────────────────────────────
+  const edu = tokens.edu('kuis', isCompact);
 
   // ── Variant state ───────────────────────────────────────────
   const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
@@ -436,31 +445,31 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               background: tokens.accentBg(tierColor, 0.08),
               border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
             }}>
-            <span style={{ ...tokens.iosTypography('title1', {}), color: tokens.color(tierColor) }}>{pct}%</span>
-            <span style={{ ...tokens.iosTypography('caption1', {}), color: tokens.muted(0.65) }}>{totalCorrect}/{questions.length}</span>
+            <span style={{ ...edu.title(), color: tokens.color(tierColor) }}>{pct}%</span>
+            <span style={{ ...edu.caption(), color: tokens.muted(0.65) }}>{totalCorrect}/{questions.length}</span>
           </div>
 
           {/* Title */}
-          <div className="mb-1" style={{ ...tokens.iosTypography('title3', {}), color: tokens.color('text') }}>
+          <div className="mb-1" style={{ ...edu.heading(), color: edu.textColor() }}>
             {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
           </div>
-          <div className="mb-4" style={{ ...tokens.iosTypography('subheadline', {}), color: tokens.muted(0.65) }}>
+          <div className="mb-4" style={{ ...edu.body(), color: edu.mutedText(0.65) }}>
             Skor kamu: {totalCorrect}/{questions.length} benar
           </div>
 
           {/* Score breakdown */}
           <div className="flex justify-center gap-4 mb-4">
-            <div className="flex items-center gap-1.5" style={{ ...tokens.iosTypography('caption1', {}), color: tokens.color('g') }}>
+            <div className="flex items-center gap-1.5" style={{ ...edu.caption(), color: tokens.color('g') }}>
               <CheckCircle2 size={14} /> {totalCorrect} benar
             </div>
-            <div className="flex items-center gap-1.5" style={{ ...tokens.iosTypography('caption1', {}), color: tokens.color('r') }}>
+            <div className="flex items-center gap-1.5" style={{ ...edu.caption(), color: tokens.color('r') }}>
               <XCircle size={14} /> {questions.length - totalCorrect} salah
             </div>
           </div>
 
           {/* Best streak */}
           {currentStreak >= 2 && (
-            <div className="mb-4 flex items-center justify-center gap-1.5" style={{ ...tokens.iosTypography('caption1', {}), color: tokens.color('o') }}>
+            <div className="mb-4 flex items-center justify-center gap-1.5" style={{ ...edu.caption(), color: tokens.color('o') }}>
               <Flame size={14} /> Streak: {currentStreak}x
             </div>
           )}
@@ -470,7 +479,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               <button className={`rounded-xl font-bold ${tokens.iosButtonTw(true)}`}
                 onClick={() => { setAnswers({}); setCurrent(0); hasReportedRef.current = false; playSound('click'); }}
                 style={{
-                  ...tokens.iosTypography('callToAction', {}),
+                  ...edu.bodyLg(), fontWeight: 700,
                   ...tokens.iosButtonPadding('md'),
                   background: tokens.accentBg(tierColor, 0.1),
                   color: tokens.color(tierColor),
@@ -515,7 +524,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
             }}>
             <Gamepad2 size={14} style={{ color: tokens.color('y') }} />
           </div>
-          <div className="font-extrabold min-w-0" style={{ ...tokens.iosTypography('footnote', { fontWeight: 800 }), color: tokens.color('y') }}>
+          <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent() }}>
             <InlineTextEditor
               {...titleEditor}
               className="font-extrabold"
@@ -531,7 +540,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                 border: `1px solid ${tokens.colorAlpha('o', 0.2)}`,
               }}>
               <Flame size={12} style={{ color: tokens.color('o') }} />
-              <span style={{ ...tokens.iosTypography('caption2', {}), color: tokens.color('o') }}>
+              <span style={{ ...edu.micro(), color: tokens.color('o') }}>
                 {currentStreak}x Streak
               </span>
             </div>
@@ -550,8 +559,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
         <div className="h-full rounded-full"
           style={{
             width: (totalAnswered / questions.length) * 100 + '%',
-            background: tokens.color('y'),
-            ...tokens.iosTransitionStyle('width', 'slow'),
+            background: edu.accent(),
           }} />
       </div>
       )}
@@ -562,8 +570,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       {effectiveVariant === 'A' && (
         <div className="rounded-xl"
           style={{
-            ...tokens.iosKuisPadding(isCompact),
-            ...tokens.cardStyle(),
+            ...edu.componentPadding(),
+            ...edu.cardStyle(),
             overflow: 'hidden',
             position: 'relative',
           }}>
@@ -571,7 +579,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           <InlineTextEditor
             {...questionEditor}
             className={`font-bold leading-relaxed mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`}
-            style={{ ...tokens.iosTypography('footnote', { fontWeight: 700 }), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+            style={{ ...edu.body(), fontWeight: 700, wordBreak: 'break-word', overflowWrap: 'break-word' }}
             placeholder="Ketik pertanyaan..."
           />
 
@@ -598,14 +606,14 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                     aria-pressed={answers[current] === i}
                     className={`p-2.5 rounded-xl font-bold text-center min-w-0 ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                     style={{
-                      ...tokens.iosTypography('subheadline', { fontWeight: 700 }),
+                      ...edu.bodyLg(), fontWeight: 700,
                       background: bg,
                       border: `1px solid ${bdr}`,
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                       color: tokens.color('text'),
                       cursor: isAnswered ? 'default' : 'pointer',
-                      ...tokens.iosTransitionStyle('background-color, border-color, transform', 'standard'),
+                      ...edu.transition('background-color, border-color, transform', 'standard'),
                     }}>
                     {opt}
                   </button>
@@ -618,11 +626,11 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           {answers[current] !== undefined && (
             <div className="mt-3 p-3 rounded-xl leading-relaxed ios-entrance-reveal"
               style={{
-                ...tokens.iosTypography('footnote', {}),
+                ...edu.caption(),
                 background: answers[current] === q.ans
                   ? tokens.accentBg('g', 0.06)
                   : tokens.accentBg('r', 0.06),
-                borderLeft: tokens.accentStripe(answers[current] === q.ans ? 'g' : 'r', 3),
+                borderLeft: `${edu.stripeWidth()}px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
                 color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
                 overflow: 'hidden',
                 wordBreak: 'break-word',
@@ -652,6 +660,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           questionEditor={questionEditor}
           explanationEditor={explanationEditor}
           onAnswer={handleAnswer}
+          edu={edu}
         />
       )}
 
@@ -670,6 +679,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           questionEditor={questionEditor}
           explanationEditor={explanationEditor}
           onAnswer={handleAnswer}
+          edu={edu}
         />
       )}
 
@@ -679,11 +689,11 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
             aria-label="Lanjut ke soal berikutnya"
             onClick={() => { setCurrent(current + 1); playSound('click'); }}
             style={{
-              ...tokens.iosTypography('callToAction', {}),
+              ...edu.bodyLg(), fontWeight: 700,
               ...tokens.iosButtonPadding('md'),
-              background: tokens.accentBg('y', 0.1),
-              color: tokens.color('y'),
-              border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,
+              background: edu.accentAlpha(0.1),
+              color: edu.accent(),
+              border: `1px solid ${edu.accentAlpha(0.2)}`,
             }}>
             Lanjut →
           </button>

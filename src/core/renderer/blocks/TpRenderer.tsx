@@ -29,6 +29,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
   });
 
   const allItems = block.items || [];
+  const edu = tokens.edu('tp', isCompact);
 
   // ── "Sudah Paham" tracking (interactive mode only) ──────────
   const [understood, setUnderstood] = React.useState<Set<number>>(new Set());
@@ -63,7 +64,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
           <Target size={16} style={{ color: tokens.color('y') }} />
         </div>
         <h2 className="font-black leading-tight min-w-0"
-          style={{ fontSize: isCompact ? '16px' : '1.6rem', fontFamily: tokens.fontFamily('display'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          style={{ ...edu.heading(), color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
@@ -83,9 +84,8 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
             style={{
               background: tokens.colorAlpha('g', 0.1),
               border: `1px solid ${tokens.colorAlpha('g', 0.25)}`,
-              fontSize: '12px',
+              ...edu.micro(),
               color: tokens.color('g'),
-              fontWeight: 700,
             }}>
             🎉 Semua tujuan sudah dipahami!
           </div>
@@ -121,13 +121,13 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
                     background: tokens.colorAlpha(item.color, 0.2),
                     color: tokens.color(item.color),
                     boxShadow: '0 4px 12px ' + tokens.colorAlpha(item.color, 0.25),
-                    fontSize: isCompact ? '11px' : '12px',
+                    ...edu.micro(),
                   }}>
                   {item.num}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-extrabold" style={{ color: tokens.color(item.color), fontSize: isCompact ? '12px' : '14px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.verb}</div>
-                  <div className={`leading-relaxed mt-0.5 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ color: tokens.muted(0.85), fontSize: isCompact ? '12px' : '13px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
+                  <div className="font-extrabold" style={{ ...edu.caption(), color: tokens.color(item.color), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.verb}</div>
+                  <div className={`leading-relaxed mt-0.5 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.desc}</div>
                 </div>
                 {/* "Sudah Paham" checkbox — interactive/preview mode only */}
                 {interactive && !isCompact && (
@@ -137,7 +137,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
                     style={{
                       background: understood.has(i) ? tokens.colorAlpha('g', 0.15) : tokens.colorAlpha('c', 0.06),
                       border: `1px solid ${understood.has(i) ? tokens.colorAlpha('g', 0.3) : tokens.colorAlpha('c', 0.15)}`,
-                      fontSize: '10px',
+                      ...edu.micro(),
                       color: understood.has(i) ? tokens.color('g') : tokens.muted(0.6),
                       cursor: 'pointer',
                     }}
@@ -178,8 +178,8 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
             borderLeft: '4px solid ' + tokens.color('g'),
             borderRadius: tokens.radius('xl') + 'px',
             boxShadow: tokens.raw.shadow.card,
+            ...edu.body(),
             color: tokens.color('text'),
-            fontSize: isCompact ? '11px' : '13px',
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>

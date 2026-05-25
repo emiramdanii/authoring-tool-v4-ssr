@@ -538,6 +538,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Educational entrance animations — calm, no bounce ── */
+@keyframes eduFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes eduSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Cover reveal animation ── */
 @keyframes coverReveal {
   from { opacity: 0; transform: scale(0.96); }

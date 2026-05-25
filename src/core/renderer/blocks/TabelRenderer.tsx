@@ -26,6 +26,7 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
   const colorKey = block.accentColor || 'c';
   const accentColor = tokens.color(colorKey);
   const accentAlpha = (a: number) => tokens.colorAlpha(colorKey, a);
+  const edu = tokens.edu('tabel', isCompact);
 
   const headers = block.headers || [];
   const rows = block.rows || [];
@@ -47,7 +48,7 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -68,9 +69,9 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
             <div
               className="font-extrabold mb-3"
               style={{
+                ...edu.heading(),
                 fontFamily: tokens.fontFamily('display'),
-                fontSize: isCompact ? '13px' : '15px',
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -91,7 +92,6 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
               style={{
                 width: '100%',
                 borderCollapse: 'collapse',
-                fontSize: isCompact ? '11px' : '13px',
               }}
             >
               {/* Header row */}
@@ -101,10 +101,10 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
                     <th
                       key={`tabel-header-${i}`}
                       style={{
-                        ...tokens.iosCardPadding(isCompact),
+                        ...edu.componentPadding(),
+                        ...edu.caption(),
                         textAlign: 'left',
                         fontWeight: 800,
-                        fontSize: isCompact ? '10px' : '12px',
                         letterSpacing: '0.03em',
                         color: tokens.color('bg'),
                         background: `linear-gradient(135deg, ${accentColor}, ${accentAlpha(0.8)})`,
@@ -128,19 +128,19 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
                     key={`tabel-row-${ri}`}
                     style={{
                       background: ri % 2 === 0
-                        ? tokens.color('card')
+                        ? edu.cardBg()
                         : accentAlpha(0.04),
-                      ...tokens.iosTransitionStyle('background-color', 'fast'),
+                      ...edu.transition('background-color', 'fast'),
                     }}
                   >
                     {row.map((cell, ci) => (
                       <td
                         key={`tabel-cell-${ri}-${ci}`}
                         style={{
-                          ...tokens.iosNestedPadding(isCompact),
-                          color: tokens.color('text'),
+                          ...edu.nestedPadding(),
+                          ...edu.body(),
+                          color: edu.textColor(),
                           borderBottom: `1px solid ${accentAlpha(0.1)}`,
-                          lineHeight: 1.6,
                           wordBreak: 'break-word',
                           overflowWrap: 'break-word',
                         }}
