@@ -13,6 +13,9 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: NormaKartuBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
+  // ── Edu rendering context ────────────────────────────────────
+  const edu = tokens.edu('nk-card', isCompact);
+
   const colorMap: Record<string, string> = {
     agama: 'y',
     kesusilaan: 'r',
@@ -69,15 +72,15 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
         </div>
         <div className="min-w-0">
           <PremiumBadge tokens={tokens} accent={colorKey} variant="solid">{block.label}</PremiumBadge>
-          <div className="font-black text-[16px] mt-0.5" style={{ fontFamily: tokens.fontFamily('display'), color }}>
-            <InlineTextEditor {...titleEditor} className="font-black text-[16px]" style={{ color }} />
+          <div className="font-black mt-0.5" style={{ ...edu.heading(), fontFamily: tokens.fontFamily('display'), color }}>
+            <InlineTextEditor {...titleEditor} className="font-black" style={{ color, fontSize: 'inherit', fontFamily: 'inherit' }} />
           </div>
         </div>
       </div>
 
       {/* Definition */}
-      <div className={`leading-relaxed mb-4 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ fontSize: '13px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-        <InlineTextEditor {...definitionEditor} className="text-[11px] leading-relaxed" style={{ overflowWrap: 'break-word' }} placeholder="Ketik definisi..." />
+      <div className={`leading-relaxed mb-4 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+        <InlineTextEditor {...definitionEditor} className="leading-relaxed" style={{ overflowWrap: 'break-word', fontSize: 'inherit' }} placeholder="Ketik definisi..." />
       </div>
 
       {/* Characteristics 2-col — hidden when compressed */}
@@ -90,8 +93,8 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
                 background: tokens.colorAlpha(colorKey, 0.08),
                 border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
               }}>
-              <div className="font-extrabold uppercase tracking-wider mb-1" style={{ fontSize: '12px', color, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.label}</div>
-              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={c.value ?? ''} /></div>
+              <div className="font-extrabold uppercase tracking-wider mb-1" style={{ ...edu.caption(), color, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{c.label}</div>
+              <div className={`leading-relaxed ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ ...edu.body(), color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={c.value ?? ''} /></div>
             </div>
             </MicroInteraction>
           ))}
@@ -108,9 +111,9 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
             borderLeft: '3px solid ' + tokens.color('o'),
             overflow: 'hidden',
           }}>
-          <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ fontSize: '12px', color: tokens.color('o'), wordBreak: 'break-word' }}>{block.sanksi.title}</div>
+          <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ ...edu.caption(), color: tokens.color('o'), wordBreak: 'break-word' }}>{block.sanksi.title}</div>
           {block.sanksi.items.map((s, i) => (
-            <div key={`nk-sanksi-${s.text?.slice(0,8)}-${i}`} className={`flex items-start gap-2 mb-1.5 leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ fontSize: '12px', color: tokens.color('text') }}>
+            <div key={`nk-sanksi-${s.text?.slice(0,8)}-${i}`} className={`flex items-start gap-2 mb-1.5 leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-1' : ''}`} style={{ ...edu.body(), color: edu.textColor() }}>
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: s.dot || color }} />
               <span className="min-w-0" style={{ wordBreak: 'break-word' }}><RichText content={s.text ?? ''} /></span>
             </div>
@@ -124,14 +127,14 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
         <MicroInteraction tokens={tokens} accent={colorKey} effect="bounce">
         <div className="mt-3 p-3 rounded-xl leading-relaxed"
           style={{
-            fontSize: '12px',
+            ...edu.body(),
             background: tokens.colorAlpha(colorKey, 0.08),
             border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
             borderLeft: '3px solid ' + color,
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className={`text-[10px] leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }} placeholder="Ketik contoh..." />
+          <span className="font-extrabold" style={{ color }}>📖 Contoh:</span> <InlineTextEditor {...contohEditor} className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', fontSize: 'inherit' }} placeholder="Ketik contoh..." />
         </div>
         </MicroInteraction>
       )}
@@ -147,9 +150,9 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
             overflow: 'hidden',
           }}>
           <div className="font-extrabold uppercase tracking-wider mb-1.5"
-            style={{ fontSize: '12px', color: tokens.color('r'), wordBreak: 'break-word' }}>{block.pelanggaran.title}</div>
+            style={{ ...edu.caption(), color: tokens.color('r'), wordBreak: 'break-word' }}>{block.pelanggaran.title}</div>
           {block.pelanggaran.items.map((p, i) => (
-            <div key={`nk-pelanggaran-${p.text?.slice(0,8)}-${i}`} className="flex gap-2 mb-1.5 leading-relaxed min-w-0" style={{ fontSize: '12px', color: tokens.color('text') }}>
+            <div key={`nk-pelanggaran-${p.text?.slice(0,8)}-${i}`} className="flex gap-2 mb-1.5 leading-relaxed min-w-0" style={{ ...edu.body(), color: edu.textColor() }}>
               <span className="flex-shrink-0">{p.icon}</span> <span className="min-w-0" style={{ wordBreak: 'break-word' }}><RichText content={p.text ?? ''} /></span>
             </div>
           ))}

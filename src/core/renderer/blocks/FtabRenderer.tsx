@@ -18,7 +18,7 @@ const SchemaBlockRenderer = React.lazy(() =>
 );
 
 /** Inner tab button component so hooks are not called in loops */
-function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, showReadMarker, isRead, isCompact }: {
+function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, showReadMarker, isRead, isCompact, edu }: {
   tab: FtabBlock['tabs'][number];
   tabIndex: number;
   blockId: string;
@@ -28,6 +28,7 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
   showReadMarker?: boolean;
   isRead: boolean;
   isCompact?: boolean;
+  edu: ReturnType<typeof tokens.edu>;
 }) {
   const labelEditor = useInlineEditor({
     blockId,
@@ -43,17 +44,17 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
         isActive ? 'scale-105' : 'opacity-60 hover:opacity-90'
       }`}
       style={{
-        fontSize: '12px',
-        background: isActive ? tokens.color('y') : tokens.subtleBg(0.06),
+        ...edu.caption(),
+        background: isActive ? edu.accent() : tokens.subtleBg(0.06),
         color: isActive ? tokens.color('bg') : tokens.muted(0.6),
-        border: '1px solid ' + (isActive ? tokens.color('y') : tokens.subtleBorder(0.1)),
-        boxShadow: isActive ? '0 0 16px ' + tokens.colorAlpha('y', 0.35) : 'none',
+        border: '1px solid ' + (isActive ? edu.accent() : tokens.subtleBorder(0.1)),
+        boxShadow: isActive ? '0 0 16px ' + edu.accentAlpha(0.35) : 'none',
         overflow: 'hidden',
       }}>
       {tab.icon} <span className={isCompact ? 'canvas-truncate-1' : ''}><InlineTextEditor {...labelEditor} style={{ color: 'inherit', fontSize: 'inherit' }} /></span>
       {showReadMarker && isRead && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black"
-          style={{ background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center font-black"
+          style={{ ...edu.micro(), background: tokens.color('g'), color: tokens.color('bg'), boxShadow: '0 0 8px ' + tokens.colorAlpha('g', 0.5) }}>✓</span>
       )}
     </button>
     </MicroInteraction>
@@ -63,6 +64,9 @@ function FtabButton({ tab, tabIndex, blockId, isActive, onActivate, tokens, show
 export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, tokens, interactive, isCompact, isEditing, compression }: {
   block: FtabBlock; mode: SchemaRenderMode; tokens: TokenResolver; interactive?: boolean; isCompact?: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
+  // ── Edu rendering context ────────────────────────────────────
+  const edu = tokens.edu('ftab', isCompact);
+
   const [activeTab, setActiveTab] = React.useState(0);
   const [readTabs, setReadTabs] = React.useState<Set<number>>(new Set());
 
@@ -107,6 +111,7 @@ export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, toke
             showReadMarker={block.showReadMarker}
             isRead={readTabs.has(i)}
             isCompact={isCompact}
+            edu={edu}
           />
         ))}
       </div>
