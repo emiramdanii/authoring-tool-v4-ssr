@@ -1602,3 +1602,29 @@ Stage Summary:
 - Layout: 8 Learning Sections each with unique atmosphere, not generic cards
 - Interaction: functional motion only, no decorative effects
 - Migration: 5 phases over ~8 weeks
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Generate SILSE Design Spec v2.1 with Learning Scene Model
+
+Work Log:
+- Integrated Learning Scene Model as fundamental architectural unit (Ch.2)
+- Defined 8 Learning Scene Types: Intro, Concept, Example, Practice, Discussion, Reflection, Assessment, Summary
+- Each scene type has: atmosphere, layout grammar, typography, color, density, motion, state lifecycle
+- Added Scene Transition Grammar (8 transition types with animation specs)
+- Added Scene Composition Rules (one focus, atmosphere integrity, progressive density, state visibility, exit clarity, reversibility)
+- Remapped Spatial Layout around Scene Types (Ch.5) instead of generic sections
+- Added Ch.7 Color Semantics per scene type
+- Added Ch.8 Component Grammar with density rules
+- Added Ch.10 10-Step Development Roadmap as dependency chain
+- Updated product positioning: "native platform untuk membuat pengalaman belajar digital"
+- Fixed font typo (YaHeId → YaHei)
+- Regenerated docx, ran TOC placeholder fix, postcheck: 8/9 passed, 0 errors
+
+Stage Summary:
+- Produced: /home/z/my-project/download/SILSE-Educational-Visual-Philosophy-v2.1.docx
+- Key addition: Learning Scene as unit of experience (not slide, not page)
+- 8 Scene Types define the entire design system architecture
+- 10-step roadmap ensures no step is skipped before implementation
+- v2.0 docx also available for reference
