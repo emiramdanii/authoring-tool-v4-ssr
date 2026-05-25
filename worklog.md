@@ -1461,3 +1461,27 @@ Stage Summary:
 - All text now meets edu minimum (18px body, 14px caption, 12px micro)
 - Build: TypeScript clean
 
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Buat SYSTEM_MAP.md, push ke GitHub, refactor block renderers ke edu tokens
+
+Work Log:
+- Analyzed entire project via trace-by-function from entrypoints (page.tsx → AuthoringTool → SchemaEngine → SceneLayoutEngine → SchemaRenderer → BlockRegistry)
+- Created comprehensive SYSTEM_MAP.md with: Project Summary, Core Logic Flow (6 flows), Clean Tree, Module Map (80+ files), Data & Config, External Integrations, Risks/Blind Spots
+- Pushed SYSTEM_MAP.md to GitHub without conflicts
+- Refactored SkenarioRenderer: 12 edits replacing 9-13px hardcoded fonts with edu.body/caption/micro
+- Refactored NormaKartuRenderer: 7 edits, title 16px→edu.heading(), definition/body 12-13px→edu.body()
+- Refactored FtabRenderer: 5 edits, tab buttons 12px→edu.caption(), read marker 10px→edu.micro()
+- Refactored FlashcardRenderer: 11 edits, card text 11-12px→edu.bodyLg()/body(), labels→edu.caption()
+- Refactored TabelAccordionRenderer: 7 edits, row titles 11-13px→edu.bodyLg(), details 10-12px→edu.body()
+- Delegated 10 game renderers refactoring to subagent — 96 font size + 172 color token + 49 mutedText replacements
+- All TypeScript compiles cleanly after each commit
+- Total 4 commits pushed to GitHub
+
+Stage Summary:
+- SYSTEM_MAP.md created at project root — one-shot project navigation
+- 15 block renderers fully migrated to edu tokens (5 content + 10 game)
+- All 39 block renderers now use edu tokens (24 were already migrated in previous sessions)
+- Remaining: Phase 2 (8 educational components with fixed identity), Phase 3 (3 templates), Phase 4 (freeze old presets)
