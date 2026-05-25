@@ -39,6 +39,10 @@ const SchemaBlockRenderer = React.lazy(() =>
 //              self-check hidden behind expand toggle
 //
 // All text is in Indonesian. BSNP = Badan Standar Nasional Pendidikan.
+//
+// EDU MIGRATION: Replaced iosTypography('title3') with edu.heading().
+//   - iosTypography('title3', {fontSize: 16/22}) → edu.heading() (26-32px)
+//   - Hardcoded fontSize: isCompact ? 14/16 : 22 → edu.heading() handles compact
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Variant Selector ─────────────────────────────────────────────
@@ -288,7 +292,8 @@ function MateriVariantKlasik({
               <h2
                 className="font-black leading-tight"
                 style={{
-                  ...tokens.iosTypography('title3', { fontSize: isCompact ? 16 : 22, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+                  ...edu.heading(),
+                  color: tokens.color('text'),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -678,7 +683,8 @@ function MateriVariantMajalah({
           <h2
             className="font-black leading-tight min-w-0"
             style={{
-              ...tokens.iosTypography('title3', { fontSize: isCompact ? 14 : 22, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+              ...edu.heading(),
+              color: tokens.color('text'),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}

@@ -542,7 +542,7 @@ scripts/                        # DevOps scripts
 
 # Risks / Blind Spots
 
-1. **Block renderers belum menggunakan edu tokens** — Mayoritas 40+ block renderers masih hardcoded fontSize (11-15px) dari iOS visual contract. EduRenderingContext sudah ada tapi belum dikonsumsi. Ini adalah pekerjaan tersisa (Phase 1B ROADMAP PEMULIHAN SILSE).
+1. **4 block renderers masih pakai iosTypography()** — Dari 43 renderers, 39 sudah pakai `tokens.edu()`. Yang masih pakai iOS VC: **HeroRenderer** (11 calls, fontSize 9-26px), **CoverRenderer** (4 calls, hero/title1), **MateriSectionRenderer** (2 calls, title3), **KuisRenderer** (1 call, caption1). Hardcoded fontSize juga masih ada di 7 file (PremiumStepNavigator 11/13px, HeroRenderer 9px, CoverRenderer 10/160px, dll).
 
 2. **Dynamic imports** — Beberapa block editor menggunakan dynamic import (module-editors/) yang tidak bisa dipetakan statik. Asumsi: semua tipe blok terdaftar di SceneRegistry.
 
@@ -554,7 +554,7 @@ scripts/                        # DevOps scripts
 
 6. **Schema migration** — `src/core/schema/schema-migration.ts` ada tapi belum ada versioning scheme yang jelas. Perubahan schema di masa depan mungkin perlu migration path.
 
-7. **EduRendererProvider** — Sudah diintegrasikan di PageRenderer tapi belum digunakan oleh block renderers. Gap antara infrastruktur dan konsumsi.
+7. **EduRenderingContext gap** — `tokens.edu(blockType, isCompact)` factory sudah ada di TokenResolver dan dipakai 39/43 renderers. Tapi HeroRenderer dan CoverRenderer (block terbesar & paling terlihat) masih 90% pakai iOS VC. Ini prioritas migrasi tertinggi.
 
 8. **AI response parsing** — Parsing JSON dari LLM response menggunakan regex cleaning. Jika LLM menghasilkan format yang tidak terduga, bisa gagal (ditangani dengan error 422).
 

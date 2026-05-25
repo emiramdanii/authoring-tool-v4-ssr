@@ -19,6 +19,14 @@ import { PremiumBlockWrapper, MicroInteraction } from './PremiumBlockEffects';
 //   C "Bercahaya" — Glowing accent line, centered, subtle animation
 //
 // All text/labels in Indonesian (Bahasa Indonesia).
+//
+// EDU MIGRATION: Replaced iosTypography() with edu tokens.
+//   - iosTypography('title2','title3','hero') → edu.heading()/edu.title()
+//   - iosTypography('caption2','footnote','subheadline') → edu.caption()/edu.body()
+//   - Hardcoded 9-12px badge text → edu.micro()
+//   - iosSectionPadding → edu.sectionPadding()
+//   - iosEntranceStyle → edu.entrance()
+//   - iosIconSize → edu.iconSize()
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Variant Selector ─────────────────────────────────────────────
@@ -64,14 +72,15 @@ function HeroVariantA({
   const accentKey = block.accentColor || 'y';
   const y = tokens.color(accentKey);
   const c = tokens.color('c');
+  const edu = tokens.edu('hero', isCompact);
 
   return (
     <div className="relative overflow-hidden rounded-2xl"
       style={{
         background: `linear-gradient(135deg, ${tokens.colorAlpha(accentKey, 0.15)}, ${tokens.colorAlpha('c', 0.05)})`,
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
-        ...tokens.iosSectionPadding(isCompact),
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        ...edu.sectionPadding(),
+        ...edu.entrance(0, 'fadeIn'),
       }}>
 
       {/* Accent bar */}
@@ -82,7 +91,8 @@ function HeroVariantA({
       <div className="mb-3">
         <div className="inline-flex items-center justify-center rounded-xl"
           style={{
-            ...tokens.iosIconSize(isCompact ? 'md' : 'lg'),
+            width: edu.iconSize('lg'),
+            height: edu.iconSize('lg'),
             background: tokens.colorAlpha(accentKey, 0.15),
             border: `1px solid ${tokens.colorAlpha(accentKey, 0.3)}`,
             fontSize: isCompact ? '18px' : '24px',
@@ -94,14 +104,15 @@ function HeroVariantA({
 
       {/* Meta label */}
       <div className="font-extrabold tracking-widest uppercase mb-1 truncate"
-        style={{ ...tokens.iosTypography('caption2', { color: tokens.colorAlpha(accentKey, 0.7) }), letterSpacing: '0.12em' }}>
+        style={{ ...edu.caption(), color: tokens.colorAlpha(accentKey, 0.7), letterSpacing: '0.12em' }}>
         {block.meta?.elemen || ''} {block.meta?.fase ? `· Kelas ${block.meta.fase}` : ''}
       </div>
 
       {/* Title */}
       <h1 className="font-black leading-tight min-w-0"
         style={{
-          ...tokens.iosTypography('title2', { fontSize: isCompact ? 18 : 26, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+          ...edu.heading(),
+          color: tokens.color('text'),
           wordBreak: 'break-word',
         }}>
         <InlineTextEditor
@@ -115,7 +126,7 @@ function HeroVariantA({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-2 overflow-hidden"
-        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.7) }), lineHeight: 1.6, maxWidth: tokens.iosSubtitleWidth('hero') }}
+        style={{ ...edu.body(), color: tokens.textSecondary(0.7), lineHeight: 1.6, maxWidth: tokens.iosSubtitleWidth('hero') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -126,11 +137,11 @@ function HeroVariantA({
             <span key={`hero-badge-a-${b.text?.slice(0,10)}-${i}`}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
               style={{
-                ...tokens.iosTypography('caption2'),
+                ...edu.micro(),
                 background: tokens.accentBg(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
-                ...tokens.iosEntranceStyle(i, 'slideIn'),
+                ...edu.entrance(i, 'slideUp'),
               }}>
               {b.icon && <span className="flex-shrink-0">{b.icon}</span>} {b.text}
             </span>
@@ -143,7 +154,8 @@ function HeroVariantA({
           <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
           <button className={`mt-4 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
             style={{
-              ...tokens.iosTypography('callToAction'),
+              ...edu.caption(),
+              fontWeight: 700,
               background: y,
               color: tokens.color('bg'),
               ...tokens.iosButtonPadding('md'),
@@ -178,6 +190,7 @@ function HeroVariantB({
 }) {
   const accentKey = block.accentColor || 'y';
   const y = tokens.color(accentKey);
+  const edu = tokens.edu('hero', isCompact);
 
   return (
     <div className="relative overflow-hidden rounded-2xl flex items-center gap-4"
@@ -185,14 +198,15 @@ function HeroVariantB({
         background: tokens.color('bg'),
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
         borderLeft: tokens.accentStripe(accentKey, 4),
-        ...tokens.iosSectionPadding(isCompact),
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        ...edu.sectionPadding(),
+        ...edu.entrance(0, 'fadeIn'),
       }}>
 
       {/* Icon */}
       <div className="flex-shrink-0 flex items-center justify-center rounded-xl"
         style={{
-          ...tokens.iosIconSize(isCompact ? 'lg' : 'xl'),
+          width: edu.iconSize('xl'),
+          height: edu.iconSize('xl'),
           background: tokens.colorAlpha(accentKey, 0.12),
           border: `1px solid ${tokens.colorAlpha(accentKey, 0.25)}`,
           fontSize: isCompact ? '20px' : '26px',
@@ -205,14 +219,15 @@ function HeroVariantB({
         <div className="flex items-center gap-2 mb-0.5">
           {block.meta?.elemen && (
             <span className="font-bold tracking-wider uppercase truncate"
-              style={{ ...tokens.iosTypography('caption2', { fontSize: 9, color: tokens.colorAlpha(accentKey, 0.6) }), letterSpacing: '0.1em' }}>
+              style={{ ...edu.micro(), color: tokens.colorAlpha(accentKey, 0.6), letterSpacing: '0.1em' }}>
               {block.meta.elemen}
             </span>
           )}
         </div>
         <h2 className="font-black leading-tight min-w-0 truncate"
           style={{
-            ...tokens.iosTypography('title3', { fontSize: isCompact ? 15 : 20, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+            ...edu.heading(),
+            color: tokens.color('text'),
           }}>
           <InlineTextEditor
             {...titleEditor}
@@ -223,7 +238,7 @@ function HeroVariantB({
         <InlineTextEditor
           {...subtitleEditor}
           className="mt-1 overflow-hidden"
-          style={{ ...tokens.iosTypography('footnote', { fontSize: isCompact ? 11 : 13, color: tokens.textSecondary(0.6) }), lineHeight: 1.5 }}
+          style={{ ...edu.caption(), color: tokens.textSecondary(0.6), lineHeight: 1.5 }}
           placeholder="Ketik subtitle..."
         />
       </div>
@@ -233,7 +248,8 @@ function HeroVariantB({
         <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`flex-shrink-0 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
           style={{
-            ...tokens.iosTypography('callToAction', { fontSize: 12 }),
+            ...edu.caption(),
+            fontWeight: 700,
             background: y,
             color: tokens.color('bg'),
             ...tokens.iosButtonPadding('md'),
@@ -250,11 +266,11 @@ function HeroVariantB({
             <span key={`hero-badge-b-${b.text?.slice(0,10)}-${i}`}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold"
               style={{
-                fontSize: '9px',
+                ...edu.micro(),
                 background: tokens.colorAlpha(b.color, 0.1),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.2)}`,
-                ...tokens.iosEntranceStyle(i, 'slideIn'),
+                ...edu.entrance(i, 'slideUp'),
               }}>
               {b.icon && <span>{b.icon}</span>} {b.text}
             </span>
@@ -278,12 +294,13 @@ function HeroVariantC({
 }) {
   const accentKey = block.accentColor || 'y';
   const y = tokens.color(accentKey);
+  const edu = tokens.edu('hero', isCompact);
 
   return (
     <div className="relative overflow-hidden text-center"
       style={{
-        ...tokens.iosSectionPadding(isCompact),
-        ...tokens.iosEntranceStyle(0, 'scaleIn'),
+        ...edu.sectionPadding(),
+        ...edu.entrance(0, 'fadeIn'),
       }}>
 
       {/* Accent line */}
@@ -303,14 +320,15 @@ function HeroVariantC({
 
       {/* Meta */}
       <div className="font-extrabold tracking-widest uppercase mb-1 truncate"
-        style={{ ...tokens.iosTypography('caption2', { color: tokens.muted(0.5) }), letterSpacing: '0.15em' }}>
+        style={{ ...edu.caption(), color: tokens.muted(0.5), letterSpacing: '0.15em' }}>
         {block.meta?.elemen || ''} {block.meta?.fase ? `· Kelas ${block.meta.fase}` : ''}
       </div>
 
       {/* Title */}
       <h2 className="font-black leading-tight min-w-0 mx-auto"
         style={{
-          ...tokens.iosTypography('title2', { fontSize: isCompact ? 18 : 24, fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+          ...edu.heading(),
+          color: tokens.color('text'),
           maxWidth: '90%',
           wordBreak: 'break-word',
         }}>
@@ -325,7 +343,7 @@ function HeroVariantC({
       <InlineTextEditor
         {...subtitleEditor}
         className="mt-2 mx-auto overflow-hidden"
-        style={{ ...tokens.iosTypography('subheadline', { fontSize: isCompact ? 12 : 14, color: tokens.textSecondary(0.6) }), lineHeight: 1.6, maxWidth: tokens.iosSubtitleWidth('heroCentered') }}
+        style={{ ...edu.body(), color: tokens.textSecondary(0.6), lineHeight: 1.6, maxWidth: tokens.iosSubtitleWidth('heroCentered') }}
         placeholder="Ketik subtitle..."
       />
 
@@ -336,11 +354,11 @@ function HeroVariantC({
             <span key={`hero-badge-c-${b.text?.slice(0,10)}-${i}`}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold"
               style={{
-                ...tokens.iosTypography('caption2', { fontSize: 9 }),
+                ...edu.micro(),
                 background: tokens.colorAlpha(b.color, 0.08),
                 color: tokens.color(b.color),
                 border: `1px solid ${tokens.colorAlpha(b.color, 0.15)}`,
-                ...tokens.iosEntranceStyle(i, 'slideIn'),
+                ...edu.entrance(i, 'slideUp'),
               }}>
               {b.icon && <span>{b.icon}</span>} {b.text}
             </span>
@@ -353,7 +371,8 @@ function HeroVariantC({
         <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`mt-4 rounded-lg font-bold ${tokens.iosButtonTw(interactive)}`}
           style={{
-            ...tokens.iosTypography('callToAction', { fontSize: 12 }),
+            ...edu.caption(),
+            fontWeight: 700,
             background: 'transparent',
             color: y,
             ...tokens.iosButtonPadding('md'),

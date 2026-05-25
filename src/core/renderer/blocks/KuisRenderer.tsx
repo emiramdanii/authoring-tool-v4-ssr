@@ -56,7 +56,7 @@ function VariantSelector({
           style={{
             padding: `${IOS_SPACING.tabPadding.py - 3}px ${IOS_SPACING.tabPadding.px - 4}px`,
             borderRadius: '9999px',
-            ...tokens.iosTypography('caption1', { fontWeight: 700 }),
+            ...tokens.edu('kuis').micro(),
             border: 'none',
             cursor: 'pointer',
             ...tokens.iosTransitionStyle('background-color, color', 'fast'),

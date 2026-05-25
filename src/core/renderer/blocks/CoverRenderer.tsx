@@ -16,6 +16,12 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 //   C "Minimalis" — Pure white, thin accent line, maximum whitespace
 //
 // All text/labels in Indonesian (Bahasa Indonesia).
+//
+// EDU MIGRATION: Replaced iosTypography() with edu tokens.
+//   - iosTypography('hero') → edu.title() (40-48px, back-of-classroom)
+//   - iosTypography('title1') → edu.title() (36-48px)
+//   - iosTypography('callToAction') → edu.caption() + fontWeight 700
+//   - Cover already used edu.* for most elements, only title was iOS VC
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Variant Selector ─────────────────────────────────────────────
@@ -96,9 +102,9 @@ function CoverVariantA({
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
-      {/* Title — inline editable */}
+      {/* Title — inline editable, edu.title() for back-of-classroom readability */}
       <h1 className="font-black leading-tight mt-4 min-w-0 line-clamp-4"
-        style={{ ...tokens.iosTypography('hero', { fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
+        style={{ ...edu.title(), color: tokens.color('text'), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
@@ -143,7 +149,8 @@ function CoverVariantA({
         <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
         <button className={`mt-7 rounded-[99px] ${tokens.iosButtonTw(interactive)}`}
           style={{
-            ...tokens.iosTypography('callToAction'),
+            ...edu.caption(),
+            fontWeight: 700,
             background: tokens.color(accentKey),
             color: tokens.color('bg'),
             ...tokens.iosButtonPadding('lg'),
@@ -221,10 +228,11 @@ function CoverVariantB({
           {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
         </div>
 
-        {/* Title — left-aligned, bold */}
+        {/* Title — left-aligned, bold, edu.title() for back-of-classroom */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            ...tokens.iosTypography('hero', { fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+            ...edu.title(),
+            color: tokens.color('text'),
             wordBreak: 'break-word',
           }}>
           <InlineTextEditor
@@ -282,7 +290,8 @@ function CoverVariantB({
           <MicroInteraction tokens={tokens} accent={accentKey} effect="squish">
           <button className={`mt-5 rounded-lg ${tokens.iosButtonTw(interactive)}`}
             style={{
-              ...tokens.iosTypography('callToAction'),
+              ...edu.caption(),
+              fontWeight: 700,
               background: tokens.color(accentKey),
               color: tokens.color('bg'),
               ...tokens.iosButtonPadding('md'),
@@ -341,10 +350,11 @@ function CoverVariantC({
           </div>
         </div>
 
-        {/* Title */}
+        {/* Title — edu.title() for back-of-classroom readability */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            ...tokens.iosTypography('title1', { fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }),
+            ...edu.title(),
+            color: tokens.color('text'),
             wordBreak: 'break-word',
           }}>
           <InlineTextEditor
