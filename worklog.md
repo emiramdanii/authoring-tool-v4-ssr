@@ -1808,3 +1808,37 @@ Stage Summary:
 - Teachers can now see the Learning Scene Type of each page in the status bar
 - Display Mode selector already functional (classroom/projector/print/student)
 - Complete scene-aware pipeline is now LIVE end-to-end
+---
+Task ID: 6
+Agent: Main
+Task: Phase 6 — Wire EduRenderingContext scene-aware APIs into 40+ block renderers
+
+Work Log:
+- Analyzed all 40+ block renderers to identify upgrade patterns
+- Defined 5 upgrade rules: stripe widths, card backgrounds, shadows, accent colors, text colors
+- Phase 6B: Upgraded 8 intro-scene renderers (Cover, Hero, Tp, TujuanDisplay, Motivasi, Petunjuk, Alur, Skenario)
+  - CoverRenderer: edu.title() → edu.hero() for cover headlines (56px in intro scenes)
+  - HeroRenderer: edu.heading() → edu.title() for section opener titles
+  - TpRenderer: Replaced hardcoded tokens.color('y') with edu.accent(), edu.accentAlpha(), edu.textColor()
+  - MotivasiRenderer: Replaced tokens.color('card') → edu.cardBg(), tokens.raw.shadow → edu.shadow()
+  - PetunjukRenderer: Replaced manual card styling with edu.accentBorder(), edu.stripeWidth(), edu.accent()
+  - AlurRenderer: Replaced tokens.raw.shadow → edu.shadow(), tokens.muted() → edu.mutedText()
+  - SkenarioRenderer: Replaced tokens.color('bg') → edu.sceneBg(), tokens.raw.shadow → edu.shadow()
+- Phase 6C: Upgraded 8 concept-scene renderers (DefBox, NcGrid, MateriSection, MateriBlok, Tabel, TabelAccordion, Timeline, Compare)
+  - DefBoxRenderer: 12 replacements including tokens.accentStripe() → edu.stripeWidth()
+  - MateriBlokRenderer: 39 replacements (largest single file upgrade)
+- Phase 6D: Upgraded 6 example-scene renderers (Flashcard, Ftab, Gambar, Reveal, Statistik, Studi)
+- Phase 6E: Upgraded ChecklistRenderer + KuisRenderer + HasilRenderer
+- Phase 6F: Upgraded 5 discussion/reflection/summary renderers (Diskusi, Refleksi, Rangkuman, Penutup, NormaKartu)
+- Phase 6G: Upgraded 10 game renderers (Sortir, Roda, Memory, Matching, FillBlank, WordSearch, TrueFalse, DragDrop, Crossword, TeamBuzzer)
+- Final verification: TypeScript compiles with 0 errors
+- Zero remaining tokens.raw.shadow, tokens.accentStripe(), tokens.color('card'), tokens.color('text') in block renderers
+
+Stage Summary:
+- All 40+ block renderers now use scene-aware EduRenderingContext APIs
+- Key transformations: edu.stripeWidth() (scene density), edu.shadow() (print-safe), edu.cardBg() (mode-aware), edu.textColor() (print-safe B&W), edu.hero() (scene-aware 56px), edu.accent()/edu.accentAlpha() (scene-aware prominence)
+- The design system now produces VISUALLY DIFFERENT output per scene type:
+  - Practice scenes: bold stripes (5px), elevated cards, larger body text
+  - Reflection scenes: gentle stripes (2px), subtle cards, generous spacing
+  - Print mode: no shadows, thick borders, pure black text, grayscale accents
+- Total replacements across all files: ~120+ individual pattern upgrades

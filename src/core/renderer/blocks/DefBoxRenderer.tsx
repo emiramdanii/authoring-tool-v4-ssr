@@ -104,10 +104,10 @@ function DefBoxStepMode({
         >
           <div
             style={{
-              borderLeft: tokens.accentStripe(colorKey, isCompact ? 3 : 4),
+              borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
               paddingLeft: isCompact ? '10px' : '12px',
               ...edu.body(),
-              color: tokens.color('text'),
+              color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -186,12 +186,12 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         <div
           style={{
             background: tokens.accentBg(colorKey, 0.04),
-            borderLeft: tokens.accentStripe(colorKey, 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
             borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('lg'),
-            boxShadow: tokens.iosShadow('whisper'),
+            boxShadow: edu.shadow('card'),
             overflow: 'hidden',
           }}
         >
@@ -224,10 +224,10 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               />
             ) : (
               <div style={{
-                borderLeft: tokens.accentStripe(colorKey, isCompact ? 3 : 4),
+                borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
                 paddingLeft: isCompact ? '10px' : '12px',
                 ...edu.body(),
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
@@ -295,12 +295,12 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         <div
           style={{
             background: tokens.accentBg(colorKey, 0.04),
-            borderLeft: tokens.accentStripe(colorKey, 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
             borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
             borderRadius: tokens.radius('xl'),
-            boxShadow: tokens.iosShadow('whisper'),
+            boxShadow: edu.shadow('card'),
             ...edu.componentPadding(),
             position: 'relative',
             overflow: 'hidden',
@@ -361,11 +361,11 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               <div
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                   paddingLeft: isCompact ? '8px' : '12px',
-                  borderLeft: tokens.accentStripe(colorKey, 3),
+                  borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
                   maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                   overflow: isContentCollapsed ? 'hidden' : undefined,
                   ...edu.transition('max-height', 'slow'),
@@ -417,7 +417,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           ...edu.nestedPadding(),
           borderRadius: tokens.radius('lg'),
           background: tokens.accentBg(colorKey, 0.04),
-          borderLeft: tokens.accentStripe(colorKey, 3),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
           borderRight: `1px solid ${tokens.subtleBorder(0.06)}`,
           borderTop: `1px solid ${tokens.subtleBorder(0.06)}`,
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
@@ -442,7 +442,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           <div
             style={{
               ...edu.body(),
-              color: tokens.color('text'),
+              color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
               maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,

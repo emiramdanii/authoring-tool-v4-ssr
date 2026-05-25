@@ -82,7 +82,7 @@ function AccordionRow({ row, rowIndex, blockId, tokens, isOpen, onToggle, intera
       style={{
         border: '1px solid ' + (isOpen ? tokens.colorAlpha(row.color, 0.35) : tokens.colorAlpha(row.color, 0.12)),
         background: isOpen ? tokens.colorAlpha(row.color, 0.08) : tokens.colorAlpha(row.color, 0.04),
-        boxShadow: tokens.raw.shadow.card,
+        boxShadow: edu.shadow('card'),
       }}>
       <MicroInteraction tokens={tokens} accent={row.color} effect="squish">
       <button className={`w-full flex items-center gap-2.5 p-3 font-extrabold cursor-pointer ${tokens.iosAccordionTw()}`}

@@ -18,10 +18,10 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 // All text/labels in Indonesian (Bahasa Indonesia).
 //
 // EDU MIGRATION: Replaced iosTypography() with edu tokens.
-//   - iosTypography('hero') → edu.title() (40-48px, back-of-classroom)
-//   - iosTypography('title1') → edu.title() (36-48px)
+//   - iosTypography('hero') → edu.hero() (56px intro, 44px concept, scene-aware)
+//   - iosTypography('title1') → edu.hero() (scene-aware cover headline)
 //   - iosTypography('callToAction') → edu.caption() + fontWeight 700
-//   - Cover already used edu.* for most elements, only title was iOS VC
+//   - Cover titles now use edu.hero() for full scene-aware prominence
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Variant Selector ─────────────────────────────────────────────
@@ -102,13 +102,13 @@ function CoverVariantA({
         {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
       </div>
 
-      {/* Title — inline editable, edu.title() for back-of-classroom readability */}
+      {/* Title — inline editable, edu.hero() for scene-aware cover headline */}
       <h1 className="font-black leading-tight mt-4 min-w-0 line-clamp-4"
-        style={{ ...edu.title(), color: tokens.color('text'), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
+        style={{ ...edu.hero(), color: edu.textColor(), overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
-          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
+          style={{ color: edu.textColor(), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
         />
       </h1>
 
@@ -228,17 +228,17 @@ function CoverVariantB({
           {block.meta?.elemen || ''} · Kelas {block.meta?.fase || 'VII'}
         </div>
 
-        {/* Title — left-aligned, bold, edu.title() for back-of-classroom */}
+        {/* Title — left-aligned, bold, edu.hero() for scene-aware cover headline */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            ...edu.title(),
-            color: tokens.color('text'),
+            ...edu.hero(),
+            color: edu.textColor(),
             wordBreak: 'break-word',
           }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
-            style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
+            style={{ color: edu.textColor(), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
           />
         </h1>
 
@@ -350,17 +350,17 @@ function CoverVariantC({
           </div>
         </div>
 
-        {/* Title — edu.title() for back-of-classroom readability */}
+        {/* Title — edu.hero() for scene-aware cover headline */}
         <h1 className="font-black leading-tight min-w-0 line-clamp-4"
           style={{
-            ...edu.title(),
-            color: tokens.color('text'),
+            ...edu.hero(),
+            color: edu.textColor(),
             wordBreak: 'break-word',
           }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
-            style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
+            style={{ color: edu.textColor(), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
           />
         </h1>
 

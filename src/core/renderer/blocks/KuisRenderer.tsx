@@ -42,6 +42,7 @@ function VariantSelector({
     { key: 'B', label: 'Kartu' },
     { key: 'C', label: 'Ringkas' },
   ];
+  const edu = tokens.edu('kuis');
 
   return (
     <div className="variant-selector" style={{ display: 'flex', gap: tokens.iosElementGap('iconToTitle'), background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
@@ -56,12 +57,12 @@ function VariantSelector({
           style={{
             padding: `${IOS_SPACING.tabPadding.py - 3}px ${IOS_SPACING.tabPadding.px - 4}px`,
             borderRadius: '9999px',
-            ...tokens.edu('kuis').micro(),
+            ...edu.micro(),
             border: 'none',
             cursor: 'pointer',
             ...tokens.iosTransitionStyle('background-color, color', 'fast'),
             background: active === v.key ? tokens.accentBg('y', 0.12) : 'transparent',
-            color: active === v.key ? tokens.color('y') : tokens.muted(0.65),
+            color: active === v.key ? edu.accent() : edu.mutedText(0.65),
           }}
         >
           {v.key}
@@ -145,7 +146,7 @@ function KuisVariantKartu({
                   border: `1px solid ${bdr}`,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   cursor: isAnswered ? 'default' : 'pointer',
                   ...edu.transition('background-color, border-color, transform', 'standard'),
                 }}
@@ -236,7 +237,7 @@ function KuisVariantRingkas({
             }}
           />
         </div>
-        <span style={{ ...edu.micro(), color: tokens.muted(0.65) }}>
+        <span style={{ ...edu.micro(), color: edu.mutedText(0.65) }}>
           {current + 1}/{questionsLength}
         </span>
       </div>
@@ -277,7 +278,7 @@ function KuisVariantRingkas({
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   maxWidth: '100%',
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   cursor: isAnswered ? 'default' : 'pointer',
                   whiteSpace: 'nowrap',
                   ...edu.transition('background-color, border-color, transform', 'standard'),
@@ -446,7 +447,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
             }}>
             <span style={{ ...edu.title(), color: tokens.color(tierColor) }}>{pct}%</span>
-            <span style={{ ...edu.caption(), color: tokens.muted(0.65) }}>{totalCorrect}/{questions.length}</span>
+            <span style={{ ...edu.caption(), color: edu.mutedText(0.65) }}>{totalCorrect}/{questions.length}</span>
           </div>
 
           {/* Title */}
@@ -520,15 +521,15 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           <div className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{
               background: tokens.accentBg('y', 0.08),
-              border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
+              border: `1px solid ${edu.accentAlpha(0.15)}`,
             }}>
-            <Gamepad2 size={14} style={{ color: tokens.color('y') }} />
+            <Gamepad2 size={14} style={{ color: edu.accent() }} />
           </div>
           <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent() }}>
             <InlineTextEditor
               {...titleEditor}
               className="font-extrabold"
-              style={{ color: tokens.color('y'), fontSize: 'inherit' }}
+              style={{ color: edu.accent(), fontSize: 'inherit' }}
               placeholder="Ketik judul kuis..."
             />
           </div>
@@ -611,7 +612,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                       border: `1px solid ${bdr}`,
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
-                      color: tokens.color('text'),
+                      color: edu.textColor(),
                       cursor: isAnswered ? 'default' : 'pointer',
                       ...edu.transition('background-color, border-color, transform', 'standard'),
                     }}>

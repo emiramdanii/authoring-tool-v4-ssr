@@ -45,8 +45,8 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  const isCompleted = totalAnswered >= questions.length && questions.length > 0;
 
  // ── Theme-aware contrast colors ────────────────────────────────
- const contrastBg = tokens.color('card');
- const contrastText = tokens.isDark() ? tokens.color('bg') : tokens.color('text');
+ const contrastBg = edu.cardBg();
+ const contrastText = tokens.isDark() ? tokens.color('bg') : edu.textColor();
 
  // ── Interactive store: score reporting ──────────────────────
  const reportScore = useInteractiveStore(s => s.reportScore);
@@ -167,7 +167,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + tokens.colorAlpha(gradeColor, 0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  }}>
  <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>{gradeEmoji}</div>
@@ -197,7 +197,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  onClick={() => { setAnswers({}); setCurrent(0); setSpinRotation(0); setShowQuestion(false); hasReportedRef.current = false; playSound('click'); }}
  style={{
  ...edu.caption(),
- background: 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('y') + ')',
+ background: 'linear-gradient(135deg, ' + edu.accent() + ', ' + edu.accent() + ')',
  color: tokens.color('bg'),
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}>
@@ -230,7 +230,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  }}>
  <ReadingProgressIndicator progress={questions.length > 0 ? totalAnswered / questions.length : 0} tokens={tokens} accent="y" height={3} position="top" />
  {/* Header */}
@@ -447,7 +447,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  ...edu.body(),
  background: spinning
  ? tokens.subtleBg(0.1)
- : `linear-gradient(135deg, ${edu.accent()}, ${tokens.color('y')})`,
+ : `linear-gradient(135deg, ${edu.accent()}, ${edu.accent()})`,
  color: tokens.color('bg'),
  boxShadow: spinning ? 'none' : `0 4px 16px ${edu.accentAlpha(0.35)}`,
  animation: spinning ? 'none' : 'pulseGlow 2s ease-in-out infinite',
@@ -465,7 +465,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  style={{
  background: edu.accentAlpha(0.08),
  border: '1px solid ' + edu.accentAlpha(0.25),
- borderLeft: '3px solid ' + edu.accent(),
+ borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
  }}>
  <div className="leading-relaxed" style={{ ...edu.caption() }}><strong style={{ color: edu.accent() }}><MessageCircle size={14} className="inline" /> Diskusi:</strong> <InlineTextEditor
  {...diskusiHintEditor}
@@ -480,8 +480,8 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  {(showQuestion || isCurrentAnswered) && !spinning && (
  <div className="p-3 rounded-xl mb-3 premium-card-glow"
  style={{
- background: tokens.colorAlpha('y', 0.08),
- border: '1px solid ' + tokens.colorAlpha('y', 0.2),
+ background: edu.accentAlpha(0.08),
+ border: '1px solid ' + edu.accentAlpha(0.2),
  animation: 'fadeIn 0.4s ease',
  }}>
  <InlineTextEditor
@@ -521,7 +521,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  }
  }}
  className={`w-full p-3 rounded-xl font-bold text-left ${tokens.iosQuizOptionTw(!isCurrentAnswered && !spinning && interactive)} min-w-0 overflow-hidden ${isCompact ? 'canvas-truncate-1' : ''}`}
- style={{ ...edu.caption(), background: bg, border: '2px solid ' + border, boxShadow: boxShd, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: tokens.color('text') }}>
+ style={{ ...edu.caption(), background: bg, border: '2px solid ' + border, boxShadow: boxShd, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: edu.textColor() }}>
  {opt.text}
  </button>
  );
@@ -551,9 +551,9 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  onClick={() => { setCurrent(current + 1); setShowQuestion(false); playSound('click'); }}
  style={{
  ...edu.caption(),
- background: 'linear-gradient(135deg, ' + tokens.color('y') + ', ' + tokens.color('o') + ')',
+ background: 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('o') + ')',
  color: tokens.color('bg'),
- boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
+ boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}>
  Soal Berikutnya →
  </button>
@@ -579,7 +579,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  style={{
  width: `${questions.length > 0 ? (totalAnswered / questions.length) * 100 : 0}%`,
  ...tokens.iosTransitionStyle('width', 'slow'),
- background: `linear-gradient(90deg, ${edu.accent()}, ${tokens.color('y')})`,
+ background: `linear-gradient(90deg, ${edu.accent()}, ${edu.accent()})`,
  backgroundSize: '200% 100%',
  animation: 'shimmer 2s linear infinite',
  boxShadow: `0 0 8px ${edu.accentAlpha(0.3)}`,

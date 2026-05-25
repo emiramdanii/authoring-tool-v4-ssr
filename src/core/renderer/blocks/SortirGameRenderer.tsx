@@ -41,7 +41,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
  style={{
  borderColor: selected ? tokens.colorAlpha(kolomDef.color, 0.5) : tokens.colorAlpha(kolomDef.color, 0.2),
  background: selected ? tokens.colorAlpha(kolomDef.color, 0.08) : tokens.colorAlpha(kolomDef.color, 0.04),
- boxShadow: selected ? '0 0 16px ' + tokens.colorAlpha(kolomDef.color, 0.15) : tokens.raw.shadow.card,
+ boxShadow: selected ? '0 0 16px ' + tokens.colorAlpha(kolomDef.color, 0.15) : edu.shadow('card'),
  }}>
  <div className="flex items-center gap-2 mb-2">
  <div className="w-7 h-7 rounded-full flex items-center justify-center"
@@ -212,7 +212,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  }}>
  <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
@@ -300,7 +300,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  style={{
  background: selected === p.id ? edu.accentAlpha(0.2) : tokens.subtleBg(0.07),
  border: '2px solid ' + (selected === p.id ? edu.accent() : tokens.subtleBorder(0.15)),
- boxShadow: selected === p.id ? '0 0 16px ' + edu.accentAlpha(0.35) : tokens.raw.shadow.card,
+ boxShadow: selected === p.id ? '0 0 16px ' + edu.accentAlpha(0.35) : edu.shadow('card'),
  ...edu.caption(),
  animation: selected === p.id ? 'pulse 1.5s ease-in-out infinite' : 'none',
  wordBreak: 'break-word',

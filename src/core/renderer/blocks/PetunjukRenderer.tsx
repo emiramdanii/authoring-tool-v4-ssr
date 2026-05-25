@@ -71,9 +71,9 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
       style={{
         background: edu.cardBg(),
         borderRadius: tokens.radius('xl') + 'px',
-        border: `1px solid ${tokens.colorAlpha('c', 0.15)}`,
-        borderLeft: `4px solid ${tokens.color('c')}`,
-        boxShadow: tokens.raw.shadow.card,
+        border: `1px solid ${edu.accentBorder()}`,
+        borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
+        boxShadow: edu.shadow('card'),
         position: 'relative',
         overflow: 'hidden',
       }}>
@@ -105,7 +105,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
       <div style={{ paddingTop: isCompact ? '24px' : '32px' }}>
         {/* ══ TITLE ════════════════════════════════════════════════ */}
         <h2 className="font-black leading-tight"
-          style={{ ...edu.heading(), color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          style={{ ...edu.heading(), color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
@@ -128,7 +128,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             style={{
               background: `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.06)}, ${tokens.colorAlpha('g', 0.02)})`,
               border: `1.5px solid ${tokens.colorAlpha('g', 0.2)}`,
-              borderLeft: `4px solid ${tokens.color('g')}`,
+              borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}`,
             }}>
             <div className="flex items-center gap-2 mb-2.5">
               <div className="w-7 h-7 rounded-full flex items-center justify-center"
@@ -161,7 +161,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                     <span className="font-extrabold" style={{ ...edu.micro(), color: tokens.color('g') }}>{obj.num || i + 1}</span>
                   </div>
                   <div className={`min-w-0 leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`}
-                    style={{ color: tokens.color('text') }}>
+                    style={{ color: edu.textColor() }}>
                     <RichText content={obj.text ?? ''} />
                   </div>
                 </div>
@@ -189,7 +189,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   style={{
                     background: tokens.colorAlpha!(itemColor, 0.06),
                     border: `1px solid ${tokens.colorAlpha!(itemColor, isExpanded ? 0.3 : 0.15)}`,
-                    borderLeftWidth: '3px',
+                    borderLeftWidth: `${edu.stripeWidth()}px`,
                     borderLeftColor: tokens.color!(itemColor),
                     borderRadius: tokens.radius('lg') + 'px',
                   }}
@@ -248,10 +248,10 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                 style={{
                   background: tokens.colorAlpha!(itemColor, 0.1),
                   border: '1px solid ' + tokens.colorAlpha!(itemColor, 0.2),
-                  borderLeftWidth: '3px',
+              borderLeftWidth: `${edu.stripeWidth()}px`,
                   borderLeftColor: tokens.color!(itemColor),
                   borderRadius: tokens.radius('xl') + 'px',
-                  boxShadow: tokens.raw.shadow.card,
+                  boxShadow: edu.shadow('card'),
                   ...edu.componentPadding(),
                   overflow: 'hidden',
                 }}>
@@ -302,7 +302,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             style={{
               background: `linear-gradient(135deg, ${tokens.colorAlpha('p', 0.06)}, ${tokens.colorAlpha('p', 0.02)})`,
               border: `1.5px solid ${tokens.colorAlpha('p', 0.15)}`,
-              borderLeft: `4px solid ${tokens.color('p')}`,
+              borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('p')}`,
             }}>
             <div className="flex items-center gap-2 mb-2">
               <Compass size={14} style={{ color: tokens.color('p') }} />
@@ -338,10 +338,10 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             style={{
               background: tokens.accentBg(accentKey, 0.06),
               border: '1px solid ' + tokens.colorAlpha(accentKey, 0.2),
-              borderLeft: `4px solid ${tokens.color(accentKey)}`,
-              boxShadow: tokens.raw.shadow.card,
+              borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentKey)}`,
+              boxShadow: edu.shadow('card'),
               ...edu.body(),
-              color: tokens.color('text'),
+              color: edu.textColor(),
             }}>
             <div className="flex items-start gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"

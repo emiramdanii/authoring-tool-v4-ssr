@@ -56,7 +56,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}

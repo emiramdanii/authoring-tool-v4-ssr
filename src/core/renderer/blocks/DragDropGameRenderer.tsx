@@ -211,7 +211,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  }}>
  <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
  {/* Animated icon */}
@@ -390,7 +390,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  : tokens.subtleBorder(0.15);
  const boxShadow = isSelected
  ? '0 0 16px ' + edu.accentAlpha(0.35)
- : tokens.raw.shadow.card;
+ : edu.shadow('card');
 
  return (
  <button
@@ -444,7 +444,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  : tokens.colorAlpha(targetColor, 0.25);
  const boxShadow = hasSelection
  ? '0 0 12px ' + tokens.colorAlpha(targetColor, 0.12)
- : tokens.raw.shadow.card;
+ : edu.shadow('card');
 
  return (
  <div

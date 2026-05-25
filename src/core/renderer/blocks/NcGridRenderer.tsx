@@ -97,7 +97,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         background: cardBg,
         borderColor: cardBorder,
         borderRadius: tokens.radius('xl') + 'px',
-        boxShadow: tokens.iosShadow('whisper'),
+        boxShadow: edu.shadow('card'),
         ...tokens.iosCardPadding(isCompact),
         overflow: 'hidden',
         position: 'relative',
@@ -126,7 +126,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
       <InlineTextEditor
         {...bodyEditor}
         className={`leading-relaxed ${isCompact ? 'line-clamp-3' : ''}`}
-        style={{ ...edu.body(), color: tokens.muted(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+        style={{ ...edu.body(), color: edu.mutedText(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik deskripsi kartu..."
         allowHtml={true}
       />
@@ -190,9 +190,9 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
         background: cardBg,
         borderColor: cardBorder,
         border: `1px solid ${cardBorder}`,
-        borderLeft: tokens.accentStripe(card.color, 4),
+        borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(card.color)}`,
         borderRadius: tokens.radius('xl') + 'px',
-        boxShadow: tokens.iosShadow('whisper'),
+        boxShadow: edu.shadow('card'),
         overflow: 'hidden',
         position: 'relative',
         ...edu.entrance(cardIndex),
@@ -242,7 +242,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
             className="leading-relaxed"
             style={{
               ...edu.body(),
-              color: tokens.muted(0.85),
+              color: edu.mutedText(0.85),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -375,7 +375,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
             className="leading-relaxed"
             style={{
               ...edu.body(),
-              color: tokens.muted(0.85),
+              color: edu.mutedText(0.85),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}

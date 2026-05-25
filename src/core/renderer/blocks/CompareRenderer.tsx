@@ -46,7 +46,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}
@@ -100,7 +100,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
               className="flex-1 min-w-0 rounded-lg"
               style={{
                 ...edu.nestedPadding(),
-                background: tokens.color('card'),
+                background: edu.cardBg(),
                 border: `1px solid ${accentAlpha(0.15)}`,
                 borderLeft: `${edu.stripeWidth()}px solid ${accentColor}`,
               }}
@@ -172,7 +172,7 @@ export const CompareRenderer = React.memo(function CompareRenderer({ block, toke
               className="flex-1 min-w-0 rounded-lg"
               style={{
                 ...edu.nestedPadding(),
-                background: tokens.color('card'),
+                background: edu.cardBg(),
                 border: `1px solid ${accentAlpha(0.15)}`,
                 borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('r')}`,
               }}

@@ -265,7 +265,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  }}>
  <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
  {/* Animated icon */}
@@ -435,7 +435,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
  style={{
  background: edu.accentAlpha(0.04),
  border: '1px solid ' + edu.accentAlpha(0.15),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  }}
  >
  {/* Column headers */}
@@ -501,7 +501,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
  ? '0 0 12px ' + tokens.colorAlpha('g', 0.15)
  : isSelected
  ? '0 0 16px ' + edu.accentAlpha(0.3)
- : tokens.raw.shadow.card;
+ : edu.shadow('card');
 
  return (
  <button
@@ -516,7 +516,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
  background: bg,
  border: '2px solid ' + border,
  boxShadow,
- color: isMatched ? tokens.color('g') : tokens.color('text'),
+ color: isMatched ? tokens.color('g') : edu.textColor(),
  textDecoration: isMatched ? 'line-through' : 'none',
  opacity: isMatched ? 0.7 : 1,
  cursor: isMatched ? 'default' : interactive ? 'pointer' : 'default',
@@ -554,7 +554,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
  ? '0 0 12px ' + tokens.colorAlpha('g', 0.15)
  : isWrong
  ? '0 0 16px ' + tokens.colorAlpha('r', 0.3)
- : tokens.raw.shadow.card;
+ : edu.shadow('card');
 
  return (
  <button
@@ -575,7 +575,7 @@ export const MatchingGameRenderer = React.memo(function MatchingGameRenderer({
  ? tokens.color('r')
  : selectedLeft === null
  ? edu.mutedText(0.5)
- : tokens.color('text'),
+ : edu.textColor(),
  textDecoration: isMatched ? 'line-through' : 'none',
  opacity: isMatched ? 0.7 : selectedLeft === null ? 0.6 : 1,
  cursor: isMatched || selectedLeft === null

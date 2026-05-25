@@ -106,7 +106,7 @@ function MateriTabBar({
               borderRadius: tokens.radius('full'),
               border: `1px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.4) : tokens.subtleBorder(0.1)}`,
               background: isActive ? tokens.accentBg(accentColor || 'p', 0.08) : 'transparent',
-              color: isActive ? tokens.accentText(accentColor || 'p') : tokens.muted(0.85),
+              color: isActive ? tokens.accentText(accentColor || 'p') : edu.mutedText(0.85),
               cursor: interactive ? 'pointer' : 'default',
             }}
           >
@@ -260,7 +260,7 @@ function MateriVariantKlasik({
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: tokens.accentStripe(accentColor, 3),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentColor)}`,
           background: edu.cardBg(),
           ...tokens.iosSectionPadding(isCompact),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
@@ -293,7 +293,7 @@ function MateriVariantKlasik({
                 className="font-black leading-tight"
                 style={{
                   ...edu.heading(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -306,7 +306,7 @@ function MateriVariantKlasik({
                 className="mt-1 leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.muted(0.85),
+                  color: edu.mutedText(0.85),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -478,7 +478,7 @@ function MateriVariantKlasik({
                   className="leading-relaxed"
                   style={{
                     ...edu.body(),
-                    color: tokens.color('text'),
+                    color: edu.textColor(),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
                   }}
@@ -501,7 +501,7 @@ function MateriVariantKlasik({
             ...tokens.iosInnerMargin(isCompact),
             ...tokens.iosNestedPadding(isCompact),
             background: tokens.accentBg('y', 0.04),
-            borderLeft: tokens.accentStripe('y', 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
           }}
         >
           <div className="flex items-start gap-3">
@@ -528,7 +528,7 @@ function MateriVariantKlasik({
                 className="leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -661,7 +661,7 @@ function MateriVariantMajalah({
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: tokens.accentStripe(accentColor, 3),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentColor)}`,
           background: edu.cardBg(),
           ...tokens.iosSectionPadding(isCompact),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
@@ -684,7 +684,7 @@ function MateriVariantMajalah({
             className="font-black leading-tight min-w-0"
             style={{
               ...edu.heading(),
-              color: tokens.color('text'),
+              color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -789,7 +789,7 @@ function MateriVariantMajalah({
                     className="leading-relaxed"
                     style={{
                       ...edu.body(),
-                      color: tokens.color('text'),
+                      color: edu.textColor(),
                       wordBreak: 'break-word',
                     }}
                   >
@@ -811,7 +811,7 @@ function MateriVariantMajalah({
             ...tokens.iosInnerMargin(isCompact),
             ...tokens.iosNestedPadding(isCompact),
             background: tokens.accentBg('y', 0.04),
-            borderLeft: tokens.accentStripe('y', 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
           }}
         >
           <div className="flex items-center gap-3">
@@ -831,7 +831,7 @@ function MateriVariantMajalah({
                 className="leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                 }}
               >
@@ -932,7 +932,7 @@ function MateriVariantPill({
         className="flex items-center gap-2.5"
         style={{
           ...tokens.iosSectionPadding(isCompact),
-          borderLeft: tokens.accentStripe(accentColor, 3),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentColor)}`,
         }}
       >
         <div
@@ -951,7 +951,7 @@ function MateriVariantPill({
           style={{
             ...edu.bodyLg(),
             fontWeight: 700,
-            color: tokens.color('text'),
+            color: edu.textColor(),
             wordBreak: 'break-word',
           }}
         >
@@ -1095,7 +1095,7 @@ function MateriVariantPill({
                 ...tokens.iosNestedPadding(isCompact),
                 background: tokens.accentBg('y', 0.04),
                 borderRadius: tokens.radius('sm'),
-                borderLeft: tokens.accentStripe('y', 3),
+                borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
                 animation: 'fadeIn 0.3s ease',
               }}
             >
@@ -1103,7 +1103,7 @@ function MateriVariantPill({
                 className="leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                 }}
               >

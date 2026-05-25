@@ -41,7 +41,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}
@@ -105,7 +105,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                       background: itemAlpha(0.08),
                       border: `1px solid ${itemAlpha(0.2)}`,
                       borderRadius: edu.radius('xl'),
-                      boxShadow: tokens.raw.shadow.card,
+                      boxShadow: edu.shadow('card'),
                       ...edu.entrance(i, 'slideUp'),
                       ...edu.transition('background-color, border-color, color, transform, box-shadow', 'fast'),
                     }}

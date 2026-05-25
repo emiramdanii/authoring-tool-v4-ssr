@@ -39,7 +39,7 @@ export const TabelRenderer = React.memo(function TabelRenderer({ block, tokens, 
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}

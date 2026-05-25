@@ -84,8 +84,8 @@ function MotivasiVariantKlasik({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
         border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.15)}`,
         animation: 'fadeIn 0.4s ease',
       }}
@@ -101,7 +101,7 @@ function MotivasiVariantKlasik({
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `4px solid ${tokens.color(gradientFrom)}`,
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(gradientFrom)}`,
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.1)}, ${tokens.colorAlpha(gradientTo, 0.03)})`,
           ...edu.sectionPadding(),
         }}
@@ -285,7 +285,7 @@ function MotivasiVariantKlasik({
               className="italic leading-relaxed"
               style={{
                 ...edu.caption(),
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -323,8 +323,8 @@ function MotivasiVariantKartuHook({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
         border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.15)}`,
         animation: 'fadeIn 0.4s ease',
       }}
@@ -493,8 +493,8 @@ function MotivasiVariantKutipan({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
         border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.12)}`,
         animation: 'fadeIn 0.4s ease',
         ...edu.componentPadding(),

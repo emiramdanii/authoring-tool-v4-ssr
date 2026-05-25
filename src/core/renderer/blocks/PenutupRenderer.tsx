@@ -119,10 +119,10 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span style={{ ...edu.caption(), color: tokens.muted(0.65) }}>
+                <span style={{ ...edu.caption(), color: edu.mutedText(0.65) }}>
                   {totalScore}/{totalMax} poin
                 </span>
-                <span style={{ ...edu.caption(), color: tokens.muted(0.55) }}>
+                <span style={{ ...edu.caption(), color: edu.mutedText(0.55) }}>
                   · {scores.filter(s => s.completed).length} aktivitas
                 </span>
               </div>
@@ -169,7 +169,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             >
               <div className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ background: tokens.color(item.warna) }} />
-              <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: tokens.muted(0.8) }}><RichText content={item.isi ?? ''} /></span></div>
+              <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}><strong style={{ color: tokens.color(item.warna) }}>{item.judul}</strong> — <span className={isCompact ? 'canvas-truncate-2' : ''} style={{ color: edu.mutedText(0.8) }}><RichText content={item.isi ?? ''} /></span></div>
             </div>
           ))}
         </div>
@@ -181,16 +181,16 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
           style={{
             ...tokens.nestedCardStyle(),
             ...edu.nestedPadding(),
-            borderLeft: tokens.accentStripe('g', 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}`,
           }}>
           <div className="flex items-center gap-2 mb-2">
             <ArrowRight size={14} style={{ color: tokens.color('g') }} />
             <div className="font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color('g') }}>Pertemuan Berikutnya</div>
           </div>
-          <div className="mb-3 font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          <div className="mb-3 font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
             <RichText content={block.nextPertemuan.judul ?? ''} />
           </div>
-          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: tokens.muted(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={block.nextPertemuan.deskripsi ?? ''} /></div>
+          <div className={`mb-3 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: edu.mutedText(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}><RichText content={block.nextPertemuan.deskripsi ?? ''} /></div>
           <div className="space-y-1.5">
             {(block.nextPertemuan.items || []).map((item, i) => (
               <div key={`penutup-next-${item.judul?.slice(0,8)}-${i}`} className="flex items-center gap-2 py-1 min-w-0"
@@ -201,7 +201,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
                 }}>
                 <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: tokens.color(item.warna) }} />
                 <span style={{ color: tokens.color(item.warna) }}>{item.icon}</span>
-                <span className="font-bold" style={{ color: tokens.color('text') }}>{item.judul}</span>
+                <span className="font-bold" style={{ color: edu.textColor() }}>{item.judul}</span>
               </div>
             ))}
           </div>

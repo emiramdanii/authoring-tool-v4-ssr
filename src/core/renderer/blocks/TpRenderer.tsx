@@ -52,32 +52,32 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
   return (
     <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={2} position="top" />
-    <div className={isCompact ? 'p-1' : 'p-2'}>
-      {/* Header with icon */}
+    <div className={isCompact ? 'p-1' : 'p-2'} style={{ background: edu.cardBg() }}>
+      {/* Header with icon — scene-aware accent */}
       <div className="flex items-center gap-2.5 mb-3">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{
-            background: tokens.colorAlpha('y', 0.15),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.3),
-            boxShadow: '0 0 12px ' + tokens.colorAlpha('y', 0.1),
+            background: edu.accentAlpha(0.15),
+            border: `1px solid ${edu.accentAlpha(0.3)}`,
+            boxShadow: '0 0 12px ' + edu.accentAlpha(0.1),
           }}>
-          <Target size={16} style={{ color: tokens.color('y') }} />
+          <Target size={16} style={{ color: edu.accent() }} />
         </div>
         <h2 className="font-black leading-tight min-w-0"
-          style={{ ...edu.heading(), color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          style={{ ...edu.heading(), color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
-            style={{ fontSize: 'inherit', fontFamily: 'inherit', color: tokens.color('text'), wordBreak: 'break-word' }}
+            style={{ fontSize: 'inherit', fontFamily: 'inherit', color: edu.textColor(), wordBreak: 'break-word' }}
           /> <InlineTextEditor
             {...titleHighlightEditor}
             className="font-black leading-tight"
-            style={{ color: tokens.color('y'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
+            style={{ color: edu.accent(), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
           />
         </h2>
       </div>
 
-      {/* All understood indicator — interactive mode */}
+      {/* All understood indicator — scene-aware emotional reward */}
       {interactive && allUnderstood && !isCompact && allItems.length > 0 && (
         <MicroInteraction tokens={tokens} accent="g" effect="bounce">
           <div className="mb-3 px-3 py-2 rounded-lg flex items-center gap-2"
@@ -112,9 +112,9 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
                 style={{
                   background: tokens.colorAlpha(item.color, 0.1),
                   border: '1px solid ' + tokens.colorAlpha(item.color, 0.25),
-                  borderLeft: '4px solid ' + tokens.color(item.color),
+                  borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(item.color)}`,
                   borderRadius: tokens.radius('xl') + 'px',
-                  boxShadow: tokens.raw.shadow.card,
+                  boxShadow: edu.shadow('card'),
                 }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center font-black flex-shrink-0"
                   style={{
@@ -175,11 +175,11 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
           style={{
             background: tokens.colorAlpha('g', 0.12),
             border: '1px solid ' + tokens.colorAlpha('g', 0.3),
-            borderLeft: '4px solid ' + tokens.color('g'),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}`,
             borderRadius: tokens.radius('xl') + 'px',
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: edu.shadow('card'),
             ...edu.body(),
-            color: tokens.color('text'),
+            color: edu.textColor(),
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>

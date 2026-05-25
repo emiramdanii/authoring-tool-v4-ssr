@@ -90,7 +90,7 @@ function VariantAKlasik({
           }}>
           <div className="rounded-full flex items-center justify-center"
             style={{
-              background: tokens.color('card'),
+              background: edu.cardBg(),
               width: isCompact ? '88px' : '136px',
               height: isCompact ? '88px' : '136px',
             }}>
@@ -111,7 +111,7 @@ function VariantAKlasik({
       </div>
 
       {/* ── Title ──────────────────────────────────────────────────── */}
-      <h2 className="font-black text-lg" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
+      <h2 className="font-black text-lg" style={{ fontFamily: tokens.fontFamily('display'), color: edu.textColor() }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black text-lg"
@@ -131,7 +131,7 @@ function VariantAKlasik({
           style={{
             background: tokens.accentBg('g', 0.06),
             border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: edu.shadow('card'),
           }}>
           <CheckCircle2 size={14} className="inline mb-0.5" style={{ color: tokens.color('g') }} />
           <div className="font-extrabold" style={{ color: tokens.color('g'), ...edu.micro() }}>Benar</div>
@@ -143,7 +143,7 @@ function VariantAKlasik({
           style={{
             background: tokens.accentBg('y', 0.06),
             border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: edu.shadow('card'),
           }}>
           <Star size={14} className="inline mb-0.5" style={{ color: tokens.color('y') }} />
           <div className="font-extrabold" style={{ color: tokens.color('y'), ...edu.micro() }}>Skor</div>
@@ -153,7 +153,7 @@ function VariantAKlasik({
           style={{
             background: tokens.accentBg('c', 0.06),
             border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
-            boxShadow: tokens.raw.shadow.card,
+            boxShadow: edu.shadow('card'),
           }}>
           <Target size={14} className="inline mb-0.5" style={{ color: tokens.color('c') }} />
           <div className="font-extrabold" style={{ color: tokens.color('c'), ...edu.micro() }}>Maks</div>
@@ -166,8 +166,8 @@ function VariantAKlasik({
         style={{
           background: tokens.accentBg(tierColor, 0.04),
           border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
-          borderLeft: `3px solid ${tokens.color(tierColor)}`,
-          boxShadow: tokens.raw.shadow.card,
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(tierColor)}`,
+          boxShadow: edu.shadow('card'),
           ...edu.nestedPadding(),
           maxWidth: tokens.iosSubtitleWidth('coverCentered'),
         }}>
@@ -215,7 +215,7 @@ function VariantAKlasik({
                 ...edu.body(),
                 background: tokens.color('y'),
                 color: tokens.color('bg'),
-                boxShadow: tokens.raw.shadow.card,
+                boxShadow: edu.shadow('card'),
               }}>
               <RotateCcw size={14} className="inline" /> Ulangi Semua
             </button>
@@ -263,7 +263,7 @@ function VariantBMajalah({
           <span>{tierConfig.label}</span>
         </span>
         <div className="flex-1 min-w-0">
-          <h2 className="font-black text-lg leading-tight" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
+          <h2 className="font-black text-lg leading-tight" style={{ fontFamily: tokens.fontFamily('display'), color: edu.textColor() }}>
             <InlineTextEditor
               {...titleEditor}
               className="font-black text-lg"
@@ -363,7 +363,7 @@ function VariantBMajalah({
           style={{
             background: tokens.accentBg(tierColor, 0.04),
             border: `1px solid ${tokens.colorAlpha(tierColor, 0.15)}`,
-            borderLeft: `3px solid ${tokens.color(tierColor)}`,
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(tierColor)}`,
             ...edu.nestedPadding(),
           }}>
           <div className="flex items-start gap-2">
@@ -393,7 +393,7 @@ function VariantBMajalah({
                 ...edu.body(),
                 background: tokens.color('y'),
                 color: tokens.color('bg'),
-                boxShadow: tokens.raw.shadow.card,
+                boxShadow: edu.shadow('card'),
               }}>
               <RotateCcw size={12} className="inline" /> Ulangi Semua
             </button>
@@ -443,7 +443,7 @@ function VariantCRingkas({
           {displayPct}%
         </span>
         <div className="flex-1 min-w-0">
-          <h2 className="font-black text-sm leading-tight" style={{ fontFamily: tokens.fontFamily('display'), color: tokens.color('text') }}>
+          <h2 className="font-black text-sm leading-tight" style={{ fontFamily: tokens.fontFamily('display'), color: edu.textColor() }}>
             <InlineTextEditor
               {...titleEditor}
               className="font-black text-sm"
@@ -475,7 +475,7 @@ function VariantCRingkas({
           <Target size={10} style={{ color: tokens.color('c') }} />
           <span style={{ color: tokens.color('c') }}>{displayMax}</span> maks
         </span>
-        <span style={{ color: tokens.muted(0.5) }}>|</span>
+        <span style={{ color: edu.mutedText(0.5) }}>|</span>
         <span className="flex items-center gap-0.5">
           <TrendingUp size={10} style={{ color: tokens.color(tierColor) }} />
           <span style={{ color: tokens.color(tierColor) }}>
@@ -577,8 +577,8 @@ function ActivityBreakdown({
           Skor Per Aktivitas
         </span>
         {expanded
-          ? <ChevronUp size={12} style={{ color: tokens.muted(0.5) }} />
-          : <ChevronDown size={12} style={{ color: tokens.muted(0.5) }} />
+          ? <ChevronUp size={12} style={{ color: edu.mutedText(0.5) }} />
+          : <ChevronDown size={12} style={{ color: edu.mutedText(0.5) }} />
         }
       </button>
 
@@ -605,7 +605,7 @@ function ActivityBreakdown({
                 {/* Label + bar */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="font-bold truncate" style={{ ...edu.micro(), color: tokens.color('text'), maxWidth: '140px' }}>{act.label}</span>
+                    <span className="font-bold truncate" style={{ ...edu.micro(), color: edu.textColor(), maxWidth: '140px' }}>{act.label}</span>
                     <span className="font-black flex-shrink-0" style={{ ...edu.micro(), color: tokens.color(barColor) }}>{act.pct}%</span>
                   </div>
                   <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: tokens.subtleBg(0.06) }}>

@@ -43,7 +43,7 @@ export const AlurRenderer = React.memo(function AlurRenderer({ block, tokens, is
         ...edu.componentPadding(),
         background: tokens.colorAlpha('c', 0.08),
         border: '1px solid ' + tokens.colorAlpha('c', 0.2),
-        boxShadow: tokens.raw.shadow.card,
+        boxShadow: edu.shadow('card'),
       }}>
       <div className="font-extrabold uppercase tracking-wider mb-3"
         style={{ ...edu.caption(), color: tokens.color('c'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
@@ -61,7 +61,7 @@ export const AlurRenderer = React.memo(function AlurRenderer({ block, tokens, is
               style={{ background: tokens.color(step.dot), boxShadow: '0 0 8px ' + tokens.colorAlpha(step.dot, 0.4) }} />
             <PremiumBadge tokens={tokens} accent={step.dot} variant="glass" isCompact={isCompact}>{step.durasi}</PremiumBadge>
             <span className={`leading-relaxed min-w-0 ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-              <strong style={{ color: tokens.color('text') }}>{step.judul}</strong> — <span style={{ color: tokens.muted(0.8) }}><RichText content={step.deskripsi ?? ''} /></span>
+              <strong style={{ color: edu.textColor() }}>{step.judul}</strong> — <span style={{ color: edu.mutedText(0.8) }}><RichText content={step.deskripsi ?? ''} /></span>
             </span>
           </div>
         ))}

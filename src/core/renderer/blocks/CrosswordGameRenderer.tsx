@@ -489,7 +489,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
  }}
  >
@@ -497,11 +497,11 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  {/* Tiered icon */}
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {pct >= 80 ? (
- <Trophy size={28} className="inline" style={{ color: tokens.color('y') }} />
+ <Trophy size={28} className="inline" style={{ color: edu.accent() }} />
  ) : pct >= 50 ? (
- <Star size={28} className="inline" style={{ color: tokens.color('y') }} />
+ <Star size={28} className="inline" style={{ color: edu.accent() }} />
  ) : (
- <Dumbbell size={28} className="inline" style={{ color: tokens.color('y') }} />
+ <Dumbbell size={28} className="inline" style={{ color: edu.accent() }} />
  )}
  </div>
 
@@ -510,7 +510,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  className="font-black text-lg mb-1"
  style={{
  fontFamily: tokens.fontFamily('display'),
- color: tokens.color('y'),
+ color: edu.accent(),
  }}
  >
  {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
@@ -535,7 +535,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  onClick={handleRestart}
  style={{
  ...edu.caption(),
- background: 'linear-gradient(135deg, ' + edu.accent() + ', ' + tokens.color('y') + ')',
+ background: 'linear-gradient(135deg, ' + edu.accent() + ', ' + edu.accent() + ')',
  color: tokens.color('bg'),
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}
@@ -638,12 +638,12 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  } else {
  bg = tokens.colorAlpha('card', 0.6);
  bdr = tokens.subtleBorder(0.12);
- textColor = tokens.color('text');
+ textColor = edu.textColor();
  }
  } else {
  bg = tokens.colorAlpha('card', 0.6);
  bdr = tokens.subtleBorder(0.12);
- textColor = tokens.color('text');
+ textColor = edu.textColor();
  }
 
  return (
@@ -689,7 +689,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  style={{
  background: tokens.colorAlpha('card', 0.4),
  border: '1px solid ' + tokens.subtleBorder(0.1),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  }}
  >
  {acrossClues.length > 0 && (

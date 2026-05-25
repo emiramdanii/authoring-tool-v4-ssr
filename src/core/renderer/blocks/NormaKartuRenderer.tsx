@@ -57,7 +57,7 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
     <div className="rounded-2xl premium-card-glow p-4" style={{
       background: tokens.colorAlpha(colorKey, 0.12),
       border: '1px solid ' + tokens.colorAlpha(colorKey, 0.3),
-      boxShadow: tokens.raw.shadow.card,
+      boxShadow: edu.shadow('card'),
       animation: 'fadeIn 0.3s ease',
       overflow: 'hidden',
     }}>
@@ -108,7 +108,7 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
           style={{
             background: tokens.colorAlpha('o', 0.08),
             border: '1px solid ' + tokens.colorAlpha('o', 0.2),
-            borderLeft: '3px solid ' + tokens.color('o'),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('o')}`,
             overflow: 'hidden',
           }}>
           <div className="font-extrabold uppercase tracking-wider mb-1.5" style={{ ...edu.caption(), color: tokens.color('o'), wordBreak: 'break-word' }}>{block.sanksi.title}</div>
@@ -130,7 +130,7 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
             ...edu.body(),
             background: tokens.colorAlpha(colorKey, 0.08),
             border: '1px solid ' + tokens.colorAlpha(colorKey, 0.15),
-            borderLeft: '3px solid ' + color,
+            borderLeft: `${edu.stripeWidth()}px solid ${color}`,
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
@@ -146,7 +146,7 @@ export const NormaKartuRenderer = React.memo(function NormaKartuRenderer({ block
           style={{
             background: tokens.colorAlpha('r', 0.08),
             border: '1px solid ' + tokens.colorAlpha('r', 0.25),
-            borderLeft: '3px solid ' + tokens.color('r'),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('r')}`,
             overflow: 'hidden',
           }}>
           <div className="font-extrabold uppercase tracking-wider mb-1.5"

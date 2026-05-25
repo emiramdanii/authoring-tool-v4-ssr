@@ -87,7 +87,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
         style={{
           background: tokens.color('bg'),
           border: '2px solid ' + tokens.colorAlpha('g', 0.3),
-          boxShadow: tokens.raw.shadow.elevated,
+          boxShadow: edu.shadow('elevated'),
           animation: 'popSuccess 0.5s ease-out',
         }}>
         <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>🧠</div>
@@ -169,18 +169,18 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
           {/* FRONT FACE */}
           <div className="rounded-xl p-4 flex flex-col justify-center"
             style={{
-              background: tokens.color('card'),
-              border: '2px solid ' + tokens.colorAlpha('y', 0.3),
+              background: edu.cardBg(),
+              border: '2px solid ' + edu.accentAlpha(0.3),
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
               position: 'absolute',
               inset: 0,
               overflowY: 'auto',
-              boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('y', 0.1),
+              boxShadow: edu.shadow('card') + ', 0 0 20px ' + edu.accentAlpha(0.1),
             }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center"
-                style={{ background: tokens.colorAlpha('y', 0.2) }}>
+                style={{ background: edu.accentAlpha(0.2) }}>
                 <span style={{ fontSize: '12px' }}>❓</span>
               </div>
               <div className="font-extrabold uppercase tracking-wider" style={{ ...edu.caption(), color: edu.accent() }}>Pertanyaan</div>
@@ -212,7 +212,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
               position: 'absolute',
               inset: 0,
               overflowY: 'auto',
-              boxShadow: tokens.raw.shadow.card + ', 0 0 20px ' + tokens.colorAlpha('g', 0.1),
+              boxShadow: edu.shadow('card') + ', 0 0 20px ' + tokens.colorAlpha('g', 0.1),
             }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center"

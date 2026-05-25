@@ -114,7 +114,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
     <PremiumBlockWrapper tokens={tokens} accent="o" staggerIndex={0}>
       <ReadingProgressIndicator progress={1} tokens={tokens} accent="o" height={2} position="top" />
     <div className="mt-3 rounded-2xl overflow-hidden border-2 premium-card-glow"
-      style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.3), boxShadow: tokens.raw.shadow.elevated }}>
+      style={{ background: edu.sceneBg(), borderColor: tokens.colorAlpha('c', 0.3), boxShadow: edu.shadow('elevated') }}>
       {/* HUD with gradient accent line */}
       <div className="relative">
         <div className="absolute top-0 left-0 right-0 h-0.5"
@@ -216,7 +216,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                   style={{
                     background: tokens.subtleBg(0.05),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
-                    boxShadow: tokens.raw.shadow.card,
+                    boxShadow: edu.shadow('card'),
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -230,7 +230,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                   style={{
                     background: tokens.subtleBg(0.05),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
-                    boxShadow: tokens.raw.shadow.card,
+                    boxShadow: edu.shadow('card'),
                   }}>
                   <span className="text-lg mt-0.5">{c.icon}</span>
                   <div className="flex-1 min-w-0">
