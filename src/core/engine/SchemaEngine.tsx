@@ -19,6 +19,8 @@ import type { SchemaRenderMode } from '../renderer/SchemaRenderer';
 import { SchemaScreenRenderer, TokenResolver } from '../renderer/SchemaRenderer';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '../scene/SceneLayoutEngine';
 import { isFullPageBlockType } from '../schema/capability-registry';
+import { inferSceneType } from '../edu/education-scene-types';
+import type { SceneType } from '../edu/education-scene-types';
 
 // Re-export utility functions from the renderer-free module
 export { loadPreset, getAvailablePresets, schemaToCanvaPages } from './SchemaEngine.utils';
@@ -42,6 +44,8 @@ export interface SchemaEngineProps {
   showTopNav?: boolean;
   /** Whether bottom navbar is shown (affects safe area) */
   showBottomNav?: boolean;
+  /** Scene type for scene-aware rendering (derived from template type if not set) */
+  sceneType?: SceneType;
 }
 
 export function SchemaEngine({
@@ -53,6 +57,7 @@ export function SchemaEngine({
   ratioId = '16:9',
   showTopNav = false,
   showBottomNav = false,
+  sceneType: explicitSceneType,
 }: SchemaEngineProps) {
   const tokens = new TokenResolver(themeOverride || schema.themeId);
   const screen = schema.screens[screenIndex];
@@ -95,6 +100,7 @@ export function SchemaEngine({
       ratioId={ratioId}
       showTopNav={showTopNav}
       showBottomNav={showBottomNav}
+      sceneType={explicitSceneType ?? (screen.blocks[0] ? inferSceneType(undefined, undefined, screen.blocks[0].type) : undefined)}
     />
   );
 }

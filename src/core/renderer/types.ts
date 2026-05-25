@@ -12,6 +12,7 @@ import { EduRenderingContext } from '../edu/EduRenderingContext';
 import type { EduDisplayMode } from '../edu/education-typography';
 import { EDU_MODE_BG } from '../edu/education-colors';
 import { EDU_PRINT_SAFE } from '../edu/education-layout-rules';
+import type { SceneType } from '../edu/education-scene-types';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -27,6 +28,16 @@ export class TokenResolver {
   private tokens: DesignTokens;
   private _themeId: string | undefined;
   private _displayMode: EduDisplayMode;
+  /**
+   * Scene type for the current page/scene being rendered.
+   * Set by SchemaScreenRenderer before rendering blocks.
+   * When set, all tokens.edu() calls automatically inherit this
+   * sceneType — making every block renderer scene-aware without
+   * any changes to individual renderer code.
+   *
+   * Flow: PageRenderer → SchemaScreenRenderer → tokens.setSceneType()
+   */
+  private _sceneType?: SceneType;
 
   constructor(themeId?: string, displayMode: EduDisplayMode = 'classroom') {
     this._themeId = themeId;
@@ -490,8 +501,29 @@ export class TokenResolver {
    *  // New API (explicit sceneType)
    *  const edu = tokens.edu('tujuan-display', isCompact, 'intro');
    */
+  /** Set the scene type for the current rendering context.
+   *  Called by SchemaScreenRenderer before rendering each page's blocks.
+   *  This enables ALL block renderers to automatically become scene-aware
+   *  without any code changes — tokens.edu('kuis', isCompact) will
+   *  automatically use the page's sceneType for typography, colors, spacing,
+   *  emotional profile, and accent prominence.
+   *
+   *  IMPORTANT: This is a per-page setting, not a global setting.
+   *  Each page has its own sceneType (from page.templateType).
+   */
+  setSceneType(sceneType: SceneType): void {
+    this._sceneType = sceneType;
+  }
+
+  /** Get the current scene type (set by SchemaScreenRenderer) */
+  getSceneType(): SceneType | undefined {
+    return this._sceneType;
+  }
+
   edu(blockType: string, isCompact: boolean = false, sceneType?: import('@/core/edu/education-scene-types').SceneType): EduRenderingContext {
-    return new EduRenderingContext(this, blockType, isCompact, this._displayMode, sceneType);
+    // Priority: explicit sceneType param > stored _sceneType > undefined (inferred from blockType)
+    const resolvedSceneType = sceneType ?? this._sceneType;
+    return new EduRenderingContext(this, blockType, isCompact, this._displayMode, resolvedSceneType);
   }
 
   // ═══════════════════════════════════════════════════════════════════

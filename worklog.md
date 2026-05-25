@@ -1765,3 +1765,46 @@ Stage Summary:
 - education-spacing.ts now has scene density rules (intensity-driven spacing)
 - All changes backward compatible — existing renderers still work unchanged
 - The 6-layer architecture is now fully wired: Foundation → Spatial → Components → Interaction → Emotional → (Gamification FASE 3)
+
+---
+Task ID: 6a
+Agent: main
+Task: Phase 6A — Make SchemaRenderer scene-aware: pass sceneType from page template to each block's EduRenderingContext
+
+Work Log:
+- Added `_sceneType` field + `setSceneType()` + `getSceneType()` methods to TokenResolver (types.ts)
+- Modified `tokens.edu()` to use `_sceneType` as default when explicit sceneType param not provided
+  - Priority: explicit sceneType param > stored _sceneType > undefined (inferred from blockType)
+  - This means ALL 43 existing block renderers automatically become scene-aware without any code changes
+- Added `sceneType` prop to `ScreenRendererProps` in SchemaRenderer.tsx
+- In `SchemaScreenRenderer`, calls `tokens.setSceneType(sceneType)` before rendering blocks
+- In `PageRenderer`, computed `sceneType` from `page.templateType` via `inferSceneType()` and passed it to SchemaScreenRenderer
+- Updated `SchemaEngine` to also support `sceneType` prop (fallback: inferred from first block type)
+- TypeScript compilation: 0 errors (clean)
+
+Stage Summary:
+- COMPLETE RENDERING PIPELINE WIRED: CanvaPage.templateType → inferSceneType() → PageRenderer.sceneType → SchemaScreenRenderer.sceneType → tokens.setSceneType() → tokens.edu(blockType, isCompact) → EduRenderingContext(sceneType)
+- ZERO changes to individual block renderers needed — they all benefit automatically
+- Quiz block on a Materi page now gets sceneType='concept' → quiz accent is muted in concept scene
+- Quiz block on a Kuis page gets sceneType='assessment' → quiz accent is full
+- The 6-layer scene-aware design system is now LIVE in the rendering pipeline
+
+---
+Task ID: 6b-6c
+Agent: main
+Task: Phase 6B-6C — Display Mode UI selector (already exists) + Scene Type indicator in StatusBar
+
+Work Log:
+- Phase 6B: Display Mode selector already exists in StatusBar.tsx (DisplayModeSelector component with 4 buttons: Classroom/Projector/Print/Student). No changes needed.
+- Phase 6C: Added Scene Type indicator to StatusBar
+  - Added imports for inferSceneType, SCENE_TYPES, SceneType, SCENE_PRIMARY_COLOR
+  - Added colored scene type badge after template badge in page info section
+  - Shows "● Pembuka" for intro pages, "● Konsep" for concept, etc.
+  - Color matches the semantic color (amber=intro, cyan=concept, green=example, etc.)
+  - Tooltip shows scene description (e.g., "Scene: Pembuka — Membuka topik, membangun curiosity")
+- TypeScript compilation: 0 errors (clean)
+
+Stage Summary:
+- Teachers can now see the Learning Scene Type of each page in the status bar
+- Display Mode selector already functional (classroom/projector/print/student)
+- Complete scene-aware pipeline is now LIVE end-to-end

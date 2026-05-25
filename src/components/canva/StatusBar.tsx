@@ -9,6 +9,9 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
 import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import { inferSceneType, SCENE_TYPES } from '@/core/edu/education-scene-types';
+import type { SceneType } from '@/core/edu/education-scene-types';
+import { SCENE_PRIMARY_COLOR } from '@/core/edu/education-components';
 
 // ═══════════════════════════════════════════════════════════════
 // STATUS BAR v6 — Modernized & Clean
@@ -177,13 +180,34 @@ export default function StatusBar() {
         <span>{totalElements} {teacherMode ? 'konten' : 'elemen'}</span>
       </span>
 
-      {/* Page info with template type */}
+      {/* Page info with template type + scene type */}
       <span className="flex items-center gap-1.5">
         <FileText size={11} className="text-app-muted" />
         <span>{currentPageIndex + 1}/{pagesLength}</span>
         <span className="text-[8px] text-app-muted">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>
+        {/* Scene Type indicator — shows which Learning Scene this page is */}
+        {page?.templateType && (() => {
+          const st = inferSceneType(undefined, page.templateType, undefined);
+          const def = SCENE_TYPES[st];
+          const colorKey = SCENE_PRIMARY_COLOR[st];
+          const sceneColors: Record<string, string> = {
+            tujuan: 'text-amber-500',
+            materi: 'text-cyan-500',
+            contoh: 'text-green-500',
+            aktivitas: 'text-orange-500',
+            diskusi: 'text-purple-500',
+            refleksi: 'text-teal-500',
+            quiz: 'text-red-500',
+            rangkuman: 'text-blue-500',
+          };
+          return (
+            <span className={`text-[7px] font-bold ${sceneColors[colorKey] ?? 'text-app-muted'}`} title={`Scene: ${def.labelId} — ${def.description}`}>
+              ● {def.labelId}
+            </span>
+          );
+        })()}
       </span>
 
       {/* Scene indicator */}

@@ -128,6 +128,15 @@ export interface ScreenRendererProps {
   showBottomNav?: boolean;
   /** Page index (0-based) — forwarded to interactive renderers for score tracking */
   pageIndex?: number;
+  /**
+   * Scene type — the Learning Scene Type for this page.
+   * When provided, tokens.setSceneType() is called before rendering blocks,
+   * making ALL block renderers automatically scene-aware.
+   * Derived from page.templateType via TEMPLATE_TO_SCENE mapping.
+   * Enables: scene-aware typography, accent prominence, emotional profile,
+   * reveal strategy, spacing density, card/header treatment.
+   */
+  sceneType?: import('@/core/edu/education-scene-types').SceneType;
 }
 
 export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
@@ -153,8 +162,18 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   showTopNav = false,
   showBottomNav = false,
   pageIndex = 0,
+  sceneType,
 }: ScreenRendererProps) {
   const isCompact = mode === 'canvas';
+
+  // ═══ SCENE TYPE INJECTION ══════════════════════════════════════
+  // Set the scene type on the TokenResolver so ALL block renderers
+  // automatically become scene-aware via tokens.edu(blockType, isCompact).
+  // No individual renderer changes needed — the sceneType flows through
+  // the shared TokenResolver instance.
+  if (sceneType) {
+    tokens.setSceneType(sceneType);
+  }
   // FIX: Detect full-page blocks (cover/hero) even when mixed with flow blocks.
   // Previously: only true when there was exactly 1 full-page block.
   // Now: true when ANY block is a full-page type — this correctly handles

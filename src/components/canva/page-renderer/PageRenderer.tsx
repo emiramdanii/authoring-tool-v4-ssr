@@ -10,6 +10,8 @@ import { ensurePageSchema, validateCanvaPageInvariant } from '@/core/schema/ensu
 import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
+import { inferSceneType } from '@/core/edu/education-scene-types';
+import type { SceneType } from '@/core/edu/education-scene-types';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -206,6 +208,20 @@ export const PageRenderer = React.memo(function PageRenderer({
     pagePadding: isCoverPage ? 0 : 16,
   }), [showTopNav, showBottomNav, isCompact, isCoverPage]);
 
+  // ═══ SCENE TYPE ════════════════════════════════════════════════
+  // Derive the Learning Scene Type from the page's template type.
+  // This is the KEY that unlocks the entire scene-aware design system:
+  //   - Typography hierarchy per scene (hero/title/body)
+  //   - Accent prominence (which colors are "vocal" vs "muted")
+  //   - Emotional profile (progress/discovery/reward triggers)
+  //   - Reveal strategy (all-visible/progressive/on-interaction)
+  //   - Spacing density (intensity-driven rhythm)
+  //   - Card/header treatment (elevated/flat/subtle)
+  const sceneType = React.useMemo<SceneType | undefined>(() => {
+    if (!page.templateType) return undefined;
+    return inferSceneType(undefined, page.templateType, undefined);
+  }, [page.templateType]);
+
   const content = (
     <>
       {/* Schema-driven rendering for ALL template pages */}
@@ -233,6 +249,7 @@ export const PageRenderer = React.memo(function PageRenderer({
           showTopNav={showTopNav}
           showBottomNav={showBottomNav}
           pageIndex={currentPageIndex}
+          sceneType={sceneType}
         />
       )}
 
