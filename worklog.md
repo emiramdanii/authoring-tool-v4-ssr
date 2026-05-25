@@ -1507,3 +1507,25 @@ Stage Summary:
 - Materi section titles now use edu.heading() → 26-32px (was 14-22px hardcoded)
 - Kuis variant selector now uses edu.micro() (was iOS VC caption1)
 - iOS VC helpers still used for app chrome (iosButtonTw, iosFocusRing, iosTabTw, etc.) — intentional
+---
+Task ID: 2
+Agent: Main Agent
+Task: Display Mode integration + PremiumStepNavigator edu migration + cardStyle/headerStyle integration
+
+Work Log:
+- Added displayMode (EduDisplayMode) + setDisplayMode to session-slice.ts and CanvaState types
+- TokenResolver: Added _displayMode field, constructor accepts displayMode param, passes to edu()
+- PageRenderer: Wire displayMode from store → new TokenResolver(themeId, displayMode), added to useMemo deps
+- PageFrame: Wire displayMode from store → new TokenResolver(themeId, displayMode)
+- StatusBar: Created DisplayModeSelector component (🏫Kelas/📽️Proyektor/🖨️Cetak/💻Siswa)
+- PremiumStepNavigator: Replaced 9 hardcoded fontSize (9-13px) with edu.micro() token
+- TujuanDisplayRenderer: Integrated edu.cardStyle() and edu.headerStyle() in all 3 variants
+- SYSTEM_MAP.md: Updated Risks section with current migration status
+- TypeScript build clean, pushed to GitHub (3 commits)
+
+Stage Summary:
+- Display Mode system fully wired: Store → TokenResolver → EduRenderingContext → block renderers
+- Teacher can switch Classroom/Projector/Print/Student — all typography auto-scales
+- 0 iosTypography() runtime calls remain in block renderers
+- edu.cardStyle()/headerStyle() pattern established in TujuanDisplayRenderer as reference
+- 3 commits: f6cc2ee (display mode + PremiumStepNavigator), 0d74876 (cardStyle/headerStyle)
