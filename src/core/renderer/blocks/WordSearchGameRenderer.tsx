@@ -21,34 +21,34 @@ import { PremiumBlockWrapper, ReadingProgressIndicator, PremiumBadge, MicroInter
 // reversed), the word is marked as found.
 //
 // Scoring: efficiency-based with 50% floor
-//   score = max(ceil(words * 0.5), words - wrongAttempts)
+// score = max(ceil(words * 0.5), words - wrongAttempts)
 //
 // Architecture mirrors KuisRenderer / MemoryGameRenderer exactly:
-//   - replayGeneration watcher resets all state
-//   - hasReportedRef guard prevents duplicate score reports
-//   - Token-aware styling (no hardcoded colors)
-//   - Inline editing via useInlineEditor
-//   - Stable React keys (never index as key)
+// - replayGeneration watcher resets all state
+// - hasReportedRef guard prevents duplicate score reports
+// - Token-aware styling (no hardcoded colors)
+// - Inline editing via useInlineEditor
+// - Stable React keys (never index as key)
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Placement info for a successfully placed word ─────────────────
 interface WordPlacement {
-  /** The word string that was placed */
-  word: string;
-  /** Ordered list of [row, col] cell coordinates */
-  cells: Array<[number, number]>;
+ /** The word string that was placed */
+ word: string;
+ /** Ordered list of [row, col] cell coordinates */
+ cells: Array<[number, number]>;
 }
 
 // ── 8 possible placement directions (dr, dc) ─────────────────────
 const DIRECTIONS: Array<[number, number]> = [
-  [0, 1],   // → horizontal right
-  [0, -1],  // ← horizontal left
-  [1, 0],   // ↓ vertical down
-  [-1, 0],  // ↑ vertical up
-  [1, 1],   // ↘ diagonal down-right
-  [-1, -1], // ↖ diagonal up-left
-  [1, -1],  // ↙ diagonal down-left
-  [-1, 1],  // ↗ diagonal up-right
+ [0, 1], // → horizontal right
+ [0, -1], // ← horizontal left
+ [1, 0], // ↓ vertical down
+ [-1, 0], // ↑ vertical up
+ [1, 1], // ↘ diagonal down-right
+ [-1, -1], // ↖ diagonal up-left
+ [1, -1], // ↙ diagonal down-left
+ [-1, 1], // ↗ diagonal up-right
 ];
 
 // ── Game phases ──────────────────────────────────────────────────
@@ -68,77 +68,77 @@ type GamePhase = 'play' | 'done';
  * cannot be placed after all attempts, it is skipped gracefully.
  */
 function generateGridWithPlacements(
-  words: string[],
-  size: number,
+ words: string[],
+ size: number,
 ): { grid: string[][]; placements: WordPlacement[] } {
-  // Initialize empty grid
-  const grid: string[][] = Array.from({ length: size }, () =>
-    Array(size).fill(''),
-  );
+ // Initialize empty grid
+ const grid: string[][] = Array.from({ length: size }, () =>
+ Array(size).fill(''),
+ );
 
-  const placements: WordPlacement[] = [];
+ const placements: WordPlacement[] = [];
 
-  // Sort longest-first for better placement density
-  const sorted = [...words].sort((a, b) => b.length - a.length);
+ // Sort longest-first for better placement density
+ const sorted = [...words].sort((a, b) => b.length - a.length);
 
-  for (const word of sorted) {
-    const upper = word.toUpperCase();
-    let placed = false;
+ for (const word of sorted) {
+ const upper = word.toUpperCase();
+ let placed = false;
 
-    // Try up to 100 random placements
-    for (let attempt = 0; attempt < 100; attempt++) {
-      // Pick a random direction
-      const [dr, dc] =
-        DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+ // Try up to 100 random placements
+ for (let attempt = 0; attempt < 100; attempt++) {
+ // Pick a random direction
+ const [dr, dc] =
+ DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
 
-      // Compute valid start range so the word fits within the grid
-      const lastR = dr === 0 ? size - 1 : dr > 0 ? size - upper.length : upper.length - 1;
-      const lastC = dc === 0 ? size - 1 : dc > 0 ? size - upper.length : upper.length - 1;
-      const firstR = dr < 0 ? upper.length - 1 : 0;
-      const firstC = dc < 0 ? upper.length - 1 : 0;
+ // Compute valid start range so the word fits within the grid
+ const lastR = dr === 0 ? size - 1 : dr > 0 ? size - upper.length : upper.length - 1;
+ const lastC = dc === 0 ? size - 1 : dc > 0 ? size - upper.length : upper.length - 1;
+ const firstR = dr < 0 ? upper.length - 1 : 0;
+ const firstC = dc < 0 ? upper.length - 1 : 0;
 
-      if (lastR < firstR || lastC < firstC) continue; // Word too long for grid in this direction
+ if (lastR < firstR || lastC < firstC) continue; // Word too long for grid in this direction
 
-      const startR = firstR + Math.floor(Math.random() * (lastR - firstR + 1));
-      const startC = firstC + Math.floor(Math.random() * (lastC - firstC + 1));
+ const startR = firstR + Math.floor(Math.random() * (lastR - firstR + 1));
+ const startC = firstC + Math.floor(Math.random() * (lastC - firstC + 1));
 
-      // Check if all cells along the path are available (empty or same letter)
-      let fits = true;
-      const cells: Array<[number, number]> = [];
-      for (let i = 0; i < upper.length; i++) {
-        const r = startR + dr * i;
-        const c = startC + dc * i;
-        // Bounds check (should always pass given start range, but be safe)
-        if (r < 0 || r >= size || c < 0 || c >= size) { fits = false; break; }
-        if (grid[r]![c] !== '' && grid[r]![c] !== upper[i]) { fits = false; break; }
-        cells.push([r, c]);
-      }
+ // Check if all cells along the path are available (empty or same letter)
+ let fits = true;
+ const cells: Array<[number, number]> = [];
+ for (let i = 0; i < upper.length; i++) {
+ const r = startR + dr * i;
+ const c = startC + dc * i;
+ // Bounds check (should always pass given start range, but be safe)
+ if (r < 0 || r >= size || c < 0 || c >= size) { fits = false; break; }
+ if (grid[r]![c] !== '' && grid[r]![c] !== upper[i]) { fits = false; break; }
+ cells.push([r, c]);
+ }
 
-      if (fits) {
-        // Place the word
-        for (let i = 0; i < upper.length; i++) {
-          grid[cells[i]![0]!]![cells[i]![1]] = upper[i];
-        }
-        placements.push({ word: upper, cells });
-        placed = true;
-        break;
-      }
-    }
-    // If not placed after 100 attempts, skip silently — the word
-    // simply won't appear in the grid for this round.
-  }
+ if (fits) {
+ // Place the word
+ for (let i = 0; i < upper.length; i++) {
+ grid[cells[i]![0]!]![cells[i]![1]] = upper[i];
+ }
+ placements.push({ word: upper, cells });
+ placed = true;
+ break;
+ }
+ }
+ // If not placed after 100 attempts, skip silently — the word
+ // simply won't appear in the grid for this round.
+ }
 
-  // Fill empty cells with random uppercase letters (A–Z)
-  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (grid[r]![c] === '') {
-        grid[r]![c] = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
-      }
-    }
-  }
+ // Fill empty cells with random uppercase letters (A–Z)
+ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+ for (let r = 0; r < size; r++) {
+ for (let c = 0; c < size; c++) {
+ if (grid[r]![c] === '') {
+ grid[r]![c] = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+ }
+ }
+ }
 
-  return { grid, placements };
+ return { grid, placements };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -152,36 +152,36 @@ function generateGridWithPlacements(
  * Returns null if the selection is not a valid straight line.
  */
 function getLineCells(
-  start: [number, number],
-  end: [number, number],
+ start: [number, number],
+ end: [number, number],
 ): Array<[number, number]> | null {
-  const [r1, c1] = start;
-  const [r2, c2] = end;
+ const [r1, c1] = start;
+ const [r2, c2] = end;
 
-  const dr = Math.sign(r2 - r1);
-  const dc = Math.sign(c2 - c1);
+ const dr = Math.sign(r2 - r1);
+ const dc = Math.sign(c2 - c1);
 
-  // Same cell is not a valid line
-  if (dr === 0 && dc === 0) return null;
+ // Same cell is not a valid line
+ if (dr === 0 && dc === 0) return null;
 
-  // Validate straight line: delta must be uniform along the path
-  const deltaR = Math.abs(r2 - r1);
-  const deltaC = Math.abs(c2 - c1);
+ // Validate straight line: delta must be uniform along the path
+ const deltaR = Math.abs(r2 - r1);
+ const deltaC = Math.abs(c2 - c1);
 
-  // Must be horizontal (dr=0), vertical (dc=0), or 45° diagonal (deltaR === deltaC)
-  const isHorizontal = dr === 0 && dc !== 0;
-  const isVertical = dc === 0 && dr !== 0;
-  const isDiagonal = deltaR === deltaC && dr !== 0 && dc !== 0;
+ // Must be horizontal (dr=0), vertical (dc=0), or 45° diagonal (deltaR === deltaC)
+ const isHorizontal = dr === 0 && dc !== 0;
+ const isVertical = dc === 0 && dr !== 0;
+ const isDiagonal = deltaR === deltaC && dr !== 0 && dc !== 0;
 
-  if (!isHorizontal && !isVertical && !isDiagonal) return null;
+ if (!isHorizontal && !isVertical && !isDiagonal) return null;
 
-  const steps = Math.max(deltaR, deltaC);
-  const cells: Array<[number, number]> = [];
-  for (let i = 0; i <= steps; i++) {
-    cells.push([r1 + dr * i, c1 + dc * i]);
-  }
+ const steps = Math.max(deltaR, deltaC);
+ const cells: Array<[number, number]> = [];
+ for (let i = 0; i <= steps; i++) {
+ cells.push([r1 + dr * i, c1 + dc * i]);
+ }
 
-  return cells;
+ return cells;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -189,554 +189,556 @@ function getLineCells(
 // ═══════════════════════════════════════════════════════════════════
 
 export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer({ block, tokens, interactive, isCompact, isEditing, pageIndex }: {
-  block: WordSearchGameBlock;
-  tokens: TokenResolver;
-  interactive: boolean;
-  isCompact: boolean;
-  isEditing?: boolean;
-  pageIndex?: number;
+ block: WordSearchGameBlock;
+ tokens: TokenResolver;
+ interactive: boolean;
+ isCompact: boolean;
+ isEditing?: boolean;
+ pageIndex?: number;
 }) {
-  // ── Derived data ────────────────────────────────────────────────
-  const words = block.words || [];
-  const gridSize = block.gridSize || Math.max(8, Math.ceil(Math.sqrt(words.join('').length * 3)));
-  // Stable key that changes when word content changes (for useMemo deps)
-  const wordsKey = words.join(',');
 
-  // ── Grid generation (regenerates when gridKey changes) ──────────
-  const [gridKey, setGridKey] = React.useState(0);
-  const { grid, placements } = React.useMemo(
-    () => generateGridWithPlacements(words, gridSize),
-    [gridKey, gridSize, wordsKey],
-  );
+ const edu = tokens.edu('word-search-game', isCompact);
+ // ── Derived data ────────────────────────────────────────────────
+ const words = block.words || [];
+ const gridSize = block.gridSize || Math.max(8, Math.ceil(Math.sqrt(words.join('').length * 3)));
+ // Stable key that changes when word content changes (for useMemo deps)
+ const wordsKey = words.join(',');
 
-  // ── Game state ──────────────────────────────────────────────────
-  const [found, setFound] = React.useState<Set<string>>(new Set());
-  const [foundCells, setFoundCells] = React.useState<Set<string>>(new Set());
-  const [startCell, setStartCell] = React.useState<[number, number] | null>(null);
-  const [wrongAttempts, setWrongAttempts] = React.useState(0);
-  const [phase, setPhase] = React.useState<GamePhase>('play');
+ // ── Grid generation (regenerates when gridKey changes) ──────────
+ const [gridKey, setGridKey] = React.useState(0);
+ const { grid, placements } = React.useMemo(
+ () => generateGridWithPlacements(words, gridSize),
+ [gridKey, gridSize, wordsKey],
+ );
 
-  // ── Accessibility hook ──────────────────────────────────────────
-  const a11y = useGameA11y({
-    gameType: 'Teka-Teki Kata',
-    blockId: block.id,
-    score: found.size,
-    maxScore: placements.length,
-    interactive: interactive ?? false,
-  });
+ // ── Game state ──────────────────────────────────────────────────
+ const [found, setFound] = React.useState<Set<string>>(new Set());
+ const [foundCells, setFoundCells] = React.useState<Set<string>>(new Set());
+ const [startCell, setStartCell] = React.useState<[number, number] | null>(null);
+ const [wrongAttempts, setWrongAttempts] = React.useState(0);
+ const [phase, setPhase] = React.useState<GamePhase>('play');
 
-  // ── Replay watcher: reset all state when replayGeneration bumps ──
-  const replayGeneration = useInteractiveStore(s => s.replayGeneration);
-  React.useEffect(() => {
-    setFound(new Set());
-    setFoundCells(new Set());
-    setStartCell(null);
-    setWrongAttempts(0);
-    setPhase('play');
-    setGridKey(k => k + 1);
-  }, [replayGeneration]);
+ // ── Accessibility hook ──────────────────────────────────────────
+ const a11y = useGameA11y({
+ gameType: 'Teka-Teki Kata',
+ blockId: block.id,
+ score: found.size,
+ maxScore: placements.length,
+ interactive: interactive ?? false,
+ });
 
-  // ── Interactive store: score reporting ───────────────────────────
-  const reportScore = useInteractiveStore(s => s.reportScore);
+ // ── Replay watcher: reset all state when replayGeneration bumps ──
+ const replayGeneration = useInteractiveStore(s => s.replayGeneration);
+ React.useEffect(() => {
+ setFound(new Set());
+ setFoundCells(new Set());
+ setStartCell(null);
+ setWrongAttempts(0);
+ setPhase('play');
+ setGridKey(k => k + 1);
+ }, [replayGeneration]);
 
-  // ── Score guard: report once per completion cycle ───────────────
-  const hasReportedRef = React.useRef(false);
-  React.useEffect(() => {
-    if (phase === 'done' && interactive && block.id && !hasReportedRef.current) {
-      hasReportedRef.current = true;
-      const score = Math.max(
-        Math.ceil(placements.length * 0.5),
-        placements.length - wrongAttempts,
-      );
-      reportScore({
-        elementId: block.id,
-        pageIndex: pageIndex ?? 0,
-        score,
-        maxScore: placements.length,
-        completed: true,
-      });
-      // Tiered sound & confetti based on percentage
-      const pct = placements.length > 0 ? Math.round((score / placements.length) * 100) : 0;
-      if (pct >= 80) {
-        playSound('complete');
-        fireConfettiCelebration();
-      } else if (pct >= 50) {
-        playSound('complete');
-        fireConfetti({ count: 30 });
-      } else {
-        playSound('ding');
-      }
-      a11y.announceComplete(score, placements.length);
-    }
-    // Reset guard when game is no longer done (e.g., after replay)
-    if (phase !== 'done') {
-      hasReportedRef.current = false;
-    }
-  }, [phase, interactive, block.id, wrongAttempts, placements.length, reportScore, pageIndex]);
+ // ── Interactive store: score reporting ───────────────────────────
+ const reportScore = useInteractiveStore(s => s.reportScore);
 
-  // ── Inline editing hooks ────────────────────────────────────────
-  const titleEditor = useInlineEditor({
-    blockId: block.id,
-    fieldKey: 'title',
-    value: block.title ?? '',
-    tag: 'span',
-  });
+ // ── Score guard: report once per completion cycle ───────────────
+ const hasReportedRef = React.useRef(false);
+ React.useEffect(() => {
+ if (phase === 'done' && interactive && block.id && !hasReportedRef.current) {
+ hasReportedRef.current = true;
+ const score = Math.max(
+ Math.ceil(placements.length * 0.5),
+ placements.length - wrongAttempts,
+ );
+ reportScore({
+ elementId: block.id,
+ pageIndex: pageIndex ?? 0,
+ score,
+ maxScore: placements.length,
+ completed: true,
+ });
+ // Tiered sound & confetti based on percentage
+ const pct = placements.length > 0 ? Math.round((score / placements.length) * 100) : 0;
+ if (pct >= 80) {
+ playSound('complete');
+ fireConfettiCelebration();
+ } else if (pct >= 50) {
+ playSound('complete');
+ fireConfetti({ count: 30 });
+ } else {
+ playSound('ding');
+ }
+ a11y.announceComplete(score, placements.length);
+ }
+ // Reset guard when game is no longer done (e.g., after replay)
+ if (phase !== 'done') {
+ hasReportedRef.current = false;
+ }
+ }, [phase, interactive, block.id, wrongAttempts, placements.length, reportScore, pageIndex]);
 
-  // ── Cell click handler ──────────────────────────────────────────
-  const handleCellClick = React.useCallback(
-    (r: number, c: number) => {
-      if (!interactive || phase !== 'play') return;
+ // ── Inline editing hooks ────────────────────────────────────────
+ const titleEditor = useInlineEditor({
+ blockId: block.id,
+ fieldKey: 'title',
+ value: block.title ?? '',
+ tag: 'span',
+ });
 
-      // If no start cell selected, set this as start
-      if (!startCell) {
-        setStartCell([r, c]);
-        return;
-      }
+ // ── Cell click handler ──────────────────────────────────────────
+ const handleCellClick = React.useCallback(
+ (r: number, c: number) => {
+ if (!interactive || phase !== 'play') return;
 
-      // If clicking the same cell, deselect
-      if (startCell[0] === r && startCell[1] === c) {
-        setStartCell(null);
-        return;
-      }
+ // If no start cell selected, set this as start
+ if (!startCell) {
+ setStartCell([r, c]);
+ return;
+ }
 
-      // Validate the line formed by start → end
-      const lineCells = getLineCells(startCell, [r, c]);
-      if (!lineCells) {
-        // Not a valid straight line — treat as wrong attempt
-        playSound('incorrect');
-        setWrongAttempts(prev => prev + 1);
-        setStartCell(null);
-        return;
-      }
+ // If clicking the same cell, deselect
+ if (startCell[0] === r && startCell[1] === c) {
+ setStartCell(null);
+ return;
+ }
 
-      // Read the letters along the selected line
-      const selectedWord = lineCells.map(([lr, lc]) => grid[lr]![lc]).join('');
-      const reversedWord = selectedWord.split('').reverse().join('');
+ // Validate the line formed by start → end
+ const lineCells = getLineCells(startCell, [r, c]);
+ if (!lineCells) {
+ // Not a valid straight line — treat as wrong attempt
+ playSound('incorrect');
+ setWrongAttempts(prev => prev + 1);
+ setStartCell(null);
+ return;
+ }
 
-      // Check if the selected word matches any unfound placement
-      const matchedPlacement = placements.find(
-        p => !found.has(p.word) && (p.word === selectedWord || p.word === reversedWord),
-      );
+ // Read the letters along the selected line
+ const selectedWord = lineCells.map(([lr, lc]) => grid[lr]![lc]).join('');
+ const reversedWord = selectedWord.split('').reverse().join('');
 
-      if (matchedPlacement) {
-        // ── Word found! ──
-        playSound('correct');
-        const newFound = new Set(found);
-        newFound.add(matchedPlacement.word);
-        setFound(newFound);
-        a11y.announceCorrect();
-        a11y.announce(`Kata ditemukan: ${matchedPlacement.word}. ${newFound.size} dari ${placements.length}`, 'assertive');
+ // Check if the selected word matches any unfound placement
+ const matchedPlacement = placements.find(
+ p => !found.has(p.word) && (p.word === selectedWord || p.word === reversedWord),
+ );
 
-        // Mark all cells of the found placement
-        const newFoundCells = new Set(foundCells);
-        matchedPlacement.cells.forEach(([fr, fc]) => {
-          newFoundCells.add(`${fr},${fc}`);
-        });
-        setFoundCells(newFoundCells);
+ if (matchedPlacement) {
+ // ── Word found! ──
+ playSound('correct');
+ const newFound = new Set(found);
+ newFound.add(matchedPlacement.word);
+ setFound(newFound);
+ a11y.announceCorrect();
+ a11y.announce(`Kata ditemukan: ${matchedPlacement.word}. ${newFound.size} dari ${placements.length}`, 'assertive');
 
-        // Check if all words are found
-        if (newFound.size >= placements.length) {
-          setPhase('done');
-        }
-      } else {
-        // ── Wrong selection ──
-        playSound('incorrect');
-        setWrongAttempts(prev => prev + 1);
-        a11y.announceIncorrect();
-      }
+ // Mark all cells of the found placement
+ const newFoundCells = new Set(foundCells);
+ matchedPlacement.cells.forEach(([fr, fc]) => {
+ newFoundCells.add(`${fr},${fc}`);
+ });
+ setFoundCells(newFoundCells);
 
-      // Reset start cell for next selection
-      setStartCell(null);
-    },
-    [interactive, phase, startCell, grid, placements, found, foundCells],
-  );
+ // Check if all words are found
+ if (newFound.size >= placements.length) {
+ setPhase('done');
+ }
+ } else {
+ // ── Wrong selection ──
+ playSound('incorrect');
+ setWrongAttempts(prev => prev + 1);
+ a11y.announceIncorrect();
+ }
 
-  // ── Restart handler ─────────────────────────────────────────────
-  const handleRestart = React.useCallback(() => {
-    setFound(new Set());
-    setFoundCells(new Set());
-    setStartCell(null);
-    setWrongAttempts(0);
-    setPhase('play');
-    setGridKey(k => k + 1);
-    hasReportedRef.current = false;
-    playSound('click');
-  }, []);
+ // Reset start cell for next selection
+ setStartCell(null);
+ },
+ [interactive, phase, startCell, grid, placements, found, foundCells],
+ );
 
-  // ── Empty state: no words configured ────────────────────────────
-  if (words.length === 0) {
-    return (
-      <div
-        className="text-center p-5 rounded-xl"
-        style={{
-          background: tokens.colorAlpha('y', 0.06),
-          border: '2px dashed ' + tokens.colorAlpha('y', 0.25),
-        }}
-      >
-        <div className="text-2xl mb-2">
-          <Search size={24} className="inline" style={{ color: tokens.color('y') }} />
-        </div>
-        <div className="font-extrabold mb-1" style={{ fontSize: '13px', color: tokens.color('y') }}>
-          <InlineTextEditor
-            {...titleEditor}
-            className="text-[11px] font-extrabold"
-            style={{ color: tokens.color('y'), fontSize: 'inherit' }}
-            placeholder="Ketik judul game..."
-          />
-        </div>
-        <div style={{ fontSize: '12px', color: tokens.muted(0.7) }}>
-          Tambahkan kata untuk memulai game Teka-Teki Kata!
-        </div>
-      </div>
-    );
-  }
+ // ── Restart handler ─────────────────────────────────────────────
+ const handleRestart = React.useCallback(() => {
+ setFound(new Set());
+ setFoundCells(new Set());
+ setStartCell(null);
+ setWrongAttempts(0);
+ setPhase('play');
+ setGridKey(k => k + 1);
+ hasReportedRef.current = false;
+ playSound('click');
+ }, []);
 
-  // ── Completion screen ───────────────────────────────────────────
-  if (phase === 'done') {
-    const score = Math.max(
-      Math.ceil(placements.length * 0.5),
-      placements.length - wrongAttempts,
-    );
-    const pct =
-      placements.length > 0 ? Math.round((score / placements.length) * 100) : 0;
+ // ── Empty state: no words configured ────────────────────────────
+ if (words.length === 0) {
+ return (
+ <div
+ className="text-center p-5 rounded-xl"
+ style={{
+ background: edu.accentAlpha(0.06),
+ border: '2px dashed ' + edu.accentAlpha(0.25),
+ }}
+ >
+ <div className="text-2xl mb-2">
+ <Search size={24} className="inline" style={{ color: edu.accent() }} />
+ </div>
+ <div className="font-extrabold mb-1" style={{ ...edu.caption(), color: edu.accent() }}>
+ <InlineTextEditor
+ {...titleEditor}
+ className="font-extrabold"
+ style={{ color: edu.accent(), ...edu.micro() }}
+ placeholder="Ketik judul game..."
+ />
+ </div>
+ <div style={{ ...edu.caption(), color: edu.mutedText(0.7) }}>
+ Tambahkan kata untuk memulai game Teka-Teki Kata!
+ </div>
+ </div>
+ );
+ }
 
-    return (
-      <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
-      <div className="text-center p-5">
-        <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
-        {/* Tiered icon */}
-        <div
-          className="text-3xl mb-3"
-          style={{ animation: 'float 3s ease-in-out infinite' }}
-        >
-          {pct >= 80 ? (
-            <Trophy size={28} className="inline text-app-accent" />
-          ) : pct >= 50 ? (
-            <Star size={28} className="inline text-app-accent" />
-          ) : (
-            <Dumbbell size={28} className="inline text-app-accent" />
-          )}
-        </div>
+ // ── Completion screen ───────────────────────────────────────────
+ if (phase === 'done') {
+ const score = Math.max(
+ Math.ceil(placements.length * 0.5),
+ placements.length - wrongAttempts,
+ );
+ const pct =
+ placements.length > 0 ? Math.round((score / placements.length) * 100) : 0;
 
-        {/* Tiered message */}
-        <div
-          className="font-black text-lg mb-1"
-          style={{
-            fontFamily: tokens.fontFamily('display'),
-            color: tokens.color('y'),
-          }}
-        >
-          {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
-        </div>
+ return (
+ <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
+ <div className="text-center p-5">
+ <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
+ {/* Tiered icon */}
+ <div
+ className="text-3xl mb-3"
+ style={{ animation: 'float 3s ease-in-out infinite' }}
+ >
+ {pct >= 80 ? (
+ <Trophy size={28} className="inline text-app-accent" />
+ ) : pct >= 50 ? (
+ <Star size={28} className="inline text-app-accent" />
+ ) : (
+ <Dumbbell size={28} className="inline text-app-accent" />
+ )}
+ </div>
 
-        {/* Score display */}
-        <div className="mb-4" style={{ fontSize: '13px', color: tokens.muted(0.8) }}>
-          Skor kamu: {score}/{placements.length} ({pct}%)
-        </div>
+ {/* Tiered message */}
+ <div
+ className="font-black text-lg mb-1"
+ style={{
+ fontFamily: tokens.fontFamily('display'),
+ color: edu.accent(),
+ }}
+ >
+ {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
+ </div>
 
-        {/* Stats row */}
-        <div className="flex justify-center gap-3">
-          <PremiumBadge tokens={tokens} accent="g" variant="glass">
-            Ditemukan {placements.length}
-          </PremiumBadge>
-          <PremiumBadge tokens={tokens} accent="r" variant="glass">
-            Salah {wrongAttempts}
-          </PremiumBadge>
-        </div>
+ {/* Score display */}
+ <div className="mb-4" style={{ ...edu.body(), color: edu.mutedText(0.8) }}>
+ Skor kamu: {score}/{placements.length} ({pct}%)
+ </div>
 
-        {/* Replay button */}
-        {interactive && (
-          <MicroInteraction tokens={tokens} accent="y" effect="squish">
-          <button
-            className={"mt-4 px-5 py-2 rounded-xl font-extrabold " + tokens.iosButtonTw(interactive)}
-            onClick={handleRestart}
-            style={{
-              fontSize: '13px',
-              background:
-                'linear-gradient(135deg, ' +
-                tokens.color('y') +
-                ', ' +
-                tokens.color('o') +
-                ')',
-              color: tokens.color('bg'),
-              boxShadow: '0 4px 16px ' + tokens.colorAlpha('y', 0.35),
-            }}
-          >
-            <RotateCcw size={14} className="inline" /> Ulangi
-          </button>
-          </MicroInteraction>
-        )}
-      </div>
-      </PremiumBlockWrapper>
-    );
-  }
+ {/* Stats row */}
+ <div className="flex justify-center gap-3">
+ <PremiumBadge tokens={tokens} accent="g" variant="glass">
+ Ditemukan {placements.length}
+ </PremiumBadge>
+ <PremiumBadge tokens={tokens} accent="r" variant="glass">
+ Salah {wrongAttempts}
+ </PremiumBadge>
+ </div>
 
-  // ── Active game screen ──────────────────────────────────────────
-  // Compute dynamic cell size based on grid size for good fit
-  const cellSize = gridSize <= 8 ? 36 : gridSize <= 10 ? 32 : gridSize <= 12 ? 28 : 24;
+ {/* Replay button */}
+ {interactive && (
+ <MicroInteraction tokens={tokens} accent="y" effect="squish">
+ <button
+ className={"mt-4 px-5 py-2 rounded-xl font-extrabold" + tokens.iosButtonTw(interactive)}
+ onClick={handleRestart}
+ style={{
+ ...edu.caption(),
+ background:
+ 'linear-gradient(135deg, ' +
+ edu.accent() +
+ ', ' +
+ tokens.color('o') +
+ ')',
+ color: tokens.color('bg'),
+ boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
+ }}
+ >
+ <RotateCcw size={14} className="inline" /> Ulangi
+ </button>
+ </MicroInteraction>
+ )}
+ </div>
+ </PremiumBlockWrapper>
+ );
+ }
 
-  return (
-    <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
-    <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
-      <ReadingProgressIndicator progress={placements.length > 0 ? found.size / placements.length : 0} tokens={tokens} accent="y" height={3} position="top" />
-      {/* Hidden instruction for screen readers */}
-      <div id={a11y.instructionId} className="sr-only">Temukan kata tersembunyi di grid huruf dengan memilih huruf awal dan akhir</div>
-      <div className="flex items-center justify-between min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="font-extrabold" style={{ fontSize: '13px', color: tokens.color('y') }}>
-            <Search size={14} className="inline" />{' '}
-            <InlineTextEditor
-              {...titleEditor}
-              className="text-[11px] font-extrabold"
-              style={{ color: tokens.color('y'), fontSize: 'inherit' }}
-              placeholder="Ketik judul game..."
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Found progress badge */}
-          <PremiumBadge tokens={tokens} accent="y" variant="glass">
-            {found.size}/{placements.length}
-          </PremiumBadge>
-        </div>
-      </div>
+ // ── Active game screen ──────────────────────────────────────────
+ // Compute dynamic cell size based on grid size for good fit
+ const cellSize = gridSize <= 8 ? 36 : gridSize <= 10 ? 32 : gridSize <= 12 ? 28 : 24;
 
-      {/* Progress bar */}
-      <div
-        className="h-1.5 rounded-full overflow-hidden"
-        {...a11y.progressAria('Kemajuan Teka-Teki Kata', found.size, placements.length)}
-        style={{ background: tokens.subtleBg(0.08) }}
-      >
-        <div
-          className="h-full rounded-full"
-          style={{
-            width:
-              placements.length > 0
-                ? (found.size / placements.length) * 100 + '%'
-                : '0%',
-            ...tokens.iosTransitionStyle('width', 'slow'),
-            background:
-              'linear-gradient(90deg, ' +
-              tokens.color('y') +
-              ', ' +
-              tokens.color('g') +
-              ')',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 2s linear infinite',
-            boxShadow: '0 0 8px ' + tokens.colorAlpha('y', 0.3),
-          }}
-        />
-        {/* Aurora shimmer overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(90deg, transparent, ' + tokens.colorAlpha('y', 0.2) + ', transparent)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 3s ease-in-out infinite',
-            pointerEvents: 'none',
-            borderRadius: 'inherit',
-          }}
-        />
-      </div>
+ return (
+ <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
+ <div className="space-y-3 game-block" {...a11y.rootAria} data-interactive>
+ <ReadingProgressIndicator progress={placements.length > 0 ? found.size / placements.length : 0} tokens={tokens} accent="y" height={3} position="top" />
+ {/* Hidden instruction for screen readers */}
+ <div id={a11y.instructionId} className="sr-only">Temukan kata tersembunyi di grid huruf dengan memilih huruf awal dan akhir</div>
+ <div className="flex items-center justify-between min-w-0">
+ <div className="flex items-center gap-2 min-w-0">
+ <div className="font-extrabold" style={{ ...edu.caption(), color: edu.accent() }}>
+ <Search size={14} className="inline" />{' '}
+ <InlineTextEditor
+ {...titleEditor}
+ className="font-extrabold"
+ style={{ color: edu.accent(), ...edu.micro() }}
+ placeholder="Ketik judul game..."
+ />
+ </div>
+ </div>
+ <div className="flex items-center gap-2">
+ {/* Found progress badge */}
+ <PremiumBadge tokens={tokens} accent="y" variant="glass">
+ {found.size}/{placements.length}
+ </PremiumBadge>
+ </div>
+ </div>
 
-      {/* Main layout: Grid on the left, word list on the right */}
-      <div className="flex gap-4">
-        {/* ── Letter Grid ── */}
-        <div className="flex-shrink-0">
-          <div
-            className="grid gap-1"
-            style={{
-              gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`,
-            }}
-          >
-            {grid.map((row, r) =>
-              row.map((letter, c) => {
-                const cellKey = `${r},${c}`;
-                const isStart =
-                  startCell !== null &&
-                  startCell[0] === r &&
-                  startCell[1] === c;
-                const isFound = foundCells.has(cellKey);
+ {/* Progress bar */}
+ <div
+ className="h-1.5 rounded-full overflow-hidden"
+ {...a11y.progressAria('Kemajuan Teka-Teki Kata', found.size, placements.length)}
+ style={{ background: tokens.subtleBg(0.08) }}
+ >
+ <div
+ className="h-full rounded-full"
+ style={{
+ width:
+ placements.length > 0
+ ? (found.size / placements.length) * 100 + '%'
+ : '0%',
+ ...tokens.iosTransitionStyle('width', 'slow'),
+ background:
+ 'linear-gradient(90deg, ' +
+ edu.accent() +
+ ', ' +
+ tokens.color('g') +
+ ')',
+ backgroundSize: '200% 100%',
+ animation: 'shimmer 2s linear infinite',
+ boxShadow: '0 0 8px ' + edu.accentAlpha(0.3),
+ }}
+ />
+ {/* Aurora shimmer overlay */}
+ <div
+ style={{
+ position: 'absolute',
+ top: 0,
+ left: 0,
+ right: 0,
+ bottom: 0,
+ background: 'linear-gradient(90deg, transparent, ' + edu.accentAlpha(0.2) + ', transparent)',
+ backgroundSize: '200% 100%',
+ animation: 'shimmer 3s ease-in-out infinite',
+ pointerEvents: 'none',
+ borderRadius: 'inherit',
+ }}
+ />
+ </div>
 
-                // Determine cell styling based on state
-                let bg: string;
-                let bdr: string;
-                let bxSh: string;
-                let textColor: string;
+ {/* Main layout: Grid on the left, word list on the right */}
+ <div className="flex gap-4">
+ {/* ── Letter Grid ── */}
+ <div className="flex-shrink-0">
+ <div
+ className="grid gap-1"
+ style={{
+ gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`,
+ }}
+ >
+ {grid.map((row, r) =>
+ row.map((letter, c) => {
+ const cellKey = `${r},${c}`;
+ const isStart =
+ startCell !== null &&
+ startCell[0] === r &&
+ startCell[1] === c;
+ const isFound = foundCells.has(cellKey);
 
-                if (isFound) {
-                  // Found word cell — green highlight
-                  bg = tokens.colorAlpha('g', 0.18);
-                  bdr = tokens.colorAlpha('g', 0.5);
-                  bxSh = '0 0 8px ' + tokens.colorAlpha('g', 0.2);
-                  textColor = tokens.color('g');
-                } else if (isStart) {
-                  // Selected start cell — amber ring
-                  bg = tokens.colorAlpha('y', 0.15);
-                  bdr = tokens.color('y');
-                  bxSh = '0 0 12px ' + tokens.colorAlpha('y', 0.4);
-                  textColor = tokens.color('text');
-                } else {
-                  // Default cell
-                  bg = tokens.colorAlpha('card', 0.6);
-                  bdr = tokens.subtleBorder(0.12);
-                  bxSh = tokens.raw.shadow.card;
-                  textColor = tokens.color('text');
-                }
+ // Determine cell styling based on state
+ let bg: string;
+ let bdr: string;
+ let bxSh: string;
+ let textColor: string;
 
-                return (
-                  <button
-                    key={`ws-cell-${block.id || 'ws'}-${r}-${c}`}
-                    role="gridcell"
-                    onClick={() => handleCellClick(r, c)}
-                    onKeyDown={(e) => {
-                      if (!interactive || phase !== 'play') return;
-                      const totalCells = gridSize * gridSize;
-                      const flatIndex = r * gridSize + c;
-                      const next = a11y.rovingFocus(totalCells, flatIndex, e.key, 'both', gridSize);
-                      if (next !== flatIndex) {
-                        e.preventDefault();
-                        const nextR = Math.floor(next / gridSize);
-                        const nextC = next % gridSize;
-                        const btn = document.querySelector(`[data-ws-cell="${block.id || 'ws'}-${nextR}-${nextC}"]`) as HTMLElement;
-                        btn?.focus();
-                      }
-                    }}
-                    data-ws-cell={`${block.id || 'ws'}-${r}-${c}`}
-                    disabled={!interactive || phase !== 'play'}
-                    aria-label={`Baris ${r + 1} Kolom ${c + 1}, huruf ${letter}${isFound ? ', ditemukan' : ''}`}
-                    className={"flex items-center justify-center rounded-lg font-extrabold " + tokens.iosGameButtonTw(interactive && phase === 'play') + " select-none"}
-                    style={{
-                      width: cellSize,
-                      height: cellSize,
-                      fontSize: cellSize <= 28 ? '11px' : '13px',
-                      background: bg,
-                      border: '2px solid ' + bdr,
-                      boxShadow: bxSh,
-                      color: textColor,
-                      cursor: interactive && phase === 'play' ? 'pointer' : 'default',
-                    }}
-                  >
-                    {letter}
-                  </button>
-                );
-              }),
-            )}
-          </div>
-        </div>
+ if (isFound) {
+ // Found word cell — green highlight
+ bg = tokens.colorAlpha('g', 0.18);
+ bdr = tokens.colorAlpha('g', 0.5);
+ bxSh = '0 0 8px ' + tokens.colorAlpha('g', 0.2);
+ textColor = tokens.color('g');
+ } else if (isStart) {
+ // Selected start cell — amber ring
+ bg = edu.accentAlpha(0.15);
+ bdr = edu.accent();
+ bxSh = '0 0 12px ' + edu.accentAlpha(0.4);
+ textColor = tokens.color('text');
+ } else {
+ // Default cell
+ bg = tokens.colorAlpha('card', 0.6);
+ bdr = tokens.subtleBorder(0.12);
+ bxSh = tokens.raw.shadow.card;
+ textColor = tokens.color('text');
+ }
 
-        {/* ── Word List ── */}
-        <div className="flex-1 min-w-0">
-          <div
-            className="rounded-xl p-3 premium-card-glow"
-            style={{
-              background: tokens.colorAlpha('card', 0.4),
-              border: '1px solid ' + tokens.subtleBorder(0.1),
-              boxShadow: tokens.raw.shadow.card,
-            }}
-          >
-            <div
-              className="font-extrabold uppercase tracking-wider mb-2"
-              style={{ fontSize: '10px', color: tokens.color('y') }}
-            >
-              Kata yang dicari
-            </div>
-            <div className="space-y-1.5 max-h-64 overflow-y-auto">
-              {placements.map((p, i) => {
-                const isWordFound = found.has(p.word);
-                return (
-                  <div
-                    key={`ws-word-${block.id || 'ws'}-${p.word}-${i}`}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-[background-color,border-color]"
-                    style={{
-                      background: isWordFound
-                        ? tokens.colorAlpha('g', 0.12)
-                        : tokens.subtleBg(0.04),
-                      border: '1px solid ' + (isWordFound
-                        ? tokens.colorAlpha('g', 0.3)
-                        : tokens.subtleBorder(0.06)),
-                    }}
-                  >
-                    {/* Status indicator dot */}
-                    <div
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{
-                        background: isWordFound
-                          ? tokens.color('g')
-                          : tokens.subtleBg(0.15),
-                        boxShadow: isWordFound
-                          ? '0 0 6px ' + tokens.colorAlpha('g', 0.4)
-                          : 'none',
-                      }}
-                    />
-                    {/* Word text */}
-                    <span
-                      className="font-bold tracking-wider"
-                      style={{
-                        fontSize: '12px',
-                        color: isWordFound
-                          ? tokens.color('g')
-                          : tokens.color('text'),
-                        textDecoration: isWordFound ? 'line-through' : 'none',
-                        opacity: isWordFound ? 0.7 : 1,
-                      }}
-                    >
-                      {p.word}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+ return (
+ <button
+ key={`ws-cell-${block.id || 'ws'}-${r}-${c}`}
+ role="gridcell"
+ onClick={() => handleCellClick(r, c)}
+ onKeyDown={(e) => {
+ if (!interactive || phase !== 'play') return;
+ const totalCells = gridSize * gridSize;
+ const flatIndex = r * gridSize + c;
+ const next = a11y.rovingFocus(totalCells, flatIndex, e.key, 'both', gridSize);
+ if (next !== flatIndex) {
+ e.preventDefault();
+ const nextR = Math.floor(next / gridSize);
+ const nextC = next % gridSize;
+ const btn = document.querySelector(`[data-ws-cell="${block.id || 'ws'}-${nextR}-${nextC}"]`) as HTMLElement;
+ btn?.focus();
+ }
+ }}
+ data-ws-cell={`${block.id || 'ws'}-${r}-${c}`}
+ disabled={!interactive || phase !== 'play'}
+ aria-label={`Baris ${r + 1} Kolom ${c + 1}, huruf ${letter}${isFound ? ', ditemukan' : ''}`}
+ className={"flex items-center justify-center rounded-lg font-extrabold" + tokens.iosGameButtonTw(interactive && phase === 'play') +" select-none"}
+ style={{
+ width: cellSize,
+ height: cellSize,
+ fontSize: cellSize <= 28 ? '11px' : '13px',
+ background: bg,
+ border: '2px solid ' + bdr,
+ boxShadow: bxSh,
+ color: textColor,
+ cursor: interactive && phase === 'play' ? 'pointer' : 'default',
+ }}
+ >
+ {letter}
+ </button>
+ );
+ }),
+ )}
+ </div>
+ </div>
 
-          {/* Hint: how to play (shown when no start cell selected) */}
-          {interactive && !startCell && (
-            <div
-              className="mt-2 px-3 py-2 rounded-lg"
-              style={{
-                fontSize: '10px',
-                color: tokens.muted(0.6),
-                background: tokens.subtleBg(0.03),
-                border: '1px solid ' + tokens.subtleBorder(0.05),
-              }}
-            >
-              Klik huruf pertama, lalu klik huruf terakhir kata yang kamu temukan.
-            </div>
-          )}
+ {/* ── Word List ── */}
+ <div className="flex-1 min-w-0">
+ <div
+ className="rounded-xl p-3 premium-card-glow"
+ style={{
+ background: tokens.colorAlpha('card', 0.4),
+ border: '1px solid ' + tokens.subtleBorder(0.1),
+ boxShadow: tokens.raw.shadow.card,
+ }}
+ >
+ <div
+ className="font-extrabold uppercase tracking-wider mb-2"
+ style={{ ...edu.micro(), color: edu.accent() }}
+ >
+ Kata yang dicari
+ </div>
+ <div className="space-y-1.5 max-h-64 overflow-y-auto">
+ {placements.map((p, i) => {
+ const isWordFound = found.has(p.word);
+ return (
+ <div
+ key={`ws-word-${block.id || 'ws'}-${p.word}-${i}`}
+ className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-[background-color,border-color]"
+ style={{
+ background: isWordFound
+ ? tokens.colorAlpha('g', 0.12)
+ : tokens.subtleBg(0.04),
+ border: '1px solid ' + (isWordFound
+ ? tokens.colorAlpha('g', 0.3)
+ : tokens.subtleBorder(0.06)),
+ }}
+ >
+ {/* Status indicator dot */}
+ <div
+ className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+ style={{
+ background: isWordFound
+ ? tokens.color('g')
+ : tokens.subtleBg(0.15),
+ boxShadow: isWordFound
+ ? '0 0 6px ' + tokens.colorAlpha('g', 0.4)
+ : 'none',
+ }}
+ />
+ {/* Word text */}
+ <span
+ className="font-bold tracking-wider"
+ style={{
+ ...edu.caption(),
+ color: isWordFound
+ ? tokens.color('g')
+ : tokens.color('text'),
+ textDecoration: isWordFound ? 'line-through' : 'none',
+ opacity: isWordFound ? 0.7 : 1,
+ }}
+ >
+ {p.word}
+ </span>
+ </div>
+ );
+ })}
+ </div>
+ </div>
 
-          {/* Selection hint (shown when start cell is selected) */}
-          {interactive && startCell && (
-            <div
-              className="mt-2 px-3 py-2 rounded-lg flex items-center gap-1.5"
-              style={{
-                fontSize: '10px',
-                color: tokens.color('y'),
-                background: tokens.colorAlpha('y', 0.08),
-                border: '1px solid ' + tokens.colorAlpha('y', 0.2),
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}
-            >
-              <Search size={12} className="inline flex-shrink-0" />
-              Pilih huruf terakhir...
-            </div>
-          )}
-        </div>
-      </div>
+ {/* Hint: how to play (shown when no start cell selected) */}
+ {interactive && !startCell && (
+ <div
+ className="mt-2 px-3 py-2 rounded-lg"
+ style={{
+ ...edu.micro(),
+ color: edu.mutedText(0.6),
+ background: tokens.subtleBg(0.03),
+ border: '1px solid ' + tokens.subtleBorder(0.05),
+ }}
+ >
+ Klik huruf pertama, lalu klik huruf terakhir kata yang kamu temukan.
+ </div>
+ )}
 
-      {/* ── Print Answer Key (teacher only) ── */}
-      <div className="print-only print-answer-key">
-        <h3>Kunci Jawaban: Teka-Teki Kata</h3>
-        <ul>
-          {placements.map((p, i) => (
-            <li key={`ws-ans-${block.id || 'ws'}-${i}`}><strong>{p.word}</strong> — baris {p.cells[0]![0] + 1}, kolom {p.cells[0]![1] + 1}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-    </PremiumBlockWrapper>
-  );
+ {/* Selection hint (shown when start cell is selected) */}
+ {interactive && startCell && (
+ <div
+ className="mt-2 px-3 py-2 rounded-lg flex items-center gap-1.5"
+ style={{
+ ...edu.micro(),
+ color: edu.accent(),
+ background: edu.accentAlpha(0.08),
+ border: '1px solid ' + edu.accentAlpha(0.2),
+ animation: 'pulse 1.5s ease-in-out infinite',
+ }}
+ >
+ <Search size={12} className="inline flex-shrink-0" />
+ Pilih huruf terakhir...
+ </div>
+ )}
+ </div>
+ </div>
+
+ {/* ── Print Answer Key (teacher only) ── */}
+ <div className="print-only print-answer-key">
+ <h3>Kunci Jawaban: Teka-Teki Kata</h3>
+ <ul>
+ {placements.map((p, i) => (
+ <li key={`ws-ans-${block.id || 'ws'}-${i}`}><strong>{p.word}</strong> — baris {p.cells[0]![0] + 1}, kolom {p.cells[0]![1] + 1}</li>
+ ))}
+ </ul>
+ </div>
+ </div>
+ </PremiumBlockWrapper>
+ );
 });
