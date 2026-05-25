@@ -1485,3 +1485,25 @@ Stage Summary:
 - 15 block renderers fully migrated to edu tokens (5 content + 10 game)
 - All 39 block renderers now use edu tokens (24 were already migrated in previous sessions)
 - Remaining: Phase 2 (8 educational components with fixed identity), Phase 3 (3 templates), Phase 4 (freeze old presets)
+---
+Task ID: 1
+Agent: Main Agent
+Task: Create SYSTEM_MAP.md + Migrate block renderers from iOS VC to edu tokens
+
+Work Log:
+- Explored entire project structure (561 source files, 43 block renderers)
+- Updated SYSTEM_MAP.md Risks section with accurate migration status (39/43 already migrated, 4 remaining)
+- Refactored HeroRenderer.tsx: 11 iosTypography() calls → edu.heading/caption/body/micro + iosSectionPadding→edu.sectionPadding + iosEntranceStyle→edu.entrance + iosIconSize→edu.iconSize
+- Refactored CoverRenderer.tsx: iosTypography('hero','title1')→edu.title(), iosTypography('callToAction')→edu.caption()
+- Refactored MateriSectionRenderer.tsx: iosTypography('title3', {fontSize: 14-22})→edu.heading() (26-32px)
+- Refactored KuisRenderer.tsx: iosTypography('caption1')→tokens.edu('kuis').micro()
+- TypeScript build verified clean (tsc --noEmit passes)
+- Committed and pushed to GitHub without conflicts
+
+Stage Summary:
+- ALL 43 block renderers now use edu tokens exclusively for typography (0 iosTypography runtime calls remain)
+- Hero titles now use edu.heading() → 26-32px (was 9-26px hardcoded)
+- Cover titles now use edu.title() → 36-48px (was iOS VC hero/title1)
+- Materi section titles now use edu.heading() → 26-32px (was 14-22px hardcoded)
+- Kuis variant selector now uses edu.micro() (was iOS VC caption1)
+- iOS VC helpers still used for app chrome (iosButtonTw, iosFocusRing, iosTabTw, etc.) — intentional
