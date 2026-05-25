@@ -1529,3 +1529,47 @@ Stage Summary:
 - 0 iosTypography() runtime calls remain in block renderers
 - edu.cardStyle()/headerStyle() pattern established in TujuanDisplayRenderer as reference
 - 3 commits: f6cc2ee (display mode + PremiumStepNavigator), 0d74876 (cardStyle/headerStyle)
+---
+Task ID: display-mode-visual
+Agent: Super Z (main)
+Task: Wire Display Mode visual rendering — make mode switching actually change visual output
+
+Work Log:
+- Verified Display Mode infrastructure was already wired (store → TokenResolver → EduRenderingContext → typography scaling)
+- Identified the gap: visual output didn't change when switching modes because EDU_MODE_BG and EDU_PRINT_SAFE were never consumed
+- Updated EduRenderingContext with mode-aware overrides:
+  - accent() → black in print mode (B&W fotokopi safe)
+  - accentAlpha() → grayscale alpha in print mode
+  - accentBg() → near-transparent gray in print mode
+  - accentBorder() → dark gray (#333333) in print mode
+  - cardBg() → mode-specific card backgrounds (projector=warm, print=white, student=clean)
+  - cardStyle() → thick borders + no shadow in print mode
+  - headerStyle() → thick black stripe (4px) in print mode
+  - shadow() → always 'none' in print mode
+  - textColor() → #000000 in print mode
+  - mutedText() → dark gray in print mode
+  - New methods: pageBg(), pageBg2(), pageCardBg(), isPrint(), isProjector(), displayMode getter
+- Wired EDU_MODE_BG into SchemaScreenRenderer background rendering
+- Wired EDU_MODE_BG into PageFrame background rendering
+- Applied print-mode text color override (#000000) in SchemaScreenRenderer container
+- Added TokenResolver display mode helpers: eduPageBg(), eduPageBg2(), eduCardBg(), eduTextColor(), isPrintMode(), isProjectorMode()
+- Migrated 6 key renderers from tokens.color('bg'/'card') to mode-aware edu helpers:
+  - CoverRenderer: tokens.color('bg') → edu.pageBg()/pageBg2()
+  - HeroRenderer: tokens.color('bg') → edu.cardBg()
+  - MateriSectionRenderer: tokens.color('card') → edu.cardBg() (5 calls)
+  - PetunjukRenderer: tokens.color('card') → edu.cardBg()
+  - RangkumanRenderer: tokens.color('card') → edu.cardBg()
+  - TujuanDisplayRenderer: tokens.colorAlpha('bg') → tokens.eduPageBg()
+- Created EduComponentShell + EduInlineSection reusable wrapper components
+- Updated SYSTEM_MAP.md with display mode architecture details
+
+Stage Summary:
+- 3 commits: 42c8c55, 50deb11, 3579880
+- Display Mode now ACTUALLY changes visual output:
+  - Kelas (classroom): standard white bg, 1.0x font scale
+  - Proyektor: warm #FFFBF0 bg, 1.15x font scale
+  - Cetak (print): B&W safe, no shadows, thick borders, black accents/text, 0.95x scale
+  - Siswa (student): cool gray #F1F5F9 bg, 0.9x scale
+- Full pipeline: Store(displayMode) → TokenResolver → EduRenderingContext → all 43 block renderers
+- EduComponentShell available for new renderer standardization
+- Build: TypeScript clean, pushed to origin/main
