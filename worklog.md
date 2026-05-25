@@ -1675,3 +1675,93 @@ Stage Summary:
 - Scene type is now threaded through: Template → SceneSpec → EduRenderingContext → renderers
 - CSS keyframes for emotional Layer 5 available globally
 - Next: Actual renderer integration (passing sceneType from PageRenderer down to block renderers)
+
+---
+Task ID: 5b
+Agent: Sub Agent
+Task: Add sceneType to CourseTemplateRegistry
+
+Work Log:
+- Read worklog.md and CourseTemplateRegistry.ts
+- Analyzed all 16 course templates to identify 132 SceneTemplateSpec objects
+- Created mapping from templateType to sceneType per TEMPLATE_TO_SCENE:
+  - cover/petunjuk/dokumen/tujuan/motivasi/hero → 'intro'
+  - materi/custom → 'concept'
+  - rangkuman/penutup → 'summary'
+  - skenario → 'example'
+  - diskusi → 'discussion'
+  - kuis/hasil → 'assessment'
+  - game → 'practice'
+  - refleksi → 'reflection'
+- Used Python script to add sceneType field to all 132 SceneTemplateSpec objects across all 16 templates
+- Verified: 132 templateType occurrences, 132 sceneType occurrences (100% coverage)
+- TypeScript compilation: clean (0 errors)
+
+Templates modified (16 total):
+1. modul-ppkn-vii (10 scenes)
+2. modul-ppkn-viii (8 scenes)
+3. modul-ipa-viii (8 scenes)
+4. modul-ipa-vii (9 scenes)
+5. modul-mtk-vii (8 scenes)
+6. modul-mtk-viii (8 scenes)
+7. modul-bin-vii (8 scenes)
+8. modul-bin-viii (9 scenes)
+9. modul-bing-viii (8 scenes)
+10. modul-bing-vii (7 scenes)
+11. modul-seni-vii (7 scenes)
+12. modul-seni-viii (7 scenes)
+13. modul-pjok-vii (8 scenes)
+14. modul-pjok-viii (7 scenes)
+15. modul-pjok-iv (9 scenes)
+16. modul-pjok-x (9 scenes)
+17. template-kosong (2 scenes)
+
+Stage Summary:
+- 1 file changed: CourseTemplateRegistry.ts
+- 132 SceneTemplateSpec objects now have explicit sceneType field
+- sceneType values follow TEMPLATE_TO_SCENE mapping from education-scene-types.ts
+- resolveSceneType() function can now use explicit sceneType directly instead of falling back to mapping lookup
+- Build: TypeScript clean
+
+---
+Task ID: 5a-5e
+Agent: main
+Task: Phase 5A-5E — Scene-aware design system integration across registries and core modules
+
+Work Log:
+- Phase 5A: Added `sceneType: SceneType` to `PagePreset` interface and all 16 preset definitions in PagePresetRegistry.ts
+  - Added imports for SceneType and TEMPLATE_TO_SCENE
+  - Added `getPresetSceneType()` and `getPresetsBySceneType()` helper functions
+  - All 16 presets now explicitly declare their scene type (cover→intro, materi→concept, kuis→assessment, etc.)
+
+- Phase 5B: Added explicit `sceneType` to all 132 SceneTemplateSpec objects across 16 course templates in CourseTemplateRegistry.ts
+  - Each scene now has an explicit sceneType matching TEMPLATE_TO_SCENE mapping
+  - resolveSceneType() can now use the explicit field directly
+
+- Phase 5C: Added scene-aware accent prominence to education-colors.ts
+  - Added imports for SceneType, getAccentOpacity, getAccentProminence, AccentProminence
+  - Added 6 helper functions: getSceneAwareBgOpacity, getSceneAwareBorderOpacity, getSceneAwareTextOpacity, getColorProminence, isColorProminent, getSceneAwareColor
+  - Colors now "adjust volume" based on scene context (e.g., quiz-red is barely visible in Reflection scenes)
+
+- Phase 5D: Added SceneType mapping to education-components.ts
+  - Added SCENE_PRIMARY_COLOR mapping (8 SceneTypes → 8 EduSemanticColors)
+  - Added getEduComponentForScene() — gets the visual "voice" of a scene
+  - Added getSceneCardTreatment(), getSceneHeaderTreatment(), getSceneStripeWidth() — scene-aware style helpers
+
+- Phase 5E: Added scene density rules to education-spacing.ts
+  - Added getSceneDensityMultiplier() — intensity → spacing density (0.85x/1.0x/1.15x)
+  - Added eduSceneComponentPadding(), eduSceneSectionPadding(), eduSceneGap() — scene-aware spacing
+  - Added getSceneWhitespaceRatio(), getSceneMaxBlocks() — scene density budgets
+  - High-intensity scenes (Practice) feel tight and focused; low-intensity (Reflection) feel open and calm
+
+- TypeScript compilation: 0 errors (clean)
+
+Stage Summary:
+- Complete scene-aware design system integration across ALL core modules
+- PagePresetRegistry now scene-aware (16 presets → 8 scene types)
+- CourseTemplateRegistry now has explicit sceneType on all 132 scene specs
+- education-colors.ts now adjusts color "volume" per scene context
+- education-components.ts now maps SceneType → ComponentIdentity
+- education-spacing.ts now has scene density rules (intensity-driven spacing)
+- All changes backward compatible — existing renderers still work unchanged
+- The 6-layer architecture is now fully wired: Foundation → Spatial → Components → Interaction → Emotional → (Gamification FASE 3)
