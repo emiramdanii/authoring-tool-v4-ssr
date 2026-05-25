@@ -542,7 +542,7 @@ scripts/                        # DevOps scripts
 
 # Risks / Blind Spots
 
-1. **4 block renderers masih pakai iosTypography()** — Dari 43 renderers, 39 sudah pakai `tokens.edu()`. Yang masih pakai iOS VC: **HeroRenderer** (11 calls, fontSize 9-26px), **CoverRenderer** (4 calls, hero/title1), **MateriSectionRenderer** (2 calls, title3), **KuisRenderer** (1 call, caption1). Hardcoded fontSize juga masih ada di 7 file (PremiumStepNavigator 11/13px, HeroRenderer 9px, CoverRenderer 10/160px, dll).
+1. **Block renderers sudah menggunakan edu tokens** — Dari 43 renderers, SEMUA sudah pakai `tokens.edu()`. Hero/Cover/MateriSection/Kuis sudah migrasi dari `iosTypography()` ke edu tokens. PremiumStepNavigator juga sudah migrasi. **Display Mode Selector** (Kelas/Proyektor/Cetak/Siswa) sudah terintegrasi di StatusBar → TokenResolver → EduRenderingContext.
 
 2. **Dynamic imports** — Beberapa block editor menggunakan dynamic import (module-editors/) yang tidak bisa dipetakan statik. Asumsi: semua tipe blok terdaftar di SceneRegistry.
 
@@ -554,7 +554,7 @@ scripts/                        # DevOps scripts
 
 6. **Schema migration** — `src/core/schema/schema-migration.ts` ada tapi belum ada versioning scheme yang jelas. Perubahan schema di masa depan mungkin perlu migration path.
 
-7. **EduRenderingContext gap** — `tokens.edu(blockType, isCompact)` factory sudah ada di TokenResolver dan dipakai 39/43 renderers. Tapi HeroRenderer dan CoverRenderer (block terbesar & paling terlihat) masih 90% pakai iOS VC. Ini prioritas migrasi tertinggi.
+7. **EduRenderingContext + Display Mode** — `tokens.edu(blockType, isCompact)` sudah terintegrasi penuh. TokenResolver menerima `displayMode` dari canva store. DisplayModeSelector di StatusBar mengontrol 4 mode tampilan (classroom/projector/print/student). `edu.cardStyle()` dan `edu.headerStyle()` mulai digunakan di TujuanDisplayRenderer.
 
 8. **AI response parsing** — Parsing JSON dari LLM response menggunakan regex cleaning. Jika LLM menghasilkan format yang tidak terduga, bisa gagal (ditangani dengan error 422).
 

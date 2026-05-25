@@ -87,18 +87,15 @@ function TujuanVariantA({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: edu.cardBg(),
-        boxShadow: edu.shadow('elevated'),
-        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.cardStyle(),
         ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
+          ...edu.headerStyle(),
           background: `linear-gradient(135deg, ${edu.accentBg()}, ${edu.accentAlpha(0.03)})`,
-          ...edu.sectionPadding(),
         }}
       >
         <div className="flex items-center justify-between gap-3">
@@ -365,16 +362,14 @@ function TujuanVariantB({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: edu.cardBg(),
-        boxShadow: edu.shadow('elevated'),
-        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.cardStyle(),
         ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* Header — compact */}
       <div
         style={{
-          ...edu.componentPadding(),
+          ...edu.headerStyle(),
           borderBottom: `1px solid ${tokens.colorAlpha('c', 0.1)}`,
           background: edu.accentBg(),
         }}
@@ -699,9 +694,7 @@ function TujuanVariantC({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: edu.cardBg(),
-        boxShadow: edu.shadow('elevated'),
-        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.cardStyle(),
         ...edu.entrance(0, 'fadeIn'),
       }}
     >
