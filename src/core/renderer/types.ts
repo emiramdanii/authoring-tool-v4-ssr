@@ -479,9 +479,19 @@ export class TokenResolver {
   /** Create an educational rendering context for a block type.
    *  This is the PRIMARY way to access edu tokens in renderers.
    *  The display mode is inherited from the TokenResolver instance
-   *  (set via constructor from the canva store's displayMode state). */
-  edu(blockType: string, isCompact: boolean = false): EduRenderingContext {
-    return new EduRenderingContext(this, blockType, isCompact, this._displayMode);
+   *  (set via constructor from the canva store's displayMode state).
+   *
+   *  Scene-aware: pass sceneType for scene-specific typography,
+   *  atmosphere, emotional profile, and accent prominence.
+   *
+   *  // Old API (still works, sceneType inferred from blockType)
+   *  const edu = tokens.edu('tujuan-display', isCompact);
+   *
+   *  // New API (explicit sceneType)
+   *  const edu = tokens.edu('tujuan-display', isCompact, 'intro');
+   */
+  edu(blockType: string, isCompact: boolean = false, sceneType?: import('@/core/edu/education-scene-types').SceneType): EduRenderingContext {
+    return new EduRenderingContext(this, blockType, isCompact, this._displayMode, sceneType);
   }
 
   // ═══════════════════════════════════════════════════════════════════

@@ -3,17 +3,29 @@
  *
  * Core principle: Every student in the room must be able to read
  * the content, even from the back row. This means:
- *   - Heading ≥ 40px (back-of-classroom readable)
+ *   - Hero ≥ 48px (scene-opening dramatic impact)
+ *   - Title ≥ 40px (back-of-classroom readable)
  *   - Body ≥ 18px (comfortable reading at 3m distance)
  *   - Caption ≥ 14px (still legible, not decorative)
  *   - WCAG AAA contrast ratio (7:1 minimum)
  *   - Maximum 120 words per visual chunk
  *   - Minimum 35% whitespace ratio
  *
+ * Dramatic Hierarchy (new in v2.1):
+ *   - Intro Scene:  Hero 56px → Body 18px = 3.1x ratio
+ *   - Concept Scene: Title 40px → Body 20px = 2.0x ratio
+ *   - Practice Scene: Title 36px → Body 22px = 1.6x ratio
+ *   - Reflection Scene: Title 36px → Body 18px = 2.0x ratio
+ *
+ * Each Scene Type has its own typography emphasis — this creates
+ * the emotional rhythm that makes learning feel alive.
+ *
  * These tokens REPLACE the iOS visual contract's tiny fonts
  * (11-15px) when rendering educational content on canvas.
  * The iOS VC is kept for app shell/chrome UI only.
  */
+
+import type { SceneType } from './education-scene-types';
 
 // ═══════════════════════════════════════════════════════════════
 // EDUCATIONAL TYPE SCALE
@@ -41,6 +53,18 @@ export interface EduTypographyLevel {
 }
 
 export const EDU_TYPOGRAPHY = {
+  /** Hero — Scene-opening headline, cover title. 56px dramatic impact. */
+  hero: {
+    name: 'Hero',
+    minPx: 42,
+    px: 56,
+    maxPx: 64,
+    weight: 800,
+    lineHeight: 1.1,
+    letterSpacing: -0.03,
+    fontFamily: 'display',
+  } satisfies EduTypographyLevel,
+
   /** Page/scene title — "Tujuan Pembelajaran", "Materi", etc. */
   title: {
     name: 'Title',
@@ -135,6 +159,106 @@ export const EDU_MODE_SCALE: Record<EduDisplayMode, number> = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// SCENE-AWARE TYPOGRAPHY OVERRIDES
+// ═══════════════════════════════════════════════════════════════
+// Each scene type has different typography emphasis:
+//
+// Intro:      Hero is HUGE (56px), body is normal → dramatic opening
+// Concept:    Hero is moderate (44px), body is larger (20px) → readable content
+// Practice:   Hero is smaller (36px), body is larger (22px) → action-focused
+// Reflection: Hero is smaller (36px), body is normal (18px) → contemplative
+// Summary:    Hero is big (48px), body is normal (18px) → achievement feel
+//
+// This creates the "dramatic hierarchy" that makes each scene FEEL different.
+
+export interface SceneTypographyOverride {
+  /** Override for hero level (if scene uses hero) */
+  hero?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+  /** Override for title level */
+  title?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+  /** Override for section level */
+  section?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+  /** Override for bodyLg level */
+  bodyLg?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+  /** Override for body level */
+  body?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+  /** Override for caption level */
+  caption?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+  /** Override for micro level */
+  micro?: { px?: number; maxPx?: number; minPx?: number; weight?: number };
+}
+
+export const SCENE_TYPOGRAPHY_OVERRIDES: Record<SceneType, SceneTypographyOverride> = {
+  // Intro — dramatic opening, big hero, curiosity-building
+  intro: {
+    hero: { px: 56, maxPx: 64, weight: 800 },
+    title: { px: 44, maxPx: 52, weight: 800 },
+    section: { px: 30, maxPx: 34 },
+    body: { px: 18 },
+  },
+
+  // Concept — readable content, moderate hierarchy, structured
+  concept: {
+    hero: { px: 44, maxPx: 52, weight: 700 },
+    title: { px: 40, maxPx: 48 },
+    section: { px: 28, maxPx: 32 },
+    body: { px: 20, minPx: 18 },    // Slightly larger body for reading
+    bodyLg: { px: 22, minPx: 20 },
+  },
+
+  // Example — discovery-focused, moderate energy
+  example: {
+    hero: { px: 40, maxPx: 48, weight: 700 },
+    title: { px: 38, maxPx: 44 },
+    section: { px: 28, maxPx: 32 },
+    body: { px: 20, minPx: 18 },    // Larger body for examples
+    bodyLg: { px: 22, minPx: 20 },
+  },
+
+  // Practice — action-focused, body text larger for doing
+  practice: {
+    hero: { px: 36, maxPx: 44, weight: 700 },
+    title: { px: 36, maxPx: 42, weight: 700 },
+    section: { px: 26, maxPx: 30 },
+    body: { px: 22, minPx: 20 },    // Large body for instructions
+    bodyLg: { px: 24, minPx: 22 },
+  },
+
+  // Discussion — open, moderate hierarchy, contemplative
+  discussion: {
+    hero: { px: 40, maxPx: 48, weight: 700 },
+    title: { px: 38, maxPx: 44 },
+    section: { px: 28, maxPx: 32 },
+    body: { px: 20, minPx: 18 },
+  },
+
+  // Reflection — calm, minimal drama, introspective
+  reflection: {
+    hero: { px: 36, maxPx: 44, weight: 600 },
+    title: { px: 36, maxPx: 42, weight: 700 },
+    section: { px: 26, maxPx: 30 },
+    body: { px: 18 },
+  },
+
+  // Assessment — focused, balanced, no distraction
+  assessment: {
+    hero: { px: 36, maxPx: 44, weight: 700 },
+    title: { px: 36, maxPx: 42, weight: 700 },
+    section: { px: 26, maxPx: 30 },
+    body: { px: 20, minPx: 18 },    // Larger body for questions
+    bodyLg: { px: 22, minPx: 20 },
+  },
+
+  // Summary — achievement, closure, sense of completion
+  summary: {
+    hero: { px: 48, maxPx: 56, weight: 800 },
+    title: { px: 42, maxPx: 48, weight: 800 },
+    section: { px: 30, maxPx: 34 },
+    body: { px: 18 },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
 // HELPER: Resolve typography for a display mode
 // ═══════════════════════════════════════════════════════════════
 
@@ -177,6 +301,66 @@ export function resolveEduTypographyCompact(
     return {
       ...resolved,
       fontSize: `${spec.minPx}px`,
+    };
+  }
+  return resolved;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPER: Scene-aware typography resolution
+// ═══════════════════════════════════════════════════════════════
+// Applies scene-specific overrides to the base typography.
+// The override adjusts px/weight for the scene's emotional needs.
+
+export function resolveEduTypographyScene(
+  key: EduTypographyKey,
+  sceneType: SceneType,
+  mode: EduDisplayMode = 'classroom',
+): ReturnType<typeof resolveEduTypography> {
+  const base = EDU_TYPOGRAPHY[key];
+  const override = SCENE_TYPOGRAPHY_OVERRIDES[sceneType][key];
+  const scale = EDU_MODE_SCALE[mode];
+
+  // Apply overrides if they exist for this key in this scene
+  const px = override?.px ?? base.px;
+  const maxPx = override?.maxPx ?? base.maxPx;
+  const weight = override?.weight ?? base.weight;
+  const minPx = override?.minPx ?? base.minPx;
+
+  const scaledPx = Math.round(px * scale);
+  const finalPx = Math.max(scaledPx, minPx);
+  // Also cap at maxPx * scale
+  const cappedPx = Math.min(finalPx, Math.round(maxPx * scale));
+
+  return {
+    fontSize: `${cappedPx}px`,
+    fontWeight: weight,
+    lineHeight: base.lineHeight,
+    letterSpacing: `${base.letterSpacing}em`,
+    fontFamily: base.fontFamily === 'display'
+      ? "var(--font-fredoka), 'Fredoka', cursive"
+      : "var(--font-nunito), 'Nunito', sans-serif",
+  };
+}
+
+/**
+ * Scene-aware + compact-aware typography resolution.
+ * This is the primary function that EduRenderingContext should use.
+ */
+export function resolveEduTypographySceneCompact(
+  key: EduTypographyKey,
+  sceneType: SceneType,
+  isCompact: boolean,
+  mode: EduDisplayMode = 'classroom',
+): ReturnType<typeof resolveEduTypography> {
+  const resolved = resolveEduTypographyScene(key, sceneType, mode);
+  if (isCompact) {
+    const base = EDU_TYPOGRAPHY[key];
+    const override = SCENE_TYPOGRAPHY_OVERRIDES[sceneType][key];
+    const minPx = override?.minPx ?? base.minPx;
+    return {
+      ...resolved,
+      fontSize: `${minPx}px`,
     };
   }
   return resolved;

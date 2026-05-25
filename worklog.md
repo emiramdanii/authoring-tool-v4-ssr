@@ -1628,3 +1628,24 @@ Stage Summary:
 - 8 Scene Types define the entire design system architecture
 - 10-step roadmap ensures no step is skipped before implementation
 - v2.0 docx also available for reference
+---
+Task ID: 1A-3B
+Agent: Main (Senior Dev)
+Task: Implement Scene Type Model + Emotional Layer + Scene Atmosphere + update all edu token files
+
+Work Log:
+- Created `src/core/edu/education-scene-types.ts` — 8 Scene Types (intro/concept/example/practice/discussion/reflection/assessment/summary), intensity curve, narrative positions, reveal strategies, TEMPLATE_TO_SCENE mapping, BLOCK_SCENE_HINT mapping, inferSceneType() helper, validateNarrativeArc()
+- Created `src/core/edu/education-emotional-layer.ts` — MVP Emotional Layer with 3 core emotions (Progress, Discovery, Reward), EmotionalMotion configs per category, SceneEmotionalProfile per scene type, emotionalRewardStyle/emotionalDiscoveryStyle/emotionalProgressStyle helpers, EMOTIONAL_KEYFRAMES CSS, EMOTIONAL_VS_DECORATIVE documentation
+- Created `src/core/edu/education-scene-atmosphere.ts` — 8 Scene Atmospheres with accentProminence (full/muted/minimal per semantic color), bgTint, cardTreatment (elevated/flat/subtle), stripeProminence (bold/normal/gentle), headerTreatment (accented/outlined/minimal), PROMINENCE_OPACITY mapping
+- Updated `src/core/edu/education-typography.ts` — Added `hero` level (56px), SceneTypographyOverride per scene type, resolveEduTypographyScene() and resolveEduTypographySceneCompact() helpers
+- Updated `src/core/edu/education-motion.ts` — Added `emotional` motion category (progress/discovery/reward), `emotional` and `emotionalMax` durations, `emotional` easing, eduEmotionalStyle() helper, expanded forbidden list (confetti, shimmer, holographic)
+- Updated `src/core/edu/EduRenderingContext.ts` — Scene-aware: hero(), sceneType getter, emotional(), atmosphere(), sceneBg(), sceneBgTinted(), sceneIntensity(), revealStrategy(), scene-aware accentBg/accentBorder/accentAlpha with prominence multipliers, scene-aware cardStyle/headerStyle with treatment, emotionalMotion(), scene-aware stripeWidth()
+- Updated `src/core/renderer/types.ts` (TokenResolver) — edu() now accepts optional 3rd param sceneType, backward compatible
+- Updated `src/core/edu/index.ts` — Added Layer 5 exports for all new modules
+
+Stage Summary:
+- 3 new files, 5 updated files, 0 TypeScript errors
+- All 43 existing block renderers continue to work (backward compatible — old 4-param edu() API still works)
+- New API: tokens.edu('kuis', false, 'assessment') for explicit scene-aware rendering
+- Foundation complete for: scene-specific typography hierarchy, atmosphere-driven accent prominence, emotional motion profiles
+- Pending: Phase 4 (PremiumStepNavigator rebuild, BlockSelectionOverlay simplify), Phase 5 (template/preset sceneType mapping)
