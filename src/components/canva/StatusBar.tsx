@@ -3,7 +3,7 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { RATIOS } from '@/components/canva/types';
-import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap, GraduationCap } from 'lucide-react';
+import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap, GraduationCap, Monitor, Projector, Printer, Laptop } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
@@ -20,6 +20,60 @@ import { teacherTerm } from '@/core/i18n/teacher-terminology';
 // ═══════════════════════════════════════════════════════════════
 
 type SaveStatus = 'unsaved' | 'saving' | 'saved' | 'error';
+
+// ═══════════════════════════════════════════════════════════════
+// DISPLAY MODE SELECTOR — Educational viewing context switcher
+// ═══════════════════════════════════════════════════════════════
+// Controls how canvas content renders:
+//   🏫 Classroom — white bg, standard sizes (1.0x)
+//   📽️ Projector — warm bg, max sizes (1.15x)
+//   🖨️ Print — B&W friendly (0.95x)
+//   💻 Student — laptop/HP (0.9x)
+// ═══════════════════════════════════════════════════════════════
+
+import type { EduDisplayMode } from '@/core/edu/education-typography';
+
+const DISPLAY_MODES: Array<{
+  key: EduDisplayMode;
+  label: string;
+  icon: React.ReactNode;
+  shortLabel: string;
+}> = [
+  { key: 'classroom', label: 'Kelas', icon: <Monitor size={10} />, shortLabel: '🏫' },
+  { key: 'projector', label: 'Proyektor', icon: <Projector size={10} />, shortLabel: '📽️' },
+  { key: 'print', label: 'Cetak', icon: <Printer size={10} />, shortLabel: '🖨️' },
+  { key: 'student', label: 'Siswa', icon: <Laptop size={10} />, shortLabel: '💻' },
+];
+
+function DisplayModeSelector() {
+  const displayMode = useCanvaStore((s) => s.displayMode);
+  const setDisplayMode = useCanvaStore((s) => s.setDisplayMode);
+
+  return (
+    <div className="flex items-center gap-0.5 rounded-md bg-app-muted/10 px-0.5 py-0.5" title="Mode tampilan konten">
+      {DISPLAY_MODES.map((m) => {
+        const isActive = displayMode === m.key;
+        return (
+          <button
+            key={m.key}
+            onClick={() => setDisplayMode(m.key)}
+            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded transition-colors text-[9px] font-bold ${
+              isActive
+                ? 'bg-app-accent/15 text-app-accent'
+                : 'text-app-muted hover:text-app-muted/80 hover:bg-app-muted/5'
+            }`}
+            title={m.label}
+            aria-label={`Mode tampilan: ${m.label}`}
+            aria-pressed={isActive}
+          >
+            {m.icon}
+            <span className="hidden sm:inline">{m.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // Module-level constant — moved from render
 const SAVE_INDICATOR_CONFIG: Record<SaveStatus, { icon: React.ReactNode; label: string; className: string }> = {
@@ -183,8 +237,10 @@ export default function StatusBar() {
         </button>
       )}
 
-      {/* Right side: Teacher mode badge + Theme + Zoom */}
+      {/* Right side: Display mode + Teacher mode badge + Theme + Zoom */}
       <div className="flex items-center gap-1.5 ml-auto">
+        {/* Display Mode Selector — educational viewing context */}
+        <DisplayModeSelector />
         {/* Teacher mode badge — always visible so teachers know their mode */}
         {teacherMode && (
           <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-[8px] font-bold text-emerald-400">

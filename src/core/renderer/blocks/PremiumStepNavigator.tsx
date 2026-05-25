@@ -16,6 +16,12 @@ import { IOS_INTERACTION, IOS_SPACING } from '../../themes/ios-visual-contract';
 //   - "SELESAI" badge with glow pulse when all steps completed
 //   - Keyboard shortcut hints (← →) shown on hover
 //   - Smooth content morph (crossfade + scale transition)
+//
+// EDU MIGRATION: Replaced hardcoded fontSize with edu tokens.
+//   - Step chips: 10/11px → edu.micro() (11-12px, badge minimum)
+//   - Nav buttons: 10/11px → edu.micro() (11-12px)
+//   - SelesaiBadge: 10/12px → edu.micro() (11-12px)
+//   - Arrow/check symbols: kept as-is (decorative, not reading text)
 // ═══════════════════════════════════════════════════════════════════
 
 export interface PremiumStepNavigatorProps {
@@ -138,6 +144,7 @@ function SelesaiBadge({ tokens, isCompact }: { tokens?: TokenResolver; isCompact
   const accentColor = resolveColor(tokens, 'y', '#fbbf24', '#fbbf24');
   const accentBg = resolveColorAlpha(tokens, 'y', 0.15, 'rgba(251,191,36,0.15)', 'rgba(251,191,36,0.15)');
   const accentBgStrong = resolveColorAlpha(tokens, 'y', 0.25, 'rgba(251,191,36,0.25)', 'rgba(251,191,36,0.25)');
+  const edu = tokens?.edu('quiz', isCompact);
 
   return (
     <div
@@ -150,8 +157,7 @@ function SelesaiBadge({ tokens, isCompact }: { tokens?: TokenResolver; isCompact
         background: `linear-gradient(135deg, ${accentBg}, ${accentBgStrong})`,
         border: `1px solid ${accentColor}`,
         color: accentColor,
-        fontSize: isCompact ? '10px' : '12px',
-        fontWeight: 900,
+        ...(edu ? edu.micro() : { fontSize: isCompact ? '11px' : '12px', fontWeight: 700 }),
         letterSpacing: '0.08em',
         animation: 'glowPulse 2s ease-in-out infinite',
         '--glow-color': resolveColorAlpha(tokens, 'y', 0.3, 'rgba(251,191,36,0.3)', 'rgba(251,191,36,0.3)'),
@@ -225,6 +231,9 @@ export function PremiumStepNavigator({
   const cardBg = resolveColor(tokens, 'card', '#ffffff', '#182d45');
   const progress = totalSteps <= 1 ? 1 : (activeStep + 1) / totalSteps;
   const isAllComplete = activeStep === totalSteps - 1 && totalSteps > 1;
+  const edu = tokens?.edu('quiz', isCompact);
+  // Fallback typography when tokens unavailable
+  const microStyle = edu ? edu.micro() : { fontSize: isCompact ? '11px' : '12px', fontWeight: 700, lineHeight: 1.3, letterSpacing: '0.03em' };
 
   const handleStepClick = useCallback((step: number) => {
     onStepChange(step);
@@ -313,9 +322,7 @@ export function PremiumStepNavigator({
                 gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px',
                 ...(tokens ? tokens.iosButtonPadding('md') : {}),
                 borderRadius: '9999px',
-                fontSize: isCompact ? '10px' : '11px',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
+                ...microStyle,
                 border: `1px solid ${isActive ? accentColor : 'transparent'}`,
                 background: isActive
                   ? `linear-gradient(135deg, ${accentAlpha(0.2)}, ${accentAlpha(0.1)})`
@@ -396,8 +403,7 @@ export function PremiumStepNavigator({
             gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px',
             ...(tokens ? tokens.iosButtonPadding('md') : {}),
             borderRadius: tokens ? tokens.radius('base') : '10px',
-            fontSize: isCompact ? '10px' : '11px',
-            fontWeight: 700,
+            ...microStyle,
             border: `1px solid ${activeStep === 0 ? 'transparent' : accentAlpha(0.3)}`,
             background: activeStep === 0 ? 'transparent' : `linear-gradient(135deg, ${accentAlpha(0.12)}, ${accentAlpha(0.06)})`,
             color: activeStep === 0 ? mutedColor : accentColor,
@@ -407,7 +413,7 @@ export function PremiumStepNavigator({
             animation: hoveredBtn === 'prev' && activeStep > 0 ? 'springBounce 0.4s ease' : 'none',
           } as React.CSSProperties}
         >
-          <span style={{ fontSize: isCompact ? '11px' : '13px' }}>&#8592;</span>
+          <span style={{ fontSize: isCompact ? '12px' : '14px' }}>&#8592;</span>
           <span>Sebelumnya</span>
           {hoveredBtn === 'prev' && activeStep > 0 && (
             <span style={{ fontSize: '10px', opacity: 0.7, marginLeft: '2px' }}>(&#8592;)</span>
@@ -420,10 +426,8 @@ export function PremiumStepNavigator({
         ) : (
           <span
             style={{
-              fontSize: isCompact ? '9px' : '10px',
-              fontWeight: 700,
+              ...microStyle,
               color: mutedColor,
-              letterSpacing: '0.05em',
             }}
           >
             {activeStep + 1} / {totalSteps}
@@ -450,8 +454,7 @@ export function PremiumStepNavigator({
             gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px',
             ...(tokens ? tokens.iosButtonPadding('md') : {}),
             borderRadius: tokens ? tokens.radius('base') : '10px',
-            fontSize: isCompact ? '10px' : '11px',
-            fontWeight: 700,
+            ...microStyle,
             border: `1px solid ${activeStep === totalSteps - 1 ? 'transparent' : accentAlpha(0.3)}`,
             background: activeStep === totalSteps - 1 ? 'transparent' : `linear-gradient(135deg, ${accentAlpha(0.12)}, ${accentAlpha(0.06)})`,
             color: activeStep === totalSteps - 1 ? mutedColor : accentColor,
@@ -462,7 +465,7 @@ export function PremiumStepNavigator({
           } as React.CSSProperties}
         >
           <span>Berikutnya</span>
-          <span style={{ fontSize: isCompact ? '11px' : '13px' }}>&#8594;</span>
+          <span style={{ fontSize: isCompact ? '12px' : '14px' }}>&#8594;</span>
           {hoveredBtn === 'next' && activeStep < totalSteps - 1 && (
             <span style={{ fontSize: '10px', opacity: 0.7, marginLeft: '2px' }}>(&#8594;)</span>
           )}

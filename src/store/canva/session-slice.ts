@@ -24,6 +24,7 @@
 import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { AppMode } from '@/components/canva/types';
+import type { EduDisplayMode } from '@/core/edu/education-typography';
 import { editBus } from '@/core/editor/edit-bus';
 
 // ── Slice Type ──────────────────────────────────────────────────
@@ -41,6 +42,8 @@ export type SessionSlice = Pick<
   // ── View modes ──
   | 'canvasPreview' | 'toggleCanvasPreview'
   | 'appMode' | 'setAppMode'
+  // ── Educational display mode (classroom/projector/print/student) ──
+  | 'displayMode' | 'setDisplayMode'
   // ── Preview viewport ──
   | 'previewViewport' | 'setPreviewViewport'
   // ── Nudge debounce ──
@@ -76,6 +79,7 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
   canvasPreview: false,
   appMode: 'edit' as AppMode,
   previewViewport: 'desktop' as 'desktop' | 'mobile',
+  displayMode: 'classroom' as EduDisplayMode,
 
   // ── Schema Block Selection ───────────────────────────────────
   // Central selection action — sets the editing context for a block.
@@ -193,6 +197,15 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
       set({ appMode: mode });
     }
   },
+
+  // ── Educational Display Mode ────────────────────────────────
+  // Controls how content is rendered: font sizes, backgrounds, colors.
+  // classroom = white bg, standard sizes (default)
+  // projector = warm bg, max sizes for projection (1.15x)
+  // print = B&W friendly, slightly smaller (0.95x)
+  // student = laptop/HP, slightly smaller (0.9x)
+  // This is ephemeral session state — not persisted.
+  setDisplayMode: (mode: EduDisplayMode) => set({ displayMode: mode }),
 
   // ── Preview Viewport ────────────────────────────────────────
   setPreviewViewport: (v: 'desktop' | 'mobile') => set({ previewViewport: v }),

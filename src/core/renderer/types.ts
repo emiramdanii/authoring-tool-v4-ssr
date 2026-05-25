@@ -9,6 +9,7 @@ import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
 import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 import { EduRenderingContext } from '../edu/EduRenderingContext';
+import type { EduDisplayMode } from '../edu/education-typography';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -23,9 +24,11 @@ export type SchemaRenderMode = 'canvas' | 'preview' | 'export';
 export class TokenResolver {
   private tokens: DesignTokens;
   private _themeId: string | undefined;
+  private _displayMode: EduDisplayMode;
 
-  constructor(themeId?: string) {
+  constructor(themeId?: string, displayMode: EduDisplayMode = 'classroom') {
     this._themeId = themeId;
+    this._displayMode = displayMode;
     this.tokens = resolveTokens(themeId);
   }
 
@@ -472,9 +475,11 @@ export class TokenResolver {
   // ═══════════════════════════════════════════════════════════════════
 
   /** Create an educational rendering context for a block type.
-   *  This is the PRIMARY way to access edu tokens in renderers. */
+   *  This is the PRIMARY way to access edu tokens in renderers.
+   *  The display mode is inherited from the TokenResolver instance
+   *  (set via constructor from the canva store's displayMode state). */
   edu(blockType: string, isCompact: boolean = false): EduRenderingContext {
-    return new EduRenderingContext(this, blockType, isCompact);
+    return new EduRenderingContext(this, blockType, isCompact, this._displayMode);
   }
 }
 

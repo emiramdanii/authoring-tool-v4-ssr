@@ -359,7 +359,8 @@ export const PageFrame = React.memo(function PageFrame({
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
-  const computedTokens = React.useMemo(() => new TokenResolver(themeId), [themeId]);
+  const displayMode = useCanvaStore((s) => s.displayMode);
+  const computedTokens = React.useMemo(() => new TokenResolver(themeId, displayMode), [themeId, displayMode]);
   const tokens = externalTokens || computedTokens;
 
   // ── Score data (use store computed functions — reactive + DRY) ──
