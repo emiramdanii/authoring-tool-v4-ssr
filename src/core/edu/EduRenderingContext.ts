@@ -46,6 +46,10 @@ import {
   eduComponentPadding,
   eduSectionPadding,
   eduNestedPadding,
+  eduSceneComponentPadding,
+  eduSceneSectionPadding,
+  eduSceneGap,
+  getSceneDensityMultiplier,
 } from './education-spacing';
 import {
   type EduComponentRole,
@@ -328,33 +332,53 @@ export class EduRenderingContext {
   }
 
   // ── Spacing helpers (scene-aware density) ─────────────────
+  // Scene intensity directly affects spacing density:
+  //   High-intensity (Practice 0.8) → 0.85x spacing (tighter, urgent)
+  //   Mid-intensity (Concept 0.4)   → 1.0x spacing (standard)
+  //   Low-intensity (Reflection 0.2) → 1.15x spacing (generous, calm)
+  //
+  // This creates the "breathing rhythm" — Practice feels focused,
+  // Reflection feels spacious. Pedagogically intentional.
 
-  /** Component padding */
+  /** Component padding — scene-density-aware.
+   *  Practice scenes: tighter padding (0.85x)
+   *  Reflection scenes: generous padding (1.15x) */
   componentPadding(): Record<string, string> {
-    return eduComponentPadding(this.isCompact);
+    return eduSceneComponentPadding(this.isCompact, this._sceneType);
   }
 
-  /** Section padding */
+  /** Section padding — scene-density-aware.
+   *  Practice scenes: tighter section spacing (0.85x)
+   *  Reflection scenes: generous section spacing (1.15x) */
   sectionPadding(): Record<string, string> {
-    return eduSectionPadding(this.isCompact);
+    return eduSceneSectionPadding(this.isCompact, this._sceneType);
   }
 
-  /** Nested padding */
+  /** Nested padding — scene-density-aware.
+   *  Uses same density multiplier as component padding. */
   nestedPadding(): Record<string, string> {
-    return eduNestedPadding(this.isCompact);
+    const density = getSceneDensityMultiplier(this._sceneType);
+    const spec = this.isCompact
+      ? { block: 8, inline: 12 }
+      : { block: 12, inline: 16 };
+    return { padding: `${Math.round(spec.block * density)}px ${Math.round(spec.inline * density)}px` };
   }
 
-  /** Gap between items */
+  /** Gap between items — scene-density-aware.
+   *  Practice scenes: tighter gaps (0.85x)
+   *  Reflection scenes: generous gaps (1.15x) */
   gap(type: 'tight' | 'standard' | 'generous' | 'section' = 'standard'): string {
-    return `${EDU_SPACING.gap[type]}px`;
+    return `${eduSceneGap(this._sceneType, type)}px`;
   }
 
-  /** Icon size */
+  /** Icon size — scene-aware.
+   *  Low-intensity scenes use slightly larger icons for emphasis. */
   iconSize(level: 'sm' | 'md' | 'lg' | 'xl' = 'md'): number {
     return EDU_SPACING.icon[level];
   }
 
-  /** Border radius */
+  /** Border radius — scene-aware.
+   *  Low-intensity scenes use slightly larger radius for softer feel. */
   radius(key: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'lg'): string {
     return `${EDU_SPACING.radius[key]}px`;
   }

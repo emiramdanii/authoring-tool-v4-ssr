@@ -47,7 +47,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -142,7 +142,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                         background: stepAlpha(0.06),
                         border: `1px solid ${stepAlpha(0.15)}`,
                         borderRadius: tokens.radius('lg') + 'px',
-                        ...tokens.iosNestedPadding(isCompact),
+                        ...edu.nestedPadding(),
                       }}
                     >
                       <div

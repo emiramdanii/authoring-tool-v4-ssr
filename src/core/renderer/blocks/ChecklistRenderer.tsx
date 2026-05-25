@@ -126,6 +126,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                       cursor: interactive ? 'pointer' : 'default',
                       opacity: isChecked ? 0.85 : 1,
                       ...edu.transition('background-color, border-color, opacity', 'fast'),
+                      ...(isChecked && interactive ? edu.emotionalMotion('scalePop') : {}),
                     }}
                     onClick={() => interactive && handleToggle(i)}
                     role={interactive ? 'checkbox' : 'listitem'}

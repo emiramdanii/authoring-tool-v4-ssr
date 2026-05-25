@@ -159,7 +159,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                 background: `linear-gradient(135deg, ${edu.accentAlpha(0.2)}, ${edu.accentAlpha(0.1)})`,
                 border: `1px solid ${edu.accentAlpha(0.35)}`,
                 boxShadow: 'none',
-                animation: 'none',
+                ...edu.emotionalMotion('reveal', i),
               }}>
               <CheckCircle2 size={14} style={{ color: edu.accent() }} />
             </div>

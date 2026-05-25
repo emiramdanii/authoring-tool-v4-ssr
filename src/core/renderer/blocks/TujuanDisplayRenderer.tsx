@@ -287,7 +287,7 @@ function TujuanVariantA({
         <div
           style={{
             ...tokens.iosInnerMargin(isCompact), marginTop: 0,
-            ...tokens.iosCardPadding(isCompact),
+            ...edu.componentPadding(),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.1),
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.25)}`,
             borderLeft: `4px solid ${tokens.color(block.profilColor || 'g')}`,

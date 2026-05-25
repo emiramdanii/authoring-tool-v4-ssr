@@ -122,7 +122,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
                 borderRadius: tokens.radius('lg') + 'px',
                 background: accentAlpha(0.06),
                 border: `2px dashed ${accentAlpha(0.25)}`,
-                ...tokens.iosContentPadding(isCompact),
+                ...edu.sectionPadding(),
                 minHeight: isCompact ? '100px' : '140px',
               }}
             >

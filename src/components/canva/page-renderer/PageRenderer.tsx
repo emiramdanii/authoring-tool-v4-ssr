@@ -218,9 +218,12 @@ export const PageRenderer = React.memo(function PageRenderer({
   //   - Spacing density (intensity-driven rhythm)
   //   - Card/header treatment (elevated/flat/subtle)
   const sceneType = React.useMemo<SceneType | undefined>(() => {
+    // Priority 1: Explicit sceneType override on the schema (teacher-set)
+    if (adaptedSchema?.sceneType) return adaptedSchema.sceneType;
+    // Priority 2: Inferred from templateType
     if (!page.templateType) return undefined;
     return inferSceneType(undefined, page.templateType, undefined);
-  }, [page.templateType]);
+  }, [adaptedSchema?.sceneType, page.templateType]);
 
   const content = (
     <>

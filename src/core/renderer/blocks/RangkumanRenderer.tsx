@@ -352,7 +352,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 id={`rangkuman-panel-${i}`}
                 role="region"
                 style={{
-                  ...tokens.iosContentPadding(isCompact), paddingTop: 0,
+                  ...edu.sectionPadding(), paddingTop: 0,
                   paddingLeft: isCompact ? '42px' : '52px',
                   animation: 'fadeIn 0.25s ease',
                 }}

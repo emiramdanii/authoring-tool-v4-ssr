@@ -51,6 +51,7 @@ export const OverflowIndicator = React.memo(function OverflowIndicator({
 
   const accentColor = resolveColor(tokens, 'y', '#fbbf24', '#fbbf24');
   const accentAlpha = (a: number) => resolveColorAlpha(tokens, 'y', a, `rgba(251,191,36,${a})`, `rgba(251,191,36,${a})`);
+  const edu = tokens ? tokens.edu('overflow-indicator', isCompact) : undefined;
 
   // ── FASE 6: Safe mode gates for overflow actions ──
   // In safe mode, scene-overflow-split and scene-overflow-merge are disabled.
@@ -104,7 +105,7 @@ export const OverflowIndicator = React.memo(function OverflowIndicator({
       </PremiumBadge>
 
       {/* Action buttons — disabled in safe mode for gated features */}
-      <div style={{ display: 'flex', gap: tokens ? tokens.iosElementGap('iconToTitle') : '4px' }}>
+      <div style={{ display: 'flex', gap: edu ? edu.gap('tight') : '4px' }}>
         {actions.map((action) => (
           <button
             key={action.key}

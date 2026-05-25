@@ -45,7 +45,7 @@ function VariantSelector({
   const edu = tokens.edu('kuis');
 
   return (
-    <div className="variant-selector" style={{ display: 'flex', gap: tokens.iosElementGap('iconToTitle'), background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
+    <div className="variant-selector" style={{ display: 'flex', gap: edu.gap('tight'), background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
       {variants.map((v) => (
         <button
           key={v.key}
@@ -159,8 +159,9 @@ function KuisVariantKartu({
 
       {/* Answer feedback — Sprint 3C: ios-entrance-reveal for smooth reveal */}
       {isAnswered && (
-        <div className="mt-4 p-4 rounded-xl leading-relaxed ios-entrance-reveal"
+        <div className="mt-4 p-4 rounded-xl leading-relaxed"
           style={{
+            ...edu.emotionalMotion('reveal'),
             ...edu.body(),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
@@ -170,7 +171,7 @@ function KuisVariantKartu({
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
+          {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={14} className="inline mr-1" />}
           <InlineTextEditor
             {...explanationEditor}
             className={`${isCompact ? 'canvas-truncate-2' : ''}`}
@@ -233,7 +234,7 @@ function KuisVariantRingkas({
             style={{
               width: (totalAnswered / questionsLength) * 100 + '%',
               background: edu.accent(),
-              ...edu.transition('width', 'slow'),
+              ...edu.emotionalMotion('fillBar'),
             }}
           />
         </div>
@@ -292,8 +293,9 @@ function KuisVariantRingkas({
 
       {/* Answer feedback — minimal. Sprint 3C: ios-entrance-reveal */}
       {isAnswered && (
-        <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug ios-entrance-reveal"
+        <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug"
           style={{
+            ...edu.emotionalMotion('reveal'),
             ...edu.body(),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
@@ -303,7 +305,7 @@ function KuisVariantRingkas({
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          {answers[current] === q.ans ? <CheckCircle2 size={10} className="inline mr-0.5" /> : <XCircle size={10} className="inline mr-0.5" />}
+          {answers[current] === q.ans ? <CheckCircle2 size={10} className="inline mr-0.5" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={10} className="inline mr-0.5" />}
           <InlineTextEditor
             {...explanationEditor}
             style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
@@ -625,8 +627,9 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           {/* ── Answer feedback ──────────────── */}
           {/* Sprint 3C: ios-entrance-reveal for smooth answer reveal animation */}
           {answers[current] !== undefined && (
-            <div className="mt-3 p-3 rounded-xl leading-relaxed ios-entrance-reveal"
+            <div className="mt-3 p-3 rounded-xl leading-relaxed"
               style={{
+                ...edu.emotionalMotion('reveal'),
                 ...edu.caption(),
                 background: answers[current] === q.ans
                   ? tokens.accentBg('g', 0.06)
@@ -636,7 +639,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                 overflow: 'hidden',
                 wordBreak: 'break-word',
               }}>
-              {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
+              {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={14} className="inline mr-1" />}
               <InlineTextEditor
                 {...explanationEditor}
                 className={`${isCompact ? 'canvas-truncate-2' : ''}`}

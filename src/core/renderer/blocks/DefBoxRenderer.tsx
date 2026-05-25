@@ -232,7 +232,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 overflowWrap: 'break-word',
                 maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                 overflow: isContentCollapsed ? 'hidden' : undefined,
-                ...edu.transition('max-height', 'slow'),
+                ...edu.emotionalMotion('accordionExpand'),
                 position: 'relative',
               }}>
                 <InlineTextEditor
@@ -368,7 +368,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                   borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
                   maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                   overflow: isContentCollapsed ? 'hidden' : undefined,
-                  ...edu.transition('max-height', 'slow'),
+                  ...edu.emotionalMotion('accordionExpand'),
                   position: 'relative',
                 }}
               >
@@ -447,7 +447,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               overflowWrap: 'break-word',
               maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,
               overflow: isContentCollapsed ? 'hidden' : undefined,
-              ...edu.transition('max-height', 'slow'),
+              ...edu.emotionalMotion('accordionExpand'),
               position: 'relative',
             }}
           >

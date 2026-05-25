@@ -213,7 +213,7 @@ function MotivasiVariantKlasik({
 
       {/* ═══ CONNECTIONS — hidden when compressed ══════════════════ */}
       {!isCompressed && connections.length > 0 && (
-        <div style={{ ...tokens.iosContentPadding(isCompact), paddingTop: 0, paddingBottom: isCompact ? 10 : 14 }}>
+        <div style={{ ...edu.sectionPadding(), paddingTop: 0, paddingBottom: isCompact ? 10 : 14 }}>
           <div
             className="font-extrabold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
             style={{
@@ -340,7 +340,7 @@ function MotivasiVariantKartuHook({
       {/* ═══ HOOK HERO CARD ═════════════════════════════════════ */}
       <div
         style={{
-          ...tokens.iosContentPadding(isCompact),
+          ...edu.sectionPadding(),
           background: `linear-gradient(135deg, ${tokens.colorAlpha(gradientFrom, 0.1)}, ${tokens.colorAlpha(gradientTo, 0.05)})`,
           position: 'relative',
           overflow: 'hidden',

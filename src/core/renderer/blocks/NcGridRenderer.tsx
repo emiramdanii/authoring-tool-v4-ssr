@@ -98,7 +98,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
         borderColor: cardBorder,
         borderRadius: tokens.radius('xl') + 'px',
         boxShadow: edu.shadow('card'),
-        ...tokens.iosCardPadding(isCompact),
+        ...edu.componentPadding(),
         overflow: 'hidden',
         position: 'relative',
         ...edu.entrance(cardIndex),
@@ -206,7 +206,7 @@ function NcGridCardB({ card, cardIndex, blockId, tokens, isCompact, interactive 
       <div
         className="flex items-start gap-3"
         style={{
-          ...tokens.iosCardPadding(isCompact),
+          ...edu.componentPadding(),
           paddingLeft: isCompact ? '16px' : '22px',
         }}
       >
@@ -314,7 +314,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
         borderRadius: expanded ? tokens.radius('xl') + 'px' : '9999px',
         background: isHovered ? hoverBg : cardBg,
         border: `1px solid ${isHovered ? hoverBorder : cardBorder}`,
-        ...tokens.iosCardPadding(isCompact),
+        ...edu.componentPadding(),
         paddingTop: isCompact ? 5 : 7,
         paddingBottom: isCompact ? 5 : 7,
         paddingLeft: isCompact ? 8 : 10,
@@ -403,6 +403,7 @@ function NcGridStepMode({ block, tokens, isCompact, interactive, variant }: {
   const STEP_SIZE = 2;
   const totalSteps = Math.ceil(cards.length / STEP_SIZE);
   const { activeStep, ...nav } = usePremiumStepNavigator(totalSteps);
+  const edu = tokens.edu('nc-grid', isCompact);
 
   // Build step labels: "Norma 1-2", "Norma 3-4", etc.
   const labels = Array.from({ length: totalSteps }, (_, i) => {
@@ -417,9 +418,9 @@ function NcGridStepMode({ block, tokens, isCompact, interactive, variant }: {
 
   // Variant B uses full-width vertical stack, C uses flex-wrap pills
   const contentStyle: React.CSSProperties = variant === 'B'
-    ? { display: 'flex', flexDirection: 'column', gap: tokens.iosElementGap('contentBlock'), minWidth: 0, padding: '8px 0' }
+    ? { display: 'flex', flexDirection: 'column', gap: edu.gap('generous'), minWidth: 0, padding: '8px 0' }
     : variant === 'C'
-      ? { display: 'flex', flexWrap: 'wrap', gap: tokens.iosElementGap('badgeGap'), minWidth: 0, padding: '8px 0' }
+      ? { display: 'flex', flexWrap: 'wrap', gap: edu.gap('tight'), minWidth: 0, padding: '8px 0' }
       : { minWidth: 0 };
 
   return (
@@ -509,9 +510,9 @@ export const NcGridRenderer = React.memo(function NcGridRenderer({ block, tokens
 
   // Non-step mode (cards <= 2)
   const containerStyle: React.CSSProperties = variant === 'B'
-    ? { display: 'flex', flexDirection: 'column', gap: tokens.iosElementGap('contentBlock'), minWidth: 0 }
+    ? { display: 'flex', flexDirection: 'column', gap: edu.gap('generous'), minWidth: 0 }
     : variant === 'C'
-      ? { display: 'flex', flexWrap: 'wrap', gap: tokens.iosElementGap('badgeGap'), minWidth: 0 }
+      ? { display: 'flex', flexWrap: 'wrap', gap: edu.gap('tight'), minWidth: 0 }
       : { minWidth: 0 };
 
   return (
