@@ -467,7 +467,7 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* ── Spring bounce — elastic overshoot for buttons and interactive elements ── */
+/* ── Spring bounce — FORBIDDEN in educational content (Layer 5 rules) ── */
 @keyframes springBounce {
   0% { transform: scale(1); }
   30% { transform: scale(0.92); }
@@ -476,20 +476,21 @@
   100% { transform: scale(1); }
 }
 
-/* ── Confetti burst — scale-up + fade-out for step completion ── */
+/* ── Confetti burst — FORBIDDEN in educational content (gamification layer, FASE 3) ── */
 @keyframes confettiBurst {
   0% { transform: scale(0); opacity: 1; }
   60% { transform: scale(1.2); opacity: 0.8; }
   100% { transform: scale(1.5); opacity: 0; }
 }
 
-/* ── Glow pulse — subtle pulsing glow for active elements ── */
+/* ── Glow pulse — FORBIDDEN in educational content (continuous pulse distracts) ── */
+/* Use eduPulseOnce instead (single pulse, not continuous) */
 @keyframes glowPulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
 
-/* ── Shimmer — sweeping highlight for loading/skeleton states ── */
+/* ── Shimmer — FORBIDDEN in educational content (decorative holographic) ── */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -545,6 +546,36 @@
 }
 @keyframes eduSlideUp {
   from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Educational emotional animations — Layer 5: Emotional Interaction ── */
+/* MVP: Progress, Discovery, Reward (3 core emotions)                    */
+/* "Structured Fun" — 70% structure, 30% engagement                     */
+
+/* Reward: Check mark draw — SVG stroke animation for correct answers */
+@keyframes eduCheckDraw {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Reward: Scale pop — subtle 1→1.05→1 when item completes (NOT bounce) */
+@keyframes eduScalePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Reward: Pulse once — subtle pulse once for success (NOT continuous) */
+@keyframes eduPulseOnce {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Discovery: Block stagger reveal — items appear progressively */
+@keyframes eduBlockStaggerIn {
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

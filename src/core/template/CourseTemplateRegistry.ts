@@ -20,6 +20,8 @@
 import type { PageTemplateType } from '@/components/canva/types';
 import type { CanvaPage } from '@/components/canva/types';
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
+import type { SceneType } from '@/core/edu/education-scene-types';
+import { TEMPLATE_TO_SCENE } from '@/core/edu/education-scene-types';
 
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
@@ -32,6 +34,16 @@ export interface SceneTemplateSpec {
   suggestedBlocks: string[];
   /** Layout variant */
   variant?: 'A' | 'B' | 'C';
+  /**
+   * Scene type for scene-aware rendering.
+   * If not specified, inferred from templateType via TEMPLATE_TO_SCENE mapping.
+   * This enables the 6-layer emotional design system to adjust:
+   *   - Typography hierarchy (hero/title/body per scene)
+   *   - Accent prominence (which colors are muted/vocal)
+   *   - Emotional profile (progress/discovery/reward triggers)
+   *   - Reveal strategy (all-visible/progressive/on-interaction)
+   */
+  sceneType?: SceneType;
 }
 
 // ── Level 1: Course Template ───────────────────────────────────
@@ -648,4 +660,34 @@ export function getTemplateFlowPreview(templateId: string): string {
   const template = _registry.get(templateId);
   if (!template) return '';
   return template.scenes.map(s => s.label).join(' → ');
+}
+
+/**
+ * Resolve the SceneType for a SceneTemplateSpec.
+ * Priority: explicit sceneType > TEMPLATE_TO_SCENE mapping > 'concept' default.
+ */
+export function resolveSceneType(spec: SceneTemplateSpec): SceneType {
+  if (spec.sceneType) return spec.sceneType;
+  const mapped = TEMPLATE_TO_SCENE[spec.templateType];
+  if (mapped) return mapped;
+  return 'concept'; // default fallback
+}
+
+/**
+ * Get the narrative intensity curve for a course template.
+ * Returns array of { sceneType, intensity, label } for each scene.
+ * Useful for visualizing the learning flow rhythm.
+ */
+export function getTemplateIntensityCurve(templateId: string): Array<{ sceneType: SceneType; intensity: number; label: string }> {
+  const template = _registry.get(templateId);
+  if (!template) return [];
+  const { SCENE_TYPES } = require('@/core/edu/education-scene-types');
+  return template.scenes.map(spec => {
+    const st = resolveSceneType(spec);
+    return {
+      sceneType: st,
+      intensity: SCENE_TYPES[st].intensity,
+      label: spec.label,
+    };
+  });
 }

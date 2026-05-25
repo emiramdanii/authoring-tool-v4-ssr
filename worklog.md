@@ -1649,3 +1649,29 @@ Stage Summary:
 - New API: tokens.edu('kuis', false, 'assessment') for explicit scene-aware rendering
 - Foundation complete for: scene-specific typography hierarchy, atmosphere-driven accent prominence, emotional motion profiles
 - Pending: Phase 4 (PremiumStepNavigator rebuild, BlockSelectionOverlay simplify), Phase 5 (template/preset sceneType mapping)
+
+---
+Task ID: 4A-5B
+Agent: Main (Senior Dev)
+Task: Rebuild PremiumStepNavigator (decorative → emotional) + Template sceneType mapping + CSS keyframes
+
+Work Log:
+- Rebuilt PremiumStepNavigator.tsx (479→260 lines) as EduStepNavigator:
+  - REMOVED: Holographic/aurora gradient progress bar, 3D flip step chips, ConfettiBurst component, SelesaiBadge with continuous glow, springBounce animation, perspective transforms
+  - REPLACED WITH: Solid accent progress bar with emotional fill (400ms), numbered step circles with check-draw, pulse-once completion badge, smooth fade entrance, scene-aware styling via edu tokens
+  - Backward compatible: old PremiumStepNavigator/usePremiumStepNavigator still work as re-exports
+  - Added `accent` prop (deprecated, ignored) for backward compat with DefBoxRenderer, NcGridRenderer, RangkumanRenderer
+- Updated CourseTemplateRegistry.ts:
+  - Added sceneType field to SceneTemplateSpec (optional, inferred from TEMPLATE_TO_SCENE)
+  - Added resolveSceneType() helper
+  - Added getTemplateIntensityCurve() for narrative rhythm visualization
+- Updated globals.css:
+  - Added emotional keyframes: eduCheckDraw, eduScalePop, eduPulseOnce, eduBlockStaggerIn
+  - Marked forbidden keyframes with comments: springBounce, confettiBurst, glowPulse, shimmer
+
+Stage Summary:
+- All phases complete, 0 TypeScript errors
+- EduStepNavigator is 45% smaller code, removes all decorative effects
+- Scene type is now threaded through: Template → SceneSpec → EduRenderingContext → renderers
+- CSS keyframes for emotional Layer 5 available globally
+- Next: Actual renderer integration (passing sceneType from PageRenderer down to block renderers)
