@@ -10,6 +10,8 @@ import { resolveTokens } from '../themes/tokens';
 import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 import { EduRenderingContext } from '../edu/EduRenderingContext';
 import type { EduDisplayMode } from '../edu/education-typography';
+import { EDU_MODE_BG } from '../edu/education-colors';
+import { EDU_PRINT_SAFE } from '../edu/education-layout-rules';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -480,6 +482,46 @@ export class TokenResolver {
    *  (set via constructor from the canva store's displayMode state). */
   edu(blockType: string, isCompact: boolean = false): EduRenderingContext {
     return new EduRenderingContext(this, blockType, isCompact, this._displayMode);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DISPLAY MODE — Mode-aware color/typography helpers
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Get the current display mode */
+  get displayMode(): EduDisplayMode {
+    return this._displayMode;
+  }
+
+  /** Mode-aware page background — returns EDU_MODE_BG for the current mode.
+   *  Use for page/scene backgrounds instead of tokens.color('bg'). */
+  eduPageBg(): string {
+    return EDU_MODE_BG[this._displayMode].bg;
+  }
+
+  /** Mode-aware secondary page background */
+  eduPageBg2(): string {
+    return EDU_MODE_BG[this._displayMode].bg2;
+  }
+
+  /** Mode-aware card background */
+  eduCardBg(): string {
+    return EDU_MODE_BG[this._displayMode].card;
+  }
+
+  /** Mode-aware text color — in print mode, always returns #000000 */
+  eduTextColor(): string {
+    return this._displayMode === 'print' ? EDU_PRINT_SAFE.textColor : this.color('text');
+  }
+
+  /** Is the current display mode 'print'? */
+  isPrintMode(): boolean {
+    return this._displayMode === 'print';
+  }
+
+  /** Is the current display mode 'projector'? */
+  isProjectorMode(): boolean {
+    return this._displayMode === 'projector';
   }
 }
 

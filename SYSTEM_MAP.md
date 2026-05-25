@@ -542,7 +542,7 @@ scripts/                        # DevOps scripts
 
 # Risks / Blind Spots
 
-1. **Block renderers sudah menggunakan edu tokens** — Dari 43 renderers, SEMUA sudah pakai `tokens.edu()`. Hero/Cover/MateriSection/Kuis sudah migrasi dari `iosTypography()` ke edu tokens. PremiumStepNavigator juga sudah migrasi. **Display Mode Selector** (Kelas/Proyektor/Cetak/Siswa) sudah terintegrasi di StatusBar → TokenResolver → EduRenderingContext.
+1. **Block renderers sudah menggunakan edu tokens** — Dari 43 renderers, SEMUA sudah pakai `tokens.edu()`. Hero/Cover/MateriSection/Kuis sudah migrasi dari `iosTypography()` ke edu tokens. PremiumStepNavigator juga sudah migrasi. **Display Mode visual rendering sudah aktif** — switching mode mengubah: page backgrounds (EDU_MODE_BG), font sizes (EDU_MODE_SCALE), dan print-safe B&W overrides (EDU_PRINT_SAFE). Beberapa renderers masih pakai `tokens.color('bg')/'card')` langsung — perlu migrasi bertahap ke `edu.cardBg()/pageBg()`.
 
 2. **Dynamic imports** — Beberapa block editor menggunakan dynamic import (module-editors/) yang tidak bisa dipetakan statik. Asumsi: semua tipe blok terdaftar di SceneRegistry.
 
@@ -554,7 +554,14 @@ scripts/                        # DevOps scripts
 
 6. **Schema migration** — `src/core/schema/schema-migration.ts` ada tapi belum ada versioning scheme yang jelas. Perubahan schema di masa depan mungkin perlu migration path.
 
-7. **EduRenderingContext + Display Mode** — `tokens.edu(blockType, isCompact)` sudah terintegrasi penuh. TokenResolver menerima `displayMode` dari canva store. DisplayModeSelector di StatusBar mengontrol 4 mode tampilan (classroom/projector/print/student). `edu.cardStyle()` dan `edu.headerStyle()` mulai digunakan di TujuanDisplayRenderer.
+7. **EduRenderingContext + Display Mode** — `tokens.edu(blockType, isCompact)` terintegrasi penuh. **Display Mode sekarang BENAR-BENAR mengubah visual output**:
+   - **Page backgrounds**: `EDU_MODE_BG` diaplikasikan di SchemaScreenRenderer + PageFrame (projector=warm #FFFBF0, print=white, student=cool gray)
+   - **Typography scaling**: `EDU_MODE_SCALE` diaplikasikan via `resolveEduTypography()` (classroom=1.0x, projector=1.15x, print=0.95x, student=0.9x)
+   - **Print mode B&W overrides**: `EDU_PRINT_SAFE` diaplikasikan di EduRenderingContext — accent→black, borders→dark gray, shadows→none, thick borders, black text
+   - **Mode-aware card backgrounds**: `edu.cardBg()` returns mode-specific card color (projector=warm white, print=pure white, student=clean white)
+   - **TokenResolver helpers**: `tokens.eduPageBg()`, `tokens.eduCardBg()`, `tokens.eduTextColor()`, `tokens.isPrintMode()`, `tokens.isProjectorMode()`
+   - **DisplayModeSelector** di StatusBar: 🏫 Kelas / 📽️ Proyektor / 🖨️ Cetak / 💻 Siswa
+   - **Store**: `displayMode` state + `setDisplayMode()` action di session-slice
 
 8. **AI response parsing** — Parsing JSON dari LLM response menggunakan regex cleaning. Jika LLM menghasilkan format yang tidak terduga, bisa gagal (ditangani dengan error 422).
 
