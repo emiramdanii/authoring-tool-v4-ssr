@@ -8,6 +8,7 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
 import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import { inferSceneType, SCENE_TYPES } from '@/core/edu/education-scene-types';
 import type { SceneType } from '@/core/edu/education-scene-types';
@@ -154,7 +155,14 @@ export default function StatusBar() {
     return `${diffHr} jam lalu`;
   })();
 
-  const totalElements = page?.elements.length || 0;
+  // FIX: Count BOTH schema blocks AND legacy elements.
+  // Schema-driven pages store blocks in page.schema.blocks,
+  // legacy pages store elements in page.elements.
+  // Previously only counted page.elements → always showed "0 konten"
+  // for schema-driven pages even when they had blocks.
+  const schemaBlocks = page ? (ensurePageSchema(page)?.blocks.length ?? 0) : 0;
+  const legacyElements = page?.elements.length || 0;
+  const totalElements = schemaBlocks + legacyElements;
   const templateBadge = TEMPLATE_BADGE_MAP[page?.templateType || 'custom'];
 
   const saveConfig = SAVE_INDICATOR_CONFIG[saveStatus];
