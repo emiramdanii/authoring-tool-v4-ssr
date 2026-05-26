@@ -12,6 +12,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
 import { inferSceneType } from '@/core/edu/education-scene-types';
 import type { SceneType } from '@/core/edu/education-scene-types';
+import { isFullPageBlockType } from '@/core/schema/capability-registry';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -197,16 +198,22 @@ export const PageRenderer = React.memo(function PageRenderer({
   const sceneResolution = React.useMemo(() => getSceneResolution(ratioId), [ratioId]);
   const navConfig = page.navConfig;
   const isCompact = mode === 'canvas';
-  const isCoverPage = page.templateType === 'cover';
+  // FIX: Use block-content-based detection (same as SchemaRenderer) instead of
+  // just templateType. This ensures consistency: a "cover" page with mixed blocks
+  // (cover + flow) gets normal padding, while a pure cover page (single block) gets zero.
+  const isPureCoverPage = adaptedSchema
+    ? adaptedSchema.blocks.length === 1 && isFullPageBlockType(adaptedSchema.blocks[0]!.type)
+    : page.templateType === 'cover';
+  const isCoverTemplate = page.templateType === 'cover';
   const showNavbar = navConfig?.showNavbar !== false;
-  const showTopNav = showNavbar && !isCoverPage;
-  const showBottomNav = showNavbar && !isCoverPage;
+  const showTopNav = showNavbar && !isCoverTemplate;
+  const showBottomNav = showNavbar && !isCoverTemplate;
   const safeArea = React.useMemo(() => computeSafeArea({
     showTopNav,
     showBottomNav,
     isCompact,
-    pagePadding: isCoverPage ? 0 : 16,
-  }), [showTopNav, showBottomNav, isCompact, isCoverPage]);
+    pagePadding: isPureCoverPage ? 0 : 16,
+  }), [showTopNav, showBottomNav, isCompact, isPureCoverPage]);
 
   // ═══ SCENE TYPE ════════════════════════════════════════════════
   // Derive the Learning Scene Type from the page's template type.

@@ -1130,7 +1130,7 @@ export function instantiateTemplate(template: LessonTemplate): CanvaPage[] {
     const page = createPageFromPreset(pageType, pageIndex);
 
     if (page.schema) {
-      const blocks = generateBlocksForPageType(pageType, parsed, meta, opts);
+      const blocks = generateBlocksForPageType(pageType, parsed, meta, opts, 'A');
       if (blocks.length > 0) {
         // Deep-clone to prevent shared references between pages.
         // Without this, editing a block on one page mutates the
@@ -1190,13 +1190,14 @@ export function instantiateTemplateWithConfig(
     const pageType = template.pageTypes[i];
     const page = createPageFromPreset!(pageType, pageIndex);
 
-    // Set variant
-    if (config.variant && page.schema) {
-      page.templateVariant = config.variant;
+    // Set variant on page AND propagate to blocks
+    const variant = config.variant || 'A';
+    if (page.schema) {
+      page.templateVariant = variant;
     }
 
     if (page.schema) {
-      const blocks = generateBlocksForPageType!(pageType, parsed, meta, opts);
+      const blocks = generateBlocksForPageType!(pageType, parsed, meta, opts, variant);
       if (blocks.length > 0) {
         // Deep-clone to prevent shared references between pages.
         // Without this, editing a block on one page mutates the
@@ -1281,56 +1282,88 @@ function generateBlocksForPageType(
   parsed: ParseResult,
   meta: { namaBab: string; kelas: string; mapel: string; durasi: string; ikon: string; judulPertemuan: string },
   opts: { pertemuan: number; bloomMax: number; jumlahKuis: number },
+  variant: import('@/core/schema/types/base').BlockVariant = 'A',
 ): import('@/core/schema/types').SchemaBlock[] {
+  /**
+   * Apply variant + layout to generated blocks.
+   * Cover/hero blocks get `layout: { position: 'absolute' }` so
+   * SceneLayoutEngine uses Phase 2 (intentional absolute) instead of
+   * Phase 3 (legacy fallback). Flow blocks keep default (no layout
+   * → position='flow').
+   */
+  const FULL_PAGE_TYPES = new Set(['cover', 'hasil', 'penutup']);
+  const applyVariantAndLayout = (blocks: import('@/core/schema/types').SchemaBlock[]): import('@/core/schema/types').SchemaBlock[] => {
+    return blocks.map(block => {
+      const updated = { ...block, variant };
+      // Full-page blocks (cover, hasil, penutup) need absolute positioning
+      if (FULL_PAGE_TYPES.has(block.type)) {
+        updated.layout = { position: 'absolute', x: 0, y: 0, width: 'auto', height: 'auto' };
+      }
+      return updated;
+    });
+  };
+
+  let blocks: import('@/core/schema/types').SchemaBlock[];
   switch (pageType) {
     case 'cover':
-      return [genCoverSchema(meta)];
+      blocks = [genCoverSchema(meta)];
+      break;
 
     case 'tujuan':
-      return [genTujuanDisplaySchema(parsed, opts)];
+      blocks = [genTujuanDisplaySchema(parsed, opts)];
+      break;
 
     case 'motivasi':
-      return [genMotivasiSchema(parsed, meta)];
+      blocks = [genMotivasiSchema(parsed, meta)];
+      break;
 
     case 'materi':
-      return genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+      blocks = genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
+      break;
 
     case 'skenario':
-      return [genSkenarioSchema(parsed, meta)];
+      blocks = [genSkenarioSchema(parsed, meta)];
+      break;
 
     case 'kuis':
-      return [genKuisSchema(parsed, opts.jumlahKuis, opts.pertemuan)];
+      blocks = [genKuisSchema(parsed, opts.jumlahKuis, opts.pertemuan)];
+      break;
 
     case 'diskusi':
-      return [genDiskusiSchema(parsed, [], { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab })];
+      blocks = [genDiskusiSchema(parsed, [], { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab })];
+      break;
 
     case 'refleksi':
-      return [genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab })];
+      blocks = [genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab })];
+      break;
 
     case 'rangkuman':
-      return [genRangkumanSchema(parsed, meta)];
+      blocks = [genRangkumanSchema(parsed, meta)];
+      break;
 
     case 'hasil':
-      return [genHasilSchema()];
+      blocks = [genHasilSchema()];
+      break;
 
     case 'penutup':
-      return [genPenutupSchema(meta)];
+      blocks = [genPenutupSchema(meta)];
+      break;
 
     case 'petunjuk':
-      return [genPetunjukSchema([
+      blocks = [genPetunjukSchema([
         { icon: '📖', judul: 'Baca Materi', isi: 'Pelajari materi yang disajikan di setiap halaman' },
         { icon: '✍️', judul: 'Kerjakan Latihan', isi: 'Jawab pertanyaan dan kerjakan kuis yang tersedia' },
         { icon: '🤔', judul: 'Refleksi', isi: 'Renungkan apa yang sudah dipelajari' },
       ])];
+      break;
 
-    case 'dokumen': {
-      const blocks: import('@/core/schema/types').SchemaBlock[] = [];
-      blocks.push(genTpSchema(parsed, opts));
-      blocks.push(genAlurSchema(parsed, opts, meta));
-      return blocks;
-    }
+    case 'dokumen':
+      blocks = [genTpSchema(parsed, opts), genAlurSchema(parsed, opts, meta)];
+      break;
 
     default:
-      return [];
+      blocks = [];
   }
+
+  return applyVariantAndLayout(blocks);
 }

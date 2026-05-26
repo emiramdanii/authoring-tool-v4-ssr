@@ -48,3 +48,20 @@ Stage Summary:
 - Mutation isolation verified: editing block on page 1 does NOT affect page 2
 - Test coverage: 9 tests covering CourseTemplateRegistry, instantiateTemplate, instantiateTemplateWithConfig, Schema Factory
 - Build: ✅ CLEAN (tsc + vitest all pass)
+---
+Task ID: 1
+Agent: Super Z (main)
+Task: Fix 3 template display issues + verify mutation isolation tests
+
+Work Log:
+- ISSUE #1 (Variant Mismatch): Fixed `generateBlocksForPageType()` to accept `variant` param and propagate it to all generated blocks via `applyVariantAndLayout()`. Fixed `instantiateTemplateWithConfig()` to pass `config.variant` to generator instead of just setting `page.templateVariant`.
+- ISSUE #2 (Missing Layout Property): Fixed `generateBlocksForPageType()` to set `layout: { position: 'absolute' }` on full-page blocks (cover, hasil, penutup) so SceneLayoutEngine uses Phase 2 (intentional absolute) instead of Phase 3 (legacy fallback).
+- ISSUE #3 (Safe Area Inconsistency): Fixed `PageRenderer.tsx` to use block-content-based `isPureCoverPage` detection (same logic as `SchemaRenderer`) instead of `templateType === 'cover'`. Added `isFullPageBlockType` import.
+- Added 5 new tests for variant propagation (2 tests) and layout property (3 tests).
+- All 14 tests pass. TypeScript build clean. Next.js build success.
+
+Stage Summary:
+- template-gallery.ts: `generateBlocksForPageType()` now accepts `variant` param + applies layout/variant to blocks
+- template-gallery.ts: `instantiateTemplateWithConfig()` now passes variant to generator, not just page level
+- PageRenderer.tsx: Uses `isPureCoverPage` (block-content-based) instead of `isCoverPage` (templateType-based)
+- Test file: 14/14 tests pass (9 original + 5 new)

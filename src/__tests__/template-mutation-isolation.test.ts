@@ -14,6 +14,7 @@ import { describe, it, expect } from 'vitest';
 import { createProjectFromTemplate } from '@/core/template/CourseTemplateRegistry';
 import { instantiateTemplate, instantiateTemplateWithConfig } from '@/core/template/template-gallery';
 import type { LessonTemplate, TemplateCustomization } from '@/core/template/template-gallery';
+import { isFullPageBlockType } from '@/core/schema/capability-registry';
 
 // ═══════════════════════════════════════════════════════════════════
 // HELPER: Create a synthetic template with duplicate pageTypes
@@ -309,6 +310,116 @@ describe('Template Mutation Isolation — Schema Factory', () => {
         // Mutation test
         content1[0]!.judul = '__MUTATED__';
         expect(content2[0]!.judul, 'Content 2 should NOT be mutated').not.toBe('__MUTATED__');
+      }
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// 5. VARIANT PROPAGATION — ISSUE #1 FIX
+// ═══════════════════════════════════════════════════════════════════
+// Verifies that when config.variant is set, it propagates to ALL
+// blocks on ALL pages — not just page.templateVariant.
+
+describe('Variant Propagation — instantiateTemplateWithConfig', () => {
+  it('variant B should propagate to all blocks on all pages', () => {
+    const template = makeDoubleMateriTemplate();
+    const config: TemplateCustomization = {
+      enabledPages: [true, true, true, true, true],
+      jumlahKuis: 5,
+      variant: 'B',
+    };
+    const pages = instantiateTemplateWithConfig(template, config);
+
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i]!;
+      // Page-level variant should be set
+      expect(page.templateVariant, `Page ${i} templateVariant should be 'B'`).toBe('B');
+
+      // Every block on every page should have variant='B'
+      if (page.schema?.blocks) {
+        for (let j = 0; j < page.schema.blocks.length; j++) {
+          const block = page.schema.blocks[j]!;
+          expect(
+            block.variant,
+            `Page ${i} block[${j}] ("${block.type}") variant should be 'B'`
+          ).toBe('B');
+        }
+      }
+    }
+  });
+
+  it('variant C should propagate to cover block specifically', () => {
+    const template = makeDoubleMateriTemplate();
+    const config: TemplateCustomization = {
+      enabledPages: [true, true, true, true, true],
+      jumlahKuis: 5,
+      variant: 'C',
+    };
+    const pages = instantiateTemplateWithConfig(template, config);
+
+    const coverPage = pages.find(p => p.templateType === 'cover');
+    expect(coverPage).toBeDefined();
+    expect(coverPage!.templateVariant).toBe('C');
+
+    const coverBlock = coverPage!.schema?.blocks?.[0];
+    expect(coverBlock?.variant, 'Cover block variant should be C').toBe('C');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// 6. LAYOUT PROPERTY — ISSUE #2 FIX
+// ═══════════════════════════════════════════════════════════════════
+// Verifies that full-page blocks (cover, hasil, penutup) get
+// layout: { position: 'absolute' } and flow blocks don't.
+
+describe('Layout Property on Generated Blocks — ISSUE #2', () => {
+  it('cover block should have layout.position = "absolute"', () => {
+    const template = makeDoubleMateriTemplate();
+    const pages = instantiateTemplate(template);
+
+    const coverPage = pages.find(p => p.templateType === 'cover');
+    expect(coverPage).toBeDefined();
+
+    const coverBlock = coverPage!.schema?.blocks?.[0];
+    expect(coverBlock, 'Cover page should have at least one block').toBeDefined();
+    expect(
+      coverBlock!.layout?.position,
+      'Cover block should have layout.position = "absolute"'
+    ).toBe('absolute');
+  });
+
+  it('penutup block should have layout.position = "absolute"', () => {
+    const template = makeDoubleMateriTemplate();
+    const pages = instantiateTemplate(template);
+
+    const penutupPage = pages.find(p => p.templateType === 'penutup');
+    expect(penutupPage).toBeDefined();
+
+    const penutupBlock = penutupPage!.schema?.blocks?.[0];
+    expect(penutupBlock, 'Penutup page should have at least one block').toBeDefined();
+    expect(
+      penutupBlock!.layout?.position,
+      'Penutup block should have layout.position = "absolute"'
+    ).toBe('absolute');
+  });
+
+  it('flow blocks (materi, kuis) should NOT have layout.position = "absolute"', () => {
+    const template = makeDoubleMateriTemplate();
+    const pages = instantiateTemplate(template);
+
+    const materiPage = pages.find(p =>
+      p.schema?.blocks?.some(b => b.type === 'materi-section')
+    );
+    if (materiPage?.schema?.blocks) {
+      for (const block of materiPage.schema.blocks) {
+        // Flow blocks should NOT have absolute positioning
+        if (!isFullPageBlockType(block.type)) {
+          expect(
+            block.layout?.position,
+            `Flow block "${block.type}" should NOT have absolute layout`
+          ).not.toBe('absolute');
+        }
       }
     }
   });
