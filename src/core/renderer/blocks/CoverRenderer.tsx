@@ -67,7 +67,8 @@ function CoverVariantA({
   const y = tokens.color('y');
   const c = tokens.color('c');
   const g = tokens.color('g');
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   const edu = tokens.edu('cover', isCompact);
 
   return (
@@ -184,7 +185,8 @@ function CoverVariantB({
 }) {
   const y = tokens.color('y');
   const c = tokens.color('c');
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   const edu = tokens.edu('cover', isCompact);
 
   return (
@@ -322,7 +324,8 @@ function CoverVariantC({
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
   const y = tokens.color('y');
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   const edu = tokens.edu('cover', isCompact);
 
   return (
@@ -467,7 +470,8 @@ export const CoverRenderer = React.memo(function CoverRenderer({ block, tokens, 
     subtitleEditor,
   };
 
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   return (
     <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}
       style={{ width: '100%', height: '100%' }}

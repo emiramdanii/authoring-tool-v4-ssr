@@ -272,8 +272,11 @@ export function estimateBlockHeight(
   // Base height from registry
   const baseHeight = meta?.estimatedHeight[variant] ?? 300;
 
-  // Compact mode reduces height by ~20%
-  const compactFactor = isCompact ? 0.8 : 1;
+  // FIX 2: compactFactor removed — compact mode no longer reduces estimated heights.
+  // Font sizes are no longer reduced in compact mode (they use full values),
+  // so estimated heights must also use full values to prevent overlap.
+  // Compact mode ONLY affects spacing (BLOCK_GAP, safe area), not content height.
+  const compactFactor = 1;
 
   // Content-based height adjustment
   let contentHeight = baseHeight;
@@ -489,10 +492,94 @@ export function resolveSceneLayout(
      * Backward compatible: if not provided, uses uniform BLOCK_GAP.
      */
     perBlockGaps?: number[];
+    /**
+     * FIX 1: Cover Page Isolation — when true, if a full-page block
+     * (cover/hero) exists on a page with other blocks, the full-page
+     * block becomes the ONLY rendered block. Other blocks are marked
+     * as overflow-hidden (height:0) so the OverflowIndicator can
+     * suggest splitting the page.
+     *
+     * This prevents the "cover invisible" bug where cover (zIndex:0)
+     * appears behind flow blocks (zIndex:1).
+     *
+     * Default: true (cover isolation is always enforced).
+     */
+    coverIsolation?: boolean;
   }
 ): ResolvedBlockPosition[] {
-  const { isCompact, perBlockGaps } = options;
+  const { isCompact, perBlockGaps, coverIsolation = true } = options;
   const resolved: ResolvedBlockPosition[] = [];
+
+  // ═══ FIX 1: COVER PAGE ISOLATION ═══════════════════════════════
+  // When a full-page block (cover/hero) exists on a page with other
+  // blocks, the full-page block MUST be the only rendered content.
+  // Other blocks are hidden (height:0, isOverflowing:true) and the
+  // OverflowIndicator gives the user the option to split the page.
+  //
+  // ROOT CAUSE of "cover invisible":
+  //   Cover gets zIndex:0 (background layer), flow blocks get
+  //   zIndex:1 (foreground). In a mixed layout, flow blocks render
+  //   ON TOP of the cover, making it invisible. Even worse, the
+  //   safe area pushes the cover down, creating a gap at the top.
+  //
+  // FIX: Cover is NOT a block — it's a page-level layout.
+  // A page with a cover block is a COVER PAGE, period.
+  // Other blocks must move to the next page.
+  const fullPageBlocks = blocks.filter(b => isFullPageBlockType(b.type));
+  const nonFullPageBlocks = blocks.filter(b => !isFullPageBlockType(b.type));
+  const hasMixedLayout = fullPageBlocks.length > 0 && nonFullPageBlocks.length > 0;
+
+  if (coverIsolation && hasMixedLayout) {
+    // DEV WARNING: Cover page has non-cover blocks
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(
+        `[SceneLayout] FIX 1: Cover page has ${nonFullPageBlocks.length} non-cover blocks. ` +
+        `These blocks are hidden. Use OverflowIndicator to split the page. ` +
+        `Block types: ${nonFullPageBlocks.map(b => b.type).join(', ')}`
+      );
+    }
+
+    // Render ONLY the full-page block(s) — cover fills entire scene
+    for (let i = 0; i < fullPageBlocks.length; i++) {
+      const block = fullPageBlocks[i]!;
+      resolved.push({
+        block,
+        x: 0,
+        y: 0,
+        width: scene.w,
+        height: scene.h,
+        position: 'absolute',
+        overflow: 'clip' as const,
+        zIndex: 0,
+        rotation: 0,
+        key: block.id || `cover-iso-${block.type}-${i}`,
+        isOverflowing: false,
+      });
+    }
+
+    // Hide non-full-page blocks — they overflow (height:0) so
+    // OverflowIndicator can suggest splitting the page.
+    for (let i = 0; i < nonFullPageBlocks.length; i++) {
+      const block = nonFullPageBlocks[i]!;
+      resolved.push({
+        block,
+        x: safeArea.left,
+        y: scene.h,  // Below visible area
+        width: scene.w - safeArea.left - safeArea.right,
+        height: 0,
+        position: 'flow',
+        overflow: getOverflowRule(block.type),
+        minHeight: 0,
+        maxHeight: 0,
+        zIndex: 1,
+        rotation: 0,
+        key: block.id || `cover-hidden-${block.type}-${i}`,
+        isOverflowing: true,  // Triggers OverflowIndicator → split
+      });
+    }
+
+    return resolved;
+  }
 
   // Content area bounds
   const contentX = safeArea.left;

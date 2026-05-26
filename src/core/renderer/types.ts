@@ -115,6 +115,11 @@ export class TokenResolver {
    *  Previously only 'y' was in the contractColorMap, meaning
    *  tokens.color('p') on a materi page returned theme default purple
    *  instead of the contract's curated #c084fc.
+   *
+   *  FIX 4: When contract is active, block.accentColor is IGNORED.
+   *  The contract's primaryAccentToken is the ONLY accent source.
+   *  This prevents multi-accent chaos where blocks pick their own
+   *  colors, breaking the "one theme per pertemuan" contract.
    */
   color(key: string): string {
     // Contract override: if contract is active, check contract colors first
@@ -142,6 +147,29 @@ export class TokenResolver {
     }
     const colors = this.tokens.colors as Record<string, string>;
     return colors[key] || key; // Pass through if not a token key (already a hex)
+  }
+
+  /**
+   * FIX 4: Resolve accent color with contract enforcement.
+   * When a contract is active, block.accentColor is IGNORED and replaced
+   * with the contract's primaryAccentToken for the current page type.
+   *
+   * This ensures ONE accent per page, enforced by the contract.
+   * Renderers should call tokens.resolveAccent(block.accentColor) instead
+   * of directly using block.accentColor.
+   *
+   * @param blockAccentColor - The block's own accent color (e.g., 'y', 'c', or hex)
+   * @returns The contract-enforced accent token key
+   */
+  resolveAccent(blockAccentColor?: string): string {
+    // FIX 4: When contract is active, ALWAYS use contract's primary accent.
+    // block.accentColor is a SOURCE OF BUGS — it creates multi-accent chaos.
+    // The contract decides the accent for each page type, not individual blocks.
+    if (this._contractStyle) {
+      return this._contractStyle.primaryAccentToken;
+    }
+    // No contract — fall back to block's own accent or default
+    return blockAccentColor || 'y';
   }
 
   /** Get color with alpha */

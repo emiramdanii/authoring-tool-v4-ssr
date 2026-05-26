@@ -70,7 +70,8 @@ function HeroVariantA({
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   const y = tokens.color(accentKey);
   const c = tokens.color('c');
   const edu = tokens.edu('hero', isCompact);
@@ -189,7 +190,8 @@ function HeroVariantB({
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   const y = tokens.color(accentKey);
   const edu = tokens.edu('hero', isCompact);
 
@@ -293,7 +295,8 @@ function HeroVariantC({
   titleEditor: ReturnType<typeof useInlineEditor>;
   subtitleEditor: ReturnType<typeof useInlineEditor>;
 }) {
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   const y = tokens.color(accentKey);
   const edu = tokens.edu('hero', isCompact);
 
@@ -423,7 +426,8 @@ export const HeroRenderer = React.memo(function HeroRenderer({ block, tokens, in
     subtitleEditor,
   };
 
-  const accentKey = block.accentColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() — contract enforces ONE accent per page
+  const accentKey = tokens.resolveAccent(block.accentColor);
   return (
     <PremiumBlockWrapper tokens={tokens} accent={accentKey} staggerIndex={0}
       style={{ width: '100%' }}>

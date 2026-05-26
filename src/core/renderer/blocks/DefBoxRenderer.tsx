@@ -123,7 +123,8 @@ function DefBoxStepMode({
 export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens, isCompact, isEditing, compression }: {
   block: DefBoxBlock; tokens: TokenResolver; isCompact: boolean; isEditing?: boolean; compression?: CompressionDecision;
 }) {
-  const colorKey = block.borderColor || 'y';
+  // FIX 4: Use tokens.resolveAccent() for border color — contract enforces accent consistency
+  const colorKey = tokens.resolveAccent(block.borderColor);
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
   const edu = tokens.edu('def-box', isCompact);
 

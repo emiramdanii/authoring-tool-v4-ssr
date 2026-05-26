@@ -14,6 +14,7 @@ import { inferSceneType } from '@/core/edu/education-scene-types';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
 import { resolveContractStyle, type ContractResolvedStyle } from '@/core/template/contract';
+import { GoldenPageRenderer } from '@/core/renderer/GoldenPageRenderer';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -267,35 +268,57 @@ export const PageRenderer = React.memo(function PageRenderer({
     return inferSceneType(undefined, page.templateType, undefined);
   }, [adaptedSchema?.sceneType, page.templateType]);
 
+  // ═══ FIX 3: Detect if golden contract is active for this page ═══
+  const isGoldenContract = !!contractStyle;
+
+  const schemaContent = useSchemaRenderer && adaptedSchema ? (
+    <SchemaScreenRenderer
+      screen={adaptedSchema}
+      mode={schemaModeMap[mode]}
+      tokens={tokens}
+      interactive={interactive}
+      selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
+      selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
+      hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
+      editingBlockId={mode === 'canvas' ? editingBlockId : undefined}
+      onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
+      onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
+      onBlockEdit={mode === 'canvas' ? handleBlockEdit : undefined}
+      onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
+      onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
+      onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
+      onBlockDuplicate={mode === 'canvas' ? handleBlockDuplicate : undefined}
+      onBlockReorder={mode === 'canvas' ? handleBlockReorder : undefined}
+      sceneResolution={sceneResolution}
+      safeArea={safeArea}
+      ratioId={ratioId}
+      showTopNav={showTopNav}
+      showBottomNav={showBottomNav}
+      pageIndex={currentPageIndex}
+      sceneType={sceneType}
+    />
+  ) : null;
+
   const content = (
     <>
-      {/* Schema-driven rendering for ALL template pages */}
-      {useSchemaRenderer && adaptedSchema && (
-        <SchemaScreenRenderer
-          screen={adaptedSchema}
-          mode={schemaModeMap[mode]}
+      {/* ═══ FIX 3: Golden Page Renderer — structural chrome ════════ */}
+      {/* When the golden contract is active, wrap the schema output with
+          GoldenPageRenderer to add progress bar, phase badge, nav dots.
+          Cover pages get NO chrome (full bleed). */}
+      {useSchemaRenderer && adaptedSchema && isGoldenContract && contractStyle ? (
+        <GoldenPageRenderer
+          contractStyle={contractStyle}
           tokens={tokens}
-          interactive={interactive}
-          selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
-          selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
-          hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
-          editingBlockId={mode === 'canvas' ? editingBlockId : undefined}
-          onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
-          onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
-          onBlockEdit={mode === 'canvas' ? handleBlockEdit : undefined}
-          onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
-          onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
-          onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
-          onBlockDuplicate={mode === 'canvas' ? handleBlockDuplicate : undefined}
-          onBlockReorder={mode === 'canvas' ? handleBlockReorder : undefined}
-          sceneResolution={sceneResolution}
-          safeArea={safeArea}
-          ratioId={ratioId}
-          showTopNav={showTopNav}
-          showBottomNav={showBottomNav}
+          sceneType={sceneType || 'concept'}
+          pageType={templateType}
           pageIndex={currentPageIndex}
-          sceneType={sceneType}
-        />
+          totalPages={totalPages}
+          isCoverPage={isPureCoverPage}
+        >
+          {schemaContent}
+        </GoldenPageRenderer>
+      ) : (
+        schemaContent
       )}
 
       {/* Empty schema page hint — when page has schema but 0 blocks (canvas mode only) */}

@@ -189,13 +189,22 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen.templateType, screen.blocks.length, isCompact]);
-  // FIX: Detect full-page blocks (cover/hero) even when mixed with flow blocks.
-  // Previously: only true when there was exactly 1 full-page block.
-  // Now: true when ANY block is a full-page type — this correctly handles
-  // the "cover + flow blocks" mixed layout where cover is background layer.
+  // ═══ FIX 1: COVER PAGE ISOLATION ═══════════════════════════════
+  // A page with ANY full-page block (cover/hero) is treated as a
+  // PURE cover page — regardless of how many other blocks exist.
+  // The SceneLayoutEngine's coverIsolation logic ensures only the
+  // cover block is rendered; other blocks are hidden with overflow.
+  //
+  // This prevents the "cover invisible" bug where:
+  //   - Cover gets zIndex:0 (background), flow blocks get zIndex:1
+  //   - Flow blocks render ON TOP of cover → cover invisible
+  //   - Safe area pushes cover down → gap at top
+  //
+  // Cover is NOT a block flow — it's a page-level layout.
   const hasCoverBlock = screen.blocks.some(b => isFullPageBlockType(b.type));
-  // Pure cover page: ONLY a full-page block, no flow content
-  const isPureCoverPage = screen.blocks.length === 1 && isFullPageBlockType(screen.blocks[0]!.type);
+  // FIX: Any page with a full-page block IS a pure cover page.
+  // The layout engine's coverIsolation handles hiding extra blocks.
+  const isPureCoverPage = hasCoverBlock;
 
   // ── FIX: Cover overflow to top ──
   // When a cover/hero block is on a page with flow blocks (mixed layout),

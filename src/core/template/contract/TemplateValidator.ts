@@ -23,6 +23,10 @@
 import type { TemplateThemeContract, PageLayoutContract } from './TemplateThemeContract';
 import { getContractOrGolden } from './TemplateThemeContract';
 import type { SchemaBlock } from '@/core/schema/types';
+import { isFullPageBlockType } from '@/core/schema/capability-registry';
+
+// Re-export for internal use — same as isFullPageBlockType
+const isFullPageBlockTypeCheck = isFullPageBlockType;
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -164,11 +168,88 @@ export function validatePage(
   }
 
   // ── Rule 7: Cover page must be single block ────────────────
+  // FIX 5: Elevated to ERROR — cover isolation is now enforced by
+  // the layout engine. A cover page with multiple blocks will have
+  // non-cover blocks hidden (height:0, isOverflowing:true).
+  // This is the strongest possible warning — the user WILL see
+  // broken output unless they split the page.
   if (pageType === 'cover' && blocks.length > 1) {
+    const nonCoverTypes = blocks.filter(b => !isFullPageBlockTypeCheck(b.type));
+    errors.push(issue(
+      'error',
+      'cover-multi-block',
+      `Cover page has ${blocks.length} blocks but MUST have exactly 1. ` +
+      `Non-cover blocks (${nonCoverTypes.map(b => b.type).join(', ')}) will be HIDDEN by cover isolation. ` +
+      `Action: Split the page or remove extra blocks.`,
+      pageType,
+    ));
+  }
+
+  // ── Rule 8: TP block exceeding safe height ─────────────────
+  // FIX 5: TP (Tujuan Pembelajaran) blocks with many items often
+  // overflow the scene. Detect and warn early.
+  const tpBlocks = blocks.filter(b => b.type === 'tp');
+  for (const tp of tpBlocks) {
+    const t = tp as { items?: unknown[] };
+    const numItems = t.items?.length || 0;
+    if (numItems > 5) {
+      warnings.push(issue(
+        'warning',
+        'tp-overflow-risk',
+        `TP block has ${numItems} items — likely to overflow. ` +
+        `Consider splitting into 2 pages (max 4-5 items per TP).`,
+        pageType,
+        'tp',
+        tp.id,
+        `Items: ${numItems}, recommended max: 5`,
+      ));
+    }
+  }
+
+  // ── Rule 9: Materi section with empty content ──────────────
+  // FIX 5: Empty materi-section is the #1 cause of "hollow output".
+  // The schema factory should populate defaults, but if it fails,
+  // this catches it before render.
+  const materiBlocks = blocks.filter(b => b.type === 'materi-section');
+  for (const ms of materiBlocks) {
+    const m = ms as { content?: SchemaBlock[] };
+    if (!m.content || m.content.length === 0) {
+      errors.push(issue(
+        'error',
+        'empty-materi-section',
+        `Materi section has no content blocks — this causes "hollow output". ` +
+        `Action: Add content blocks (materi-blok, def-box, nc-grid) to the section.`,
+        pageType,
+        'materi-section',
+        ms.id,
+      ));
+    }
+  }
+
+  // ── Rule 10: Multiple accent colors on same page ───────────
+  // FIX 4+5: Contract should enforce ONE accent per page.
+  // If blocks have different accentColor values, warn about inconsistency.
+  const accentColors = new Set<string>();
+  for (const block of blocks) {
+    const b = block as Record<string, unknown>;
+    if ('accentColor' in b && typeof b.accentColor === 'string') {
+      accentColors.add(b.accentColor as string);
+    }
+    if ('borderColor' in b && typeof b.borderColor === 'string') {
+      const bc = b.borderColor as string;
+      // Only count token-based borderColors (not hex)
+      if (!/^#[0-9a-fA-F]/.test(bc)) {
+        accentColors.add(bc);
+      }
+    }
+  }
+  if (accentColors.size > 1) {
     warnings.push(issue(
       'warning',
-      'cover-multi-block',
-      `Cover page should have exactly 1 block, but has ${blocks.length}. Extra blocks may overflow or overlap.`,
+      'multi-accent',
+      `Page uses ${accentColors.size} different accent colors: ${[...accentColors].join(', ')}. ` +
+      `Contract enforces ONE accent per page type. ` +
+      `The tokens.resolveAccent() method will override to the contract's primary accent.`,
       pageType,
     ));
   }

@@ -286,25 +286,29 @@ export function resolveEduTypography(
 // ═══════════════════════════════════════════════════════════════
 // HELPER: Get compact-mode typography
 // ═══════════════════════════════════════════════════════════════
-// When isCompact is true (canvas auto-compression), we scale down
-// but NEVER below the educational minimum.
+// FIX 2: Compact mode NO LONGER reduces font sizes.
+//
+// The scene is already scaled down via CSS transform: scale()
+// in the canvas viewport. Reducing font sizes on top of that
+// is DOUBLE-PENALIZING readability:
+//   Body 18px × 0.85 compact × 0.5 viewport scale = 7.65px effective
+//   That's unreadable from any distance.
+//
+// Compact mode now ONLY affects spacing (padding, gaps, margins).
+// Font sizes ALWAYS use full values — the CSS scale handles visual size.
+//
+// This is the "Golden Template" principle: media content must be
+// readable at ALL zoom levels. The editor chrome can be compact,
+// but the student-facing content must stay at full size.
 
 export function resolveEduTypographyCompact(
   key: EduTypographyKey,
   isCompact: boolean,
   mode: EduDisplayMode = 'classroom',
 ): ReturnType<typeof resolveEduTypography> {
-  const resolved = resolveEduTypography(key, mode);
-  if (isCompact) {
-    const spec = EDU_TYPOGRAPHY[key];
-    // Compact mode: moderate reduction (0.85x) but never below minPx
-    const compactPx = Math.max(Math.round(spec.px * 0.85), spec.minPx);
-    return {
-      ...resolved,
-      fontSize: `${compactPx}px`,
-    };
-  }
-  return resolved;
+  // FIX 2: isCompact no longer reduces font sizes.
+  // Always use full-size typography — CSS scale handles visual reduction.
+  return resolveEduTypography(key, mode);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -347,6 +351,14 @@ export function resolveEduTypographyScene(
 /**
  * Scene-aware + compact-aware typography resolution.
  * This is the primary function that EduRenderingContext should use.
+ *
+ * FIX 2: isCompact no longer reduces font sizes.
+ * The scene is already scaled by CSS transform: scale() in the canvas.
+ * Reducing font sizes here causes double-downscaling, making text
+ * unreadable (e.g., body 18px × 0.85 × viewport scale = tiny).
+ *
+ * Compact mode now ONLY affects spacing (padding, gaps, block gaps).
+ * Font sizes always use full scene-aware values.
  */
 export function resolveEduTypographySceneCompact(
   key: EduTypographyKey,
@@ -354,19 +366,7 @@ export function resolveEduTypographySceneCompact(
   isCompact: boolean,
   mode: EduDisplayMode = 'classroom',
 ): ReturnType<typeof resolveEduTypography> {
-  const resolved = resolveEduTypographyScene(key, sceneType, mode);
-  if (isCompact) {
-    const base = EDU_TYPOGRAPHY[key];
-    const override = SCENE_TYPOGRAPHY_OVERRIDES[sceneType][key];
-    const minPx = override?.minPx ?? base.minPx;
-    const overridePx = override?.px ?? base.px;
-    // Moderate reduction for compact mode — 0.85x but never below minPx
-    // This keeps text readable even when canvas is zoomed out
-    const compactPx = Math.max(Math.round(overridePx * 0.85), minPx);
-    return {
-      ...resolved,
-      fontSize: `${compactPx}px`,
-    };
-  }
-  return resolved;
+  // FIX 2: isCompact no longer reduces font sizes.
+  // Always return full scene-aware typography — CSS scale handles visual size.
+  return resolveEduTypographyScene(key, sceneType, mode);
 }
