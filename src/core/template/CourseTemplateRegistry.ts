@@ -38,6 +38,59 @@ export {
   VISUAL_DNA_QUICK_REF,
 } from '@/core/visual-dna/visual-dna';
 
+// ── Block Type Icon Map ───────────────────────────────────────
+
+const BLOCK_ICONS: Record<string, string> = {
+  'cover': '🏠',
+  'petunjuk': '📋',
+  'tp': '🎯',
+  'alur': '⏱️',
+  'skenario': '🎭',
+  'def-box': '📖',
+  'nc-grid': '🔲',
+  'flashcard-set': '🃏',
+  'ftab': '📑',
+  'nk-card': '🪪',
+  'materi-section': '📚',
+  'diskusi': '💬',
+  'kuis': '❓',
+  'sortir-game': '🔀',
+  'roda-game': '🎡',
+  'memory-game': '🧠',
+  'matching-game': '🔗',
+  'fill-blank-game': '✏️',
+  'word-search-game': '🔍',
+  'true-false-game': '✅',
+  'drag-drop-game': '👆',
+  'crossword-game': '🧩',
+  'team-buzzer-game': '🔔',
+  'hasil': '🏆',
+  'refleksi': '📝',
+  'penutup': '👋',
+  'tujuan-display': '🎯',
+  'motivasi': '💡',
+  'rangkuman': '📊',
+  'tabel-accord': '📋',
+};
+
+export function getBlockIcon(blockType: string): string {
+  return BLOCK_ICONS[blockType] || '📦';
+}
+
+// ── Preview Block Info (for marketplace/gallery cards) ──────────
+
+export interface PreviewBlockInfo {
+  type: string;
+  icon: string;
+  label: string;
+}
+
+export interface PreviewScreenInfo {
+  templateType: string;
+  label: string;
+  blocks: PreviewBlockInfo[];
+}
+
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
 export interface SceneTemplateSpec {
@@ -102,6 +155,13 @@ export interface CourseTemplate {
   pattern: TemplatePattern;
   /** Search tags */
   tags: string[];
+  // ── Marketplace/Gallery display fields ──
+  /** Cover gradient colors for card display (e.g., ['y', 'o'] for amber→orange) */
+  coverGradient?: [string, string];
+  /** Preview block info for marketplace card display */
+  previewBlocks?: PreviewScreenInfo[];
+  /** Whether this template is BSNP-compliant */
+  bsnpCompliant?: boolean;
 }
 
 // ── Template Pattern — Learning flow archetype ─────────────────
@@ -191,11 +251,13 @@ export interface SubjectConfig {
 export const SUBJECTS: SubjectConfig[] = [
   { id: 'PPKn', label: 'PPKn', icon: '⚖️', color: '#ef4444' },
   { id: 'IPA', label: 'IPA', icon: '🔬', color: '#22c55e' },
-  { id: 'MTK', label: 'MTK', icon: '📐', color: '#3b82f6' },
-  { id: 'B.Indonesia', label: 'B. Indonesia', icon: '📖', color: '#f59e0b' },
+  { id: 'MTK', label: 'Matematika', icon: '📐', color: '#3b82f6' },
+  { id: 'B.Indonesia', label: 'Bahasa Indonesia', icon: '📖', color: '#f59e0b' },
   { id: 'B.Inggris', label: 'B. Inggris', icon: '🌍', color: '#8b5cf6' },
-  { id: 'Seni', label: 'Seni', icon: '🎨', color: '#ec4899' },
+  { id: 'IPS', label: 'IPS', icon: '🏛️', color: '#f97316' },
+  { id: 'Seni', label: 'Seni Budaya', icon: '🎨', color: '#ec4899' },
   { id: 'PJOK', label: 'PJOK', icon: '⚽', color: '#06b6d4' },
+  { id: 'Informatika', label: 'Informatika', icon: '💻', color: '#6366f1' },
   { id: 'Lainnya', label: 'Lainnya', icon: '📚', color: '#6b7280' },
 ];
 
@@ -317,7 +379,231 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     ],
     metadata: { icon: '📋', author: 'SILSE', version: '2.1.0' },
   },
+
+  // ── MARKETPLACE TEMPLATES — Absorbed from marketplace-templates.ts ──
+  // Metadata only. Schema factories are in _schemaFactories map below.
+  // These templates use presetId or schemaFactory for content generation.
+
+  {
+    id: 'mat-persamaan-linear',
+    name: 'Persamaan Linear',
+    subtitle: 'Matematika Kelas 7 - Semester 1',
+    description: 'Pelajari konsep persamaan linear satu variabel melalui kuis interaktif, isian singkat, dan drag-drop. Cocok untuk kelas 7 semester 1 dengan pendekatan kontekstual.',
+    subject: 'MTK',
+    grade: '7',
+    semester: '1',
+    theme: 'golden-presentation',
+    color: 'amber',
+    pattern: 'interaktif',
+    coverGradient: ['y', 'o'],
+    bsnpCompliant: true,
+    previewBlocks: [
+      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
+      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Kartu Konsep' }, { type: 'flashcard-set', icon: '🃏', label: 'Flashcard' }] },
+      { templateType: 'game', label: 'Latihan Interaktif', blocks: [{ type: 'fill-blank-game', icon: '✏️', label: 'Isian Singkat' }, { type: 'drag-drop-game', icon: '👆', label: 'Drag & Drop' }] },
+      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'kuis', icon: '❓', label: 'Kuis Pilihan Ganda' }] },
+      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi Diri' }] },
+    ],
+    tags: ['matematika', 'aljabar', 'persamaan linear', 'PLSV'],
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set'], sceneType: 'concept' },
+      { templateType: 'game', label: 'Latihan Interaktif', suggestedBlocks: ['fill-blank-game', 'drag-drop-game'], sceneType: 'practice' },
+      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['kuis'], sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
+    ],
+    metadata: { icon: '📐', author: 'SILSE', version: '2.1.0' },
+  },
+
+  {
+    id: 'ipa-tata-surya',
+    name: 'Sistem Tata Surya',
+    subtitle: 'IPA Kelas 7 - Semester 2',
+    description: 'Eksplorasi planet-planet dalam tata surya melalui media visual, word search, dan kuis benar-salah. Template interaktif untuk kelas 7 semester 2.',
+    subject: 'IPA',
+    grade: '7',
+    semester: '2',
+    theme: 'golden-presentation',
+    color: 'sky',
+    pattern: 'interaktif',
+    coverGradient: ['c', 'p'],
+    bsnpCompliant: true,
+    previewBlocks: [
+      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
+      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Planet-planet' }, { type: 'flashcard-set', icon: '🃏', label: 'Flashcard' }] },
+      { templateType: 'game', label: 'Word Search', blocks: [{ type: 'word-search-game', icon: '🔍', label: 'Cari Kata' }] },
+      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'true-false-game', icon: '✅', label: 'Benar-Salah' }, { type: 'kuis', icon: '❓', label: 'Pilihan Ganda' }] },
+      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi Diri' }] },
+    ],
+    tags: ['ipa', 'tata surya', 'planet', 'astronomi'],
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set'], sceneType: 'concept' },
+      { templateType: 'game', label: 'Word Search', suggestedBlocks: ['word-search-game'], sceneType: 'practice' },
+      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['true-false-game', 'kuis'], sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
+    ],
+    metadata: { icon: '🌍', author: 'SILSE', version: '2.1.0' },
+  },
+
+  {
+    id: 'ipa-ekosistem',
+    name: 'Ekosistem',
+    subtitle: 'IPA Kelas 7 - Semester 1',
+    description: 'Pahami interaksi makhluk hidup dengan lingkungan melalui memory game, matching game, dan crossword. Template seru untuk kelas 7 semester 1.',
+    subject: 'IPA',
+    grade: '7',
+    semester: '1',
+    theme: 'golden-presentation',
+    color: 'emerald',
+    pattern: 'interaktif',
+    coverGradient: ['g', 'c'],
+    bsnpCompliant: true,
+    previewBlocks: [
+      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
+      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Komponen' }] },
+      { templateType: 'game', label: 'Memory Game', blocks: [{ type: 'memory-game', icon: '🧠', label: 'Memory' }] },
+      { templateType: 'game', label: 'Matching & Crossword', blocks: [{ type: 'matching-game', icon: '🔗', label: 'Matching' }, { type: 'crossword-game', icon: '🧩', label: 'Crossword' }] },
+      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi Diri' }] },
+    ],
+    tags: ['ipa', 'ekosistem', 'biotik', 'abiotik'],
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid'], sceneType: 'concept' },
+      { templateType: 'game', label: 'Memory Game', suggestedBlocks: ['memory-game'], sceneType: 'practice' },
+      { templateType: 'game', label: 'Matching & Crossword', suggestedBlocks: ['matching-game', 'crossword-game'], sceneType: 'practice' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
+    ],
+    metadata: { icon: '🌿', author: 'SILSE', version: '2.1.0' },
+  },
+
+  {
+    id: 'ips-sejarah-indonesia',
+    name: 'Sejarah Indonesia',
+    subtitle: 'IPS Kelas 8 - Semester 1',
+    description: 'Pelajari peristiwa penting sejarah Indonesia melalui skenario interaktif, kuis, dan team buzzer. Template menarik untuk kelas 8 semester 1.',
+    subject: 'IPS',
+    grade: '8',
+    semester: '1',
+    theme: 'golden-presentation',
+    color: 'red',
+    pattern: 'interaktif',
+    coverGradient: ['r', 'o'],
+    bsnpCompliant: true,
+    previewBlocks: [
+      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
+      { templateType: 'skenario', label: 'Skenario', blocks: [{ type: 'skenario', icon: '🎭', label: 'Skenario Interaktif' }] },
+      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'kuis', icon: '❓', label: 'Pilihan Ganda' }] },
+      { templateType: 'game', label: 'Team Buzzer', blocks: [{ type: 'team-buzzer-game', icon: '🔔', label: 'Team Buzzer' }] },
+      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'diskusi', icon: '💬', label: 'Diskusi' }, { type: 'refleksi', icon: '📝', label: 'Refleksi' }] },
+    ],
+    tags: ['ips', 'sejarah', 'indonesia', 'kemerdekaan'],
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario', suggestedBlocks: ['skenario'], sceneType: 'example' },
+      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['kuis'], sceneType: 'assessment' },
+      { templateType: 'game', label: 'Team Buzzer', suggestedBlocks: ['team-buzzer-game'], sceneType: 'practice' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['diskusi', 'refleksi'], sceneType: 'reflection' },
+    ],
+    metadata: { icon: '🏛️', author: 'SILSE', version: '2.1.0' },
+  },
+
+  {
+    id: 'bindo-teks-narasi',
+    name: 'Teks Narasi',
+    subtitle: 'B. Indonesia Kelas 8 - Semester 1',
+    description: 'Kuasai struktur teks narasi melalui flashcard, fill-blank game, dan refleksi. Template cocok untuk kelas 8 semester 1 dengan fokus pada menulis kreatif.',
+    subject: 'B.Indonesia',
+    grade: '8',
+    semester: '1',
+    theme: 'golden-presentation',
+    color: 'violet',
+    pattern: 'interaktif',
+    coverGradient: ['p', 'c'],
+    bsnpCompliant: true,
+    previewBlocks: [
+      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
+      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Struktur' }, { type: 'flashcard-set', icon: '🃏', label: 'Flashcard' }] },
+      { templateType: 'game', label: 'Latihan', blocks: [{ type: 'fill-blank-game', icon: '✏️', label: 'Isian' }] },
+      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'kuis', icon: '❓', label: 'Pilihan Ganda' }] },
+      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'diskusi', icon: '💬', label: 'Diskusi' }, { type: 'refleksi', icon: '📝', label: 'Refleksi' }] },
+    ],
+    tags: ['bahasa indonesia', 'narasi', 'menulis', 'cerita'],
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set'], sceneType: 'concept' },
+      { templateType: 'game', label: 'Latihan', suggestedBlocks: ['fill-blank-game'], sceneType: 'practice' },
+      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['kuis'], sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['diskusi', 'refleksi'], sceneType: 'reflection' },
+    ],
+    metadata: { icon: '📖', author: 'SILSE', version: '2.1.0' },
+  },
+
+  {
+    id: 'ppkn-norma-masyarakat',
+    name: 'Norma dalam Masyarakat',
+    subtitle: 'PPKn Kelas 7 - Semester 1',
+    description: 'Kenali berbagai norma yang berlaku di masyarakat melalui sortir game, roda game, dan kuis. Template interaktif untuk kelas 7 semester 1.',
+    subject: 'PPKn',
+    grade: '7',
+    semester: '1',
+    theme: 'hakikat-norma',
+    color: 'amber',
+    pattern: 'interaktif',
+    coverGradient: ['y', 'g'],
+    bsnpCompliant: true,
+    previewBlocks: [
+      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
+      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Jenis Norma' }] },
+      { templateType: 'game', label: 'Sortir Game', blocks: [{ type: 'sortir-game', icon: '🔀', label: 'Klasifikasi Norma' }] },
+      { templateType: 'game', label: 'Roda Game', blocks: [{ type: 'roda-game', icon: '🎡', label: 'Roda Pertanyaan' }, { type: 'kuis', icon: '❓', label: 'Kuis' }] },
+      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi' }] },
+    ],
+    tags: ['ppkn', 'norma', 'hukum', 'masyarakat'],
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid'], sceneType: 'concept' },
+      { templateType: 'game', label: 'Sortir Game', suggestedBlocks: ['sortir-game'], sceneType: 'practice' },
+      { templateType: 'game', label: 'Roda Game', suggestedBlocks: ['roda-game', 'kuis'], sceneType: 'practice' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
+    ],
+    metadata: { icon: '⚖️', author: 'SILSE', version: '2.1.0' },
+  },
 ];
+
+// ═══════════════════════════════════════════════════════════════════
+// SCHEMA FACTORIES — Bridge to marketplace-templates.ts
+// ═══════════════════════════════════════════════════════════════════
+// TODO (Phase 3): Convert schemaFactory closures to preset files,
+// then delete marketplace-templates.ts entirely.
+
+import type { LessonSchema } from '@/core/schema/types';
+
+/** @internal Lazy-loaded schema factories from marketplace-templates */
+const _schemaFactories: Map<string, () => LessonSchema> = new Map();
+
+/**
+ * Register a schema factory for a template ID.
+ * Called during initialization to bridge marketplace schema factories.
+ */
+export function registerSchemaFactory(id: string, factory: () => LessonSchema): void {
+  _schemaFactories.set(id, factory);
+}
+
+/**
+ * Get a schema factory by template ID.
+ * Returns undefined if no factory is registered (template uses presetId instead).
+ */
+export function getSchemaFactory(id: string): (() => LessonSchema) | undefined {
+  return _schemaFactories.get(id);
+}
+
+// ── Initialize marketplace schema factories ─────────────────────
+// Lazy import to avoid circular deps; runs once at module load.
+import { MARKETPLACE_TEMPLATES as _MP_TEMPLATES } from '@/core/templates/marketplace-templates';
+for (const tmpl of _MP_TEMPLATES) {
+  registerSchemaFactory(tmpl.id, tmpl.schemaFactory);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // REGISTRY — Map-based lookup
@@ -566,7 +852,7 @@ export function resolveSceneType(spec: SceneTemplateSpec): SceneType {
 }
 
 /**
- * Get unique subject list from all templates.
+ * Get unique subject list from all templates (IDs only).
  */
 export function getSubjectList(): string[] {
   const subjects = new Set<string>();
@@ -574,6 +860,41 @@ export function getSubjectList(): string[] {
     if (t.subject !== '*') subjects.add(t.subject);
   }
   return Array.from(subjects);
+}
+
+/**
+ * Get subject display label from subject ID.
+ * Looks up the SUBJECTS config for a human-readable label.
+ */
+export function getSubjectLabel(subjectId: string): string {
+  const cfg = SUBJECTS.find(s => s.id === subjectId);
+  return cfg?.label ?? subjectId;
+}
+
+/**
+ * Get all subjects with full config (for marketplace filter UI).
+ */
+export function getSubjectListDetailed(): SubjectConfig[] {
+  const usedSubjects = new Set<string>();
+  for (const t of getAllCourseTemplates()) {
+    if (t.subject !== '*') usedSubjects.add(t.subject);
+  }
+  return SUBJECTS.filter(s => usedSubjects.has(s.id));
+}
+
+/**
+ * Get all block types used across a template's scenes.
+ */
+export function getTemplateBlockTypes(templateId: string): string[] {
+  const template = _registry.get(templateId);
+  if (!template) return [];
+  const blockTypes = new Set<string>();
+  for (const scene of template.scenes) {
+    for (const block of scene.suggestedBlocks) {
+      blockTypes.add(block);
+    }
+  }
+  return Array.from(blockTypes);
 }
 
 /**

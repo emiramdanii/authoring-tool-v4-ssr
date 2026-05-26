@@ -18,13 +18,15 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCanvaStore } from '@/store/canva-store';
 import {
-  MARKETPLACE_TEMPLATES,
-  getSubjectList,
+  getAllCourseTemplates,
+  getSubjectListDetailed,
+  getSubjectLabel,
   getBlockIcon,
-  type MarketplaceTemplate,
-  type MapelCategory,
+  getSchemaFactory,
+  getTemplateBlockTypes,
+  type CourseTemplate,
   type PreviewScreenInfo,
-} from '@/core/templates/marketplace-templates';
+} from '@/core/template/CourseTemplateRegistry';
 import { resolveTokens } from '@/core/themes/tokens';
 import TemplatePreviewThumbnail from '@/components/shared/TemplatePreviewThumbnail';
 
@@ -39,23 +41,23 @@ const GRADE_OPTIONS: Array<{ value: 7 | 8 | 9; label: string }> = [
 // ── Subject color map ────────────────────────────────────────
 
 const SUBJECT_COLORS: Record<string, string> = {
-  'Matematika': 'from-amber-500 to-orange-500',
+  'MTK': 'from-amber-500 to-orange-500',
   'IPA': 'from-emerald-500 to-teal-500',
   'IPS': 'from-red-500 to-rose-500',
-  'Bahasa Indonesia': 'from-violet-500 to-purple-500',
+  'B.Indonesia': 'from-violet-500 to-purple-500',
   'PPKn': 'from-yellow-500 to-amber-500',
-  'Seni Budaya': 'from-pink-500 to-fuchsia-500',
+  'Seni': 'from-pink-500 to-fuchsia-500',
   'PJOK': 'from-green-500 to-lime-500',
   'Informatika': 'from-cyan-500 to-sky-500',
 };
 
 const SUBJECT_BADGE_COLORS: Record<string, string> = {
-  'Matematika': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  'MTK': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
   'IPA': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
   'IPS': 'bg-red-500/20 text-red-300 border-red-500/30',
-  'Bahasa Indonesia': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+  'B.Indonesia': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
   'PPKn': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-  'Seni Budaya': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+  'Seni': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
   'PJOK': 'bg-green-500/20 text-green-300 border-green-500/30',
   'Informatika': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
 };
@@ -87,13 +89,13 @@ function TemplatePreview({
   onClose,
   onApply,
 }: {
-  template: MarketplaceTemplate;
+  template: CourseTemplate;
   onClose: () => void;
-  onApply: (t: MarketplaceTemplate) => void;
+  onApply: (t: CourseTemplate) => void;
 }) {
   const [screenIdx, setScreenIdx] = useState(0);
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
-  const screens = template.previewBlocks;
+  const screens = template.previewBlocks ?? [];
   const currentScreen = screens[screenIdx];
 
   return (
@@ -109,13 +111,13 @@ function TemplatePreview({
         <div className="flex items-center gap-3 p-4 border-b border-app-border">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
-            style={{ background: resolveGradient(template.coverGradient) }}
+            style={{ background: resolveGradient(template.coverGradient ?? ['c', 'p']) }}
           >
-            {template.icon}
+            {template.metadata.icon}
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-app-primary font-bold text-lg truncate">{template.name}</h3>
-            <p className="text-app-muted text-xs">{template.subject} • Kelas {template.grade}</p>
+            <p className="text-app-muted text-xs">{getSubjectLabel(template.subject)} • Kelas {template.grade}</p>
           </div>
           {/* View mode toggle */}
           <div className="flex items-center gap-1 bg-app-surface/50 rounded-lg p-0.5 border border-app-border/50">
@@ -280,10 +282,10 @@ function TemplateCard({
   onPreview,
   onApply,
 }: {
-  template: MarketplaceTemplate;
+  template: CourseTemplate;
   index: number;
-  onPreview: (t: MarketplaceTemplate) => void;
-  onApply: (t: MarketplaceTemplate) => void;
+  onPreview: (t: CourseTemplate) => void;
+  onApply: (t: CourseTemplate) => void;
 }) {
   // Track which screen to show in thumbnail on hover
   const [thumbScreen, setThumbScreen] = useState(0);
@@ -292,9 +294,9 @@ function TemplateCard({
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     const startCycling = () => {
-      if (template.previewBlocks.length <= 1) return;
+      if ((template.previewBlocks?.length ?? 0) <= 1) return;
       interval = setInterval(() => {
-        setThumbScreen(prev => (prev + 1) % template.previewBlocks.length);
+        setThumbScreen(prev => (prev + 1) % (template.previewBlocks?.length ?? 1));
       }, 1500);
     };
     const stopCycling = () => {
@@ -365,20 +367,20 @@ function TemplateCard({
             variant="outline"
             className={`text-[9px] px-1.5 py-0 h-5 border ${SUBJECT_BADGE_COLORS[template.subject] || 'bg-app-surface text-app-secondary border-app-border'}`}
           >
-            {template.subject}
+            {getSubjectLabel(template.subject)}
           </Badge>
           <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-5 border border-app-border text-app-muted">
             Kelas {template.grade}
           </Badge>
           <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-5 border border-app-border text-app-muted">
             <Layers size={9} className="mr-0.5" />
-            {template.screens} layar
+            {template.scenes.length} layar
           </Badge>
         </div>
 
         {/* Block type icons */}
         <div className="flex items-center gap-1 flex-wrap">
-          {template.blockTypes.slice(0, 5).map((bt) => (
+          {getTemplateBlockTypes(template.id).slice(0, 5).map((bt) => (
             <span
               key={`bt-${template.id}-${bt}`}
               className="text-xs"
@@ -387,8 +389,8 @@ function TemplateCard({
               {getBlockIcon(bt)}
             </span>
           ))}
-          {template.blockTypes.length > 5 && (
-            <span className="text-[9px] text-app-muted">+{template.blockTypes.length - 5}</span>
+          {getTemplateBlockTypes(template.id).length > 5 && (
+            <span className="text-[9px] text-app-muted">+{getTemplateBlockTypes(template.id).length - 5}</span>
           )}
         </div>
 
@@ -420,15 +422,16 @@ export default function TemplateMarketplace({
   onClose: () => void;
 }) {
   const loadCustomSchema = useCanvaStore((s) => s.loadCustomSchema);
-  const subjects = useMemo(() => getSubjectList(), []);
+  const subjects = useMemo(() => getSubjectListDetailed(), []);
+  const allTemplates = useMemo(() => getAllCourseTemplates(), []);
 
   // ── Filter state ──
   const [search, setSearch] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState<MapelCategory | 'all'>('all');
-  const [gradeFilter, setGradeFilter] = useState<7 | 8 | 9 | null>(null);
+  const [subjectFilter, setSubjectFilter] = useState<string | 'all'>('all');
+  const [gradeFilter, setGradeFilter] = useState<string | null>(null);
 
   // ── Preview state ──
-  const [previewTemplate, setPreviewTemplate] = useState<MarketplaceTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<CourseTemplate | null>(null);
 
   // ── Keyboard: Escape to close ──
   useEffect(() => {
@@ -450,15 +453,18 @@ export default function TemplateMarketplace({
 
   // ── Filtered templates ──
   const filteredTemplates = useMemo(() => {
-    return MARKETPLACE_TEMPLATES.filter((t) => {
+    return allTemplates.filter((t) => {
+      // Skip template-kosong in marketplace
+      if (t.id === 'template-kosong') return false;
       // Search filter
       if (search) {
         const q = search.toLowerCase();
+        const blockTypes = getTemplateBlockTypes(t.id);
         const matchSearch =
           t.name.toLowerCase().includes(q) ||
-          t.subject.toLowerCase().includes(q) ||
+          getSubjectLabel(t.subject).toLowerCase().includes(q) ||
           t.description.toLowerCase().includes(q) ||
-          t.blockTypes.some((bt) => bt.toLowerCase().includes(q));
+          blockTypes.some((bt) => bt.toLowerCase().includes(q));
         if (!matchSearch) return false;
       }
       // Subject filter
@@ -467,12 +473,22 @@ export default function TemplateMarketplace({
       if (gradeFilter !== null && t.grade !== gradeFilter) return false;
       return true;
     });
-  }, [search, subjectFilter, gradeFilter]);
+  }, [search, subjectFilter, gradeFilter, allTemplates]);
 
   // ── Apply template ──
-  const handleApply = useCallback((template: MarketplaceTemplate) => {
-    const schema = template.schemaFactory();
-    loadCustomSchema(schema);
+  const handleApply = useCallback((template: CourseTemplate) => {
+    // Try schema factory first (marketplace templates)
+    const factory = getSchemaFactory(template.id);
+    if (factory) {
+      const schema = factory();
+      loadCustomSchema(schema);
+      setPreviewTemplate(null);
+      onClose();
+      return;
+    }
+    // Fallback: if template has presetId, use createProjectFromTemplate
+    // (handled by the template wizard / gallery panel)
+    console.warn(`[Marketplace] No schema factory for template "${template.id}" — apply via wizard instead`);
     setPreviewTemplate(null);
     onClose();
   }, [loadCustomSchema, onClose]);
@@ -540,15 +556,15 @@ export default function TemplateMarketplace({
                   </button>
                   {subjects.map((subj) => (
                     <button
-                      key={`subj-${subj}`}
-                      onClick={() => setSubjectFilter(subj)}
+                      key={`subj-${subj.id}`}
+                      onClick={() => setSubjectFilter(subj.id)}
                       className={`px-3 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-colors shrink-0 ${
-                        subjectFilter === subj
+                        subjectFilter === subj.id
                           ? 'bg-app-accent text-app-bg'
                           : 'bg-app-surface/60 text-app-muted hover:bg-app-surface border border-app-border/50'
                       }`}
                     >
-                      {subj}
+                      {subj.icon} {subj.label}
                     </button>
                   ))}
                 </div>
@@ -569,9 +585,9 @@ export default function TemplateMarketplace({
                   {GRADE_OPTIONS.map((g) => (
                     <button
                       key={`grade-${g.value}`}
-                      onClick={() => setGradeFilter(g.value === gradeFilter ? null : g.value)}
+                      onClick={() => setGradeFilter(String(g.value) === gradeFilter ? null : String(g.value))}
                       className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
-                        gradeFilter === g.value
+                        gradeFilter === String(g.value)
                           ? 'bg-app-accent text-app-bg'
                           : 'bg-app-surface/60 text-app-muted hover:bg-app-surface border border-app-border/50'
                       }`}

@@ -8,7 +8,8 @@
 // Uses the template's theme colors for visual identity.
 
 import React from 'react';
-import type { MarketplaceTemplate, PreviewScreenInfo } from '@/core/templates/marketplace-templates';
+import type { CourseTemplate, PreviewScreenInfo } from '@/core/template/CourseTemplateRegistry';
+import { getSubjectLabel } from '@/core/template/CourseTemplateRegistry';
 import { resolveTokens } from '@/core/themes/tokens';
 
 // ── Block type → visual category ───────────────────────────────
@@ -129,7 +130,7 @@ function ScreenBlock({
 // ═══════════════════════════════════════════════════════════════════
 
 interface TemplatePreviewThumbnailProps {
-  template: MarketplaceTemplate;
+  template: CourseTemplate;
   /** Width in pixels (default: 200) */
   width?: number;
   /** Height in pixels (default: 112 — ~16:9) */
@@ -150,9 +151,11 @@ export default function TemplatePreviewThumbnail({
   showDots = true,
   activeScreen = 0,
 }: TemplatePreviewThumbnailProps) {
-  const gradient = resolveGradientCSS(template.coverGradient);
-  const accentColor = resolveColor(template.coverGradient[0]);
-  const currentScreen = template.previewBlocks[activeScreen] || template.previewBlocks[0];
+  const gradient = resolveGradientCSS(template.coverGradient ?? ['c', 'p']);
+  const accentColor = resolveColor(template.coverGradient?.[0] ?? 'c');
+  const currentScreen = template.previewBlocks?.[activeScreen] ?? template.previewBlocks?.[0];
+
+  if (!currentScreen) return null;
 
   return (
     <div
@@ -183,7 +186,7 @@ export default function TemplatePreviewThumbnail({
       )}
 
       {/* Screen dots */}
-      {showDots && template.previewBlocks.length > 1 && (
+      {showDots && template.previewBlocks && template.previewBlocks.length > 1 && (
         <div className="absolute top-1.5 right-1.5 flex gap-0.5">
           {template.previewBlocks.map((_, i) => (
             <div
@@ -204,7 +207,7 @@ export default function TemplatePreviewThumbnail({
         className="absolute top-1.5 left-1.5 px-1 py-px rounded text-[6px] font-bold text-white/80"
         style={{ background: `${accentColor}55` }}
       >
-        {template.subject}
+        {getSubjectLabel(template.subject)}
       </div>
     </div>
   );
