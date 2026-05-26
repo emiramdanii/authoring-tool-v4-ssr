@@ -211,3 +211,23 @@ export {
 } from './session-state';
 
 export type { DocumentState, SessionInteractionState } from './session-state';
+
+// ── Guided Schema Patch (Single Write Path) ──────────────────────
+export {
+  applyGuidedSchemaPatch,
+  applyGuidedSchemaPatchBatch,
+  applyGuidedSchemaPatchWithProjection,
+  getEditableSchemaBlocks,
+  getEditableSchemaBlocksByPageId,
+  getSchemaBlockById,
+  getGuidedEditorSchema,
+  hasGuidedEditor,
+} from './guided-patch';
+
+export type {
+  GuidedPatchArgs,
+  GuidedPatchResult,
+  OverflowPolicy,
+  GuidedFieldDef,
+  GuidedEditorSchema,
+} from './guided-patch';

@@ -3,25 +3,23 @@
 // ═══════════════════════════════════════════════════════════════════
 // Phase 18.3d: Projection Live Sync
 //
-// PROBLEM: Konten editor tabs write to the AuthoringStore projection,
-// but the canvas reads from the schema tree. So edits don't appear
-// on the canvas until a full regeneration.
+// ⚠️  DEPRECATION NOTICE (Phase 1 — Guided Schema Authoring):
+//   These functions are DEPRECATED. New code should use
+//   applyGuidedSchemaPatch() from '@/core/schema/guided-patch'.
 //
-// SOLUTION: syncFieldToSchema() bridges the gap. When a Konten tab
-// edits data, it also calls syncFieldToSchema() to write the changes
-// to the corresponding schema block in the canvas page.
+//   Migration guide:
+//     OLD: syncKuisToSchema(kuis) → finds page by templateType + replaces block
+//     NEW: applyGuidedSchemaPatch({ pageId, blockId, patch: { questions: kuis } })
 //
-// FLOW:
-//   Konten tab edit → updateKuis(i, ...) [projection]
-//                   → syncKuisToSchema(kuis) [schema write-back]
-//                   → Canvas re-renders with new data ✅
+//   Why deprecate?
+//     - sync functions find blocks by templateType + blockType (fragile)
+//     - sync functions replace entire block content (no deep merge)
+//     - sync functions have no undo support
+//     - sync functions bypass edit bus (no audit trail)
+//     - applyGuidedSchemaPatch fixes ALL of these issues
 //
-// DESIGN:
-//   - Lightweight: only syncs the specific field, not the whole page
-//   - Scoped: finds the right page and block by templateType + blockType
-//   - Safe: doesn't modify projection data, only schema blocks
-//   - Best-effort: if the schema block isn't found, silently skips
-//     (the projection still has the data, it just won't show on canvas)
+//   These functions will be REMOVED in Phase 5 (Cleanup Dual Source).
+//   Until then, they still work but log a deprecation warning in dev.
 // ═══════════════════════════════════════════════════════════════════
 
 import type { KuisItem, DiskusiData, RefleksiData, MateriState } from '@/store/authoring-store';
@@ -39,6 +37,15 @@ function updateSchemaBlock(
   blockType: string,
   updater: (block: SchemaBlock) => SchemaBlock,
 ): boolean {
+  // Runtime deprecation warning (dev only)
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      `[DEPRECATED] sync-projection updateSchemaBlock('${templateType}', '${blockType}') is deprecated. ` +
+      `Use applyGuidedSchemaPatch({ pageId, blockId, patch }) instead. ` +
+      `See guided-patch.ts for migration guide.`
+    );
+  }
+
   const store = useCanvaStore.getState();
   const pages = [...store.pages];
   let updated = false;
@@ -75,6 +82,10 @@ function updateSchemaBlock(
 /**
  * Sync KuisItem[] from projection to the KuisBlock in the schema.
  * Updates all KuisBlocks on pages with templateType 'kuis'.
+ *
+ * @deprecated Use applyGuidedSchemaPatch() instead.
+ *   OLD: syncKuisToSchema(kuis)
+ *   NEW: applyGuidedSchemaPatch({ pageId, blockId, patch: { questions: kuis } })
  */
 export function syncKuisToSchema(kuis: KuisItem[]): boolean {
   return updateSchemaBlock('kuis', 'kuis', (block) => ({
@@ -92,6 +103,10 @@ export function syncKuisToSchema(kuis: KuisItem[]): boolean {
 /**
  * Sync DiskusiData from projection to the DiskusiBlock in the schema.
  * Updates all DiskusiBlocks on pages with templateType 'diskusi'.
+ *
+ * @deprecated Use applyGuidedSchemaPatch() instead.
+ *   OLD: syncDiskusiToSchema(diskusi)
+ *   NEW: applyGuidedSchemaPatch({ pageId, blockId, patch: { ...diskusi } })
  */
 export function syncDiskusiToSchema(diskusi: DiskusiData): boolean {
   return updateSchemaBlock('diskusi', 'diskusi', (block) => ({
@@ -110,6 +125,10 @@ export function syncDiskusiToSchema(diskusi: DiskusiData): boolean {
 /**
  * Sync RefleksiData from projection to the RefleksiBlock in the schema.
  * Updates all RefleksiBlocks on pages with templateType 'refleksi'.
+ *
+ * @deprecated Use applyGuidedSchemaPatch() instead.
+ *   OLD: syncRefleksiToSchema(refleksi)
+ *   NEW: applyGuidedSchemaPatch({ pageId, blockId, patch: { ...refleksi } })
  */
 export function syncRefleksiToSchema(refleksi: RefleksiData): boolean {
   return updateSchemaBlock('refleksi', 'refleksi', (block) => ({
@@ -138,6 +157,11 @@ export function syncRefleksiToSchema(refleksi: RefleksiData): boolean {
  * This is the most complex sync because MateriBlok has varied types
  * (teks, definisi, poin, highlight, compare, infobox, etc.) that each
  * map to different SchemaBlock types (def-box, nc-grid, etc.).
+ *
+ * @deprecated Use applyGuidedSchemaPatch() instead.
+ *   OLD: syncMateriToSchema(materi)
+ *   NEW: applyGuidedSchemaPatch({ pageId, blockId, patch: { content: [...], tabs: [...] } })
+ *   Note: MateriBlock→SchemaBlock conversion still needed until Phase 3.
  */
 export function syncMateriToSchema(materi: MateriState): boolean {
   return updateSchemaBlock('materi', 'materi-section', (block) => {
