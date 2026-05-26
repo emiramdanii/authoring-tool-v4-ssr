@@ -26,3 +26,25 @@ Stage Summary:
 - Runtime: ✅ SMOKE TEST PASSED
 
 The original "engine canggih tapi output hollow" problem is FIXED at the pipeline level. Templates now produce populated schemas via createDefaultSchemaForTemplateType() which uses BLOCK_DEFINITIONS.createDefault() for each block type.
+
+---
+Task ID: deep-clone-fix
+Agent: main
+Task: Implement deep-clone fix for shared reference bug — edit di canvas menyebabkan layout halaman lain ikut kacau
+
+Work Log:
+- Discovered commit 2f31aaf (user's previous fix) does NOT exist in current repo — fix was never applied
+- Added cloneSchemaBlocks() helper using structuredClone() in template-gallery.ts (lines 56-58)
+- Applied cloneSchemaBlocks() in instantiateTemplate() (line 1138)
+- Applied cloneSchemaBlocks() in instantiateTemplateWithConfig() (line 1204)
+- Applied structuredClone(schema.blocks) in CourseTemplateRegistry.createProjectFromTemplate() (line 652)
+- Wrote 9 mutation isolation tests in template-mutation-isolation.test.ts
+- Fixed false positive in test — def-box.content is a string not array, iterating it yields duplicate chars
+- All 9 tests pass, plus 73 existing tests (block-registry + schema-traversal)
+- Committed as c156c0c
+
+Stage Summary:
+- Deep-clone fix applied to ALL 3 pipeline entry points
+- Mutation isolation verified: editing block on page 1 does NOT affect page 2
+- Test coverage: 9 tests covering CourseTemplateRegistry, instantiateTemplate, instantiateTemplateWithConfig, Schema Factory
+- Build: ✅ CLEAN (tsc + vitest all pass)
