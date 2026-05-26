@@ -1,12 +1,12 @@
-/** Simple presentational badge for block capabilities */
+/** Simple presentational badge for block capabilities — stitch v4 style */
 export function CapabilityBadge({ label, value }: { label: string; value: boolean }) {
   return (
-    <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] ${
+    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium ${
       value
-        ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
-        : 'bg-app-elevated/40 text-app-muted border border-app-border/10'
+        ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+        : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/30'
     }`}>
-      <span>{value ? '✓' : '✕'}</span>
+      <span className="text-[10px]">{value ? '✓' : '✕'}</span>
       <span>{label}</span>
     </div>
   );

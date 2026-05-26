@@ -12,7 +12,7 @@ import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand } from 'lucide-react';
+import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
@@ -22,8 +22,8 @@ const AIAssistantSection = dynamic(() => import('./AIAssistantSection'), {
   ssr: false,
   loading: () => (
     <div className="p-3 space-y-2">
-      <div className="h-4 w-24 animate-pulse bg-app-elevated/20 rounded" />
-      <div className="h-20 animate-pulse bg-app-elevated/20 rounded-lg" />
+      <div className="h-4 w-24 animate-pulse bg-surface-container-high rounded" />
+      <div className="h-20 animate-pulse bg-surface-container-high rounded-xl" />
     </div>
   ),
 });
@@ -32,23 +32,21 @@ const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'),
   ssr: false,
   loading: () => (
     <div className="p-3 space-y-2">
-      <div className="h-4 w-20 animate-pulse bg-app-elevated/20 rounded" />
-      <div className="h-16 animate-pulse bg-app-elevated/20 rounded-lg" />
+      <div className="h-4 w-20 animate-pulse bg-surface-container-high rounded" />
+      <div className="h-16 animate-pulse bg-surface-container-high rounded-xl" />
     </div>
   ),
 });
 
 // ═══════════════════════════════════════════════════════════════
-// RIGHT PANEL v7 — Teacher-Mode-Aware Tab Layout
+// RIGHT PANEL v8 — Stitch v4 Style
 // ═══════════════════════════════════════════════════════════════
-// Tabs (sederhana / teacher mode):
-//   Properti → Block props, Background (no Layer tab clutter)
-//   AI       → AI Assistant, AI Refine
-//
-// Tabs (lengkap / advanced mode):
-//   Properties → Block/Element props, Alignment, Background
-//   AI         → AI Assistant, AI Refine
-//   Layer      → LayerPanel, Navigation, PageInfo
+// Stitch spec:
+//   - w-80 (320px) width
+//   - White bg, border-l border-outline-variant
+//   - Tab bar: subtle underline indicators
+//   - Teacher mode: Properti + AI tabs
+//   - Advanced mode: Properti + AI + Layer tabs
 // ═══════════════════════════════════════════════════════════════
 
 type RightPanelTab = 'properties' | 'ai' | 'layer';
@@ -71,17 +69,14 @@ export default function RightPanel() {
   const isSchemaDriven = !!page?.schema;
 
   // Teacher-mode aware tab configuration
-  // Sederhana mode: only Properti + AI (Layer is hidden — reduces cognitive load)
-  // Lengkap mode: all 3 tabs including Layer for advanced block ordering
   const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'properties', label: 'Properti', icon: <Box size={12} /> },
-    ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: <Sparkles size={12} /> }] : []),
-    // Layer tab only in advanced mode — teachers get NavigationSection in Properties tab instead
-    ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={12} /> }] : []),
+    { id: 'properties', label: 'Properti', icon: <Box size={14} /> },
+    ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: <Sparkles size={14} /> }] : []),
+    // Layer tab only in advanced mode
+    ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={14} /> }] : []),
   ];
 
   // Auto-correct: if teacher mode is on and layer tab was active, switch to properties
-  // (useEffect must be called before any early return — Rules of Hooks)
   useEffect(() => {
     if (isSederhana && activeTab === 'layer') {
       setActiveTab('properties');
@@ -96,107 +91,103 @@ export default function RightPanel() {
   if (!rightPanelOpen) return null;
 
   return (
-    <div className="w-full flex flex-col bg-app-surface overflow-hidden" style={{ width: 'var(--semantic-panel-expanded)' }}>
-      {/* ── Tab Bar ──────────────────────────────────────────── */}
-      <div className="flex items-center border-b border-app-border px-1 pt-1 flex-shrink-0">
+    <div className="w-80 bg-white border-l border-outline-variant flex flex-col shrink-0 overflow-hidden">
+      {/* ── Tab Bar — Stitch style ────────────────────────── */}
+      <div className="flex items-center border-b border-outline-variant px-1 pt-1 shrink-0 bg-white">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1 px-3 py-2 text-[10px] font-bold transition-[background-color,border-color,color] relative ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-bold transition-all relative ${
                 isActive
-                  ? 'text-app-accent'
-                  : 'text-app-muted hover:text-app-secondary'
+                  ? 'text-secondary'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50'
               }`}
               aria-selected={isActive}
               role="tab"
             >
               {tab.icon}
               <span>{tab.label}</span>
-              {/* Active indicator — subtle underline */}
+              {/* Active indicator — stitch underline */}
               {isActive && (
-                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-app-accent rounded-t-full" />
+                <span className="absolute bottom-0 left-3 right-3 h-[2.5px] bg-secondary rounded-t-full" />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* ── Tab Content ──────────────────────────────────────── */}
-      {/* PERF: Conditional rendering instead of CSS hidden — only mounts the active tab's components, */}
-      {/* reducing store subscriptions and re-renders from ~10 mounted components down to ~3. */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      {/* ── Tab Content ──────────────────────────────────── */}
+      <div className="flex-1 overflow-hidden">
         {/* Properties Tab */}
         {activeTab === 'properties' && (
-          <div role="tabpanel" aria-label="Properti">
+          <div role="tabpanel" aria-label="Properti" className="h-full flex flex-col">
             {hasMultiBlockSelection ? (
-              <>
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <AlignmentTools />
                 <BlockPropertiesPanel />
-              </>
+              </div>
             ) : hasBlockSelection ? (
               <BlockPropertiesPanel />
             ) : isSchemaDriven ? (
-              <>
-                {/* Page-level settings when no block selected */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />
                 <TabManagementSection />
-                {/* ── Teacher mode: Show NavigationSection + PageInfo here ── */}
-                {/* (These are normally in the Layer tab, but Layer is hidden in sederhana mode) */}
+                {/* ── Teacher mode: Navigation + PageInfo ── */}
                 {isSederhana && (
                   <>
-                    <div className="border-t border-app-border/30 mx-2" />
+                    <div className="border-t border-outline-variant/30 mx-4 my-3" />
                     <NavigationSection />
                     <PageInfo />
                   </>
                 )}
-                <div className="mx-3 mt-3 mb-4 rounded-xl border border-dashed border-app-accent/25 bg-app-accent/5 overflow-hidden">
-                  {/* Header with accent stripe */}
-                  <div className="px-4 pt-4 pb-3 text-center">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
-                      <MousePointer2 size={20} className="text-app-accent/60" />
+                {/* ── Empty state hint ── */}
+                <div className="mx-4 mt-4 mb-6 rounded-2xl border border-dashed border-outline-variant bg-surface-container-low overflow-hidden">
+                  <div className="px-5 pt-5 pb-4 text-center">
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center">
+                      <MousePointer2 size={22} className="text-secondary/60" />
                     </div>
-                    <div className="text-[11px] font-bold text-app-primary/80 mb-1">
+                    <div className="text-[13px] font-bold text-on-surface mb-1">
                       Pilih {blockLabel} untuk Edit
                     </div>
-                    <div className="text-[9px] text-app-muted leading-relaxed">
-                      Klik {blockLabel.toLowerCase()} di canvas untuk mengedit properti,<br/>teks, warna, dan kompresinya
+                    <div className="text-[11px] text-on-surface-variant leading-relaxed">
+                      Klik {blockLabel.toLowerCase()} di canvas untuk mengedit properti, teks, warna, dan kompresinya
                     </div>
                   </div>
                   {/* Quick action hints */}
-                  <div className="border-t border-app-border/20 px-3 py-2.5 space-y-1.5 bg-app-elevated/20">
-                    <div className="flex items-center gap-2 text-[8px] text-app-muted">
-                      <span className="px-1 py-0.5 rounded bg-app-accent/15 text-app-accent font-bold text-[7px]">1x Klik</span>
+                  <div className="border-t border-outline-variant/20 px-4 py-3 space-y-2 bg-surface-container-lowest">
+                    <div className="flex items-center gap-2.5 text-[10px] text-on-surface-variant">
+                      <span className="px-1.5 py-0.5 rounded-md bg-secondary/10 text-secondary font-bold text-[9px]">1x Klik</span>
                       <span>Pilih {blockLabel.toLowerCase()}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[8px] text-app-muted">
-                      <span className="px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[7px]">2x Klik</span>
+                    <div className="flex items-center gap-2.5 text-[10px] text-on-surface-variant">
+                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 font-bold text-[9px]">2x Klik</span>
                       <span>Edit teks langsung</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[8px] text-app-muted">
-                      <span className="px-1 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold text-[7px]">Shift+Klik</span>
+                    <div className="flex items-center gap-2.5 text-[10px] text-on-surface-variant">
+                      <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 font-bold text-[9px]">Shift+Klik</span>
                       <span>Pilih banyak {blockLabel.toLowerCase()}</span>
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <ElementProperties />
                 <AlignmentTools />
                 <BackgroundSection />
-              </>
+              </div>
             )}
           </div>
         )}
 
-        {/* AI Tab — only rendered when aiAssistant feature flag is enabled */}
+        {/* AI Tab */}
         {aiEnabled && activeTab === 'ai' && (
-          <div role="tabpanel" aria-label="AI">
+          <div role="tabpanel" aria-label="AI" className="flex-1 overflow-y-auto custom-scrollbar">
             {hasBlockSelection ? (
               <>
                 <AIRefineSection />
@@ -208,11 +199,11 @@ export default function RightPanel() {
           </div>
         )}
 
-        {/* Layer Tab — Block layer list + page navigation */}
+        {/* Layer Tab */}
         {activeTab === 'layer' && (
-          <div role="tabpanel" aria-label="Layer">
+          <div role="tabpanel" aria-label="Layer" className="flex-1 overflow-y-auto custom-scrollbar">
             <LayerPanel />
-            <div className="border-t border-app-border/30 mx-2" />
+            <div className="border-t border-outline-variant/30 mx-4 my-3" />
             <NavigationSection />
             <PageInfo />
           </div>

@@ -2,14 +2,20 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import {
-  Type, AlignLeft, List, Palette, LayoutGrid, HelpCircle, Hash, ToggleLeft, ChevronDown,
-  Plus, Trash2, GripVertical, X, RotateCcw,
+  Type, AlignLeft, List, Palette, LayoutGrid, Hash, ToggleLeft, ChevronDown,
+  Plus, Trash2, GripVertical, X, RotateCcw, Bold, Italic, ListChecks,
 } from 'lucide-react';
 import type { PropertyField } from '@/core/editor/types';
 import { getNestedValue, buildNestedUpdate } from './dot-notation';
 
 // ═══════════════════════════════════════════════════════════════
-// FIELD RENDERER — Routes property type to the right editor UI
+// FIELD RENDERER — Stitch v4 Style
+// ═══════════════════════════════════════════════════════════════
+// Stitch design tokens:
+//   - Input: px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright
+//   - Label: font-label-lg text-[12px] font-bold text-on-surface-variant mb-2
+//   - Focus: focus:border-secondary focus:ring-2 focus:ring-secondary/20
+//   - Section header: text-[11px] uppercase tracking-widest font-bold text-outline
 // ═══════════════════════════════════════════════════════════════
 
 export function renderField(
@@ -17,16 +23,9 @@ export function renderField(
   blockData: Record<string, unknown>,
   onUpdate: (updates: Record<string, unknown>) => void,
 ): React.ReactNode {
-  // Support dot-notation keys (e.g., 'cta.label', 'meta.durasi')
   const value = getNestedValue(blockData, field.key);
-
-  // Wrap onUpdate to handle dot-notation paths via deep merge
   const handleUpdate = (v: unknown) => onUpdate(buildNestedUpdate(field.key, v));
-
-  // Get default value for reset
   const defaultValue = field.defaultValue;
-
-  // Generate unique ids for label-input association and help text
   const fieldId = `prop-${field.key.replace(/\./g, '-')}`;
   const helpId = field.helpText ? `${fieldId}-help` : undefined;
 
@@ -40,7 +39,7 @@ export function renderField(
             helpText={field.helpText}
             label={field.label}
             value={String(value || '')}
-            icon={field.icon ? <span className="text-[9px]">{field.icon}</span> : <Type size={9} />}
+            icon={field.icon ? <span className="text-sm">{field.icon}</span> : undefined}
             placeholder={field.placeholder}
             onChange={v => handleUpdate(v)}
           />
@@ -50,16 +49,14 @@ export function renderField(
     case 'textarea':
       return (
         <FieldWithReset key={field.key} defaultValue={defaultValue} value={value} onReset={v => handleUpdate(v)}>
-          <TextField
+          <RichTextareaField
             fieldId={fieldId}
             helpId={helpId}
             helpText={field.helpText}
             label={field.label}
             value={String(value || '')}
-            icon={field.icon ? <span className="text-[9px]">{field.icon}</span> : <AlignLeft size={9} />}
             placeholder={field.placeholder}
-            multiline
-            rows={field.rows || 3}
+            rows={field.rows || 4}
             onChange={v => handleUpdate(v)}
           />
         </FieldWithReset>
@@ -157,7 +154,7 @@ export function renderField(
             helpText={field.helpText}
             label={field.label}
             value={String(value || '')}
-            icon={<Palette size={9} />}
+            icon={<Palette size={14} className="text-on-surface-variant" />}
             placeholder={field.placeholder || '🏠'}
             onChange={v => handleUpdate(v)}
           />
@@ -184,7 +181,14 @@ export function renderField(
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FIELD WITH RESET — Wraps a field with a "Reset to Default" button
+// SHARED STITCH STYLES
+// ═══════════════════════════════════════════════════════════════
+
+const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-md text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all duration-200';
+const LABEL_BASE = 'text-[12px] font-bold text-on-surface-variant mb-2 block';
+
+// ═══════════════════════════════════════════════════════════════
+// FIELD WITH RESET
 // ═══════════════════════════════════════════════════════════════
 
 function FieldWithReset({ defaultValue, value, onReset, children }: {
@@ -193,7 +197,6 @@ function FieldWithReset({ defaultValue, value, onReset, children }: {
   onReset: (value: unknown) => void;
   children: React.ReactNode;
 }) {
-  // Only show reset if there's a default and the value differs
   const hasDefault = defaultValue !== undefined && defaultValue !== null;
   const isModified = hasDefault && JSON.stringify(value) !== JSON.stringify(defaultValue);
 
@@ -205,10 +208,10 @@ function FieldWithReset({ defaultValue, value, onReset, children }: {
       {isModified && (
         <button
           onClick={() => onReset(defaultValue)}
-          className="absolute top-0 right-0 h-5 w-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-app-muted hover:text-app-accent"
+          className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
           title="Reset ke default"
         >
-          <RotateCcw size={10} />
+          <RotateCcw size={14} />
         </button>
       )}
     </div>
@@ -216,57 +219,93 @@ function FieldWithReset({ defaultValue, value, onReset, children }: {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// REUSABLE FIELD COMPONENTS
+// TEXT FIELD — Stitch style: large rounded input
 // ═══════════════════════════════════════════════════════════════
 
-/** Single-line or multiline text input */
-function TextField({ label, value, icon, onChange, multiline = false, rows = 3, placeholder, fieldId, helpId, helpText }: {
+function TextField({ label, value, icon, onChange, placeholder, fieldId, helpId, helpText }: {
   label: string;
   value: string;
   icon?: React.ReactNode;
   onChange: (value: string) => void;
-  multiline?: boolean;
-  rows?: number;
   placeholder?: string;
   fieldId?: string;
   helpId?: string;
   helpText?: string;
 }) {
-  const describedBy = helpId ? helpId : undefined;
   return (
-    <div className="space-y-0.5">
-      <label htmlFor={fieldId} className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        {icon} {label}
+    <div>
+      <label htmlFor={fieldId} className={LABEL_BASE}>
+        <span className="flex items-center gap-1.5">
+          {icon} {label}
+        </span>
       </label>
-      {multiline ? (
+      <input
+        id={fieldId}
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-describedby={helpId}
+        className={INPUT_BASE}
+      />
+      {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RICH TEXTAREA — Stitch style: mini toolbar + textarea
+// ═══════════════════════════════════════════════════════════════
+
+function RichTextareaField({ label, value, onChange, placeholder, rows = 4, fieldId, helpId, helpText }: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  rows?: number;
+  fieldId?: string;
+  helpId?: string;
+  helpText?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={fieldId} className={LABEL_BASE}>
+        <span className="flex items-center gap-1.5">
+          <AlignLeft size={14} className="text-on-surface-variant" /> {label}
+        </span>
+      </label>
+      <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all duration-200">
+        {/* Mini toolbar — stitch spec */}
+        <div className="flex gap-1 p-2 border-b border-outline-variant bg-surface-container-low">
+          <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Tebal">
+            <Bold size={14} />
+          </button>
+          <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Miring">
+            <Italic size={14} />
+          </button>
+          <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Daftar">
+            <ListChecks size={14} />
+          </button>
+        </div>
         <textarea
           id={fieldId}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           rows={rows}
-          aria-describedby={describedBy}
-          className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary resize-y focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
+          aria-describedby={helpId}
+          className="w-full px-4 py-3 border-none bg-transparent focus:ring-0 focus:outline-none text-sm font-body-md leading-relaxed text-on-surface resize-y"
         />
-      ) : (
-        <input
-          id={fieldId}
-          type="text"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={placeholder}
-          aria-describedby={describedBy}
-          className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
-        />
-      )}
-      {helpText && (
-        <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
-      )}
+      </div>
+      {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
     </div>
   );
 }
 
-/** Numeric input with optional min/max/step */
+// ═══════════════════════════════════════════════════════════════
+// NUMBER FIELD — Stitch style
+// ═══════════════════════════════════════════════════════════════
+
 function NumberField({ label, value, min, max, step, onChange, fieldId, helpId, helpText }: {
   label: string;
   value: number;
@@ -279,9 +318,11 @@ function NumberField({ label, value, min, max, step, onChange, fieldId, helpId, 
   helpText?: string;
 }) {
   return (
-    <div className="space-y-0.5">
-      <label htmlFor={fieldId} className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        <Hash size={9} /> {label}
+    <div>
+      <label htmlFor={fieldId} className={LABEL_BASE}>
+        <span className="flex items-center gap-1.5">
+          <Hash size={14} className="text-on-surface-variant" /> {label}
+        </span>
       </label>
       <input
         id={fieldId}
@@ -292,63 +333,77 @@ function NumberField({ label, value, min, max, step, onChange, fieldId, helpId, 
         step={step || 1}
         onChange={e => onChange(Number(e.target.value))}
         aria-describedby={helpId}
-        className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
+        className={INPUT_BASE}
       />
-      {helpText && (
-        <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
-      )}
+      {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
     </div>
   );
 }
 
-/** Color token selector with inline swatch preview */
+// ═══════════════════════════════════════════════════════════════
+// COLOR TOKEN FIELD — Stitch style: visual swatch + color name
+// ═══════════════════════════════════════════════════════════════
+
+const TOKEN_COLORS: Record<string, { label: string; swatch: string; bg: string; activeBg: string; activeText: string; ring: string }> = {
+  'y': { label: 'Kuning', swatch: 'bg-amber-500', bg: 'bg-amber-500/10', activeBg: 'bg-amber-500/20', activeText: 'text-amber-700', ring: 'ring-amber-500/40' },
+  'c': { label: 'Cyan', swatch: 'bg-cyan-500', bg: 'bg-cyan-500/10', activeBg: 'bg-cyan-500/20', activeText: 'text-cyan-700', ring: 'ring-cyan-500/40' },
+  'g': { label: 'Hijau', swatch: 'bg-emerald-500', bg: 'bg-emerald-500/10', activeBg: 'bg-emerald-500/20', activeText: 'text-emerald-700', ring: 'ring-emerald-500/40' },
+  'r': { label: 'Merah', swatch: 'bg-red-500', bg: 'bg-red-500/10', activeBg: 'bg-red-500/20', activeText: 'text-red-700', ring: 'ring-red-500/40' },
+  'p': { label: 'Ungu', swatch: 'bg-purple-500', bg: 'bg-purple-500/10', activeBg: 'bg-purple-500/20', activeText: 'text-purple-700', ring: 'ring-purple-500/40' },
+  'bg': { label: 'Background', swatch: 'bg-gray-400', bg: 'bg-gray-500/10', activeBg: 'bg-gray-500/20', activeText: 'text-gray-700', ring: 'ring-gray-500/40' },
+  'card': { label: 'Card', swatch: 'bg-gray-300', bg: 'bg-gray-400/10', activeBg: 'bg-gray-400/20', activeText: 'text-gray-700', ring: 'ring-gray-400/40' },
+};
+
 function ColorTokenField({ label, value, onChange, fieldId }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   fieldId?: string;
 }) {
-  const TOKEN_COLORS: Record<string, { label: string; bg: string; text: string; swatch: string }> = {
-    'y': { label: 'Kuning', bg: 'bg-yellow-500/20', text: 'text-yellow-300', swatch: 'bg-yellow-500' },
-    'c': { label: 'Cyan', bg: 'bg-cyan-500/20', text: 'text-cyan-300', swatch: 'bg-cyan-500' },
-    'g': { label: 'Hijau', bg: 'bg-emerald-500/20', text: 'text-emerald-300', swatch: 'bg-emerald-500' },
-    'r': { label: 'Merah', bg: 'bg-red-500/20', text: 'text-red-300', swatch: 'bg-red-500' },
-    'p': { label: 'Ungu', bg: 'bg-purple-500/20', text: 'text-purple-300', swatch: 'bg-purple-500' },
-    'bg': { label: 'Background', bg: 'bg-app-elevated/20', text: 'text-app-secondary', swatch: 'bg-app-elevated' },
-    'card': { label: 'Card', bg: 'bg-app-elevated/20', text: 'text-app-secondary', swatch: 'bg-app-elevated' },
-  };
-
   const currentToken = TOKEN_COLORS[value];
 
   return (
-    <div className="space-y-0.5">
-      <label className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        <Palette size={9} /> {label}
+    <div>
+      <label className={LABEL_BASE} id={fieldId}>
+        <span className="flex items-center gap-1.5">
+          <Palette size={14} className="text-on-surface-variant" /> {label}
+        </span>
         {/* Inline color swatch preview */}
         {currentToken && (
-          <span className={`inline-block w-2.5 h-2.5 rounded-full ${currentToken.swatch} ml-1 ring-1 ring-app-border/30`} />
+          <span className={`inline-flex items-center gap-1.5 ml-3 px-2.5 py-1 rounded-lg ${currentToken.activeBg} ${currentToken.activeText} text-[11px] font-bold ring-1 ${currentToken.ring}`}>
+            <span className={`w-3.5 h-3.5 rounded-full ${currentToken.swatch} ring-1 ring-white/50`} />
+            {currentToken.label}
+          </span>
         )}
       </label>
-      <div className="flex flex-wrap gap-1">
-        {Object.entries(TOKEN_COLORS).map(([key, { label: colorLabel, bg, text }]) => (
-          <button
-            key={key}
-            onClick={() => onChange(key)}
-            className={`px-1.5 py-0.5 rounded text-[8px] font-bold transition-[background-color,border-color,color] border ${
-              value === key
-                ? `${bg} ${text} border-current/30`
-                : 'bg-app-elevated/40 text-app-muted border-app-border/20 hover:bg-app-elevated/60'
-            }`}
-          >
-            {colorLabel}
-          </button>
-        ))}
+      <div className="grid grid-cols-4 gap-2 mt-1">
+        {Object.entries(TOKEN_COLORS).map(([key, { label: colorLabel, swatch, bg, activeBg, activeText }]) => {
+          const isActive = value === key;
+          return (
+            <button
+              key={key}
+              onClick={() => onChange(key)}
+              className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 ${
+                isActive
+                  ? `${activeBg} ${activeText} border-current/30 ring-2 ring-current/20`
+                  : 'bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:border-on-surface-variant/30'
+              }`}
+              title={colorLabel}
+            >
+              <span className={`w-6 h-6 rounded-full ${swatch} ring-1 ring-black/10 shadow-sm`} />
+              <span className="text-[10px] font-bold">{colorLabel}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-/** Select dropdown */
+// ═══════════════════════════════════════════════════════════════
+// SELECT FIELD — Stitch style: custom styled dropdown
+// ═══════════════════════════════════════════════════════════════
+
 function SelectField({ label, value, options, onChange, fieldId, helpId, helpText }: {
   label: string;
   value: string;
@@ -359,29 +414,35 @@ function SelectField({ label, value, options, onChange, fieldId, helpId, helpTex
   helpText?: string;
 }) {
   return (
-    <div className="space-y-0.5">
-      <label htmlFor={fieldId} className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        <ChevronDown size={9} /> {label}
+    <div>
+      <label htmlFor={fieldId} className={LABEL_BASE}>
+        <span className="flex items-center gap-1.5">
+          <ChevronDown size={14} className="text-on-surface-variant" /> {label}
+        </span>
       </label>
-      <select
-        id={fieldId}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        aria-describedby={helpId}
-        className="w-full bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[10px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color]"
-      >
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-      {helpText && (
-        <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
-      )}
+      <div className="relative">
+        <select
+          id={fieldId}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          aria-describedby={helpId}
+          className={`${INPUT_BASE} appearance-none pr-10`}
+        >
+          {options.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+      </div>
+      {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
     </div>
   );
 }
 
-/** Boolean toggle */
+// ═══════════════════════════════════════════════════════════════
+// BOOLEAN FIELD — Stitch style: toggle switch with accent
+// ═══════════════════════════════════════════════════════════════
+
 function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
   label: string;
   value: boolean;
@@ -391,29 +452,35 @@ function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
   helpText?: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <label className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        <ToggleLeft size={9} /> {label}
-      </label>
-      <button
-        id={fieldId}
-        onClick={() => onChange(!value)}
-        role="switch"
-        aria-checked={value}
-        aria-label={label}
-        aria-describedby={helpId}
-        className={`w-8 h-4 rounded-full transition-[background-color,transform] relative ${value ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
-      >
-        <div className={`absolute top-0.5 w-3 h-3 rounded-full transition-[background-color,transform] ${value ? 'left-4.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
-      </button>
-      {helpText && (
-        <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
-      )}
+    <div>
+      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary-container/10 border border-secondary/20">
+        <div className="flex items-center gap-2">
+          <ToggleLeft size={16} className="text-secondary" />
+          <span className="text-[12px] font-bold text-on-secondary-fixed-variant">{label}</span>
+        </div>
+        <button
+          id={fieldId}
+          onClick={() => onChange(!value)}
+          role="switch"
+          aria-checked={value}
+          aria-label={label}
+          aria-describedby={helpId}
+          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-secondary' : 'bg-outline-variant'}`}
+        >
+          <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${value ? 'left-5.5' : 'left-0.5'}`} />
+        </button>
+      </div>
+      {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
     </div>
   );
 }
 
-/** Variant selector (A/B/C) */
+// ═══════════════════════════════════════════════════════════════
+// VARIANT FIELD — Stitch style: three option pills
+// ═══════════════════════════════════════════════════════════════
+
+const VARIANT_LABELS: Record<string, string> = { A: 'Standar', B: 'Ringkas', C: 'Lebar' };
+
 function VariantField({ label, value, onChange, fieldId }: {
   label: string;
   value: string;
@@ -421,37 +488,41 @@ function VariantField({ label, value, onChange, fieldId }: {
   fieldId?: string;
 }) {
   return (
-    <div className="space-y-1" role="radiogroup" aria-label={label}>
-      <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1" id={fieldId}>
-        <LayoutGrid size={9} /> {label}
+    <div>
+      <div className={LABEL_BASE} id={fieldId}>
+        <span className="flex items-center gap-1.5">
+          <LayoutGrid size={14} className="text-on-surface-variant" /> {label}
+        </span>
       </div>
-      <div className="flex gap-1" role="group" aria-labelledby={fieldId}>
-        {(['A', 'B', 'C'] as const).map(v => (
-          <button
-            key={v}
-            onClick={() => onChange(v)}
-            role="radio"
-            aria-checked={value === v}
-            aria-label={`Varian ${v}`}
-            className={`px-2 py-0.5 rounded text-[9px] font-bold transition-[background-color,border-color,color] ${
-              value === v
-                ? 'bg-blue-500/30 text-blue-300 border border-blue-500/40'
-                : 'bg-app-elevated/40 text-app-muted border border-app-border/20 hover:bg-app-elevated/60'
-            }`}
-          >
-            {v}
-          </button>
-        ))}
+      <div className="flex gap-2" role="group" aria-labelledby={fieldId}>
+        {(['A', 'B', 'C'] as const).map(v => {
+          const isActive = value === v;
+          return (
+            <button
+              key={v}
+              onClick={() => onChange(v)}
+              role="radio"
+              aria-checked={isActive}
+              aria-label={`Varian ${v}`}
+              className={`flex-1 py-2.5 rounded-xl text-[12px] font-bold border transition-all duration-200 ${
+                isActive
+                  ? 'bg-secondary/15 text-secondary border-secondary/30 ring-2 ring-secondary/10'
+                  : 'bg-surface-bright text-on-surface-variant border-outline-variant hover:bg-surface-container-high'
+              }`}
+            >
+              {VARIANT_LABELS[v]}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// IMPROVED ARRAY EDITOR — Larger max-h, drag handles, icons
+// ARRAY FIELD — Stitch style: card-based item editor
 // ═══════════════════════════════════════════════════════════════
 
-/** Array of objects editor — shows items with editable sub-fields */
 function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fieldId }: {
   label: string;
   items: Array<Record<string, unknown>>;
@@ -516,52 +587,60 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-          <List size={9} /> {label} ({items.length})
+        <label className={LABEL_BASE.replace('mb-2', 'mb-0')}>
+          <span className="flex items-center gap-1.5">
+            <List size={14} className="text-on-surface-variant" /> {label}
+            <span className="text-on-surface-variant font-normal">({items.length})</span>
+          </span>
         </label>
         <button
           onClick={addItem}
           disabled={maxItems ? items.length >= maxItems : false}
-          className="flex items-center gap-0.5 text-[8px] font-bold text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-40"
+          className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-secondary hover:bg-secondary/10 rounded-lg transition-colors disabled:opacity-40"
         >
-          <Plus size={9} /> Tambah Item
+          <Plus size={12} /> Tambah
         </button>
       </div>
-      <div className="space-y-1.5 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+      <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-1">
         {items.map((item, idx) => (
-          <div key={idx} className="bg-app-surface/40 rounded border border-app-border/20 p-1.5 space-y-1">
+          <div key={idx} className="bg-surface-container-low rounded-xl border border-outline-variant/50 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                {/* Drag handle for visual reordering */}
-                <GripVertical size={10} className="text-app-muted/40 cursor-grab" />
-                <span className="text-[8px] font-bold text-app-muted">#{idx + 1}</span>
-                {idx > 0 && (
-                  <button onClick={() => moveItem(idx, 'up')} className="text-[8px] text-app-muted hover:text-app-secondary transition-colors" title="Pindah ke atas">↑</button>
-                )}
-                {idx < items.length - 1 && (
-                  <button onClick={() => moveItem(idx, 'down')} className="text-[8px] text-app-muted hover:text-app-secondary transition-colors" title="Pindah ke bawah">↓</button>
-                )}
+              <div className="flex items-center gap-2">
+                <GripVertical size={14} className="text-on-surface-variant/40 cursor-grab" />
+                <span className="text-[12px] font-bold text-on-surface-variant">#{idx + 1}</span>
+                <div className="flex gap-0.5">
+                  {idx > 0 && (
+                    <button onClick={() => moveItem(idx, 'up')} className="p-1 rounded hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Pindah ke atas">
+                      <span className="text-[10px]">↑</span>
+                    </button>
+                  )}
+                  {idx < items.length - 1 && (
+                    <button onClick={() => moveItem(idx, 'down')} className="p-1 rounded hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Pindah ke bawah">
+                      <span className="text-[10px]">↓</span>
+                    </button>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => removeItem(idx)}
-                className="flex items-center gap-0.5 text-[8px] text-red-400/60 hover:text-red-400 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-error/70 hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                 title="Hapus item"
               >
-                <Trash2 size={9} /> Hapus
+                <Trash2 size={12} /> Hapus
               </button>
             </div>
             {fieldDefs.map((fieldDef) => (
               <div key={fieldDef.key}>
                 {fieldDef.type === 'boolean' ? (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[8px] text-app-muted">{fieldDef.label}</span>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-[12px] text-on-surface-variant">{fieldDef.label}</span>
                     <button
                       onClick={() => updateItem(idx, fieldDef.key, !item[fieldDef.key])}
-                      className={`w-7 h-3.5 rounded-full transition-[background-color,transform] relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+                      className={`relative w-9 h-5 rounded-full transition-all duration-200 ${item[fieldDef.key] ? 'bg-secondary' : 'bg-outline-variant'}`}
                     >
-                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full transition-[background-color,transform] ${item[fieldDef.key] ? 'left-3.5 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${item[fieldDef.key] ? 'left-4' : 'left-0.5'}`} />
                     </button>
                   </div>
                 ) : fieldDef.type === 'array' && fieldDef.fields ? (
@@ -573,8 +652,8 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                     onUpdate={v => updateItem(idx, fieldDef.key, v)}
                   />
                 ) : (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[8px] text-app-muted w-16 shrink-0">{fieldDef.label}</span>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-on-surface-variant">{fieldDef.label}</label>
                     {fieldDef.type === 'color' ? (
                       <InlineColorTokenField
                         value={String(item[fieldDef.key] || 'y')}
@@ -585,13 +664,13 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
                         rows={2}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0 resize-y"
+                        className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-bright text-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 focus:outline-none transition-all resize-y"
                       />
                     ) : fieldDef.type === 'select' && fieldDef.options ? (
                       <select
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
+                        className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-bright text-sm text-on-surface focus:border-secondary focus:outline-none transition-all"
                       >
                         {fieldDef.options.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -603,7 +682,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateItem(idx, fieldDef.key, e.target.value)}
                         placeholder={fieldDef.placeholder}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
+                        className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-bright text-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 focus:outline-none transition-all"
                       />
                     )}
                   </div>
@@ -613,36 +692,36 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-[9px] text-app-muted italic">Belum ada item</div>
+          <div className="text-[12px] text-on-surface-variant italic text-center py-4 bg-surface-container-low rounded-xl border border-dashed border-outline-variant">
+            Belum ada item. Klik &ldquo;Tambah&rdquo; untuk menambah.
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-/** Inline color token selector for array sub-fields (compact, no label) */
+/** Inline color token selector for array sub-fields */
 function InlineColorTokenField({ value, onChange }: {
   value: string;
   onChange: (value: string) => void;
 }) {
   const TOKENS = ['y', 'c', 'g', 'r', 'p', 'bg', 'card'] as const;
-  const TOKEN_COLORS: Record<string, string> = {
-    'y': 'bg-yellow-500', 'c': 'bg-cyan-500', 'g': 'bg-emerald-500',
-    'r': 'bg-red-500', 'p': 'bg-purple-500', 'bg': 'bg-app-elevated', 'card': 'bg-app-elevated',
+  const TOKEN_SWATCHES: Record<string, string> = {
+    'y': 'bg-amber-500', 'c': 'bg-cyan-500', 'g': 'bg-emerald-500',
+    'r': 'bg-red-500', 'p': 'bg-purple-500', 'bg': 'bg-gray-400', 'card': 'bg-gray-300',
   };
   return (
-    <div className="flex gap-0.5 flex-1 flex-wrap items-center">
-      {/* Inline color swatch preview */}
-      {TOKEN_COLORS[value] && (
-        <span className={`inline-block w-3 h-3 rounded-full ${TOKEN_COLORS[value]} mr-1 ring-1 ring-app-border/30 flex-shrink-0`} />
-      )}
+    <div className="flex gap-1.5 flex-wrap items-center">
       {TOKENS.map(t => (
         <button
           key={t}
           onClick={() => onChange(t)}
-          className={`w-4 h-4 rounded-full transition-[background-color,border-color,transform] border ${
-            value === t ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-app-surface' : 'border-app-border/30 hover:scale-[1.05]'
-          } ${TOKEN_COLORS[t] || 'bg-app-elevated'}`}
+          className={`w-7 h-7 rounded-full transition-all duration-200 border-2 ${
+            value === t
+              ? 'ring-2 ring-secondary ring-offset-2 ring-offset-surface-bright border-secondary/50 scale-110'
+              : 'border-outline-variant/30 hover:scale-105'
+          } ${TOKEN_SWATCHES[t] || 'bg-gray-400'}`}
           title={t}
         />
       ))}
@@ -650,7 +729,7 @@ function InlineColorTokenField({ value, onChange }: {
   );
 }
 
-/** Inline nested array editor for array sub-fields (compact, no label) */
+/** Inline nested array editor for array sub-fields */
 function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }: {
   label: string;
   items: Array<Record<string, unknown>>;
@@ -700,56 +779,56 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
   };
 
   return (
-    <div className="mt-0.5">
-      <div className="flex items-center justify-between mb-0.5">
-        <span className="text-[8px] font-bold text-app-muted flex items-center gap-0.5">
-          <GripVertical size={7} className="text-app-muted/40" />
+    <div className="mt-1">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[11px] font-bold text-on-surface-variant flex items-center gap-1">
+          <GripVertical size={10} className="text-on-surface-variant/40" />
           {label} ({items.length})
         </span>
         <button
           onClick={addNestedItem}
           disabled={maxItems ? items.length >= maxItems : false}
-          className="flex items-center gap-0.5 text-[7px] font-bold text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-40"
+          className="flex items-center gap-0.5 text-[10px] font-bold text-secondary hover:bg-secondary/10 px-2 py-1 rounded-md transition-colors disabled:opacity-40"
         >
-          <Plus size={7} /> Tambah
+          <Plus size={10} /> Tambah
         </button>
       </div>
-      <div className="space-y-1 max-h-64 overflow-y-auto custom-scrollbar pr-0.5">
+      <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
         {items.map((item, idx) => (
-          <div key={idx} className="bg-app-surface/30 rounded border border-app-border/15 p-1 space-y-0.5">
+          <div key={idx} className="bg-surface-bright rounded-lg border border-outline-variant/30 p-2 space-y-1.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-0.5">
-                <span className="text-[7px] font-bold text-app-muted">#{idx + 1}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-bold text-on-surface-variant">#{idx + 1}</span>
                 {idx > 0 && (
-                  <button onClick={() => moveNestedItem(idx, 'up')} className="text-[7px] text-app-muted hover:text-app-secondary" title="Atas">↑</button>
+                  <button onClick={() => moveNestedItem(idx, 'up')} className="text-[9px] text-on-surface-variant hover:text-secondary transition-colors" title="Atas">↑</button>
                 )}
                 {idx < items.length - 1 && (
-                  <button onClick={() => moveNestedItem(idx, 'down')} className="text-[7px] text-app-muted hover:text-app-secondary" title="Bawah">↓</button>
+                  <button onClick={() => moveNestedItem(idx, 'down')} className="text-[9px] text-on-surface-variant hover:text-secondary transition-colors" title="Bawah">↓</button>
                 )}
               </div>
               <button
                 onClick={() => removeNestedItem(idx)}
-                className="flex items-center gap-0.5 text-[7px] text-red-400/60 hover:text-red-400 transition-colors"
+                className="flex items-center gap-0.5 text-[9px] text-error/60 hover:text-error transition-colors"
                 title="Hapus item"
               >
-                <Trash2 size={7} /> Hapus
+                <Trash2 size={9} /> Hapus
               </button>
             </div>
             {fieldDefs.map((fieldDef) => (
               <div key={fieldDef.key}>
                 {fieldDef.type === 'boolean' ? (
                   <div className="flex items-center justify-between">
-                    <span className="text-[7px] text-app-muted">{fieldDef.label}</span>
+                    <span className="text-[10px] text-on-surface-variant">{fieldDef.label}</span>
                     <button
                       onClick={() => updateNestedItem(idx, fieldDef.key, !item[fieldDef.key])}
-                      className={`w-6 h-3 rounded-full transition-[background-color,transform] relative ${item[fieldDef.key] ? 'bg-blue-500/40' : 'bg-app-elevated/40'}`}
+                      className={`relative w-7 h-4 rounded-full transition-all duration-200 ${item[fieldDef.key] ? 'bg-secondary' : 'bg-outline-variant'}`}
                     >
-                      <div className={`absolute top-0.5 w-2 h-2 rounded-full transition-[background-color,transform] ${item[fieldDef.key] ? 'left-3 bg-blue-400' : 'left-0.5 bg-app-elevated'}`} />
+                      <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-200 ${item[fieldDef.key] ? 'left-3.5' : 'left-0.5'}`} />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[7px] text-app-muted w-14 shrink-0">{fieldDef.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-on-surface-variant w-16 shrink-0">{fieldDef.label}</span>
                     {fieldDef.type === 'color' ? (
                       <InlineColorTokenField
                         value={String(item[fieldDef.key] || 'y')}
@@ -760,7 +839,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
                         rows={1}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0 resize-y"
+                        className="flex-1 px-2 py-1 rounded-md border border-outline-variant/30 bg-surface-bright text-[11px] text-on-surface focus:border-secondary focus:outline-none transition-all resize-y min-w-0"
                       />
                     ) : (
                       <input
@@ -768,7 +847,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                         value={String(item[fieldDef.key] || '')}
                         onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
                         placeholder={fieldDef.placeholder}
-                        className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1 py-0.5 text-[8px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
+                        className="flex-1 px-2 py-1 rounded-md border border-outline-variant/30 bg-surface-bright text-[11px] text-on-surface focus:border-secondary focus:outline-none transition-all min-w-0"
                       />
                     )}
                   </div>
@@ -778,7 +857,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-[7px] text-app-muted italic">Belum ada item</div>
+          <div className="text-[10px] text-on-surface-variant italic text-center py-2">Belum ada item</div>
         )}
       </div>
     </div>
@@ -786,10 +865,9 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
 }
 
 // ═══════════════════════════════════════════════════════════════
-// JSON FIELD EDITOR — Smart structured editor replacing raw JSON
+// JSON FIELD EDITOR — Smart structured editor
 // ═══════════════════════════════════════════════════════════════
 
-/** Smart JSON editor that detects value type and renders appropriate UI */
 function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId, helpText }: {
   label: string;
   value: unknown;
@@ -799,7 +877,6 @@ function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId
   helpId?: string;
   helpText?: string;
 }) {
-  // Detect value type
   if (Array.isArray(value) && value.length > 0 && value.every(v => typeof v === 'string')) {
     return (
       <div className="group relative">
@@ -808,11 +885,10 @@ function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId
         {defaultValue !== undefined && JSON.stringify(value) !== JSON.stringify(defaultValue) && (
           <button
             onClick={() => onChange(defaultValue)}
-            className="absolute top-0 right-0 h-5 w-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-app-muted hover:text-app-accent"
+            className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
             title="Reset ke default"
-            aria-label="Reset ke default"
           >
-            <RotateCcw size={10} />
+            <RotateCcw size={14} />
           </button>
         )}
       </div>
@@ -827,36 +903,33 @@ function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId
         {defaultValue !== undefined && JSON.stringify(value) !== JSON.stringify(defaultValue) && (
           <button
             onClick={() => onChange(defaultValue)}
-            className="absolute top-0 right-0 h-5 w-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-app-muted hover:text-app-accent"
+            className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
             title="Reset ke default"
-            aria-label="Reset ke default"
           >
-            <RotateCcw size={10} />
+            <RotateCcw size={14} />
           </button>
         )}
       </div>
     );
   }
 
-  // Fallback: raw JSON textarea with validation
   return (
     <div className="group relative">
       <JsonTextarea label={label} value={value} onChange={onChange} fieldId={fieldId} helpId={helpId} helpText={helpText} />
       {defaultValue !== undefined && JSON.stringify(value) !== JSON.stringify(defaultValue) && (
         <button
           onClick={() => onChange(defaultValue)}
-          className="absolute top-0 right-0 h-5 w-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-app-muted hover:text-app-accent"
+          className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
           title="Reset ke default"
-          aria-label="Reset ke default"
         >
-          <RotateCcw size={10} />
+          <RotateCcw size={14} />
         </button>
       )}
     </div>
   );
 }
 
-/** Tag-style editor for arrays of strings */
+/** Tag-style editor for arrays of strings — stitch style chips */
 function StringArrayEditor({ label, items, onChange }: {
   label: string;
   items: string[];
@@ -892,72 +965,58 @@ function StringArrayEditor({ label, items, onChange }: {
   };
 
   return (
-    <div className="space-y-1">
-      <label className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        <List size={9} /> {label} ({items.length})
+    <div className="space-y-2">
+      <label className={LABEL_BASE}>
+        <span className="flex items-center gap-1.5">
+          <List size={14} className="text-on-surface-variant" /> {label}
+          <span className="text-on-surface-variant font-normal">({items.length})</span>
+        </span>
       </label>
-      {/* Tags/chips */}
-      <div className="flex flex-wrap gap-1 min-h-[20px]">
+      {/* Chips */}
+      <div className="flex flex-wrap gap-1.5 min-h-[24px]">
         {items.map((item, idx) => (
           <span
             key={idx}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-app-accent/10 border border-app-accent/20 rounded text-[9px] text-app-accent group/tag"
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-container/20 border border-primary/20 rounded-lg text-[12px] text-primary font-medium group/tag"
           >
-            {/* Move up/down buttons */}
-            <span className="flex items-center gap-px mr-0.5">
+            <span className="flex items-center gap-0.5 mr-0.5">
               {idx > 0 && (
-                <button
-                  onClick={() => moveItem(idx, 'up')}
-                  className="text-[7px] text-app-muted/50 hover:text-app-accent transition-colors"
-                  title="Pindah ke atas"
-                >
-                  ↑
-                </button>
+                <button onClick={() => moveItem(idx, 'up')} className="text-on-surface-variant/50 hover:text-primary transition-colors" title="Pindah ke atas">↑</button>
               )}
               {idx < items.length - 1 && (
-                <button
-                  onClick={() => moveItem(idx, 'down')}
-                  className="text-[7px] text-app-muted/50 hover:text-app-accent transition-colors"
-                  title="Pindah ke bawah"
-                >
-                  ↓
-                </button>
+                <button onClick={() => moveItem(idx, 'down')} className="text-on-surface-variant/50 hover:text-primary transition-colors" title="Pindah ke bawah">↓</button>
               )}
             </span>
             {item}
-            <button
-              onClick={() => removeItem(idx)}
-              className="text-app-muted/50 hover:text-red-400 transition-colors ml-0.5"
-              title="Hapus"
-            >
-              <X size={8} />
+            <button onClick={() => removeItem(idx)} className="text-on-surface-variant/50 hover:text-error transition-colors ml-0.5" title="Hapus">
+              <X size={12} />
             </button>
           </span>
         ))}
       </div>
-      {/* Input to add new items */}
-      <div className="flex gap-1">
+      {/* Input */}
+      <div className="flex gap-2">
         <input
           type="text"
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ketik lalu Enter untuk menambah..."
-          className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-2 py-1 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-[background-color,border-color]"
+          placeholder="Ketik lalu Enter..."
+          className={`flex-1 ${INPUT_BASE}`}
         />
         <button
           onClick={addItem}
           disabled={!inputValue.trim()}
-          className="flex items-center gap-0.5 px-2 py-1 text-[8px] font-bold text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors disabled:opacity-40"
+          className="flex items-center gap-1 px-4 py-3 text-[12px] font-bold text-secondary bg-secondary/10 hover:bg-secondary/20 rounded-xl transition-colors disabled:opacity-40"
         >
-          <Plus size={9} /> Tambah
+          <Plus size={14} /> Tambah
         </button>
       </div>
     </div>
   );
 }
 
-/** Structured row editor for arrays of objects */
+/** Structured row editor for arrays of objects — stitch style */
 function ObjectArrayEditor({ label, items, onChange }: {
   label: string;
   items: Array<Record<string, unknown>>;
@@ -983,7 +1042,6 @@ function ObjectArrayEditor({ label, items, onChange }: {
   };
 
   const addItem = () => {
-    // Create a new item with empty string values for all keys
     const template: Record<string, unknown> = {};
     if (items.length > 0) {
       for (const key of Object.keys(items[0])) {
@@ -994,64 +1052,56 @@ function ObjectArrayEditor({ label, items, onChange }: {
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-          <List size={9} /> {label} ({items.length})
+        <label className={LABEL_BASE.replace('mb-2', 'mb-0')}>
+          <span className="flex items-center gap-1.5">
+            <List size={14} className="text-on-surface-variant" /> {label}
+            <span className="text-on-surface-variant font-normal">({items.length})</span>
+          </span>
         </label>
-        <button
-          onClick={addItem}
-          className="flex items-center gap-0.5 text-[8px] font-bold text-blue-400 hover:text-blue-300 transition-colors"
-        >
-          <Plus size={9} /> Tambah Item
+        <button onClick={addItem} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-secondary hover:bg-secondary/10 rounded-lg transition-colors">
+          <Plus size={12} /> Tambah
         </button>
       </div>
-      <div className="space-y-1.5 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+      <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
         {items.map((item, idx) => (
-          <div key={idx} className="bg-app-surface/40 rounded border border-app-border/20 p-1.5 space-y-1">
+          <div key={idx} className="bg-surface-container-low rounded-xl border border-outline-variant/50 p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <GripVertical size={10} className="text-app-muted/40 cursor-grab" />
-                <span className="text-[8px] font-bold text-app-muted">#{idx + 1}</span>
-                {idx > 0 && (
-                  <button onClick={() => moveItem(idx, 'up')} className="text-[8px] text-app-muted hover:text-app-secondary transition-colors">↑</button>
-                )}
-                {idx < items.length - 1 && (
-                  <button onClick={() => moveItem(idx, 'down')} className="text-[8px] text-app-muted hover:text-app-secondary transition-colors">↓</button>
-                )}
+              <div className="flex items-center gap-1.5">
+                <GripVertical size={12} className="text-on-surface-variant/40 cursor-grab" />
+                <span className="text-[11px] font-bold text-on-surface-variant">#{idx + 1}</span>
+                <div className="flex gap-0.5">
+                  {idx > 0 && <button onClick={() => moveItem(idx, 'up')} className="text-[10px] text-on-surface-variant hover:text-secondary transition-colors">↑</button>}
+                  {idx < items.length - 1 && <button onClick={() => moveItem(idx, 'down')} className="text-[10px] text-on-surface-variant hover:text-secondary transition-colors">↓</button>}
+                </div>
               </div>
-              <button
-                onClick={() => removeItem(idx)}
-                className="flex items-center gap-0.5 text-[8px] text-red-400/60 hover:text-red-400 transition-colors"
-              >
-                <Trash2 size={9} /> Hapus
+              <button onClick={() => removeItem(idx)} className="flex items-center gap-0.5 text-[10px] text-error/60 hover:text-error transition-colors">
+                <Trash2 size={10} /> Hapus
               </button>
             </div>
             {Object.entries(item).map(([key, val]) => (
-              <div key={key} className="flex items-center gap-1">
-                <span className="text-[8px] text-app-muted w-16 shrink-0">{key}</span>
+              <div key={key} className="flex items-center gap-2">
+                <span className="text-[11px] text-on-surface-variant w-20 shrink-0">{key}</span>
                 <input
                   type={typeof val === 'number' ? 'number' : 'text'}
-                  value={String(val || '')}
-                  onChange={e => {
-                    const newVal = typeof val === 'number' ? Number(e.target.value) : e.target.value;
-                    updateItem(idx, key, newVal);
-                  }}
-                  className="flex-1 bg-app-surface/60 border border-app-border/30 rounded px-1.5 py-0.5 text-[9px] text-app-primary focus:outline-none focus:border-blue-500/40 transition-[background-color,border-color] min-w-0"
+                  value={String(val ?? '')}
+                  onChange={e => updateItem(idx, key, typeof val === 'number' ? Number(e.target.value) : e.target.value)}
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-bright text-[12px] text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 focus:outline-none transition-all min-w-0"
                 />
               </div>
             ))}
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-[9px] text-app-muted italic">Belum ada item</div>
+          <div className="text-[12px] text-on-surface-variant italic text-center py-3">Belum ada item</div>
         )}
       </div>
     </div>
   );
 }
 
-/** Raw JSON textarea with validation — fallback for complex JSON */
+/** Raw JSON textarea — fallback */
 function JsonTextarea({ label, value, onChange, fieldId, helpId, helpText }: {
   label: string;
   value: unknown;
@@ -1062,35 +1112,27 @@ function JsonTextarea({ label, value, onChange, fieldId, helpId, helpText }: {
 }) {
   const [text, setText] = useState(() => {
     try { return JSON.stringify(value, null, 2); }
-    catch { return String(value || ''); }
+    catch { return String(value); }
   });
   const [error, setError] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleChange = useCallback((newText: string) => {
+  const handleChange = (newText: string) => {
     setText(newText);
-
-    // Validate immediately for error feedback
-    let parsed: unknown;
     try {
-      parsed = JSON.parse(newText);
+      const parsed = JSON.parse(newText);
       setError(null);
-    } catch {
-      setError('JSON tidak valid');
-      return; // Don't propagate invalid JSON
-    }
-
-    // Debounce onChange to avoid excessive updates on every keystroke
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
       onChange(parsed);
-    }, 300);
-  }, [onChange]);
+    } catch (e) {
+      setError('JSON tidak valid');
+    }
+  };
 
   return (
-    <div className="space-y-0.5">
-      <label htmlFor={fieldId} className="text-[9px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-        <HelpCircle size={9} /> {label}
+    <div>
+      <label htmlFor={fieldId} className={LABEL_BASE}>
+        <span className="flex items-center gap-1.5">
+          <Type size={14} className="text-on-surface-variant" /> {label}
+        </span>
       </label>
       <textarea
         id={fieldId}
@@ -1098,14 +1140,12 @@ function JsonTextarea({ label, value, onChange, fieldId, helpId, helpText }: {
         onChange={e => handleChange(e.target.value)}
         rows={4}
         aria-describedby={helpId}
-        className={`w-full bg-app-surface/60 border rounded px-2 py-1 text-[9px] text-app-primary font-mono resize-y focus:outline-none focus:ring-1 transition-[background-color,border-color] ${
-          error ? 'border-red-500/40 focus:ring-red-500/20' : 'border-app-border/30 focus:border-blue-500/40 focus:ring-blue-500/20'
+        className={`w-full px-4 py-3 rounded-xl border bg-surface-bright text-sm font-mono text-on-surface focus:outline-none focus:ring-2 transition-all resize-y ${
+          error ? 'border-error/50 focus:ring-error/20' : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
         }`}
       />
-      {error && <div className="text-[8px] text-red-400" role="alert">{error}</div>}
-      {helpText && (
-        <span id={helpId} className="text-[8px] text-app-muted sr-only">{helpText}</span>
-      )}
+      {error && <div className="text-[10px] text-error mt-1">{error}</div>}
+      {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
     </div>
   );
 }

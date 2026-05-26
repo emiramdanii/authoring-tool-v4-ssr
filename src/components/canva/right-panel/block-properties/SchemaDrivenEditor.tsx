@@ -7,11 +7,17 @@ import { PropertyGroup } from './PropertyGroup';
 import { renderField } from './field-registry';
 
 /**
- * Schema-driven dynamic editor.
+ * SchemaDrivenEditor — Stitch v4 Style
  *
- * Replaces the giant switch statement in BlockTypeEditor.
- * Reads PropertySchema and auto-generates the appropriate form fields.
- * Adding a new block type = add its propertySchema. No code change here.
+ * Stitch layout:
+ *   - Ungrouped fields first (content fields: title, body, etc.)
+ *   - Divider + Grouped fields in collapsible sections
+ *   - Each group has uppercase tracking-widest header
+ *
+ * Groups are organized by purpose:
+ *   - "content" → Main content editing (title, text, items)
+ *   - "appearance" → Colors, variants, style options
+ *   - "behavior" → Interactive toggles, animations
  */
 export function SchemaDrivenEditor({ block, schema, onUpdate }: {
   block: SchemaBlock;
@@ -41,28 +47,40 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
   // If this block type should redirect to authoring panel, show note
   if (schema.redirectToAuthoring) {
     return (
-      <div className="mt-2 space-y-2" role="region" aria-label={`Properti ${schema.blockType}`}>
+      <div className="space-y-4" role="region" aria-label={`Properti ${schema.blockType}`}>
         {schema.properties
           .filter(p => p.type === 'variant')
           .map(field => renderField(field, b, onUpdate))}
-        <div className="text-[9px] text-app-muted italic px-1">
+        <div className="px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-[12px] text-on-surface-variant italic text-center">
           {schema.redirectNote}
         </div>
       </div>
     );
   }
 
+  // Determine group display order
+  const groupOrder = schema.groups?.map(g => g.key) || Array.from(groupedFields.groups.keys());
+
   return (
-    <div className="mt-2 space-y-2" role="region" aria-label={`Properti ${schema.blockType}`}>
-      {/* Ungrouped fields first */}
-      {groupedFields.ungrouped.map(field => renderField(field, b, onUpdate))}
+    <div className="space-y-4" role="region" aria-label={`Properti ${schema.blockType}`}>
+      {/* Ungrouped fields first — these are the primary content fields */}
+      {groupedFields.ungrouped.length > 0 && (
+        <div className="space-y-4">
+          {groupedFields.ungrouped.map(field => renderField(field, b, onUpdate))}
+        </div>
+      )}
 
       {/* Grouped fields in collapsible sections */}
-      {Array.from(groupedFields.groups.entries()).map(([groupKey, fields]) => {
+      {groupOrder.map(groupKey => {
+        const fields = groupedFields.groups.get(groupKey);
+        if (!fields || fields.length === 0) return null;
+
         const groupDef = schema.groups?.find(g => g.key === groupKey);
         const isCollapsed = groupDef?.collapsed ?? false;
+        const groupLabel = groupDef?.label || groupKey;
+
         return (
-          <PropertyGroup key={groupKey} label={groupDef?.label || groupKey} defaultCollapsed={isCollapsed}>
+          <PropertyGroup key={groupKey} label={groupLabel} defaultCollapsed={isCollapsed}>
             {fields.map(field => renderField(field, b, onUpdate))}
           </PropertyGroup>
         );

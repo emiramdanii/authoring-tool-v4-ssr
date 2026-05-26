@@ -3,7 +3,14 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-/** Collapsible section for grouped fields — uses fieldset/legend for accessibility */
+/**
+ * PropertyGroup — Collapsible section matching stitch v4 design.
+ *
+ * Stitch spec:
+ *   - Section header: uppercase tracking-widest text-[11px] font-bold text-outline
+ *   - Thin divider line above (h-px bg-outline-variant)
+ *   - Content area with generous spacing
+ */
 export function PropertyGroup({ label, defaultCollapsed = false, children }: {
   label: string;
   defaultCollapsed?: boolean;
@@ -12,18 +19,33 @@ export function PropertyGroup({ label, defaultCollapsed = false, children }: {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   return (
-    <fieldset className="border-t border-app-border/20 pt-1">
-      <legend className="sr-only">{label}</legend>
+    <div className="pt-2">
+      {/* Divider */}
+      <div className="h-px bg-outline-variant/40 mb-4" />
+
+      {/* Section header */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-1 w-full text-left hover:text-app-secondary transition-colors"
+        className="flex items-center gap-1.5 w-full text-left group mb-3"
         aria-expanded={!collapsed}
         aria-label={`${label} — ${collapsed ? 'Kembangkan' : 'Perkecil'}`}
       >
-        <ChevronDown size={8} className={`transition-transform ${collapsed ? '-rotate-90' : ''}`} aria-hidden="true" />
-        <span className="text-[9px] font-bold text-app-muted uppercase tracking-wider">{label}</span>
+        <ChevronDown
+          size={14}
+          className={`text-outline transition-transform duration-200 ${collapsed ? '-rotate-90' : ''}`}
+          aria-hidden="true"
+        />
+        <span className="text-[11px] font-bold text-outline uppercase tracking-widest group-hover:text-on-surface-variant transition-colors">
+          {label}
+        </span>
       </button>
-      {!collapsed && <div className="space-y-2 mt-1">{children}</div>}
-    </fieldset>
+
+      {/* Content */}
+      {!collapsed && (
+        <div className="space-y-4 animate-accordion-down">
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
