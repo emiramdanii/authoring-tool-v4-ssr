@@ -105,7 +105,7 @@ function DefBoxStepMode({
           <div
             style={{
               borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
-              paddingLeft: isCompact ? '14px' : '16px',
+              paddingLeft: isCompact ? '10px' : '12px',
               ...edu.body(),
               color: edu.textColor(),
               wordBreak: 'break-word',
@@ -197,17 +197,16 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         >
           {/* Icon row */}
           <div style={{ ...edu.componentPadding() }}>
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: tokens.colorAlpha(colorKey, 0.12) }}>
-                <BookOpen size={14} className="inline" style={{ color: tokens.accentText(colorKey) }} />
+                <BookOpen size={10} className="inline" style={{ color: tokens.accentText(colorKey) }} />
               </div>
               <span
                 style={{
                   ...edu.caption(),
                   color: tokens.accentText(colorKey),
                   textTransform: 'uppercase',
-                  fontWeight: 600,
                 }}
               >
                 Definisi
@@ -226,12 +225,12 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             ) : (
               <div style={{
                 borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
-                paddingLeft: isCompact ? '14px' : '16px',
+                paddingLeft: isCompact ? '10px' : '12px',
                 ...edu.body(),
                 color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
-                maxHeight: isContentCollapsed ? (isCompact ? '80px' : '120px') : undefined,
+                maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                 overflow: isContentCollapsed ? 'hidden' : undefined,
                 ...edu.emotionalMotion('accordionExpand'),
                 position: 'relative',
@@ -261,18 +260,17 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 aria-expanded={isExpanded}
                 onMouseEnter={() => setIsExpandHovered(true)}
                 onMouseLeave={() => setIsExpandHovered(false)}
-                className={`flex items-center justify-center gap-1 w-full py-2 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
+                className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
                 style={{
                   background: tokens.accentBg(colorKey, 0.06),
                   ...edu.caption(),
-                  fontWeight: 600,
                   color: tokens.accentText(colorKey),
                   cursor: 'pointer',
                   border: 'none',
                   ...tokens.iosHoverBgStyle(isExpandHovered, 0.04),
                 }}
               >
-                <ChevronDown size={isCompact ? 12 : 14} />
+                <ChevronDown size={isCompact ? 10 : 12} />
                 Selengkapnya
               </button>
             )}
@@ -332,21 +330,20 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
 
           {/* Content */}
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div className="flex items-center gap-2.5 mb-3">
+            <div className="flex items-center gap-2 mb-3">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{
                   background: tokens.colorAlpha(colorKey, 0.12),
                 }}
               >
-                <BookOpen size={14} style={{ color: tokens.accentText(colorKey) }} />
+                <BookOpen size={12} style={{ color: tokens.accentText(colorKey) }} />
               </div>
               <span
                 style={{
                   ...edu.caption(),
                   color: tokens.accentText(colorKey),
                   textTransform: 'uppercase',
-                  fontWeight: 600,
                 }}
               >
                 Definisi
@@ -367,9 +364,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                   color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
-                  paddingLeft: isCompact ? '12px' : '16px',
+                  paddingLeft: isCompact ? '8px' : '12px',
                   borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}`,
-                  maxHeight: isContentCollapsed ? (isCompact ? '80px' : '120px') : undefined,
+                  maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
                   overflow: isContentCollapsed ? 'hidden' : undefined,
                   ...edu.emotionalMotion('accordionExpand'),
                   position: 'relative',
@@ -392,9 +389,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 aria-expanded={isExpanded}
                 onMouseEnter={() => setIsExpandHovered(true)}
                 onMouseLeave={() => setIsExpandHovered(false)}
-                className={`flex items-center justify-center gap-1 w-full py-2 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
-                style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.caption(), fontWeight: 600, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
-                <ChevronDown size={isCompact ? 12 : 14} /> Selengkapnya
+                className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
+                style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.caption(), color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
+                <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
               </button>
             )}
           </div>
@@ -415,7 +412,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         </div>
       )}
       <div
-        className="flex items-start gap-2.5"
+        className="flex items-start gap-2"
         style={{
           ...edu.nestedPadding(),
           borderRadius: tokens.radius('lg'),
@@ -427,16 +424,15 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
         }}
       >
         <div
-          className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
+          className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: tokens.colorAlpha(colorKey, 0.12) }}
         >
-          <BookOpen size={14} style={{ color: tokens.accentText(colorKey) }} />
+          <BookOpen size={9} style={{ color: tokens.accentText(colorKey) }} />
         </div>
         <div className="min-w-0 flex-1">
           <span
             style={{
-              ...edu.caption(),
-              fontWeight: 600,
+              ...edu.micro(),
               color: tokens.accentText(colorKey),
               textTransform: 'uppercase',
             }}
@@ -449,7 +445,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
-              maxHeight: isContentCollapsed ? (isCompact ? '60px' : '80px') : undefined,
+              maxHeight: isContentCollapsed ? (isCompact ? '40px' : '50px') : undefined,
               overflow: isContentCollapsed ? 'hidden' : undefined,
               ...edu.emotionalMotion('accordionExpand'),
               position: 'relative',
@@ -471,9 +467,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               aria-expanded={isExpanded}
               onMouseEnter={() => setIsExpandHovered(true)}
               onMouseLeave={() => setIsExpandHovered(false)}
-              className={`flex items-center justify-center gap-1 w-full py-1.5 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}
-              style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.caption(), fontWeight: 600, color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
-              <ChevronDown size={12} /> Selengkapnya
+              className={`flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}
+              style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.micro(), color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
+              <ChevronDown size={8} /> Selengkapnya
             </button>
           )}
         </div>

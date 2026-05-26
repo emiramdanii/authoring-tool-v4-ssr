@@ -109,7 +109,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       refleksi: 'minimal',
       rangkuman: 'minimal',
     },
-    bgTint: 'rgba(202,138,4,0.06)',    // Warm glow of yellow
+    bgTint: 'rgba(202,138,4,0.03)',    // Warm hint of yellow
     cardTreatment: 'elevated',
     stripeProminence: 'bold',
     headerTreatment: 'accented',
@@ -130,7 +130,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       refleksi: 'minimal',
       rangkuman: 'muted',
     },
-    bgTint: 'rgba(8,145,178,0.05)',    // Cool glow of cyan
+    bgTint: 'rgba(8,145,178,0.02)',    // Cool hint of cyan
     cardTreatment: 'flat',
     stripeProminence: 'normal',
     headerTreatment: 'outlined',
@@ -151,7 +151,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       refleksi: 'minimal',
       rangkuman: 'muted',
     },
-    bgTint: 'rgba(21,128,61,0.05)',     // Glow of green
+    bgTint: 'rgba(21,128,61,0.02)',     // Hint of green
     cardTreatment: 'flat',
     stripeProminence: 'normal',
     headerTreatment: 'outlined',
@@ -172,7 +172,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       refleksi: 'minimal',
       rangkuman: 'minimal',
     },
-    bgTint: 'rgba(194,65,12,0.06)',     // Warm glow of orange
+    bgTint: 'rgba(194,65,12,0.03)',     // Warm hint of orange
     cardTreatment: 'elevated',
     stripeProminence: 'bold',
     headerTreatment: 'accented',
@@ -193,7 +193,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       quiz: 'minimal',
       rangkuman: 'minimal',
     },
-    bgTint: 'rgba(124,58,237,0.05)',    // Glow of purple
+    bgTint: 'rgba(124,58,237,0.02)',    // Hint of purple
     cardTreatment: 'subtle',
     stripeProminence: 'gentle',
     headerTreatment: 'minimal',
@@ -214,7 +214,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       quiz: 'minimal',
       rangkuman: 'minimal',
     },
-    bgTint: 'rgba(13,148,136,0.05)',    // Glow of teal
+    bgTint: 'rgba(13,148,136,0.02)',    // Hint of teal
     cardTreatment: 'subtle',
     stripeProminence: 'gentle',
     headerTreatment: 'minimal',
@@ -235,7 +235,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       refleksi: 'minimal',
       rangkuman: 'minimal',
     },
-    bgTint: 'rgba(220,38,38,0.05)',     // Glow of red
+    bgTint: 'rgba(220,38,38,0.02)',     // Hint of red
     cardTreatment: 'elevated',
     stripeProminence: 'bold',
     headerTreatment: 'accented',
@@ -256,7 +256,7 @@ export const SCENE_ATMOSPHERES: Record<SceneType, SceneAtmosphere> = {
       diskusi: 'minimal',
       refleksi: 'minimal',
     },
-    bgTint: 'rgba(2,132,199,0.05)',     // Glow of blue
+    bgTint: 'rgba(2,132,199,0.02)',     // Hint of blue
     cardTreatment: 'elevated',
     stripeProminence: 'normal',
     headerTreatment: 'outlined',

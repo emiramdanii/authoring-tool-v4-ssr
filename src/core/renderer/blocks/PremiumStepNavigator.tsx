@@ -267,7 +267,7 @@ export function EduStepNavigator({
               {isPast ? (
                 <span
                   style={{
-                    fontSize: isCompact ? '11px' : '12px',
+                    fontSize: isCompact ? '10px' : '11px',
                     color: accentColor,
                     ...checkDrawStyle,   // Emotional: check-draw animation
                   }}
@@ -275,7 +275,7 @@ export function EduStepNavigator({
                   &#10003;
                 </span>
               ) : (
-                <span style={{ fontSize: isCompact ? '11px' : '12px', opacity: 0.7 }}>
+                <span style={{ fontSize: isCompact ? '10px' : '11px', opacity: 0.7 }}>
                   {i + 1}
                 </span>
               )}

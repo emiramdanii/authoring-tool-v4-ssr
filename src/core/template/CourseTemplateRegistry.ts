@@ -23,74 +23,6 @@ import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { TEMPLATE_TO_SCENE } from '@/core/edu/education-scene-types';
 
-// ── Source of Truth Contracts (promoted from dead docs → active engine) ──
-export { GOLDEN_FLOW, GOLDEN_FLOW_META, getGoldenFlowIntensityCurve, validateGoldenFlow } from './golden/interactive-lesson';
-export type { GoldenFlowScene } from './golden/interactive-lesson';
-export {
-  VISUAL_DNA_TYPOGRAPHY,
-  VISUAL_DNA_COLORS,
-  VISUAL_DNA_LAYOUT,
-  VISUAL_DNA_CARD,
-  VISUAL_DNA_NAVIGATION,
-  VISUAL_DNA_MOTION,
-  VISUAL_DNA_RHYTHM,
-  VISUAL_DNA_INTERACTION,
-  VISUAL_DNA_QUICK_REF,
-} from '@/core/visual-dna/visual-dna';
-
-// ── Block Type Icon Map ───────────────────────────────────────
-
-const BLOCK_ICONS: Record<string, string> = {
-  'cover': '🏠',
-  'petunjuk': '📋',
-  'tp': '🎯',
-  'alur': '⏱️',
-  'skenario': '🎭',
-  'def-box': '📖',
-  'nc-grid': '🔲',
-  'flashcard-set': '🃏',
-  'ftab': '📑',
-  'nk-card': '🪪',
-  'materi-section': '📚',
-  'diskusi': '💬',
-  'kuis': '❓',
-  'sortir-game': '🔀',
-  'roda-game': '🎡',
-  'memory-game': '🧠',
-  'matching-game': '🔗',
-  'fill-blank-game': '✏️',
-  'word-search-game': '🔍',
-  'true-false-game': '✅',
-  'drag-drop-game': '👆',
-  'crossword-game': '🧩',
-  'team-buzzer-game': '🔔',
-  'hasil': '🏆',
-  'refleksi': '📝',
-  'penutup': '👋',
-  'tujuan-display': '🎯',
-  'motivasi': '💡',
-  'rangkuman': '📊',
-  'tabel-accord': '📋',
-};
-
-export function getBlockIcon(blockType: string): string {
-  return BLOCK_ICONS[blockType] || '📦';
-}
-
-// ── Preview Block Info (for marketplace/gallery cards) ──────────
-
-export interface PreviewBlockInfo {
-  type: string;
-  icon: string;
-  label: string;
-}
-
-export interface PreviewScreenInfo {
-  templateType: string;
-  label: string;
-  blocks: PreviewBlockInfo[];
-}
-
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
 export interface SceneTemplateSpec {
@@ -121,8 +53,6 @@ export interface CourseTemplate {
   id: string;
   /** Display name */
   name: string;
-  /** Subtitle (e.g., 'PPKn Kelas 7 - Semester 1') */
-  subtitle: string;
   /** Short description */
   description: string;
   /** Subject (e.g., 'PPKn', 'IPA', 'MTK') — '*' for universal */
@@ -140,91 +70,6 @@ export interface CourseTemplate {
     icon: string;
     author: string;
     version: string;
-  };
-  /**
-   * Premium preset ID — links to a handcrafted LessonSchema in src/presets/.
-   * When set, createProjectFromTemplate() will load this preset first
-   * (Level 1 pipeline), producing rich, pedagogically-structured content
-   * instead of empty structural shells.
-   */
-  presetId?: string;
-  // ── UI-facing fields (for template gallery / marketplace) ──
-  /** Tailwind color key for card styling (e.g., 'amber', 'emerald', 'sky') */
-  color: string;
-  /** Learning flow pattern */
-  pattern: TemplatePattern;
-  /** Search tags */
-  tags: string[];
-  // ── Marketplace/Gallery display fields ──
-  /** Cover gradient colors for card display (e.g., ['y', 'o'] for amber→orange) */
-  coverGradient?: [string, string];
-  /** Preview block info for marketplace card display */
-  previewBlocks?: PreviewScreenInfo[];
-  /** Whether this template is BSNP-compliant */
-  bsnpCompliant?: boolean;
-}
-
-// ── Template Pattern — Learning flow archetype ─────────────────
-
-export type TemplatePattern = 'standar' | 'interaktif' | 'eksperimen' | 'mini';
-
-export const TEMPLATE_PATTERNS: Record<TemplatePattern, {
-  id: TemplatePattern;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-}> = {
-  standar: {
-    id: 'standar',
-    label: 'Standar',
-    description: 'Alur lengkap pembelajaran: pembuka, materi, latihan, penutup',
-    icon: '📋',
-    color: 'sky',
-  },
-  interaktif: {
-    id: 'interaktif',
-    label: 'Interaktif',
-    description: 'Banyak aktivitas interaktif: skenario, game, diskusi',
-    icon: '🎮',
-    color: 'violet',
-  },
-  eksperimen: {
-    id: 'eksperimen',
-    label: 'Eksperimen',
-    description: 'Berbasis praktikum dan penyelidikan ilmiah',
-    icon: '🔬',
-    color: 'emerald',
-  },
-  mini: {
-    id: 'mini',
-    label: 'Mini',
-    description: 'Pertemuan singkat: materi inti + kuis cepat',
-    icon: '⚡',
-    color: 'amber',
-  },
-};
-
-// ── Template Customization ──────────────────────────────────────
-
-export interface TemplateCustomization {
-  /** Which pages to include (by index in template.scenes) */
-  enabledPages: boolean[];
-  /** Number of quiz questions */
-  jumlahKuis: number;
-  /** Variant preference */
-  variant: 'A' | 'B' | 'C';
-  /** Teacher name to inject into cover */
-  guru?: string;
-  /** School name to inject into cover */
-  sekolah?: string;
-}
-
-export function getDefaultCustomization(template: CourseTemplate): TemplateCustomization {
-  return {
-    enabledPages: template.scenes.map(() => true),
-    jumlahKuis: 5,
-    variant: 'A',
   };
 }
 
@@ -251,13 +96,11 @@ export interface SubjectConfig {
 export const SUBJECTS: SubjectConfig[] = [
   { id: 'PPKn', label: 'PPKn', icon: '⚖️', color: '#ef4444' },
   { id: 'IPA', label: 'IPA', icon: '🔬', color: '#22c55e' },
-  { id: 'MTK', label: 'Matematika', icon: '📐', color: '#3b82f6' },
-  { id: 'B.Indonesia', label: 'Bahasa Indonesia', icon: '📖', color: '#f59e0b' },
+  { id: 'MTK', label: 'MTK', icon: '📐', color: '#3b82f6' },
+  { id: 'B.Indonesia', label: 'B. Indonesia', icon: '📖', color: '#f59e0b' },
   { id: 'B.Inggris', label: 'B. Inggris', icon: '🌍', color: '#8b5cf6' },
-  { id: 'IPS', label: 'IPS', icon: '🏛️', color: '#f97316' },
-  { id: 'Seni', label: 'Seni Budaya', icon: '🎨', color: '#ec4899' },
+  { id: 'Seni', label: 'Seni', icon: '🎨', color: '#ec4899' },
   { id: 'PJOK', label: 'PJOK', icon: '⚽', color: '#06b6d4' },
-  { id: 'Informatika', label: 'Informatika', icon: '💻', color: '#6366f1' },
   { id: 'Lainnya', label: 'Lainnya', icon: '📚', color: '#6b7280' },
 ];
 
@@ -284,326 +127,382 @@ export const SEMESTER_OPTIONS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════
-// ACTIVE COURSE TEMPLATES — Golden Flow only (SILSE v2.1)
+// STARTER COURSE TEMPLATES — expanded for all 8 subjects
 // ═══════════════════════════════════════════════════════════════════
-// Filosofi baru: experience → template → system
-//
-// Hanya 3 template aktif. Legacy templates sudah di-purge (Phase 1).
-//
-// ❄️ template-gallery.ts — FROZEN (LESSON_TEMPLATES + SUBJECT_MOCK_DATA)
-// ❄️ marketplace-templates.ts — FROZEN (6 template definitions)
-// ✅ Golden Flow — src/core/template/golden/interactive-lesson.ts
-// ✅ Visual DNA — src/core/visual-dna/visual-dna.ts
+// Every subject gets at least one template. The "template-kosong"
+// uses subject='*' and grade='*' so it always appears in filters.
 
 const COURSE_TEMPLATES: CourseTemplate[] = [
-  // ── PPKn VII — Alur Emas: Hakikat Norma ──────────────────────
-  // SYNCED with: golden/interactive-lesson.ts + presets/ppkn/hakikat-norma-schema.ts
-  // Flow: Cover → Petunjuk → Tujuan → Apersepsi → Diskusi → Materi 1 → Materi 2 → Game → Hasil → Refleksi → Penutup
+  // ── PPKn VII — Full learning module ──────────────────────────
   {
     id: 'modul-ppkn-vii',
-    name: 'Hakikat Norma — Interactive Lesson',
-    subtitle: 'PPKn Kelas 7 - Semester 1',
-    description: 'Alur emas PPKn VII: Cover → Petunjuk → Tujuan → Apersepsi (4 Skenario) → Diskusi → Materi 1 (Pengertian) → Materi 2 (Fungsi) → Game → Hasil → Refleksi → Penutup',
+    name: 'Modul PPKn Kelas VII',
+    description: 'Alur pembelajaran lengkap PPKn SMP kelas VII: Pembuka → Tujuan → Motivasi → Materi ×3 → Diskusi → Kuis → Refleksi → Penutup',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
-    theme: 'hakikat-norma',
-    presetId: 'hakikat-norma',
-    color: 'amber',
-    pattern: 'interaktif',
-    tags: ['norma', 'aturan', 'sanksi', 'masyarakat', 'hukum'],
+    theme: 'nilai-pancasila',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'tujuan', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tp', 'alur'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'skenario', label: 'Apersepsi — Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
-      { templateType: 'diskusi', label: 'Diskusi — Manusia Makhluk Sosial', suggestedBlocks: ['def-box', 'nc-grid', 'diskusi'], variant: 'A', sceneType: 'discussion' },
-      { templateType: 'materi', label: 'Materi 1 — Pengertian Norma', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set', 'diskusi'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'materi', label: 'Materi 2 — Fungsi Norma', suggestedBlocks: ['ftab', 'def-box', 'flashcard-set', 'diskusi'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'game', label: 'Game Fungsi Norma', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'practice' },
-      { templateType: 'hasil', label: 'Hasil', suggestedBlocks: ['hasil'], variant: 'A', sceneType: 'assessment' },
-      { templateType: 'refleksi', label: 'Refleksi Diri', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Apersepsi / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['def-box', 'nc-grid'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
-    metadata: { icon: '⚖️', author: 'SILSE', version: '2.1.0' },
+    metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── PPKn VII — Alur Emas: Macam-Macam Norma ────────────────
-  // SYNCED with: presets/ppkn/macam-norma-schema.ts
-  // Flow: Cover → Petunjuk → CP/TP/ATP → TP → Review → Materi (4 Norma) → Game Sortir → Hubungan Antarnorma → Game Roda → Refleksi → Penutup
+  // ── PPKn VIII — Interaktif ──────────────────────────────────
   {
-    id: 'modul-ppkn-vii-macam-norma',
-    name: 'Macam-Macam Norma — Interactive Lesson',
-    subtitle: 'PPKn Kelas 7 - Semester 1',
-    description: 'Alur emas PPKn VII Pertemuan 2: Cover → Petunjuk → CP/TP/ATP → Review → Eksplorasi 4 Norma → Game Sortir → Hubungan Antarnorma → Game Roda → Refleksi → Penutup',
+    id: 'modul-ppkn-viii',
+    name: 'Modul PPKn Kelas VIII',
+    description: 'Alur pembelajaran PPKn SMP kelas VIII dengan skenario interaktif: Cover → Tujuan → Skenario → Materi → Diskusi → Kuis → Refleksi → Penutup',
     subject: 'PPKn',
+    grade: '8',
+    semester: '1',
+    theme: 'bhinneka-tunggal-ika',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── IPA VIII — Eksperimen ───────────────────────────────────
+  {
+    id: 'modul-ipa-viii',
+    name: 'Modul IPA Kelas VIII',
+    description: 'Alur pembelajaran IPA SMP kelas VIII: Cover → Tujuan → Skenario → Materi ×2 → Eksperimen → Kuis → Rangkuman',
+    subject: 'IPA',
+    grade: '8',
+    semester: '1',
+    theme: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Ilmiah', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep Dasar', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Penerapan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Eksperimen / Praktikum', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'concept' },
+    ],
+    metadata: { icon: '🔬', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── IPA VII — Standar ───────────────────────────────────────
+  {
+    id: 'modul-ipa-vii',
+    name: 'Modul IPA Kelas VII',
+    description: 'Alur pembelajaran IPA SMP kelas VII: Cover → Tujuan → Motivasi → Materi ×2 → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'IPA',
     grade: '7',
     semester: '1',
-    theme: 'macam-norma',
-    presetId: 'macam-norma',
-    color: 'amber',
-    pattern: 'interaktif',
-    tags: ['norma', 'macam norma', 'agama', 'kesusilaan', 'kesopanan', 'hukum'],
+    theme: 'ham-hak-kewajiban',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🔬', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── MTK VII — Standar ───────────────────────────────────────
+  {
+    id: 'modul-mtk-vii',
+    name: 'Modul Matematika Kelas VII',
+    description: 'Alur pembelajaran MTK SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Contoh Soal → Latihan → Kuis → Rangkuman → Penutup',
+    subject: 'MTK',
+    grade: '7',
+    semester: '1',
+    theme: 'nilai-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — Konsep Dasar', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Contoh Soal & Pembahasan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Latihan Soal', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📐', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── MTK VIII — Interaktif ───────────────────────────────────
+  {
+    id: 'modul-mtk-viii',
+    name: 'Modul Matematika Kelas VIII',
+    description: 'Alur pembelajaran MTK SMP kelas VIII: Cover → Tujuan → Materi ×2 → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'MTK',
+    grade: '8',
+    semester: '1',
+    theme: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Penerapan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi Soal', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📐', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── B. Indonesia VII — Standar ──────────────────────────────
+  {
+    id: 'modul-bin-vii',
+    name: 'Modul B. Indonesia Kelas VII',
+    description: 'Alur pembelajaran Bahasa Indonesia SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'B.Indonesia',
+    grade: '7',
+    semester: '1',
+    theme: 'perilaku-patuh',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📖', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── B. Indonesia VIII — Interaktif ──────────────────────────
+  {
+    id: 'modul-bin-viii',
+    name: 'Modul B. Indonesia Kelas VIII',
+    description: 'Alur pembelajaran Bahasa Indonesia SMP kelas VIII: Cover → Tujuan → Skenario → Materi ×2 → Diskusi → Kuis → Rangkuman → Penutup',
+    subject: 'B.Indonesia',
+    grade: '8',
+    semester: '1',
+    theme: 'bhinneka-tunggal-ika',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi Kelompok', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'rangkuman', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'summary' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📖', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── B. Inggris VIII — Interaktif ────────────────────────────
+  {
+    id: 'modul-bing-viii',
+    name: 'Modul B. Inggris Kelas VIII',
+    description: 'Alur pembelajaran Bahasa Inggris SMP kelas VIII: Cover → Tujuan → Skenario → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'B.Inggris',
+    grade: '8',
+    semester: '1',
+    theme: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Interactive Scenario', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Material', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Discussion', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Reflection', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Closing', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🌍', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── B. Inggris VII — Standar ────────────────────────────────
+  {
+    id: 'modul-bing-vii',
+    name: 'Modul B. Inggris Kelas VII',
+    description: 'Alur pembelajaran Bahasa Inggris SMP kelas VII: Cover → Tujuan → Materi → Diskusi → Kuis → Rangkuman → Penutup',
+    subject: 'B.Inggris',
+    grade: '7',
+    semester: '1',
+    theme: 'ham-hak-kewajiban',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Material', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Discussion', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'rangkuman', label: 'Summary', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'summary' },
+      { templateType: 'penutup', label: 'Closing', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🌍', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Seni VII — Standar ──────────────────────────────────────
+  {
+    id: 'modul-seni-vii',
+    name: 'Modul Seni Budaya Kelas VII',
+    description: 'Alur pembelajaran Seni Budaya SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Praktik → Diskusi → Refleksi → Penutup',
+    subject: 'Seni',
+    grade: '7',
+    semester: '1',
+    theme: 'perilaku-patuh',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Seni', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Praktik & Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'refleksi', label: 'Refleksi Karya', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🎨', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Seni VIII — Interaktif ──────────────────────────────────
+  {
+    id: 'modul-seni-viii',
+    name: 'Modul Seni Budaya Kelas VIII',
+    description: 'Alur pembelajaran Seni Budaya SMP kelas VIII: Cover → Tujuan → Materi → Skenario Kreatif → Diskusi → Refleksi → Penutup',
+    subject: 'Seni',
+    grade: '8',
+    semester: '1',
+    theme: 'bhinneka-tunggal-ika',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Seni', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'skenario', label: 'Skenario Kreatif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'diskusi', label: 'Diskusi Karya', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🎨', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PJOK VII — Standar ──────────────────────────────────────
+  {
+    id: 'modul-pjok-vii',
+    name: 'Modul PJOK Kelas VII',
+    description: 'Alur pembelajaran PJOK SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Praktik → Kuis → Refleksi → Penutup',
+    subject: 'PJOK',
+    grade: '7',
+    semester: '1',
+    theme: 'nilai-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Pemanasan / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Praktik & Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi Aktivitas', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PJOK VIII — Interaktif ──────────────────────────────────
+  {
+    id: 'modul-pjok-viii',
+    name: 'Modul PJOK Kelas VIII',
+    description: 'Alur pembelajaran PJOK SMP kelas VIII: Cover → Tujuan → Materi → Skenario Olahraga → Diskusi → Kuis → Penutup',
+    subject: 'PJOK',
+    grade: '8',
+    semester: '1',
+    theme: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'skenario', label: 'Skenario Olahraga', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PJOK IV (SD) — Gerak Dasar ──────────────────────────────
+  {
+    id: 'modul-pjok-iv',
+    name: 'Modul PJOK Kelas IV SD',
+    description: 'Alur pembelajaran PJOK SD kelas IV: Cover → Petunjuk → Tujuan → Materi ×3 → Kuis → Refleksi → Penutup',
+    subject: 'PJOK',
+    grade: '4',
+    semester: '1',
+    theme: 'nilai-pancasila',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'dokumen', label: 'CP · TP · ATP', suggestedBlocks: ['ftab'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'tujuan', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tp', 'alur'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'materi', label: 'Review Pertemuan 1', suggestedBlocks: ['nc-grid', 'diskusi', 'def-box'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'materi', label: 'Eksplorasi 4 Norma', suggestedBlocks: ['ftab', 'tabel-accord', 'diskusi'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'game', label: 'Game Sortir Norma', suggestedBlocks: ['sortir-game', 'diskusi'], variant: 'A', sceneType: 'practice' },
-      { templateType: 'materi', label: 'Hubungan Antarnorma', suggestedBlocks: ['tabel-accord', 'nc-grid', 'diskusi'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'game', label: 'Game Roda Norma', suggestedBlocks: ['roda-game'], variant: 'A', sceneType: 'practice' },
-      { templateType: 'refleksi', label: 'Refleksi Diri', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
-    metadata: { icon: '📜', author: 'SILSE', version: '2.1.0' },
+    metadata: { icon: '🏃', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PJOK X (SMA) — Kebugaran ────────────────────────────────
+  {
+    id: 'modul-pjok-x',
+    name: 'Modul PJOK Kelas X SMA',
+    description: 'Alur pembelajaran PJOK SMA kelas X: Cover → Tujuan → Materi ×2 → Studi Kasus → Kuis → Refleksi → Rangkuman → Penutup',
+    subject: 'PJOK',
+    grade: '10',
+    semester: '1',
+    theme: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Prinsip Latihan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Studi Kasus', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '💪', author: 'SILSE', version: '1.0.0' },
   },
 
   // ── Template Kosong — Universal (subject='*', grade='*') ────
   {
     id: 'template-kosong',
     name: 'Template Kosong',
-    subtitle: 'Semua Mapel - Semua Kelas',
     description: 'Mulai dari nol dengan Cover dan Penutup saja. Tambahkan halaman sesuai kebutuhan.',
     subject: '*',
     grade: '*',
     semester: '*',
-    theme: 'golden-presentation',
-    color: 'sky',
-    pattern: 'mini',
-    tags: ['kosong', 'blank', 'universal'],
+    theme: 'default',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
-    metadata: { icon: '📋', author: 'SILSE', version: '2.1.0' },
-  },
-
-  // ── MARKETPLACE TEMPLATES — Absorbed from marketplace-templates.ts ──
-  // Metadata only. Schema factories are in _schemaFactories map below.
-  // These templates use presetId or schemaFactory for content generation.
-
-  {
-    id: 'mat-persamaan-linear',
-    name: 'Persamaan Linear',
-    subtitle: 'Matematika Kelas 7 - Semester 1',
-    description: 'Pelajari konsep persamaan linear satu variabel melalui kuis interaktif, isian singkat, dan drag-drop. Cocok untuk kelas 7 semester 1 dengan pendekatan kontekstual.',
-    subject: 'MTK',
-    grade: '7',
-    semester: '1',
-    theme: 'golden-presentation',
-    color: 'amber',
-    pattern: 'interaktif',
-    coverGradient: ['y', 'o'],
-    bsnpCompliant: true,
-    previewBlocks: [
-      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
-      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Kartu Konsep' }, { type: 'flashcard-set', icon: '🃏', label: 'Flashcard' }] },
-      { templateType: 'game', label: 'Latihan Interaktif', blocks: [{ type: 'fill-blank-game', icon: '✏️', label: 'Isian Singkat' }, { type: 'drag-drop-game', icon: '👆', label: 'Drag & Drop' }] },
-      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'kuis', icon: '❓', label: 'Kuis Pilihan Ganda' }] },
-      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi Diri' }] },
-    ],
-    tags: ['matematika', 'aljabar', 'persamaan linear', 'PLSV'],
-    scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
-      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set'], sceneType: 'concept' },
-      { templateType: 'game', label: 'Latihan Interaktif', suggestedBlocks: ['fill-blank-game', 'drag-drop-game'], sceneType: 'practice' },
-      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['kuis'], sceneType: 'assessment' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
-    ],
-    metadata: { icon: '📐', author: 'SILSE', version: '2.1.0' },
-  },
-
-  {
-    id: 'ipa-tata-surya',
-    name: 'Sistem Tata Surya',
-    subtitle: 'IPA Kelas 7 - Semester 2',
-    description: 'Eksplorasi planet-planet dalam tata surya melalui media visual, word search, dan kuis benar-salah. Template interaktif untuk kelas 7 semester 2.',
-    subject: 'IPA',
-    grade: '7',
-    semester: '2',
-    theme: 'golden-presentation',
-    color: 'sky',
-    pattern: 'interaktif',
-    coverGradient: ['c', 'p'],
-    bsnpCompliant: true,
-    previewBlocks: [
-      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
-      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Planet-planet' }, { type: 'flashcard-set', icon: '🃏', label: 'Flashcard' }] },
-      { templateType: 'game', label: 'Word Search', blocks: [{ type: 'word-search-game', icon: '🔍', label: 'Cari Kata' }] },
-      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'true-false-game', icon: '✅', label: 'Benar-Salah' }, { type: 'kuis', icon: '❓', label: 'Pilihan Ganda' }] },
-      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi Diri' }] },
-    ],
-    tags: ['ipa', 'tata surya', 'planet', 'astronomi'],
-    scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
-      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set'], sceneType: 'concept' },
-      { templateType: 'game', label: 'Word Search', suggestedBlocks: ['word-search-game'], sceneType: 'practice' },
-      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['true-false-game', 'kuis'], sceneType: 'assessment' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
-    ],
-    metadata: { icon: '🌍', author: 'SILSE', version: '2.1.0' },
-  },
-
-  {
-    id: 'ipa-ekosistem',
-    name: 'Ekosistem',
-    subtitle: 'IPA Kelas 7 - Semester 1',
-    description: 'Pahami interaksi makhluk hidup dengan lingkungan melalui memory game, matching game, dan crossword. Template seru untuk kelas 7 semester 1.',
-    subject: 'IPA',
-    grade: '7',
-    semester: '1',
-    theme: 'golden-presentation',
-    color: 'emerald',
-    pattern: 'interaktif',
-    coverGradient: ['g', 'c'],
-    bsnpCompliant: true,
-    previewBlocks: [
-      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
-      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Komponen' }] },
-      { templateType: 'game', label: 'Memory Game', blocks: [{ type: 'memory-game', icon: '🧠', label: 'Memory' }] },
-      { templateType: 'game', label: 'Matching & Crossword', blocks: [{ type: 'matching-game', icon: '🔗', label: 'Matching' }, { type: 'crossword-game', icon: '🧩', label: 'Crossword' }] },
-      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi Diri' }] },
-    ],
-    tags: ['ipa', 'ekosistem', 'biotik', 'abiotik'],
-    scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
-      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid'], sceneType: 'concept' },
-      { templateType: 'game', label: 'Memory Game', suggestedBlocks: ['memory-game'], sceneType: 'practice' },
-      { templateType: 'game', label: 'Matching & Crossword', suggestedBlocks: ['matching-game', 'crossword-game'], sceneType: 'practice' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
-    ],
-    metadata: { icon: '🌿', author: 'SILSE', version: '2.1.0' },
-  },
-
-  {
-    id: 'ips-sejarah-indonesia',
-    name: 'Sejarah Indonesia',
-    subtitle: 'IPS Kelas 8 - Semester 1',
-    description: 'Pelajari peristiwa penting sejarah Indonesia melalui skenario interaktif, kuis, dan team buzzer. Template menarik untuk kelas 8 semester 1.',
-    subject: 'IPS',
-    grade: '8',
-    semester: '1',
-    theme: 'golden-presentation',
-    color: 'red',
-    pattern: 'interaktif',
-    coverGradient: ['r', 'o'],
-    bsnpCompliant: true,
-    previewBlocks: [
-      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
-      { templateType: 'skenario', label: 'Skenario', blocks: [{ type: 'skenario', icon: '🎭', label: 'Skenario Interaktif' }] },
-      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'kuis', icon: '❓', label: 'Pilihan Ganda' }] },
-      { templateType: 'game', label: 'Team Buzzer', blocks: [{ type: 'team-buzzer-game', icon: '🔔', label: 'Team Buzzer' }] },
-      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'diskusi', icon: '💬', label: 'Diskusi' }, { type: 'refleksi', icon: '📝', label: 'Refleksi' }] },
-    ],
-    tags: ['ips', 'sejarah', 'indonesia', 'kemerdekaan'],
-    scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
-      { templateType: 'skenario', label: 'Skenario', suggestedBlocks: ['skenario'], sceneType: 'example' },
-      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['kuis'], sceneType: 'assessment' },
-      { templateType: 'game', label: 'Team Buzzer', suggestedBlocks: ['team-buzzer-game'], sceneType: 'practice' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['diskusi', 'refleksi'], sceneType: 'reflection' },
-    ],
-    metadata: { icon: '🏛️', author: 'SILSE', version: '2.1.0' },
-  },
-
-  {
-    id: 'bindo-teks-narasi',
-    name: 'Teks Narasi',
-    subtitle: 'B. Indonesia Kelas 8 - Semester 1',
-    description: 'Kuasai struktur teks narasi melalui flashcard, fill-blank game, dan refleksi. Template cocok untuk kelas 8 semester 1 dengan fokus pada menulis kreatif.',
-    subject: 'B.Indonesia',
-    grade: '8',
-    semester: '1',
-    theme: 'golden-presentation',
-    color: 'violet',
-    pattern: 'interaktif',
-    coverGradient: ['p', 'c'],
-    bsnpCompliant: true,
-    previewBlocks: [
-      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
-      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Struktur' }, { type: 'flashcard-set', icon: '🃏', label: 'Flashcard' }] },
-      { templateType: 'game', label: 'Latihan', blocks: [{ type: 'fill-blank-game', icon: '✏️', label: 'Isian' }] },
-      { templateType: 'game', label: 'Kuis', blocks: [{ type: 'kuis', icon: '❓', label: 'Pilihan Ganda' }] },
-      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'diskusi', icon: '💬', label: 'Diskusi' }, { type: 'refleksi', icon: '📝', label: 'Refleksi' }] },
-    ],
-    tags: ['bahasa indonesia', 'narasi', 'menulis', 'cerita'],
-    scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
-      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set'], sceneType: 'concept' },
-      { templateType: 'game', label: 'Latihan', suggestedBlocks: ['fill-blank-game'], sceneType: 'practice' },
-      { templateType: 'game', label: 'Kuis', suggestedBlocks: ['kuis'], sceneType: 'assessment' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['diskusi', 'refleksi'], sceneType: 'reflection' },
-    ],
-    metadata: { icon: '📖', author: 'SILSE', version: '2.1.0' },
-  },
-
-  {
-    id: 'ppkn-norma-masyarakat',
-    name: 'Norma dalam Masyarakat',
-    subtitle: 'PPKn Kelas 7 - Semester 1',
-    description: 'Kenali berbagai norma yang berlaku di masyarakat melalui sortir game, roda game, dan kuis. Template interaktif untuk kelas 7 semester 1.',
-    subject: 'PPKn',
-    grade: '7',
-    semester: '1',
-    theme: 'hakikat-norma',
-    color: 'amber',
-    pattern: 'interaktif',
-    coverGradient: ['y', 'g'],
-    bsnpCompliant: true,
-    previewBlocks: [
-      { templateType: 'cover', label: 'Cover', blocks: [{ type: 'cover', icon: '🏠', label: 'Cover' }] },
-      { templateType: 'materi', label: 'Materi', blocks: [{ type: 'def-box', icon: '📖', label: 'Definisi' }, { type: 'nc-grid', icon: '🔲', label: 'Jenis Norma' }] },
-      { templateType: 'game', label: 'Sortir Game', blocks: [{ type: 'sortir-game', icon: '🔀', label: 'Klasifikasi Norma' }] },
-      { templateType: 'game', label: 'Roda Game', blocks: [{ type: 'roda-game', icon: '🎡', label: 'Roda Pertanyaan' }, { type: 'kuis', icon: '❓', label: 'Kuis' }] },
-      { templateType: 'refleksi', label: 'Refleksi', blocks: [{ type: 'refleksi', icon: '📝', label: 'Refleksi' }] },
-    ],
-    tags: ['ppkn', 'norma', 'hukum', 'masyarakat'],
-    scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], sceneType: 'intro' },
-      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['def-box', 'nc-grid'], sceneType: 'concept' },
-      { templateType: 'game', label: 'Sortir Game', suggestedBlocks: ['sortir-game'], sceneType: 'practice' },
-      { templateType: 'game', label: 'Roda Game', suggestedBlocks: ['roda-game', 'kuis'], sceneType: 'practice' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], sceneType: 'reflection' },
-    ],
-    metadata: { icon: '⚖️', author: 'SILSE', version: '2.1.0' },
+    metadata: { icon: '📋', author: 'SILSE', version: '1.0.0' },
   },
 ];
-
-// ═══════════════════════════════════════════════════════════════════
-// SCHEMA FACTORIES — Bridge to marketplace-templates.ts
-// ═══════════════════════════════════════════════════════════════════
-// TODO (Phase 3): Convert schemaFactory closures to preset files,
-// then delete marketplace-templates.ts entirely.
-
-import type { LessonSchema } from '@/core/schema/types';
-
-/** @internal Lazy-loaded schema factories from marketplace-templates */
-const _schemaFactories: Map<string, () => LessonSchema> = new Map();
-
-/**
- * Register a schema factory for a template ID.
- * Called during initialization to bridge marketplace schema factories.
- */
-export function registerSchemaFactory(id: string, factory: () => LessonSchema): void {
-  _schemaFactories.set(id, factory);
-}
-
-/**
- * Get a schema factory by template ID.
- * Returns undefined if no factory is registered (template uses presetId instead).
- */
-export function getSchemaFactory(id: string): (() => LessonSchema) | undefined {
-  return _schemaFactories.get(id);
-}
-
-// ── Initialize marketplace schema factories ─────────────────────
-// Lazy import to avoid circular deps; runs once at module load.
-import { MARKETPLACE_TEMPLATES as _MP_TEMPLATES } from '@/core/templates/marketplace-templates';
-for (const tmpl of _MP_TEMPLATES) {
-  registerSchemaFactory(tmpl.id, tmpl.schemaFactory);
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // REGISTRY — Map-based lookup
@@ -668,103 +567,26 @@ export function getCourseTemplatesFiltered(subject?: string, grade?: string): Co
 /**
  * Create a full CanvaPage[] array from a Course Template.
  *
- * 2-Level Content Pipeline (Level 2 FROZEN since SILSE v2.1):
- *   Level 1 (presetId): If the template has a presetId, load the handcrafted
- *     LessonSchema from src/presets/ and convert it to CanvaPages using
- *     schemaToCanvaPages(). This produces rich, pedagogically-structured content
- *     with real scenarios, definitions, quizzes, etc.
- *   Level 3 (empty shell): Falls back to createPageFromPreset() which creates
- *     pages with default block structure but minimal content.
+ * For each scene in the template:
+ *   1. Creates a page using createPageFromPreset (existing preset system)
+ *   2. The preset's create() factory populates page.schema with default blocks
+ *   3. The suggested blocks in the template are hints — the preset already
+ *      creates appropriate default blocks for the template type.
+ *   4. Sets page label from the scene spec
  *
- * ❄️ Level 2 (SUBJECT_MOCK_DATA + generators) was FROZEN and disconnected.
- *    All templates should provide a presetId for rich content.
- *
- * User never sees the difference — all levels produce valid CanvaPage[].
+ * Note: The existing createPageFromPreset already creates schema-native pages
+ * with appropriate default blocks. The suggestedBlocks field serves as
+ * documentation and potential future "add more blocks" functionality.
  */
-export async function createProjectFromTemplate(
+export function createProjectFromTemplate(
   templateId: string,
   metadata: ProjectMetadata,
-): Promise<CanvaPage[]> {
+): CanvaPage[] {
   const template = _registry.get(templateId);
   if (!template) {
     throw new Error(`Course template "${templateId}" not found`);
   }
 
-  // ── LEVEL 1: Handcrafted preset pipeline ──────────────────────
-  // If the template links to a premium preset, use it directly.
-  // This produces rich, real educational content instead of empty shells.
-  if (template.presetId) {
-    try {
-      const { loadPreset, schemaToCanvaPages } = await import('@/core/engine/SchemaEngine.utils');
-      const schema = await loadPreset(template.presetId);
-      if (schema) {
-        const rawPages = schemaToCanvaPages(schema);
-
-        // Wrap into full CanvaPage objects (same logic as schema-preset-slice)
-        const { generatePageId } = await import('@/core/schema/ensure-schema');
-        const { DEFAULT_NAV_CONFIG } = await import('@/components/canva/types');
-        const pages: CanvaPage[] = rawPages.map((raw, i) => {
-          // Inject metadata into cover page
-          if (i === 0 && raw.templateType === 'cover') {
-            // Override title with user-provided title
-            const screenData = raw.templateData?.schemaScreen as Record<string, unknown> | undefined;
-            if (screenData && metadata.title) {
-              const blocks = screenData.blocks as Array<Record<string, unknown>> | undefined;
-              if (blocks && blocks.length > 0) {
-                blocks[0] = { ...blocks[0], title: metadata.title };
-                if (metadata.guru || metadata.sekolah) {
-                  const meta = { ...((blocks[0].meta as Record<string, string>) || {}) };
-                  if (metadata.guru) meta.elemen = metadata.guru;
-                  if (metadata.sekolah) meta.fase = metadata.sekolah;
-                  blocks[0] = { ...blocks[0], meta };
-                }
-              }
-            }
-          }
-
-          return {
-            id: raw.id || generatePageId(),
-            label: raw.label,
-            bgDataUrl: null,
-            bgColor: raw.bgColor || '#ffffff',
-            overlay: 20,
-            elements: [],
-            templateType: (raw.templateType || 'custom') as CanvaPage['templateType'],
-            colorPalette: null,
-            navConfig: { ...DEFAULT_NAV_CONFIG },
-            templateData: raw.templateData,
-            schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
-          } as CanvaPage;
-        });
-
-        // Cover pages should show navbar + progress
-        if (pages.length > 0 && pages[0]!.templateType === 'cover') {
-          pages[0]!.navConfig = {
-            ...pages[0]!.navConfig,
-            showNavbar: true,
-            showProgress: true,
-          };
-        }
-
-        return pages;
-      }
-    } catch (err) {
-      // Level 1 failed — fall through to Level 3
-      console.warn(`[Pipeline] Level 1 preset "${template.presetId}" failed, falling back to Level 3:`, err);
-    }
-  }
-
-  // ── LEVEL 2: FROZEN — template-gallery pipeline disconnected ────
-  // ❄️ Since SILSE v2.1, the Level 2 pipeline (SUBJECT_MOCK_DATA +
-  //    schema generators from template-gallery.ts) has been FROZEN.
-  //    All templates now go directly from Level 1 (preset) → Level 3 (empty shell).
-  //    See: src/core/template/template-gallery.ts (FROZEN)
-  //    See: src/core/templates/marketplace-templates.ts (FROZEN)
-  //
-  //    When new templates need generated content, they should get a
-  //    proper presetId (Level 1) instead of relying on mock data.
-
-  // ── LEVEL 3: Empty shell pipeline (last resort) ──────────────────
   const pages: CanvaPage[] = [];
 
   for (let i = 0; i < template.scenes.length; i++) {
@@ -849,65 +671,6 @@ export function resolveSceneType(spec: SceneTemplateSpec): SceneType {
   const mapped = TEMPLATE_TO_SCENE[spec.templateType];
   if (mapped) return mapped;
   return 'concept'; // default fallback
-}
-
-/**
- * Get unique subject list from all templates (IDs only).
- */
-export function getSubjectList(): string[] {
-  const subjects = new Set<string>();
-  for (const t of getAllCourseTemplates()) {
-    if (t.subject !== '*') subjects.add(t.subject);
-  }
-  return Array.from(subjects);
-}
-
-/**
- * Get subject display label from subject ID.
- * Looks up the SUBJECTS config for a human-readable label.
- */
-export function getSubjectLabel(subjectId: string): string {
-  const cfg = SUBJECTS.find(s => s.id === subjectId);
-  return cfg?.label ?? subjectId;
-}
-
-/**
- * Get all subjects with full config (for marketplace filter UI).
- */
-export function getSubjectListDetailed(): SubjectConfig[] {
-  const usedSubjects = new Set<string>();
-  for (const t of getAllCourseTemplates()) {
-    if (t.subject !== '*') usedSubjects.add(t.subject);
-  }
-  return SUBJECTS.filter(s => usedSubjects.has(s.id));
-}
-
-/**
- * Get all block types used across a template's scenes.
- */
-export function getTemplateBlockTypes(templateId: string): string[] {
-  const template = _registry.get(templateId);
-  if (!template) return [];
-  const blockTypes = new Set<string>();
-  for (const scene of template.scenes) {
-    for (const block of scene.suggestedBlocks) {
-      blockTypes.add(block);
-    }
-  }
-  return Array.from(blockTypes);
-}
-
-/**
- * Get page preview info for a template — derived from scenes.
- */
-export function getPagePreview(templateId: string): Array<{ type: PageTemplateType; title: string; description: string }> {
-  const template = _registry.get(templateId);
-  if (!template) return [];
-  return template.scenes.map(scene => ({
-    type: scene.templateType,
-    title: scene.label,
-    description: scene.suggestedBlocks.join(', '),
-  }));
 }
 
 /**

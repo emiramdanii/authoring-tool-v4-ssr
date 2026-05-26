@@ -36,6 +36,8 @@ export { EDU_DENSITY, EDU_GRAMMAR, EDU_PRINT_SAFE } from './education-layout-rul
 // ── Layer 3: Component Grammar ──────────────────────────────
 export { EDU_COMPONENTS, getEduComponentForBlock, type EduComponentRole, type EduComponentIdentity } from './education-components';
 export { EduRenderingContext, createEduContext } from './EduRenderingContext';
+export { EduComponentShell, EduInlineSection, type EduComponentShellProps, type EduInlineSectionProps } from './EduComponentShell';
+
 // ── Layer 4: Interaction Language ───────────────────────────
 export { EDU_MOTION, eduTransitionStyle, eduEntranceStyle } from './education-motion';
 

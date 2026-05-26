@@ -370,3 +370,63 @@ export function resolveEduTypographySceneCompact(
   }
   return resolved;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// HELPER: Scene-aware typography resolution
+// ═══════════════════════════════════════════════════════════════
+// Applies scene-specific overrides to the base typography.
+// The override adjusts px/weight for the scene's emotional needs.
+
+export function resolveEduTypographyScene(
+  key: EduTypographyKey,
+  sceneType: SceneType,
+  mode: EduDisplayMode = 'classroom',
+): ReturnType<typeof resolveEduTypography> {
+  const base = EDU_TYPOGRAPHY[key];
+  const override = SCENE_TYPOGRAPHY_OVERRIDES[sceneType][key];
+  const scale = EDU_MODE_SCALE[mode];
+
+  // Apply overrides if they exist for this key in this scene
+  const px = override?.px ?? base.px;
+  const maxPx = override?.maxPx ?? base.maxPx;
+  const weight = override?.weight ?? base.weight;
+  const minPx = override?.minPx ?? base.minPx;
+
+  const scaledPx = Math.round(px * scale);
+  const finalPx = Math.max(scaledPx, minPx);
+  // Also cap at maxPx * scale
+  const cappedPx = Math.min(finalPx, Math.round(maxPx * scale));
+
+  return {
+    fontSize: `${cappedPx}px`,
+    fontWeight: weight,
+    lineHeight: base.lineHeight,
+    letterSpacing: `${base.letterSpacing}em`,
+    fontFamily: base.fontFamily === 'display'
+      ? "var(--font-fredoka), 'Fredoka', cursive"
+      : "var(--font-nunito), 'Nunito', sans-serif",
+  };
+}
+
+/**
+ * Scene-aware + compact-aware typography resolution.
+ * This is the primary function that EduRenderingContext should use.
+ */
+export function resolveEduTypographySceneCompact(
+  key: EduTypographyKey,
+  sceneType: SceneType,
+  isCompact: boolean,
+  mode: EduDisplayMode = 'classroom',
+): ReturnType<typeof resolveEduTypography> {
+  const resolved = resolveEduTypographyScene(key, sceneType, mode);
+  if (isCompact) {
+    const base = EDU_TYPOGRAPHY[key];
+    const override = SCENE_TYPOGRAPHY_OVERRIDES[sceneType][key];
+    const minPx = override?.minPx ?? base.minPx;
+    return {
+      ...resolved,
+      fontSize: `${minPx}px`,
+    };
+  }
+  return resolved;
+}
