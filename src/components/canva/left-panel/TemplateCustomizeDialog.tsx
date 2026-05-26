@@ -101,7 +101,7 @@ export default function TemplateCustomizeDialog({
 
   // Toggle a page on/off
   const togglePage = useCallback((index: number) => {
-    setConfig(prev => {
+    setConfig((prev: TemplateCustomization) => {
       const next = [...prev.enabledPages];
       // Cover and penutup cannot be disabled
       if (template.pageTypes[index] === 'cover' || template.pageTypes[index] === 'penutup') {
@@ -114,7 +114,7 @@ export default function TemplateCustomizeDialog({
 
   // Update jumlah kuis
   const adjustJumlahKuis = useCallback((delta: number) => {
-    setConfig(prev => ({
+    setConfig((prev: TemplateCustomization) => ({
       ...prev,
       jumlahKuis: Math.max(3, Math.min(20, prev.jumlahKuis + delta)),
     }));
@@ -122,15 +122,15 @@ export default function TemplateCustomizeDialog({
 
   // Set variant
   const setVariant = useCallback((v: 'A' | 'B' | 'C') => {
-    setConfig(prev => ({ ...prev, variant: v }));
+    setConfig((prev: TemplateCustomization) => ({ ...prev, variant: v }));
   }, []);
 
   // Update guru/sekolah
   const setGuru = useCallback((v: string) => {
-    setConfig(prev => ({ ...prev, guru: v || undefined }));
+    setConfig((prev: TemplateCustomization) => ({ ...prev, guru: v || undefined }));
   }, []);
   const setSekolah = useCallback((v: string) => {
-    setConfig(prev => ({ ...prev, sekolah: v || undefined }));
+    setConfig((prev: TemplateCustomization) => ({ ...prev, sekolah: v || undefined }));
   }, []);
 
   // Apply

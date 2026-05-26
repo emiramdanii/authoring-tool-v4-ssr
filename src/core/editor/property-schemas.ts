@@ -778,3 +778,121 @@ export const TEAMBUZZERGAME_PROPERTY_SCHEMA: PropertySchema = {
 //
 // The named exports (COVER_PROPERTY_SCHEMA, etc.) remain for
 // SceneRegistry to import and attach to BlockDefinition.propertySchema.
+
+// ── Additional Block Type Property Schemas ────────────────────────
+// These schemas were added for blocks that have standalone renderers
+// (gambar, timeline, compare, reveal, tabel, checklist, statistik,
+// studi, materi-blok) but were missing from the original set.
+
+export const GAMBAR_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'gambar',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'url', type: 'text', label: 'URL Gambar', group: 'content', required: true },
+    { key: 'caption', type: 'text', label: 'Keterangan', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const TIMELINE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'timeline',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const COMPARE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'compare',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const REVEAL_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'reveal',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'coverIcon', type: 'text', label: 'Ikon Sampul', group: 'content' },
+    { key: 'coverText', type: 'text', label: 'Teks Sampul', group: 'content' },
+    { key: 'revealContent', type: 'text', label: 'Konten Reveal', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const TABEL_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'tabel',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const CHECKLIST_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'checklist',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const STATISTIK_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'statistik',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const STUDI_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'studi',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'karakter', type: 'text', label: 'Karakter', group: 'content' },
+    { key: 'situasi', type: 'text', label: 'Situasi', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};
+
+export const MATERIBLOK_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'materi-blok',
+  groups: [{ key: 'content', label: 'Konten', icon: 'Type' }],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'content' },
+    { key: 'tipe', type: 'select', label: 'Tipe', group: 'content', options: [
+      { label: 'Paragraf', value: 'teks' },
+      { label: 'Definisi', value: 'definisi' },
+      { label: 'Poin', value: 'poin' },
+      { label: 'Tabel', value: 'tabel' },
+      { label: 'Kutipan', value: 'kutipan' },
+      { label: 'Gambar', value: 'gambar' },
+      { label: 'Timeline', value: 'timeline' },
+      { label: 'Highlight', value: 'highlight' },
+      { label: 'Perbandingan', value: 'compare' },
+      { label: 'Info', value: 'infobox' },
+      { label: 'Checklist', value: 'checklist' },
+      { label: 'Statistik', value: 'statistik' },
+      { label: 'Studi Kasus', value: 'studi' },
+    ] },
+    { key: 'judul', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'isi', type: 'text', label: 'Isi', group: 'content' },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
+  ],
+};

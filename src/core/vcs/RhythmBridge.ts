@@ -26,12 +26,11 @@
  */
 
 import type { ScreenSchema } from '../schema/types';
-import type { ResolvedSectionPreset, ScreenRhythm, CompositionReport } from '../vcs/types';
+import type { ResolvedSectionPreset, ScreenRhythm, CompositionAnalysis } from '../vcs/types';
 
 import { resolveSectionPreset } from '../vcs/resolver';
-import { resolveScreenRhythm, getRhythmGapArray } from '../vcs/TransitionRhythmEngine';
-import { analyzeComposition, quickCompositionScore } from '../vcs/CompositionAnalyzer';
-import { computePerBlockGaps } from '../scene/SceneLayoutEngine';
+import { resolveScreenRhythm, computePerBlockGaps } from '../vcs/TransitionRhythmEngine';
+import { analyzeComposition } from '../vcs/CompositionAnalyzer';
 
 // ═══════════════════════════════════════════════════════════════
 // RHYTHM BRIDGE RESULT
@@ -61,14 +60,14 @@ export interface VCSResolution {
 }
 
 /**
- * Extended VCS resolution with full CompositionReport.
+ * Extended VCS resolution with full CompositionAnalysis.
  *
  * Use this when you need the full diagnostics (for Visual Linter UI).
  * For layout-only usage, `resolveVCSForScreen()` is sufficient.
  */
 export interface VCSResolutionWithReport extends VCSResolution {
-  /** Full composition report with diagnostics */
-  report: CompositionReport;
+  /** Full composition analysis with diagnostics */
+  report: CompositionAnalysis;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -106,13 +105,14 @@ export function resolveVCSForScreen(screen: ScreenSchema): VCSResolution {
   const resolved = resolveSectionPreset(screen);
 
   // Step 2: Resolve screen rhythm (FASE 11A.2)
-  const rhythm = resolveScreenRhythm(screen, resolved);
+  const rhythm = resolveScreenRhythm(screen.blocks, screen.templateType, screen.sectionType);
 
   // Step 3: Compute per-block gaps for layout engine consumption
-  const perBlockGaps = computePerBlockGaps(screen.blocks, rhythm);
+  const perBlockGaps = computePerBlockGaps(screen.blocks, screen.templateType, screen.sectionType);
 
   // Step 4: Quick composition score (FASE 11A.3)
-  const compositionScore = quickCompositionScore(screen, resolved, rhythm);
+  const analysis = analyzeComposition(screen.blocks);
+  const compositionScore = analysis.score;
 
   return {
     resolved,
@@ -123,7 +123,7 @@ export function resolveVCSForScreen(screen: ScreenSchema): VCSResolution {
 }
 
 /**
- * Resolves all VCS data including the full CompositionReport.
+ * Resolves all VCS data including the full CompositionAnalysis.
  *
  * Use this when you need the complete diagnostics (for Visual Linter UI).
  * This is slightly more expensive than resolveVCSForScreen() because
@@ -134,15 +134,15 @@ export function resolveVCSForScreen(screen: ScreenSchema): VCSResolution {
  */
 export function resolveVCSForScreenFull(screen: ScreenSchema): VCSResolutionWithReport {
   const resolved = resolveSectionPreset(screen);
-  const rhythm = resolveScreenRhythm(screen, resolved);
-  const perBlockGaps = computePerBlockGaps(screen.blocks, rhythm);
-  const report = analyzeComposition(screen, resolved, rhythm);
+  const rhythm = resolveScreenRhythm(screen.blocks, screen.templateType, screen.sectionType);
+  const perBlockGaps = computePerBlockGaps(screen.blocks, screen.templateType, screen.sectionType);
+  const report = analyzeComposition(screen.blocks);
 
   return {
     resolved,
     rhythm,
     perBlockGaps,
-    compositionScore: report.compositionScore,
+    compositionScore: report.score,
     report,
   };
 }

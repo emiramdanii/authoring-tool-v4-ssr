@@ -28,7 +28,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { IconRail, type LeftPanelTab } from './left-panel/IconRail';
+import { IconRail } from './left-panel/IconRail';
+import type { LeftTab } from './types';
 import { SceneList } from './left-panel/SceneList';
 import { AddBlockSection } from './left-panel/AddBlockSection';
 import { TemplateSection } from './left-panel/TemplateSection';
@@ -67,7 +68,7 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 export default function LeftPanel() {
   // Sync activeTab with store's leftTab — single source of truth
   const storeLeftTab = useCanvaStore(s => s.leftTab);
-  const [activeTab, setActiveTab] = useState<LeftPanelTab>(storeLeftTab);
+  const [activeTab, setActiveTab] = useState<LeftTab>(storeLeftTab);
   const [addBlockOpen, setAddBlockOpen] = useState(true);
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -84,12 +85,12 @@ export default function LeftPanel() {
   useEffect(() => {
     if (storeLeftTab !== prevStoreTab.current) {
       prevStoreTab.current = storeLeftTab;
-      setActiveTab(storeLeftTab);
+      setActiveTab(storeLeftTab as LeftTab);
       if (!expanded) toggleLeftPanel();
     }
   }, [storeLeftTab, expanded, toggleLeftPanel]);
 
-  const handleTabChange = (tab: LeftPanelTab) => {
+  const handleTabChange = (tab: LeftTab) => {
     if (activeTab === tab && expanded) {
       // Clicking same tab collapses the panel
       toggleLeftPanel();

@@ -101,7 +101,6 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
     editable: true, resizable: false, movable: false,
     backgroundCustom: false, interactive: false, autoGeneratable: true,
     composite: false, variants: ['A'], handlesCompression: false,
-    hasTabs: false,
   };
   const blockName = definition?.name ?? blockType;
   const blockIcon = definition?.icon ?? '?';

@@ -141,8 +141,8 @@ export type { IntegrityStatus, IntegrityCheckResult } from '../../schema/snapsho
 export { SafeModeManager, safeModeManager } from '../../renderer/safe-mode';
 export type { BlockCrashRecord, SafeModeLevel, SafeModeStatus } from '../../renderer/safe-mode';
 
-// ── Block Error Boundary + Safe Mode Wrapper (FASE 6) ──
-export { BlockErrorBoundary, SafeModePlaceholder, SafeModeWrapper } from '../../renderer/BlockErrorBoundary';
+// ── Block Error Boundary (FASE 6) ──
+export { BlockErrorBoundary } from '../../renderer/BlockErrorBoundary';
 
 // ── Boot Recovery Orchestrator (FASE 6: Unified Boot Sequence) ──
 export { BootRecoveryOrchestrator, bootRecoveryOrchestrator } from '../boot-recovery';

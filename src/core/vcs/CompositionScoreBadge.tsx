@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import type { VisualLintResult, LintDiagnostic } from '../../core/vcs/types';
-import { gradeToColor, gradeToLabel } from '../../core/vcs/VisualLinter';
+import type { VisualLinterResult } from '../../core/vcs/types';
 
 // ═══════════════════════════════════════════════════════════════
 // COMPOSITION SCORE BADGE — Passive quality indicator
@@ -25,7 +24,7 @@ import { gradeToColor, gradeToLabel } from '../../core/vcs/VisualLinter';
 
 interface CompositionScoreBadgeProps {
   /** The lint result to display */
-  result: VisualLintResult;
+  result: VisualLinterResult;
   /** Whether in compact (canvas) mode */
   isCompact: boolean;
   /** Whether the diagnostic panel is open */
@@ -43,11 +42,11 @@ export const CompositionScoreBadge = React.memo(function CompositionScoreBadge({
   // Only show in canvas mode
   if (!isCompact) return null;
 
-  const { compositionScore, grade, diagnosticCounts } = result;
-  const color = gradeToColor(grade);
-  const label = gradeToLabel(grade);
-  const hasWarnings = diagnosticCounts.warning > 0;
-  const isLow = grade === 'poor' || grade === 'bad';
+  const { score: compositionScore, grade, counts, warnings } = result;
+  const color = grade === 'A' ? '#10b981' : grade === 'B' ? '#3b82f6' : grade === 'C' ? '#f59e0b' : grade === 'D' ? '#f97316' : '#ef4444';
+  const label = grade === 'A' ? 'Sangat Baik' : grade === 'B' ? 'Baik' : grade === 'C' ? 'Cukup' : grade === 'D' ? 'Kurang' : 'Buruk';
+  const hasWarnings = counts.warning > 0;
+  const isLow = grade === 'D' || grade === 'F';
 
   return (
     <button
@@ -114,7 +113,7 @@ export const CompositionScoreBadge = React.memo(function CompositionScoreBadge({
 
 interface DiagnosticPanelProps {
   /** The lint result to display */
-  result: VisualLintResult;
+  result: VisualLinterResult;
   /** Whether the panel is open */
   isOpen: boolean;
   /** Whether in compact (canvas) mode */
@@ -139,19 +138,15 @@ export const DiagnosticPanel = React.memo(function DiagnosticPanel({
   if (!isOpen || !isCompact) return null;
 
   const {
-    compositionScore,
+    score: compositionScore,
     grade,
-    cadenceScore,
-    balanceScore,
-    densityScore,
-    intentScore,
-    sequenceScore,
-    diagnostics,
-    diagnosticCounts,
-    hasFatalIssue,
+    categories,
+    warnings: diagnostics,
+    counts: diagnosticCounts,
   } = result;
+  const hasFatalIssue = diagnosticCounts.error > 0;
 
-  const color = gradeToColor(grade);
+  const color = grade === 'A' ? '#10b981' : grade === 'B' ? '#3b82f6' : grade === 'C' ? '#f59e0b' : grade === 'D' ? '#f97316' : '#ef4444';
   const visibleDiagnostics = showAll ? diagnostics : diagnostics.slice(0, MAX_VISIBLE_DIAGNOSTICS);
   const hasMore = diagnostics.length > MAX_VISIBLE_DIAGNOSTICS && !showAll;
 
@@ -178,14 +173,8 @@ export const DiagnosticPanel = React.memo(function DiagnosticPanel({
 
         {/* Mini score bars */}
         <div className="grid grid-cols-5 gap-1">
-          {[
-            { label: 'Ritme', score: cadenceScore },
-            { label: 'Balance', score: balanceScore },
-            { label: 'Density', score: densityScore },
-            { label: 'Intent', score: intentScore },
-            { label: 'Sequence', score: sequenceScore },
-          ].map(item => (
-            <div key={item.label} className="flex flex-col items-center gap-0.5">
+          {categories.map(item => (
+            <div key={item.category} className="flex flex-col items-center gap-0.5">
               <div className="w-full h-1 rounded-full bg-black/10 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-300"
@@ -195,7 +184,7 @@ export const DiagnosticPanel = React.memo(function DiagnosticPanel({
                   }}
                 />
               </div>
-              <span className="text-[6px] text-app-muted">{item.label}</span>
+              <span className="text-[6px] text-app-muted">{item.category}</span>
             </div>
           ))}
         </div>
@@ -204,7 +193,7 @@ export const DiagnosticPanel = React.memo(function DiagnosticPanel({
       {/* ── Diagnostics List ── */}
       {diagnostics.length > 0 ? (
         <div className="px-2 py-1.5">
-          {visibleDiagnostics.map((d, i) => {
+          {visibleDiagnostics.map((d: { severity: string; code: string; message: string; suggestion?: string }, i: number) => {
             const sev = SEVERITY_STYLES[d.severity] ?? SEVERITY_STYLES.info;
             return (
               <div

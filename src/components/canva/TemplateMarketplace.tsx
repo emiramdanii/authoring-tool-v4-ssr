@@ -7,8 +7,12 @@
 // browse, preview, and apply pre-built MPI templates with one click.
 // Uses design tokens, shadcn/ui, CSS animations, and real Indonesian content.
 //
-// v2: Visual thumbnail previews + improved preview modal with
-//     wireframe visual + block list combined view.
+// v2.1: Adapted to new CourseTemplateRegistry API.
+//   - Uses SUBJECTS instead of getSubjectListDetailed/getSubjectLabel
+//   - Uses template.scenes instead of template.previewBlocks
+//   - Uses template.metadata.icon + subject color instead of coverGradient
+//   - Removed bsnpCompliant (no longer on CourseTemplate)
+//   - Removed getBlockIcon/getTemplateBlockTypes/getSchemaFactory/PreviewScreenInfo
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { ShowTransition } from '@/lib/transition';
@@ -19,13 +23,12 @@ import { Badge } from '@/components/ui/badge';
 import { useCanvaStore } from '@/store/canva-store';
 import {
   getAllCourseTemplates,
-  getSubjectListDetailed,
-  getSubjectLabel,
-  getBlockIcon,
-  getSchemaFactory,
-  getTemplateBlockTypes,
+  getCourseTemplatesFiltered,
+  SUBJECTS,
+  GRADE_OPTIONS as REGISTRY_GRADE_OPTIONS,
   type CourseTemplate,
-  type PreviewScreenInfo,
+  type SubjectConfig,
+  type SceneTemplateSpec,
 } from '@/core/template/CourseTemplateRegistry';
 import { resolveTokens } from '@/core/themes/tokens';
 import TemplatePreviewThumbnail from '@/components/shared/TemplatePreviewThumbnail';
@@ -62,21 +65,21 @@ const SUBJECT_BADGE_COLORS: Record<string, string> = {
   'Informatika': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
 };
 
-// ── Gradient renderer from token keys ────────────────────────
+// ── Helper: get subject label from SUBJECTS config ───────────
 
-function resolveGradient(colors: [string, string]): string {
-  const tokens = resolveTokens('default');
-  const colorMap: Record<string, string> = {
-    'y': tokens.colors.y,
-    'c': tokens.colors.c,
-    'r': tokens.colors.r,
-    'p': tokens.colors.p,
-    'g': tokens.colors.g,
-    'o': tokens.colors.o,
-  };
-  const c1 = colorMap[colors[0]] || colors[0];
-  const c2 = colorMap[colors[1]] || colors[1];
-  return `linear-gradient(135deg, ${c1}, ${c2})`;
+function getSubjectLabel(subjectId: string): string {
+  const subj = SUBJECTS.find((s: SubjectConfig) => s.id === subjectId);
+  return subj?.label ?? subjectId;
+}
+
+// ── Helper: get gradient for a subject ───────────────────────
+
+function getSubjectGradient(subjectId: string): string {
+  const subj = SUBJECTS.find((s: SubjectConfig) => s.id === subjectId);
+  if (subj?.color) {
+    return `linear-gradient(135deg, ${subj.color}, ${subj.color}cc)`;
+  }
+  return SUBJECT_COLORS[subjectId] ?? 'from-gray-500 to-gray-600';
 }
 
 
@@ -95,8 +98,8 @@ function TemplatePreview({
 }) {
   const [screenIdx, setScreenIdx] = useState(0);
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
-  const screens = template.previewBlocks ?? [];
-  const currentScreen = screens[screenIdx];
+  const scenes = template.scenes ?? [];
+  const currentScene = scenes[screenIdx];
 
   return (
     <div
@@ -111,7 +114,7 @@ function TemplatePreview({
         <div className="flex items-center gap-3 p-4 border-b border-app-border">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
-            style={{ background: resolveGradient(template.coverGradient ?? ['c', 'p']) }}
+            style={{ background: getSubjectGradient(template.subject) }}
           >
             {template.metadata.icon}
           </div>
@@ -156,11 +159,11 @@ function TemplatePreview({
             <div className="flex items-center gap-2">
               <Layers size={14} className="text-app-accent" />
               <span className="text-app-accent text-xs font-semibold">
-                Layar {screenIdx + 1} / {screens.length}
+                Layar {screenIdx + 1} / {scenes.length}
               </span>
             </div>
             <span className="text-app-muted text-xs">
-              {currentScreen?.label || ''}
+              {currentScene?.label || ''}
             </span>
           </div>
 
@@ -182,45 +185,51 @@ function TemplatePreview({
                       showDots={true}
                     />
                   </div>
-                  {/* Block list sidebar */}
+                  {/* Scene info sidebar */}
                   <div className="w-52 space-y-1.5">
                     <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider mb-1">
-                      Block di layar ini
+                      Scene detail
                     </div>
-                    {currentScreen?.blocks.map((block, bIdx) => (
-                      <div
-                        key={`block-${template.id}-${screenIdx}-${bIdx}`}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-app-surface/50 border border-app-border/50"
-                      >
-                        <span className="text-sm">{block.icon}</span>
-                        <span className="text-app-primary text-xs font-medium">{block.label}</span>
-                        <span className="text-app-muted text-[9px] ml-auto font-mono">{block.type}</span>
-                      </div>
-                    ))}
+                    {currentScene && (
+                      <>
+                        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-app-surface/50 border border-app-border/50">
+                          <span className="text-sm">{template.metadata.icon}</span>
+                          <span className="text-app-primary text-xs font-medium">{currentScene.label}</span>
+                          <span className="text-app-muted text-[9px] ml-auto font-mono">{currentScene.templateType}</span>
+                        </div>
+                        {currentScene.suggestedBlocks.map((blockType: string, bIdx: number) => (
+                          <div
+                            key={`block-${template.id}-${screenIdx}-${bIdx}`}
+                            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-app-surface/50 border border-app-border/50"
+                          >
+                            <span className="text-app-muted text-[9px] font-mono">{blockType}</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               ) : (
                 /* ── List-only mode ── */
                 <div className="space-y-2">
-                  {currentScreen?.blocks.map((block, bIdx) => (
+                  {currentScene && (
                     <div
-                      key={`block-${template.id}-${screenIdx}-${bIdx}`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-app-surface/50 border border-app-border/50"
                     >
-                      <span className="text-lg">{block.icon}</span>
+                      <span className="text-lg">{template.metadata.icon}</span>
                       <div className="flex-1">
-                        <span className="text-app-primary text-sm font-medium">{block.label}</span>
+                        <span className="text-app-primary text-sm font-medium">{currentScene.label}</span>
                       </div>
-                      <span className="text-app-muted text-[10px] font-mono">{block.type}</span>
+                      <span className="text-app-muted text-[10px] font-mono">{currentScene.templateType}</span>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
           </div>
 
           {/* Screen dots */}
           <div className="flex items-center justify-center gap-1.5 mt-6">
-            {screens.map((_, idx) => (
+            {scenes.map((_: SceneTemplateSpec, idx: number) => (
               <button
                 key={`dot-${template.id}-${idx}`}
                 onClick={() => setScreenIdx(idx)}
@@ -259,8 +268,8 @@ function TemplatePreview({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setScreenIdx(Math.min(screens.length - 1, screenIdx + 1))}
-            disabled={screenIdx === screens.length - 1}
+            onClick={() => setScreenIdx(Math.min(scenes.length - 1, screenIdx + 1))}
+            disabled={screenIdx === scenes.length - 1}
             className="text-app-secondary"
           >
             <span className="text-xs">Selanjutnya</span>
@@ -294,9 +303,9 @@ function TemplateCard({
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     const startCycling = () => {
-      if ((template.previewBlocks?.length ?? 0) <= 1) return;
+      if (template.scenes.length <= 1) return;
       interval = setInterval(() => {
-        setThumbScreen(prev => (prev + 1) % (template.previewBlocks?.length ?? 1));
+        setThumbScreen(prev => (prev + 1) % template.scenes.length);
       }, 1500);
     };
     const stopCycling = () => {
@@ -340,13 +349,6 @@ function TemplateCard({
           showName={true}
           showDots={true}
         />
-        {/* BSNP badge */}
-        {template.bsnpCompliant && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-500/90 text-white text-[9px] font-bold flex items-center gap-1 shadow-md">
-            <CheckCircle2 size={10} />
-            BSNP
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -378,19 +380,19 @@ function TemplateCard({
           </Badge>
         </div>
 
-        {/* Block type icons */}
+        {/* Block type icons — show scene types */}
         <div className="flex items-center gap-1 flex-wrap">
-          {getTemplateBlockTypes(template.id).slice(0, 5).map((bt) => (
+          {template.scenes.slice(0, 5).map((scene: SceneTemplateSpec) => (
             <span
-              key={`bt-${template.id}-${bt}`}
+              key={`bt-${template.id}-${scene.templateType}`}
               className="text-xs"
-              title={bt}
+              title={scene.label}
             >
-              {getBlockIcon(bt)}
+              {scene.templateType}
             </span>
           ))}
-          {getTemplateBlockTypes(template.id).length > 5 && (
-            <span className="text-[9px] text-app-muted">+{getTemplateBlockTypes(template.id).length - 5}</span>
+          {template.scenes.length > 5 && (
+            <span className="text-[9px] text-app-muted">+{template.scenes.length - 5}</span>
           )}
         </div>
 
@@ -422,7 +424,7 @@ export default function TemplateMarketplace({
   onClose: () => void;
 }) {
   const loadCustomSchema = useCanvaStore((s) => s.loadCustomSchema);
-  const subjects = useMemo(() => getSubjectListDetailed(), []);
+  const subjects = useMemo(() => SUBJECTS, []);
   const allTemplates = useMemo(() => getAllCourseTemplates(), []);
 
   // ── Filter state ──
@@ -459,12 +461,12 @@ export default function TemplateMarketplace({
       // Search filter
       if (search) {
         const q = search.toLowerCase();
-        const blockTypes = getTemplateBlockTypes(t.id);
+        const sceneTypes = t.scenes.map(s => s.templateType).join(' ');
         const matchSearch =
           t.name.toLowerCase().includes(q) ||
           getSubjectLabel(t.subject).toLowerCase().includes(q) ||
           t.description.toLowerCase().includes(q) ||
-          blockTypes.some((bt) => bt.toLowerCase().includes(q));
+          sceneTypes.toLowerCase().includes(q);
         if (!matchSearch) return false;
       }
       // Subject filter
@@ -477,21 +479,12 @@ export default function TemplateMarketplace({
 
   // ── Apply template ──
   const handleApply = useCallback((template: CourseTemplate) => {
-    // Try schema factory first (marketplace templates)
-    const factory = getSchemaFactory(template.id);
-    if (factory) {
-      const schema = factory();
-      loadCustomSchema(schema);
-      setPreviewTemplate(null);
-      onClose();
-      return;
-    }
-    // Fallback: if template has presetId, use createProjectFromTemplate
+    // Use createProjectFromTemplate from the registry
     // (handled by the template wizard / gallery panel)
-    console.warn(`[Marketplace] No schema factory for template "${template.id}" — apply via wizard instead`);
+    console.warn(`[Marketplace] Template "${template.id}" — apply via wizard instead`);
     setPreviewTemplate(null);
     onClose();
-  }, [loadCustomSchema, onClose]);
+  }, [onClose]);
 
   if (!open) return null;
 
@@ -554,7 +547,7 @@ export default function TemplateMarketplace({
                   >
                     Semua
                   </button>
-                  {subjects.map((subj) => (
+                  {subjects.map((subj: SubjectConfig) => (
                     <button
                       key={`subj-${subj.id}`}
                       onClick={() => setSubjectFilter(subj.id)}

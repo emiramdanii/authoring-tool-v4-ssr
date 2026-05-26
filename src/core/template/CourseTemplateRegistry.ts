@@ -84,6 +84,27 @@ export interface ProjectMetadata {
   sekolah?: string;
 }
 
+// ── Template Pattern ───────────────────────────────────────────
+
+export type TemplatePattern = 'standar' | 'interaktif' | 'eksperimen' | 'mini';
+
+export const TEMPLATE_PATTERNS: Record<TemplatePattern, { icon: string; label: string; description: string; color: string }> = {
+  standar: { icon: '📖', label: 'Standar', description: 'Alur pembelajaran klasik', color: 'amber' },
+  interaktif: { icon: '🎮', label: 'Interaktif', description: 'Alur dengan skenario pilihan', color: 'emerald' },
+  eksperimen: { icon: '🔬', label: 'Eksperimen', description: 'Alur dengan praktikum/diskusi', color: 'sky' },
+  mini: { icon: '⚡', label: 'Mini', description: 'Alur singkat 3-5 halaman', color: 'violet' },
+};
+
+// ── Template Customization ─────────────────────────────────────
+
+export interface TemplateCustomization {
+  enabledPages: boolean[];
+  jumlahKuis: number;
+  variant: 'A' | 'B' | 'C';
+  guru?: string;
+  sekolah?: string;
+}
+
 // ── Subject Configuration ──────────────────────────────────────
 
 export interface SubjectConfig {

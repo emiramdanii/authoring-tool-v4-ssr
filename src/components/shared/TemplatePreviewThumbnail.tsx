@@ -4,22 +4,26 @@
 // TEMPLATE PREVIEW THUMBNAIL — Miniature visual preview for templates
 // ═══════════════════════════════════════════════════════════════════
 // Renders a compact wireframe-style thumbnail showing the structure
-// of a template's screens using colored rectangles and block icons.
-// Uses the template's theme colors for visual identity.
+// of a template's scenes using colored rectangles and scene labels.
+// Uses the template's subject color for visual identity.
+//
+// v2.1: Adapted to new CourseTemplate API (no previewBlocks/coverGradient).
+//   - Uses template.scenes instead of template.previewBlocks
+//   - Uses subject color from SUBJECTS instead of coverGradient
 
 import React from 'react';
-import type { CourseTemplate, PreviewScreenInfo } from '@/core/template/CourseTemplateRegistry';
-import { getSubjectLabel } from '@/core/template/CourseTemplateRegistry';
+import type { CourseTemplate, SubjectConfig } from '@/core/template/CourseTemplateRegistry';
+import { SUBJECTS } from '@/core/template/CourseTemplateRegistry';
 import { resolveTokens } from '@/core/themes/tokens';
 
 // ── Block type → visual category ───────────────────────────────
 type BlockCategory = 'cover' | 'content' | 'game' | 'navigation' | 'reflection';
 
-function categorizeBlock(type: string): BlockCategory {
-  if (type === 'cover') return 'cover';
-  if (type.endsWith('-game') || type === 'kuis' || type === 'skenario') return 'game';
-  if (type === 'refleksi' || type === 'diskusi') return 'reflection';
-  if (type === 'petunjuk' || type === 'alur' || type === 'tp' || type === 'tujuan-display') return 'navigation';
+function categorizeScene(templateType: string): BlockCategory {
+  if (templateType === 'cover' || templateType === 'penutup') return 'cover';
+  if (templateType === 'kuis' || templateType === 'skenario' || templateType.endsWith('-game')) return 'game';
+  if (templateType === 'refleksi' || templateType === 'diskusi') return 'reflection';
+  if (templateType === 'petunjuk' || templateType === 'alur' || templateType === 'tp' || templateType === 'tujuan-display' || templateType === 'dokumen') return 'navigation';
   return 'content';
 }
 
@@ -32,95 +36,73 @@ const CATEGORY_STYLES: Record<BlockCategory, { height: string; opacity: number; 
   reflection: { height: '14%', opacity: 0.45, radius: '1px 1px 3px 3px' },
 };
 
-// ── Resolve gradient to CSS string ─────────────────────────────
-function resolveGradientCSS(colors: [string, string]): string {
-  const tokens = resolveTokens('default');
-  const colorMap: Record<string, string> = {
-    y: tokens.colors.y,
-    c: tokens.colors.c,
-    r: tokens.colors.r,
-    p: tokens.colors.p,
-    g: tokens.colors.g,
-    o: tokens.colors.o,
-  };
-  const c1 = colorMap[colors[0]] || colors[0];
-  const c2 = colorMap[colors[1]] || colors[1];
-  return `linear-gradient(135deg, ${c1}, ${c2})`;
+// ── Resolve subject color to gradient CSS ──────────────────────
+function getSubjectGradientCSS(subjectId: string): string {
+  const subj = SUBJECTS.find((s: SubjectConfig) => s.id === subjectId);
+  if (subj?.color) {
+    return `linear-gradient(135deg, ${subj.color}, ${subj.color}cc)`;
+  }
+  return 'linear-gradient(135deg, #6366f1, #8b5cf6)';
 }
 
-// ── Resolve single token color ─────────────────────────────────
-function resolveColor(token: string): string {
-  const tokens = resolveTokens('default');
-  const colorMap: Record<string, string> = {
-    y: tokens.colors.y,
-    c: tokens.colors.c,
-    r: tokens.colors.r,
-    p: tokens.colors.p,
-    g: tokens.colors.g,
-    o: tokens.colors.o,
-  };
-  return colorMap[token] || token;
+// ── Resolve single subject color ───────────────────────────────
+function getSubjectColor(subjectId: string): string {
+  const subj = SUBJECTS.find((s: SubjectConfig) => s.id === subjectId);
+  return subj?.color ?? '#6366f1';
 }
 
-// ── Screen wireframe block ──────────────────────────────────────
-function ScreenBlock({
-  screen,
+// ── Helper: get subject label ──────────────────────────────────
+function getSubjectLabel(subjectId: string): string {
+  const subj = SUBJECTS.find((s: SubjectConfig) => s.id === subjectId);
+  return subj?.label ?? subjectId;
+}
+
+// ── Scene wireframe block ──────────────────────────────────────
+function SceneWireframe({
+  scene,
   gradient,
   accentColor,
 }: {
-  screen: PreviewScreenInfo;
+  scene: { templateType: string; label: string };
   gradient: string;
   accentColor: string;
 }) {
-  // Build mini wireframe blocks
-  const blocks = screen.blocks.map((block, i) => {
-    const category = categorizeBlock(block.type);
-    const style = CATEGORY_STYLES[category];
+  const category = categorizeScene(scene.templateType);
+  const style = CATEGORY_STYLES[category];
 
-    return (
-      <div
-        key={`sb-${i}`}
-        className="relative flex items-center gap-0.5 px-1 overflow-hidden"
-        style={{
-          height: style.height,
-          opacity: style.opacity,
-          borderRadius: style.radius,
-          background: category === 'cover'
-            ? gradient
-            : category === 'game'
-              ? `${accentColor}33`
-              : 'rgba(255,255,255,0.12)',
-        }}
-      >
-        <span className="text-[6px] leading-none shrink-0" style={{ opacity: 0.8 }}>
-          {block.icon}
-        </span>
-        {/* Text placeholder lines */}
-        <div className="flex-1 flex flex-col gap-px py-0.5">
+  return (
+    <div
+      className="relative flex items-center gap-0.5 px-1 overflow-hidden"
+      style={{
+        height: style.height,
+        opacity: style.opacity,
+        borderRadius: style.radius,
+        background: category === 'cover'
+          ? gradient
+          : category === 'game'
+            ? `${accentColor}33`
+            : 'rgba(255,255,255,0.12)',
+      }}
+    >
+      {/* Text placeholder lines */}
+      <div className="flex-1 flex flex-col gap-px py-0.5">
+        <div
+          className="h-px rounded-full"
+          style={{
+            width: `${50 + Math.random() * 30}%`,
+            background: 'rgba(255,255,255,0.3)',
+          }}
+        />
+        {category !== 'navigation' && (
           <div
             className="h-px rounded-full"
             style={{
-              width: `${50 + Math.random() * 30}%`,
-              background: 'rgba(255,255,255,0.3)',
+              width: `${30 + Math.random() * 25}%`,
+              background: 'rgba(255,255,255,0.15)',
             }}
           />
-          {category !== 'navigation' && (
-            <div
-              className="h-px rounded-full"
-              style={{
-                width: `${30 + Math.random() * 25}%`,
-                background: 'rgba(255,255,255,0.15)',
-              }}
-            />
-          )}
-        </div>
+        )}
       </div>
-    );
-  });
-
-  return (
-    <div className="flex flex-col gap-px w-full h-full">
-      {blocks}
     </div>
   );
 }
@@ -151,11 +133,12 @@ export default function TemplatePreviewThumbnail({
   showDots = true,
   activeScreen = 0,
 }: TemplatePreviewThumbnailProps) {
-  const gradient = resolveGradientCSS(template.coverGradient ?? ['c', 'p']);
-  const accentColor = resolveColor(template.coverGradient?.[0] ?? 'c');
-  const currentScreen = template.previewBlocks?.[activeScreen] ?? template.previewBlocks?.[0];
+  const gradient = getSubjectGradientCSS(template.subject);
+  const accentColor = getSubjectColor(template.subject);
+  const scenes = template.scenes ?? [];
+  const currentScene = scenes[activeScreen] ?? scenes[0];
 
-  if (!currentScreen) return null;
+  if (!currentScene) return null;
 
   return (
     <div
@@ -167,10 +150,10 @@ export default function TemplatePreviewThumbnail({
         background: 'rgba(0,0,0,0.4)',
       }}
     >
-      {/* Screen wireframe */}
+      {/* Scene wireframe */}
       <div className="absolute inset-0 p-1.5 flex items-stretch">
-        <ScreenBlock
-          screen={currentScreen}
+        <SceneWireframe
+          scene={currentScene}
           gradient={gradient}
           accentColor={accentColor}
         />
@@ -186,9 +169,9 @@ export default function TemplatePreviewThumbnail({
       )}
 
       {/* Screen dots */}
-      {showDots && template.previewBlocks && template.previewBlocks.length > 1 && (
+      {showDots && scenes.length > 1 && (
         <div className="absolute top-1.5 right-1.5 flex gap-0.5">
-          {template.previewBlocks.map((_, i) => (
+          {scenes.map((_: { templateType: string; label: string }, i: number) => (
             <div
               key={`dot-${i}`}
               className="rounded-full transition-all"
