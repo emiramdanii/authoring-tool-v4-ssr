@@ -80,3 +80,33 @@ Stage Summary:
 - Teacher mode hides developer info (capabilities, layout, block ID) by default
 - Footer action added for block deletion (was missing before)
 - Build verified — no new errors introduced
+
+---
+Task ID: 3
+Agent: main
+Task: Phase 2 (Functional) — Wire GuidedFormEditor to Right Panel + applyGuidedSchemaPatch as write path
+
+Work Log:
+- Audited current right panel code: BlockPropertiesPanel still using PropertySchema + updateSchemaBlock()
+- Confirmed Phase 2 UI redesign was done, but functional wiring was NOT — GuidedEditorSchema existed but wasn't connected
+- Created GuidedFormEditor.tsx: renders GuidedEditorSchema fields with sections, writes via applyGuidedSchemaPatch()
+- Created guided-field-renderer.tsx: 9 field types (text, textarea, richtext, color, icon, select, number, boolean, array) with teacher-friendly features:
+  - Required indicator (asterisk) on labels
+  - Help text shown inline
+  - Placeholder always visible
+  - MaxItems with visual feedback
+  - Richtext with insert markup (Bold/Italic/List toolbar)
+- Updated BlockPropertiesPanel.tsx: routes to GuidedFormEditor when hasGuidedEditor(blockType), falls back to SchemaDrivenEditor
+- Header changes: BookOpen icon + "Edit Konten" label for guided form, SlidersHorizontal + "Properties" for dev mode
+- Block type badge uses guidedSchema icon and displayName when available
+- Renamed dead code: block-properties/index.tsx → index.deprecated.tsx (old app-* style version)
+- Updated STATUS.md: all Phase 1 + Phase 2 tasks marked DONE
+- Build verified: npx next build ✓
+
+Stage Summary:
+- **GuidedFormEditor is now the primary editor** for 12 block types (cover, kuis, diskusi, refleksi, materi-section, def-box, nc-grid, tujuan-display, rangkuman, motivasi, petunjuk, penutup)
+- **applyGuidedSchemaPatch() is the write path** — no more updateSchemaBlock() for guided form edits
+- **Teacher mode**: sees content-focused fields with help text, no dev info
+- **Dev mode**: falls back to SchemaDrivenEditor with full property schema
+- Dead code cleaned up (old duplicate BlockPropertiesPanel marked deprecated)
+- Phase 2 is fully complete — ready for Phase 3 (Konten → Schema Navigator)

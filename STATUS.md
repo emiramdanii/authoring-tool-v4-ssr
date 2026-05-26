@@ -1,5 +1,5 @@
 # STATUS.md — Sumber Kebenaran Proyek SILSE
-> Terakhir diperbarui: 2026-05-26
+> Terakhir diperbarui: 2026-05-27
 > Prinsip: **Selesai satu, baru lanjut satu. Tidak numpuk.**
 
 ---
@@ -20,14 +20,15 @@
 
 | Task | Status | Fase |
 |---|---|---|
-| 0. Buat STATUS.md | 🔄 IN PROGRESS | Setup |
-| 1. applyGuidedSchemaPatch() | ⬜ PENDING | Phase 1 |
-| 2. getEditableSchemaBlocks() + getGuidedEditorSchema() | ⬜ PENDING | Phase 1 |
-| 3. Deprecate old write paths | ⬜ PENDING | Phase 1 |
-| 4. Guided form di Right Panel | ⬜ PENDING | Phase 2 |
-| 5. Konten.tsx → Schema Navigator | ⬜ PENDING | Phase 3 |
-| 6. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
-| 7. Cleanup dual source | ⬜ PENDING | Phase 5 |
+| 0. Buat STATUS.md | ✅ DONE | Setup |
+| 1. applyGuidedSchemaPatch() | ✅ DONE | Phase 1 |
+| 2. getEditableSchemaBlocks() + getGuidedEditorSchema() | ✅ DONE | Phase 1 |
+| 3. Deprecate old write paths | ✅ DONE | Phase 1 |
+| 4. Guided form di Right Panel (UI redesign) | ✅ DONE | Phase 2 |
+| 5. Guided form di Right Panel (functional) | ✅ DONE | Phase 2 |
+| 6. Konten.tsx → Schema Navigator | ⬜ PENDING | Phase 3 |
+| 7. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
+| 8. Cleanup dual source | ⬜ PENDING | Phase 5 |
 
 ---
 
@@ -41,11 +42,17 @@
 | TemplateThemeContract | `src/core/template/contract/TemplateThemeContract.ts` | Contract system |
 | GoldenPageRenderer | `src/core/renderer/GoldenPageRenderer.tsx` | Progress bar + phase badge |
 | Schema Apply API | `src/core/schema/schema-apply.ts` | applyBlocksToPages, transactions, split/merge |
-| BlockPropertiesPanel | `src/components/canva/right-panel/block-properties/` | Schema-driven |
-| SchemaDrivenEditor | `src/components/canva/right-panel/block-properties/SchemaDrivenEditor.tsx` | Dynamic form |
+| applyGuidedSchemaPatch() | `src/core/schema/guided-patch.ts` | Single write path ke schema, 12 block type registry |
+| getEditableSchemaBlocks() | `src/core/schema/guided-patch.ts` | List editable blocks dari schema |
+| getGuidedEditorSchema() | `src/core/schema/guided-patch.ts` | Field definitions per block type |
+| Deprecated sync-projection.ts | `src/core/schema/sync-projection.ts` | @deprecated + console.warn |
+| BlockPropertiesPanel (stitch v4) | `src/components/canva/right-panel/BlockPropertiesPanel.tsx` | Guided form routing |
+| GuidedFormEditor | `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` | Teacher-friendly content editor |
+| Guided Field Renderer | `src/components/canva/right-panel/block-properties/guided-field-renderer.tsx` | text/textarea/richtext/color/array/boolean/select/number/icon |
+| SchemaDrivenEditor | `src/components/canva/right-panel/block-properties/SchemaDrivenEditor.tsx` | Developer fallback editor |
 | CoverRenderer font fix | `src/core/renderer/blocks/CoverRenderer.tsx` | 12px→14px |
 | Schema immutable ops | `src/core/schema/immutable/` | produce, patch, split, merge |
-| Sync projection bridges | `src/core/schema/sync-projection.ts` | syncKuis/ToSchema (sementara) |
+| Sync projection bridges | `src/core/schema/sync-projection.ts` | syncKuis/ToSchema (sementara, deprecated) |
 | AuthoringStore deprecation notice | `src/store/authoring-store.ts` | Notice ada, belum migrasi |
 
 ---
@@ -78,16 +85,22 @@
 
 ## Catatan Per Fase
 
-### Phase 1 — Schema Editing Foundation
+### Phase 1 — Schema Editing Foundation ✅ DONE
 **Goal**: Schema jadi single write path untuk konten
 
 1. `applyGuidedSchemaPatch({ pageId, blockId, patch, overflowPolicy })` — fungsi utama
 2. `getEditableSchemaBlocks(page)` — list block yang bisa diedit
-3. `getGuidedEditorSchema(blockType)` — definisi field per block type
+3. `getGuidedEditorSchema(blockType)` — definisi field per block type (12 block types)
 4. Deprecate: syncKuisToSchema, syncMateriToSchema, dll → ganti dengan applyGuidedSchemaPatch
 
-### Phase 2 — Right Panel Guided Form
+### Phase 2 — Right Panel Guided Form ✅ DONE
 **Goal**: Setiap block type punya guided editor yang ramah guru
+
+- UI redesign sesuai stitch v4 (spacious, MD3 tokens, large labels, rounded-xl)
+- GuidedFormEditor — teacher-friendly content editor, writes via applyGuidedSchemaPatch()
+- guided-field-renderer — 9 field types: text, textarea, richtext, color, icon, select, number, boolean, array
+- BlockPropertiesPanel routing: GuidedForm (when hasGuidedEditor) vs SchemaDrivenEditor (fallback)
+- Dead code cleaned up (old block-properties/index.tsx → .deprecated.tsx)
 
 ### Phase 3 — Konten → Schema Navigator
 **Goal**: Konten panel baca dari schema, bukan authoring store

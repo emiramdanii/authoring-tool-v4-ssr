@@ -3,22 +3,29 @@
 // ═══════════════════════════════════════════════════════════════
 // BLOCK PROPERTIES PANEL — Stitch v4 Guided Form
 // ═══════════════════════════════════════════════════════════════
-// Stitch spec:
-//   - Header: tune icon + "Properties" title + close button
-//   - Block type badge: icon + name + category
-//   - Variant switcher (if applicable)
-//   - Schema-driven form fields (auto-generated)
-//   - Footer: "Remove Block" action
+// Routes between two editors based on block type:
 //
-// Teacher mode: Always shows guided form, hides dev info
-// Advanced mode: Shows capabilities, layout info in collapsed details
+//   1. GUIDED FORM (teacher-friendly) — when hasGuidedEditor(blockType)
+//      - Uses GuidedEditorSchema (content-focused fields)
+//      - Writes via applyGuidedSchemaPatch() (single write path)
+//      - Shows: title, content, array items, color tokens
+//      - Hides: layout, position, dev capabilities
+//
+//   2. SCHEMA-DRIVEN EDITOR (developer) — fallback
+//      - Uses PropertySchema (all properties)
+//      - Writes via updateSchemaBlock() (Zustand store)
+//      - Shows: everything including layout, variant, dev info
+//
+// Teacher mode ALWAYS prefers GuidedForm when available.
 // ═══════════════════════════════════════════════════════════════
 
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
-import { SlidersHorizontal, X, Trash2 } from 'lucide-react';
+import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-patch';
+import { SlidersHorizontal, X, Trash2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './block-properties/use-selected-block';
+import { GuidedFormEditor } from './block-properties/GuidedFormEditor';
 import { SchemaDrivenEditor } from './block-properties/SchemaDrivenEditor';
 import { CapabilityBadge } from './block-properties/CapabilityBadge';
 import { BlockVariantSwitcher } from './block-properties/BlockVariantSwitcher';
@@ -35,6 +42,10 @@ export default function BlockPropertiesPanel() {
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const { block } = useSelectedBlock();
 
+  // Need pageId for applyGuidedSchemaPatch
+  const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
+  const pageId = useCanvaStore(s => s.pages[currentPageIndex]?.id);
+
   if (!selectedBlockId || !selectedBlockType) return null;
 
   const definition = getBlockDefinition(selectedBlockType);
@@ -45,6 +56,10 @@ export default function BlockPropertiesPanel() {
     redirectToAuthoring: true,
     redirectNote: `Block type "${selectedBlockType}" — editor belum tersedia`,
   };
+
+  // ── Determine which editor to use ──
+  const guidedSchema = getGuidedEditorSchema(selectedBlockType);
+  const useGuidedForm = hasGuidedEditor(selectedBlockType) && guidedSchema !== null;
 
   const handleRemoveBlock = () => {
     if (!selectedBlockId) return;
@@ -84,8 +99,14 @@ export default function BlockPropertiesPanel() {
       {/* ═══ Header — Stitch spec ═══════════════════════════════ */}
       <div className="p-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest shrink-0">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={18} className="text-tertiary" />
-          <h3 className="text-[14px] font-bold text-on-surface">Properties</h3>
+          {useGuidedForm ? (
+            <BookOpen size={18} className="text-primary-container" />
+          ) : (
+            <SlidersHorizontal size={18} className="text-tertiary" />
+          )}
+          <h3 className="text-[14px] font-bold text-on-surface">
+            {useGuidedForm ? 'Edit Konten' : 'Properties'}
+          </h3>
         </div>
         <Button
           variant="ghost"
@@ -101,13 +122,19 @@ export default function BlockPropertiesPanel() {
       <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
         {/* Block Type Badge — Stitch style */}
         <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50">
-          <span className="text-2xl">{definition?.icon || '📦'}</span>
+          <span className="text-2xl">{guidedSchema?.icon || definition?.icon || '📦'}</span>
           <div className="flex-1 min-w-0">
             <div className="text-[13px] font-bold text-on-surface truncate">
-              {teacherTerm(definition?.name || selectedBlockType, teacherMode)}
+              {useGuidedForm
+                ? (guidedSchema?.displayName || teacherTerm(definition?.name || selectedBlockType, teacherMode))
+                : teacherTerm(definition?.name || selectedBlockType, teacherMode)
+              }
             </div>
             <div className="text-[11px] text-on-surface-variant">
-              {teacherMode ? (definition?.category || '') : `${definition?.category || 'unknown'} · ${selectedBlockType}`}
+              {teacherMode
+                ? (guidedSchema?.description?.split('.')[0] || definition?.category || '')
+                : `${definition?.category || 'unknown'} · ${selectedBlockType}`
+              }
             </div>
           </div>
           {editingBlockId === selectedBlockId && (
@@ -117,17 +144,28 @@ export default function BlockPropertiesPanel() {
           )}
         </div>
 
-        {/* Block Variant Switcher */}
+        {/* Block Variant Switcher — shown for both modes */}
         {block && <BlockVariantSwitcher block={block} />}
 
-        {/* ═══ SCHEMA-DRIVEN DYNAMIC EDITOR ═══════════════════════ */}
-        {block && (
+        {/* ═══ EDITOR ROUTING ═════════════════════════════════════ */}
+        {useGuidedForm && block && pageId ? (
+          /* GUIDED FORM — teacher-friendly, content-focused
+           * Writes via applyGuidedSchemaPatch() (single write path) */
+          <GuidedFormEditor
+            block={block}
+            guidedSchema={guidedSchema}
+            pageId={pageId}
+            blockId={selectedBlockId}
+          />
+        ) : block ? (
+          /* SCHEMA-DRIVEN EDITOR — developer mode fallback
+           * Writes via updateSchemaBlock() (Zustand store) */
           <SchemaDrivenEditor
             block={block}
             schema={propertySchema}
             onUpdate={(updates: Record<string, unknown>) => updateSchemaBlock(selectedBlockId, updates)}
           />
-        )}
+        ) : null}
 
         {/* ═══ Advanced: Capabilities & Layout (collapsed, hidden in teacher mode) ═══ */}
         {!teacherMode && definition && (
