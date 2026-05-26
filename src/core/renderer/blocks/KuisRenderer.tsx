@@ -42,9 +42,10 @@ function VariantSelector({
     { key: 'B', label: 'Kartu' },
     { key: 'C', label: 'Ringkas' },
   ];
+  const edu = tokens.edu('kuis');
 
   return (
-    <div className="variant-selector" style={{ display: 'flex', gap: tokens.iosElementGap('iconToTitle'), background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
+    <div className="variant-selector" style={{ display: 'flex', gap: edu.gap('tight'), background: tokens.subtleBg(0.06), borderRadius: '9999px', padding: '3px' }}>
       {variants.map((v) => (
         <button
           key={v.key}
@@ -56,12 +57,12 @@ function VariantSelector({
           style={{
             padding: `${IOS_SPACING.tabPadding.py - 3}px ${IOS_SPACING.tabPadding.px - 4}px`,
             borderRadius: '9999px',
-            ...tokens.edu('kuis').micro(),
+            ...edu.micro(),
             border: 'none',
             cursor: 'pointer',
             ...tokens.iosTransitionStyle('background-color, color', 'fast'),
             background: active === v.key ? tokens.accentBg('y', 0.12) : 'transparent',
-            color: active === v.key ? tokens.color('y') : tokens.muted(0.65),
+            color: active === v.key ? edu.accent() : edu.mutedText(0.65),
           }}
         >
           {v.key}
@@ -145,7 +146,7 @@ function KuisVariantKartu({
                   border: `1px solid ${bdr}`,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   cursor: isAnswered ? 'default' : 'pointer',
                   ...edu.transition('background-color, border-color, transform', 'standard'),
                 }}
@@ -158,8 +159,9 @@ function KuisVariantKartu({
 
       {/* Answer feedback — Sprint 3C: ios-entrance-reveal for smooth reveal */}
       {isAnswered && (
-        <div className="mt-4 p-4 rounded-xl leading-relaxed ios-entrance-reveal"
+        <div className="mt-4 p-4 rounded-xl leading-relaxed"
           style={{
+            ...edu.emotionalMotion('reveal'),
             ...edu.body(),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
@@ -169,7 +171,7 @@ function KuisVariantKartu({
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
+          {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={14} className="inline mr-1" />}
           <InlineTextEditor
             {...explanationEditor}
             className={`${isCompact ? 'canvas-truncate-2' : ''}`}
@@ -232,11 +234,11 @@ function KuisVariantRingkas({
             style={{
               width: (totalAnswered / questionsLength) * 100 + '%',
               background: edu.accent(),
-              ...edu.transition('width', 'slow'),
+              ...edu.emotionalMotion('fillBar'),
             }}
           />
         </div>
-        <span style={{ ...edu.micro(), color: tokens.muted(0.65) }}>
+        <span style={{ ...edu.micro(), color: edu.mutedText(0.65) }}>
           {current + 1}/{questionsLength}
         </span>
       </div>
@@ -271,13 +273,13 @@ function KuisVariantRingkas({
                 aria-pressed={answers[current] === i}
                 className={`px-3 py-1.5 rounded-full font-bold ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
                 style={{
-                  ...edu.caption(), fontWeight: 700,
+                  ...edu.body(), fontWeight: 700,
                   background: bg,
                   border: `1px solid ${bdr}`,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   maxWidth: '100%',
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   cursor: isAnswered ? 'default' : 'pointer',
                   whiteSpace: 'nowrap',
                   ...edu.transition('background-color, border-color, transform', 'standard'),
@@ -291,8 +293,9 @@ function KuisVariantRingkas({
 
       {/* Answer feedback — minimal. Sprint 3C: ios-entrance-reveal */}
       {isAnswered && (
-        <div className="mt-2 px-3 py-1.5 rounded-lg leading-snug ios-entrance-reveal"
+        <div className="mt-2 px-3 py-2 rounded-lg leading-relaxed"
           style={{
+            ...edu.emotionalMotion('reveal'),
             ...edu.body(),
             background: answers[current] === q.ans
               ? tokens.accentBg('g', 0.06)
@@ -302,7 +305,7 @@ function KuisVariantRingkas({
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          {answers[current] === q.ans ? <CheckCircle2 size={10} className="inline mr-0.5" /> : <XCircle size={10} className="inline mr-0.5" />}
+          {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={14} className="inline mr-1" />}
           <InlineTextEditor
             {...explanationEditor}
             style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
@@ -446,14 +449,14 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
             }}>
             <span style={{ ...edu.title(), color: tokens.color(tierColor) }}>{pct}%</span>
-            <span style={{ ...edu.caption(), color: tokens.muted(0.65) }}>{totalCorrect}/{questions.length}</span>
+            <span style={{ ...edu.caption(), color: edu.mutedText(0.65) }}>{totalCorrect}/{questions.length}</span>
           </div>
 
           {/* Title */}
           <div className="mb-1" style={{ ...edu.heading(), color: edu.textColor() }}>
             {pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!'}
           </div>
-          <div className="mb-4" style={{ ...edu.body(), color: edu.mutedText(0.65) }}>
+          <div className="mb-4" style={{ ...edu.bodyLg(), color: edu.mutedText(0.8) }}>
             Skor kamu: {totalCorrect}/{questions.length} benar
           </div>
 
@@ -520,15 +523,15 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           <div className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{
               background: tokens.accentBg('y', 0.08),
-              border: `1px solid ${tokens.colorAlpha('y', 0.15)}`,
+              border: `1px solid ${edu.accentAlpha(0.15)}`,
             }}>
-            <Gamepad2 size={14} style={{ color: tokens.color('y') }} />
+            <Gamepad2 size={14} style={{ color: edu.accent() }} />
           </div>
           <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent() }}>
             <InlineTextEditor
               {...titleEditor}
               className="font-extrabold"
-              style={{ color: tokens.color('y'), fontSize: 'inherit' }}
+              style={{ color: edu.accent(), fontSize: 'inherit' }}
               placeholder="Ketik judul kuis..."
             />
           </div>
@@ -611,7 +614,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                       border: `1px solid ${bdr}`,
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
-                      color: tokens.color('text'),
+                      color: edu.textColor(),
                       cursor: isAnswered ? 'default' : 'pointer',
                       ...edu.transition('background-color, border-color, transform', 'standard'),
                     }}>
@@ -624,9 +627,10 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           {/* ── Answer feedback ──────────────── */}
           {/* Sprint 3C: ios-entrance-reveal for smooth answer reveal animation */}
           {answers[current] !== undefined && (
-            <div className="mt-3 p-3 rounded-xl leading-relaxed ios-entrance-reveal"
+            <div className="mt-3 p-3 rounded-xl leading-relaxed"
               style={{
-                ...edu.caption(),
+                ...edu.emotionalMotion('reveal'),
+                ...edu.body(),
                 background: answers[current] === q.ans
                   ? tokens.accentBg('g', 0.06)
                   : tokens.accentBg('r', 0.06),
@@ -635,7 +639,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                 overflow: 'hidden',
                 wordBreak: 'break-word',
               }}>
-              {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
+              {answers[current] === q.ans ? <CheckCircle2 size={16} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={16} className="inline mr-1" />}
               <InlineTextEditor
                 {...explanationEditor}
                 className={`${isCompact ? 'canvas-truncate-2' : ''}`}

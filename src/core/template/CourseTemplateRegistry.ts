@@ -20,6 +20,8 @@
 import type { PageTemplateType } from '@/components/canva/types';
 import type { CanvaPage } from '@/components/canva/types';
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
+import type { SceneType } from '@/core/edu/education-scene-types';
+import { TEMPLATE_TO_SCENE } from '@/core/edu/education-scene-types';
 
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
@@ -32,6 +34,16 @@ export interface SceneTemplateSpec {
   suggestedBlocks: string[];
   /** Layout variant */
   variant?: 'A' | 'B' | 'C';
+  /**
+   * Scene type for scene-aware rendering.
+   * If not specified, inferred from templateType via TEMPLATE_TO_SCENE mapping.
+   * This enables the 6-layer emotional design system to adjust:
+   *   - Typography hierarchy (hero/title/body per scene)
+   *   - Accent prominence (which colors are muted/vocal)
+   *   - Emotional profile (progress/discovery/reward triggers)
+   *   - Reveal strategy (all-visible/progressive/on-interaction)
+   */
+  sceneType?: SceneType;
 }
 
 // ── Level 1: Course Template ───────────────────────────────────
@@ -59,6 +71,18 @@ export interface CourseTemplate {
     author: string;
     version: string;
   };
+  /**
+   * Premium preset ID — links to a handcrafted LessonSchema in src/presets/.
+   * When set, createProjectFromTemplate() will load this preset first
+   * (Level 1 pipeline), producing rich, pedagogically-structured content
+   * instead of empty structural shells.
+   *
+   * 3-Level Pipeline:
+   *   Level 1: presetId → handcrafted content (⭐⭐⭐⭐⭐)
+   *   Level 2: SUBJECT_MOCK_DATA → generated content (⭐⭐⭐)
+   *   Level 3: Empty shell → structural fallback (⭐)
+   */
+  presetId?: string;
 }
 
 // ── Metadata for createProjectFromTemplate ─────────────────────
@@ -129,23 +153,201 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     subject: 'PPKn',
     grade: '7',
     semester: '1',
-    theme: 'nilai-pancasila',
+    theme: 'hakikat-norma',
+    presetId: 'hakikat-norma',
     scenes: [
-      { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Apersepsi / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['def-box', 'nc-grid'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Apersepsi / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['def-box', 'nc-grid'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── PPKn VIII — Interaktif ──────────────────────────────────
+  // ── PPKn VII — Macam-Macam Norma (Interaktif) ────────────────
+  {
+    id: 'modul-ppkn-vii-macam-norma',
+    name: 'Macam-Macam Norma (PPKn VII)',
+    description: 'Mengenal 4 jenis norma (agama, kesusilaan, kesopanan, hukum) dengan norma kartu, sortir game, dan refleksi: Cover → Tujuan → Materi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '7',
+    semester: '1',
+    theme: 'macam-norma',
+    presetId: 'macam-norma',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — Macam-Macam Norma', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📜', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn VII — Perilaku Patuh ──────────────────────────────
+  {
+    id: 'modul-ppkn-vii-perilaku-patuh',
+    name: 'Perilaku Patuh Norma (PPKn VII)',
+    description: 'Membangun kesadaran patuh norma melalui skenario interaktif dan diskusi: Cover → Tujuan → Skenario → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '7',
+    semester: '2',
+    theme: 'perilaku-patuh',
+    presetId: 'perilaku-patuh',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn VIII — Nilai Pancasila ──────────────────────────────
+  {
+    id: 'modul-ppkn-viii-nilai-pancasila',
+    name: 'Nilai-Nilai Pancasila (PPKn VIII)',
+    description: 'Mendalami nilai-nilai Pancasila sebagai dasar negara: Cover → Tujuan → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '8',
+    semester: '1',
+    theme: 'nilai-pancasila',
+    presetId: 'nilai-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — Nilai Pancasila', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🇮🇩', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn VIII — Bhinneka Tunggal Ika ──────────────────────────
+  {
+    id: 'modul-ppkn-viii-bhinneka',
+    name: 'Bhinneka Tunggal Ika (PPKn VIII)',
+    description: 'Memahami makna keberagaman dan persatuan Indonesia: Cover → Tujuan → Skenario → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '8',
+    semester: '1',
+    theme: 'bhinneka-tunggal-ika',
+    presetId: 'bhinneka-tunggal-ika',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🤝', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn VIII — HAM & Kewajiban ──────────────────────────────
+  {
+    id: 'modul-ppkn-viii-ham',
+    name: 'HAM & Kewajiban (PPKn VIII)',
+    description: 'Mengenal hak asasi manusia dan kewajiban warga negara: Cover → Tujuan → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '8',
+    semester: '2',
+    theme: 'ham-hak-kewajiban',
+    presetId: 'ham-hak-kewajiban',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — HAM & Kewajiban', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🕊️', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn IX — Demokrasi Pancasila ──────────────────────────────
+  {
+    id: 'modul-ppkn-ix-demokrasi',
+    name: 'Demokrasi Pancasila (PPKn IX)',
+    description: 'Memahami prinsip demokrasi Pancasila dan penerapannya: Cover → Tujuan → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '9',
+    semester: '1',
+    theme: 'demokrasi-pancasila',
+    presetId: 'demokrasi-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — Demokrasi Pancasila', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🏛️', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn IX — Globalisasi ──────────────────────────────
+  {
+    id: 'modul-ppkn-ix-globalisasi',
+    name: 'Globalisasi (PPKn IX)',
+    description: 'Menganalisis dampak globalisasi terhadap kehidupan berbangsa: Cover → Tujuan → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '9',
+    semester: '2',
+    theme: 'globalisasi',
+    presetId: 'globalisasi',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — Globalisasi', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🌐', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn VII — Misi Penjelajah Pancasila ──────────────────
+  {
+    id: 'modul-ppkn-vii-misi-pancasila',
+    name: 'Misi Penjelajah Pancasila (PPKn VII)',
+    description: 'Petualangan interaktif mengeksplorasi nilai Pancasila: Cover → Tujuan → Skenario → Materi → Kuis → Refleksi → Penutup',
+    subject: 'PPKn',
+    grade: '7',
+    semester: '2',
+    theme: 'hakikat-norma',
+    presetId: 'misi-penjelajah-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🗺️', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── PPKn VIII — Generic (no preset, uses Level 2/3) ───────
   {
     id: 'modul-ppkn-viii',
     name: 'Modul PPKn Kelas VIII',
@@ -155,14 +357,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
   },
@@ -177,14 +379,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'globalisasi',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'skenario', label: 'Skenario Ilmiah', suggestedBlocks: ['skenario'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1 — Konsep Dasar', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2 — Penerapan', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Eksperimen / Praktikum', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Ilmiah', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep Dasar', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Penerapan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Eksperimen / Praktikum', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'concept' },
     ],
     metadata: { icon: '🔬', author: 'SILSE', version: '1.0.0' },
   },
@@ -199,15 +401,15 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'ham-hak-kewajiban',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '🔬', author: 'SILSE', version: '1.0.0' },
   },
@@ -222,14 +424,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'nilai-pancasila',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'motivasi', label: 'Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi — Konsep Dasar', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Contoh Soal & Pembahasan', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'kuis', label: 'Latihan Soal', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi — Konsep Dasar', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Contoh Soal & Pembahasan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Latihan Soal', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '📐', author: 'SILSE', version: '1.0.0' },
   },
@@ -244,14 +446,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'globalisasi',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1 — Konsep', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2 — Penerapan', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi Soal', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Penerapan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi Soal', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '📐', author: 'SILSE', version: '1.0.0' },
   },
@@ -266,14 +468,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'perilaku-patuh',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'motivasi', label: 'Motivasi', suggestedBlocks: ['motivasi'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '📖', author: 'SILSE', version: '1.0.0' },
   },
@@ -288,15 +490,15 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi Kelompok', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'rangkuman', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi Kelompok', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'rangkuman', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'summary' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '📖', author: 'SILSE', version: '1.0.0' },
   },
@@ -311,14 +513,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'globalisasi',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'skenario', label: 'Interactive Scenario', suggestedBlocks: ['skenario'], variant: 'A' },
-      { templateType: 'materi', label: 'Material', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Discussion', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Reflection', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Closing', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Interactive Scenario', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Material', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Discussion', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Reflection', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Closing', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '🌍', author: 'SILSE', version: '1.0.0' },
   },
@@ -333,13 +535,13 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'ham-hak-kewajiban',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Material', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Discussion', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'rangkuman', label: 'Summary', suggestedBlocks: ['rangkuman'], variant: 'A' },
-      { templateType: 'penutup', label: 'Closing', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Material', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Discussion', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'rangkuman', label: 'Summary', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'summary' },
+      { templateType: 'penutup', label: 'Closing', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '🌍', author: 'SILSE', version: '1.0.0' },
   },
@@ -354,13 +556,13 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'perilaku-patuh',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi Seni', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Praktik & Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi Karya', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Seni', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Praktik & Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'refleksi', label: 'Refleksi Karya', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '🎨', author: 'SILSE', version: '1.0.0' },
   },
@@ -375,13 +577,13 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi Seni', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'skenario', label: 'Skenario Kreatif', suggestedBlocks: ['skenario'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi Karya', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Seni', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'skenario', label: 'Skenario Kreatif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'diskusi', label: 'Diskusi Karya', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '🎨', author: 'SILSE', version: '1.0.0' },
   },
@@ -396,14 +598,14 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'nilai-pancasila',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'motivasi', label: 'Pemanasan / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Praktik & Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi Aktivitas', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Pemanasan / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Praktik & Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi Aktivitas', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
   },
@@ -418,13 +620,13 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'globalisasi',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'skenario', label: 'Skenario Olahraga', suggestedBlocks: ['skenario'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'skenario', label: 'Skenario Olahraga', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
   },
@@ -439,15 +641,15 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'nilai-pancasila',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '🏃', author: 'SILSE', version: '1.0.0' },
   },
@@ -462,15 +664,15 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '1',
     theme: 'globalisasi',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 1 — Konsep Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'materi', label: 'Materi 2 — Prinsip Latihan', suggestedBlocks: ['materi-section'], variant: 'A' },
-      { templateType: 'diskusi', label: 'Studi Kasus', suggestedBlocks: ['diskusi'], variant: 'A' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A' },
-      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1 — Konsep Kebugaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Prinsip Latihan', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Studi Kasus', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'materi', label: 'Rangkuman', suggestedBlocks: ['rangkuman'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '💪', author: 'SILSE', version: '1.0.0' },
   },
@@ -485,8 +687,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     scenes: [
-      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A' },
-      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '📋', author: 'SILSE', version: '1.0.0' },
   },
@@ -555,26 +757,300 @@ export function getCourseTemplatesFiltered(subject?: string, grade?: string): Co
 /**
  * Create a full CanvaPage[] array from a Course Template.
  *
- * For each scene in the template:
- *   1. Creates a page using createPageFromPreset (existing preset system)
- *   2. The preset's create() factory populates page.schema with default blocks
- *   3. The suggested blocks in the template are hints — the preset already
- *      creates appropriate default blocks for the template type.
- *   4. Sets page label from the scene spec
+ * 3-Level Content Pipeline:
+ *   Level 1 (presetId): If the template has a presetId, load the handcrafted
+ *     LessonSchema from src/presets/ and convert it to CanvaPages using
+ *     schemaToCanvaPages(). This produces rich, pedagogically-structured content
+ *     with real scenarios, definitions, quizzes, etc.
+ *   Level 2 (generator): Not yet implemented — will use SUBJECT_MOCK_DATA
+ *     from template-gallery.ts for smart generated content.
+ *   Level 3 (empty shell): Falls back to createPageFromPreset() which creates
+ *     pages with default block structure but minimal content.
  *
- * Note: The existing createPageFromPreset already creates schema-native pages
- * with appropriate default blocks. The suggestedBlocks field serves as
- * documentation and potential future "add more blocks" functionality.
+ * User never sees the difference — all levels produce valid CanvaPage[].
  */
-export function createProjectFromTemplate(
+export async function createProjectFromTemplate(
   templateId: string,
   metadata: ProjectMetadata,
-): CanvaPage[] {
+): Promise<CanvaPage[]> {
   const template = _registry.get(templateId);
   if (!template) {
     throw new Error(`Course template "${templateId}" not found`);
   }
 
+  // ── LEVEL 1: Handcrafted preset pipeline ──────────────────────
+  // If the template links to a premium preset, use it directly.
+  // This produces rich, real educational content instead of empty shells.
+  if (template.presetId) {
+    try {
+      const { loadPreset, schemaToCanvaPages } = await import('@/core/engine/SchemaEngine.utils');
+      const schema = await loadPreset(template.presetId);
+      if (schema) {
+        const rawPages = schemaToCanvaPages(schema);
+
+        // Wrap into full CanvaPage objects (same logic as schema-preset-slice)
+        const { generatePageId } = await import('@/core/schema/ensure-schema');
+        const { DEFAULT_NAV_CONFIG } = await import('@/components/canva/types');
+        const pages: CanvaPage[] = rawPages.map((raw, i) => {
+          // Inject metadata into cover page
+          if (i === 0 && raw.templateType === 'cover') {
+            // Override title with user-provided title
+            const screenData = raw.templateData?.schemaScreen as Record<string, unknown> | undefined;
+            if (screenData && metadata.title) {
+              const blocks = screenData.blocks as Array<Record<string, unknown>> | undefined;
+              if (blocks && blocks.length > 0) {
+                blocks[0] = { ...blocks[0], title: metadata.title };
+                if (metadata.guru || metadata.sekolah) {
+                  const meta = { ...((blocks[0].meta as Record<string, string>) || {}) };
+                  if (metadata.guru) meta.elemen = metadata.guru;
+                  if (metadata.sekolah) meta.fase = metadata.sekolah;
+                  blocks[0] = { ...blocks[0], meta };
+                }
+              }
+            }
+          }
+
+          return {
+            id: raw.id || generatePageId(),
+            label: raw.label,
+            bgDataUrl: null,
+            bgColor: raw.bgColor || '#ffffff',
+            overlay: 20,
+            elements: [],
+            templateType: (raw.templateType || 'custom') as CanvaPage['templateType'],
+            colorPalette: null,
+            navConfig: { ...DEFAULT_NAV_CONFIG },
+            templateData: raw.templateData,
+            schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
+          } as CanvaPage;
+        });
+
+        // Cover pages should show navbar + progress
+        if (pages.length > 0 && pages[0]!.templateType === 'cover') {
+          pages[0]!.navConfig = {
+            ...pages[0]!.navConfig,
+            showNavbar: true,
+            showProgress: true,
+          };
+        }
+
+        return pages;
+      }
+    } catch (err) {
+      // Level 1 failed — fall through to Level 3
+      console.warn(`[Pipeline] Level 1 preset "${template.presetId}" failed, falling back to Level 3:`, err);
+    }
+  }
+
+  // ── LEVEL 2: Smart generated content pipeline ──────────────────
+  // When no handcrafted preset exists, use SUBJECT_MOCK_DATA + generators
+  // to produce meaningful content instead of empty shells.
+  // This creates pages with real definitions, quiz questions, and scenarios
+  // derived from subject-specific mock data.
+  try {
+    const { createMockParseResult, LESSON_TEMPLATES } = await import('./template-gallery');
+    const {
+      genCoverSchema, genMateriSchema, genKuisSchema, genDiskusiSchema,
+      genRefleksiSchema, genSkenarioSchema, genTpSchema, genPenutupSchema,
+      genMotivasiSchema, genTujuanDisplaySchema,
+    } = await import('@/core/schema/generators');
+
+    // Build a synthetic LessonTemplate for mock data lookup
+    const syntheticTemplate = {
+      id: templateId,
+      title: metadata.title || template.name,
+      subtitle: `${template.subject} Kelas ${template.grade}`,
+      description: template.description,
+      mapel: template.subject,
+      kelas: template.grade,
+      semester: template.semester,
+      icon: template.metadata.icon,
+      color: 'amber',
+      tags: [],
+      pattern: 'standar' as const,
+      pageTypes: template.scenes.map(s => s.templateType),
+      estimatedPages: template.scenes.length,
+      pagePreview: template.scenes.map(s => ({
+        type: s.templateType,
+        title: s.label,
+        description: '',
+      })),
+    };
+
+    const parsed = createMockParseResult(syntheticTemplate as any);
+
+    // Generate pages using the schema generators with mock content
+    const { generatePageId } = await import('@/core/schema/ensure-schema');
+    const { DEFAULT_NAV_CONFIG } = await import('@/components/canva/types');
+    const { createPageFromPreset } = await import('@/core/preset/PagePresetRegistry');
+    const { resolveTokens } = await import('@/core/themes/tokens');
+
+    const level2Pages: CanvaPage[] = [];
+    const tokens = resolveTokens(template.theme);
+    const kuisCount = 5;
+
+    for (let i = 0; i < template.scenes.length; i++) {
+      const scene = template.scenes[i]!;
+      const page = createPageFromPreset(scene.templateType, i);
+      page.label = scene.label;
+
+      if (scene.variant) {
+        page.templateVariant = scene.variant;
+      }
+
+      // Generate real schema blocks based on scene type
+      const generatedBlocks: any[] = [];
+      const lessonTitle = metadata.title || template.name;
+      const meta = { judulPertemuan: lessonTitle, namaBab: lessonTitle };
+
+      switch (scene.templateType) {
+        case 'cover': {
+          const coverSchema = genCoverSchema({ namaBab: lessonTitle, kelas: template.grade, mapel: template.subject, ikon: template.metadata.icon });
+          generatedBlocks.push(coverSchema);
+          break;
+        }
+        case 'dokumen': {
+          const tpSchema = genTujuanDisplaySchema(parsed, { pertemuan: 1, bloomMax: 4 });
+          generatedBlocks.push(tpSchema);
+          break;
+        }
+        case 'materi': {
+          const materiSchema = genMateriSchema(parsed, meta);
+          generatedBlocks.push(...materiSchema);
+          break;
+        }
+        case 'skenario': {
+          const skenarioSchema = genSkenarioSchema(parsed, { namaBab: lessonTitle });
+          generatedBlocks.push(skenarioSchema);
+          break;
+        }
+        case 'diskusi': {
+          const tpData = parsed.sentences.slice(0, 3).map(s => ({ desc: s }));
+          const diskusiSchema = genDiskusiSchema(parsed, tpData, meta);
+          generatedBlocks.push(diskusiSchema);
+          break;
+        }
+        case 'kuis': {
+          const kuisSchema = genKuisSchema(parsed, kuisCount, 1);
+          generatedBlocks.push(kuisSchema);
+          break;
+        }
+        case 'refleksi': {
+          const refleksiSchema = genRefleksiSchema(parsed, meta);
+          generatedBlocks.push(refleksiSchema);
+          break;
+        }
+        case 'penutup': {
+          const penutupSchema = genPenutupSchema(meta);
+          generatedBlocks.push(penutupSchema);
+          break;
+        }
+        case 'motivasi': {
+          const motivasiSchema = genMotivasiSchema(parsed, { namaBab: lessonTitle });
+          generatedBlocks.push(motivasiSchema);
+          break;
+        }
+        default: {
+          // For unhandled types, fall through to Level 3 logic for this page
+          break;
+        }
+      }
+
+      // If we generated blocks, replace the page schema with generated content
+      if (generatedBlocks.length > 0) {
+        const stabilizedBlocks = generatedBlocks.map((block, bIdx) => ({
+          ...block,
+          id: block.id || `${scene.templateType}-${block.type}-${bIdx}`,
+        }));
+
+        page.schema = {
+          ...(page.schema || { id: `page-${i}`, version: 1, templateType: scene.templateType, blocks: [] }),
+          blocks: stabilizedBlocks,
+        };
+
+        // Inject metadata into cover
+        if (scene.templateType === 'cover') {
+          page.schema = {
+            ...page.schema,
+            blocks: page.schema.blocks.map(block => {
+              if (block.type !== 'cover') return block;
+              const cover = block as unknown as Record<string, unknown>;
+              const newMeta = { ...((cover.meta as Record<string, string>) || {}) };
+              if (metadata.guru) newMeta.elemen = metadata.guru;
+              if (metadata.sekolah) newMeta.fase = metadata.sekolah;
+              return {
+                ...block,
+                ...(metadata.title ? { title: metadata.title } : {}),
+                ...(metadata.guru || metadata.sekolah ? { meta: newMeta } : {}),
+              };
+            }),
+          };
+        }
+
+        // Inject closing info
+        if (scene.templateType === 'penutup') {
+          page.schema = {
+            ...page.schema,
+            blocks: page.schema.blocks.map(block => {
+              if (block.type !== 'penutup') return block;
+              return {
+                ...block,
+                ...(metadata.title ? { subtitle: `Terima kasih — ${metadata.title}` } : {}),
+              };
+            }),
+          };
+        }
+      } else {
+        // Fallback to Level 3 for this specific page
+        if (scene.templateType === 'cover' && page.schema?.blocks) {
+          page.schema = {
+            ...page.schema,
+            blocks: page.schema.blocks.map(block => {
+              if (block.type !== 'cover') return block;
+              const cover = block as unknown as Record<string, unknown>;
+              const newMeta = { ...((cover.meta as Record<string, string>) || {}) };
+              if (metadata.guru) newMeta.elemen = metadata.guru;
+              if (metadata.sekolah) newMeta.fase = metadata.sekolah;
+              return {
+                ...block,
+                ...(metadata.title ? { title: metadata.title } : {}),
+                ...(metadata.guru || metadata.sekolah ? { meta: newMeta } : {}),
+              };
+            }),
+          };
+        }
+
+        if (scene.templateType === 'penutup' && page.schema?.blocks) {
+          page.schema = {
+            ...page.schema,
+            blocks: page.schema.blocks.map(block => {
+              if (block.type !== 'penutup') return block;
+              return {
+                ...block,
+                ...(metadata.title ? { subtitle: `Terima kasih — ${metadata.title}` } : {}),
+              };
+            }),
+          };
+        }
+      }
+
+      // Apply theme from template
+      page.bgColor = tokens.colors.bg;
+      page.navConfig = { ...DEFAULT_NAV_CONFIG, showNavbar: true, showProgress: true };
+
+      level2Pages.push(page);
+    }
+
+    if (level2Pages.length > 0) {
+      console.info(`[Pipeline] Level 2 generated content for "${templateId}" using SUBJECT_MOCK_DATA`);
+      return level2Pages;
+    }
+  } catch (err) {
+    // Level 2 failed — fall through to Level 3
+    console.warn(`[Pipeline] Level 2 generation failed for "${templateId}", falling back to Level 3:`, err);
+  }
+
+  // ── LEVEL 3: Empty shell pipeline (last resort) ──────────────────
   const pages: CanvaPage[] = [];
 
   for (let i = 0; i < template.scenes.length; i++) {
@@ -648,4 +1124,34 @@ export function getTemplateFlowPreview(templateId: string): string {
   const template = _registry.get(templateId);
   if (!template) return '';
   return template.scenes.map(s => s.label).join(' → ');
+}
+
+/**
+ * Resolve the SceneType for a SceneTemplateSpec.
+ * Priority: explicit sceneType > TEMPLATE_TO_SCENE mapping > 'concept' default.
+ */
+export function resolveSceneType(spec: SceneTemplateSpec): SceneType {
+  if (spec.sceneType) return spec.sceneType;
+  const mapped = TEMPLATE_TO_SCENE[spec.templateType];
+  if (mapped) return mapped;
+  return 'concept'; // default fallback
+}
+
+/**
+ * Get the narrative intensity curve for a course template.
+ * Returns array of { sceneType, intensity, label } for each scene.
+ * Useful for visualizing the learning flow rhythm.
+ */
+export function getTemplateIntensityCurve(templateId: string): Array<{ sceneType: SceneType; intensity: number; label: string }> {
+  const template = _registry.get(templateId);
+  if (!template) return [];
+  const { SCENE_TYPES } = require('@/core/edu/education-scene-types');
+  return template.scenes.map(spec => {
+    const st = resolveSceneType(spec);
+    return {
+      sceneType: st,
+      intensity: SCENE_TYPES[st].intensity,
+      label: spec.label,
+    };
+  });
 }

@@ -121,7 +121,7 @@ export const FtabRenderer = React.memo(function FtabRenderer({ block, mode, toke
         <div className="mt-3 rounded-xl premium-card-glow p-3"
           style={{
             background: tokens.subtleBg(0.04),
-            border: '1px solid ' + tokens.colorAlpha('y', 0.15),
+            border: '1px solid ' + edu.accentAlpha(0.15),
             animation: 'fadeIn 0.3s ease',
           }}>
           {(tab.content || []).map((b, i) => (

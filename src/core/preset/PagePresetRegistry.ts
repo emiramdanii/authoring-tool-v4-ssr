@@ -24,6 +24,8 @@ import { ensurePageSchema } from '../schema/ensure-schema';
 import { getTemplateLabel, getTemplateExtraProps } from '@/store/canva/template-data';
 import { populateTemplateElements } from '@/lib/canva-constants';
 import { createPage, createElId } from '@/store/canva/constants';
+import type { SceneType } from '../edu/education-scene-types';
+import { TEMPLATE_TO_SCENE } from '../edu/education-scene-types';
 
 // ── Preset Interface ──────────────────────────────────────────
 
@@ -44,6 +46,15 @@ export interface PagePreset {
   tags: string[];
   /** Sort order within category (lower = first) */
   sortOrder: number;
+  /**
+   * Scene type — maps this preset to the 8 Learning Scene Types.
+   * Enables the 6-layer design system (typography, atmosphere,
+   * emotional profile, reveal strategy, accent prominence)
+   * to adjust automatically when a page of this preset is rendered.
+   *
+   * If not set, resolved from TEMPLATE_TO_SCENE mapping.
+   */
+  sceneType: SceneType;
   /**
    * Factory: creates a ScreenSchema for this preset.
    * Reads from the authoring store to populate content.
@@ -77,6 +88,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#f9c82e',
     tags: ['judul', 'pembuka', 'cover', 'awal'],
     sortOrder: 10,
+    sceneType: 'intro',
   },
   {
     id: 'petunjuk',
@@ -87,6 +99,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#3ecfcf',
     tags: ['petunjuk', 'langkah', 'cara', 'panduan'],
     sortOrder: 20,
+    sceneType: 'intro',
   },
   {
     id: 'dokumen',
@@ -97,6 +110,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#3ecfcf',
     tags: ['dokumen', 'cp', 'tp', 'atp', 'tujuan'],
     sortOrder: 30,
+    sceneType: 'intro',
   },
   {
     id: 'tujuan',
@@ -107,6 +121,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: 'blue',
     tags: ['bsnp', 'tujuan', 'tp', 'profil', 'pancasila'],
     sortOrder: 15,
+    sceneType: 'intro',
   },
   {
     id: 'motivasi',
@@ -117,6 +132,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: 'amber',
     tags: ['bsnp', 'motivasi', 'apersepsi', 'hook'],
     sortOrder: 25,
+    sceneType: 'intro',
   },
   {
     id: 'hero',
@@ -127,6 +143,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#fb923c',
     tags: ['hero', 'banner', 'gradient', 'header'],
     sortOrder: 40,
+    sceneType: 'intro',
   },
   {
     id: 'materi',
@@ -137,6 +154,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#a78bfa',
     tags: ['materi', 'konten', 'definisi', 'poin', 'flashcard'],
     sortOrder: 50,
+    sceneType: 'concept',
   },
   {
     id: 'skenario',
@@ -147,6 +165,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#f472b6',
     tags: ['skenario', 'cerita', 'pilihan', 'interaktif'],
     sortOrder: 60,
+    sceneType: 'example',
   },
   {
     id: 'diskusi',
@@ -157,6 +176,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#34d399',
     tags: ['diskusi', 'pertanyaan', 'tulis', 'reflektif'],
     sortOrder: 70,
+    sceneType: 'discussion',
   },
   {
     id: 'kuis',
@@ -167,6 +187,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#f5c842',
     tags: ['kuis', 'soal', 'pilihan ganda', 'evaluasi'],
     sortOrder: 80,
+    sceneType: 'assessment',
   },
   {
     id: 'game',
@@ -177,6 +198,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#3ecfcf',
     tags: ['game', 'sortir', 'roda', 'interaktif', 'permainan'],
     sortOrder: 90,
+    sceneType: 'practice',
   },
   {
     id: 'hasil',
@@ -187,6 +209,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#34d399',
     tags: ['hasil', 'skor', 'apresiasi', 'nilai'],
     sortOrder: 100,
+    sceneType: 'assessment',
   },
   {
     id: 'refleksi',
@@ -197,6 +220,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#a78bfa',
     tags: ['refleksi', 'diri', 'portofolio', 'penugasan'],
     sortOrder: 110,
+    sceneType: 'reflection',
   },
   {
     id: 'rangkuman',
@@ -207,6 +231,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: 'emerald',
     tags: ['bsnp', 'rangkuman', 'ringkasan', 'kesimpulan'],
     sortOrder: 65,
+    sceneType: 'summary',
   },
   {
     id: 'penutup',
@@ -217,6 +242,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#fb923c',
     tags: ['penutup', 'preview', 'pertemuan', 'akhir'],
     sortOrder: 120,
+    sceneType: 'summary',
   },
   {
     id: 'custom',
@@ -227,6 +253,7 @@ const PRESET_DEFINITIONS: Omit<PagePreset, 'create'>[] = [
     color: '#6366f1',
     tags: ['kosong', 'bebas', 'custom', 'canvas'],
     sortOrder: 130,
+    sceneType: 'concept',
   },
 ];
 
@@ -390,4 +417,25 @@ export function getPresetCategory(templateType: string): PagePreset['category'] 
  */
 export function isPresetRegistered(id: string): boolean {
   return _registry.has(id);
+}
+
+/**
+ * Get the SceneType for a preset by template type.
+ * Returns the explicit sceneType from the preset definition,
+ * or falls back to TEMPLATE_TO_SCENE mapping, or 'concept' default.
+ */
+export function getPresetSceneType(templateType: string): SceneType {
+  const preset = getPreset(templateType);
+  if (preset?.sceneType) return preset.sceneType;
+  const mapped = TEMPLATE_TO_SCENE[templateType];
+  if (mapped) return mapped;
+  return 'concept';
+}
+
+/**
+ * Get presets filtered by SceneType.
+ * Useful for building scene-type galleries in the editor.
+ */
+export function getPresetsBySceneType(sceneType: SceneType): PagePreset[] {
+  return getAllPresets().filter(p => p.sceneType === sceneType);
 }

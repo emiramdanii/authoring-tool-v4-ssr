@@ -82,9 +82,9 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
       style={{
         background: tokens.colorAlpha(concept.color, 0.08),
         border: `1px solid ${tokens.colorAlpha(concept.color, 0.2)}`,
-        borderLeft: `4px solid ${tokens.color(concept.color)}`,
+        borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(concept.color)}`,
         borderRadius: tokens.radius('xl') + 'px',
-        boxShadow: tokens.raw.shadow.card,
+        boxShadow: edu.shadow('card'),
         ...edu.entrance(index, 'slideUp'),
         ...edu.transition('background-color, border-color, color, transform, box-shadow', 'fast'),
       }}
@@ -112,7 +112,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
           className="leading-relaxed"
           style={{
             ...edu.body(),
-            color: tokens.muted(0.85),
+            color: edu.mutedText(0.85),
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
           }}
@@ -210,7 +210,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
           border: `1px solid ${tokens.colorAlpha(concept.color, 0.15)}`,
           borderRadius: tokens.radius('xl') + 'px',
           ...edu.componentPadding(),
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
           ...edu.transition('background-color, border-color, color', 'fast'),
           marginBottom: isLast ? 0 : (isCompact ? '6px' : '10px'),
         }}
@@ -238,7 +238,7 @@ function RangkumanConceptCardB({ concept, index, isLast, tokens, isCompact }: {
           className="leading-relaxed"
           style={{
             ...edu.body(),
-            color: tokens.muted(0.85),
+            color: edu.mutedText(0.85),
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
           }}
@@ -333,7 +333,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 style={{
                   ...edu.bodyLg(),
                   fontWeight: 700,
-                  color: isOpen ? conceptColor : tokens.color('text'),
+                  color: isOpen ? conceptColor : edu.textColor(),
                   wordBreak: 'break-word',
                 }}
               >
@@ -352,7 +352,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                 id={`rangkuman-panel-${i}`}
                 role="region"
                 style={{
-                  ...tokens.iosContentPadding(isCompact), paddingTop: 0,
+                  ...edu.sectionPadding(), paddingTop: 0,
                   paddingLeft: isCompact ? '42px' : '52px',
                   animation: 'fadeIn 0.25s ease',
                 }}
@@ -361,7 +361,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
                   className="leading-relaxed"
                   style={{
                     ...edu.body(),
-                    color: tokens.muted(0.85),
+                    color: edu.mutedText(0.85),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
                   }}
@@ -533,8 +533,8 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: tokens.color('card'),
-        boxShadow: tokens.raw.shadow.elevated,
+        background: edu.cardBg(),
+        boxShadow: edu.shadow('elevated'),
         border: `1px solid ${accentAlpha(0.15)}`,
         animation: 'fadeIn 0.4s ease',
         position: 'relative',
@@ -550,7 +550,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: variant === 'B' ? 'none' : `4px solid ${accent}`,
+          borderLeft: variant === 'B' ? 'none' : `${edu.stripeWidth()}px solid ${accent}`,
           background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.03)})`,
           ...edu.componentPadding(),
           position: 'relative',
@@ -686,7 +686,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             background: `linear-gradient(135deg, ${accentAlpha(0.1)}, ${accentAlpha(0.05)})`,
             border: `1px solid ${accentAlpha(0.2)}`,
             borderRadius: tokens.radius('xl') + 'px',
-            borderLeft: `4px solid ${accent}`,
+            borderLeft: `${edu.stripeWidth()}px solid ${accent}`,
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -713,7 +713,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
               className="leading-relaxed italic"
               style={{
                 ...edu.body(),
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}

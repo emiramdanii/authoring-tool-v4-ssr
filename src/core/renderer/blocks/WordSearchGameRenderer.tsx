@@ -581,13 +581,13 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  bg = edu.accentAlpha(0.15);
  bdr = edu.accent();
  bxSh = '0 0 12px ' + edu.accentAlpha(0.4);
- textColor = tokens.color('text');
+ textColor = edu.textColor();
  } else {
  // Default cell
  bg = tokens.colorAlpha('card', 0.6);
  bdr = tokens.subtleBorder(0.12);
- bxSh = tokens.raw.shadow.card;
- textColor = tokens.color('text');
+ bxSh = edu.shadow('card');
+ textColor = edu.textColor();
  }
 
  return (
@@ -638,7 +638,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  style={{
  background: tokens.colorAlpha('card', 0.4),
  border: '1px solid ' + tokens.subtleBorder(0.1),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  }}
  >
  <div
@@ -682,7 +682,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  ...edu.caption(),
  color: isWordFound
  ? tokens.color('g')
- : tokens.color('text'),
+ : edu.textColor(),
  textDecoration: isWordFound ? 'line-through' : 'none',
  opacity: isWordFound ? 0.7 : 1,
  }}

@@ -214,7 +214,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
  }}>
  <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
@@ -331,12 +331,12 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  style={{
  background: edu.accentAlpha(0.06),
  border: '1px solid ' + edu.accentAlpha(0.2),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  overflow: 'hidden',
  }}>
  {/* Question text — truncasi saat compact */}
  <p className={`font-bold leading-relaxed mb-4 ${isCompact ? '' : ''} ${isCompact ? 'canvas-truncate-2' : ''}`}
- style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+ style={{ color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
  {q.text}
  </p>
 

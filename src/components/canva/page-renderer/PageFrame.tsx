@@ -12,6 +12,7 @@ import { alpha } from '@/lib/color-palette';
 import { useNavSync } from '@/hooks/use-nav-sync';
 import { ScoreDisplay } from './ScoreDisplay';
 import { computeSafeArea } from '@/core/scene/SceneLayoutEngine';
+import { EDU_MODE_BG } from '@/core/edu/education-colors';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE FRAME — Unified page shell shared by Canvas, Preview, Export
@@ -359,8 +360,10 @@ export const PageFrame = React.memo(function PageFrame({
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
-  const computedTokens = React.useMemo(() => new TokenResolver(themeId), [themeId]);
+  const displayMode = useCanvaStore((s) => s.displayMode);
+  const computedTokens = React.useMemo(() => new TokenResolver(themeId, displayMode), [themeId, displayMode]);
   const tokens = externalTokens || computedTokens;
+  const modeBg = EDU_MODE_BG[displayMode];
 
   // ── Score data (use store computed functions — reactive + DRY) ──
   const totalScoreVal = useInteractiveStore((s) => s.totalScore());
@@ -413,7 +416,7 @@ export const PageFrame = React.memo(function PageFrame({
       {/* ══ Background ════════════════════════════════════════ */}
       {!isSchemaDriven && (
         <>
-          <div className="absolute inset-0" style={{ background: page.bgColor || tokens.color('bg') }} />
+          <div className="absolute inset-0" style={{ background: page.bgColor || modeBg.bg }} />
           {page.bgDataUrl && (
             <img src={page.bgDataUrl} alt="" role="presentation" className="absolute inset-0 w-full h-full object-cover" />
           )}
@@ -426,10 +429,10 @@ export const PageFrame = React.memo(function PageFrame({
       {isSchemaDriven && (() => {
         const schemaBg = page.schema?.background;
         let baseBg = tokens.color('bg');
-        if (schemaBg?.type === 'solid') baseBg = tokens.color(schemaBg.color1 || 'bg');
+        if (schemaBg?.type === 'solid') baseBg = displayMode === 'print' ? modeBg.bg : tokens.color(schemaBg.color1 || 'bg');
         else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
         else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${tokens.color('bg2')})`;
-        else baseBg = page.bgColor || tokens.color('bg');
+        else baseBg = page.bgColor || modeBg.bg;
 
         return (
           <>

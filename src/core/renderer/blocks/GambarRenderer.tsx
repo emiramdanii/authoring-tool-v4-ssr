@@ -51,7 +51,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}
@@ -99,7 +99,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
               style={{
                 borderRadius: tokens.radius('lg') + 'px',
                 overflow: 'hidden',
-                boxShadow: tokens.raw.shadow.card,
+                boxShadow: edu.shadow('card'),
                 border: `1px solid ${accentAlpha(0.12)}`,
               }}
             >
@@ -122,7 +122,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
                 borderRadius: tokens.radius('lg') + 'px',
                 background: accentAlpha(0.06),
                 border: `2px dashed ${accentAlpha(0.25)}`,
-                ...tokens.iosContentPadding(isCompact),
+                ...edu.sectionPadding(),
                 minHeight: isCompact ? '100px' : '140px',
               }}
             >

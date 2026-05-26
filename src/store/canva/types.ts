@@ -293,6 +293,10 @@ export interface CanvaState {
   previewViewport: 'desktop' | 'mobile';
   /** Set the preview viewport mode */
   setPreviewViewport: (v: 'desktop' | 'mobile') => void;
+  /** Educational display mode — controls font sizes, backgrounds for different viewing contexts */
+  displayMode: import('@/core/edu/education-typography').EduDisplayMode;
+  /** Set the educational display mode (classroom/projector/print/student) */
+  setDisplayMode: (mode: import('@/core/edu/education-typography').EduDisplayMode) => void;
 
   // ── Actions: Stage ───────────────────────────────────────────
   clearStage: () => void;

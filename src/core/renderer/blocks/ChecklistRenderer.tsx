@@ -56,7 +56,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}
@@ -126,6 +126,7 @@ export const ChecklistRenderer = React.memo(function ChecklistRenderer({ block, 
                       cursor: interactive ? 'pointer' : 'default',
                       opacity: isChecked ? 0.85 : 1,
                       ...edu.transition('background-color, border-color, opacity', 'fast'),
+                      ...(isChecked && interactive ? edu.emotionalMotion('scalePop') : {}),
                     }}
                     onClick={() => interactive && handleToggle(i)}
                     role={interactive ? 'checkbox' : 'listitem'}

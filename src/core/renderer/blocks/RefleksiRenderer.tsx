@@ -155,7 +155,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
               ...edu.componentPadding(),
               background: edu.cardBg(),
               border: `1px solid ${tokens.subtleBorder(0.08)}`,
-              borderLeft: tokens.accentStripe(hasResponse ? 'g' : qColor, 3),
+              borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(hasResponse ? 'g' : qColor)}`,
               ...edu.transition('background-color, border-color, box-shadow, border-left-color', 'standard'),
               ...edu.entrance(i),
             }}>

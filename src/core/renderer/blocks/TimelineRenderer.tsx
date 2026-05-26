@@ -38,7 +38,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
         style={{
           background: tokens.colorAlpha(colorKey, 0.06),
           border: `1px solid ${accentAlpha(0.2)}`,
-          boxShadow: tokens.raw.shadow.card,
+          boxShadow: edu.shadow('card'),
         }}
       >
         {/* Top accent bar */}
@@ -47,7 +47,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentAlpha(0.4)})` }}
         />
 
-        <div style={{ ...tokens.iosSectionPadding(isCompact) }}>
+        <div style={{ ...edu.sectionPadding() }}>
           {/* Header row with badge */}
           <div className="flex items-center gap-2 mb-3">
             <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -70,7 +70,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
               style={{
                 ...edu.bodyLg(),
                 fontWeight: 700,
-                color: tokens.color('text'),
+                color: edu.textColor(),
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -142,7 +142,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                         background: stepAlpha(0.06),
                         border: `1px solid ${stepAlpha(0.15)}`,
                         borderRadius: tokens.radius('lg') + 'px',
-                        ...tokens.iosNestedPadding(isCompact),
+                        ...edu.nestedPadding(),
                       }}
                     >
                       <div
@@ -161,7 +161,7 @@ export const TimelineRenderer = React.memo(function TimelineRenderer({ block, to
                         className={isCompact ? 'canvas-truncate-2' : ''}
                         style={{
                           ...edu.body(),
-                          color: tokens.color('text'),
+                          color: edu.textColor(),
                           wordBreak: 'break-word',
                           overflowWrap: 'break-word',
                         }}

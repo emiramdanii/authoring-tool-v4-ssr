@@ -305,6 +305,7 @@ export function genKuisSchema(
   const questions: Array<{ q: string; opts: string[]; ans: number; ex: string }> = [];
 
   const makeWrongOpts = (correct: string, exclude: string[] = []): string[] => {
+    // Strategy 1: Use topWords from parsed content
     const pool = topWords.filter(
       w => !correct.toLowerCase().includes(w) && !exclude.some(e => e.toLowerCase().includes(w)),
     );
@@ -314,7 +315,67 @@ export function genKuisSchema(
       const capitalised = w.charAt(0).toUpperCase() + w.slice(1);
       if (!wrongs.includes(capitalised)) wrongs.push(capitalised);
     }
-    while (wrongs.length < 3) wrongs.push(`Pilihan ${wrongs.length + 1}`);
+
+    // Strategy 2: Use definitions from other terms as distractors
+    if (wrongs.length < 3) {
+      for (const def of definitions) {
+        if (wrongs.length >= 3) break;
+        const defMeaning = def.meaning;
+        if (
+          defMeaning &&
+          defMeaning !== correct &&
+          !exclude.some(e => defMeaning.toLowerCase().includes(e.toLowerCase())) &&
+          !wrongs.includes(defMeaning)
+        ) {
+          wrongs.push(defMeaning);
+        }
+      }
+    }
+
+    // Strategy 3: Use enumeration items as distractors
+    if (wrongs.length < 3) {
+      for (const en of enumerations) {
+        if (wrongs.length >= 3) break;
+        for (const item of en.items) {
+          if (wrongs.length >= 3) break;
+          if (
+            item !== correct &&
+            !exclude.some(e => item.toLowerCase().includes(e.toLowerCase())) &&
+            !wrongs.includes(item)
+          ) {
+            wrongs.push(item);
+          }
+        }
+      }
+    }
+
+    // Strategy 4: Use sentences fragments as contextual distractors
+    if (wrongs.length < 3) {
+      const shortPhrases = sentences
+        .map(s => s.split(/[,.]/).map(p => p.trim()).filter(p => p.length > 5 && p.length < 60))
+        .flat();
+      for (const phrase of shortPhrases) {
+        if (wrongs.length >= 3) break;
+        if (
+          phrase !== correct &&
+          !exclude.some(e => phrase.toLowerCase().includes(e.toLowerCase())) &&
+          !wrongs.includes(phrase)
+        ) {
+          wrongs.push(phrase);
+        }
+      }
+    }
+
+    // Final fallback: Construct plausible distractors from the correct answer pattern
+    while (wrongs.length < 3) {
+      const idx = wrongs.length + 1;
+      const prefix = correct.length > 20 ? correct.slice(0, 15).trim() : '';
+      const distractor = prefix
+        ? `${prefix}... (variasi ${idx})`
+        : `Jawaban lain yang mungkin (${idx})`;
+      if (!wrongs.includes(distractor)) wrongs.push(distractor);
+    }
+
     return wrongs;
   };
 

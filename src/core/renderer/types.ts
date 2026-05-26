@@ -9,6 +9,10 @@ import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
 import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 import { EduRenderingContext } from '../edu/EduRenderingContext';
+import type { EduDisplayMode } from '../edu/education-typography';
+import { EDU_MODE_BG } from '../edu/education-colors';
+import { EDU_PRINT_SAFE } from '../edu/education-layout-rules';
+import type { SceneType } from '../edu/education-scene-types';
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -23,9 +27,21 @@ export type SchemaRenderMode = 'canvas' | 'preview' | 'export';
 export class TokenResolver {
   private tokens: DesignTokens;
   private _themeId: string | undefined;
+  private _displayMode: EduDisplayMode;
+  /**
+   * Scene type for the current page/scene being rendered.
+   * Set by SchemaScreenRenderer before rendering blocks.
+   * When set, all tokens.edu() calls automatically inherit this
+   * sceneType — making every block renderer scene-aware without
+   * any changes to individual renderer code.
+   *
+   * Flow: PageRenderer → SchemaScreenRenderer → tokens.setSceneType()
+   */
+  private _sceneType?: SceneType;
 
-  constructor(themeId?: string) {
+  constructor(themeId?: string, displayMode: EduDisplayMode = 'classroom') {
     this._themeId = themeId;
+    this._displayMode = displayMode;
     this.tokens = resolveTokens(themeId);
   }
 
@@ -472,9 +488,82 @@ export class TokenResolver {
   // ═══════════════════════════════════════════════════════════════════
 
   /** Create an educational rendering context for a block type.
-   *  This is the PRIMARY way to access edu tokens in renderers. */
-  edu(blockType: string, isCompact: boolean = false): EduRenderingContext {
-    return new EduRenderingContext(this, blockType, isCompact);
+   *  This is the PRIMARY way to access edu tokens in renderers.
+   *  The display mode is inherited from the TokenResolver instance
+   *  (set via constructor from the canva store's displayMode state).
+   *
+   *  Scene-aware: pass sceneType for scene-specific typography,
+   *  atmosphere, emotional profile, and accent prominence.
+   *
+   *  // Old API (still works, sceneType inferred from blockType)
+   *  const edu = tokens.edu('tujuan-display', isCompact);
+   *
+   *  // New API (explicit sceneType)
+   *  const edu = tokens.edu('tujuan-display', isCompact, 'intro');
+   */
+  /** Set the scene type for the current rendering context.
+   *  Called by SchemaScreenRenderer before rendering each page's blocks.
+   *  This enables ALL block renderers to automatically become scene-aware
+   *  without any code changes — tokens.edu('kuis', isCompact) will
+   *  automatically use the page's sceneType for typography, colors, spacing,
+   *  emotional profile, and accent prominence.
+   *
+   *  IMPORTANT: This is a per-page setting, not a global setting.
+   *  Each page has its own sceneType (from page.templateType).
+   */
+  setSceneType(sceneType: SceneType): void {
+    this._sceneType = sceneType;
+  }
+
+  /** Get the current scene type (set by SchemaScreenRenderer) */
+  getSceneType(): SceneType | undefined {
+    return this._sceneType;
+  }
+
+  edu(blockType: string, isCompact: boolean = false, sceneType?: import('@/core/edu/education-scene-types').SceneType): EduRenderingContext {
+    // Priority: explicit sceneType param > stored _sceneType > undefined (inferred from blockType)
+    const resolvedSceneType = sceneType ?? this._sceneType;
+    return new EduRenderingContext(this, blockType, isCompact, this._displayMode, resolvedSceneType);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DISPLAY MODE — Mode-aware color/typography helpers
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Get the current display mode */
+  get displayMode(): EduDisplayMode {
+    return this._displayMode;
+  }
+
+  /** Mode-aware page background — returns EDU_MODE_BG for the current mode.
+   *  Use for page/scene backgrounds instead of tokens.color('bg'). */
+  eduPageBg(): string {
+    return EDU_MODE_BG[this._displayMode].bg;
+  }
+
+  /** Mode-aware secondary page background */
+  eduPageBg2(): string {
+    return EDU_MODE_BG[this._displayMode].bg2;
+  }
+
+  /** Mode-aware card background */
+  eduCardBg(): string {
+    return EDU_MODE_BG[this._displayMode].card;
+  }
+
+  /** Mode-aware text color — in print mode, always returns #000000 */
+  eduTextColor(): string {
+    return this._displayMode === 'print' ? EDU_PRINT_SAFE.textColor : this.color('text');
+  }
+
+  /** Is the current display mode 'print'? */
+  isPrintMode(): boolean {
+    return this._displayMode === 'print';
+  }
+
+  /** Is the current display mode 'projector'? */
+  isProjectorMode(): boolean {
+    return this._displayMode === 'projector';
   }
 }
 

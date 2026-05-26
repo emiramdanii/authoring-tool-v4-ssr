@@ -46,6 +46,10 @@ import { computeScenePlan, createDerivedSchema, type ScenePlan } from '../layout
 import { SceneNavigator } from '../layout/SceneNavigator';
 import { useCanvaStore } from '@/store/canva-store';
 import { useCanvasBlockDrag } from '@/hooks/use-canvas-block-drag';
+import { EDU_MODE_BG } from '@/core/edu/education-colors';
+import type { EduDisplayMode } from '@/core/edu/education-typography';
+import { SCENE_ATMOSPHERES } from '@/core/edu/education-scene-atmosphere';
+import type { SceneType } from '@/core/edu/education-scene-types';
 import { isFullPageBlockType, isBlockInteractive, isBlockTypeRendererHandlesCompression } from '../schema/capability-registry';
 import { OverflowIndicator } from './blocks/OverflowIndicator';
 
@@ -126,6 +130,15 @@ export interface ScreenRendererProps {
   showBottomNav?: boolean;
   /** Page index (0-based) — forwarded to interactive renderers for score tracking */
   pageIndex?: number;
+  /**
+   * Scene type — the Learning Scene Type for this page.
+   * When provided, tokens.setSceneType() is called before rendering blocks,
+   * making ALL block renderers automatically scene-aware.
+   * Derived from page.templateType via TEMPLATE_TO_SCENE mapping.
+   * Enables: scene-aware typography, accent prominence, emotional profile,
+   * reveal strategy, spacing density, card/header treatment.
+   */
+  sceneType?: import('@/core/edu/education-scene-types').SceneType;
 }
 
 export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
@@ -151,8 +164,18 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   showTopNav = false,
   showBottomNav = false,
   pageIndex = 0,
+  sceneType,
 }: ScreenRendererProps) {
   const isCompact = mode === 'canvas';
+
+  // ═══ SCENE TYPE INJECTION ══════════════════════════════════════
+  // Set the scene type on the TokenResolver so ALL block renderers
+  // automatically become scene-aware via tokens.edu(blockType, isCompact).
+  // No individual renderer changes needed — the sceneType flows through
+  // the shared TokenResolver instance.
+  if (sceneType) {
+    tokens.setSceneType(sceneType);
+  }
   // FIX: Detect full-page blocks (cover/hero) even when mixed with flow blocks.
   // Previously: only true when there was exactly 1 full-page block.
   // Now: true when ANY block is a full-page type — this correctly handles
@@ -418,23 +441,44 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   }, [dragState, screen.blocks]);
 
   // ═══ BACKGROUND STYLE — applies to ALL screen types ═══
+  // Display mode backgrounds override the default bg color:
+  //   - classroom: normal theme bg
+  //   - projector: warm #FFFBF0 for projection screens
+  //   - print: pure white for B&W fotokopi
+  //   - student: cool gray for laptop/HP
+  //
+  // Cover pages and explicit gradient/radial backgrounds keep their
+  // design intent — only the default solid bg gets overridden.
+  const displayMode = useCanvaStore((s) => s.displayMode);
   const bg = screen.background;
   const bgStyle = useMemo<React.CSSProperties>(() => {
     const style: React.CSSProperties = {};
+    const modeBg = EDU_MODE_BG[displayMode];
+
     if (bg) {
       if (bg.type === 'radial') {
+        // Radial backgrounds (cover/hero) keep their design intent
         style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
       } else if (bg.type === 'gradient') {
+        // Gradient backgrounds keep their design intent
         style.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
       } else if (bg.type === 'solid') {
-        style.background = tokens.color(bg.color1 || 'bg');
+        // Solid backgrounds: in print mode, always white
+        style.background = displayMode === 'print' ? modeBg.bg : tokens.color(bg.color1 || 'bg');
       }
     }
     if (!bg && !isPureCoverPage) {
-      style.background = tokens.color('bg');
+      // No explicit background: use display mode background + scene atmosphere tint
+      // This makes pages feel alive — each scene type has a subtle warm/cool glow
+      const atmosphere = SCENE_ATMOSPHERES[sceneType ?? 'concept'];
+      if (displayMode !== 'print' && atmosphere.bgTint) {
+        style.background = `linear-gradient(180deg, ${modeBg.bg} 0%, ${atmosphere.bgTint} 100%)`;
+      } else {
+        style.background = modeBg.bg;
+      }
     }
     return style;
-  }, [bg, tokens, isPureCoverPage]);
+  }, [bg, tokens, isPureCoverPage, displayMode, sceneType]);
 
   // ═══ RENDER: Scene-driven absolute positioning ═══
   // Cover/hero: absolute inset-0 (fills entire scene)
@@ -456,7 +500,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       className={isPureCoverPage ? 'absolute inset-0' : 'relative h-full w-full'}
       style={{
         fontFamily: tokens.fontFamily('body'),
-        color: tokens.color('text'),
+        color: displayMode === 'print' ? '#000000' : tokens.color('text'),
         ...bgStyle,
         overflow: 'hidden', // Scene clips at boundary — no content escapes
       }}

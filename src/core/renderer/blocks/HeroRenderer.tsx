@@ -21,12 +21,13 @@ import { PremiumBlockWrapper, MicroInteraction } from './PremiumBlockEffects';
 // All text/labels in Indonesian (Bahasa Indonesia).
 //
 // EDU MIGRATION: Replaced iosTypography() with edu tokens.
-//   - iosTypography('title2','title3','hero') → edu.heading()/edu.title()
+//   - iosTypography('title2','title3','hero') → edu.title() (scene-aware)
 //   - iosTypography('caption2','footnote','subheadline') → edu.caption()/edu.body()
 //   - Hardcoded 9-12px badge text → edu.micro()
 //   - iosSectionPadding → edu.sectionPadding()
 //   - iosEntranceStyle → edu.entrance()
 //   - iosIconSize → edu.iconSize()
+//   - tokens.accentStripe() → edu.stripeWidth() + accent (scene-aware density)
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Variant Selector ─────────────────────────────────────────────
@@ -108,17 +109,17 @@ function HeroVariantA({
         {block.meta?.elemen || ''} {block.meta?.fase ? `· Kelas ${block.meta.fase}` : ''}
       </div>
 
-      {/* Title */}
+      {/* Title — edu.title() for scene-aware section opener headline */}
       <h1 className="font-black leading-tight min-w-0"
         style={{
-          ...edu.heading(),
-          color: tokens.color('text'),
+          ...edu.title(),
+          color: edu.textColor(),
           wordBreak: 'break-word',
         }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
-          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
+          style={{ color: edu.textColor(), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
         />
       </h1>
 
@@ -195,9 +196,9 @@ function HeroVariantB({
   return (
     <div className="relative overflow-hidden rounded-2xl flex items-center gap-4"
       style={{
-        background: tokens.color('bg'),
+        background: edu.cardBg(),
         border: `1px solid ${tokens.colorAlpha(accentKey, 0.15)}`,
-        borderLeft: tokens.accentStripe(accentKey, 4),
+        borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentKey)}`,
         ...edu.sectionPadding(),
         ...edu.entrance(0, 'fadeIn'),
       }}>
@@ -227,12 +228,12 @@ function HeroVariantB({
         <h2 className="font-black leading-tight min-w-0 truncate"
           style={{
             ...edu.heading(),
-            color: tokens.color('text'),
+            color: edu.textColor(),
           }}>
           <InlineTextEditor
             {...titleEditor}
             className="font-black leading-tight"
-            style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit' }}
+            style={{ color: edu.textColor(), fontSize: 'inherit', fontFamily: 'inherit' }}
           />
         </h2>
         <InlineTextEditor
@@ -328,14 +329,14 @@ function HeroVariantC({
       <h2 className="font-black leading-tight min-w-0 mx-auto"
         style={{
           ...edu.heading(),
-          color: tokens.color('text'),
+          color: edu.textColor(),
           maxWidth: '90%',
           wordBreak: 'break-word',
         }}>
         <InlineTextEditor
           {...titleEditor}
           className="font-black leading-tight"
-          style={{ color: tokens.color('text'), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
+          style={{ color: edu.textColor(), fontSize: 'inherit', fontFamily: 'inherit', wordBreak: 'break-word' }}
         />
       </h2>
 

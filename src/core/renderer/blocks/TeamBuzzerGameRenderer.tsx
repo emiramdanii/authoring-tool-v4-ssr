@@ -266,7 +266,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
  }}
  >
@@ -391,12 +391,12 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  style={{
  background: edu.accentAlpha(0.06),
  border: '1px solid ' + edu.accentAlpha(0.2),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  }}
  >
  <p
  className={`font-bold leading-relaxed mb-4 ${isCompact ? '' : ''} ${isCompact ? 'canvas-truncate-2' : ''}`}
- style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word', overflow: 'hidden' }}
+ style={{ color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word', overflow: 'hidden' }}
  >
  {q.teks}
  </p>

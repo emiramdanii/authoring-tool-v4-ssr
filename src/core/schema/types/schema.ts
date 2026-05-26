@@ -122,6 +122,16 @@ export interface ScreenSchema {
   sectionType?: import('../../vcs/types').SectionType;
   /** FASE 11A — Layout grammar (visual structure, overrides templateType-derived default) */
   layoutGrammar?: import('../../vcs/types').LayoutGrammarKey;
+  /** Phase 7 — Learning scene type override.
+   *  When set, overrides the inferred sceneType from templateType.
+   *  Allows teachers to explicitly control scene-aware rendering:
+   *    - Typography hierarchy (hero/title/body sizes)
+   *    - Accent prominence (which colors are "vocal" vs "muted")
+   *    - Emotional profile (progress/discovery/reward triggers)
+   *    - Spacing density (intensity-driven rhythm)
+   *    - Card/header treatment (elevated/flat/subtle)
+   *  If not set, sceneType is inferred from templateType via inferSceneType(). */
+  sceneType?: import('../../edu/education-scene-types').SceneType;
   /** Screen blocks in order */
   blocks: SchemaBlock[];
   /** Tab definitions for icon navigation */

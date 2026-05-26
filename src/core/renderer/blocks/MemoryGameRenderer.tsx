@@ -497,7 +497,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
  border: '2px solid ' + (isMatched
  ? tokens.colorAlpha('g', 0.4)
  : edu.accentAlpha(0.25)),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  }}
  >
  <span

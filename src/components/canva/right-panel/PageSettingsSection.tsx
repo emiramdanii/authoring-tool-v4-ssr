@@ -7,6 +7,7 @@ import { LAYOUT_PRESETS } from '../types';
 import type { PageTemplateType } from '../types';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { getAllPresets } from '@/core/preset/PagePresetRegistry';
+import { SCENE_TYPES, type SceneType } from '@/core/edu/education-scene-types';
 import { toast } from 'sonner';
 import Section from './Section';
 import { Button } from '@/components/ui/button';
@@ -150,6 +151,44 @@ export default function PageSettingsSection() {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Phase 7: Scene Type Override — teacher can explicitly set the learning scene type.
+          This controls scene-aware rendering: typography hierarchy, accent prominence,
+          emotional profile, spacing density, and card/header treatment.
+          If not set, sceneType is automatically inferred from templateType. */}
+      {isTemplateMode && page?.schema && (
+        <div className="mb-3">
+          <label className="text-[10px] text-app-muted block mb-1">Scene Type</label>
+          <select
+            value={page.schema.sceneType || ''}
+            onChange={(e) => {
+              const store = useCanvaStore.getState();
+              const { currentPageIndex, pages } = store;
+              const currentPage = pages[currentPageIndex];
+              if (!currentPage?.schema) return;
+              const newSceneType = (e.target.value || undefined) as SceneType | undefined;
+              // Update schema with new sceneType — zustand immutable update pattern
+              const newPages = [...pages];
+              newPages[currentPageIndex] = {
+                ...currentPage,
+                schema: { ...currentPage.schema, sceneType: newSceneType },
+              };
+              useCanvaStore.setState({ pages: newPages });
+              const labelId = newSceneType ? SCENE_TYPES[newSceneType].labelId : 'Otomatis';
+              toast.success(`Scene type: ${labelId}`);
+            }}
+            className="w-full h-7 px-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none focus-ring"
+          >
+            <option value="">Otomatis (dari jenis halaman)</option>
+            {Object.entries(SCENE_TYPES).map(([key, def]) => (
+              <option key={key} value={key}>{def.labelId} — {def.description}</option>
+            ))}
+          </select>
+          <p className="text-[8px] text-app-muted mt-1 leading-tight">
+            Mengubah scene type mempengaruhi ukuran font, ketebalan aksen, jarak, dan animasi.
+          </p>
         </div>
       )}
 

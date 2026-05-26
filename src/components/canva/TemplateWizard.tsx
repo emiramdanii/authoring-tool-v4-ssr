@@ -131,7 +131,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
         sekolah: sekolah.trim() || undefined,
       };
 
-      const rawPages = createProjectFromTemplate(selectedTemplateId, metadata);
+      const rawPages = await createProjectFromTemplate(selectedTemplateId, metadata);
 
       // Get theme from template
       const themeId = getTemplateThemeId(selectedTemplateId);

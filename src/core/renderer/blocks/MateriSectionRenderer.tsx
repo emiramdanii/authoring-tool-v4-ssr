@@ -106,7 +106,7 @@ function MateriTabBar({
               borderRadius: tokens.radius('full'),
               border: `1px solid ${isActive ? tokens.colorAlpha(accentColor || 'p', 0.4) : tokens.subtleBorder(0.1)}`,
               background: isActive ? tokens.accentBg(accentColor || 'p', 0.08) : 'transparent',
-              color: isActive ? tokens.accentText(accentColor || 'p') : tokens.muted(0.85),
+              color: isActive ? tokens.accentText(accentColor || 'p') : edu.mutedText(0.85),
               cursor: interactive ? 'pointer' : 'default',
             }}
           >
@@ -134,7 +134,7 @@ function OverflowIndicator({
 
   return (
     <div style={{
-      ...tokens.iosNestedPadding(isCompact),
+      ...edu.nestedPadding(),
       marginTop: 4,
       borderRadius: tokens.radius('md'),
       background: tokens.colorAlpha('y', 0.08),
@@ -260,9 +260,9 @@ function MateriVariantKlasik({
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: tokens.accentStripe(accentColor, 3),
-          background: tokens.color('card'),
-          ...tokens.iosSectionPadding(isCompact),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentColor)}`,
+          background: edu.cardBg(),
+          ...edu.sectionPadding(),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
@@ -293,7 +293,7 @@ function MateriVariantKlasik({
                 className="font-black leading-tight"
                 style={{
                   ...edu.heading(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -306,7 +306,7 @@ function MateriVariantKlasik({
                 className="mt-1 leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.muted(0.85),
+                  color: edu.mutedText(0.85),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -327,7 +327,7 @@ function MateriVariantKlasik({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ ...tokens.iosSectionPadding(isCompact), paddingBottom: 0 }}>
+        <div style={{ ...edu.sectionPadding(), paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}
@@ -344,7 +344,7 @@ function MateriVariantKlasik({
         <div
           className="flex flex-col gap-4"
           style={{
-            ...tokens.iosContentPadding(isCompact),
+            ...edu.sectionPadding(),
             position: 'relative',
             maxWidth: tokens.contentWidth(),
             lineHeight: 1.7,
@@ -367,7 +367,7 @@ function MateriVariantKlasik({
             onClick={() => toggleSection(i)}
             className={`w-full flex items-center gap-2 text-left ${tokens.iosAccordionTw(interactive)}`}
                     style={{
-                      ...tokens.iosNestedPadding(isCompact),
+                      ...edu.nestedPadding(),
                       cursor: 'pointer',
                       background: expandedSections.has(i) ? accentAlpha(0.06) : 'transparent',
                       ...edu.caption(),
@@ -389,10 +389,9 @@ function MateriVariantKlasik({
                   <div style={{
                     maxHeight: expandedSections.has(i) ? 2000 : 0,
                     overflow: 'hidden',
-                    // Sprint 3C: Use iosTransitionStyle for accordion expand
-                    ...tokens.iosTransitionStyle('max-height', 'slow'),
+                    ...edu.emotionalMotion('accordionExpand'),
                   }}>
-                    <div style={{ ...tokens.iosNestedPadding(isCompact), paddingTop: isCompact ? 2 : 4, paddingBottom: isCompact ? 6 : 8 }}>
+                    <div style={{ ...edu.nestedPadding(), paddingTop: isCompact ? 2 : 4, paddingBottom: isCompact ? 6 : 8 }}>
                       <SchemaBlockRenderer
                         block={childBlock}
                         mode={mode}
@@ -420,7 +419,7 @@ function MateriVariantKlasik({
               left: 0,
               right: 0,
               height: 40,
-              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              background: `linear-gradient(transparent, ${edu.cardBg()})`,
               pointerEvents: 'none',
             }} />
           )}
@@ -436,7 +435,7 @@ function MateriVariantKlasik({
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosInnerMargin(isCompact),
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
           }}
         >
           <div className="flex items-center gap-2 mb-3">
@@ -465,6 +464,7 @@ function MateriVariantKlasik({
                 key={`materi-takeaway-mi-${block.id || 'ms'}-${i}`}
                 className="flex items-start gap-2.5 rounded-lg p-2"
                 style={{
+                  ...edu.emotionalMotion('reveal', i),
                   background: tokens.subtleBg(0.02),
                   border: `1px solid ${tokens.subtleBorder(0.06)}`,
                 }}
@@ -478,7 +478,7 @@ function MateriVariantKlasik({
                   className="leading-relaxed"
                   style={{
                     ...edu.body(),
-                    color: tokens.color('text'),
+                    color: edu.textColor(),
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
                   }}
@@ -499,9 +499,9 @@ function MateriVariantKlasik({
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosInnerMargin(isCompact),
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: tokens.accentBg('y', 0.04),
-            borderLeft: tokens.accentStripe('y', 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
           }}
         >
           <div className="flex items-start gap-3">
@@ -528,7 +528,7 @@ function MateriVariantKlasik({
                 className="leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}
@@ -661,9 +661,9 @@ function MateriVariantMajalah({
       {/* ═══ SECTION HEADER ══════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: tokens.accentStripe(accentColor, 3),
-          background: tokens.color('card'),
-          ...tokens.iosSectionPadding(isCompact),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentColor)}`,
+          background: edu.cardBg(),
+          ...edu.sectionPadding(),
           borderBottom: `1px solid ${tokens.subtleBorder(0.06)}`,
         }}
       >
@@ -684,7 +684,7 @@ function MateriVariantMajalah({
             className="font-black leading-tight min-w-0"
             style={{
               ...edu.heading(),
-              color: tokens.color('text'),
+              color: edu.textColor(),
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -701,7 +701,7 @@ function MateriVariantMajalah({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ ...tokens.iosSectionPadding(isCompact), paddingBottom: 0 }}>
+        <div style={{ ...edu.sectionPadding(), paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}
@@ -717,7 +717,7 @@ function MateriVariantMajalah({
       <div
         className={isCompact ? undefined : 'variant-magazine-layout'}
         style={{
-          ...tokens.iosSectionPadding(isCompact),
+          ...edu.sectionPadding(),
           ...(isCompact ? { display: 'flex', flexDirection: 'column', gap: '12px' } : {}),
         }}
       >
@@ -744,7 +744,7 @@ function MateriVariantMajalah({
               left: 0,
               right: 0,
               height: 40,
-              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              background: `linear-gradient(transparent, ${edu.cardBg()})`,
               pointerEvents: 'none',
             }} />
           )}
@@ -756,7 +756,7 @@ function MateriVariantMajalah({
             style={{
               ...(isCompact ? {} : { position: 'sticky', top: '16px', alignSelf: 'start' }),
               ...tokens.nestedCardStyle(),
-              ...tokens.iosNestedPadding(isCompact),
+              ...edu.nestedPadding(),
             }}
           >
             <div className="flex items-center gap-2 mb-3">
@@ -789,7 +789,7 @@ function MateriVariantMajalah({
                     className="leading-relaxed"
                     style={{
                       ...edu.body(),
-                      color: tokens.color('text'),
+                      color: edu.textColor(),
                       wordBreak: 'break-word',
                     }}
                   >
@@ -809,9 +809,9 @@ function MateriVariantMajalah({
           style={{
             ...tokens.nestedCardStyle(),
             ...tokens.iosInnerMargin(isCompact),
-            ...tokens.iosNestedPadding(isCompact),
+            ...edu.nestedPadding(),
             background: tokens.accentBg('y', 0.04),
-            borderLeft: tokens.accentStripe('y', 3),
+            borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
           }}
         >
           <div className="flex items-center gap-3">
@@ -831,7 +831,7 @@ function MateriVariantMajalah({
                 className="leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                 }}
               >
@@ -931,8 +931,8 @@ function MateriVariantPill({
       <div
         className="flex items-center gap-2.5"
         style={{
-          ...tokens.iosSectionPadding(isCompact),
-          borderLeft: tokens.accentStripe(accentColor, 3),
+          ...edu.sectionPadding(),
+          borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(accentColor)}`,
         }}
       >
         <div
@@ -951,7 +951,7 @@ function MateriVariantPill({
           style={{
             ...edu.bodyLg(),
             fontWeight: 700,
-            color: tokens.color('text'),
+            color: edu.textColor(),
             wordBreak: 'break-word',
           }}
         >
@@ -966,7 +966,7 @@ function MateriVariantPill({
 
       {/* ═══ TAB BAR ═════════════════════════════════════════════ */}
       {hasTabs && block.tabs && (
-        <div style={{ ...tokens.iosCardPadding(isCompact), paddingBottom: 0 }}>
+        <div style={{ ...edu.componentPadding(), paddingBottom: 0 }}>
           <MateriTabBar
             tabs={block.tabs}
             activeIndex={activeTabIndex}
@@ -983,7 +983,7 @@ function MateriVariantPill({
         <div
           className="flex flex-col gap-3"
           style={{
-            ...tokens.iosContentPadding(isCompact),
+            ...edu.sectionPadding(),
             position: 'relative',
           }}
         >
@@ -1008,7 +1008,7 @@ function MateriVariantPill({
               left: 0,
               right: 0,
               height: 40,
-              background: `linear-gradient(transparent, ${tokens.color('card')})`,
+              background: `linear-gradient(transparent, ${edu.cardBg()})`,
               pointerEvents: 'none',
             }} />
           )}
@@ -1019,7 +1019,7 @@ function MateriVariantPill({
       {takeaways.length > 0 && (
         <div
           style={{
-            ...tokens.iosCardPadding(isCompact),
+            ...edu.componentPadding(),
             paddingTop: isCompact ? 4 : 6,
             paddingBottom: isCompact ? 8 : 10,
           }}
@@ -1060,7 +1060,7 @@ function MateriVariantPill({
       {selfCheck && (
         <div
           style={{
-            ...tokens.iosCardPadding(isCompact),
+            ...edu.componentPadding(),
             paddingTop: isCompact ? 4 : 6,
             paddingBottom: isCompact ? 8 : 12,
           }}
@@ -1071,7 +1071,7 @@ function MateriVariantPill({
             type="button"
             className={`flex items-center gap-1.5 w-full text-left ${tokens.iosExpandTw(interactive)}`}
             style={{
-              ...tokens.iosNestedPadding(isCompact),
+              ...edu.nestedPadding(),
               borderRadius: tokens.radius('sm'),
               background: tokens.accentBg('y', 0.06),
               border: `1px solid ${tokens.subtleBorder(0.06)}`,
@@ -1092,18 +1092,18 @@ function MateriVariantPill({
             <div
               style={{
                 marginTop: '6px',
-                ...tokens.iosNestedPadding(isCompact),
+                ...edu.nestedPadding(),
                 background: tokens.accentBg('y', 0.04),
                 borderRadius: tokens.radius('sm'),
-                borderLeft: tokens.accentStripe('y', 3),
-                animation: 'fadeIn 0.3s ease',
+                borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('y')}`,
+                ...edu.emotionalMotion('reveal'),
               }}
             >
               <p
                 className="leading-relaxed"
                 style={{
                   ...edu.body(),
-                  color: tokens.color('text'),
+                  color: edu.textColor(),
                   wordBreak: 'break-word',
                 }}
               >

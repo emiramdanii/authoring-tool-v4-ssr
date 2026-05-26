@@ -185,10 +185,15 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
         id: 'ch1',
         charEmoji: '🎭',
         title: 'Bab 1',
-        choices: [{
-          icon: '👉', label: 'Pilihan 1', detail: '', good: true, pts: 10,
-          level: 'good' as const,
-        }],
+        setup: [
+          { speaker: 'Narator', text: 'Bayangkan kamu menghadapi situasi berikut...' },
+        ],
+        choicePrompt: 'Apa yang akan kamu lakukan?',
+        choices: [
+          { icon: '✅', label: 'Melakukan hal yang benar', detail: 'Memilih tindakan sesuai norma dan aturan', good: true, pts: 10, level: 'good' as const },
+          { icon: '🤔', label: 'Bertanya pada orang lain', detail: 'Meminta pendapat sebelum bertindak', good: true, pts: 5, level: 'ok' as const },
+          { icon: '❌', label: 'Mengabaikan situasi', detail: 'Tidak melakukan apa-apa', good: false, pts: 0, level: 'bad' as const },
+        ],
       }],
     }),
   },

@@ -76,8 +76,12 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
 
   return {
     // ── Initial state ────────────────────────────────────────────
-    pages: [createPage('Halaman 1', 'custom')],
-    currentPageIndex: 0,
+    // Start with NO pages — user sees the warm CanvasEmptyState
+    // which guides them to create content via template or auto-generate.
+    // Previously: pages: [createPage('Halaman 1', 'custom')] which
+    // showed a blank "Halaman Kosong" — emotionally empty.
+    pages: [],
+    currentPageIndex: -1,
     ratioId: '16:9',
     zoom: -1, // -1 = auto-fit (calculated by Stage on mount)
     fitZoom: 0.5, // Updated by Stage's ResizeObserver — initial fallback

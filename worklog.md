@@ -1507,3 +1507,435 @@ Stage Summary:
 - Materi section titles now use edu.heading() → 26-32px (was 14-22px hardcoded)
 - Kuis variant selector now uses edu.micro() (was iOS VC caption1)
 - iOS VC helpers still used for app chrome (iosButtonTw, iosFocusRing, iosTabTw, etc.) — intentional
+---
+Task ID: 2
+Agent: Main Agent
+Task: Display Mode integration + PremiumStepNavigator edu migration + cardStyle/headerStyle integration
+
+Work Log:
+- Added displayMode (EduDisplayMode) + setDisplayMode to session-slice.ts and CanvaState types
+- TokenResolver: Added _displayMode field, constructor accepts displayMode param, passes to edu()
+- PageRenderer: Wire displayMode from store → new TokenResolver(themeId, displayMode), added to useMemo deps
+- PageFrame: Wire displayMode from store → new TokenResolver(themeId, displayMode)
+- StatusBar: Created DisplayModeSelector component (🏫Kelas/📽️Proyektor/🖨️Cetak/💻Siswa)
+- PremiumStepNavigator: Replaced 9 hardcoded fontSize (9-13px) with edu.micro() token
+- TujuanDisplayRenderer: Integrated edu.cardStyle() and edu.headerStyle() in all 3 variants
+- SYSTEM_MAP.md: Updated Risks section with current migration status
+- TypeScript build clean, pushed to GitHub (3 commits)
+
+Stage Summary:
+- Display Mode system fully wired: Store → TokenResolver → EduRenderingContext → block renderers
+- Teacher can switch Classroom/Projector/Print/Student — all typography auto-scales
+- 0 iosTypography() runtime calls remain in block renderers
+- edu.cardStyle()/headerStyle() pattern established in TujuanDisplayRenderer as reference
+- 3 commits: f6cc2ee (display mode + PremiumStepNavigator), 0d74876 (cardStyle/headerStyle)
+---
+Task ID: display-mode-visual
+Agent: Super Z (main)
+Task: Wire Display Mode visual rendering — make mode switching actually change visual output
+
+Work Log:
+- Verified Display Mode infrastructure was already wired (store → TokenResolver → EduRenderingContext → typography scaling)
+- Identified the gap: visual output didn't change when switching modes because EDU_MODE_BG and EDU_PRINT_SAFE were never consumed
+- Updated EduRenderingContext with mode-aware overrides:
+  - accent() → black in print mode (B&W fotokopi safe)
+  - accentAlpha() → grayscale alpha in print mode
+  - accentBg() → near-transparent gray in print mode
+  - accentBorder() → dark gray (#333333) in print mode
+  - cardBg() → mode-specific card backgrounds (projector=warm, print=white, student=clean)
+  - cardStyle() → thick borders + no shadow in print mode
+  - headerStyle() → thick black stripe (4px) in print mode
+  - shadow() → always 'none' in print mode
+  - textColor() → #000000 in print mode
+  - mutedText() → dark gray in print mode
+  - New methods: pageBg(), pageBg2(), pageCardBg(), isPrint(), isProjector(), displayMode getter
+- Wired EDU_MODE_BG into SchemaScreenRenderer background rendering
+- Wired EDU_MODE_BG into PageFrame background rendering
+- Applied print-mode text color override (#000000) in SchemaScreenRenderer container
+- Added TokenResolver display mode helpers: eduPageBg(), eduPageBg2(), eduCardBg(), eduTextColor(), isPrintMode(), isProjectorMode()
+- Migrated 6 key renderers from tokens.color('bg'/'card') to mode-aware edu helpers:
+  - CoverRenderer: tokens.color('bg') → edu.pageBg()/pageBg2()
+  - HeroRenderer: tokens.color('bg') → edu.cardBg()
+  - MateriSectionRenderer: tokens.color('card') → edu.cardBg() (5 calls)
+  - PetunjukRenderer: tokens.color('card') → edu.cardBg()
+  - RangkumanRenderer: tokens.color('card') → edu.cardBg()
+  - TujuanDisplayRenderer: tokens.colorAlpha('bg') → tokens.eduPageBg()
+- Created EduComponentShell + EduInlineSection reusable wrapper components
+- Updated SYSTEM_MAP.md with display mode architecture details
+
+Stage Summary:
+- 3 commits: 42c8c55, 50deb11, 3579880
+- Display Mode now ACTUALLY changes visual output:
+  - Kelas (classroom): standard white bg, 1.0x font scale
+  - Proyektor: warm #FFFBF0 bg, 1.15x font scale
+  - Cetak (print): B&W safe, no shadows, thick borders, black accents/text, 0.95x scale
+  - Siswa (student): cool gray #F1F5F9 bg, 0.9x scale
+- Full pipeline: Store(displayMode) → TokenResolver → EduRenderingContext → all 43 block renderers
+- EduComponentShell available for new renderer standardization
+- Build: TypeScript clean, pushed to origin/main
+---
+Task ID: 2
+Agent: Main Agent
+Task: Create comprehensive SILSE Educational Visual Philosophy Design Specification document
+
+Work Log:
+- Audited current codebase: display mode store exists, TokenResolver has edu helpers, all 43 renderers migrated to edu tokens
+- Identified anti-patterns: holographic/aurora effects, permanent labels, border-everything, flat typography, card stack layout
+- Created comprehensive design specification document covering:
+  - Product Identity (what SILSE is and isn't)
+  - 10 Guided Focus Design principles
+  - Educational Typography Spec (8-level scale, weight hierarchy, line height, letter spacing, rhythm rules, per-section treatment, display mode adjustments)
+  - Spatial Layout System (8 Learning Sections with atmosphere, composition rules, spatial storytelling techniques, layout grammar, whitespace budget, content density rules)
+  - Interaction Language (hover states, 5 reveal patterns, quiz feedback, section transitions, motion rules, interactive component states, attention steering)
+  - Anti-Patterns catalog with diagnosis of current problems
+  - 5-phase migration plan (Phase A through E)
+- Generated document using docx skill with WM-1 Warm Teal palette and R4 cover recipe
+- Fixed TOC placeholders using add_toc_placeholders.py
+- Post-check passed: 7/9 checks, 0 errors
+
+Stage Summary:
+- Produced: /home/z/my-project/download/SILSE-Educational-Visual-Philosophy-v2.0.docx
+- Document is ~30 pages comprehensive design specification
+- Key design pivot: from "slide projector" to "Educational Interactive Experience"
+- Core philosophy: Guided Focus Design — one slide = one focus, content dominant, editor hidden
+- Typography: dramatic scale (hero 48-56px down to micro 12-13px) with weight contrast
+- Layout: 8 Learning Sections each with unique atmosphere, not generic cards
+- Interaction: functional motion only, no decorative effects
+- Migration: 5 phases over ~8 weeks
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Generate SILSE Design Spec v2.1 with Learning Scene Model
+
+Work Log:
+- Integrated Learning Scene Model as fundamental architectural unit (Ch.2)
+- Defined 8 Learning Scene Types: Intro, Concept, Example, Practice, Discussion, Reflection, Assessment, Summary
+- Each scene type has: atmosphere, layout grammar, typography, color, density, motion, state lifecycle
+- Added Scene Transition Grammar (8 transition types with animation specs)
+- Added Scene Composition Rules (one focus, atmosphere integrity, progressive density, state visibility, exit clarity, reversibility)
+- Remapped Spatial Layout around Scene Types (Ch.5) instead of generic sections
+- Added Ch.7 Color Semantics per scene type
+- Added Ch.8 Component Grammar with density rules
+- Added Ch.10 10-Step Development Roadmap as dependency chain
+- Updated product positioning: "native platform untuk membuat pengalaman belajar digital"
+- Fixed font typo (YaHeId → YaHei)
+- Regenerated docx, ran TOC placeholder fix, postcheck: 8/9 passed, 0 errors
+
+Stage Summary:
+- Produced: /home/z/my-project/download/SILSE-Educational-Visual-Philosophy-v2.1.docx
+- Key addition: Learning Scene as unit of experience (not slide, not page)
+- 8 Scene Types define the entire design system architecture
+- 10-step roadmap ensures no step is skipped before implementation
+- v2.0 docx also available for reference
+---
+Task ID: 1A-3B
+Agent: Main (Senior Dev)
+Task: Implement Scene Type Model + Emotional Layer + Scene Atmosphere + update all edu token files
+
+Work Log:
+- Created `src/core/edu/education-scene-types.ts` — 8 Scene Types (intro/concept/example/practice/discussion/reflection/assessment/summary), intensity curve, narrative positions, reveal strategies, TEMPLATE_TO_SCENE mapping, BLOCK_SCENE_HINT mapping, inferSceneType() helper, validateNarrativeArc()
+- Created `src/core/edu/education-emotional-layer.ts` — MVP Emotional Layer with 3 core emotions (Progress, Discovery, Reward), EmotionalMotion configs per category, SceneEmotionalProfile per scene type, emotionalRewardStyle/emotionalDiscoveryStyle/emotionalProgressStyle helpers, EMOTIONAL_KEYFRAMES CSS, EMOTIONAL_VS_DECORATIVE documentation
+- Created `src/core/edu/education-scene-atmosphere.ts` — 8 Scene Atmospheres with accentProminence (full/muted/minimal per semantic color), bgTint, cardTreatment (elevated/flat/subtle), stripeProminence (bold/normal/gentle), headerTreatment (accented/outlined/minimal), PROMINENCE_OPACITY mapping
+- Updated `src/core/edu/education-typography.ts` — Added `hero` level (56px), SceneTypographyOverride per scene type, resolveEduTypographyScene() and resolveEduTypographySceneCompact() helpers
+- Updated `src/core/edu/education-motion.ts` — Added `emotional` motion category (progress/discovery/reward), `emotional` and `emotionalMax` durations, `emotional` easing, eduEmotionalStyle() helper, expanded forbidden list (confetti, shimmer, holographic)
+- Updated `src/core/edu/EduRenderingContext.ts` — Scene-aware: hero(), sceneType getter, emotional(), atmosphere(), sceneBg(), sceneBgTinted(), sceneIntensity(), revealStrategy(), scene-aware accentBg/accentBorder/accentAlpha with prominence multipliers, scene-aware cardStyle/headerStyle with treatment, emotionalMotion(), scene-aware stripeWidth()
+- Updated `src/core/renderer/types.ts` (TokenResolver) — edu() now accepts optional 3rd param sceneType, backward compatible
+- Updated `src/core/edu/index.ts` — Added Layer 5 exports for all new modules
+
+Stage Summary:
+- 3 new files, 5 updated files, 0 TypeScript errors
+- All 43 existing block renderers continue to work (backward compatible — old 4-param edu() API still works)
+- New API: tokens.edu('kuis', false, 'assessment') for explicit scene-aware rendering
+- Foundation complete for: scene-specific typography hierarchy, atmosphere-driven accent prominence, emotional motion profiles
+- Pending: Phase 4 (PremiumStepNavigator rebuild, BlockSelectionOverlay simplify), Phase 5 (template/preset sceneType mapping)
+
+---
+Task ID: 4A-5B
+Agent: Main (Senior Dev)
+Task: Rebuild PremiumStepNavigator (decorative → emotional) + Template sceneType mapping + CSS keyframes
+
+Work Log:
+- Rebuilt PremiumStepNavigator.tsx (479→260 lines) as EduStepNavigator:
+  - REMOVED: Holographic/aurora gradient progress bar, 3D flip step chips, ConfettiBurst component, SelesaiBadge with continuous glow, springBounce animation, perspective transforms
+  - REPLACED WITH: Solid accent progress bar with emotional fill (400ms), numbered step circles with check-draw, pulse-once completion badge, smooth fade entrance, scene-aware styling via edu tokens
+  - Backward compatible: old PremiumStepNavigator/usePremiumStepNavigator still work as re-exports
+  - Added `accent` prop (deprecated, ignored) for backward compat with DefBoxRenderer, NcGridRenderer, RangkumanRenderer
+- Updated CourseTemplateRegistry.ts:
+  - Added sceneType field to SceneTemplateSpec (optional, inferred from TEMPLATE_TO_SCENE)
+  - Added resolveSceneType() helper
+  - Added getTemplateIntensityCurve() for narrative rhythm visualization
+- Updated globals.css:
+  - Added emotional keyframes: eduCheckDraw, eduScalePop, eduPulseOnce, eduBlockStaggerIn
+  - Marked forbidden keyframes with comments: springBounce, confettiBurst, glowPulse, shimmer
+
+Stage Summary:
+- All phases complete, 0 TypeScript errors
+- EduStepNavigator is 45% smaller code, removes all decorative effects
+- Scene type is now threaded through: Template → SceneSpec → EduRenderingContext → renderers
+- CSS keyframes for emotional Layer 5 available globally
+- Next: Actual renderer integration (passing sceneType from PageRenderer down to block renderers)
+
+---
+Task ID: 5b
+Agent: Sub Agent
+Task: Add sceneType to CourseTemplateRegistry
+
+Work Log:
+- Read worklog.md and CourseTemplateRegistry.ts
+- Analyzed all 16 course templates to identify 132 SceneTemplateSpec objects
+- Created mapping from templateType to sceneType per TEMPLATE_TO_SCENE:
+  - cover/petunjuk/dokumen/tujuan/motivasi/hero → 'intro'
+  - materi/custom → 'concept'
+  - rangkuman/penutup → 'summary'
+  - skenario → 'example'
+  - diskusi → 'discussion'
+  - kuis/hasil → 'assessment'
+  - game → 'practice'
+  - refleksi → 'reflection'
+- Used Python script to add sceneType field to all 132 SceneTemplateSpec objects across all 16 templates
+- Verified: 132 templateType occurrences, 132 sceneType occurrences (100% coverage)
+- TypeScript compilation: clean (0 errors)
+
+Templates modified (16 total):
+1. modul-ppkn-vii (10 scenes)
+2. modul-ppkn-viii (8 scenes)
+3. modul-ipa-viii (8 scenes)
+4. modul-ipa-vii (9 scenes)
+5. modul-mtk-vii (8 scenes)
+6. modul-mtk-viii (8 scenes)
+7. modul-bin-vii (8 scenes)
+8. modul-bin-viii (9 scenes)
+9. modul-bing-viii (8 scenes)
+10. modul-bing-vii (7 scenes)
+11. modul-seni-vii (7 scenes)
+12. modul-seni-viii (7 scenes)
+13. modul-pjok-vii (8 scenes)
+14. modul-pjok-viii (7 scenes)
+15. modul-pjok-iv (9 scenes)
+16. modul-pjok-x (9 scenes)
+17. template-kosong (2 scenes)
+
+Stage Summary:
+- 1 file changed: CourseTemplateRegistry.ts
+- 132 SceneTemplateSpec objects now have explicit sceneType field
+- sceneType values follow TEMPLATE_TO_SCENE mapping from education-scene-types.ts
+- resolveSceneType() function can now use explicit sceneType directly instead of falling back to mapping lookup
+- Build: TypeScript clean
+
+---
+Task ID: 5a-5e
+Agent: main
+Task: Phase 5A-5E — Scene-aware design system integration across registries and core modules
+
+Work Log:
+- Phase 5A: Added `sceneType: SceneType` to `PagePreset` interface and all 16 preset definitions in PagePresetRegistry.ts
+  - Added imports for SceneType and TEMPLATE_TO_SCENE
+  - Added `getPresetSceneType()` and `getPresetsBySceneType()` helper functions
+  - All 16 presets now explicitly declare their scene type (cover→intro, materi→concept, kuis→assessment, etc.)
+
+- Phase 5B: Added explicit `sceneType` to all 132 SceneTemplateSpec objects across 16 course templates in CourseTemplateRegistry.ts
+  - Each scene now has an explicit sceneType matching TEMPLATE_TO_SCENE mapping
+  - resolveSceneType() can now use the explicit field directly
+
+- Phase 5C: Added scene-aware accent prominence to education-colors.ts
+  - Added imports for SceneType, getAccentOpacity, getAccentProminence, AccentProminence
+  - Added 6 helper functions: getSceneAwareBgOpacity, getSceneAwareBorderOpacity, getSceneAwareTextOpacity, getColorProminence, isColorProminent, getSceneAwareColor
+  - Colors now "adjust volume" based on scene context (e.g., quiz-red is barely visible in Reflection scenes)
+
+- Phase 5D: Added SceneType mapping to education-components.ts
+  - Added SCENE_PRIMARY_COLOR mapping (8 SceneTypes → 8 EduSemanticColors)
+  - Added getEduComponentForScene() — gets the visual "voice" of a scene
+  - Added getSceneCardTreatment(), getSceneHeaderTreatment(), getSceneStripeWidth() — scene-aware style helpers
+
+- Phase 5E: Added scene density rules to education-spacing.ts
+  - Added getSceneDensityMultiplier() — intensity → spacing density (0.85x/1.0x/1.15x)
+  - Added eduSceneComponentPadding(), eduSceneSectionPadding(), eduSceneGap() — scene-aware spacing
+  - Added getSceneWhitespaceRatio(), getSceneMaxBlocks() — scene density budgets
+  - High-intensity scenes (Practice) feel tight and focused; low-intensity (Reflection) feel open and calm
+
+- TypeScript compilation: 0 errors (clean)
+
+Stage Summary:
+- Complete scene-aware design system integration across ALL core modules
+- PagePresetRegistry now scene-aware (16 presets → 8 scene types)
+- CourseTemplateRegistry now has explicit sceneType on all 132 scene specs
+- education-colors.ts now adjusts color "volume" per scene context
+- education-components.ts now maps SceneType → ComponentIdentity
+- education-spacing.ts now has scene density rules (intensity-driven spacing)
+- All changes backward compatible — existing renderers still work unchanged
+- The 6-layer architecture is now fully wired: Foundation → Spatial → Components → Interaction → Emotional → (Gamification FASE 3)
+
+---
+Task ID: 6a
+Agent: main
+Task: Phase 6A — Make SchemaRenderer scene-aware: pass sceneType from page template to each block's EduRenderingContext
+
+Work Log:
+- Added `_sceneType` field + `setSceneType()` + `getSceneType()` methods to TokenResolver (types.ts)
+- Modified `tokens.edu()` to use `_sceneType` as default when explicit sceneType param not provided
+  - Priority: explicit sceneType param > stored _sceneType > undefined (inferred from blockType)
+  - This means ALL 43 existing block renderers automatically become scene-aware without any code changes
+- Added `sceneType` prop to `ScreenRendererProps` in SchemaRenderer.tsx
+- In `SchemaScreenRenderer`, calls `tokens.setSceneType(sceneType)` before rendering blocks
+- In `PageRenderer`, computed `sceneType` from `page.templateType` via `inferSceneType()` and passed it to SchemaScreenRenderer
+- Updated `SchemaEngine` to also support `sceneType` prop (fallback: inferred from first block type)
+- TypeScript compilation: 0 errors (clean)
+
+Stage Summary:
+- COMPLETE RENDERING PIPELINE WIRED: CanvaPage.templateType → inferSceneType() → PageRenderer.sceneType → SchemaScreenRenderer.sceneType → tokens.setSceneType() → tokens.edu(blockType, isCompact) → EduRenderingContext(sceneType)
+- ZERO changes to individual block renderers needed — they all benefit automatically
+- Quiz block on a Materi page now gets sceneType='concept' → quiz accent is muted in concept scene
+- Quiz block on a Kuis page gets sceneType='assessment' → quiz accent is full
+- The 6-layer scene-aware design system is now LIVE in the rendering pipeline
+
+---
+Task ID: 6b-6c
+Agent: main
+Task: Phase 6B-6C — Display Mode UI selector (already exists) + Scene Type indicator in StatusBar
+
+Work Log:
+- Phase 6B: Display Mode selector already exists in StatusBar.tsx (DisplayModeSelector component with 4 buttons: Classroom/Projector/Print/Student). No changes needed.
+- Phase 6C: Added Scene Type indicator to StatusBar
+  - Added imports for inferSceneType, SCENE_TYPES, SceneType, SCENE_PRIMARY_COLOR
+  - Added colored scene type badge after template badge in page info section
+  - Shows "● Pembuka" for intro pages, "● Konsep" for concept, etc.
+  - Color matches the semantic color (amber=intro, cyan=concept, green=example, etc.)
+  - Tooltip shows scene description (e.g., "Scene: Pembuka — Membuka topik, membangun curiosity")
+- TypeScript compilation: 0 errors (clean)
+
+Stage Summary:
+- Teachers can now see the Learning Scene Type of each page in the status bar
+- Display Mode selector already functional (classroom/projector/print/student)
+- Complete scene-aware pipeline is now LIVE end-to-end
+---
+Task ID: 6
+Agent: Main
+Task: Phase 6 — Wire EduRenderingContext scene-aware APIs into 40+ block renderers
+
+Work Log:
+- Analyzed all 40+ block renderers to identify upgrade patterns
+- Defined 5 upgrade rules: stripe widths, card backgrounds, shadows, accent colors, text colors
+- Phase 6B: Upgraded 8 intro-scene renderers (Cover, Hero, Tp, TujuanDisplay, Motivasi, Petunjuk, Alur, Skenario)
+  - CoverRenderer: edu.title() → edu.hero() for cover headlines (56px in intro scenes)
+  - HeroRenderer: edu.heading() → edu.title() for section opener titles
+  - TpRenderer: Replaced hardcoded tokens.color('y') with edu.accent(), edu.accentAlpha(), edu.textColor()
+  - MotivasiRenderer: Replaced tokens.color('card') → edu.cardBg(), tokens.raw.shadow → edu.shadow()
+  - PetunjukRenderer: Replaced manual card styling with edu.accentBorder(), edu.stripeWidth(), edu.accent()
+  - AlurRenderer: Replaced tokens.raw.shadow → edu.shadow(), tokens.muted() → edu.mutedText()
+  - SkenarioRenderer: Replaced tokens.color('bg') → edu.sceneBg(), tokens.raw.shadow → edu.shadow()
+- Phase 6C: Upgraded 8 concept-scene renderers (DefBox, NcGrid, MateriSection, MateriBlok, Tabel, TabelAccordion, Timeline, Compare)
+  - DefBoxRenderer: 12 replacements including tokens.accentStripe() → edu.stripeWidth()
+  - MateriBlokRenderer: 39 replacements (largest single file upgrade)
+- Phase 6D: Upgraded 6 example-scene renderers (Flashcard, Ftab, Gambar, Reveal, Statistik, Studi)
+- Phase 6E: Upgraded ChecklistRenderer + KuisRenderer + HasilRenderer
+- Phase 6F: Upgraded 5 discussion/reflection/summary renderers (Diskusi, Refleksi, Rangkuman, Penutup, NormaKartu)
+- Phase 6G: Upgraded 10 game renderers (Sortir, Roda, Memory, Matching, FillBlank, WordSearch, TrueFalse, DragDrop, Crossword, TeamBuzzer)
+- Final verification: TypeScript compiles with 0 errors
+- Zero remaining tokens.raw.shadow, tokens.accentStripe(), tokens.color('card'), tokens.color('text') in block renderers
+
+Stage Summary:
+- All 40+ block renderers now use scene-aware EduRenderingContext APIs
+- Key transformations: edu.stripeWidth() (scene density), edu.shadow() (print-safe), edu.cardBg() (mode-aware), edu.textColor() (print-safe B&W), edu.hero() (scene-aware 56px), edu.accent()/edu.accentAlpha() (scene-aware prominence)
+- The design system now produces VISUALLY DIFFERENT output per scene type:
+  - Practice scenes: bold stripes (5px), elevated cards, larger body text
+  - Reflection scenes: gentle stripes (2px), subtle cards, generous spacing
+  - Print mode: no shadows, thick borders, pure black text, grayscale accents
+- Total replacements across all files: ~120+ individual pattern upgrades
+
+---
+Task ID: phase-7
+Agent: Super Z (main)
+Task: Phase 7 — Scene-Density-Aware Spacing + Emotional Rewards + SceneType Override
+
+Work Log:
+- Phase 7A: Fixed EduRenderingContext spacing to be scene-density-aware
+  - componentPadding() → eduSceneComponentPadding(isCompact, sceneType) — 0.85x Practice, 1.0x Concept, 1.15x Reflection
+  - sectionPadding() → eduSceneSectionPadding(isCompact, sceneType) — same density multiplier
+  - nestedPadding() → density-adjusted via getSceneDensityMultiplier(sceneType)
+  - gap() → eduSceneGap(sceneType, gapType) — scene-aware gap sizing
+  - Added imports: eduSceneComponentPadding, eduSceneSectionPadding, eduSceneGap, getSceneDensityMultiplier
+- Phase 7B: Migrated 36 tokens.iosXxxPadding/ElementGap calls to edu.xxx scene-aware API across 9 renderer files
+  - MateriSectionRenderer: 20 calls (sectionPadding, componentPadding, nestedPadding)
+  - NcGridRenderer: 7 calls (componentPadding + elementGap → gap)
+  - GambarRenderer: 1 call (sectionPadding)
+  - TimelineRenderer: 2 calls (sectionPadding, nestedPadding)
+  - MotivasiRenderer: 2 calls (sectionPadding)
+  - OverflowIndicator: 1 call (gap), added conditional edu
+  - RangkumanRenderer: 1 call (sectionPadding)
+  - KuisRenderer: 1 call (gap)
+  - TujuanDisplayRenderer: 1 call (componentPadding)
+- Phase 7C: Wired emotional reward motions into 5 interactive renderers
+  - KuisRenderer: 3 variants — reveal + checkDraw for correct answers, fillBar for progress bar
+  - ChecklistRenderer: scalePop for checked items (conditional on interactive)
+  - MateriSectionRenderer: accordionExpand for Variant A, staggered reveal for takeaways
+  - DefBoxRenderer: accordionExpand for all 3 variants
+  - DiskusiRenderer: staggered reveal for answered question badges
+- Phase 7D: SceneType schema persistence + UI override
+  - Added sceneType?: SceneType to ScreenSchema interface
+  - PageRenderer now honors schema.sceneType (Priority 1) over inferred type (Priority 2)
+  - Added Scene Type selector in PageSettingsSection — 8 types with Indonesian labels
+  - Zustand immutable update pattern for schema mutation
+
+Stage Summary:
+- 16 files changed, +144/-62
+- All spacing now scene-density-aware: Practice scenes tighter, Reflection scenes more generous
+- Emotional rewards wired into 5 key interactive renderers (was only PremiumStepNavigator)
+- Teachers can now override scene type per page via right panel
+- Build: clean | Tests: 637/637 pass | TS: 0 errors
+- Commit: 4c23dbc, pushed to origin/main
+---
+Task ID: 7
+Agent: main
+Task: Readability + Pipeline Connection + Blank Page Fix
+
+Work Log:
+- Read all edu layer files (typography, colors, atmosphere, spacing, EduRenderingContext)
+- Read handcrafted presets (hakikat-norma-schema.ts - full content audit)
+- Read CourseTemplateRegistry, PagePresetRegistry, SchemaEngine.utils, SchemaRenderer
+- Read TemplateWizard, Dashboard, schema-preset-slice, store.ts
+- Fixed EDU_MODE_BG.classroom.bg from '#FFFFFF' to '#FAFBFE' (reduce glaring white)
+- Fixed EDU_MODE_BG.classroom.bg2 from '#F8FAFC' to '#F1F5F9' (softer secondary)
+- Increased bgTint opacity from 0.02-0.03 to 0.05-0.06 across all 8 scene atmospheres
+- Added SCENE_ATMOSPHERES import to SchemaRenderer.tsx
+- Modified SchemaRenderer bgStyle to apply scene atmosphere tint on default backgrounds (linear-gradient)
+- Added presetId field to CourseTemplate interface (3-Level Pipeline documentation)
+- Set presetId: 'hakikat-norma' on PPKn VII template
+- Changed theme from 'nilai-pancasila' to 'hakikat-norma' on PPKn VII template
+- Rewrote createProjectFromTemplate() as async with 3-Level Pipeline:
+  Level 1: presetId → loadPreset() → schemaToCanvaPages() (handcrafted content)
+  Level 3: createPageFromPreset() (empty shell fallback)
+- Updated TemplateWizard to await createProjectFromTemplate()
+- Changed store init from pages:[createPage()] to pages:[] with currentPageIndex:-1
+- All changes pass TypeScript build (0 errors)
+
+Stage Summary:
+- Readability: background no longer glaring white, scene tints now visible (0.05-0.06 opacity)
+- Pipeline: PPKn VII template now loads hakikat-norma preset (rich content) instead of empty shells
+- Blank page: store starts empty, user sees CanvasEmptyState instead of "Halaman Kosong"
+- Key architectural change: createProjectFromTemplate() is now async (3-Level Pipeline)
+---
+Task ID: 1
+Agent: Main Dev
+Task: Phase 1+2 — Fix Readability & Sambung Pipeline 3-Level
+
+Work Log:
+- Investigated full codebase: CourseTemplateRegistry, presets, store, renderers, tokens
+- Found root causes: small text (12-14px for readable content), low opacity (0.4-0.6), tiny icons (9-14px), disconnected pipelines
+- Fixed DefBoxRenderer: icon 10→14px, padding 10/12→14/16px, collapsed height 60/80→80/120px, micro→caption for labels
+- Fixed KuisRenderer: Variant A feedback caption→body, Variant C options caption→body, completion score body→bodyLg
+- Fixed SkenarioRenderer: HUD micro→caption, narrator opacity 0.4→0.65, setup text 0.6→0.8, choice prompt caption→body, choice detail caption→body+opacity 0.8, feedback caption→body, consequences caption→body, norma content caption→body
+- Fixed CoverRenderer: CTA button all 3 variants caption→body with fontWeight 700
+- Added 8 new PPKn templates with presetIds (macam-norma, perilaku-patuh, nilai-pancasila, bhinneka-tunggal-ika, ham-hak-kewajiban, demokrasi-pancasila, globalisasi, misi-penjelajah-pancasila)
+- Implemented Level 2 Pipeline: uses SUBJECT_MOCK_DATA + generators for smart generated content when no handcrafted preset exists
+- Fixed quiz distractor fallback: replaced "Pilihan 1,2,3" with 4-strategy approach (topWords → definitions → enumerations → sentence fragments → contextual distractors)
+- Fixed persistence reset: pages: [makePage(...)] → pages: [], currentPageIndex: 0 → -1
+- Fixed skenario default: "Pilihan 1" → 3 real choices with setup, choicePrompt, and proper level/pts
+- All modified files: 0 TypeScript errors
+
+Stage Summary:
+- Readability: All 4 main block renderers (DefBox, Kuis, Skenario, Cover) upgraded with larger text, better contrast, and proper spacing
+- Pipeline: 3-Level fully connected — Level 1 (presetId → handcrafted), Level 2 (SUBJECT_MOCK_DATA → generated), Level 3 (empty shell fallback)
+- PPKn coverage: All 9 handcrafted PPKn presets now have matching templates with presetIds
+- Quiz quality: No more "Pilihan 1,2,3" — distractors come from actual content data
+- Store: Reset produces empty state (CanvasEmptyState) instead of blank page

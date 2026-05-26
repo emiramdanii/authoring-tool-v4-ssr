@@ -10,6 +10,8 @@ import { ensurePageSchema, validateCanvaPageInvariant } from '@/core/schema/ensu
 import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
+import { inferSceneType } from '@/core/edu/education-scene-types';
+import type { SceneType } from '@/core/edu/education-scene-types';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -88,6 +90,9 @@ export const PageRenderer = React.memo(function PageRenderer({
     ? undefined // Schema pages use token system, not theme IDs
     : (page.templateData?.schemaThemeId as string | undefined);
 
+  // Educational display mode — controls font sizes for different viewing contexts
+  const displayMode = useCanvaStore((s) => s.displayMode);
+
   // ═══ ENSURE PAGE SCHEMA — PURE, no writeback during render ════
   // ensurePageSchema() is now PURE during render — it only READS
   // and returns the schema. Migration writeback is handled at
@@ -108,14 +113,14 @@ export const PageRenderer = React.memo(function PageRenderer({
   // Resolve tokens, applying palette overrides for legacy pages
   const tokens = React.useMemo(() => {
     // If schema has a theme ID, use it
-    if (schemaThemeId) return new TokenResolver(schemaThemeId);
+    if (schemaThemeId) return new TokenResolver(schemaThemeId, displayMode);
 
     // For legacy pages, apply palette color overrides on top of default tokens
     const overrides = paletteToTokenOverrides(page.colorPalette);
-    if (!overrides) return new TokenResolver();
+    if (!overrides) return new TokenResolver(undefined, displayMode);
 
     // Create TokenResolver with overridden colors
-    const resolver = new TokenResolver();
+    const resolver = new TokenResolver(undefined, displayMode);
     // Patch the token colors with palette overrides
     const raw = resolver.raw;
     (raw.colors as Record<string, string>)[
@@ -133,7 +138,7 @@ export const PageRenderer = React.memo(function PageRenderer({
     if (overrides.bg) (raw.colors as Record<string, string>)['bg'] = overrides.bg;
     if (overrides.card) (raw.colors as Record<string, string>)['card'] = overrides.card;
     return resolver;
-  }, [schemaThemeId, page.colorPalette]);
+  }, [schemaThemeId, page.colorPalette, displayMode]);
 
   // Decide rendering strategy — unified for ALL template pages
   const useSchemaRenderer = !!adaptedSchema;
@@ -203,6 +208,23 @@ export const PageRenderer = React.memo(function PageRenderer({
     pagePadding: isCoverPage ? 0 : 16,
   }), [showTopNav, showBottomNav, isCompact, isCoverPage]);
 
+  // ═══ SCENE TYPE ════════════════════════════════════════════════
+  // Derive the Learning Scene Type from the page's template type.
+  // This is the KEY that unlocks the entire scene-aware design system:
+  //   - Typography hierarchy per scene (hero/title/body)
+  //   - Accent prominence (which colors are "vocal" vs "muted")
+  //   - Emotional profile (progress/discovery/reward triggers)
+  //   - Reveal strategy (all-visible/progressive/on-interaction)
+  //   - Spacing density (intensity-driven rhythm)
+  //   - Card/header treatment (elevated/flat/subtle)
+  const sceneType = React.useMemo<SceneType | undefined>(() => {
+    // Priority 1: Explicit sceneType override on the schema (teacher-set)
+    if (adaptedSchema?.sceneType) return adaptedSchema.sceneType;
+    // Priority 2: Inferred from templateType
+    if (!page.templateType) return undefined;
+    return inferSceneType(undefined, page.templateType, undefined);
+  }, [adaptedSchema?.sceneType, page.templateType]);
+
   const content = (
     <>
       {/* Schema-driven rendering for ALL template pages */}
@@ -230,6 +252,7 @@ export const PageRenderer = React.memo(function PageRenderer({
           showTopNav={showTopNav}
           showBottomNav={showBottomNav}
           pageIndex={currentPageIndex}
+          sceneType={sceneType}
         />
       )}
 

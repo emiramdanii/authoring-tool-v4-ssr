@@ -87,18 +87,15 @@ function TujuanVariantA({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: edu.cardBg(),
-        boxShadow: edu.shadow('elevated'),
-        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.cardStyle(),
         ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* ═══ HEADER ══════════════════════════════════════════════ */}
       <div
         style={{
-          borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
+          ...edu.headerStyle(),
           background: `linear-gradient(135deg, ${edu.accentBg()}, ${edu.accentAlpha(0.03)})`,
-          ...edu.sectionPadding(),
         }}
       >
         <div className="flex items-center justify-between gap-3">
@@ -232,7 +229,7 @@ function TujuanVariantA({
               className="absolute bottom-8 left-0 right-0 pointer-events-none"
               style={{
                 height: 40,
-                background: `linear-gradient(transparent, ${tokens.colorAlpha('bg', 0.9)})`,
+                background: `linear-gradient(transparent, ${tokens.eduPageBg()})`,
                 zIndex: 2,
               }}
             />
@@ -290,7 +287,7 @@ function TujuanVariantA({
         <div
           style={{
             ...tokens.iosInnerMargin(isCompact), marginTop: 0,
-            ...tokens.iosCardPadding(isCompact),
+            ...edu.componentPadding(),
             background: tokens.colorAlpha(block.profilColor || 'g', 0.1),
             border: `1px solid ${tokens.colorAlpha(block.profilColor || 'g', 0.25)}`,
             borderLeft: `4px solid ${tokens.color(block.profilColor || 'g')}`,
@@ -365,16 +362,14 @@ function TujuanVariantB({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: edu.cardBg(),
-        boxShadow: edu.shadow('elevated'),
-        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.cardStyle(),
         ...edu.entrance(0, 'fadeIn'),
       }}
     >
       {/* Header — compact */}
       <div
         style={{
-          ...edu.componentPadding(),
+          ...edu.headerStyle(),
           borderBottom: `1px solid ${tokens.colorAlpha('c', 0.1)}`,
           background: edu.accentBg(),
         }}
@@ -699,9 +694,7 @@ function TujuanVariantC({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: edu.cardBg(),
-        boxShadow: edu.shadow('elevated'),
-        border: `1px solid ${edu.accentBorder()}`,
+        ...edu.cardStyle(),
         ...edu.entrance(0, 'fadeIn'),
       }}
     >

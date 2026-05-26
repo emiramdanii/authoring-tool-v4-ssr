@@ -493,11 +493,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // localStorage might be unavailable — ignore
     }
 
-    // Reset store to default state (single blank page)
+    // Reset store to default state (empty — user sees CanvasEmptyState)
     const { createPage: makePage } = require('./constants');
     set({
-      pages: [makePage('Halaman 1', 'custom')],
-      currentPageIndex: 0,
+      pages: [],
+      currentPageIndex: -1,
       selectedElId: null,
       selectedElIds: [],
       selectedBlockId: null,

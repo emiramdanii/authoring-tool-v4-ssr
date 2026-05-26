@@ -159,7 +159,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                 background: `linear-gradient(135deg, ${edu.accentAlpha(0.2)}, ${edu.accentAlpha(0.1)})`,
                 border: `1px solid ${edu.accentAlpha(0.35)}`,
                 boxShadow: 'none',
-                animation: 'none',
+                ...edu.emotionalMotion('reveal', i),
               }}>
               <CheckCircle2 size={14} style={{ color: edu.accent() }} />
             </div>
@@ -328,7 +328,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: allAnswered ? tokens.color('bg') : edu.mutedText(0.4),
               border: '1px solid ' + (allAnswered ? edu.accentAlpha(0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
-                ? tokens.raw.shadow.card
+                ? edu.shadow('card')
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
               animation: 'none',
@@ -488,7 +488,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: allAnswered ? tokens.color('bg') : edu.mutedText(0.4),
               border: '1px solid ' + (allAnswered ? edu.accentAlpha(0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
-                ? tokens.raw.shadow.card
+                ? edu.shadow('card')
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
               animation: 'none',
@@ -561,7 +561,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               ? `linear-gradient(135deg, ${tokens.colorAlpha('g', 0.04)}, ${tokens.colorAlpha(qColor, 0.02)})`
               : tokens.subtleBg(0.03),
             border: `1px solid ${tokens.colorAlpha(qColor, hasResponse ? 0.25 : 0.1)}`,
-            borderLeft: `2px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
+            borderLeft: `${edu.stripeWidth()}px solid ${hasResponse ? tokens.color('g') : tokens.color(qColor)}`,
             boxShadow: hasResponse ? `0 1px 6px ${tokens.colorAlpha('g', 0.08)}` : 'none',
             ...edu.transition('background-color, border-color, color, transform, box-shadow', 'standard'),
           }}>
@@ -632,7 +632,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: allAnswered ? tokens.color('bg') : edu.mutedText(0.4),
               border: '1px solid ' + (allAnswered ? edu.accentAlpha(0.4) : tokens.subtleBorder(0.1)),
               boxShadow: allAnswered
-                ? tokens.raw.shadow.card
+                ? edu.shadow('card')
                 : 'none',
               cursor: allAnswered ? 'pointer' : 'not-allowed',
               animation: 'none',
@@ -654,7 +654,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
         ...edu.sectionPadding(),
         background: `linear-gradient(135deg, ${edu.accentAlpha(0.1)}, ${edu.accentAlpha(0.04)})`,
         border: `2px solid ${edu.accentAlpha(0.3)}`,
-        boxShadow: tokens.raw.shadow.card + ', 0 0 24px ' + edu.accentAlpha(0.08),
+        boxShadow: edu.shadow('card') + ', 0 0 24px ' + edu.accentAlpha(0.08),
       }}>
       {/* Variant selector overlay — only visible when editing */}
       {isEditing && (

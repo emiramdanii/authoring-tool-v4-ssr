@@ -206,7 +206,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
  style={{
  background: tokens.color('bg'),
  border: '2px solid ' + edu.accentAlpha(0.3),
- boxShadow: tokens.raw.shadow.elevated,
+ boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
  }}>
  <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
@@ -329,12 +329,12 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
  style={{
  background: edu.accentAlpha(0.06),
  border: '1px solid ' + edu.accentAlpha(0.2),
- boxShadow: tokens.raw.shadow.card,
+ boxShadow: edu.shadow('card'),
  overflow: 'hidden',
  }}>
  {/* Question text with blank marker — truncasi saat compact */}
  <p className={`font-bold leading-relaxed mb-3 ${isCompact ? '' : ''} ${isCompact ? 'canvas-truncate-2' : ''}`}
- style={{ color: tokens.color('text'), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+ style={{ color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
  {parts.length > 1 ? (
  <>
  {parts.map((part, i) => (
@@ -371,7 +371,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
  style={{
  background: tokens.colorAlpha('o', 0.08),
  border: '1px solid ' + tokens.colorAlpha('o', 0.2),
- borderLeft: '3px solid ' + tokens.color('o'),
+ borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('o')}`,
  }}>
  <span style={{ ...edu.micro() }}>💡</span>
  <span className="italic leading-relaxed"
@@ -409,7 +409,7 @@ export const FillBlankGameRenderer = React.memo(function FillBlankGameRenderer({
  ? lastCorrect
  ? tokens.color('g')
  : tokens.color('r')
- : tokens.color('text'),
+ : edu.textColor(),
  boxShadow: answered
  ? lastCorrect
  ? '0 0 12px ' + tokens.colorAlpha('g', 0.15)
