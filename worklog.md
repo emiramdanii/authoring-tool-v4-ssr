@@ -65,3 +65,23 @@ Stage Summary:
 - template-gallery.ts: `instantiateTemplateWithConfig()` now passes variant to generator, not just page level
 - PageRenderer.tsx: Uses `isPureCoverPage` (block-content-based) instead of `isCoverPage` (templateType-based)
 - Test file: 14/14 tests pass (9 original + 5 new)
+
+---
+Task ID: 2
+Agent: Super Z (main)
+Task: Fix 9 critical issues from deep analysis
+
+Work Log:
+- FIX #1: Replaced Unix-only build scripts with cross-env + shx (cross-platform)
+- FIX #3: Semester schema mismatch — coerce string to int in updateProjectSchema
+- FIX #4: Added elements field to savePageSchema + fallback to save elements as blocks
+- FIX #5: Export route now hydrates authoringData (allKuis, games, etc.) from DB
+- FIX #6: InlineTextEditor + DefBoxRenderer now use sanitizeHtml() from RichText
+- FIX #7: Created /api/upload route (POST/GET/DELETE) with validation
+- FIX #8: Fixed rate limit tier to match /api/export without trailing slash
+- FIX #9: Added eslint ignores for public/sw.js, workbox-*, upload/, scripts/
+
+Stage Summary:
+- 10 files changed, 253 insertions, 26 deletions
+- All targeted tests pass (37/37), Next.js build success
+- Pushed as commit 74e99e0
