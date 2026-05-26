@@ -85,3 +85,31 @@ Stage Summary:
 - 10 files changed, 253 insertions, 26 deletions
 - All targeted tests pass (37/37), Next.js build success
 - Pushed as commit 74e99e0
+---
+Task ID: recovery-sprint
+Agent: main
+Task: Full Pertemuan Template Recovery Sprint — Contract Enforcement
+
+Work Log:
+- Discovered TemplateThemeContract + TemplateValidator already existed but were 0% connected to rendering pipeline
+- Added `contractId` + `status` (active/legacy/hidden/experimental) to CourseTemplate interface
+- Set modul-ppkn-vii as THE golden template (contractId: 'golden-pertemuan', theme: 'golden-presentation', status: 'active')
+- Marked all other 15 templates as status: 'legacy' (hidden from gallery)
+- Added `applyContract()` to TokenResolver that patches underlying DesignTokens with contract values
+- Modified TokenResolver.color() to check contract overrides BEFORE theme defaults
+- Wired contract resolution in PageRenderer: contractStyle resolved from page.contractId or auto-detected from templateType
+- Contract applied INSIDE useMemo (before first render, no flash of wrong styles)
+- Contract applied AFTER palette overrides (contract WINS over palette)
+- Added dev-mode validation: validatePage() called in SchemaScreenRenderer, warnings logged to console
+- Fixed schema-factory SECTION_COLORS to match contract.pageAccents (kuis→g, skenario→o, penutup→y, rangkuman→y)
+- Added contractId to CanvaPage type, DBPageData, savePageSchema, save-utils, persistence-slice
+- Updated getCourseTemplatesFiltered() to hide legacy/hidden templates (showLegacy param)
+- Updated getCourseTemplatesBySubject() to filter out hidden/legacy
+- Build: ✅ success, Tests: 651 pass (3 pre-existing failures unrelated)
+
+Stage Summary:
+- Formula implemented: 1 theme contract + 1 layout grammar + 1 overflow validator + 1 golden template
+- Priority chain enforced: TemplateThemeContract > Scene Style > Block Default
+- Contract enforcement is NOW LIVE in the rendering pipeline
+- All pertemuan pages now obey the same visual rules (dark navy + gold accent)
+- Commit: e1dd719, pushed to main
