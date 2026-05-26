@@ -1,65 +1,93 @@
 'use client';
 
-import { useRef, useCallback, useEffect } from 'react';
+// ═══════════════════════════════════════════════════════════════
+// DISKUSI TAB — Schema-First (Phase 3)
+// ═══════════════════════════════════════════════════════════════
+// MIGRATION STATUS:
+//   READ:  useSchemaDiskusi() ← CanvaStore.pages[].schema.blocks
+//   WRITE: applyGuidedSchemaPatch() ← single write path to schema
+//   SYNC:  REMOVED syncDiskusiToSchema() — no longer needed
+//          (startProjectionSync auto-derives authoring store from schema)
+//
+// FALLBACK: If no diskusi schema blocks exist, shows empty state.
+// ═══════════════════════════════════════════════════════════════
+
+import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useSchemaDiskusi } from '@/hooks/use-schema-navigator';
 import { useAuthoringStore } from '@/store/authoring-store';
-import type { DiskusiData, DiskusiPertanyaan } from '@/store/authoring-store';
 import { RegenerateButton } from './RegenerateButton';
 import { ItemRegenerateButton } from './ItemRegenerateButton';
-import { regenerateDiskusi, regenerateDiskusiSchema, regenerateSingleDiskusiQuestion } from '../auto-generate/regenerate';
-import { syncDiskusiToSchema } from '@/core/schema/sync-projection';
+import { regenerateDiskusi, regenerateSingleDiskusiQuestion } from '../auto-generate/regenerate';
 import { Zap, MessageSquare, Trash2, Plus } from 'lucide-react';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
-// ── Diskusi Tab — Edit discussion questions with RegenerateButton ──
+// ── Diskusi Tab — Schema-first edit with RegenerateButton ──
 export function DiskusiTab() {
-  const diskusi = useAuthoringStore((s) => s.diskusi);
+  const {
+    data: diskusi,
+    locations,
+    updateTitle,
+    updateIntro,
+    updateQuestion,
+    addQuestion,
+    removeQuestion,
+  } = useSchemaDiskusi();
+
+  // Meta still comes from authoring store (not schema-represented yet)
   const meta = useAuthoringStore((s) => s.meta);
   const tp = useAuthoringStore((s) => s.tp);
-  const updateDiskusi = useAuthoringStore((s) => s.updateDiskusi);
-  const addDiskusiPertanyaan = useAuthoringStore((s) => s.addDiskusiPertanyaan);
-  const removeDiskusiPertanyaan = useAuthoringStore((s) => s.removeDiskusiPertanyaan);
-  const updateDiskusiPertanyaan = useAuthoringStore((s) => s.updateDiskusiPertanyaan);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // ── Phase 18.3d: Projection Live Sync ──────────────────────────
-  const prevDiskusiRef = useRef(diskusi);
-  useEffect(() => {
-    if (diskusi !== prevDiskusiRef.current && diskusi.pertanyaan.length > 0) {
-      syncDiskusiToSchema(diskusi);
-    }
-    prevDiskusiRef.current = diskusi;
-  }, [diskusi]);
-
   const handleRegenerateDiskusi = async () => {
-    // Schema-first: regenerate SchemaBlocks and apply to canvas directly
-    const schemaBlock = regenerateDiskusiSchema(tp, {
-      judulPertemuan: meta.judulPertemuan,
-      namaBab: meta.namaBab,
-    });
-    // Also regenerate authoring store data (projection for Konten editor)
     const newDiskusi = regenerateDiskusi(tp, {
       judulPertemuan: meta.judulPertemuan,
       namaBab: meta.namaBab,
     });
-    if (newDiskusi) {
-      useAuthoringStore.setState({ diskusi: newDiskusi as DiskusiData, dirty: true });
+    if (newDiskusi && locations.length > 0) {
+      // Write the regenerated data to schema via applyGuidedSchemaPatch
+      const loc = locations[0]!;
+      const { applyGuidedSchemaPatch } = await import('@/core/schema/guided-patch');
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: {
+          title: newDiskusi.title,
+          intro: newDiskusi.intro,
+          questions: newDiskusi.pertanyaan.map(q => ({
+            label: q.label,
+            icon: q.icon,
+            teks: q.teks,
+            petunjuk: q.petunjuk,
+          })),
+        },
+        source: 'konten-tab',
+      });
       toast.success(`🗣️ Diskusi berhasil digenerate ulang (${newDiskusi.pertanyaan.length} pertanyaan)`);
     } else {
-      toast.error('Gagal regenerate — tidak ada teks sumber.');
+      toast.error('Gagal regenerate — tidak ada teks sumber atau tidak ada diskusi block di schema.');
       useAuthoringStore.getState().setActivePanel('autogen');
     }
   };
 
   const handleAdd = useCallback(() => {
-    addDiskusiPertanyaan();
+    // Add to the first diskusi block (or show empty state if no blocks)
+    if (locations.length === 0) return;
+    addQuestion(0);
     setTimeout(() => {
       const el = listRef.current?.lastElementChild;
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
-  }, [addDiskusiPertanyaan]);
+  }, [locations, addQuestion]);
 
   const ICON_OPTIONS = ['💭', '🤔', '🗣️', '👥', '✋', '💡', '🎯', '📝'];
+
+  // Map flat question list to block indices for editing
+  // Currently all questions are merged into one list; find which block each belongs to
+  const getBlockIndexForQuestion = (questionIdx: number): number => {
+    // For now, all questions go to block 0 (single diskusi block model)
+    return 0;
+  };
 
   return (
     <div className="space-y-4">
@@ -82,7 +110,7 @@ export function DiskusiTab() {
             maxLength={MAX_TITLE}
             placeholder="Diskusi tentang..."
             value={diskusi.title}
-            onChange={(e) => updateDiskusi({ title: e.target.value })}
+            onChange={(e) => updateTitle(e.target.value)}
           />
         </div>
         <div>
@@ -93,7 +121,7 @@ export function DiskusiTab() {
             maxLength={MAX_BODY}
             placeholder="Instruksi untuk siswa..."
             value={diskusi.intro}
-            onChange={(e) => updateDiskusi({ intro: e.target.value })}
+            onChange={(e) => updateIntro(e.target.value)}
           />
         </div>
       </div>
@@ -113,107 +141,117 @@ export function DiskusiTab() {
             >
               <Zap size={12} /> Auto-Generate
             </button>
-            <button
-              onClick={handleAdd}
-              className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              ＋ Manual
-            </button>
+            {locations.length > 0 && (
+              <button
+                onClick={handleAdd}
+                className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                ＋ Manual
+              </button>
+            )}
           </div>
         </div>
       ) : (
         /* Question list */
         <div ref={listRef} className="space-y-3">
-          {diskusi.pertanyaan.map((q, i) => (
-            <div key={i} className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
-              {/* Question header */}
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{q.icon || '💭'}</span>
-                <span className="text-sm font-medium text-app-primary">Pertanyaan {i + 1}</span>
-                <div className="ml-auto flex items-center gap-1">
-                  <ItemRegenerateButton
-                    title="Regenerate pertanyaan ini"
-                    onRegenerate={async () => {
-                      const newQ = regenerateSingleDiskusiQuestion(i, tp, {
-                        judulPertemuan: meta.judulPertemuan,
-                        namaBab: meta.namaBab,
-                      });
-                      if (newQ) {
-                        updateDiskusiPertanyaan(i, newQ);
-                        toast.success(`🔄 Pertanyaan diskusi ${i + 1} berhasil digenerate ulang`);
-                      } else {
-                        toast.error('Gagal regenerate — tidak ada teks sumber.');
-                      }
-                    }}
+          {diskusi.pertanyaan.map((q, i) => {
+            const blockIdx = getBlockIndexForQuestion(i);
+            return (
+              <div key={i} className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
+                {/* Question header */}
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{q.icon || '💭'}</span>
+                  <span className="text-sm font-medium text-app-primary">Pertanyaan {i + 1}</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <ItemRegenerateButton
+                      title="Regenerate pertanyaan ini"
+                      onRegenerate={async () => {
+                        const newQ = regenerateSingleDiskusiQuestion(i, tp, {
+                          judulPertemuan: meta.judulPertemuan,
+                          namaBab: meta.namaBab,
+                        });
+                        if (newQ) {
+                          updateQuestion(blockIdx, i, {
+                            label: newQ.label,
+                            icon: newQ.icon,
+                            teks: newQ.teks,
+                            petunjuk: newQ.petunjuk,
+                          });
+                          toast.success(`🔄 Pertanyaan diskusi ${i + 1} berhasil digenerate ulang`);
+                        } else {
+                          toast.error('Gagal regenerate — tidak ada teks sumber.');
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => removeQuestion(blockIdx, i)}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Icon selector */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-app-muted">Ikon:</span>
+                  {ICON_OPTIONS.map((icon) => (
+                    <button
+                      key={icon}
+                      onClick={() => updateQuestion(blockIdx, i, { icon })}
+                      className={`w-7 h-7 rounded-md text-sm flex items-center justify-center transition-colors ${
+                        q.icon === icon ? 'bg-app-accent/15 border border-app-accent/40' : 'bg-app-elevated/50 border border-app-border/50 hover:border-app-border'
+                      }`}
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Label */}
+                <div>
+                  <FieldLabel>Label</FieldLabel>
+                  <input
+                    className={INPUT_CLS}
+                    maxLength={MAX_SHORT_TEXT}
+                    placeholder={`Pertanyaan ${i + 1}`}
+                    value={q.label}
+                    onChange={(e) => updateQuestion(blockIdx, i, { label: e.target.value })}
                   />
-                  <button
-                    onClick={() => removeDiskusiPertanyaan(i)}
-                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                </div>
+
+                {/* Question text */}
+                <div>
+                  <FieldLabel>Teks Pertanyaan</FieldLabel>
+                  <textarea
+                    className={TEXTAREA_CLS}
+                    rows={3}
+                    maxLength={MAX_BODY}
+                    placeholder="Tulis pertanyaan diskusi..."
+                    value={q.teks}
+                    onChange={(e) => updateQuestion(blockIdx, i, { teks: e.target.value })}
+                  />
+                </div>
+
+                {/* Hint/petunjuk */}
+                <div>
+                  <FieldLabel>Petunjuk Jawaban</FieldLabel>
+                  <input
+                    className={INPUT_CLS}
+                    maxLength={MAX_BODY}
+                    placeholder="Petunjuk untuk membantu siswa..."
+                    value={q.petunjuk}
+                    onChange={(e) => updateQuestion(blockIdx, i, { petunjuk: e.target.value })}
+                  />
                 </div>
               </div>
-
-              {/* Icon selector */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-app-muted">Ikon:</span>
-                {ICON_OPTIONS.map((icon) => (
-                  <button
-                    key={icon}
-                    onClick={() => updateDiskusiPertanyaan(i, { icon })}
-                    className={`w-7 h-7 rounded-md text-sm flex items-center justify-center transition-colors ${
-                      q.icon === icon ? 'bg-app-accent/15 border border-app-accent/40' : 'bg-app-elevated/50 border border-app-border/50 hover:border-app-border'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-
-              {/* Label */}
-              <div>
-                <FieldLabel>Label</FieldLabel>
-                <input
-                  className={INPUT_CLS}
-                  maxLength={MAX_SHORT_TEXT}
-                  placeholder={`Pertanyaan ${i + 1}`}
-                  value={q.label}
-                  onChange={(e) => updateDiskusiPertanyaan(i, { label: e.target.value })}
-                />
-              </div>
-
-              {/* Question text */}
-              <div>
-                <FieldLabel>Teks Pertanyaan</FieldLabel>
-                <textarea
-                  className={TEXTAREA_CLS}
-                  rows={3}
-                  maxLength={MAX_BODY}
-                  placeholder="Tulis pertanyaan diskusi..."
-                  value={q.teks}
-                  onChange={(e) => updateDiskusiPertanyaan(i, { teks: e.target.value })}
-                />
-              </div>
-
-              {/* Hint/petunjuk */}
-              <div>
-                <FieldLabel>Petunjuk Jawaban</FieldLabel>
-                <input
-                  className={INPUT_CLS}
-                  maxLength={MAX_BODY}
-                  placeholder="Petunjuk untuk membantu siswa..."
-                  value={q.petunjuk}
-                  onChange={(e) => updateDiskusiPertanyaan(i, { petunjuk: e.target.value })}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Add question button */}
-      {diskusi.pertanyaan.length > 0 && (
+      {diskusi.pertanyaan.length > 0 && locations.length > 0 && (
         <button
           onClick={handleAdd}
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors inline-flex items-center gap-1.5"

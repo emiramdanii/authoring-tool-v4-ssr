@@ -26,9 +26,11 @@
 | 3. Deprecate old write paths | ✅ DONE | Phase 1 |
 | 4. Guided form di Right Panel (UI redesign) | ✅ DONE | Phase 2 |
 | 5. Guided form di Right Panel (functional) | ✅ DONE | Phase 2 |
-| 6. Konten.tsx → Schema Navigator | ⬜ PENDING | Phase 3 |
-| 7. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
-| 8. Cleanup dual source | ⬜ PENDING | Phase 5 |
+| 6. Konten.tsx → Schema Navigator (DiskusiTab + RefleksiTab) | ✅ DONE | Phase 3 |
+| 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ⬜ PENDING | Phase 3 |
+| 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ⬜ PENDING | Phase 3 |
+| 9. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
+| 10. Cleanup dual source | ⬜ PENDING | Phase 5 |
 
 ---
 

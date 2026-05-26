@@ -110,3 +110,32 @@ Stage Summary:
 - **Dev mode**: falls back to SchemaDrivenEditor with full property schema
 - Dead code cleaned up (old duplicate BlockPropertiesPanel marked deprecated)
 - Phase 2 is fully complete — ready for Phase 3 (Konten → Schema Navigator)
+
+---
+Task ID: 4
+Agent: main
+Task: Phase 3 (Partial) — DiskusiTab + RefleksiTab schema-first migration
+
+Work Log:
+- Audited full Konten panel codebase: 8 tabs, 6 authoring store slices, sync-projection.ts, schema-projection.ts
+- Mapped data flow per tab: Diskusi (1:1 clean) and Refleksi (1:1 clean) are the easiest migrations
+- Created use-schema-navigator.ts hook with:
+  - useSchemaBlocksByType(blockType) — finds blocks across all pages
+  - useSchemaDiskusi() — reads/writes diskusi data from schema, writes via applyGuidedSchemaPatch()
+  - useSchemaRefleksi() — reads/writes refleksi data from schema, writes via applyGuidedSchemaPatch()
+- Refactored DiskusiTab.tsx:
+  - REMOVED: useAuthoringStore for diskusi data reads, syncDiskusiToSchema() forward sync
+  - ADDED: useSchemaDiskusi() for reads, applyGuidedSchemaPatch() for writes
+  - Regeneration now writes directly to schema instead of authoring store + sync
+- Refactored RefleksiTab.tsx:
+  - REMOVED: useAuthoringStore for refleksi data reads, syncRefleksiToSchema() forward sync
+  - ADDED: useSchemaRefleksi() for reads, applyGuidedSchemaPatch() for writes
+  - Penugasan editing now writes via applyGuidedSchemaPatch()
+- Build verified: npx next build ✓
+
+Stage Summary:
+- **DiskusiTab and RefleksiTab are now schema-first** — they read from CanvaStore.pages[].schema.blocks and write via applyGuidedSchemaPatch()
+- **Forward sync functions (syncDiskusiToSchema, syncRefleksiToSchema) are no longer called** by these tabs
+- **startProjectionSync()** auto-derives authoring store from schema — Konten tabs don't need to write to authoring store
+- Remaining tabs for Phase 3: KuisTab, MotivasiTab, RangkumanTab, MateriTab (progressively harder)
+- ModulesTab requires schema representation that doesn't exist yet — deferred
