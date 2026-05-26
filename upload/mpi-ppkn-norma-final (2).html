@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPI PPKn Kelas VII - Macam-Macam Norma (Siap Publish)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=Poppins:wght@400;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #0f172a;
+    font-family: 'Open Sans', sans-serif;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+  }
+
+  /* ===== PRESENTATION WRAPPER ===== */
+  .presentation {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+  }
+
+  /* ===== SLIDE BASE ===== */
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    z-index: 10;
+  }
+
+  /* ===== NAV BAR ===== */
+  .nav-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 52px;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+  }
+  .nav-left, .nav-right { display: flex; gap: 8px; align-items: center; }
+  .nav-center {
+    color: #94a3b8; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .nav-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 16px; border-radius: 8px; border: none;
+    font-family: 'Open Sans', sans-serif; font-weight: 700; font-size: 12px;
+    cursor: pointer; transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .nav-btn:active { transform: scale(0.96); }
+  .nav-btn.home { background: #fbbf24; color: #1a1a2e; }
+  .nav-btn.home:hover { background: #f59e0b; }
+  .nav-btn.back { background: #475569; color: #e2e8f0; }
+  .nav-btn.back:hover { background: #64748b; }
+  .nav-btn.next { background: #2563eb; color: #fff; }
+  .nav-btn.next:hover { background: #1d4ed8; }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px; z-index: 200;
+    background: rgba(255,255,255,0.1);
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #fbbf24, #2563eb);
+    transition: width 0.5s ease; border-radius: 0 2px 2px 0;
+  }
+
+  /* ===== PHASE BADGE ===== */
+  .phase-badge {
+    position: absolute; top: 16px; right: 20px; z-index: 50;
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .phase-badge.orient { background: rgba(37,99,235,0.2); color: #93c5fd; border: 1px solid rgba(37,99,235,0.4); }
+  .phase-badge.explore { background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4); }
+  .phase-badge.practice { background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid rgba(34,197,94,0.4); }
+  .phase-badge.apply { background: rgba(251,191,36,0.2); color: #fde68a; border: 1px solid rgba(251,191,36,0.4); }
+  .phase-badge.evaluate { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+
+  /* ===== BLOOM TAG ===== */
+  .bloom-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 4px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-left: 8px;
+  }
+  .bloom-tag.c3 { background: #dcfce7; color: #166534; }
+  .bloom-tag.c4 { background: #fef9c3; color: #854d0e; }
+  .bloom-tag.c5 { background: #fce7f3; color: #9d174d; }
+
+  /* ===== COMMON ELEMENTS ===== */
+  .slide-content {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 36px 50px 62px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    min-height: 0;
+  }
+  .header-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .header-icon {
+    width: 50px; height: 50px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+  .header-row h2 {
+    font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800; color: #fff;
+  }
+  .header-row .sub { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+  /* ===== SLIDE 1: HOME ===== */
+  .slide-home {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 50%, #1b2838 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 50px 62px;
+  }
+  .slide-home .bg-pattern {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(251,191,36,0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(37,99,235,0.12) 0%, transparent 50%);
+  }
+  .slide-home .content {
+    position: relative; z-index: 2;
+    display: flex; width: 100%; max-width: 1200px; gap: 50px; align-items: center;
+  }
+  .slide-home .left-col { flex: 1; }
+  .slide-home .badge {
+    display: inline-block; background: #fbbf24; color: #1a1a2e;
+    padding: 6px 18px; border-radius: 20px;
+    font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .slide-home h1 {
+    font-family: 'Poppins', sans-serif; font-size: clamp(28px, 4vw, 42px); font-weight: 800; color: #fff;
+    line-height: 1.15; margin-bottom: 16px;
+  }
+  .slide-home h1 span { color: #fbbf24; }
+  .slide-home .subtitle { font-size: 18px; color: #93c5fd; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
+  .slide-home .meta-info { display: flex; gap: 14px; flex-wrap: wrap; }
+  .slide-home .meta-item {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .slide-home .meta-item .icon { font-size: 22px; }
+  .slide-home .meta-item .label { font-size: 10px; color: #93c5fd; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .slide-home .meta-item .value { font-size: 14px; color: #fff; font-weight: 700; }
+  .slide-home .right-col { width: 360px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .slide-home .illust-box {
+    width: 320px; height: 200px;
+    background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(37,99,235,0.12));
+    border: 2px solid rgba(251,191,36,0.25); border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; text-align: center;
+  }
+  .slide-home .illust-box .big-icon { font-size: 56px; margin-bottom: 8px; }
+  .slide-home .illust-box .illust-text { font-size: 13px; color: #e0e7ff; font-weight: 600; }
+  .start-btn {
+    background: #fbbf24; color: #1a1a2e; border: none; border-radius: 12px;
+    padding: 14px 48px; font-size: 16px; font-weight: 800;
+    font-family: 'Poppins', sans-serif; cursor: pointer;
+    letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.25s;
+  }
+  .start-btn:hover { background: #f59e0b; transform: scale(1.03); }
+  .start-btn:active { transform: scale(0.98); }
+  .slide-home .approach-tag {
+    font-size: 12px; color: #fde68a; font-weight: 700; margin-top: 4px;
+    background: rgba(251,191,36,0.1); padding: 6px 14px; border-radius: 8px;
+    border: 1px solid rgba(251,191,36,0.2);
+  }
+
+  /* ===== GUIDE GRID ===== */
+  .guide-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; flex: 1; }
+  .guide-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 16px 18px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .guide-card .g-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .guide-card .g-icon.yellow { background: rgba(251,191,36,0.2); }
+  .guide-card .g-icon.blue { background: rgba(37,99,235,0.2); }
+  .guide-card .g-icon.green { background: rgba(34,197,94,0.2); }
+  .guide-card .g-icon.purple { background: rgba(168,85,247,0.2); }
+  .guide-card .g-icon.red { background: rgba(239,68,68,0.2); }
+  .guide-card .g-icon.teal { background: rgba(20,184,166,0.2); }
+  .guide-card h3 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .guide-card p { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+
+  /* ===== TWO COL ===== */
+  .two-col { display: flex; gap: 24px; flex: 1; }
+  .tp-col {
+    flex: 1; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px;
+  }
+  .tp-col h3 { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; color: #fbbf24; margin-bottom: 12px; }
+  .tp-item { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+  .tp-num {
+    width: 26px; height: 26px; background: #2563eb; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .tp-text { font-size: 12px; color: #e2e8f0; line-height: 1.5; font-weight: 500; }
+  .ppp-item {
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .ppp-item .ppp-icon { font-size: 18px; }
+  .ppp-item .ppp-text { font-size: 11px; color: #d1fae5; font-weight: 600; }
+
+  /* ===== CASE CARDS ===== */
+  .case-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+    transition: all 0.3s;
+  }
+  .case-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+  .case-card .case-icon { font-size: 28px; flex-shrink: 0; }
+  .case-card .case-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .case-card .case-desc { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
+
+  /* ===== DISCOVERY CARDS (Klik Reveal) ===== */
+  .discovery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; }
+  .disc-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; padding: 18px 20px;
+    cursor: pointer; transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .disc-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .disc-card.revealed { border-color: rgba(251,191,36,0.5); }
+  .disc-card .disc-icon { font-size: 28px; margin-bottom: 6px; }
+  .disc-card .disc-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .disc-card .disc-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+  .disc-card .disc-reveal {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(251,191,36,0.3);
+    font-size: 12px; color: #fbbf24; font-weight: 700; line-height: 1.5;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+    padding-top: 0; margin-top: 0; border-top: none;
+  }
+  .disc-card.revealed .disc-reveal {
+    max-height: 80px; opacity: 1; padding-top: 10px; margin-top: 10px;
+    border-top: 1px solid rgba(251,191,36,0.3);
+  }
+  .disc-card .click-hint {
+    font-size: 10px; color: #64748b; font-style: italic; margin-top: 6px;
+    transition: opacity 0.3s;
+  }
+  .disc-card.revealed .click-hint { opacity: 0; }
+
+  /* ===== MATERI CARDS ===== */
+  .m-body { display: flex; gap: 24px; flex: 1; }
+  .m-left { flex: 1.1; display: flex; flex-direction: column; gap: 12px; }
+  .m-right { width: 400px; display: flex; flex-direction: column; gap: 12px; }
+  .info-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 14px 18px;
+  }
+  .info-card .ic-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .info-card .ic-label.l-sumber { color: #a78bfa; }
+  .info-card .ic-label.l-sifat { color: #fb923c; }
+  .info-card .ic-label.l-sanksi { color: #f87171; }
+  .info-card .ic-value { font-size: 13px; color: #e2e8f0; font-weight: 600; line-height: 1.5; }
+  .example-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 14px 18px;
+  }
+  .example-card h4 { font-size: 13px; font-weight: 700; color: #fbbf24; margin-bottom: 8px; }
+  .ex-item { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+  .ex-bullet {
+    width: 20px; height: 20px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .ex-bullet.agama { background: #7c3aed; }
+  .ex-bullet.kesusilaan { background: #dc2626; }
+  .ex-bullet.kesopanan { background: #d97706; }
+  .ex-bullet.hukum { background: #2563eb; }
+  .ex-text { font-size: 12px; color: #cbd5e1; line-height: 1.5; font-weight: 500; }
+
+  /* ===== TABLE ===== */
+  .table-wrap {
+    flex: 1; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden;
+  }
+  .table-wrap table { width: 100%; border-collapse: collapse; }
+  .table-wrap th {
+    padding: 12px 14px; text-align: left;
+    font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .table-wrap th:nth-child(1) { background: #374151; width: 14%; }
+  .table-wrap th:nth-child(2) { background: #7c3aed; width: 21.5%; }
+  .table-wrap th:nth-child(3) { background: #dc2626; width: 21.5%; }
+  .table-wrap th:nth-child(4) { background: #d97706; width: 21.5%; }
+  .table-wrap th:nth-child(5) { background: #2563eb; width: 21.5%; }
+  .table-wrap td {
+    padding: 10px 14px; font-size: 11px; color: #e2e8f0;
+    font-weight: 500; line-height: 1.4; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .table-wrap td:first-child { font-weight: 700; color: #fbbf24; }
+  .table-wrap tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .table-wrap td.empty-cell {
+    background: rgba(251,191,36,0.08); color: #fbbf24; font-style: italic; font-weight: 700;
+  }
+
+  /* ===== KLASIFIKASI (Klik Reveal) ===== */
+  .klas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; }
+  .klas-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; padding: 16px 20px;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .klas-card:hover { background: rgba(255,255,255,0.1); }
+  .klas-card .klas-situation { font-size: 13px; color: #e2e8f0; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+  .klas-card .klas-reveal {
+    font-size: 12px; font-weight: 700; line-height: 1.5;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    padding-top: 0; border-top: none;
+  }
+  .klas-card.revealed .klas-reveal {
+    max-height: 60px; opacity: 1; padding-top: 10px;
+    border-top: 1px solid rgba(34,197,94,0.3);
+  }
+  .klas-card.revealed { border-color: rgba(34,197,94,0.5); }
+  .klas-card .klas-hint { font-size: 10px; color: #64748b; font-style: italic; }
+  .klas-card.revealed .klas-hint { display: none; }
+
+  /* ===== EVALUASI / QUIZ ===== */
+  .quiz-container { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .quiz-question {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 14px 18px;
+    transition: border-color 0.3s;
+  }
+  .quiz-question.correct { border-color: rgba(34,197,94,0.6); background: rgba(34,197,94,0.08); }
+  .quiz-question.wrong { border-color: rgba(239,68,68,0.6); background: rgba(239,68,68,0.08); }
+  .quiz-question .q-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .quiz-question .q-num {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .quiz-question .q-type {
+    font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .q-type.mc { background: rgba(37,99,235,0.2); color: #93c5fd; }
+  .q-type.tf { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .q-type.essay { background: rgba(34,197,94,0.2); color: #86efac; }
+  .q-type.scenario { background: rgba(239,68,68,0.2); color: #fca5a5; }
+  .q-type.match { background: rgba(251,191,36,0.2); color: #fde68a; }
+  .quiz-question .q-text { font-size: 13px; color: #e2e8f0; font-weight: 600; line-height: 1.5; margin-bottom: 10px; }
+
+  .q-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .q-option {
+    padding: 8px 16px; border-radius: 8px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #e2e8f0; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .q-option:hover { background: rgba(255,255,255,0.15); }
+  .q-option.selected { background: rgba(37,99,235,0.3); border-color: #2563eb; color: #fff; }
+  .q-option.correct-answer { background: rgba(34,197,94,0.3); border-color: #22c55e; color: #fff; }
+  .q-option.wrong-answer { background: rgba(239,68,68,0.3); border-color: #ef4444; color: #fff; }
+  .q-option.disabled { pointer-events: none; opacity: 0.7; }
+
+  .q-feedback {
+    font-size: 11px; font-weight: 700; margin-top: 8px;
+    padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+  .quiz-question.answered .q-feedback { max-height: 60px; opacity: 1; }
+  .q-feedback.correct { color: #4ade80; }
+  .q-feedback.wrong { color: #f87171; }
+
+  /* Essay answer reveal */
+  .essay-reveal {
+    margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(34,197,94,0.3);
+    font-size: 11px; color: #4ade80; font-weight: 600; line-height: 1.5;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+  }
+  .essay-reveal.show { max-height: 80px; opacity: 1; }
+
+  .reveal-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(251,191,36,0.4);
+    background: rgba(251,191,36,0.15); color: #fbbf24; font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: all 0.25s; margin-top: 6px;
+  }
+  .reveal-btn:hover { background: rgba(251,191,36,0.3); }
+
+  /* ===== MATCHING (Menjodohkan) ===== */
+  .match-container { display: flex; gap: 20px; flex: 1; }
+  .match-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .match-col h4 { font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .match-item {
+    padding: 10px 14px; border-radius: 8px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #e2e8f0; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.25s; text-align: center;
+  }
+  .match-item:hover { background: rgba(255,255,255,0.15); }
+  .match-item.selected { background: rgba(37,99,235,0.3); border-color: #2563eb; }
+  .match-item.matched { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #4ade80; cursor: default; }
+  .match-item.wrong-match { background: rgba(239,68,68,0.2); border-color: #ef4444; }
+
+  /* ===== SCORE DISPLAY ===== */
+  .score-panel {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 16px 20px; text-align: center;
+  }
+  .score-panel .score-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .score-panel .score-value { font-family: 'Poppins', sans-serif; font-size: 36px; font-weight: 800; }
+  .score-panel .score-value.excellent { color: #4ade80; }
+  .score-panel .score-value.good { color: #fbbf24; }
+  .score-panel .score-value.need-improve { color: #f87171; }
+  .score-panel .score-msg { font-size: 13px; color: #e2e8f0; font-weight: 600; margin-top: 6px; }
+
+  /* ===== REFLEKSI ===== */
+  .reflect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; }
+  .reflect-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .reflect-card .rc-icon { font-size: 28px; margin-bottom: 8px; }
+  .reflect-card .rc-q { font-size: 14px; color: #e2e8f0; font-weight: 700; line-height: 1.5; margin-bottom: 8px; }
+  .reflect-card .rc-prompt { font-size: 11px; color: #94a3b8; font-style: italic; line-height: 1.4; }
+
+  /* ===== PENUTUP ===== */
+  .slide-penutup {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 50px 62px; text-align: center;
+  }
+  .slide-penutup .closing-icon { font-size: 52px; margin-bottom: 12px; }
+  .slide-penutup h2 { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+  .slide-penutup .closing-sub { font-size: 15px; color: #93c5fd; font-weight: 600; margin-bottom: 24px; max-width: 800px; line-height: 1.5; }
+  .slide-penutup .tugas-box {
+    background: rgba(251,191,36,0.1); border: 2px solid rgba(251,191,36,0.3);
+    border-radius: 14px; padding: 20px 28px; max-width: 880px;
+    text-align: left; margin-bottom: 16px;
+  }
+  .slide-penutup .tugas-box h3 { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #fbbf24; margin-bottom: 8px; }
+  .slide-penutup .tugas-box p { font-size: 13px; color: #e2e8f0; line-height: 1.6; font-weight: 500; }
+  .slide-penutup .reflect { font-size: 14px; color: #94a3b8; font-weight: 600; font-style: italic; }
+
+  /* ===== FLOATING SCORE (mini) ===== */
+  .mini-score {
+    position: absolute; top: 16px; left: 20px; z-index: 50;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+    padding: 6px 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .mini-score .ms-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+  .mini-score .ms-value { font-size: 14px; color: #fbbf24; font-weight: 800; }
+
+  /* ===== CHECKPOINT ===== */
+  .checkpoint {
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .checkpoint .cp-icon { font-size: 20px; }
+  .checkpoint .cp-text { font-size: 11px; color: #86efac; font-weight: 600; line-height: 1.4; }
+
+  /* ===== FULLSCREEN BUTTON ===== */
+  .fs-btn {
+    position: fixed; top: 16px; left: 20px; z-index: 9999;
+    width: 42px; height: 42px; border-radius: 10px;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #e2e8f0; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s;
+  }
+  .fs-btn:hover { background: rgba(37,99,235,0.5); border-color: #2563eb; transform: scale(1.1); }
+  .fs-btn:active { transform: scale(0.95); }
+
+  /* ===== RESPONSIVE ADJUSTMENTS ===== */
+  @media (max-width: 1024px) {
+    .slide-content { padding: 28px 30px 62px; }
+    .slide-home { padding: 28px 30px 62px; }
+    .slide-home .content { gap: 30px; }
+    .slide-home .right-col { width: 280px; }
+    .slide-home .illust-box { width: 260px; height: 160px; }
+    .m-right { width: 320px; }
+  }
+  @media (max-width: 768px) {
+    .slide-content { padding: 20px 20px 62px; }
+    .slide-home { padding: 20px 20px 62px; }
+    .slide-home .content { flex-direction: column; gap: 20px; width: 100%; }
+    .slide-home .right-col { width: 100%; }
+    .slide-home .illust-box { width: 100%; height: auto; min-height: 120px; }
+    .m-body { flex-direction: column; }
+    .m-right { width: 100%; }
+    .header-row h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- FULLSCREEN TOGGLE BUTTON -->
+<button class="fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Layar Penuh (F)">⛶</button>
+
+<div class="presentation" id="presentation">
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:6.67%"></div></div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 1: HOME -->
+<!-- ====================================================== -->
+<div class="slide slide-home active" data-slide="1">
+  <div class="bg-pattern"></div>
+  <div class="content">
+    <div class="left-col">
+      <div class="badge">Media Pembelajaran Interaktif</div>
+      <h1>Macam-Macam <span>Norma</span> dalam Kehidupan Bermasyarakat</h1>
+      <div class="subtitle">PPKn Kelas VII (Fase D) &mdash; Hakikat Norma &mdash; Pertemuan Ke-2</div>
+      <div class="meta-info">
+        <div class="meta-item"><div class="icon">📚</div><div><div class="label">Mapel</div><div class="value">PPKn</div></div></div>
+        <div class="meta-item"><div class="icon">🎓</div><div><div class="label">Kelas/Fase</div><div class="value">VII / D</div></div></div>
+        <div class="meta-item"><div class="icon">⏱️</div><div><div class="label">Alokasi</div><div class="value">2 × 40 menit</div></div></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="illust-box">
+        <div class="big-icon">⚖️</div>
+        <div class="illust-text">4 Jenis Norma: Agama &bull; Kesusilaan &bull; Kesopanan &bull; Hukum</div>
+      </div>
+      <button class="start-btn" onclick="goSlide(2)">MULAI BELAJAR ▶</button>
+      <div class="approach-tag">🔬 Pendekatan: Discovery Learning + Inkuiri</div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button></div>
+    <div class="nav-center">Slide 1 / 15 &mdash; Halaman Muka</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(2)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 2: PANDUAN -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="2">
+  <div class="phase-badge orient">FASE: ORIENTASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(251,191,36,0.25)">📋</div>
+    <div><h2>Panduan Penggunaan Media</h2><div class="sub">Baca sebelum memulai agar belajar efektif</div></div>
+  </div>
+  <div class="guide-grid">
+    <div class="guide-card"><div class="g-icon yellow">🏠</div><div><h3>Tombol Home</h3><p>Klik tombol kuning Home untuk kembali ke Halaman Muka kapan saja.</p></div></div>
+    <div class="guide-card"><div class="g-icon blue">◀▶</div><div><h3>Navigasi Slide</h3><p>Gunakan tombol Kembali dan Selanjutnya untuk berpindah slide.</p></div></div>
+    <div class="guide-card"><div class="g-icon green">🔍</div><div><h3>Klik untuk Reveal</h3><p>Klik kartu bergaris untuk memunculkan jawaban tersembunyi.</p></div></div>
+    <div class="guide-card"><div class="g-icon purple">✅</div><div><h3>Kuis Interaktif</h3><p>Pilih jawaban di soal pilihan ganda. Feedback langsung muncul.</p></div></div>
+    <div class="guide-card"><div class="g-icon red">🎯</div><div><h3>Skoring Otomatis</h3><p>Skor kamu dihitung otomatis di slide Evaluasi. Kerjakan dengan sungguh-sungguh!</p></div></div>
+    <div class="guide-card"><div class="g-icon teal">📝</div><div><h3>Essay / Refleksi</h3><p>Tulis jawabanmu di buku/tulisan, lalu klik "Lihat Kunci Jawaban" untuk membandingkan.</p></div></div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(1)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 2 / 15 &mdash; PANDUAN</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(3)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 3: TUJUAN PEMBELAJARAN -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="3">
+  <div class="phase-badge orient">FASE: ORIENTASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(37,99,235,0.25)">🎯</div>
+    <div><h2>Tujuan Pembelajaran & Profil Pelajar Pancasila</h2></div>
+  </div>
+  <div class="two-col">
+    <div class="tp-col">
+      <h3>🎯 Tujuan Pembelajaran (TP)</h3>
+      <div class="tp-item"><div class="tp-num">1</div><div class="tp-text">Mengidentifikasi macam-macam norma (agama, kesusilaan, kesopanan, hukum) <b>melalui pengamatan contoh kasus nyata</b> di lingkungan sekitar.</div></div>
+      <div class="tp-item"><div class="tp-num">2</div><div class="tp-text">Membedakan sumber, sifat, dan sanksi dari setiap jenis norma <b>melalui kegiatan menganalisis</b> tabel perbandingan.</div></div>
+      <div class="tp-item"><div class="tp-num">3</div><div class="tp-text">Memberikan contoh perilaku yang sesuai dengan masing-masing norma <b>dalam kehidupan sehari-hari</b> di lingkungan sekolah dan masyarakat.</div></div>
+    </div>
+    <div class="tp-col">
+      <h3>🇮🇩 Profil Pelajar Pancasila</h3>
+      <div class="ppp-item"><div class="ppp-icon">🤝</div><div class="ppp-text">Gotong Royong &mdash; Menghargai peran norma dalam kehidupan bersama</div></div>
+      <div class="ppp-item"><div class="ppp-icon">🌍</div><div class="ppp-text">Berglobal &mdash; Memahami norma sebagai bagian kehidupan bermasyarakat</div></div>
+      <div class="ppp-item"><div class="ppp-icon">🙏</div><div class="ppp-text">Beriman &mdash; Menjalankan norma agama sebagai pedoman hidup</div></div>
+      <div class="ppp-item"><div class="ppp-icon">💡</div><div class="ppp-text">Bernalar Kritis &mdash; Membedakan jenis norma berdasarkan sumber dan sanksi</div></div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(2)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 3 / 15 &mdash; TUJUAN PEMBELAJARAN</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(4)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 4: AKTIVASI - SKENARIO KASUS NYATA -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="4">
+  <div class="phase-badge explore">FASE: EKSPLORASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(168,85,247,0.25)">🔬</div>
+    <div><h2>Ayo Amati! Situasi Apa yang Kamu Temui?</h2><div class="sub">Perhatikan 4 skenario berikut. Apa yang mengatur perilaku dalam situasi ini? <span class="bloom-tag c3">C3 Menerapkan</span></div></div>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; flex:1;">
+    <div class="case-card">
+      <div class="case-icon">🕌</div>
+      <div><div class="case-title">Skenario 1: Saat Adzan Berkumandang</div><div class="case-desc">Rina mendengar adzan Zuhur saat di sekolah. Ia segera menghentikan kegiatannya dan pergi ke mushola untuk melaksanakan salat. Teman-temannya ada yang ikut salat, ada yang melanjutkan bermain.</div></div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">❤️</div>
+      <div><div class="case-title">Skenario 2: Uang Teman Jatuh</div><div class="case-desc">Budi melihat uang Rp50.000 jatuh dari saku Andi saat bermain di lapangan. Tidak ada orang lain yang melihat. Budi merasa ragu: mengambil atau mengembalikan?</div></div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">🤝</div>
+      <div><div class="case-title">Skenario 3: Makan di Kantin Sekolah</div><div class="case-desc">Saat makan di kantin, Sari makan dengan tangan dan bersuara keras. Teman-temannya terlihat tidak nyaman. Ibu guru yang lewat menegur Sari dengan sopan.</div></div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">⚖️</div>
+      <div><div class="case-title">Skenario 4: Naik Motor Tanpa Helm</div><div class="case-desc">Pak Darmawan mengantar anaknya ke sekolah menggunakan motor, tapi tidak memakai helm. Di persimpangan, polisi berhenti dan memberikan tilang kepada Pak Darmawan.</div></div>
+    </div>
+  </div>
+  <div style="margin-top:10px">
+    <div class="checkpoint">
+      <div class="cp-icon">💡</div>
+      <div class="cp-text">Pikirkan: Apa yang mengatur perilaku dalam tiap skenario? Norma apa yang berlaku? Lanjut ke slide berikutnya untuk menemukan jawabannya!</div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(3)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 4 / 15 &mdash; AKTIVASI: SKENARIO KASUS NYATA</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(5)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 5: DISCOVERY - TEMUKAN JAWABANNYA (Klik Reveal) -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="5">
+  <div class="phase-badge explore">FASE: EKSPLORASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(168,85,247,0.25)">🔎</div>
+    <div><h2>Temukan Jawabannya!</h2><div class="sub">Klik tiap kartu untuk mengungkap jenis norma yang berlaku <span class="bloom-tag c4">C4 Menganalisis</span></div></div>
+  </div>
+  <div class="discovery-grid">
+    <div class="disc-card" onclick="revealDiscovery(this)">
+      <div class="disc-icon">🕌</div>
+      <div class="disc-title">Skenario 1: Rina Salat Zuhur</div>
+      <div class="disc-desc">Rina melaksanakan salat karena perintah agama. Ini adalah kewajiban bagi setiap muslim yang sudah baligh.</div>
+      <div class="disc-reveal">🕌 Ini adalah <b>NORMA AGAMA</b> &mdash; Sumber: Al-Qur'an & Hadits | Sanksi: Dosa</div>
+      <div class="click-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+    <div class="disc-card" onclick="revealDiscovery(this)">
+      <div class="disc-icon">❤️</div>
+      <div class="disc-title">Skenario 2: Uang Andi Jatuh</div>
+      <div class="disc-desc">Mengambil uang yang bukan milik kita bertentangan dengan hati nurani. Meskipun tidak ada yang tahu...</div>
+      <div class="disc-reveal">❤️ Ini adalah <b>NORMA KESUSILAAN</b> &mdash; Sumber: Hati nurani | Sanksi: Rasa bersalah</div>
+      <div class="click-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+    <div class="disc-card" onclick="revealDiscovery(this)">
+      <div class="disc-icon">🤝</div>
+      <div class="disc-title">Skenario 3: Sari Makan Bersuara Keras</div>
+      <div class="disc-desc">Makan dengan tangan dan bersuara keras di kantin dianggap tidak sopan. Ibu guru menegur.</div>
+      <div class="disc-reveal">🤝 Ini adalah <b>NORMA KESOPANAN</b> &mdash; Sumber: Kebiasaan masyarakat | Sanksi: Teguran</div>
+      <div class="click-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+    <div class="disc-card" onclick="revealDiscovery(this)">
+      <div class="disc-icon">⚖️</div>
+      <div class="disc-title">Skenario 4: Pak Darmawan Tanpa Helm</div>
+      <div class="disc-desc">Tidak memakai helm melanggar UU Lalu Lintas. Polisi memberi tilang karena aturan mengikat seluruh warga negara.</div>
+      <div class="disc-reveal">⚖️ Ini adalah <b>NORMA HUKUM</b> &mdash; Sumber: UU No. 22/2009 | Sanksi: Tilang/Denda</div>
+      <div class="click-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(4)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 5 / 15 &mdash; DISCOVERY: TEMUKAN JAWABANNYA</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(6)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 6: MATERI NORMA AGAMA -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="6">
+  <div class="phase-badge explore">FASE: EKSPLORASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(168,85,247,0.25)">🕌</div>
+    <div><h2>Norma Agama</h2><div class="sub">Sumber, sifat, sanksi, dan contoh dalam kehidupan sehari-hari</div></div>
+  </div>
+  <div class="m-body">
+    <div class="m-left">
+      <div class="info-card"><div class="ic-label l-sumber">📖 Sumber</div><div class="ic-value">Kitab suci agama (Al-Qur'an, Bible, Weda, Tripitaka) serta firman Tuhan YME. Tidak dapat diubah oleh manusia.</div></div>
+      <div class="info-card"><div class="ic-label l-sifat">⚖️ Sifat</div><div class="ic-value">Mutlak &amp; universal &mdash; berlaku bagi seluruh penganut agama tanpa terkecuali, abadi sepanjang zaman.</div></div>
+      <div class="info-card"><div class="ic-label l-sanksi">⛔ Sanksi</div><div class="ic-value">Dosa &mdash; bersifat spiritual/ukhrowi. Tidak ada pengadilan duniawi yang mengadili pelanggaran norma agama.</div></div>
+    </div>
+    <div class="m-right">
+      <div class="example-card">
+        <h4>💡 Contoh Kontekstual Siswa SMP</h4>
+        <div class="ex-item"><div class="ex-bullet agama">1</div><div class="ex-text">Berdoa sebelum pelajaran dimulai &mdash; kewajiban yang diajarkan agama</div></div>
+        <div class="ex-item"><div class="ex-bullet agama">2</div><div class="ex-text">Berpuasa Ramadhan meski sedang ujian &mdash; menahan lapar dan haus karena perintah agama</div></div>
+        <div class="ex-item"><div class="ex-bullet agama">3</div><div class="ex-text">Menghadiri kebaktian Minggu bersama keluarga &mdash; ibadah wajib bagi umat Kristiani</div></div>
+      </div>
+      <div class="quiz-question" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="q-header"><span class="q-type essay">Essay</span></div>
+        <div class="q-text">Ceritakan satu kebiasaan keagamaan yang kamu lakukan setiap hari di rumah. Apa yang kamu rasakan jika suatu hari kamu lupa melakukannya?</div>
+        <button class="reveal-btn" onclick="revealEssay(this)">📝 Lihat Contoh Jawaban</button>
+        <div class="essay-reveal">Contoh: Saya berdoa sebelum tidur. Jika lupa, saya merasa tidak tenang dan seolah ada yang kurang. Ini menunjukkan norma agama memberi ketenangan batin.</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(5)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 6 / 15 &mdash; MATERI: NORMA AGAMA</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(7)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 7: MATERI NORMA KESUSILAAN -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="7">
+  <div class="phase-badge explore">FASE: EKSPLORASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(239,68,68,0.25)">❤️</div>
+    <div><h2>Norma Kesusilaan</h2><div class="sub">Sumber, sifat, sanksi, dan contoh dalam kehidupan sehari-hari</div></div>
+  </div>
+  <div class="m-body">
+    <div class="m-left">
+      <div class="info-card"><div class="ic-label l-sumber">📖 Sumber</div><div class="ic-value">Hati nurani dan kebudayaan manusia &mdash; lahir dari perasaan batin tentang baik dan buruk.</div></div>
+      <div class="info-card"><div class="ic-label l-sifat">⚖️ Sifat</div><div class="ic-value">Relatif &amp; universal sebagian &mdash; berlaku umum, namun tingkat kesepakatan bisa berbeda antar budaya.</div></div>
+      <div class="info-card"><div class="ic-label l-sanksi">⛔ Sanksi</div><div class="ic-value">Rasa bersalah &amp; penyesalan mendalam. Pelanggar merasa gelisah dan tidak tenang secara batiniah.</div></div>
+    </div>
+    <div class="m-right">
+      <div class="example-card">
+        <h4>💡 Contoh Kontekstual Siswa SMP</h4>
+        <div class="ex-item"><div class="ex-bullet kesusilaan">1</div><div class="ex-text">Mencontek saat ulangan &mdash; hati nurani berkata ini salah, meski guru tidak tahu</div></div>
+        <div class="ex-item"><div class="ex-bullet kesusilaan">2</div><div class="ex-text">Menyakiti perasaan teman dengan bully di grup WA &mdash; merasa bersalah setelahnya</div></div>
+        <div class="ex-item"><div class="ex-bullet kesusilaan">3</div><div class="ex-text">Menolong teman yang jatuh di koridor &mdash; hati nurani mendorong untuk menolong</div></div>
+      </div>
+      <div class="quiz-question" data-quiz="mc-kesusilaan" data-answer="B" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="q-header"><span class="q-type mc">Pilihan Ganda</span></div>
+        <div class="q-text">Andi mencontek saat ulangan matematika. Ia merasa gelisah meskipun guru tidak mengetahui. Norma apa yang dilanggar?</div>
+        <div class="q-options">
+          <div class="q-option" onclick="answerMC(this,'A')">A. Kesopanan</div>
+          <div class="q-option" onclick="answerMC(this,'B')">B. Kesusilaan</div>
+          <div class="q-option" onclick="answerMC(this,'C')">C. Agama</div>
+          <div class="q-option" onclick="answerMC(this,'D')">D. Hukum</div>
+        </div>
+        <div class="q-feedback">Benar! Mencontek melanggar hati nurani (kesusilaan). Meski tidak tertangkap, Andi merasa bersalah.</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(6)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 7 / 15 &mdash; MATERI: NORMA KESUSILAAN</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(8)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 8: MATERI NORMA KESOPANAN -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="8">
+  <div class="phase-badge explore">FASE: EKSPLORASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(251,191,36,0.25)">🤝</div>
+    <div><h2>Norma Kesopanan</h2><div class="sub">Sumber, sifat, sanksi, dan contoh dalam kehidupan sehari-hari</div></div>
+  </div>
+  <div class="m-body">
+    <div class="m-left">
+      <div class="info-card"><div class="ic-label l-sumber">📖 Sumber</div><div class="ic-value">Kebiasaan, tradisi, dan adat istiadat masyarakat &mdash; tumbuh dari kesepakatan tidak tertulis.</div></div>
+      <div class="info-card"><div class="ic-label l-sifat">⚖️ Sifat</div><div class="ic-value">Relatif &amp; lokal &mdash; berlaku dalam kelompok masyarakat tertentu. Sopan di satu daerah belum tentu sopan di daerah lain.</div></div>
+      <div class="info-card"><div class="ic-label l-sanksi">⛔ Sanksi</div><div class="ic-value">Ditegur, dikritik, atau dijauhi masyarakat. Dianggap tidak tahu adat dan sulit diterima secara sosial.</div></div>
+    </div>
+    <div class="m-right">
+      <div class="example-card">
+        <h4>💡 Contoh Kontekstual Siswa SMP</h4>
+        <div class="ex-item"><div class="ex-bullet kesopanan">1</div><div class="ex-text">Mengucap salam saat masuk ruang guru &mdash; menunjukkan rasa hormat kepada yang lebih tua</div></div>
+        <div class="ex-item"><div class="ex-bullet kesopanan">2</div><div class="ex-text">Memakai seragam lengkap dan rapi ke sekolah &mdash; adab berpenampilan di lingkungan formal</div></div>
+        <div class="ex-item"><div class="ex-bullet kesopanan">3</div><div class="ex-text">Tidak berteriak di perpustakaan sekolah &mdash; menghormati ketenangan orang lain</div></div>
+      </div>
+      <div class="quiz-question" data-quiz="mc-kesopanan" data-answer="C" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="q-header"><span class="q-type mc">Pilihan Ganda</span></div>
+        <div class="q-text">Santi tidak mau menyapu kelas padahal sudah jadwal piketnya. Teman-temannya mengeluh. Norma apa yang dilanggar?</div>
+        <div class="q-options">
+          <div class="q-option" onclick="answerMC(this,'A')">A. Agama</div>
+          <div class="q-option" onclick="answerMC(this,'B')">B. Hukum</div>
+          <div class="q-option" onclick="answerMC(this,'C')">C. Kesopanan</div>
+          <div class="q-option" onclick="answerMC(this,'D')">D. Kesusilaan</div>
+        </div>
+        <div class="q-feedback">Benar! Tidak mau piket melanggar kesopanan, karena piket adalah kesepakatan kelas yang harus dihormati.</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(7)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 8 / 15 &mdash; MATERI: NORMA KESOPANAN</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(9)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 9: MATERI NORMA HUKUM -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="9">
+  <div class="phase-badge explore">FASE: EKSPLORASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(37,99,235,0.25)">⚖️</div>
+    <div><h2>Norma Hukum</h2><div class="sub">Sumber, sifat, sanksi, dan contoh dalam kehidupan sehari-hari</div></div>
+  </div>
+  <div class="m-body">
+    <div class="m-left">
+      <div class="info-card"><div class="ic-label l-sumber">📖 Sumber</div><div class="ic-value">Peraturan perundang-undangan yang dibuat oleh lembaga berwenang (DPR, Pemerintah). Bersifat tertulis dan mengikat.</div></div>
+      <div class="info-card"><div class="ic-label l-sifat">⚖️ Sifat</div><div class="ic-value">Mutlak &amp; mengikat paksa &mdash; berlaku bagi seluruh warga negara tanpa terkecuali. Pelanggaran dikenai sanksi tegas.</div></div>
+      <div class="info-card"><div class="ic-label l-sanksi">⛔ Sanksi</div><div class="ic-value">Tegas &amp; nyata: denda, penjara, tilang, atau hukuman sosial. Diberlakukan oleh aparat penegak hukum.</div></div>
+    </div>
+    <div class="m-right">
+      <div class="example-card">
+        <h4>💡 Contoh Kontekstual Siswa SMP</h4>
+        <div class="ex-item"><div class="ex-bullet hukum">1</div><div class="ex-text">Membawa helm saat naik motor &mdash; wajib sesuai UU No. 22 Tahun 2009 tentang Lalu Lintas</div></div>
+        <div class="ex-item"><div class="ex-bullet hukum">2</div><div class="ex-text">Tidak membuang sampah di sungai &mdash; melanggar UU No. 18/2008 tentang Pengelolaan Sampah</div></div>
+        <div class="ex-item"><div class="ex-bullet hukum">3</div><div class="ex-text">Hadir di sekolah minimal 90% &mdash; aturan Permenbudikdasmen tentang kehadiran siswa</div></div>
+      </div>
+      <div class="quiz-question" data-quiz="mc-hukum" data-answer="D" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="q-header"><span class="q-type mc">Pilihan Ganda</span></div>
+        <div class="q-text">Seorang siswa kedapatan mencuri sepeda motor. Ia dihadapkan ke polisi dan diproses secara hukum. Norma apa yang berlaku?</div>
+        <div class="q-options">
+          <div class="q-option" onclick="answerMC(this,'A')">A. Kesopanan</div>
+          <div class="q-option" onclick="answerMC(this,'B')">B. Kesusilaan</div>
+          <div class="q-option" onclick="answerMC(this,'C')">C. Agama</div>
+          <div class="q-option" onclick="answerMC(this,'D')">D. Hukum</div>
+        </div>
+        <div class="q-feedback">Benar! Mencuri adalah pelanggaran hukum yang dikenai sanksi tegas (pidana). Polisi dan pengadilan yang menangani.</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(8)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 9 / 15 &mdash; MATERI: NORMA HUKUM</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(10)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 10: TABEL PERBANDINGAN (8 kotak kosong) -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="10">
+  <div class="phase-badge practice">FASE: PENGOLAHAN</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(34,197,94,0.25)">📊</div>
+    <div><h2>Tabel Perbandingan 4 Jenis Norma</h2><div class="sub">Isi 8 kotak kosong berdasarkan materi yang sudah dipelajari, lalu klik "Cek Jawaban" <span class="bloom-tag c4">C4 Menganalisis</span></div></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Aspek</th><th>🕌 Norma Agama</th><th>❤️ Norma Kesusilaan</th><th>🤝 Norma Kesopanan</th><th>⚖️ Norma Hukum</th></tr>
+      <tr><td>Sumber</td><td>Kitab suci & firman Tuhan</td><td class="empty-cell" id="t1">?</td><td>Kebiasaan & adat masyarakat</td><td class="empty-cell" id="t2">?</td></tr>
+      <tr><td>Sifat</td><td class="empty-cell" id="t3">?</td><td>Relatif & universal sebagian</td><td class="empty-cell" id="t4">?</td><td>Mutlak & mengikat paksa</td></tr>
+      <tr><td>Sanksi</td><td>Dosa (spiritual)</td><td class="empty-cell" id="t5">?</td><td>Ditegur, dikritik, dijauhi</td><td class="empty-cell" id="t6">?</td></tr>
+      <tr><td>Contoh</td><td class="empty-cell" id="t7">?</td><td>Mencontek saat ulangan</td><td class="empty-cell" id="t8">?</td><td>Naik motor tanpa helm</td></tr>
+    </table>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:12px;align-items:center;">
+    <button class="reveal-btn" onclick="revealTable()" style="font-size:13px;padding:10px 24px;">🔍 Cek Jawaban</button>
+    <div id="tableFeedback" style="font-size:12px;color:#94a3b8;font-weight:600;"></div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(9)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 10 / 15 &mdash; TABEL PERBANDINGAN</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(11)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 11: KLASIFIKASI SITUASI (Klik Reveal) -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="11">
+  <div class="phase-badge apply">FASE: PEMBUKTIAN</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(251,191,36,0.25)">🏷️</div>
+    <div><h2>Klasifikasikan: Norma Apa yang Berlaku?</h2><div class="sub">Klik tiap situasi untuk mengungkap jenis normanya <span class="bloom-tag c3">C3 Menerapkan</span></div></div>
+  </div>
+  <div class="klas-grid">
+    <div class="klas-card" onclick="revealKlas(this)">
+      <div class="klas-situation">📋 Situasi 1: Doni berbohong kepada orang tuanya. Di malam hari ia tidak bisa tidur karena merasa bersalah.</div>
+      <div class="klas-reveal" style="color:#f87171;">❤️ <b>Norma Kesusilaan</b> &mdash; Berbohong melanggar hati nurani. Sanksi: Rasa bersalah &amp; gelisah.</div>
+      <div class="klas-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+    <div class="klas-card" onclick="revealKlas(this)">
+      <div class="klas-situation">📋 Situasi 2: Rani mengenakan seragam pramuka setiap Sabtu sesuai jadwal sekolah.</div>
+      <div class="klas-reveal" style="color:#fbbf24;">🤝 <b>Norma Kesopanan</b> &mdash; Mematuhi aturan berpakaian adalah kesopanan dalam lingkungan formal.</div>
+      <div class="klas-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+    <div class="klas-card" onclick="revealKlas(this)">
+      <div class="klas-situation">📋 Situasi 3: Pak Budi tertangkap basah mencuri sepeda motor dan diajukan ke pengadilan.</div>
+      <div class="klas-reveal" style="color:#60a5fa;">⚖️ <b>Norma Hukum</b> &mdash; Mencuri melanggar KUHP. Sanksi: Penjara atau denda, diproses secara hukum.</div>
+      <div class="klas-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+    <div class="klas-card" onclick="revealKlas(this)">
+      <div class="klas-situation">📋 Situasi 4: Keluarga Siti selalu berdoa bersama sebelum makan malam setiap hari.</div>
+      <div class="klas-reveal" style="color:#c084fc;">🕌 <b>Norma Agama</b> &mdash; Berdoa sebelum makan adalah perintah agama. Sanksi: Dosa jika sengaja meninggalkan.</div>
+      <div class="klas-hint">👆 Klik untuk lihat jawaban</div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(10)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 11 / 15 &mdash; KLASIFIKASI SITUASI</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(12)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 12: RANGKUMAN -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="12">
+  <div class="phase-badge apply">FASE: PEMBUKTIAN</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(251,191,36,0.25)">📝</div>
+    <div><h2>Rangkuman: Perbandingan Lengkap 4 Jenis Norma</h2></div>
+  </div>
+  <div class="table-wrap" style="flex:1;">
+    <table>
+      <tr><th>Aspek</th><th>🕌 Norma Agama</th><th>❤️ Norma Kesusilaan</th><th>🤝 Norma Kesopanan</th><th>⚖️ Norma Hukum</th></tr>
+      <tr><td>Sumber</td><td>Kitab suci & firman Tuhan</td><td>Hati nurani & kebudayaan</td><td>Kebiasaan & adat masyarakat</td><td>Peraturan perundang-undangan</td></tr>
+      <tr><td>Sifat</td><td>Mutlak & universal</td><td>Relatif & universal sebagian</td><td>Relatif & lokal</td><td>Mutlak & mengikat paksa</td></tr>
+      <tr><td>Sanksi</td><td>Dosa (spiritual)</td><td>Rasa bersalah (batiniah)</td><td>Ditegur, dikritik, dijauhi</td><td>Denda, penjara, tilang</td></tr>
+      <tr><td>Contoh</td><td>Berdoa sebelum belajar</td><td>Mencontek saat ulangan</td><td>Mengucap salam ke guru</td><td>Naik motor tanpa helm</td></tr>
+    </table>
+  </div>
+  <div class="checkpoint" style="margin-top:12px;">
+    <div class="cp-icon">✅</div>
+    <div class="cp-text">Rangkuman ini bisa kamu jadikan referensi untuk mengerjakan evaluasi di slide berikutnya. Semangat!</div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(11)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 12 / 15 &mdash; RANGKUMAN</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(13)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 13: EVALUASI (Quiz Interaktif + Skoring) -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="13">
+  <div class="mini-score">
+    <div class="ms-label">Skor</div>
+    <div class="ms-value" id="miniScore">0/6</div>
+  </div>
+  <div class="phase-badge evaluate">FASE: EVALUASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(239,68,68,0.25)">✅</div>
+    <div><h2>Evaluasi: Uji Pemahamanmu!</h2><div class="sub">Jawab 6 soal berikut. Skor dihitung otomatis. <span class="bloom-tag c3">C3</span> <span class="bloom-tag c4">C4</span> <span class="bloom-tag c5">C5</span></div></div>
+  </div>
+  <div class="quiz-container" style="max-height:480px;overflow-y:auto;padding-right:6px;">
+    <!-- SOAL 1: MC -->
+    <div class="quiz-question" data-quiz="eval1" data-answer="B" data-points="1">
+      <div class="q-header"><span class="q-num" style="background:#2563eb;">1</span><span class="q-type mc">Pilihan Ganda</span><span class="bloom-tag c3">C3</span></div>
+      <div class="q-text">Berikut ini yang merupakan sumber norma agama adalah...</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answerMC(this,'A')">A. Kebiasaan masyarakat</div>
+        <div class="q-option" onclick="answerMC(this,'B')">B. Kitab suci dan firman Tuhan</div>
+        <div class="q-option" onclick="answerMC(this,'C')">C. Hati nurani manusia</div>
+        <div class="q-option" onclick="answerMC(this,'D')">D. Peraturan pemerintah</div>
+      </div>
+      <div class="q-feedback">Benar! Norma agama bersumber dari kitab suci dan firman Tuhan YME.</div>
+    </div>
+    <!-- SOAL 2: MC -->
+    <div class="quiz-question" data-quiz="eval2" data-answer="C" data-points="1">
+      <div class="q-header"><span class="q-num" style="background:#7c3aed;">2</span><span class="q-type mc">Pilihan Ganda</span><span class="bloom-tag c4">C4</span></div>
+      <div class="q-text">Seseorang merasa gelisah setelah mengambil barang temannya tanpa izin. Norma apa yang melandasi rasa bersalah tersebut?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answerMC(this,'A')">A. Norma Agama</div>
+        <div class="q-option" onclick="answerMC(this,'B')">B. Norma Kesopanan</div>
+        <div class="q-option" onclick="answerMC(this,'C')">C. Norma Kesusilaan</div>
+        <div class="q-option" onclick="answerMC(this,'D')">D. Norma Hukum</div>
+      </div>
+      <div class="q-feedback">Benar! Rasa gelisah dan bersalah adalah sanksi norma kesusilaan yang bersumber dari hati nurani.</div>
+    </div>
+    <!-- SOAL 3: MC (Studi Kasus) -->
+    <div class="quiz-question" data-quiz="eval3" data-answer="D" data-points="1">
+      <div class="q-header"><span class="q-num" style="background:#dc2626;">3</span><span class="q-type scenario">Studi Kasus</span><span class="bloom-tag c5">C5</span></div>
+      <div class="q-text">Dina menolak membayar parkir sebesar Rp2.000 dan berdebat dengan petugas. Petugas parkir tersebut memiliki Surat Keputusan dari Dinas Perhubungan. Norma apa yang dilanggar Dina?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answerMC(this,'A')">A. Norma Agama</div>
+        <div class="q-option" onclick="answerMC(this,'B')">B. Norma Kesusilaan</div>
+        <div class="q-option" onclick="answerMC(this,'C')">C. Norma Kesopanan</div>
+        <div class="q-option" onclick="answerMC(this,'D')">D. Norma Hukum</div>
+      </div>
+      <div class="q-feedback">Benar! Membayar parkir berdasarkan SK Dinas Perhubungan adalah kewajiban hukum. Menolak berarti melanggar norma hukum.</div>
+    </div>
+    <!-- SOAL 4: True/False -->
+    <div class="quiz-question" data-quiz="eval4" data-answer="B" data-points="1">
+      <div class="q-header"><span class="q-num" style="background:#d97706;">4</span><span class="q-type tf">Benar/Salah</span><span class="bloom-tag c4">C4</span></div>
+      <div class="q-text">Pernyataan: "Sanksi norma kesopanan bersifat tegas dan dapat berupa penjara." Pernyataan ini...</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answerMC(this,'A')">A. Benar</div>
+        <div class="q-option" onclick="answerMC(this,'B')">B. Salah</div>
+      </div>
+      <div class="q-feedback">Benar! Pernyataan itu SALAH. Sanksi norma kesopanan adalah teguran/kritik, bukan penjara. Penjara adalah sanksi norma hukum.</div>
+    </div>
+    <!-- SOAL 5: MC -->
+    <div class="quiz-question" data-quiz="eval5" data-answer="C" data-points="1">
+      <div class="q-header"><span class="q-num" style="background:#059669;">5</span><span class="q-type mc">Pilihan Ganda</span><span class="bloom-tag c3">C3</span></div>
+      <div class="q-text">Perhatikan pernyataan berikut: (1) Mengucap salam saat bertemu guru, (2) Berdoa sebelum makan, (3) Menunduk saat lewat orang tua, (4) Memakai helm saat naik motor. Yang termasuk norma kesopanan adalah...</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answerMC(this,'A')">A. (1) dan (2)</div>
+        <div class="q-option" onclick="answerMC(this,'B')">B. (2) dan (4)</div>
+        <div class="q-option" onclick="answerMC(this,'C')">C. (1) dan (3)</div>
+        <div class="q-option" onclick="answerMC(this,'D')">D. (3) dan (4)</div>
+      </div>
+      <div class="q-feedback">Benar! Mengucap salam dan menunduk saat lewat orang tua adalah norma kesopanan. (2) norma agama, (4) norma hukum.</div>
+    </div>
+    <!-- SOAL 6: MC (Menjodohkan via MC) -->
+    <div class="quiz-question" data-quiz="eval6" data-answer="A" data-points="1">
+      <div class="q-header"><span class="q-num" style="background:#7c3aed;">6</span><span class="q-type match">Menjodohkan</span><span class="bloom-tag c5">C5</span></div>
+      <div class="q-text">Pasangkan dengan benar: "Mencuri uang kelas dan merasa sangat menyesal sepanjang hari" &mdash; norma apa yang paling dominan berlaku?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answerMC(this,'A')">A. Kesusilaan (rasa menyesal dari hati nurani)</div>
+        <div class="q-option" onclick="answerMC(this,'B')">B. Hukum (karena mencuri melanggar UU)</div>
+        <div class="q-option" onclick="answerMC(this,'C')">C. Kesopanan (karena menyesal di depan teman)</div>
+        <div class="q-option" onclick="answerMC(this,'D')">D. Agama (karena mencuri adalah dosa)</div>
+      </div>
+      <div class="q-feedback">Benar! Rasa menyesal yang dalam adalah reaksi hati nurani (kesusilaan). Meski mencuri juga melanggar hukum, yang DOMINAN dalam perasaan menyesal adalah kesusilaan.</div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(12)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 13 / 15 &mdash; EVALUASI</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(14)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 14: HASIL EVALUASI + REFLEKSI -->
+<!-- ====================================================== -->
+<div class="slide slide-content" data-slide="14">
+  <div class="phase-badge evaluate">FASE: EVALUASI</div>
+  <div class="header-row">
+    <div class="header-icon" style="background:rgba(239,68,68,0.25)">🏆</div>
+    <div><h2>Hasil Evaluasi & Refleksi Diri</h2></div>
+  </div>
+  <div style="display:flex;gap:24px;flex:1;">
+    <div style="width:320px;display:flex;flex-direction:column;gap:14px;">
+      <div class="score-panel">
+        <div class="score-label">Skor Evaluasimu</div>
+        <div class="score-value" id="finalScore">0/6</div>
+        <div class="score-msg" id="scoreMsg">Kerjakan evaluasi di slide sebelumnya</div>
+      </div>
+      <div class="checkpoint">
+        <div class="cp-icon">💡</div>
+        <div class="cp-text">Kembali ke slide Evaluasi (slide 13) jika belum mengerjakan semua soal.</div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <h3 style="font-family:'Poppins',sans-serif;font-size:16px;color:#fbbf24;font-weight:700;margin-bottom:4px;">🪞 Refleksi Diri</h3>
+      <div class="reflect-grid" style="flex:1;">
+        <div class="reflect-card">
+          <div class="rc-icon">🤔</div>
+          <div class="rc-q">Norma mana yang paling sering kamu jumpai di kehidupan sehari-hari?</div>
+          <div class="rc-prompt">Tulis jawaban di buku tulismu, lalu diskusikan dengan teman sebangku.</div>
+        </div>
+        <div class="reflect-card">
+          <div class="rc-icon">💭</div>
+          <div class="rc-q">Apa yang akan kamu lakukan jika melihat teman melanggar norma di sekolah?</div>
+          <div class="rc-prompt">Pikirkan jawaban yang menunjukkan sikap bertanggung jawab sebagai siswa.</div>
+        </div>
+        <div class="reflect-card">
+          <div class="rc-icon">🌱</div>
+          <div class="rc-q">Norma mana yang paling sulit kamu patuhi? Mengapa?</div>
+          <div class="rc-prompt">Jujurlah pada diri sendiri. Tidak ada jawaban salah di sini.</div>
+        </div>
+        <div class="reflect-card">
+          <div class="rc-icon">🎯</div>
+          <div class="rc-q">Tuliskan 1 komitmenmu untuk lebih mematuhi norma mulai hari ini.</div>
+          <div class="rc-prompt">Contoh: "Saya berkomitmen untuk selalu mengucap salam saat bertemu guru."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(13)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 14 / 15 &mdash; HASIL EVALUASI & REFLEKSI</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(15)">Selanjutnya ▶</button></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- SLIDE 15: PENUTUP -->
+<!-- ====================================================== -->
+<div class="slide slide-penutup" data-slide="15">
+  <div class="closing-icon">🎓</div>
+  <h2>Terima Kasih, Sobat PPKn!</h2>
+  <div class="closing-sub">Semoga kamu semakin memahami macam-macam norma dan mampu menerapkannya dalam kehidupan sehari-hari. Ingat, norma bukan sekadar aturan &mdash; norma adalah pedoman agar kita bisa hidup rukun dan bermartabat.</div>
+  <div class="tugas-box">
+    <h3>📋 Tugas Observasi (Pertemuan Berikutnya)</h3>
+    <p>Amati lingkungan sekitarmu (rumah, sekolah, masyarakat). Catat minimal <b>5 contoh pelanggaran norma</b> yang kamu temui. Identifikasi jenis normanya (agama, kesusilaan, kesopanan, atau hukum) dan jelaskan sanksi yang berlaku. Kumpulkan dalam bentuk tabel di buku tulis.</p>
+  </div>
+  <div class="reflect">"Di mana ada norma, di situ ada ketertiban. Di mana ada ketertiban, di situ ada kedamaian."</div>
+  <div class="nav-bar">
+    <div class="nav-left"><button class="nav-btn home" onclick="goSlide(1)">🏠 Home</button><button class="nav-btn back" onclick="goSlide(14)">◀ Kembali</button></div>
+    <div class="nav-center">Slide 15 / 15 &mdash; PENUTUP</div>
+    <div class="nav-right"><button class="nav-btn next" onclick="goSlide(1)">🏠 Kembali ke Awal</button></div>
+  </div>
+</div>
+
+</div><!-- end presentation -->
+
+<script>
+// ===== SLIDE NAVIGATION =====
+let currentSlide = 1;
+const totalSlides = 15;
+
+function goSlide(n) {
+  if (n < 1 || n > totalSlides) return;
+  const oldSlide = document.querySelector('.slide[data-slide="'+currentSlide+'"]');
+  const newSlide = document.querySelector('.slide[data-slide="'+n+'"]');
+  if (!oldSlide || !newSlide) return;
+
+  oldSlide.classList.remove('active');
+  newSlide.classList.add('active');
+  currentSlide = n;
+
+  // Update progress bar
+  const pct = (n / totalSlides) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Update score display on slide 14
+  if (n === 14) updateFinalScore();
+}
+
+// ===== DISCOVERY REVEAL (Slide 5) =====
+function revealDiscovery(card) {
+  if (card.classList.contains('revealed')) return;
+  card.classList.add('revealed');
+}
+
+// ===== KLASIFIKASI REVEAL (Slide 11) =====
+function revealKlas(card) {
+  if (card.classList.contains('revealed')) return;
+  card.classList.add('revealed');
+}
+
+// ===== ESSAY REVEAL =====
+function revealEssay(btn) {
+  const reveal = btn.nextElementSibling;
+  reveal.classList.toggle('show');
+  btn.textContent = reveal.classList.contains('show') ? '📝 Sembunyikan Jawaban' : '📝 Lihat Contoh Jawaban';
+}
+
+// ===== TABLE REVEAL (Slide 10) =====
+function revealTable() {
+  const answers = {
+    t1: 'Hati nurani & kebudayaan',
+    t2: 'Peraturan perundang-undangan',
+    t3: 'Mutlak & universal',
+    t4: 'Relatif & lokal',
+    t5: 'Rasa bersalah (batiniah)',
+    t6: 'Denda, penjara, tilang',
+    t7: 'Berdoa sebelum belajar',
+    t8: 'Mengucap salam ke guru'
+  };
+  for (const [id, val] of Object.entries(answers)) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = val;
+      el.classList.remove('empty-cell');
+      el.style.color = '#4ade80';
+      el.style.fontWeight = '700';
+      el.style.fontStyle = 'normal';
+      el.style.transition = 'all 0.3s';
+    }
+  }
+  document.getElementById('tableFeedback').textContent = '✅ Jawaban sudah ditampilkan. Bandingkan dengan jawabanmu!';
+  document.getElementById('tableFeedback').style.color = '#4ade80';
+}
+
+// ===== QUIZ SCORING =====
+let score = 0;
+let answeredQuestions = {};
+
+function answerMC(option, choice) {
+  const question = option.closest('.quiz-question');
+  if (!question) return;
+
+  const quizId = question.dataset.quiz;
+  if (answeredQuestions[quizId]) return; // already answered
+
+  const correctAnswer = question.dataset.answer;
+  const options = question.querySelectorAll('.q-option');
+
+  // Mark as answered
+  answeredQuestions[quizId] = choice;
+
+  // Disable all options
+  options.forEach(opt => opt.classList.add('disabled'));
+
+  // Mark selected
+  option.classList.add('selected');
+
+  // Check answer
+  if (choice === correctAnswer) {
+    option.classList.add('correct-answer');
+    question.classList.add('correct', 'answered');
+    score++;
+  } else {
+    option.classList.add('wrong-answer');
+    question.classList.add('wrong', 'answered');
+    // Show correct answer
+    options.forEach(opt => {
+      const optLetter = opt.textContent.charAt(0);
+      if (optLetter === correctAnswer) {
+        opt.classList.add('correct-answer');
+      }
+    });
+  }
+
+  // Update mini score
+  updateMiniScore();
+}
+
+function updateMiniScore() {
+  const total = Object.keys(answeredQuestions).length;
+  const el = document.getElementById('miniScore');
+  if (el) el.textContent = score + '/' + Math.max(total, 6);
+}
+
+function updateFinalScore() {
+  const totalAnswered = Object.keys(answeredQuestions).length;
+  const totalQuestions = 6;
+  const el = document.getElementById('finalScore');
+  const msgEl = document.getElementById('scoreMsg');
+
+  if (totalAnswered === 0) {
+    el.textContent = '0/' + totalQuestions;
+    el.className = 'score-value need-improve';
+    msgEl.textContent = 'Belum ada soal yang dijawab. Kembali ke slide Evaluasi.';
+    return;
+  }
+
+  el.textContent = score + '/' + totalQuestions;
+
+  const pct = (score / totalQuestions) * 100;
+  if (pct >= 80) {
+    el.className = 'score-value excellent';
+    msgEl.textContent = 'Luar biasa! Kamu sudah sangat memahami materi norma. Pertahankan!';
+  } else if (pct >= 60) {
+    el.className = 'score-value good';
+    msgEl.textContent = 'Bagus! Pemahamanmu sudah cukup baik. Pelajari lagi bagian yang masih kurang.';
+  } else {
+    el.className = 'score-value need-improve';
+    msgEl.textContent = 'Jangan menyerah! Ulangi mempelajari materi dari slide 6-9 untuk pemahaman lebih baik.';
+  }
+}
+
+// ===== KEYBOARD NAVIGATION =====
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (currentSlide < totalSlides) goSlide(currentSlide + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (currentSlide > 1) goSlide(currentSlide - 1);
+  } else if (e.key === 'Home') {
+    e.preventDefault();
+    goSlide(1);
+  }
+});
+// ===== FULLSCREEN TOGGLE =====
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange', function() {
+  const btn = document.getElementById('fsBtn');
+  if (document.fullscreenElement) {
+    btn.textContent = '✕';
+    btn.title = 'Keluar Layar Penuh (F)';
+  } else {
+    btn.textContent = '⛶';
+    btn.title = 'Layar Penuh (F)';
+  }
+});
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault();
+    goSlide(currentSlide + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    goSlide(currentSlide - 1);
+  } else if (e.key === 'f' || e.key === 'F') {
+    toggleFullscreen();
+  } else if (e.key === 'Home') {
+    goSlide(1);
+  }
+});
+</script>
+
+</body>
+</html>

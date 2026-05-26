@@ -168,6 +168,83 @@ export const THEME_PRESETS: ThemePreset[] = [
     name: 'Default (Dark)',
     tokens: {},
   },
+  // ═══════════════════════════════════════════════════════════════════
+  // TEMA EMAS — Visual DNA dari referensi "media belajar modern"
+  // ═══════════════════════════════════════════════════════════════════
+  // Berdasarkan referensi HTML mpi-ppkn-norma-final:
+  //   - Background: #0f172a → #1e293b (dark navy gradient)
+  //   - Card: rgba(255,255,255,0.06) dengan border rgba(255,255,255,0.1)
+  //   - Aksen utama: #fbbf24 (emas/kuning) — warna identitas SILSE v2.1
+  //   - Aksen sekunder: #2563eb (biru)
+  //   - Tipografi: Poppins 800 untuk heading, Open Sans 400-600 untuk body
+  //   - Radius: 12px kartu, 20px badge/pill
+  //   - Interaksi: hover translateY(-2px), active scale(0.96)
+  //   - Fase badge: Orient=biru, Explore=ungu, Practice=hijau, Apply=kuning, Evaluate=merah
+  {
+    id: 'golden-presentation',
+    name: '✨ Golden Presentation',
+    tokens: {
+      colors: {
+        bg: '#0f172a',
+        bg2: '#1e293b',
+        card: 'rgba(255,255,255,0.06)',
+        border: 'rgba(255,255,255,0.1)',
+        y: '#fbbf24',   // Aksen emas — identitas utama
+        c: '#2563eb',   // Aksen biru — sekunder
+        r: '#f87171',   // Danger/evaluate
+        p: '#c084fc',   // Purple — explore phase
+        g: '#4ade80',   // Success/practice
+        o: '#fb923c',   // Orange — warm accent
+        text: '#ffffff',
+        muted: '#64748b',
+        // Norma-specific (macam-norma) — diwarisi oleh preset turunan
+        nagama: '#fbbf24',
+        nkesusilaan: '#f87171',
+        nkesopanan: '#38bdf8',
+        nhukum: '#c084fc',
+      },
+      spacing: {
+        xs: 4, sm: 8, md: 14, lg: 18, xl: 24, xxl: 36,
+      },
+      radius: {
+        sm: 8, base: 10, md: 12, lg: 14, xl: 20, full: 99,
+      },
+      shadow: {
+        card: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
+        elevated: '0 10px 25px rgba(0,0,0,0.3), 0 6px 10px rgba(0,0,0,0.15)',
+        glow: (color: string, opacity = 0.25) =>
+          `0 0 20px rgba(${color},${opacity})`,
+      },
+      typography: {
+        fontFamily: {
+          display: "'Poppins', var(--font-fredoka), 'Fredoka', cursive",
+          body: "'Open Sans', var(--font-nunito), 'Nunito', sans-serif",
+        },
+        fontSize: {
+          xs: '0.6875rem',  // 11px
+          sm: '0.75rem',    // 12px
+          base: '0.8125rem', // 13px
+          md: '0.875rem',   // 14px
+          lg: '1rem',       // 16px
+          xl: '1.125rem',   // 18px
+          h3: '1.625rem',   // 26px
+          h2: '2.625rem',   // 42px
+        },
+        fontWeight: {
+          normal: 400,
+          semibold: 600,
+          bold: 700,
+          extrabold: 800,
+          black: 900,
+        },
+      },
+      animation: {
+        fadeMs: 250,
+        hoverLift: 'translateY(-2px)',
+        pressDown: 'scale(0.96)',
+      },
+    },
+  },
   {
     id: 'ios-light',
     name: '\ud83c\udf4e iOS Light',
@@ -260,30 +337,140 @@ export const THEME_PRESETS: ThemePreset[] = [
       },
     },
   },
+  // ═══════════════════════════════════════════════════════════════════
+  // PRESET TURUNAN — Mewarisi golden-presentation + aksen spesifik
+  // ═══════════════════════════════════════════════════════════════════
   {
     id: 'hakikat-norma',
-    name: 'Hakikat Norma (Yellow Accent)',
+    name: '⚖️ Hakikat Norma (Golden Accent)',
     tokens: {
       colors: {
-        ...DEFAULT_TOKENS.colors,
-        // Yellow-driven, warm accent
+        // Mewarisi seluruh Visual DNA golden-presentation
+        // Aksen utama tetap emas (#fbbf24) — identitas "Hakikat Norma"
+        bg: '#0f172a',
+        bg2: '#1e293b',
+        card: 'rgba(255,255,255,0.06)',
+        border: 'rgba(255,255,255,0.1)',
+        y: '#fbbf24',
+        c: '#2563eb',
+        r: '#f87171',
+        p: '#c084fc',
+        g: '#4ade80',
+        o: '#fb923c',
+        text: '#ffffff',
+        muted: '#64748b',
+      },
+      spacing: {
+        xs: 4, sm: 8, md: 14, lg: 18, xl: 24, xxl: 36,
+      },
+      radius: {
+        sm: 8, base: 10, md: 12, lg: 14, xl: 20, full: 99,
+      },
+      shadow: {
+        card: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
+        elevated: '0 10px 25px rgba(0,0,0,0.3), 0 6px 10px rgba(0,0,0,0.15)',
+        glow: (color: string, opacity = 0.25) =>
+          `0 0 20px rgba(${color},${opacity})`,
+      },
+      typography: {
+        fontFamily: {
+          display: "'Poppins', var(--font-fredoka), 'Fredoka', cursive",
+          body: "'Open Sans', var(--font-nunito), 'Nunito', sans-serif",
+        },
+        fontSize: {
+          xs: '0.6875rem',
+          sm: '0.75rem',
+          base: '0.8125rem',
+          md: '0.875rem',
+          lg: '1rem',
+          xl: '1.125rem',
+          h3: '1.625rem',
+          h2: '2.625rem',
+        },
+        fontWeight: {
+          normal: 400,
+          semibold: 600,
+          bold: 700,
+          extrabold: 800,
+          black: 900,
+        },
+      },
+      animation: {
+        fadeMs: 250,
+        hoverLift: 'translateY(-2px)',
+        pressDown: 'scale(0.96)',
       },
     },
   },
   {
     id: 'macam-norma',
-    name: 'Macam Norma (Cyan Accent)',
+    name: '📜 Macam Norma (Cyan-Golden Accent)',
     tokens: {
       colors: {
-        ...DEFAULT_TOKENS.colors,
-        // Cyan-driven, cool accent — hl color is cyan instead of yellow
-        nagama: PRIMITIVES.color.nagama,
-        nkesusilaan: PRIMITIVES.color.nkesusilaan,
-        nkesopanan: PRIMITIVES.color.nkesopanan,
-        nhukum: PRIMITIVES.color.nhukum,
+        // Mewarisi golden-presentation + warna norma spesifik
+        bg: '#0f172a',
+        bg2: '#1e293b',
+        card: 'rgba(255,255,255,0.06)',
+        border: 'rgba(255,255,255,0.1)',
+        y: '#fbbf24',
+        c: '#2563eb',
+        r: '#f87171',
+        p: '#c084fc',
+        g: '#4ade80',
+        o: '#fb923c',
+        text: '#ffffff',
+        muted: '#64748b',
+        // Norma-specific — 4 jenis norma dengan warna khas
+        nagama: '#fbbf24',      // Emas — Norma Agama
+        nkesusilaan: '#f87171',  // Merah — Norma Kesusilaan
+        nkesopanan: '#38bdf8',  // Biru muda — Norma Kesopanan
+        nhukum: '#c084fc',      // Ungu — Norma Hukum
+      },
+      spacing: {
+        xs: 4, sm: 8, md: 14, lg: 18, xl: 24, xxl: 36,
+      },
+      radius: {
+        sm: 8, base: 10, md: 12, lg: 14, xl: 20, full: 99,
+      },
+      shadow: {
+        card: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
+        elevated: '0 10px 25px rgba(0,0,0,0.3), 0 6px 10px rgba(0,0,0,0.15)',
+        glow: (color: string, opacity = 0.25) =>
+          `0 0 20px rgba(${color},${opacity})`,
+      },
+      typography: {
+        fontFamily: {
+          display: "'Poppins', var(--font-fredoka), 'Fredoka', cursive",
+          body: "'Open Sans', var(--font-nunito), 'Nunito', sans-serif",
+        },
+        fontSize: {
+          xs: '0.6875rem',
+          sm: '0.75rem',
+          base: '0.8125rem',
+          md: '0.875rem',
+          lg: '1rem',
+          xl: '1.125rem',
+          h3: '1.625rem',
+          h2: '2.625rem',
+        },
+        fontWeight: {
+          normal: 400,
+          semibold: 600,
+          bold: 700,
+          extrabold: 800,
+          black: 900,
+        },
+      },
+      animation: {
+        fadeMs: 250,
+        hoverLift: 'translateY(-2px)',
+        pressDown: 'scale(0.96)',
       },
     },
   },
+  // ═══════════════════════════════════════════════════════════════════
+  // PRESET LEGACY — Tersedia untuk referensi, bukan alur aktif
+  // ═══════════════════════════════════════════════════════════════════
   {
     id: 'nilai-pancasila',
     name: 'Nilai Pancasila (Red Accent)',
@@ -478,7 +665,7 @@ export const THEME_PRESETS: ThemePreset[] = [
   },
 ];
 
-export const DEFAULT_THEME_ID = 'ios-light';
+export const DEFAULT_THEME_ID = 'golden-presentation';
 
 /**
  * Merge a theme preset with default tokens.
