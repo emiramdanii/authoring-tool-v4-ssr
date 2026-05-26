@@ -11,7 +11,7 @@
 // would create circular dependencies:
 //   canva-store → schema-preset-slice → SchemaEngine → renderers → canva-store
 
-import type { LessonSchema } from '../schema/types';
+import type { LessonSchema, ScreenSchema } from '../schema/types';
 import { resolveTokens } from '../themes/tokens';
 
 // ── Preset Registry ────────────────────────────────────────────
@@ -62,6 +62,8 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
   templateType: string;
   bgColor: string;
   templateData: Record<string, unknown>;
+  /** Direct ScreenSchema — canonical source of truth (replaces templateData.schemaScreen path) */
+  schema: ScreenSchema;
 }> {
   const tokens = resolveTokens(schema.themeId);
 
@@ -72,6 +74,8 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       id: block.id || `${screen.templateType}-${block.type}-${bIdx}`,
     }));
 
+    const stabilizedScreen: ScreenSchema = { ...screen, blocks: stabilizedBlocks };
+
     return {
       id: `schema-${schema.id}-${screen.id}`,
       label: screen.sectionLabel || `Layar ${i + 1}`,
@@ -81,9 +85,12 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       // can detect it and use SchemaScreenRenderer instead of PageTemplate.
       // Also store schemaThemeId so TokenResolver uses the correct theme.
       templateData: {
-        schemaScreen: { ...screen, blocks: stabilizedBlocks },
+        schemaScreen: stabilizedScreen,
         schemaThemeId: schema.themeId,
       },
+      // FASE 3: Schema-first — set page.schema directly.
+      // No need to store in templateData and promote on read.
+      schema: stabilizedScreen,
     };
   });
 }

@@ -21,17 +21,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import {
   getAllCourseTemplates,
   getCourseTemplatesFiltered,
+  createProjectFromTemplate,
+  getTemplateThemeId,
   SUBJECTS,
   GRADE_OPTIONS as REGISTRY_GRADE_OPTIONS,
   type CourseTemplate,
   type SubjectConfig,
   type SceneTemplateSpec,
+  type ProjectMetadata,
 } from '@/core/template/CourseTemplateRegistry';
 import { resolveTokens } from '@/core/themes/tokens';
 import TemplatePreviewThumbnail from '@/components/shared/TemplatePreviewThumbnail';
+import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 // ── Grade filter options ──────────────────────────────────────
 
@@ -423,7 +429,6 @@ export default function TemplateMarketplace({
   open: boolean;
   onClose: () => void;
 }) {
-  const loadCustomSchema = useCanvaStore((s) => s.loadCustomSchema);
   const subjects = useMemo(() => SUBJECTS, []);
   const allTemplates = useMemo(() => getAllCourseTemplates(), []);
 
@@ -478,12 +483,81 @@ export default function TemplateMarketplace({
   }, [search, subjectFilter, gradeFilter, allTemplates]);
 
   // ── Apply template ──
-  const handleApply = useCallback((template: CourseTemplate) => {
-    // Use createProjectFromTemplate from the registry
-    // (handled by the template wizard / gallery panel)
-    console.warn(`[Marketplace] Template "${template.id}" — apply via wizard instead`);
-    setPreviewTemplate(null);
-    onClose();
+  // FIXED: Previously a no-op that just logged a warning.
+  // Now actually creates the project using createProjectFromTemplate()
+  // and writes the populated pages to the canva store.
+  const handleApply = useCallback(async (template: CourseTemplate) => {
+    try {
+      // Build metadata from template info (Marketplace has no wizard step)
+      const metadata: ProjectMetadata = {
+        title: template.name,
+        mapel: template.subject !== '*' ? template.subject : undefined,
+        kelas: template.grade !== '*' ? template.grade : undefined,
+      };
+
+      // Create populated pages using the schema factory bridge
+      const rawPages = createProjectFromTemplate(template.id, metadata);
+
+      // Get theme from template
+      const themeId = getTemplateThemeId(template.id);
+
+      // Apply theme IMMUTABLY — schemas may be deepFrozen in dev mode,
+      // so we must create new page objects instead of mutating in place.
+      const pages = rawPages.map(page => {
+        if (!page.schema) return page;
+
+        const updatedSchema = {
+          ...page.schema,
+          background: {
+            ...(page.schema.background ?? {}),
+            type: page.schema.background?.type ?? 'gradient',
+          } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
+        };
+
+        return {
+          ...page,
+          schema: updatedSchema,
+          templateData: { ...page.templateData, schemaThemeId: themeId },
+        };
+      });
+
+      // Set pages in canva store (replaces current project)
+      const store = useCanvaStore.getState();
+      store._pushHistory();
+      useCanvaStore.setState({
+        pages,
+        currentPageIndex: 0,
+        selectedElId: null,
+        selectedElIds: [],
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
+      });
+
+      // Update authoring store metadata so Dashboard reflects the new project
+      const authoringStore = useAuthoringStore.getState();
+      authoringStore.updateMeta('judulPertemuan', template.name);
+      if (template.subject !== '*') authoringStore.updateMeta('mapel', template.subject);
+      if (template.grade !== '*') authoringStore.updateMeta('kelas', template.grade);
+      useAuthoringStore.setState({ dirty: true });
+
+      // Save to localStorage as fallback
+      useCanvaStore.getState().saveToStorage();
+      useAuthoringStore.getState().saveToStorage();
+
+      toast.success(`Template "${template.name}" berhasil diterapkan!`);
+      setPreviewTemplate(null);
+      onClose();
+
+      // Navigate to Canva editor after a short delay
+      setTimeout(() => {
+        useAuthoringStore.getState().setActivePanel('canva');
+      }, 300);
+    } catch (err) {
+      toast.error('Gagal menerapkan template. Silakan coba lagi.');
+      logger.error('Marketplace', 'handleApply error: ' + String(err));
+    }
   }, [onClose]);
 
   if (!open) return null;

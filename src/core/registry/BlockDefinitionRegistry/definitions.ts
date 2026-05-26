@@ -872,8 +872,8 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     estimatedHeight: { A: 200, B: 200, C: 200 },
     createDefault: () => ({
       tipe: 'teks' as const,
-      judul: '',
-      isi: '',
+      judul: 'Materi Pembelajaran',
+      isi: 'Tuliskan materi pembelajaran di sini. Gunakan panel properti untuk mengubah tipe blok menjadi definisi, poin, tabel, gambar, timeline, atau tipe lainnya.',
       accentColor: 'c',
     }),
   },

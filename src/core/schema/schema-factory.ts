@@ -28,6 +28,7 @@
 import type { ScreenSchema, SchemaBlock, CoverBlock, PenutupBlock } from './types';
 import { BLOCK_DEFINITIONS } from '../registry/BlockDefinitionRegistry';
 import { generateBlockId, generatePageId } from './ensure-schema';
+import { SCHEMA_VERSION } from './validation';
 import { TEMPLATE_TO_SCENE } from '../edu/education-scene-types';
 import type { SceneType } from '../edu/education-scene-types';
 
@@ -159,7 +160,7 @@ export function createDefaultSchemaForTemplateType(
 
   return {
     id: pageId,
-    version: 1,
+    version: SCHEMA_VERSION,
     templateType,
     sectionLabel: SECTION_LABELS[templateType],
     sectionColor: SECTION_COLORS[templateType],
@@ -207,7 +208,96 @@ function createBlockFromRegistry(blockType: string, variant: 'A' | 'B' | 'C'): S
   const defaultContent = definition.createDefault?.() ?? { title: definition.name };
   Object.assign(block, defaultContent);
 
+  // ═══ COMPOSITE BLOCK POPULATION ═══════════════════════════════
+  // Fix "hollow output" — populate composite blocks with default
+  // child blocks. Without this, materi-section renders an empty
+  // shell because content:[] has nothing to display.
+  populateCompositeChildren(block, blockType, variant);
+
   return block as unknown as SchemaBlock;
+}
+
+/**
+ * Populate composite blocks with default child blocks.
+ *
+ * ROOT CAUSE of "engine canggih tapi output hollow":
+ *   materi-section.createDefault() returns content:[] — empty array.
+ *   MateriSectionRenderer maps over content → renders nothing.
+ *   Result: section header visible but content area blank.
+ *
+ * This function detects composite blocks with empty content arrays
+ * and fills them with meaningful default child blocks.
+ */
+function populateCompositeChildren(
+  block: Record<string, unknown>,
+  blockType: string,
+  variant: 'A' | 'B' | 'C',
+): void {
+  // ── materi-section: content[] population ──────────────────────
+  if (blockType === 'materi-section') {
+    const content = block.content as SchemaBlock[] | undefined;
+    // Only populate if content is empty (don't override custom content)
+    if (!content || content.length === 0) {
+      block.content = createDefaultMateriSectionChildren(variant);
+    }
+  }
+
+  // ── ftab: tabs[].content[] population ────────────────────────
+  if (blockType === 'ftab') {
+    const tabs = block.tabs as Array<{ icon?: string; label: string; content: SchemaBlock[] }> | undefined;
+    if (tabs) {
+      for (const tab of tabs) {
+        if (!tab.content || tab.content.length === 0) {
+          tab.content = [
+            createBlockFromRegistry('materi-blok', variant),
+          ].filter((b): b is SchemaBlock => b !== null);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Create meaningful default children for materi-section.
+ * Produces a text block + bullet points — the most common
+ * content pattern for educational material sections.
+ */
+function createDefaultMateriSectionChildren(variant: 'A' | 'B' | 'C'): SchemaBlock[] {
+  const children: SchemaBlock[] = [];
+
+  // 1. Main text explanation
+  const textBlock = createBlockFromRegistry('materi-blok', variant);
+  if (textBlock) {
+    Object.assign(textBlock, {
+      tipe: 'teks',
+      judul: 'Penjelasan Materi',
+      isi: 'Tuliskan penjelasan materi pembelajaran di sini. Gunakan panel properti untuk mengubah tipe blok menjadi definisi, poin, tabel, gambar, timeline, atau tipe lainnya.',
+    });
+    children.push(textBlock);
+  }
+
+  // 2. Key points / bullet list
+  const poinBlock = createBlockFromRegistry('materi-blok', variant);
+  if (poinBlock) {
+    Object.assign(poinBlock, {
+      tipe: 'poin',
+      judul: 'Poin Penting',
+      butir: ['Poin pertama yang perlu diperhatikan', 'Poin kedua yang penting untuk dipahami', 'Poin ketiga sebagai ringkasan'],
+    });
+    children.push(poinBlock);
+  }
+
+  // 3. Definition box for key terms
+  const defBlock = createBlockFromRegistry('def-box', variant);
+  if (defBlock) {
+    Object.assign(defBlock, {
+      content: 'Istilah kunci: Tuliskan definisi penting yang perlu ditekankan di sini.',
+      borderColor: 'y',
+    });
+    children.push(defBlock);
+  }
+
+  return children;
 }
 
 /**

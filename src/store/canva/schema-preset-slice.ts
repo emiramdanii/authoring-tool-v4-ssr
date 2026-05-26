@@ -45,7 +45,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
 
       // Wrap into full CanvaPage objects (schemaToCanvaPages returns partial)
       // FASE 3: Set page.schema directly — no templateData.schemaScreen promotion needed
-      // Schema is the single source of truth. templateData is deprecated legacy.
+      // Schema is the single source of truth. templateData is kept for legacy export compat.
       const pages: CanvaPage[] = rawPages.map((raw, i) => ({
         id: raw.id || generatePageId(),
         label: raw.label,
@@ -57,9 +57,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         colorPalette: null,
         navConfig: { ...DEFAULT_NAV_CONFIG },
         templateData: raw.templateData, // @deprecated — kept for legacy export compat
-        // FASE 3: Schema-first — set page.schema directly from schemaScreen
-        // No need to store in templateData and promote on read
-        schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
+        // Schema-first: raw.schema is the canonical ScreenSchema from schemaToCanvaPages
+        pageMode: 'schema' as const,
+        schema: raw.schema,
       }));
 
       // Cover pages should hide the top navbar
@@ -120,7 +120,9 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         colorPalette: null,
         navConfig: { ...DEFAULT_NAV_CONFIG },
         templateData: raw.templateData, // @deprecated — kept for legacy export compat
-        schema: (raw.templateData?.schemaScreen as CanvaPage['schema']) || undefined,
+        // Schema-first: raw.schema is the canonical ScreenSchema from schemaToCanvaPages
+        pageMode: 'schema' as const,
+        schema: raw.schema,
       }));
 
       // Cover pages should show navbar + progress
