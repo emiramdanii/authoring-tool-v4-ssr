@@ -39,6 +39,16 @@ export class TokenResolver {
    */
   private _sceneType?: SceneType;
 
+  /**
+   * Contract style overrides — when a TemplateThemeContract is active,
+   * its resolved values OVERRIDE the theme/scene/block defaults.
+   * Priority: Contract > Scene > Block Default
+   *
+   * Set via applyContract() from PageRenderer.
+   * Null when no contract is active (legacy behavior).
+   */
+  private _contractStyle: import('@/core/template/contract/TemplateThemeContract').ContractResolvedStyle | null = null;
+
   constructor(themeId?: string, displayMode: EduDisplayMode = 'classroom') {
     this._themeId = themeId;
     this._displayMode = displayMode;
@@ -96,8 +106,23 @@ export class TokenResolver {
     return this.colorAlpha('text', this.minOpacity(a));
   }
 
-  /** Get a color by token key (e.g., 'y' → '#f9c12e') */
+  /** Get a color by token key (e.g., 'y' → '#f9c12e')
+   *  When a contract is active, contract colors OVERRIDE theme defaults.
+   *  Priority: Contract > Theme token
+   */
   color(key: string): string {
+    // Contract override: if contract is active, check contract colors first
+    if (this._contractStyle) {
+      const contractColorMap: Record<string, string> = {
+        bg: this._contractStyle.background,
+        bg2: this._contractStyle.background, // surface used as bg2
+        card: this._contractStyle.cardBg,
+        text: this._contractStyle.textColor,
+        muted: this._contractStyle.mutedColor,
+        y: this._contractStyle.accent, // Primary accent = 'y' in golden contract
+      };
+      if (key in contractColorMap) return contractColorMap[key]!;
+    }
     const colors = this.tokens.colors as Record<string, string>;
     return colors[key] || key; // Pass through if not a token key (already a hex)
   }
@@ -501,6 +526,69 @@ export class TokenResolver {
    *  // New API (explicit sceneType)
    *  const edu = tokens.edu('tujuan-display', isCompact, 'intro');
    */
+  /** Apply a TemplateThemeContract's resolved style to this TokenResolver.
+   *  This is the KEY enforcement mechanism: when a contract is active,
+   *  its values OVERRIDE theme/scene/block defaults.
+   *
+   *  Called from PageRenderer after resolving the contract for a page.
+   *  All subsequent color(), spacing(), radius() calls will return
+   *  contract values instead of theme defaults.
+   *
+   *  Priority chain:
+   *    TemplateThemeContract > Scene Style > Block Default
+   *
+   *  @param contractStyle - Resolved contract style for the current page
+   */
+  applyContract(contractStyle: import('@/core/template/contract/TemplateThemeContract').ContractResolvedStyle): void {
+    this._contractStyle = contractStyle;
+
+    // Patch the underlying DesignTokens to ensure ALL existing code paths
+    // (including code that reads tokens.raw directly) get contract values.
+    // This is the enforcement layer — contract wins everywhere.
+    const raw = this.tokens;
+    const colors = raw.colors as Record<string, string>;
+    colors['bg'] = contractStyle.background;
+    colors['bg2'] = contractStyle.background;
+    colors['card'] = contractStyle.cardBg;
+    colors['text'] = contractStyle.textColor;
+    colors['muted'] = contractStyle.mutedColor;
+
+    // Override accent color token 'y' with contract accent
+    colors['y'] = contractStyle.accent;
+
+    // Override spacing
+    const spacing = raw.spacing as Record<string, number>;
+    spacing['xl'] = contractStyle.pagePadding;
+    spacing['xxl'] = contractStyle.cardPadding;
+
+    // Override radius
+    const radius = raw.radius as Record<string, number>;
+    radius['xl'] = contractStyle.cardRadius;
+
+    // Override shadow
+    raw.shadow.card = contractStyle.cardShadow;
+
+    // Override typography scale
+    const fontSize = raw.typography.fontSize as Record<string, string>;
+    fontSize['h1'] = `${contractStyle.typo.hero}px`;
+    fontSize['h2'] = `${contractStyle.typo.title}px`;
+    fontSize['h3'] = `${contractStyle.typo.heading}px`;
+    fontSize['lg'] = `${contractStyle.typo.bodyLg}px`;
+    fontSize['md'] = `${contractStyle.typo.body}px`;
+    fontSize['sm'] = `${contractStyle.typo.caption}px`;
+    fontSize['xs'] = `${contractStyle.typo.micro}px`;
+  }
+
+  /** Get the active contract style, if any */
+  get contractStyle(): import('@/core/template/contract/TemplateThemeContract').ContractResolvedStyle | null {
+    return this._contractStyle;
+  }
+
+  /** Whether a TemplateThemeContract is currently active */
+  hasContract(): boolean {
+    return this._contractStyle !== null;
+  }
+
   /** Set the scene type for the current rendering context.
    *  Called by SchemaScreenRenderer before rendering each page's blocks.
    *  This enables ALL block renderers to automatically become scene-aware

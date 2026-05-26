@@ -13,6 +13,7 @@ import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeAre
 import { inferSceneType } from '@/core/edu/education-scene-types';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
+import { resolveContractStyle, type ContractResolvedStyle } from '@/core/template/contract';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -112,13 +113,45 @@ export const PageRenderer = React.memo(function PageRenderer({
   }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType]);
 
   // Resolve tokens, applying palette overrides for legacy pages
+  // ═══ TEMPLATE THEME CONTRACT ENFORCEMENT ══════════════════
+  // Resolve the contract for this page and apply it to the TokenResolver.
+  // When a contract is active (e.g., golden-pertemuan), its values OVERRIDE
+  // all theme/scene/block defaults — enforcing visual consistency across ALL
+  // pages in a full pertemuan template.
+  //
+  // Priority: TemplateThemeContract > Scene Style > Block Default
+  const contractStyle = React.useMemo<ContractResolvedStyle | null>(() => {
+    // Priority 1: Use page's stored contractId (persists through save/load)
+    const cid = page.contractId;
+    if (cid) {
+      return resolveContractStyle(cid, page.templateType || 'custom', page.templateVariant || 'A');
+    }
+    // Priority 2: Auto-apply golden contract for known pertemuan page types
+    // (fallback for pages created before contractId was added)
+    const tt = page.templateType || 'custom';
+    const pertemuanPageTypes = ['cover', 'petunjuk', 'dokumen', 'tujuan', 'motivasi', 'materi', 'skenario', 'diskusi', 'kuis', 'game', 'hasil', 'refleksi', 'rangkuman', 'penutup'];
+    if (!pertemuanPageTypes.includes(tt)) return null;
+    return resolveContractStyle('golden-pertemuan', tt, page.templateVariant || 'A');
+  }, [page.contractId, page.templateType, page.templateVariant]);
+
   const tokens = React.useMemo(() => {
-    // If schema has a theme ID, use it
-    if (schemaThemeId) return new TokenResolver(schemaThemeId, displayMode);
+    // If schema has a theme ID, use it (but still apply contract override)
+    if (schemaThemeId) {
+      const resolver = new TokenResolver(schemaThemeId, displayMode);
+      // ═══ CONTRACT ENFORCEMENT — contract WINS even over explicit themeId ═══
+      if (contractStyle) resolver.applyContract(contractStyle);
+      return resolver;
+    }
 
     // For legacy pages, apply palette color overrides on top of default tokens
     const overrides = paletteToTokenOverrides(page.colorPalette);
-    if (!overrides) return new TokenResolver(undefined, displayMode);
+    if (!overrides) {
+      const resolver = new TokenResolver(undefined, displayMode);
+      // ═══ CONTRACT ENFORCEMENT — applied BEFORE first render ═══
+      // Apply contract immediately so there's no flash of wrong styles.
+      if (contractStyle) resolver.applyContract(contractStyle);
+      return resolver;
+    }
 
     // Create TokenResolver with overridden colors
     const resolver = new TokenResolver(undefined, displayMode);
@@ -138,8 +171,10 @@ export const PageRenderer = React.memo(function PageRenderer({
     ] = overrides.r || raw.colors.r;
     if (overrides.bg) (raw.colors as Record<string, string>)['bg'] = overrides.bg;
     if (overrides.card) (raw.colors as Record<string, string>)['card'] = overrides.card;
+    // ═══ CONTRACT ENFORCEMENT — applied AFTER palette, contract WINS ═══
+    if (contractStyle) resolver.applyContract(contractStyle);
     return resolver;
-  }, [schemaThemeId, page.colorPalette, displayMode]);
+  }, [schemaThemeId, page.colorPalette, displayMode, contractStyle]);
 
   // Decide rendering strategy — unified for ALL template pages
   const useSchemaRenderer = !!adaptedSchema;

@@ -157,6 +157,13 @@ export interface CanvaPage {
   // Different visual layouts for the same template type (A/B/C)
   templateVariant?: 'A' | 'B' | 'C';
 
+  // ── Template Theme Contract (Contract Enforcement Layer) ──
+  // Links this page to a TemplateThemeContract for visual enforcement.
+  // When set, the contract OVERRIDES scene/block default styles.
+  // Priority: TemplateThemeContract > Scene Style > Block Default
+  // Stored on the page so it persists through save/load cycles.
+  contractId?: string;
+
   // ── Schema-first (FASE 1 — Schema as Canonical State) ──
   // First-class ScreenSchema — the canonical runtime representation.
   // When present, renderer uses this DIRECTLY (no TemplateAdapter needed).

@@ -49,6 +49,8 @@ export interface SceneTemplateSpec {
 
 // ── Level 1: Course Template ───────────────────────────────────
 
+export type TemplateStatus = 'active' | 'legacy' | 'hidden' | 'experimental';
+
 export interface CourseTemplate {
   /** Unique template ID */
   id: string;
@@ -64,6 +66,16 @@ export interface CourseTemplate {
   semester: string;
   /** Theme preset ID (links to existing DesignTokens theme) */
   theme: string;
+  /** Contract ID — links to TemplateThemeContract for visual enforcement.
+   *  When set, the contract OVERRIDES scene/block default styles.
+   *  Priority: TemplateThemeContract > Scene Style > Block Default */
+  contractId?: string;
+  /** Template status — controls visibility in the template gallery.
+   *  'active' = shown in gallery, fully supported
+   *  'legacy' = hidden from gallery, still functional
+   *  'hidden' = completely hidden, not selectable
+   *  'experimental' = shown with warning badge */
+  status?: TemplateStatus;
   /** Ordered scene specifications */
   scenes: SceneTemplateSpec[];
   /** Metadata */
@@ -152,15 +164,19 @@ export const SEMESTER_OPTIONS = [
 // uses subject='*' and grade='*' so it always appears in filters.
 
 const COURSE_TEMPLATES: CourseTemplate[] = [
-  // ── PPKn VII — Full learning module ──────────────────────────
+  // ── PPKn VII — THE GOLDEN TEMPLATE (Hakikat Norma) ───────────
+  // This is the ONE active template. All others are legacy/hidden.
+  // Contract: golden-pertemuan — enforces visual consistency across ALL pages.
   {
     id: 'modul-ppkn-vii',
-    name: 'Modul PPKn Kelas VII',
+    name: 'Modul PPKn Kelas VII — Hakikat Norma',
     description: 'Alur pembelajaran lengkap PPKn SMP kelas VII: Pembuka → Tujuan → Motivasi → Materi ×3 → Diskusi → Kuis → Refleksi → Penutup',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
-    theme: 'nilai-pancasila',
+    theme: 'golden-presentation',
+    contractId: 'golden-pertemuan',
+    status: 'active',
     scenes: [
       { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -173,10 +189,10 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
       { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
-    metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
+    metadata: { icon: '⚖️', author: 'SILSE', version: '2.1.0' },
   },
 
-  // ── PPKn VIII — Interaktif ──────────────────────────────────
+  // ── PPKn VIII — Interaktif (LEGACY) ──────────────────────────
   {
     id: 'modul-ppkn-viii',
     name: 'Modul PPKn Kelas VIII',
@@ -185,6 +201,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -198,7 +215,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── IPA VIII — Eksperimen ───────────────────────────────────
+  // ── IPA VIII — Eksperimen (LEGACY) ──────────────────────────
   {
     id: 'modul-ipa-viii',
     name: 'Modul IPA Kelas VIII',
@@ -207,6 +224,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'globalisasi',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -220,7 +238,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🔬', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── IPA VII — Standar ───────────────────────────────────────
+  // ── IPA VII — Standar (LEGACY) ──────────────────────────────
   {
     id: 'modul-ipa-vii',
     name: 'Modul IPA Kelas VII',
@@ -229,6 +247,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'ham-hak-kewajiban',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -243,7 +262,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🔬', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── MTK VII — Standar ───────────────────────────────────────
+  // ── MTK VII — Standar (LEGACY) ──────────────────────────────
   {
     id: 'modul-mtk-vii',
     name: 'Modul Matematika Kelas VII',
@@ -252,6 +271,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'nilai-pancasila',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -265,7 +285,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '📐', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── MTK VIII — Interaktif ───────────────────────────────────
+  // ── MTK VIII — Interaktif (LEGACY) ──────────────────────────
   {
     id: 'modul-mtk-viii',
     name: 'Modul Matematika Kelas VIII',
@@ -274,6 +294,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'globalisasi',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -287,7 +308,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '📐', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── B. Indonesia VII — Standar ──────────────────────────────
+  // ── B. Indonesia VII — Standar (LEGACY) ────────────────────
   {
     id: 'modul-bin-vii',
     name: 'Modul B. Indonesia Kelas VII',
@@ -296,6 +317,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'perilaku-patuh',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -309,7 +331,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '📖', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── B. Indonesia VIII — Interaktif ──────────────────────────
+  // ── B. Indonesia VIII — Interaktif (LEGACY) ────────────────
   {
     id: 'modul-bin-viii',
     name: 'Modul B. Indonesia Kelas VIII',
@@ -318,6 +340,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -332,7 +355,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '📖', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── B. Inggris VIII — Interaktif ────────────────────────────
+  // ── B. Inggris VIII — Interaktif (LEGACY) ──────────────────
   {
     id: 'modul-bing-viii',
     name: 'Modul B. Inggris Kelas VIII',
@@ -515,6 +538,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
+    status: 'active',
+    contractId: 'golden-pertemuan',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
@@ -552,9 +577,11 @@ export function getAllCourseTemplates(): CourseTemplate[] {
 
 /**
  * Get course templates filtered by subject.
+ * Hides 'hidden' and 'legacy' status templates from the gallery.
  */
 export function getCourseTemplatesBySubject(subject: string): CourseTemplate[] {
-  return getAllCourseTemplates().filter(t => t.subject === subject || t.subject === '*');
+  return getAllCourseTemplates()
+    .filter(t => (t.subject === subject || t.subject === '*') && t.status !== 'hidden' && t.status !== 'legacy');
 }
 
 /**
@@ -565,9 +592,18 @@ export function getCourseTemplatesBySubject(subject: string): CourseTemplate[] {
  *   - grade filter: match t.grade === grade OR t.grade === '*'
  *   - The "template-kosong" (subject='*', grade='*') always passes both filters
  *   - Always puts template-kosong at the end of the list
+ *   - Hides 'hidden' templates completely, shows only 'active' + 'experimental'
+ *   - 'legacy' templates are hidden by default but can be shown with showLegacy=true
  */
-export function getCourseTemplatesFiltered(subject?: string, grade?: string): CourseTemplate[] {
+export function getCourseTemplatesFiltered(subject?: string, grade?: string, showLegacy: boolean = false): CourseTemplate[] {
   let results = getAllCourseTemplates();
+
+  // Filter by status: hide 'hidden' always, hide 'legacy' unless explicitly requested
+  results = results.filter(t => {
+    if (t.status === 'hidden') return false;
+    if (t.status === 'legacy' && !showLegacy) return false;
+    return true;
+  });
 
   if (subject && subject !== 'Lainnya') {
     results = results.filter(t => t.subject === subject || t.subject === '*');
@@ -634,6 +670,13 @@ export function createProjectFromTemplate(
     // Set variant if specified
     if (scene.variant) {
       page.templateVariant = scene.variant;
+    }
+
+    // ═══ CONTRACT ID PERSISTENCE ═════════════════════════════════
+    // Store the contractId on each page so it persists through save/load.
+    // Without this, the contract would be lost after saving the project.
+    if (template.contractId) {
+      page.contractId = template.contractId;
     }
 
     // ═══ SCHEMA FACTORY BRIDGE ═══════════════════════════════════

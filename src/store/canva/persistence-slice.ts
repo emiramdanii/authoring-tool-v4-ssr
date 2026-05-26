@@ -403,6 +403,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             navConfig,
             templateData,
             templateVariant: (p.variant as 'A' | 'B' | 'C') || undefined,
+            contractId: (p.contractId as string) || undefined,
             schema: schema || (schemaBlocks.length > 0 ? { id: p.id, templateType: p.templateType || 'custom', blocks: schemaBlocks } : undefined),
           };
 

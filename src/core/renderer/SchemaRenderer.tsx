@@ -50,6 +50,7 @@ import { EDU_MODE_BG } from '@/core/edu/education-colors';
 import type { EduDisplayMode } from '@/core/edu/education-typography';
 import { isFullPageBlockType, isBlockInteractive, isBlockTypeRendererHandlesCompression } from '../schema/capability-registry';
 import { OverflowIndicator } from './blocks/OverflowIndicator';
+import { validatePage, formatValidationResult } from '@/core/template/contract';
 
 // Re-export from types.ts for backward compatibility
 export type { SchemaRenderMode } from './types';
@@ -174,6 +175,20 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   if (sceneType) {
     tokens.setSceneType(sceneType);
   }
+
+  // ═══ TEMPLATE VALIDATION (DEV MODE) ════════════════════════════
+  // In canvas mode (dev), validate the page against the TemplateThemeContract.
+  // Any violations (overflow, font size, colors, etc.) are logged to console.
+  // This is the enforcement feedback loop — designers see warnings immediately.
+  React.useEffect(() => {
+    if (isCompact && process.env.NODE_ENV === 'development') {
+      const result = validatePage(undefined, screen.templateType || 'custom', screen.blocks);
+      if (!result.valid || result.warnings.length > 0) {
+        console.warn(formatValidationResult(result));
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen.templateType, screen.blocks.length, isCompact]);
   // FIX: Detect full-page blocks (cover/hero) even when mixed with flow blocks.
   // Previously: only true when there was exactly 1 full-page block.
   // Now: true when ANY block is a full-page type — this correctly handles

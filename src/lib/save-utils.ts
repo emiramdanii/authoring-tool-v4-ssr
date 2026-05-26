@@ -10,6 +10,7 @@ export function canvaPagesToSavePages(pages: CanvaPage[]) {
     label: page.label,
     templateType: page.templateType,
     templateVariant: page.templateVariant,
+    contractId: page.contractId,
     bgColor: page.bgColor,
     bgDataUrl: page.bgDataUrl,
     overlay: page.overlay,

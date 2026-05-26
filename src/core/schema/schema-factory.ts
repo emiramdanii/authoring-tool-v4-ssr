@@ -58,16 +58,16 @@ const SECTION_COLORS: Record<string, string> = {
   dokumen: 'c',
   tujuan: 'c',
   motivasi: 'y',
-  skenario: 'p',
+  skenario: 'o',  // Contract: skenario → orange (was 'p')
   materi: 'p',
   diskusi: 'c',
-  kuis: 'y',
-  game: 'c',
+  kuis: 'g',      // Contract: kuis → green (was 'y')
+  game: 'g',
   hasil: 'g',
   refleksi: 'p',
-  rangkuman: 'g',
-  penutup: 'o',
-  hero: 'o',
+  rangkuman: 'y',  // Contract: rangkuman → gold (was 'g')
+  penutup: 'y',    // Contract: penutup → gold (was 'o')
+  hero: 'y',
 };
 
 // ── Block Type Mapping: templateType → suggested block types ──────
