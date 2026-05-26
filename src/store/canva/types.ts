@@ -317,6 +317,8 @@ export interface CanvaState {
   loadSchemaPreset: (presetId: string) => Promise<void>;
   /** Load a custom LessonSchema into the canvas (used by Template Marketplace) */
   loadCustomSchema: (schema: import('@/core/schema/types').LessonSchema) => void;
+  /** Load a golden preset (e.g. 'norma-golden') into the canvas — returns CanvaPage[] directly */
+  loadGoldenPreset: (presetId: string) => Promise<void>;
 
   // ── Actions: Persistence ─────────────────────────────────────
   saveToStorage: () => void;

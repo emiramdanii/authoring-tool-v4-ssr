@@ -119,38 +119,51 @@ export class EduRenderingContext {
   // ── Typography helpers (scene-aware) ──────────────────────
 
   /** Hero typography — for scene-opening headlines, cover titles.
-   *  Size varies by scene type: Intro=56px, Concept=44px, Practice=36px */
+   *  Size varies by scene type: Intro=56px, Concept=44px, Practice=36px
+   *  When a TemplateThemeContract is active, its minimum hero size overrides
+   *  the scene-based default if it's larger (STANDAR: cover title min 48px). */
   hero(): Record<string, string | number> {
-    return resolveEduTypographySceneCompact('hero', this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact('hero', this._sceneType, this.isCompact, this.mode);
+    return this.applyContractMinimum(resolved, 'hero');
   }
 
   /** Title typography — for page/scene headings.
-   *  Scene-aware: Intro=44px, Concept=40px, Practice=36px */
+   *  Scene-aware: Intro=44px, Concept=40px, Practice=36px
+   *  Contract: min 36px enforced */
   title(): Record<string, string | number> {
-    return resolveEduTypographySceneCompact('title', this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact('title', this._sceneType, this.isCompact, this.mode);
+    return this.applyContractMinimum(resolved, 'title');
   }
 
   /** Section heading typography — for component headings.
-   *  Scene-aware: Intro=30px, Concept=28px, Summary=30px */
+   *  Scene-aware: Intro=30px, Concept=28px, Summary=30px
+   *  Contract: min 26px enforced */
   heading(): Record<string, string | number> {
-    return resolveEduTypographySceneCompact('section', this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact('section', this._sceneType, this.isCompact, this.mode);
+    return this.applyContractMinimum(resolved, 'heading');
   }
 
   /** Large body typography — key definitions.
-   *  Scene-aware: Practice=24px (larger for instructions) */
+   *  Scene-aware: Practice=24px (larger for instructions)
+   *  Contract: min 22px enforced */
   bodyLg(): Record<string, string | number> {
-    return resolveEduTypographySceneCompact('bodyLg', this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact('bodyLg', this._sceneType, this.isCompact, this.mode);
+    return this.applyContractMinimum(resolved, 'bodyLg');
   }
 
   /** Standard body typography — most content.
-   *  Scene-aware: Practice=22px (larger for doing), Concept=20px */
+   *  Scene-aware: Practice=22px (larger for doing), Concept=20px
+   *  Contract: min 20px enforced (STANDAR UTAMA SILSE) */
   body(): Record<string, string | number> {
-    return resolveEduTypographySceneCompact('body', this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact('body', this._sceneType, this.isCompact, this.mode);
+    return this.applyContractMinimum(resolved, 'body');
   }
 
-  /** Caption typography — labels, metadata */
+  /** Caption typography — labels, metadata
+   *  Contract: min 16px enforced */
   caption(): Record<string, string | number> {
-    return resolveEduTypographySceneCompact('caption', this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact('caption', this._sceneType, this.isCompact, this.mode);
+    return this.applyContractMinimum(resolved, 'caption');
   }
 
   /** Micro typography — badges only, NOT for content */
@@ -160,7 +173,73 @@ export class EduRenderingContext {
 
   /** Resolve any typography key (scene-aware) */
   typo(key: EduTypographyKey): Record<string, string | number> {
-    return resolveEduTypographySceneCompact(key, this._sceneType, this.isCompact, this.mode);
+    const resolved = resolveEduTypographySceneCompact(key, this._sceneType, this.isCompact, this.mode);
+    // Map edu typography key to contract typography key
+    const contractKeyMap: Record<string, string> = {
+      hero: 'hero', title: 'title', section: 'heading',
+      bodyLg: 'bodyLg', body: 'body', caption: 'caption', micro: 'micro',
+    };
+    const contractKey = contractKeyMap[key];
+    if (contractKey) return this.applyContractMinimum(resolved, contractKey);
+    return resolved;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CONTRACT ENFORCEMENT — Typography minimum overrides
+  // ═══════════════════════════════════════════════════════════════════
+  // When a TemplateThemeContract is active, its typography minimums
+  // OVERRIDE the scene-based defaults. This ensures that even when
+  // a scene type would produce smaller text (e.g., reflection body=18px),
+  // the contract's minimum (e.g., body=20px) takes precedence.
+  //
+  // This is the KEY fix for "Engine Canggih Tapi Output Hollow" —
+  // the contract had min sizes but they were never enforced through
+  // the edu typography pipeline.
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Apply contract typography minimum to a resolved style.
+   *  If contract has a larger font size for this role, override.
+   *  If contract has a minimum font size, ensure it's not violated.
+   *  If no contract is active, return the resolved style unchanged. */
+  private applyContractMinimum(
+    resolved: Record<string, string | number>,
+    contractKey: string,
+  ): Record<string, string | number> {
+    const cs = this.tokens.contractStyle;
+    if (!cs) return resolved; // No contract — use scene-based defaults
+
+    // Contract typography scale: hero, title, heading, bodyLg, body, caption, micro
+    const contractSizes: Record<string, number> = {
+      hero: cs.typo.hero,
+      title: cs.typo.title,
+      heading: cs.typo.heading,
+      bodyLg: cs.typo.bodyLg,
+      body: cs.typo.body,
+      caption: cs.typo.caption,
+      micro: cs.typo.micro,
+    };
+
+    const contractPx = contractSizes[contractKey];
+    if (contractPx == null) return resolved;
+
+    // Parse the resolved fontSize (e.g., "18px" → 18)
+    const resolvedPx = typeof resolved.fontSize === 'string'
+      ? parseInt(resolved.fontSize, 10)
+      : typeof resolved.fontSize === 'number'
+        ? resolved.fontSize
+        : 0;
+
+    // Contract wins if it's larger — this enforces minimums
+    if (contractPx > resolvedPx) {
+      return { ...resolved, fontSize: `${contractPx}px` };
+    }
+
+    // Also enforce the contract's absolute minimum font size
+    if (resolvedPx < cs.typo.caption && contractKey !== 'micro') {
+      return { ...resolved, fontSize: `${cs.typo.caption}px` };
+    }
+
+    return resolved;
   }
 
   // ── Scene context ──────────────────────────────────────────

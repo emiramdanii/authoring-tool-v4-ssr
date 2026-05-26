@@ -176,12 +176,15 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     tokens.setSceneType(sceneType);
   }
 
-  // ═══ TEMPLATE VALIDATION (DEV MODE) ════════════════════════════
-  // In canvas mode (dev), validate the page against the TemplateThemeContract.
-  // Any violations (overflow, font size, colors, etc.) are logged to console.
-  // This is the enforcement feedback loop — designers see warnings immediately.
+  // ═══ TEMPLATE VALIDATION (ALL MODES) ════════════════════════════
+  // Validate the page against the TemplateThemeContract in ALL modes.
+  // In development, log violations to console as warnings.
+  // In production, only log errors (not warnings) for performance.
+  // STANDAR UTAMA SILSE: The validator is the enforcement feedback loop —
+  // designers see violations in canvas mode, and the validator catches
+  // issues before they reach students in preview/export mode.
   React.useEffect(() => {
-    if (isCompact && process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       const result = validatePage(undefined, screen.templateType || 'custom', screen.blocks);
       if (!result.valid || result.warnings.length > 0) {
         console.warn(formatValidationResult(result));

@@ -35,6 +35,7 @@ import {
   type TemplatePattern,
   type TemplateCustomization,
 } from '@/core/template/template-gallery';
+import { getAvailableGoldenPresets } from '@/core/engine/SchemaEngine.utils';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import dynamic from 'next/dynamic';
 
@@ -198,10 +199,23 @@ export default function TemplateGalleryPanel() {
       // ── 3-LEVEL PIPELINE ──────────────────────────────────────────
       // Level 1: If template has a presetId, load the premium handcrafted
       //   preset directly → rich, pedagogically-structured content (⭐⭐⭐⭐⭐)
+      // Level 1g: Golden preset — returns CanvaPage[] directly (bypasses LessonSchema)
       // Level 2: Otherwise, use instantiateTemplate() with mock data (⭐⭐⭐)
       // Level 3: Fallback empty shell (handled by instantiateTemplate)
       if (template.presetId) {
-        // Level 1: Premium preset pipeline
+        // Level 1g: Golden preset — returns CanvaPage[] directly (bypasses LessonSchema)
+        const goldenPresets = getAvailableGoldenPresets();
+        if (goldenPresets.includes(template.presetId)) {
+          try {
+            await useCanvaStore.getState().loadGoldenPreset(template.presetId);
+            return;
+          } catch (goldenErr) {
+            logger.warn('TemplateGallery', `Golden preset "${template.presetId}" failed, falling back: ${String(goldenErr)}`);
+            // Fall through to Level 1 (schema preset)
+          }
+        }
+
+        // Level 1: Premium schema preset pipeline
         try {
           await useCanvaStore.getState().loadSchemaPreset(template.presetId);
           // loadSchemaPreset handles all store updates + toast
@@ -268,6 +282,19 @@ export default function TemplateGalleryPanel() {
       // ── 3-LEVEL PIPELINE for custom apply too ──────────────────
       // If template has presetId and mode is 'replace', use premium preset
       if (template.presetId && mode === 'replace') {
+        // Level 1g: Golden preset
+        const goldenPresets = getAvailableGoldenPresets();
+        if (goldenPresets.includes(template.presetId)) {
+          try {
+            await useCanvaStore.getState().loadGoldenPreset(template.presetId);
+            return;
+          } catch (goldenErr) {
+            logger.warn('TemplateGallery', `Golden preset "${template.presetId}" failed in custom apply, falling back: ${String(goldenErr)}`);
+            // Fall through to Level 1 (schema preset)
+          }
+        }
+
+        // Level 1: Premium schema preset
         try {
           await useCanvaStore.getState().loadSchemaPreset(template.presetId);
           return;

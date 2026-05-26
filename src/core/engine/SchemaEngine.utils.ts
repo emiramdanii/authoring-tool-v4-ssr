@@ -12,6 +12,7 @@
 //   canva-store → schema-preset-slice → SchemaEngine → renderers → canva-store
 
 import type { LessonSchema, ScreenSchema } from '../schema/types';
+import type { CanvaPage } from '@/components/canva/types';
 import { resolveTokens } from '../themes/tokens';
 
 // ── Preset Registry ────────────────────────────────────────────
@@ -44,6 +45,24 @@ const PRESET_MAP: Record<string, () => Promise<LessonSchema>> = {
 
 export function getAvailablePresets(): string[] {
   return Object.keys(PRESET_MAP);
+}
+
+// ── Golden Preset Registry ─────────────────────────────────────
+// Golden presets return CanvaPage[] directly (already handcrafted),
+// bypassing the LessonSchema → schemaToCanvaPages conversion.
+
+const GOLDEN_PRESET_MAP: Record<string, () => Promise<CanvaPage[]>> = {
+  'norma-golden': () => import('@/presets/ppkn/norma-golden-schema').then(m => m.createPpknNormaGoldenProject()),
+};
+
+export function getAvailableGoldenPresets(): string[] {
+  return Object.keys(GOLDEN_PRESET_MAP);
+}
+
+export async function loadGoldenPreset(id: string): Promise<CanvaPage[] | null> {
+  const loader = GOLDEN_PRESET_MAP[id];
+  if (!loader) return null;
+  return loader();
 }
 
 export async function loadPreset(id: string): Promise<LessonSchema | null> {
