@@ -40,6 +40,22 @@ import {
   genPetunjukSchema,
 } from '@/core/schema/generators';
 import { assertDocumentPurity } from '@/core/schema/session-state';
+import type { SchemaBlock } from '@/core/schema/types';
+
+// ═══════════════════════════════════════════════════════════════════
+// DEEP-CLONE HELPER — Prevent shared references between pages
+// ═══════════════════════════════════════════════════════════════════
+// When multiple pages use the same template type (e.g. 2x 'materi'),
+// schema generators may return blocks that share object references.
+// Mutating a block on one page (via canvas editor) would then
+// silently corrupt the layout/data of another page.
+//
+// This helper deep-clones every block so each page owns its own
+// independent data — mutations are strictly isolated per page.
+
+function cloneSchemaBlocks(blocks: SchemaBlock[]): SchemaBlock[] {
+  return structuredClone(blocks);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // LESSON TEMPLATE INTERFACE
@@ -1116,7 +1132,10 @@ export function instantiateTemplate(template: LessonTemplate): CanvaPage[] {
     if (page.schema) {
       const blocks = generateBlocksForPageType(pageType, parsed, meta, opts);
       if (blocks.length > 0) {
-        page.schema.blocks = blocks;
+        // Deep-clone to prevent shared references between pages.
+        // Without this, editing a block on one page mutates the
+        // same object on another page (e.g. 2 materi pages).
+        page.schema.blocks = cloneSchemaBlocks(blocks);
       }
     }
 
@@ -1179,7 +1198,10 @@ export function instantiateTemplateWithConfig(
     if (page.schema) {
       const blocks = generateBlocksForPageType!(pageType, parsed, meta, opts);
       if (blocks.length > 0) {
-        page.schema.blocks = blocks;
+        // Deep-clone to prevent shared references between pages.
+        // Without this, editing a block on one page mutates the
+        // same object on another page (e.g. 2 materi pages).
+        page.schema.blocks = cloneSchemaBlocks(blocks);
       }
     }
 

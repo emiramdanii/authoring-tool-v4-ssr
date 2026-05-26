@@ -646,6 +646,11 @@ export function createProjectFromTemplate(
       scene.variant || 'A',
     );
 
+    // Deep-clone schema blocks to prevent shared references between pages.
+    // Without this, editing a block on one page could mutate the same
+    // object on another page (e.g. when 2+ scenes share a templateType).
+    schema.blocks = structuredClone(schema.blocks);
+
     // Set scene type from the spec (for scene-aware rendering)
     if (scene.sceneType) {
       schema.sceneType = scene.sceneType;
