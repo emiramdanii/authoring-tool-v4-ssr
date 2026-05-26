@@ -1,9 +1,22 @@
 // ═══════════════════════════════════════════════════════════════════
-// MARKETPLACE TEMPLATES — Pre-built MPI lesson templates
+// MARKETPLACE TEMPLATES — FROZEN since SILSE v2.1
 // ═══════════════════════════════════════════════════════════════════
-// Gallery of templates organized by subject for Indonesian SMP teachers.
-// Each template has metadata for the marketplace UI and a schemaFactory
-// that produces a valid LessonSchema with real Indonesian content.
+// ❄️ STATUS: FROZEN — Semua 6 template di bawah ini TIDAK AKTIF
+//    di pipeline utama. Hanya tersedia untuk backward compatibility.
+//
+// 🔄 PENGGANTI: Golden Flow — src/core/template/golden/interactive-lesson.ts
+//    + Premium Presets — src/presets/ppkn/hakikat-norma-schema.ts
+//
+// ⚠️ JANGAN tambahkan template marketplace baru di sini.
+//    Template baru harus melalui proses: define Visual DNA → build
+//    1 golden experience → derive system. Lihat visual-dna.ts.
+//
+// Original Description:
+//   Pre-built MPI lesson templates — gallery of templates organized
+//   by subject for Indonesian SMP teachers. Each template has metadata
+//   for the marketplace UI and a schemaFactory that produces a valid
+//   LessonSchema with real Indonesian content.
+// ═══════════════════════════════════════════════════════════════════
 
 import type { LessonSchema, ScreenSchema, SchemaBlock } from '@/core/schema/types';
 import { generatePageId, generateBlockId } from '@/core/schema/ensure-schema';

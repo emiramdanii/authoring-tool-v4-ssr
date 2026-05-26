@@ -1,18 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE GALLERY — Pre-built lesson templates with mock content
+// TEMPLATE GALLERY — FROZEN since SILSE v2.1
 // ═══════════════════════════════════════════════════════════════════
-// Each template describes a complete SMP lesson that can be
-// instantiated into a full CanvaPage[] with real content using
-// the existing schema generators (genCoverSchema, genMateriSchema,
-// etc.) and createPageFromPreset.
+// ❄️ STATUS: FROZEN — Data di bawah ini TIDAK AKTIF di pipeline utama.
+//    Hanya tersedia untuk backward compatibility dan Level 2 fallback.
 //
-// Design Principles:
-//   1. Templates are DATA, not code — just metadata + mock ParseResult
-//   2. instantiateTemplate() uses existing generators — no duplication
-//   3. Mock ParseResult provides contextual content per subject
-//   4. Schema-first: SchemaBlock[] is the single source of truth
-//   5. Template Patterns: Standar, Interaktif, Eksperimen, Mini
-//   6. Customizable: teachers can toggle pages before applying
+// 🔄 PENGGANTI: Golden Flow — src/core/template/golden/interactive-lesson.ts
+//    Filosofi baru: experience → template → system
+//    Hanya 1 alur template aktif (hakikat-norma preset).
+//
+// ⚠️ JANGAN tambahkan template baru di sini.
+//    Template baru harus melalui proses: define Visual DNA → build
+//    1 golden experience → derive system. Lihat visual-dna.ts.
+//
+// Original Description:
+//   Pre-built lesson templates with mock content. Each template
+//   describes a complete SMP lesson that can be instantiated into
+//   a full CanvaPage[] using schema generators + createPageFromPreset.
 // ═══════════════════════════════════════════════════════════════════
 
 import type { PageTemplateType } from '@/components/canva/types';

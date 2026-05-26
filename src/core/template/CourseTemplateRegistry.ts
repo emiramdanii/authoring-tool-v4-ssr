@@ -142,12 +142,18 @@ export const SEMESTER_OPTIONS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════
-// ACTIVE COURSE TEMPLATES — Golden flows only (SILSE v2.1)
+// ACTIVE COURSE TEMPLATES — Golden Flow only (SILSE v2.1)
 // ═══════════════════════════════════════════════════════════════════
 // Filosofi baru: experience → template → system
+//
 // Hanya 3 template aktif. Semua template legacy dipindahkan ke
 // ./legacy/course-templates-legacy.ts dan TIDAK didaftarkan
 // di pipeline aktif.
+//
+// ❄️ template-gallery.ts — FROZEN (LESSON_TEMPLATES + SUBJECT_MOCK_DATA)
+// ❄️ marketplace-templates.ts — FROZEN (6 template definitions)
+// ✅ Golden Flow — src/core/template/golden/interactive-lesson.ts
+// ✅ Visual DNA — src/core/visual-dna/visual-dna.ts
 
 const COURSE_TEMPLATES: CourseTemplate[] = [
   // ── PPKn VII — Alur Emas: Hakikat Norma ──────────────────────
