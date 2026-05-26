@@ -195,6 +195,24 @@ export default function TemplateGalleryPanel() {
     setLoadingTemplateId(template.id);
 
     try {
+      // ── 3-LEVEL PIPELINE ──────────────────────────────────────────
+      // Level 1: If template has a presetId, load the premium handcrafted
+      //   preset directly → rich, pedagogically-structured content (⭐⭐⭐⭐⭐)
+      // Level 2: Otherwise, use instantiateTemplate() with mock data (⭐⭐⭐)
+      // Level 3: Fallback empty shell (handled by instantiateTemplate)
+      if (template.presetId) {
+        // Level 1: Premium preset pipeline
+        try {
+          await useCanvaStore.getState().loadSchemaPreset(template.presetId);
+          // loadSchemaPreset handles all store updates + toast
+          return;
+        } catch (presetErr) {
+          logger.warn('TemplateGallery', `Preset "${template.presetId}" failed, falling back to Level 2: ${String(presetErr)}`);
+          // Fall through to Level 2
+        }
+      }
+
+      // Level 2: Generated content pipeline
       await new Promise(resolve => setTimeout(resolve, 150));
 
       // If project is empty → replace (same as before)
@@ -247,6 +265,19 @@ export default function TemplateGalleryPanel() {
     setLoadingTemplateId(template.id);
 
     try {
+      // ── 3-LEVEL PIPELINE for custom apply too ──────────────────
+      // If template has presetId and mode is 'replace', use premium preset
+      if (template.presetId && mode === 'replace') {
+        try {
+          await useCanvaStore.getState().loadSchemaPreset(template.presetId);
+          return;
+        } catch (presetErr) {
+          logger.warn('TemplateGallery', `Preset "${template.presetId}" failed in custom apply, falling back: ${String(presetErr)}`);
+          // Fall through to Level 2
+        }
+      }
+
+      // Level 2: Generated content pipeline
       await new Promise(resolve => setTimeout(resolve, 150));
 
       _pushHistory();

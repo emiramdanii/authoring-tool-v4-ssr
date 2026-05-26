@@ -132,6 +132,18 @@ export interface LessonTemplate {
   estimatedPages: number;
   // Preview content — short descriptions of what each page will contain
   pagePreview: Array<{ type: PageTemplateType; title: string; description: string }>;
+  /**
+   * Premium preset ID — links to a handcrafted LessonSchema in src/presets/.
+   * When set, instantiateTemplate() will load this preset first (Level 1),
+   * producing rich, pedagogically-structured content instead of generic
+   * generator output.
+   *
+   * 3-Level Pipeline (same as CourseTemplateRegistry):
+   *   Level 1: presetId → handcrafted content (⭐⭐⭐⭐⭐)
+   *   Level 2: SUBJECT_MOCK_DATA → generated content (⭐⭐⭐)
+   *   Level 3: Empty shell → structural fallback (⭐)
+   */
+  presetId?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -660,6 +672,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     color: 'amber',
     tags: ['demokrasi', 'musyawarah', 'kebebasan', 'hak', 'kewajiban'],
     pattern: 'standar',
+    presetId: 'demokrasi-pancasila',
     pageTypes: ['cover', 'tujuan', 'motivasi', 'materi', 'diskusi', 'kuis', 'refleksi', 'rangkuman', 'penutup'],
     estimatedPages: 9,
     pagePreview: [
@@ -688,6 +701,7 @@ export const LESSON_TEMPLATES: LessonTemplate[] = [
     color: 'amber',
     tags: ['norma', 'aturan', 'sanksi', 'masyarakat', 'hukum'],
     pattern: 'interaktif',
+    presetId: 'hakikat-norma',
     pageTypes: ['cover', 'tujuan', 'skenario', 'materi', 'diskusi', 'kuis', 'refleksi', 'penutup'],
     estimatedPages: 8,
     pagePreview: [
