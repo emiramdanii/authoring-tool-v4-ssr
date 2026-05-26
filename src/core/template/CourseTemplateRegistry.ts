@@ -292,15 +292,16 @@ export function getCourseTemplatesFiltered(subject?: string, grade?: string): Co
 /**
  * Create a full CanvaPage[] array from a Course Template.
  *
- * 3-Level Content Pipeline:
+ * 2-Level Content Pipeline (Level 2 FROZEN since SILSE v2.1):
  *   Level 1 (presetId): If the template has a presetId, load the handcrafted
  *     LessonSchema from src/presets/ and convert it to CanvaPages using
  *     schemaToCanvaPages(). This produces rich, pedagogically-structured content
  *     with real scenarios, definitions, quizzes, etc.
- *   Level 2 (generator): Not yet implemented — will use SUBJECT_MOCK_DATA
- *     from template-gallery.ts for smart generated content.
  *   Level 3 (empty shell): Falls back to createPageFromPreset() which creates
  *     pages with default block structure but minimal content.
+ *
+ * ❄️ Level 2 (SUBJECT_MOCK_DATA + generators) was FROZEN and disconnected.
+ *    All templates should provide a presetId for rich content.
  *
  * User never sees the difference — all levels produce valid CanvaPage[].
  */
@@ -377,213 +378,15 @@ export async function createProjectFromTemplate(
     }
   }
 
-  // ── LEVEL 2: Smart generated content pipeline ──────────────────
-  // When no handcrafted preset exists, use SUBJECT_MOCK_DATA + generators
-  // to produce meaningful content instead of empty shells.
-  // This creates pages with real definitions, quiz questions, and scenarios
-  // derived from subject-specific mock data.
-  try {
-    const { createMockParseResult, LESSON_TEMPLATES } = await import('./template-gallery');
-    const {
-      genCoverSchema, genMateriSchema, genKuisSchema, genDiskusiSchema,
-      genRefleksiSchema, genSkenarioSchema, genTpSchema, genPenutupSchema,
-      genMotivasiSchema, genTujuanDisplaySchema,
-    } = await import('@/core/schema/generators');
-
-    // Build a synthetic LessonTemplate for mock data lookup
-    const syntheticTemplate = {
-      id: templateId,
-      title: metadata.title || template.name,
-      subtitle: `${template.subject} Kelas ${template.grade}`,
-      description: template.description,
-      mapel: template.subject,
-      kelas: template.grade,
-      semester: template.semester,
-      icon: template.metadata.icon,
-      color: 'amber',
-      tags: [],
-      pattern: 'standar' as const,
-      pageTypes: template.scenes.map(s => s.templateType),
-      estimatedPages: template.scenes.length,
-      pagePreview: template.scenes.map(s => ({
-        type: s.templateType,
-        title: s.label,
-        description: '',
-      })),
-    };
-
-    const parsed = createMockParseResult(syntheticTemplate as any);
-
-    // Generate pages using the schema generators with mock content
-    const { generatePageId } = await import('@/core/schema/ensure-schema');
-    const { DEFAULT_NAV_CONFIG } = await import('@/components/canva/types');
-    const { createPageFromPreset } = await import('@/core/preset/PagePresetRegistry');
-    const { resolveTokens } = await import('@/core/themes/tokens');
-
-    const level2Pages: CanvaPage[] = [];
-    const tokens = resolveTokens(template.theme);
-    const kuisCount = 5;
-
-    for (let i = 0; i < template.scenes.length; i++) {
-      const scene = template.scenes[i]!;
-      const page = createPageFromPreset(scene.templateType, i);
-      page.label = scene.label;
-
-      if (scene.variant) {
-        page.templateVariant = scene.variant;
-      }
-
-      // Generate real schema blocks based on scene type
-      const generatedBlocks: any[] = [];
-      const lessonTitle = metadata.title || template.name;
-      const meta = { judulPertemuan: lessonTitle, namaBab: lessonTitle };
-
-      switch (scene.templateType) {
-        case 'cover': {
-          const coverSchema = genCoverSchema({ namaBab: lessonTitle, kelas: template.grade, mapel: template.subject, ikon: template.metadata.icon });
-          generatedBlocks.push(coverSchema);
-          break;
-        }
-        case 'dokumen': {
-          const tpSchema = genTujuanDisplaySchema(parsed, { pertemuan: 1, bloomMax: 4 });
-          generatedBlocks.push(tpSchema);
-          break;
-        }
-        case 'materi': {
-          const materiSchema = genMateriSchema(parsed, meta);
-          generatedBlocks.push(...materiSchema);
-          break;
-        }
-        case 'skenario': {
-          const skenarioSchema = genSkenarioSchema(parsed, { namaBab: lessonTitle });
-          generatedBlocks.push(skenarioSchema);
-          break;
-        }
-        case 'diskusi': {
-          const tpData = parsed.sentences.slice(0, 3).map(s => ({ desc: s }));
-          const diskusiSchema = genDiskusiSchema(parsed, tpData, meta);
-          generatedBlocks.push(diskusiSchema);
-          break;
-        }
-        case 'kuis': {
-          const kuisSchema = genKuisSchema(parsed, kuisCount, 1);
-          generatedBlocks.push(kuisSchema);
-          break;
-        }
-        case 'refleksi': {
-          const refleksiSchema = genRefleksiSchema(parsed, meta);
-          generatedBlocks.push(refleksiSchema);
-          break;
-        }
-        case 'penutup': {
-          const penutupSchema = genPenutupSchema(meta);
-          generatedBlocks.push(penutupSchema);
-          break;
-        }
-        case 'motivasi': {
-          const motivasiSchema = genMotivasiSchema(parsed, { namaBab: lessonTitle });
-          generatedBlocks.push(motivasiSchema);
-          break;
-        }
-        default: {
-          // For unhandled types, fall through to Level 3 logic for this page
-          break;
-        }
-      }
-
-      // If we generated blocks, replace the page schema with generated content
-      if (generatedBlocks.length > 0) {
-        const stabilizedBlocks = generatedBlocks.map((block, bIdx) => ({
-          ...block,
-          id: block.id || `${scene.templateType}-${block.type}-${bIdx}`,
-        }));
-
-        page.schema = {
-          ...(page.schema || { id: `page-${i}`, version: 1, templateType: scene.templateType, blocks: [] }),
-          blocks: stabilizedBlocks,
-        };
-
-        // Inject metadata into cover
-        if (scene.templateType === 'cover') {
-          page.schema = {
-            ...page.schema,
-            blocks: page.schema.blocks.map(block => {
-              if (block.type !== 'cover') return block;
-              const cover = block as unknown as Record<string, unknown>;
-              const newMeta = { ...((cover.meta as Record<string, string>) || {}) };
-              if (metadata.guru) newMeta.elemen = metadata.guru;
-              if (metadata.sekolah) newMeta.fase = metadata.sekolah;
-              return {
-                ...block,
-                ...(metadata.title ? { title: metadata.title } : {}),
-                ...(metadata.guru || metadata.sekolah ? { meta: newMeta } : {}),
-              };
-            }),
-          };
-        }
-
-        // Inject closing info
-        if (scene.templateType === 'penutup') {
-          page.schema = {
-            ...page.schema,
-            blocks: page.schema.blocks.map(block => {
-              if (block.type !== 'penutup') return block;
-              return {
-                ...block,
-                ...(metadata.title ? { subtitle: `Terima kasih — ${metadata.title}` } : {}),
-              };
-            }),
-          };
-        }
-      } else {
-        // Fallback to Level 3 for this specific page
-        if (scene.templateType === 'cover' && page.schema?.blocks) {
-          page.schema = {
-            ...page.schema,
-            blocks: page.schema.blocks.map(block => {
-              if (block.type !== 'cover') return block;
-              const cover = block as unknown as Record<string, unknown>;
-              const newMeta = { ...((cover.meta as Record<string, string>) || {}) };
-              if (metadata.guru) newMeta.elemen = metadata.guru;
-              if (metadata.sekolah) newMeta.fase = metadata.sekolah;
-              return {
-                ...block,
-                ...(metadata.title ? { title: metadata.title } : {}),
-                ...(metadata.guru || metadata.sekolah ? { meta: newMeta } : {}),
-              };
-            }),
-          };
-        }
-
-        if (scene.templateType === 'penutup' && page.schema?.blocks) {
-          page.schema = {
-            ...page.schema,
-            blocks: page.schema.blocks.map(block => {
-              if (block.type !== 'penutup') return block;
-              return {
-                ...block,
-                ...(metadata.title ? { subtitle: `Terima kasih — ${metadata.title}` } : {}),
-              };
-            }),
-          };
-        }
-      }
-
-      // Apply theme from template
-      page.bgColor = tokens.colors.bg;
-      page.navConfig = { ...DEFAULT_NAV_CONFIG, showNavbar: true, showProgress: true };
-
-      level2Pages.push(page);
-    }
-
-    if (level2Pages.length > 0) {
-      console.info(`[Pipeline] Level 2 generated content for "${templateId}" using SUBJECT_MOCK_DATA`);
-      return level2Pages;
-    }
-  } catch (err) {
-    // Level 2 failed — fall through to Level 3
-    console.warn(`[Pipeline] Level 2 generation failed for "${templateId}", falling back to Level 3:`, err);
-  }
+  // ── LEVEL 2: FROZEN — template-gallery pipeline disconnected ────
+  // ❄️ Since SILSE v2.1, the Level 2 pipeline (SUBJECT_MOCK_DATA +
+  //    schema generators from template-gallery.ts) has been FROZEN.
+  //    All templates now go directly from Level 1 (preset) → Level 3 (empty shell).
+  //    See: src/core/template/template-gallery.ts (FROZEN)
+  //    See: src/core/templates/marketplace-templates.ts (FROZEN)
+  //
+  //    When new templates need generated content, they should get a
+  //    proper presetId (Level 1) instead of relying on mock data.
 
   // ── LEVEL 3: Empty shell pipeline (last resort) ──────────────────
   const pages: CanvaPage[] = [];
