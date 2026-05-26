@@ -242,12 +242,24 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
 // BLOCK REGISTRY — Composed from metadata + renderers
 // ═══════════════════════════════════════════════════════════════════
 
+// ── Unregistered Renderer Warning ────────────────────────────────
+// When a block type is in BLOCK_DEFINITIONS but NOT in RENDERER_MAP,
+// this component renders a dev-visible warning instead of silently
+// rendering nothing (which was the old `() => null` behavior).
+// In production, it renders nothing to avoid leaking internals.
+function UnregisteredRenderer({ block }: { block: { type: string } }) {
+  if (process.env.NODE_ENV === 'production') return null;
+  return React.createElement('div', {
+    className: 'p-2 rounded bg-amber-500/20 border border-amber-500/40 text-amber-700 text-[10px] font-bold',
+  }, `\u26A0 Renderer belum terdaftar untuk blok "${block.type}" — tambahkan ke RENDERER_MAP di SceneRegistry.tsx`);
+}
+
 export const SCENE_REGISTRY: Record<string, BlockDefinition> = Object.fromEntries(
   Object.entries(BLOCK_DEFINITIONS).map(([type, meta]) => [
     type,
     {
       ...meta,
-      renderer: RENDERER_MAP[type] ?? (() => null), // Fallback: render nothing
+      renderer: RENDERER_MAP[type] ?? ((props: { block: { type: string } }) => <UnregisteredRenderer block={props.block} />),
     },
   ])
 );

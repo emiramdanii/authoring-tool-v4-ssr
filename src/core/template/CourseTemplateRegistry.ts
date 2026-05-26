@@ -19,7 +19,8 @@
 
 import type { PageTemplateType } from '@/components/canva/types';
 import type { CanvaPage } from '@/components/canva/types';
-import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
+import { createPage } from '@/store/canva/constants';
+import { createDefaultSchemaForTemplateType, type ProjectCreationMetadata } from '@/core/schema/schema-factory';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { TEMPLATE_TO_SCENE } from '@/core/edu/education-scene-types';
 
@@ -74,15 +75,12 @@ export interface CourseTemplate {
 }
 
 // ── Metadata for createProjectFromTemplate ─────────────────────
+// Re-export from schema-factory for backward compatibility.
+// New code should import directly from schema-factory.
+export type { ProjectCreationMetadata as ProjectMetadata } from '@/core/schema/schema-factory';
 
-export interface ProjectMetadata {
-  /** Presentation title */
-  title: string;
-  /** Teacher name */
-  guru?: string;
-  /** School name */
-  sekolah?: string;
-}
+// Local type alias for use within this module
+type LocalProjectMetadata = import('@/core/schema/schema-factory').ProjectCreationMetadata;
 
 // ── Template Pattern ───────────────────────────────────────────
 
@@ -588,20 +586,27 @@ export function getCourseTemplatesFiltered(subject?: string, grade?: string): Co
 /**
  * Create a full CanvaPage[] array from a Course Template.
  *
- * For each scene in the template:
- *   1. Creates a page using createPageFromPreset (existing preset system)
- *   2. The preset's create() factory populates page.schema with default blocks
- *   3. The suggested blocks in the template are hints — the preset already
- *      creates appropriate default blocks for the template type.
- *   4. Sets page label from the scene spec
+ * ARCHITECTURE (FIXED — Schema Factory Bridge):
+ *   OLD (BROKEN): createPageFromPreset() → ensurePageSchema() → TemplateAdapter
+ *     → reads empty templateData → HOLLOW OUTPUT
  *
- * Note: The existing createPageFromPreset already creates schema-native pages
- * with appropriate default blocks. The suggestedBlocks field serves as
- * documentation and potential future "add more blocks" functionality.
+ *   NEW (FIXED): createPage() → createDefaultSchemaForTemplateType()
+ *     → BLOCK_DEFINITIONS.createDefault() → POPULATED OUTPUT
+ *
+ * For each scene in the template:
+ *   1. Creates a CanvaPage via createPage() (basic page with empty schema)
+ *   2. Creates a populated ScreenSchema using createDefaultSchemaForTemplateType()
+ *      which uses BLOCK_DEFINITIONS.createDefault() for each suggested block
+ *   3. Injects project metadata (title, guru, sekolah) into cover/penutup
+ *   4. Sets page label and variant from the scene spec
+ *
+ * This ensures templates produce RICH, populated output from the start.
+ * The suggestedBlocks field in each scene is now ACTIVELY used — each
+ * block type gets a createDefault() instance with meaningful default data.
  */
 export function createProjectFromTemplate(
   templateId: string,
-  metadata: ProjectMetadata,
+  metadata: LocalProjectMetadata,
 ): CanvaPage[] {
   const template = _registry.get(templateId);
   if (!template) {
@@ -610,54 +615,46 @@ export function createProjectFromTemplate(
 
   const pages: CanvaPage[] = [];
 
+  // Build ProjectCreationMetadata for the schema factory
+  const creationMeta: ProjectCreationMetadata = {
+    title: metadata.title,
+    guru: metadata.guru,
+    sekolah: metadata.sekolah,
+  };
+
   for (let i = 0; i < template.scenes.length; i++) {
-    const scene = template.scenes[i];
+    const scene = template.scenes[i]!;
 
-    // Use existing PagePresetRegistry to create schema-native pages
-    const page = createPageFromPreset(scene!.templateType, i);
+    // Create a base page
+    const page = createPage(scene.label, scene.templateType);
 
-    // Override label with the scene's label (immutable — page is fresh, not frozen yet)
-    page.label = scene!.label;
+    // Override label with the scene's label
+    page.label = scene.label;
 
     // Set variant if specified
-    if (scene!.variant) {
-      page.templateVariant = scene!.variant;
+    if (scene.variant) {
+      page.templateVariant = scene.variant;
     }
 
-    // For the cover page, inject the metadata (title, guru, sekolah)
-    // IMPORTANT: Schema may be deepFrozen in dev mode from ensurePageSchema().
-    // We must create new objects immutably instead of mutating in place.
-    if (scene!.templateType === 'cover' && page.schema?.blocks) {
-      page.schema = {
-        ...page.schema,
-        blocks: page.schema.blocks.map(block => {
-          if (block.type !== 'cover') return block;
-          const cover = block as unknown as Record<string, unknown>;
-          const newMeta = { ...((cover.meta as Record<string, string>) || {}) };
-          if (metadata.guru) newMeta.elemen = metadata.guru;
-          if (metadata.sekolah) newMeta.fase = metadata.sekolah;
-          return {
-            ...block,
-            ...(metadata.title ? { title: metadata.title } : {}),
-            ...(metadata.guru || metadata.sekolah ? { meta: newMeta } : {}),
-          };
-        }),
-      };
+    // ═══ SCHEMA FACTORY BRIDGE ═══════════════════════════════════
+    // Create populated schema DIRECTLY using BlockDefinitionRegistry
+    // createDefault(). Bypasses the deprecated TemplateAdapter entirely.
+    const schema = createDefaultSchemaForTemplateType(
+      scene.templateType,
+      creationMeta,
+      scene.suggestedBlocks,
+      scene.variant || 'A',
+    );
+
+    // Set scene type from the spec (for scene-aware rendering)
+    if (scene.sceneType) {
+      schema.sceneType = scene.sceneType;
     }
 
-    // For the penutup page, inject closing info (immutable)
-    if (scene!.templateType === 'penutup' && page.schema?.blocks) {
-      page.schema = {
-        ...page.schema,
-        blocks: page.schema.blocks.map(block => {
-          if (block.type !== 'penutup') return block;
-          return {
-            ...block,
-            ...(metadata.title ? { subtitle: `Terima kasih — ${metadata.title}` } : {}),
-          };
-        }),
-      };
-    }
+    // Assign the populated schema to the page
+    page.schema = schema;
+    page.elements = []; // Schema-driven: no legacy elements
+    page.pageMode = 'schema';
 
     pages.push(page);
   }
