@@ -157,35 +157,40 @@ export const SEMESTER_OPTIONS = [
 
 const COURSE_TEMPLATES: CourseTemplate[] = [
   // ── PPKn VII — Alur Emas: Hakikat Norma ──────────────────────
+  // SYNCED with: golden/interactive-lesson.ts + presets/ppkn/hakikat-norma-schema.ts
+  // Flow: Cover → Petunjuk → Tujuan → Apersepsi → Diskusi → Materi 1 → Materi 2 → Game → Hasil → Refleksi → Penutup
   {
     id: 'modul-ppkn-vii',
-    name: 'Modul PPKn Kelas VII',
-    description: 'Alur pembelajaran lengkap PPKn SMP kelas VII: Pembuka → Tujuan → Motivasi → Materi ×3 → Diskusi → Kuis → Refleksi → Penutup',
+    name: 'Hakikat Norma — Interactive Lesson',
+    description: 'Alur emas PPKn VII: Cover → Petunjuk → Tujuan → Apersepsi (4 Skenario) → Diskusi → Materi 1 (Pengertian) → Materi 2 (Fungsi) → Game → Hasil → Refleksi → Penutup',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
     theme: 'hakikat-norma',
     presetId: 'hakikat-norma',
     scenes: [
-      { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'materi', label: 'Apersepsi / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['def-box', 'nc-grid'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'tujuan', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tp', 'alur'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Apersepsi — Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'diskusi', label: 'Diskusi — Manusia Makhluk Sosial', suggestedBlocks: ['def-box', 'nc-grid', 'diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'materi', label: 'Materi 1 — Pengertian Norma', suggestedBlocks: ['def-box', 'nc-grid', 'flashcard-set', 'diskusi'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2 — Fungsi Norma', suggestedBlocks: ['ftab', 'def-box', 'flashcard-set', 'diskusi'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'game', label: 'Game Fungsi Norma', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'practice' },
+      { templateType: 'hasil', label: 'Hasil', suggestedBlocks: ['hasil'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi Diri', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '⚖️', author: 'SILSE', version: '2.1.0' },
   },
 
   // ── PPKn VII — Alur Emas: Macam-Macam Norma ────────────────
+  // SYNCED with: presets/ppkn/macam-norma-schema.ts
+  // Flow: Cover → Petunjuk → CP/TP/ATP → TP → Review → Materi (4 Norma) → Game Sortir → Hubungan Antarnorma → Game Roda → Refleksi → Penutup
   {
     id: 'modul-ppkn-vii-macam-norma',
-    name: 'Macam-Macam Norma (PPKn VII)',
-    description: 'Mengenal 4 jenis norma (agama, kesusilaan, kesopanan, hukum) dengan norma kartu, sortir game, dan refleksi: Cover → Tujuan → Materi → Kuis → Refleksi → Penutup',
+    name: 'Macam-Macam Norma — Interactive Lesson',
+    description: 'Alur emas PPKn VII Pertemuan 2: Cover → Petunjuk → CP/TP/ATP → Review → Eksplorasi 4 Norma → Game Sortir → Hubungan Antarnorma → Game Roda → Refleksi → Penutup',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
@@ -193,10 +198,15 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     presetId: 'macam-norma',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
-      { templateType: 'materi', label: 'Materi — Macam-Macam Norma', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
-      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'CP · TP · ATP', suggestedBlocks: ['ftab'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'tujuan', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tp', 'alur'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Review Pertemuan 1', suggestedBlocks: ['nc-grid', 'diskusi', 'def-box'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Eksplorasi 4 Norma', suggestedBlocks: ['ftab', 'tabel-accord', 'diskusi'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'game', label: 'Game Sortir Norma', suggestedBlocks: ['sortir-game', 'diskusi'], variant: 'A', sceneType: 'practice' },
+      { templateType: 'materi', label: 'Hubungan Antarnorma', suggestedBlocks: ['tabel-accord', 'nc-grid', 'diskusi'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'game', label: 'Game Roda Norma', suggestedBlocks: ['roda-game'], variant: 'A', sceneType: 'practice' },
+      { templateType: 'refleksi', label: 'Refleksi Diri', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],
     metadata: { icon: '📜', author: 'SILSE', version: '2.1.0' },

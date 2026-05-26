@@ -697,12 +697,19 @@ export interface ScreenSchema {
   version?: number;
   /** Maps to PageTemplateType */
   templateType: string;
+  /** Scene type — links to the 8 Learning Scene Types system.
+   *  When set, enables scene-aware rendering (emotional profile,
+   *  reveal strategy, accent prominence, typography hierarchy). */
+  sceneType?: import('@/core/edu/education-scene-types').SceneType;
   /** Section label chip */
   sectionLabel?: string;
   /** Section label color token */
   sectionColor?: string;
   /** Screen blocks in order */
   blocks: SchemaBlock[];
+  /** Tab definitions for screens with ftab blocks.
+   *  Enables tab management from the right panel. */
+  tabs?: TabDefinition[];
   /** Navigation targets and config */
   nav?: {
     prev?: string;
@@ -723,6 +730,21 @@ export interface ScreenSchema {
     /** Dark overlay opacity (0–60) for image readability */
     overlay?: number;
   };
+}
+
+// ── Tab Definition (for scene-level tab management) ────────────
+
+export interface TabDefinition {
+  /** Unique tab ID */
+  id: string;
+  /** Display label */
+  label: string;
+  /** Tab icon emoji */
+  icon?: string;
+  /** Whether the tab has been read/viewed */
+  read?: boolean;
+  /** Color token key */
+  color?: string;
 }
 
 // ── Lesson Schema (full lesson = multiple screens) ─────────────

@@ -1,67 +1,55 @@
+# SILSE v2.1 — Worklog
+
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Audit codebase — baca semua file kunci yang belum pernah terbaca
+Agent: Main (dev senior)
+Task: Audit codebase & fix template pipeline mismatch
 
 Work Log:
-- Read CourseTemplateRegistry.ts (677 lines) — 3 active templates, 3-Level Pipeline
-- Read template-gallery.ts (1300+ lines) — 16 LESSON_TEMPLATES, 20+ SUBJECT_MOCK_DATA entries
-- Read marketplace-templates.ts (800+ lines) — 6 MarketplaceTemplate entries
-- Read PagePresetRegistry.ts (442 lines) — 16 page presets, schema-native
-- Read hakikat-norma-schema.ts (870+ lines) — 11 screens, 4-chapter interactive scenario
-- Read tokens.ts (720 lines) — golden-presentation theme, Visual DNA already defined
-- Read education-scene-types.ts (404 lines) — 8 Scene Types, intensity curve, reveal strategies
-- Read SchemaRenderer.tsx (836 lines) — SceneLayoutEngine, TokenResolver, VCS rhythm
+- Explored full project structure at /home/z/my-project/
+- Found key files: CourseTemplateRegistry.ts, golden/interactive-lesson.ts, legacy/course-templates-legacy.ts, template-gallery.ts, hakikat-norma-schema.ts, macam-norma-schema.ts, visual-dna.ts
+- Discovered CRITICAL MISMATCH: Active template (modul-ppkn-vii) had 10 scenes with OLD structure, while golden flow + preset had 11 scenes with new structure
+- Found that legacy/, golden/, Visual DNA were already built in previous sessions
+- Verified pipeline: SchemaEngine.utils.ts → loadPreset → schemaToCanvaPages works correctly
+- Verified TEMPLATE_TO_SCENE mapping covers all needed page types
+- Verified PagePresetRegistry has presets for all golden flow page types
+- Found TemplateGalleryPanel uses LESSON_TEMPLATES (frozen) not CourseTemplateRegistry
+- Found TemplateWizard uses CourseTemplateRegistry (the "New Project" wizard)
+- Found pre-existing TS errors: ScreenSchema missing sceneType/tabs, TabDefinition not exported
 
 Stage Summary:
-- 3 parallel template systems identified: CourseTemplateRegistry, template-gallery, marketplace-templates
-- Visual DNA already exists in tokens.ts (golden-presentation theme)
-- hakikat-norma preset already has golden content (11 rich screens)
-- Architecture is solid — problem is template bloat, not engine
+- Audit complete: 80% of infrastructure was already built
+- Core problem: Active template in CourseTemplateRegistry was out of sync with golden flow + preset
 
 ---
 Task ID: 2
-Agent: Main Agent
-Task: Freeze template-gallery.ts and marketplace-templates.ts
+Agent: Main (dev senior)
+Task: Fix mismatch — sync active templates with Golden Flow
 
 Work Log:
-- Added FROZEN banner to template-gallery.ts header
-- Added FROZEN banner to marketplace-templates.ts header
-- Updated CourseTemplateRegistry.ts with freeze status references
-- All imports remain working — no breaking changes
+- Updated modul-ppkn-vii template: 10 old scenes → 11 golden flow scenes (cover→petunjuk→tujuan→skenario→diskusi→materi1→materi2→game→hasil→refleksi→penutup)
+- Updated modul-ppkn-vii-macam-norma template: 6 old scenes → 11 detailed scenes matching preset
+- Added SYNCED comments referencing golden flow and preset files
+- Next.js build verified passing after changes
 
 Stage Summary:
-- template-gallery.ts: FROZEN — LESSON_TEMPLATES + SUBJECT_MOCK_DATA still importable for Level 2 fallback
-- marketplace-templates.ts: FROZEN — 6 templates still importable for backward compat
-- CourseTemplateRegistry.ts: Updated header with freeze references
+- Both active templates now match their respective presets
+- CourseTemplateRegistry is the single source of truth for TemplateWizard
+- TemplateGalleryPanel still uses frozen LESSON_TEMPLATES (Level 1 preset pipeline takes over for content)
 
 ---
-Task ID: 4
-Agent: Main Agent (via subagent)
-Task: Create Visual DNA formal definition
+Task ID: 3
+Agent: Main (dev senior)
+Task: Fix pre-existing TS errors — ScreenSchema.sceneType & tabs
 
 Work Log:
-- Created /home/z/my-project/src/core/visual-dna/visual-dna.ts (381 lines)
-- 8 pillars: Typography, Color, Layout, Card, Navigation, Motion, Content Rhythm, Interaction
-- Each pillar has: concrete values, rules, and constraints
-- Plus VISUAL_DNA_QUICK_REF quick reference card
+- Added sceneType (SceneType) to ScreenSchema interface
+- Added tabs (TabDefinition[]) to ScreenSchema interface
+- Created TabDefinition interface with id, label, icon, read, color fields
+- TS errors reduced from 13+ to ~8 (remaining are unrelated: missing npm packages, addable property, eduViewingMode)
+- Next.js build verified passing
 
 Stage Summary:
-- File: src/core/visual-dna/visual-dna.ts
-- Exports: VISUAL_DNA_TYPOGRAPHY, VISUAL_DNA_COLORS, VISUAL_DNA_LAYOUT, VISUAL_DNA_CARD, VISUAL_DNA_NAVIGATION, VISUAL_DNA_MOTION, VISUAL_DNA_RHYTHM, VISUAL_DNA_INTERACTION, VISUAL_DNA_QUICK_REF
-
----
-Task ID: 5
-Agent: Main Agent (via subagent)
-Task: Create Golden Flow: Interactive Lesson PPKn Hakikat Norma
-
-Work Log:
-- Created /home/z/my-project/src/core/template/golden/interactive-lesson.ts (306 lines)
-- 11 scenes across 5 phases: ORIENTATION → HOOK → EXPLORATION → PRACTICE → CLOSURE
-- Links to hakikat-norma preset and golden-presentation theme
-- Helper functions: getGoldenFlowIntensityCurve, getGoldenFlowScene, getGoldenFlowPhase, validateGoldenFlow
-
-Stage Summary:
-- File: src/core/template/golden/interactive-lesson.ts
-- Exports: GoldenFlowScene interface, GOLDEN_FLOW array, GOLDEN_FLOW_META, helper functions
-- Validates: intro→summary endpoints, intensity monotony, block density
+- Critical type errors fixed — ScreenSchema now supports scene-aware rendering
+- Tab management now type-safe
+- Build passes cleanly
