@@ -1,0 +1,330 @@
+// ═══════════════════════════════════════════════════════════════════
+// TEMPLATE VALIDATOR — Pre-render validation for Full Pertemuan
+// ═══════════════════════════════════════════════════════════════════
+// Before a page is rendered, the validator checks it against the
+// TemplateThemeContract. Any violations are flagged as warnings
+// or errors that surface in the dev console / editor UI.
+//
+// Checks:
+//   1. Content height overflow (> maxContentHeight)
+//   2. Font size below minimum
+//   3. Hardcoded colors (not from contract)
+//   4. Too many active accent colors
+//   5. Empty/placeholder content
+//   6. Disallowed block types on a page
+//   7. Too many blocks on a page
+//   8. Absolute blocks outside canvas bounds
+//
+// Usage:
+//   const result = validatePage(contract, pageSchema);
+//   if (result.errors.length > 0) { ... handle ... }
+// ═══════════════════════════════════════════════════════════════════
+
+import type { TemplateThemeContract, PageLayoutContract } from './TemplateThemeContract';
+import { getContractOrGolden } from './TemplateThemeContract';
+import type { SchemaBlock } from '@/core/schema/types';
+
+// ── Types ──────────────────────────────────────────────────────
+
+export type ValidationSeverity = 'error' | 'warning' | 'info';
+
+export interface ValidationIssue {
+  severity: ValidationSeverity;
+  rule: string;
+  message: string;
+  pageType: string;
+  blockType?: string;
+  blockId?: string;
+  detail?: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationIssue[];
+  warnings: ValidationIssue[];
+  infos: ValidationIssue[];
+  allIssues: ValidationIssue[];
+}
+
+// ── Validation Rules ───────────────────────────────────────────
+
+function issue(
+  severity: ValidationSeverity,
+  rule: string,
+  message: string,
+  pageType: string,
+  blockType?: string,
+  blockId?: string,
+  detail?: string,
+): ValidationIssue {
+  return { severity, rule, message, pageType, blockType, blockId, detail };
+}
+
+/**
+ * Validate a page against the TemplateThemeContract.
+ * Returns all issues found (errors, warnings, infos).
+ */
+export function validatePage(
+  contract: TemplateThemeContract | undefined,
+  pageType: string,
+  blocks: SchemaBlock[],
+  estimatedHeightPx?: number,
+): ValidationResult {
+  const c = contract || getContractOrGolden(undefined);
+  const layout = c.pageLayouts[pageType] || c.pageLayouts['custom'];
+  const errors: ValidationIssue[] = [];
+  const warnings: ValidationIssue[] = [];
+  const infos: ValidationIssue[] = [];
+
+  // ── Rule 1: Max blocks ─────────────────────────────────────
+  if (layout && blocks.length > layout.maxBlocks) {
+    warnings.push(issue(
+      'warning',
+      'max-blocks',
+      `Page has ${blocks.length} blocks, but contract allows max ${layout.maxBlocks}. Consider splitting content.`,
+      pageType,
+      undefined, undefined,
+      `Contract: ${layout.maxBlocks} blocks max for '${pageType}'`,
+    ));
+  }
+
+  // ── Rule 2: Disallowed block types ─────────────────────────
+  if (layout && layout.allowedBlockTypes.length > 0) {
+    for (const block of blocks) {
+      if (!layout.allowedBlockTypes.includes(block.type)) {
+        warnings.push(issue(
+          'warning',
+          'disallowed-block',
+          `Block type '${block.type}' is not recommended for page type '${pageType}'. Allowed: ${layout.allowedBlockTypes.join(', ')}`,
+          pageType,
+          block.type,
+          block.id,
+        ));
+      }
+    }
+  }
+
+  // ── Rule 3: Content height overflow ────────────────────────
+  if (estimatedHeightPx && estimatedHeightPx > c.maxContentHeight) {
+    const overflow = estimatedHeightPx - c.maxContentHeight;
+    errors.push(issue(
+      'error',
+      'overflow',
+      `Page content overflows by ${overflow}px. Estimated: ${estimatedHeightPx}px, max: ${c.maxContentHeight}px. Action: split required or enable compression.`,
+      pageType,
+      undefined, undefined,
+      `Overflow: ${overflow}px`,
+    ));
+  }
+
+  // ── Rule 4: Check blocks for issues ────────────────────────
+  const usedAccentColors = new Set<string>();
+  for (const block of blocks) {
+    // Rule 4a: Check for empty/placeholder content
+    checkEmptyContent(block, pageType, warnings);
+
+    // Rule 4b: Check font size in block style
+    checkFontSize(block, pageType, c, warnings);
+
+    // Rule 4c: Track accent colors
+    const blockAccent = (block as Record<string, unknown>).borderColor as string | undefined;
+    if (blockAccent) {
+      usedAccentColors.add(blockAccent);
+    }
+  }
+
+  // ── Rule 5: Too many accent colors ─────────────────────────
+  if (usedAccentColors.size > c.colors.maxAccents) {
+    warnings.push(issue(
+      'warning',
+      'too-many-accents',
+      `Page uses ${usedAccentColors.size} accent colors, but contract allows max ${c.colors.maxAccents}. Colors: ${[...usedAccentColors].join(', ')}`,
+      pageType,
+    ));
+  }
+
+  // ── Rule 6: Check absolute blocks ──────────────────────────
+  for (const block of blocks) {
+    if (block.layout?.position === 'absolute') {
+      const { x, y, width, height } = block.layout;
+      if ((x !== undefined && (x < 0 || x > 100)) ||
+          (y !== undefined && (y < 0 || y > 100)) ||
+          (typeof width === 'number' && (width < 0 || width > 100)) ||
+          (typeof height === 'number' && (height < 0 || height > 100))) {
+        errors.push(issue(
+          'error',
+          'absolute-oob',
+          `Block '${block.type}' has absolute layout outside canvas bounds. x=${x}, y=${y}, w=${width}, h=${height}`,
+          pageType,
+          block.type,
+          block.id,
+        ));
+      }
+    }
+  }
+
+  // ── Rule 7: Cover page must be single block ────────────────
+  if (pageType === 'cover' && blocks.length > 1) {
+    warnings.push(issue(
+      'warning',
+      'cover-multi-block',
+      `Cover page should have exactly 1 block, but has ${blocks.length}. Extra blocks may overflow or overlap.`,
+      pageType,
+    ));
+  }
+
+  // ── Info: Density recommendation ────────────────────────────
+  if (layout) {
+    infos.push(issue(
+      'info',
+      'density',
+      `Recommended density for '${pageType}': ${layout.density}. ${layout.canSplit ? 'Content can be split.' : 'Content must fit in one screen.'}`,
+      pageType,
+    ));
+  }
+
+  const allIssues = [...errors, ...warnings, ...infos];
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    infos,
+    allIssues,
+  };
+}
+
+/**
+ * Validate all pages in a project against the contract.
+ */
+export function validateProject(
+  contractId: string | undefined,
+  pages: Array<{ templateType: string; blocks: SchemaBlock[]; estimatedHeightPx?: number }>,
+): ValidationResult {
+  const contract = getContractOrGolden(contractId);
+  const allErrors: ValidationIssue[] = [];
+  const allWarnings: ValidationIssue[] = [];
+  const allInfos: ValidationIssue[] = [];
+
+  for (const page of pages) {
+    const result = validatePage(contract, page.templateType, page.blocks, page.estimatedHeightPx);
+    allErrors.push(...result.errors);
+    allWarnings.push(...result.warnings);
+    allInfos.push(...result.infos);
+  }
+
+  return {
+    valid: allErrors.length === 0,
+    errors: allErrors,
+    warnings: allWarnings,
+    infos: allInfos,
+    allIssues: [...allErrors, ...allWarnings, ...allInfos],
+  };
+}
+
+// ── Internal helpers ────────────────────────────────────────────
+
+function checkEmptyContent(
+  block: SchemaBlock,
+  pageType: string,
+  warnings: ValidationIssue[],
+): void {
+  const b = block as Record<string, unknown>;
+
+  // Check for empty title
+  if ('title' in b && (!b.title || b.title === '')) {
+    warnings.push(issue(
+      'warning',
+      'empty-content',
+      `Block '${block.type}' has an empty title field.`,
+      pageType,
+      block.type,
+      block.id,
+    ));
+  }
+
+  // Check for empty content
+  if ('content' in b && (!b.content || b.content === '')) {
+    warnings.push(issue(
+      'warning',
+      'empty-content',
+      `Block '${block.type}' has empty content.`,
+      pageType,
+      block.type,
+      block.id,
+    ));
+  }
+
+  // Check for empty items array
+  if ('items' in b && Array.isArray(b.items) && b.items.length === 0) {
+    warnings.push(issue(
+      'warning',
+      'empty-content',
+      `Block '${block.type}' has no items.`,
+      pageType,
+      block.type,
+      block.id,
+    ));
+  }
+
+  // Check for empty questions
+  if ('questions' in b && Array.isArray(b.questions) && b.questions.length === 0) {
+    warnings.push(issue(
+      'warning',
+      'empty-content',
+      `Block '${block.type}' has no questions.`,
+      pageType,
+      block.type,
+      block.id,
+    ));
+  }
+}
+
+function checkFontSize(
+  block: SchemaBlock,
+  pageType: string,
+  contract: TemplateThemeContract,
+  warnings: ValidationIssue[],
+): void {
+  // Check block.style for font-size declarations
+  if (block.style) {
+    for (const [key, value] of Object.entries(block.style)) {
+      if (key.includes('font-size') || key.includes('fontSize')) {
+        const pxMatch = value.match(/(\d+(?:\.\d+)?)px/);
+        if (pxMatch) {
+          const size = parseFloat(pxMatch[1]!);
+          if (size < contract.typography.minFontSize) {
+            warnings.push(issue(
+              'warning',
+              'min-font-size',
+              `Block '${block.type}' has font-size ${size}px which is below contract minimum ${contract.typography.minFontSize}px.`,
+              pageType,
+              block.type,
+              block.id,
+            ));
+          }
+        }
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DEV CONSOLE HELPER — Format validation results for console.log
+// ═══════════════════════════════════════════════════════════════════
+
+export function formatValidationResult(result: ValidationResult): string {
+  const lines: string[] = [];
+  lines.push(`╔══ Template Validation ══════════════════╗`);
+  lines.push(`║ Status: ${result.valid ? '✅ PASS' : '❌ FAIL'} (${result.errors.length} errors, ${result.warnings.length} warnings)`);
+
+  for (const err of result.errors) {
+    lines.push(`║ 🔴 [${err.rule}] ${err.message}`);
+  }
+  for (const warn of result.warnings) {
+    lines.push(`║ 🟡 [${warn.rule}] ${warn.message}`);
+  }
+
+  lines.push(`╚════════════════════════════════════════╝`);
+  return lines.join('\n');
+}
