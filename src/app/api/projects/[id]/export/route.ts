@@ -160,7 +160,18 @@ export async function GET(
     // Reconstruct pages for export
     const pages = reconstructPages(project.pages);
 
+    // Parse authoringData from project — this contains kuis, modules, games, etc.
+    let authoringData: Record<string, unknown> = {};
+    if (project.authoringData) {
+      try {
+        authoringData = JSON.parse(project.authoringData);
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
     // Build export data — compatible with the Vite SSR template
+    // Hydrate from authoringData (saved by useAutoSave) with DB fallbacks
     const exportData = {
       pages,
       ratioId: project.ratioId || '16:9',
@@ -171,20 +182,20 @@ export async function GET(
         guru: project.teacherName || '',
         sekolah: project.schoolName || '',
       },
-      allKuis: [],
-      allModules: [],
-      games: [],
-      cp: {},
-      tp: [],
-      atp: { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
-      alur: [],
-      materi: { blok: [] },
-      skenario: [],
-      petunjuk: { title: '', intro: '', langkah: [] },
-      diskusi: { title: '', intro: '', pertanyaan: [] },
-      refleksi: { title: '', intro: '', pertanyaan: [] },
-      penutup: { title: '', subjudul: '', preview: [] },
-      suara: { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+      allKuis: (authoringData.allKuis as unknown[]) || [],
+      allModules: (authoringData.allModules as unknown[]) || [],
+      games: (authoringData.games as unknown[]) || [],
+      cp: (authoringData.cp as Record<string, unknown>) || {},
+      tp: (authoringData.tp as unknown[]) || [],
+      atp: (authoringData.atp as Record<string, unknown>) || { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
+      alur: (authoringData.alur as unknown[]) || [],
+      materi: (authoringData.materi as Record<string, unknown>) || { blok: [] },
+      skenario: (authoringData.skenario as unknown[]) || [],
+      petunjuk: (authoringData.petunjuk as Record<string, unknown>) || { title: '', intro: '', langkah: [] },
+      diskusi: (authoringData.diskusi as Record<string, unknown>) || { title: '', intro: '', pertanyaan: [] },
+      refleksi: (authoringData.refleksi as Record<string, unknown>) || { title: '', intro: '', pertanyaan: [] },
+      penutup: (authoringData.penutup as Record<string, unknown>) || { title: '', subjudul: '', preview: [] },
+      suara: (authoringData.suara as Record<string, unknown>) || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
     const dataJson = JSON.stringify(exportData)

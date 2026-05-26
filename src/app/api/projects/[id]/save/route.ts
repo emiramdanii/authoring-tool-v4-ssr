@@ -161,6 +161,20 @@ export async function PUT(
               },
             });
           }
+        } else if (page.elements && page.elements.length > 0) {
+          // Legacy elements: save as blocks so element-mode pages don't lose content
+          for (let ei = 0; ei < page.elements.length; ei++) {
+            const el = page.elements[ei]!;
+            await tx.block.create({
+              data: {
+                pageId: createdPage.id,
+                blockType: el.type,
+                blockIndex: ei,
+                content: JSON.stringify(el.content || {}),
+                layout: null,
+              },
+            });
+          }
         }
       }
     });

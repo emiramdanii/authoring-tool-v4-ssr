@@ -49,7 +49,7 @@ export function hasHtmlTags(text: string): boolean {
  * Sanitize HTML content — strip dangerous tags while preserving
  * safe formatting tags. This is a whitelist approach.
  */
-function sanitizeHtml(html: string): string {
+export function sanitizeHtml(html: string): string {
   // Allowed tags for basic formatting in schema content
   const allowedTags = ['strong', 'em', 'b', 'i', 'u', 'br', 'span', 'sub', 'sup', 'mark', 'small'];
 

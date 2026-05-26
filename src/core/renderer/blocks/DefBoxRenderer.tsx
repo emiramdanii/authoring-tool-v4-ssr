@@ -5,7 +5,7 @@ import { BookOpen, Sparkles, ChevronDown } from 'lucide-react';
 import type { DefBoxBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
-import { RichText } from './RichText';
+import { RichText, sanitizeHtml } from './RichText';
 import { PremiumStepNavigator, usePremiumStepNavigator } from './PremiumStepNavigator';
 import { PremiumBlockWrapper, ReadingProgressIndicator } from './PremiumBlockEffects';
 import { useCanvaStore } from '../../../store/canva/store';
@@ -111,7 +111,7 @@ function DefBoxStepMode({
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
-            dangerouslySetInnerHTML={{ __html: step!.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(step!.content) }}
           />
         </div>
       </PremiumStepNavigator>

@@ -18,7 +18,8 @@ import { checkRateLimit, getClientIp, rateLimitHeaders, type RateLimitTier } fro
 
 function getRateLimitTier(pathname: string): RateLimitTier {
   if (pathname.startsWith('/api/ai/')) return 'ai';
-  if (pathname.startsWith('/api/export/')) return 'export';
+  // Match both /api/export and /api/export/ (no trailing slash gap)
+  if (pathname.startsWith('/api/export')) return 'export';
   if (pathname.startsWith('/api/projects/') && pathname.endsWith('/save')) return 'project';
   if (pathname.startsWith('/api/')) return 'general';
   return 'general';

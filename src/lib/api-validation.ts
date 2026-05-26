@@ -108,7 +108,14 @@ export const updateProjectSchema = z.object({
   description: z.string().max(5000).optional(),
   subject: z.string().max(100).optional(),
   grade: z.string().max(50).optional(),
-  semester: z.string().max(20).optional(),
+  semester: z.union([z.number().int().min(1).max(2), z.string().max(20)]).optional().transform(v => {
+    // Coerce string to int for Prisma compatibility (DB expects Int?)
+    if (typeof v === 'string') {
+      const parsed = parseInt(v, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return v;
+  }),
   teacherName: z.string().max(200).optional(),
   schoolName: z.string().max(300).optional(),
   templateId: z.string().max(100).optional(),
@@ -150,6 +157,13 @@ export const savePageSchema = z.object({
   templateData: z.record(z.string(), z.unknown()).optional(),
   colorPalette: z.record(z.string(), z.unknown()).nullable().optional(),
   blocks: z.array(saveBlockSchema).optional(),
+  // Legacy elements support — elements are preserved as blocks so
+  // pages that still use element-mode don't lose their content on save.
+  elements: z.array(z.object({
+    type: z.string().max(100),
+    id: z.string().max(100).optional(),
+    content: z.record(z.string(), z.unknown()).optional(),
+  })).optional(),
 });
 
 export const saveProjectSchema = z.object({

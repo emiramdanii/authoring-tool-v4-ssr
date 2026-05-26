@@ -48,7 +48,25 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills/**", "debug-canva.js", "public/canva-hybrid.js", "preview-app/**"]
+  ignores: [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "examples/**",
+    "skills/**",
+    "debug-canva.js",
+    "public/canva-hybrid.js",
+    "preview-app/**",
+    "public/sw.js",
+    "public/workbox-*.js",
+    "public/workbox-*.js.map",
+    "upload/**",
+    "export-output/**",
+    "prisma/seed.ts",
+    "scripts/**",
+  ]
 }];
 
 export default eslintConfig;

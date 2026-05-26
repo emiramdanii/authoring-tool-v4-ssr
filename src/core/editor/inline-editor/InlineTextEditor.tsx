@@ -18,6 +18,7 @@
 
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { sanitizeHtml } from '@/core/renderer/blocks/RichText';
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -142,7 +143,7 @@ export function InlineTextEditor({
         <Tag
           className={className}
           style={style}
-          dangerouslySetInnerHTML={{ __html: value || placeholder }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(value || placeholder) }}
         />
       );
     }
