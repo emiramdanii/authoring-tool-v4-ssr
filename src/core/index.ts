@@ -15,6 +15,7 @@ export type {
   BlockLayout,
   BaseBlock,
   CoverBlock,
+  HeroBlock,
   PetunjukBlock,
   TpBlock,
   AlurBlock,
@@ -24,14 +25,35 @@ export type {
   FlashcardSetBlock,
   FtabBlock,
   NormaKartuBlock,
+  MateriSectionBlock,
   DiskusiBlock,
   KuisBlock,
   SortirGameBlock,
   RodaGameBlock,
+  MemoryGameBlock,
+  MatchingGameBlock,
+  FillBlankGameBlock,
+  WordSearchGameBlock,
+  TrueFalseGameBlock,
+  DragDropGameBlock,
+  CrosswordGameBlock,
+  TeamBuzzerGameBlock,
   HasilBlock,
   RefleksiBlock,
   PenutupBlock,
   TabelAccordionBlock,
+  TujuanDisplayBlock,
+  MotivasiBlock,
+  RangkumanBlock,
+  GambarBlock,
+  TimelineBlock,
+  CompareBlock,
+  RevealBlock,
+  TabelBlock,
+  ChecklistBlock,
+  StatistikBlock,
+  StudiBlock,
+  MateriBlokBlock,
 } from './schema/types';
 
 // Scene registry — capability-based block dispatch (includes renderers)
@@ -55,6 +77,7 @@ export type {
 // Block definition registry — renderer-free (safe for store imports)
 export {
   BLOCK_DEFINITIONS,
+  PERSONALITY_CONFIG,
   getBlockMeta,
   getBlocksByCategoryMeta,
   getBlocksForTemplateTypeMeta,
@@ -65,6 +88,7 @@ export {
 } from './registry/BlockDefinitionRegistry';
 export type {
   BlockDefinitionMeta,
+  BlockPersonality,
 } from './registry/BlockDefinitionRegistry';
 
 // Renderer

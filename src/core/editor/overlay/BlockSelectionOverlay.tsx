@@ -23,7 +23,7 @@
 import React, { useCallback, useState, type ReactNode } from 'react';
 // NOTE: Import from BlockDefinitionRegistry (NOT SceneRegistry) to break
 // the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → SceneRegistry
-import { getBlockMeta, type BlockCapabilities } from '../../registry/BlockDefinitionRegistry';
+import { getBlockMeta, DEFAULT_CAPABILITIES, type BlockCapabilities } from '../../registry/BlockDefinitionRegistry';
 import type { SchemaBlock } from '../../schema/types';
 import { BlockContextMenu } from './BlockContextMenu';
 import { TransformHandles, useTransformDrag } from '../transform-controls/TransformHandles';
@@ -97,11 +97,7 @@ export const BlockSelectionOverlay = React.memo(function BlockSelectionOverlay({
 }: BlockSelectionOverlayProps) {
   // Look up block definition from registry for capabilities and metadata
   const definition = getBlockMeta(blockType);
-  const capabilities: BlockCapabilities = definition?.capabilities ?? {
-    editable: true, resizable: false, movable: false,
-    backgroundCustom: false, interactive: false, autoGeneratable: true,
-    composite: false, variants: ['A'], handlesCompression: false,
-  };
+  const capabilities: BlockCapabilities = definition?.capabilities ?? DEFAULT_CAPABILITIES;
   const blockName = definition?.name ?? blockType;
   const blockIcon = definition?.icon ?? '?';
 

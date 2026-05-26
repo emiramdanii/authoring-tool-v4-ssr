@@ -22,7 +22,7 @@ import {
 //   Lengkap: all 5 tabs in a single column
 // ═══════════════════════════════════════════════════════════════
 
-export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings';
+export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings' | 'sisipkan';
 
 interface IconRailProps {
   activeTab: LeftPanelTab;
