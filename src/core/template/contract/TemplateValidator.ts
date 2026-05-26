@@ -5,6 +5,18 @@
 // TemplateThemeContract. Any violations are flagged as warnings
 // or errors that surface in the dev console / editor UI.
 //
+// STANDAR UTAMA SILSE — Density Rules:
+//   - maxWords: 90 per page
+//   - maxBulletPoints: 5 per block
+//   - maxCards: 4 per nc-grid
+//   - maxActiveColors: 3 per page (1 main + 1 accent + 1 feedback)
+//   - maxMainBlocks: 2 per page (1 block = 1 learning focus)
+//   - minBodyFontSize: 20px
+//   - minCoverTitleFontSize: 48px
+//   - minWhitespaceRatio: 0.30
+//   - Quiz = 1 question per page
+//   - TP = max 4 items per page (split if more)
+//
 // Checks:
 //   1. Content height overflow (> maxContentHeight)
 //   2. Font size below minimum
@@ -14,6 +26,10 @@
 //   6. Disallowed block types on a page
 //   7. Too many blocks on a page
 //   8. Absolute blocks outside canvas bounds
+//   9. PAGE_DENSITY_RULES (word count, bullet points, cards, etc.)
+//  10. Quiz multiple questions on same page
+//  11. Placeholder text detection
+//  12. Max blocks per page (STANDAR: 2 main blocks max)
 //
 // Usage:
 //   const result = validatePage(contract, pageSchema);
@@ -27,6 +43,55 @@ import { isFullPageBlockType } from '@/core/schema/capability-registry';
 
 // Re-export for internal use — same as isFullPageBlockType
 const isFullPageBlockTypeCheck = isFullPageBlockType;
+
+// ═══════════════════════════════════════════════════════════════════
+// PAGE DENSITY RULES — STANDAR UTAMA SILSE
+// ═══════════════════════════════════════════════════════════════════
+// These are the HARD LIMITS that enforce "1 page = 1 learning focus".
+// Violations are flagged as errors (not warnings) because they
+// produce broken/overwhelming output.
+//
+// Philosophy: "Jangan menumpuk. Pecah menjadi pengalaman belajar
+//              kecil yang stabil."
+// ═══════════════════════════════════════════════════════════════════
+
+export const PAGE_DENSITY_RULES = {
+  /** Maximum visible words per page before it feels overwhelming */
+  maxWords: 90,
+  /** Maximum bullet points per block before it becomes a wall of text */
+  maxBulletPoints: 5,
+  /** Maximum cards per nc-grid block */
+  maxCards: 4,
+  /** Maximum active colors per page (1 main + 1 accent + 1 feedback) */
+  maxActiveColors: 3,
+  /** Maximum main blocks per page — STANDAR: 1 block = 1 focus */
+  maxMainBlocks: 2,
+  /** Minimum body font size — anything below is unreadable on projection */
+  minBodyFontSize: 20,
+  /** Minimum cover title font size */
+  minCoverTitleFontSize: 48,
+  /** Minimum whitespace ratio (30% of page must be breathing room) */
+  minWhitespaceRatio: 0.30,
+  /** Quiz: maximum questions per page — STANDAR: 1 question = 1 page */
+  maxQuizQuestionsPerPage: 1,
+  /** TP: maximum items per page — split if more */
+  maxTPItemsPerPage: 4,
+} as const;
+
+/** Placeholder patterns that indicate unfinished content */
+const PLACEHOLDER_PATTERNS = [
+  /tuliskan\s+(di\s+)?sini/i,
+  /contoh\s+(di\s+)?sini/i,
+  /isi\s+(di\s+)?sini/i,
+  /tulis\s+pendapat/i,
+  /placeholder/i,
+  /lorem\s+ipsum/i,
+  /judul\s+materi/i,
+  /penjelasan\s+materi/i,
+  /poin\s+(pertama|kedua|ketiga)/i,
+  /tipe\s+blok/i,
+  /tulis\s+di\s+sini/i,
+];
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -254,6 +319,93 @@ export function validatePage(
     ));
   }
 
+  // ── Rule 11: Quiz multiple questions — STANDAR: 1 question per page ──
+  const kuisBlocks = blocks.filter(b => b.type === 'kuis');
+  for (const kuis of kuisBlocks) {
+    const k = kuis as { questions?: unknown[] };
+    const numQ = k.questions?.length || 0;
+    if (numQ > PAGE_DENSITY_RULES.maxQuizQuestionsPerPage) {
+      errors.push(issue(
+        'error',
+        'quiz-multi-question',
+        `Kuis block has ${numQ} questions, but STANDAR allows max ${PAGE_DENSITY_RULES.maxQuizQuestionsPerPage} per page. ` +
+        `Action: Split into ${numQ} separate pages, 1 question each.`,
+        pageType,
+        'kuis',
+        kuis.id,
+        `Questions: ${numQ}, max: ${PAGE_DENSITY_RULES.maxQuizQuestionsPerPage}`,
+      ));
+    }
+  }
+
+  // ── Rule 12: TP items exceeding STANDAR limit ──────────────
+  for (const tp of tpBlocks) {
+    const t = tp as { items?: unknown[] };
+    const numItems = t.items?.length || 0;
+    if (numItems > PAGE_DENSITY_RULES.maxTPItemsPerPage) {
+      errors.push(issue(
+        'error',
+        'tp-exceeds-density',
+        `TP block has ${numItems} items, but STANDAR allows max ${PAGE_DENSITY_RULES.maxTPItemsPerPage} per page. ` +
+        `Action: Split TP into 2 pages.`,
+        pageType,
+        'tp',
+        tp.id,
+        `Items: ${numItems}, STANDAR max: ${PAGE_DENSITY_RULES.maxTPItemsPerPage}`,
+      ));
+    }
+  }
+
+  // ── Rule 13: nc-grid cards exceeding STANDAR limit ─────────
+  const ncGridBlocks = blocks.filter(b => b.type === 'nc-grid');
+  for (const ncg of ncGridBlocks) {
+    const n = ncg as { cards?: unknown[] };
+    const numCards = n.cards?.length || 0;
+    if (numCards > PAGE_DENSITY_RULES.maxCards) {
+      warnings.push(issue(
+        'warning',
+        'nc-grid-exceeds-density',
+        `nc-grid has ${numCards} cards, but STANDAR recommends max ${PAGE_DENSITY_RULES.maxCards}. ` +
+        `Consider splitting into 2 pages or reducing cards.`,
+        pageType,
+        'nc-grid',
+        ncg.id,
+        `Cards: ${numCards}, recommended max: ${PAGE_DENSITY_RULES.maxCards}`,
+      ));
+    }
+  }
+
+  // ── Rule 14: Placeholder text detection — STANDAR: no placeholder ──
+  checkPlaceholderText(blocks, pageType, errors);
+
+  // ── Rule 15: Word count density — STANDAR: max 90 words per page ──
+  const totalWords = countPageWords(blocks);
+  if (totalWords > PAGE_DENSITY_RULES.maxWords) {
+    warnings.push(issue(
+      'warning',
+      'word-count-exceeds-density',
+      `Page has ~${totalWords} words, but STANDAR recommends max ${PAGE_DENSITY_RULES.maxWords}. ` +
+      `Consider splitting into multiple pages for better readability.`,
+      pageType,
+      undefined, undefined,
+      `Words: ${totalWords}, max: ${PAGE_DENSITY_RULES.maxWords}`,
+    ));
+  }
+
+  // ── Rule 16: Max main blocks per page — STANDAR: 2 blocks max ──
+  const mainBlocks = blocks.filter(b => !isFullPageBlockTypeCheck(b.type));
+  if (mainBlocks.length > PAGE_DENSITY_RULES.maxMainBlocks && pageType !== 'materi' && pageType !== 'dokumen') {
+    warnings.push(issue(
+      'warning',
+      'too-many-main-blocks',
+      `Page has ${mainBlocks.length} main blocks, but STANDAR recommends max ${PAGE_DENSITY_RULES.maxMainBlocks}. ` +
+      `"1 page = 1 learning focus" — consider splitting.`,
+      pageType,
+      undefined, undefined,
+      `Blocks: ${mainBlocks.length}, STANDAR max: ${PAGE_DENSITY_RULES.maxMainBlocks}`,
+    ));
+  }
+
   // ── Info: Density recommendation ────────────────────────────
   if (layout) {
     infos.push(issue(
@@ -466,4 +618,114 @@ export function formatValidationResult(result: ValidationResult): string {
 
   lines.push(`╚════════════════════════════════════════╝`);
   return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STANDAR UTAMA SILSE — Helper functions for density validation
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Count approximate words across all blocks on a page.
+ * Extracts text from common text fields: title, content, body, text, teks, isi, desc.
+ * This is an approximation — exact word count would require DOM rendering.
+ */
+function countPageWords(blocks: SchemaBlock[]): number {
+  let totalWords = 0;
+
+  function countInObject(obj: Record<string, unknown>): void {
+    for (const value of Object.values(obj)) {
+      if (typeof value === 'string') {
+        // Strip HTML tags for word count
+        const plainText = value.replace(/<[^>]*>/g, '');
+        const words = plainText.split(/\s+/).filter(w => w.length > 0);
+        totalWords += words.length;
+      } else if (Array.isArray(value)) {
+        for (const item of value) {
+          if (typeof item === 'object' && item !== null) {
+            countInObject(item as Record<string, unknown>);
+          }
+        }
+      } else if (typeof value === 'object' && value !== null) {
+        countInObject(value as Record<string, unknown>);
+      }
+    }
+  }
+
+  for (const block of blocks) {
+    // Skip internal properties that aren't user-visible text
+    const b = block as Record<string, unknown>;
+    const textFields: Record<string, unknown> = {};
+    const textKeys = ['title', 'subtitle', 'content', 'body', 'text', 'teks', 'isi', 'desc',
+                      'description', 'intro', 'hookQuestion', 'transition', 'tips',
+                      'closingStatement', 'selfCheck', 'petunjuk', 'label'];
+    for (const key of textKeys) {
+      if (key in b && b[key]) {
+        textFields[key] = b[key];
+      }
+    }
+    // Also count items, cards, questions sub-arrays
+    if ('items' in b && Array.isArray(b.items)) {
+      for (const item of b.items) {
+        if (typeof item === 'object' && item !== null) {
+          countInObject(item as Record<string, unknown>);
+        }
+      }
+    }
+    if ('cards' in b && Array.isArray(b.cards)) {
+      for (const card of b.cards) {
+        if (typeof card === 'object' && card !== null) {
+          countInObject(card as Record<string, unknown>);
+        }
+      }
+    }
+    if ('questions' in b && Array.isArray(b.questions)) {
+      for (const q of b.questions) {
+        if (typeof q === 'object' && q !== null) {
+          countInObject(q as Record<string, unknown>);
+        }
+      }
+    }
+    countInObject(textFields);
+  }
+
+  return totalWords;
+}
+
+/**
+ * Check for placeholder text patterns in block content.
+ * STANDAR: No placeholder text in ready templates.
+ * Placeholder text means the content wasn't actually written —
+ * it was generated by createDefaultSchemaForTemplateType() with
+ * generic filler text.
+ */
+function checkPlaceholderText(
+  blocks: SchemaBlock[],
+  pageType: string,
+  errors: ValidationIssue[],
+): void {
+  for (const block of blocks) {
+    const b = block as Record<string, unknown>;
+    const textFields = ['title', 'content', 'body', 'text', 'isi', 'subtitle', 'intro'];
+
+    for (const field of textFields) {
+      if (field in b && typeof b[field] === 'string') {
+        const value = b[field] as string;
+        for (const pattern of PLACEHOLDER_PATTERNS) {
+          if (pattern.test(value)) {
+            errors.push(issue(
+              'error',
+              'placeholder-text',
+              `Block '${block.type}' has placeholder text in '${field}': "${value.slice(0, 80)}..." ` +
+              `STANDAR: No placeholder text in ready templates. Replace with real content.`,
+              pageType,
+              block.type,
+              block.id,
+              `Pattern: ${pattern.source}`,
+            ));
+            break; // One match per field is enough
+          }
+        }
+      }
+    }
+  }
 }

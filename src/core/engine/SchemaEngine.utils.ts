@@ -64,6 +64,8 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
   templateData: Record<string, unknown>;
   /** Direct ScreenSchema — canonical source of truth (replaces templateData.schemaScreen path) */
   schema: ScreenSchema;
+  /** STANDAR: Contract ID for TemplateThemeContract enforcement */
+  contractId?: string;
 }> {
   const tokens = resolveTokens(schema.themeId);
 
@@ -91,6 +93,8 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       // FASE 3: Schema-first — set page.schema directly.
       // No need to store in templateData and promote on read.
       schema: stabilizedScreen,
+      // STANDAR: Golden contract enforcement on every page
+      contractId: 'golden-pertemuan',
     };
   });
 }

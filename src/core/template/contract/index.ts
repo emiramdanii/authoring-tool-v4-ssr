@@ -31,4 +31,5 @@ export {
   validatePage,
   validateProject,
   formatValidationResult,
+  PAGE_DENSITY_RULES,
 } from './TemplateValidator';

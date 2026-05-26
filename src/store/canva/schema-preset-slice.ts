@@ -46,6 +46,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       // Wrap into full CanvaPage objects (schemaToCanvaPages returns partial)
       // FASE 3: Set page.schema directly — no templateData.schemaScreen promotion needed
       // Schema is the single source of truth. templateData is kept for legacy export compat.
+      // STANDAR: contractId from schemaToCanvaPages for golden contract enforcement
       const pages: CanvaPage[] = rawPages.map((raw, i) => ({
         id: raw.id || generatePageId(),
         label: raw.label,
@@ -60,6 +61,8 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         // Schema-first: raw.schema is the canonical ScreenSchema from schemaToCanvaPages
         pageMode: 'schema' as const,
         schema: raw.schema,
+        // STANDAR: Contract ID for TemplateThemeContract enforcement
+        contractId: (raw as { contractId?: string }).contractId || 'golden-pertemuan',
       }));
 
       // Cover pages should hide the top navbar
@@ -123,6 +126,8 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         // Schema-first: raw.schema is the canonical ScreenSchema from schemaToCanvaPages
         pageMode: 'schema' as const,
         schema: raw.schema,
+        // STANDAR: Contract ID for TemplateThemeContract enforcement
+        contractId: (raw as { contractId?: string }).contractId || 'golden-pertemuan',
       }));
 
       // Cover pages should show navbar + progress

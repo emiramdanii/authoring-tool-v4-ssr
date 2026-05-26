@@ -190,25 +190,25 @@ export const GOLDEN_PERTEMUAN_CONTRACT: TemplateThemeContract = {
     accent: '#fbbf24',
     accentBg: 'rgba(251,191,36,0.12)',
     accentBorder: 'rgba(251,191,36,0.25)',
-    maxAccents: 4,
+    maxAccents: 3,             // STANDAR: Max 3 active colors per page (1 main + 1 accent + 1 feedback) — was 4
     accentTokens: ['y', 'c', 'g', 'p'],
   },
 
   typography: {
-    heroSize: 48,
-    titleSize: 34,
-    headingSize: 24,
-    bodyLgSize: 20,
-    bodySize: 18,
-    captionSize: 16,
-    microSize: 14,
+    heroSize: 48,          // STANDAR: Cover title minimum 48px
+    titleSize: 36,          // STANDAR: Page title minimum 36px
+    headingSize: 26,        // STANDAR: Card title minimum 26px
+    bodyLgSize: 22,         // STANDAR: Body large 22px
+    bodySize: 20,           // STANDAR: Body minimum 20px — was 18, upgraded
+    captionSize: 16,        // STANDAR: Caption minimum 16px
+    microSize: 14,          // STANDAR: Micro/badge minimum 14px
     displayFont: "'Poppins', var(--font-fredoka), 'Fredoka', cursive",
     bodyFont: "'Open Sans', var(--font-nunito), 'Nunito', sans-serif",
-    minFontSize: 14,
+    minFontSize: 16,        // STANDAR: Absolute minimum — anything below is flagged as error
   },
 
   spacing: {
-    pagePadding: 20,
+    pagePadding: 24,           // STANDAR: increased for better whitespace ratio (0.30+)
     cardPadding: 20,
     blockGap: 24,
     itemGap: 12,
@@ -514,6 +514,9 @@ export function resolveContractStyle(
   // Apply variant override (changes the primary accent color family)
   const variantColors = contract.variantOverrides?.[variant] || {};
 
+  // Detect contract type — must be before primaryAccentToken resolution
+  const isModernEducator = contract.id === 'modern-educator';
+
   // Resolve which token is the primary accent for this page type
   const primaryAccentToken = pageAccent.accentToken || (isModernEducator ? 'e' : 'y');
 
@@ -536,7 +539,7 @@ export function resolveContractStyle(
   // default which could be a different shade.
   const accentTokenMap: Record<string, string> = {};
   // Use the Modern Educator palette if that contract is active
-  const isModernEducator = contract.id === 'modern-educator';
+  // (isModernEducator already declared above)
   const palette = isModernEducator ? MODERN_EDUCATOR_ACCENT_PALETTE : CONTRACT_ACCENT_PALETTE;
   for (const [token, color] of Object.entries(palette)) {
     accentTokenMap[token] = color;
