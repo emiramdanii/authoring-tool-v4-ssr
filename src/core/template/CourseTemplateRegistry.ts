@@ -23,8 +23,20 @@ import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { TEMPLATE_TO_SCENE } from '@/core/edu/education-scene-types';
 
-// LEGACY: Frozen — not registered in active pipeline. Available for future reference.
-import { LEGACY_COURSE_TEMPLATES } from './legacy/course-templates-legacy';
+// ── Source of Truth Contracts (promoted from dead docs → active engine) ──
+export { GOLDEN_FLOW, GOLDEN_FLOW_META, getGoldenFlowIntensityCurve, validateGoldenFlow } from './golden/interactive-lesson';
+export type { GoldenFlowScene } from './golden/interactive-lesson';
+export {
+  VISUAL_DNA_TYPOGRAPHY,
+  VISUAL_DNA_COLORS,
+  VISUAL_DNA_LAYOUT,
+  VISUAL_DNA_CARD,
+  VISUAL_DNA_NAVIGATION,
+  VISUAL_DNA_MOTION,
+  VISUAL_DNA_RHYTHM,
+  VISUAL_DNA_INTERACTION,
+  VISUAL_DNA_QUICK_REF,
+} from '@/core/visual-dna/visual-dna';
 
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
@@ -56,6 +68,8 @@ export interface CourseTemplate {
   id: string;
   /** Display name */
   name: string;
+  /** Subtitle (e.g., 'PPKn Kelas 7 - Semester 1') */
+  subtitle: string;
   /** Short description */
   description: string;
   /** Subject (e.g., 'PPKn', 'IPA', 'MTK') — '*' for universal */
@@ -79,13 +93,79 @@ export interface CourseTemplate {
    * When set, createProjectFromTemplate() will load this preset first
    * (Level 1 pipeline), producing rich, pedagogically-structured content
    * instead of empty structural shells.
-   *
-   * 3-Level Pipeline:
-   *   Level 1: presetId → handcrafted content (⭐⭐⭐⭐⭐)
-   *   Level 2: SUBJECT_MOCK_DATA → generated content (⭐⭐⭐)
-   *   Level 3: Empty shell → structural fallback (⭐)
    */
   presetId?: string;
+  // ── UI-facing fields (for template gallery / marketplace) ──
+  /** Tailwind color key for card styling (e.g., 'amber', 'emerald', 'sky') */
+  color: string;
+  /** Learning flow pattern */
+  pattern: TemplatePattern;
+  /** Search tags */
+  tags: string[];
+}
+
+// ── Template Pattern — Learning flow archetype ─────────────────
+
+export type TemplatePattern = 'standar' | 'interaktif' | 'eksperimen' | 'mini';
+
+export const TEMPLATE_PATTERNS: Record<TemplatePattern, {
+  id: TemplatePattern;
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
+}> = {
+  standar: {
+    id: 'standar',
+    label: 'Standar',
+    description: 'Alur lengkap pembelajaran: pembuka, materi, latihan, penutup',
+    icon: '📋',
+    color: 'sky',
+  },
+  interaktif: {
+    id: 'interaktif',
+    label: 'Interaktif',
+    description: 'Banyak aktivitas interaktif: skenario, game, diskusi',
+    icon: '🎮',
+    color: 'violet',
+  },
+  eksperimen: {
+    id: 'eksperimen',
+    label: 'Eksperimen',
+    description: 'Berbasis praktikum dan penyelidikan ilmiah',
+    icon: '🔬',
+    color: 'emerald',
+  },
+  mini: {
+    id: 'mini',
+    label: 'Mini',
+    description: 'Pertemuan singkat: materi inti + kuis cepat',
+    icon: '⚡',
+    color: 'amber',
+  },
+};
+
+// ── Template Customization ──────────────────────────────────────
+
+export interface TemplateCustomization {
+  /** Which pages to include (by index in template.scenes) */
+  enabledPages: boolean[];
+  /** Number of quiz questions */
+  jumlahKuis: number;
+  /** Variant preference */
+  variant: 'A' | 'B' | 'C';
+  /** Teacher name to inject into cover */
+  guru?: string;
+  /** School name to inject into cover */
+  sekolah?: string;
+}
+
+export function getDefaultCustomization(template: CourseTemplate): TemplateCustomization {
+  return {
+    enabledPages: template.scenes.map(() => true),
+    jumlahKuis: 5,
+    variant: 'A',
+  };
 }
 
 // ── Metadata for createProjectFromTemplate ─────────────────────
@@ -162,12 +242,16 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-ppkn-vii',
     name: 'Hakikat Norma — Interactive Lesson',
+    subtitle: 'PPKn Kelas 7 - Semester 1',
     description: 'Alur emas PPKn VII: Cover → Petunjuk → Tujuan → Apersepsi (4 Skenario) → Diskusi → Materi 1 (Pengertian) → Materi 2 (Fungsi) → Game → Hasil → Refleksi → Penutup',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
     theme: 'hakikat-norma',
     presetId: 'hakikat-norma',
+    color: 'amber',
+    pattern: 'interaktif',
+    tags: ['norma', 'aturan', 'sanksi', 'masyarakat', 'hukum'],
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
@@ -190,12 +274,16 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-ppkn-vii-macam-norma',
     name: 'Macam-Macam Norma — Interactive Lesson',
+    subtitle: 'PPKn Kelas 7 - Semester 1',
     description: 'Alur emas PPKn VII Pertemuan 2: Cover → Petunjuk → CP/TP/ATP → Review → Eksplorasi 4 Norma → Game Sortir → Hubungan Antarnorma → Game Roda → Refleksi → Penutup',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
     theme: 'macam-norma',
     presetId: 'macam-norma',
+    color: 'amber',
+    pattern: 'interaktif',
+    tags: ['norma', 'macam norma', 'agama', 'kesusilaan', 'kesopanan', 'hukum'],
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
@@ -216,11 +304,15 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'template-kosong',
     name: 'Template Kosong',
+    subtitle: 'Semua Mapel - Semua Kelas',
     description: 'Mulai dari nol dengan Cover dan Penutup saja. Tambahkan halaman sesuai kebutuhan.',
     subject: '*',
     grade: '*',
     semester: '*',
     theme: 'golden-presentation',
+    color: 'sky',
+    pattern: 'mini',
+    tags: ['kosong', 'blank', 'universal'],
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
@@ -473,6 +565,30 @@ export function resolveSceneType(spec: SceneTemplateSpec): SceneType {
   const mapped = TEMPLATE_TO_SCENE[spec.templateType];
   if (mapped) return mapped;
   return 'concept'; // default fallback
+}
+
+/**
+ * Get unique subject list from all templates.
+ */
+export function getSubjectList(): string[] {
+  const subjects = new Set<string>();
+  for (const t of getAllCourseTemplates()) {
+    if (t.subject !== '*') subjects.add(t.subject);
+  }
+  return Array.from(subjects);
+}
+
+/**
+ * Get page preview info for a template — derived from scenes.
+ */
+export function getPagePreview(templateId: string): Array<{ type: PageTemplateType; title: string; description: string }> {
+  const template = _registry.get(templateId);
+  if (!template) return [];
+  return template.scenes.map(scene => ({
+    type: scene.templateType,
+    title: scene.label,
+    description: scene.suggestedBlocks.join(', '),
+  }));
 }
 
 /**

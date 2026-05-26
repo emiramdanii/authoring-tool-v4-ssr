@@ -53,3 +53,57 @@ Stage Summary:
 - Critical type errors fixed — ScreenSchema now supports scene-aware rendering
 - Tab management now type-safe
 - Build passes cleanly
+---
+Task ID: 1
+Agent: Main Agent (Super Z)
+Task: PHASE 1 — Dead System Purge
+
+Work Log:
+- Audited entire codebase: 672 files, 163K lines across src/
+- Identified 7 redundancy categories via deep audit
+- Deleted zero-import dead files:
+  - src/core/engine/SceneLayoutEngine.ts (old class-based version, replaced by scene/)
+  - src/core/renderer/EduRenderingContext.tsx (old React Context, replaced by edu/)
+- Removed dead import: LEGACY_COURSE_TEMPLATES from CourseTemplateRegistry.ts
+- PROMOTED visual-dna.ts and golden/interactive-lesson.ts from dead docs → active engine contracts
+  - Added re-exports from CourseTemplateRegistry.ts (single entry point)
+  - visual-dna.ts: 8 design token modules (typography, colors, layout, card, navigation, motion, rhythm, interaction)
+  - golden/interactive-lesson.ts: GOLDEN_FLOW, GoldenFlowScene, GOLDEN_FLOW_META, validation helpers
+- Build verified: `next build` passes cleanly
+
+Stage Summary:
+- -2 dead files, -1 dead import, +2 promoted contracts
+- CourseTemplateRegistry is now the single re-export point for Visual DNA + Golden Flow
+- legacy/course-templates-legacy.ts fully disconnected (only referenced in comments)
+- Phase 1 COMPLETE
+
+---
+Task ID: 2 (NEXT)
+Task: PHASE 2 — Source of Truth Lockdown
+
+Status: PENDING
+- Migrate 5 UI components off template-gallery.ts
+- Migrate 2 UI components off marketplace-templates.ts
+- Unify edu/ vs themes/ token systems
+- Make CourseTemplateRegistry the ONE AND ONLY template source
+---
+Task ID: 2
+Agent: Main Agent (Super Z)
+Task: PHASE 2 — Source of Truth Lockdown (partial: extend CourseTemplate)
+
+Work Log:
+- Extended CourseTemplate interface with UI-facing fields:
+  - `subtitle: string` — for gallery card subtitle
+  - `color: string` — Tailwind color key for card styling
+  - `pattern: TemplatePattern` — learning flow archetype
+  - `tags: string[]` — search tags
+- Added TemplatePattern type and TEMPLATE_PATTERNS constant to CourseTemplateRegistry
+- Added TemplateCustomization interface and getDefaultCustomization() function
+- Added getSubjectList() and getPagePreview() helper functions
+- Updated all 3 active templates with new fields (subtitle, color, pattern, tags)
+- Build verified: `next build` passes cleanly
+
+Stage Summary:
+- CourseTemplate now has all fields needed to replace LessonTemplate in UI
+- TemplatePattern, TEMPLATE_PATTERNS, TemplateCustomization moved from template-gallery to CourseTemplateRegistry
+- Next step: migrate 5 UI components from template-gallery/marketplace imports to CourseTemplateRegistry imports
