@@ -297,10 +297,11 @@ export function resolveEduTypographyCompact(
   const resolved = resolveEduTypography(key, mode);
   if (isCompact) {
     const spec = EDU_TYPOGRAPHY[key];
-    // Compact mode: use minPx but never below it
+    // Compact mode: moderate reduction (0.85x) but never below minPx
+    const compactPx = Math.max(Math.round(spec.px * 0.85), spec.minPx);
     return {
       ...resolved,
-      fontSize: `${spec.minPx}px`,
+      fontSize: `${compactPx}px`,
     };
   }
   return resolved;
@@ -358,9 +359,13 @@ export function resolveEduTypographySceneCompact(
     const base = EDU_TYPOGRAPHY[key];
     const override = SCENE_TYPOGRAPHY_OVERRIDES[sceneType][key];
     const minPx = override?.minPx ?? base.minPx;
+    const overridePx = override?.px ?? base.px;
+    // Moderate reduction for compact mode — 0.85x but never below minPx
+    // This keeps text readable even when canvas is zoomed out
+    const compactPx = Math.max(Math.round(overridePx * 0.85), minPx);
     return {
       ...resolved,
-      fontSize: `${minPx}px`,
+      fontSize: `${compactPx}px`,
     };
   }
   return resolved;

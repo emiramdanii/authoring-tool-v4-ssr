@@ -50,6 +50,17 @@ export default function CanvasEmptyState() {
 
   const cards: ActionCard[] = [
     {
+      id: 'template',
+      title: isSederhana ? 'Template Siap Pakai' : 'Dari Template',
+      description: 'Pilih template PPKn dan mapel lain, langsung pakai',
+      icon: FileText,
+      colorClass: 'text-app-accent',
+      iconBgClass: 'bg-app-accent/15',
+      borderClass: 'border-app-accent/30',
+      hoverBorderClass: 'hover:border-app-accent/50',
+      action: handleTemplate,
+    },
+    {
       id: 'autogen',
       title: isSederhana ? 'Buat dengan AI' : 'Auto-Generate',
       description: 'Tempel materi, AI buatkan untuk Anda',
@@ -59,17 +70,6 @@ export default function CanvasEmptyState() {
       borderClass: 'border-purple-500/20',
       hoverBorderClass: 'hover:border-purple-500/40',
       action: handleAutoGenerate,
-    },
-    {
-      id: 'template',
-      title: isSederhana ? 'Template Siap Pakai' : 'Dari Template',
-      description: 'Pilih template siap pakai',
-      icon: FileText,
-      colorClass: 'text-app-accent',
-      iconBgClass: 'bg-app-accent/15',
-      borderClass: 'border-app-accent/20',
-      hoverBorderClass: 'hover:border-app-accent/40',
-      action: handleTemplate,
     },
     {
       id: 'blank',
@@ -108,13 +108,19 @@ export default function CanvasEmptyState() {
         <div className="flex flex-col sm:flex-row gap-4 mb-8 w-full max-w-xl">
           {cards.map((card, i) => {
             const Icon = card.icon;
+            const isRecommended = card.id === 'template';
             return (
               <button
                 key={card.id}
                 onClick={card.action}
-                className={`anim-enter-slide-up flex-1 min-w-0 p-5 rounded-xl border bg-app-elevated/30 text-left transition-[transform,background-color,border-color] hover:-translate-y-0.5 active:scale-[0.98] focus-ring ${card.borderClass} ${card.hoverBorderClass}`}
+                className={`anim-enter-slide-up relative flex-1 min-w-0 p-5 rounded-xl border bg-app-elevated/30 text-left transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 active:scale-[0.98] focus-ring ${card.borderClass} ${card.hoverBorderClass} ${isRecommended ? 'shadow-[0_0_24px_-6px_rgba(245,158,11,0.2)]' : ''}`}
                 style={{ animationDelay: `${i * 0.08}s`, animationFillMode: 'both' }}
               >
+                {isRecommended && (
+                  <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/90 text-white tracking-wide shadow-sm">
+                    ⭐ Direkomendasikan
+                  </span>
+                )}
                 <div className={`w-10 h-10 rounded-lg ${card.iconBgClass} flex items-center justify-center mb-3`}>
                   <Icon size={20} className={card.colorClass} />
                 </div>
@@ -134,8 +140,8 @@ export default function CanvasEmptyState() {
           <Lightbulb size={14} className="text-amber-400 flex-shrink-0" />
           <span className="text-xs text-app-secondary">
             {isSederhana
-              ? 'Tip: Buat dengan AI paling cepat — tempel materi, edit sedikit, selesai!'
-              : 'Tip: Auto-Generate paling cepat — tempel materi, edit sedikit, selesai!'
+              ? 'Tip: Template Siap Pakai paling mudah — pilih PPKn, langsung jadi!'
+              : 'Tip: Template Siap Pakai paling mudah — pilih mata pelajaran, konten lengkap langsung jadi!'
             }
           </span>
         </FadeIn>

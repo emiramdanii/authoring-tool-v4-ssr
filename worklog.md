@@ -1939,3 +1939,36 @@ Stage Summary:
 - PPKn coverage: All 9 handcrafted PPKn presets now have matching templates with presetIds
 - Quiz quality: No more "Pilihan 1,2,3" — distractors come from actual content data
 - Store: Reset produces empty state (CanvasEmptyState) instead of blank page
+
+---
+Task ID: 1
+Agent: main-dev
+Task: Fix readability and pipeline connection (SILSE v2.1 polish)
+
+Work Log:
+- Verified pipeline Level 1 works for hakikat-norma preset
+  - Template `modul-ppkn-vii` has `presetId: 'hakikat-norma'` (CourseTemplateRegistry.ts line 157)
+  - `createProjectFromTemplate()` checks `template.presetId` → calls `loadPreset(template.presetId)` (lines 784-838)
+  - `loadPreset('hakikat-norma')` resolves to `import('@/presets/ppkn/hakikat-norma-schema').then(m => m.HAKIKAT_NORMA_LESSON)` (SchemaEngine.utils.ts line 26)
+  - `hakikat-norma-schema.ts` exports `HAKIKAT_NORMA_LESSON` matching the import — no mismatch found
+- Fixed compact mode typography reduction in education-typography.ts
+  - `resolveEduTypographyCompact()`: was dropping directly to `minPx`, now uses `Math.max(Math.round(spec.px * 0.85), spec.minPx)` — 0.85x scaling with minPx floor
+  - `resolveEduTypographySceneCompact()`: was dropping directly to `minPx`, now uses `Math.max(Math.round(overridePx * 0.85), minPx)` — same 0.85x approach with scene overrides
+  - This keeps text readable in zoomed-out canvas mode while still fitting content
+- Improved CanvasEmptyState UX with recommendation badge
+  - Reordered cards: Template Siap Pakai first (was second)
+  - Added "⭐ Direkomendasikan" badge on template card (absolute positioned, amber pill)
+  - Added subtle amber glow (box-shadow) to template card for visual prominence
+  - Updated template description from "Pilih template siap pakai" to "Pilih template PPKn dan mapel lain, langsung pakai"
+  - Updated tip text to recommend Template path instead of Auto-Generate
+- Verified Level 2 generators produce meaningful content
+  - Generators (genMateriSchema, genKuisSchema, genDiskusiSchema, etc.) use ParseResult data (definitions, enumerations, functions, causes)
+  - Added `'modul-ppkn-vii'` entry to SUBJECT_MOCK_DATA with rich hakikat-norma content as Level 2 fallback
+  - This ensures Level 2 produces meaningful hakikat-norma content if Level 1 preset loading fails
+  - Mock data includes: 3 definitions (Norma, Zoon Politikon, Fungsi norma), 3 enumerations (Sifat norma, Fungsi norma, Kebutuhan manusia), 5 functions, 2 cause-effect pairs
+
+Stage Summary:
+- Pipeline Level 1 confirmed working: presetId → loadPreset → schemaToCanvaPages — no mismatches
+- Readability fix: compact mode now uses 0.85x scaling instead of dropping to minPx — text stays readable
+- Canvas empty state improved: template card first, recommendation badge, glow highlight, updated tip
+- Level 2 fallback strengthened: modul-ppkn-vii mock data added to SUBJECT_MOCK_DATA

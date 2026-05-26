@@ -372,6 +372,38 @@ const SUBJECT_MOCK_DATA: Record<string, MockSubjectData> = {
     ],
   },
 
+  // ── PPKn VII: Hakikat Norma (Level 2 fallback for modul-ppkn-vii) ──
+  'modul-ppkn-vii': {
+    sentences: [
+      'Norma adalah aturan atau ketentuan yang mengikat warga suatu kelompok masyarakat, dipakai sebagai panduan, tatanan, dan pengendali tingkah laku.',
+      'Manusia disebut Zoon Politikon karena selalu hidup berkelompok dan membutuhkan orang lain untuk memenuhi kebutuhannya.',
+      'Pelanggaran terhadap norma dapat menimbulkan konflik dan ketidakharmonisan dalam masyarakat.',
+    ],
+    words: ['norma', 'mengikat', 'panduan', 'tatanan', 'pengendali', 'ketertiban', 'keadilan', 'solidaritas'],
+    topWords: ['norma', 'mengikat', 'panduan', 'ketertiban', 'keadilan'],
+    definitions: [
+      { term: 'Norma', meaning: 'aturan atau ketentuan yang mengikat warga masyarakat, dipakai sebagai panduan, tatanan, dan pengendali tingkah laku yang sesuai dan dapat diterima masyarakat' },
+      { term: 'Zoon Politikon', meaning: 'sebutan Aristoteles untuk manusia sebagai makhluk sosial yang selalu hidup berkelompok dan membutuhkan orang lain' },
+      { term: 'Fungsi norma', meaning: 'peran norma sebagai pedoman tingkah laku, pencipta ketertiban, pelindung hak, penguat solidaritas, dan penegak keadilan' },
+    ],
+    enumerations: [
+      { subject: 'Sifat norma', items: ['Mengikat', 'Panduan', 'Tatanan', 'Pengendali'] },
+      { subject: 'Fungsi norma dalam masyarakat', items: ['Pedoman tingkah laku', 'Menciptakan ketertiban', 'Melindungi hak warga', 'Memperkuat solidaritas', 'Mewujudkan keadilan'] },
+      { subject: 'Kebutuhan manusia sebagai makhluk sosial', items: ['Kebutuhan fisik', 'Kebutuhan emosional', 'Kebutuhan pengetahuan', 'Kebutuhan keamanan'] },
+    ],
+    functions: [
+      { subject: 'Norma sebagai pedoman', desc: 'memberi petunjuk tentang cara bertindak yang baik dan benar dalam pergaulan sehari-hari' },
+      { subject: 'Norma sebagai ketertiban', desc: 'mencegah kekacauan dan konflik sehingga kehidupan berjalan teratur' },
+      { subject: 'Norma sebagai perlindungan hak', desc: 'menjamin setiap anggota masyarakat mendapatkan haknya dan diperlakukan secara adil' },
+      { subject: 'Norma sebagai solidaritas', desc: 'mempererat rasa kebersamaan, persatuan, dan kepedulian antaranggota masyarakat' },
+      { subject: 'Norma sebagai keadilan', desc: 'memastikan setiap orang diperlakukan setara tanpa diskriminasi' },
+    ],
+    causes: [
+      { cause: 'Pelanggaran norma', effect: 'konflik dan ketidakharmonisan dalam masyarakat' },
+      { cause: 'Ketaatan terhadap norma', effect: 'kehidupan yang tertib, adil, aman, dan harmonis' },
+    ],
+  },
+
   // ── IPA: Tata Surya (Kelas 9) ──
   'ipa-tata-surya': {
     sentences: [
