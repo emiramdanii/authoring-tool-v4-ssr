@@ -106,8 +106,8 @@ export function BlockRenderer({
             color: element.textColor || COLORS.textWhite,
             textAlign: element.textAlign || 'left',
             textShadow: '0 2px 8px rgba(0,0,0,.5)',
-            lineHeight: 1.4,
-            padding: 8,
+            lineHeight: 1.65,
+            padding: 16,
           }}
         >
           {interactive ? (element.text || '') : (element.text || 'Ketik teks…')}
@@ -134,8 +134,8 @@ export function BlockRenderer({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-orange-500/10 rounded-lg border border-orange-500/20">
             <span className="text-2xl">🖼️</span>
-            <span className="text-[9px] font-bold text-orange-300 mt-1">Gambar</span>
-            <span className="text-[7px] text-orange-400/60">Pilih gambar di panel properti</span>
+            <span className="text-[11px] font-bold text-orange-300 mt-1">Gambar</span>
+            <span className="text-[10px] text-orange-400/70">Pilih gambar di panel properti</span>
           </div>
         )
       )}

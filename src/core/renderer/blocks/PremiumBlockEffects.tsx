@@ -312,7 +312,7 @@ export const PremiumBadge = React.memo(function PremiumBadge({
         gap: '4px',
         padding: isCompact ? '2px 8px' : '3px 12px',
         borderRadius: '9999px',
-        fontSize: isCompact ? '9px' : '10px',
+        fontSize: isCompact ? '11px' : '12px',
         fontWeight: 800,
         letterSpacing: '0.05em',
         whiteSpace: 'nowrap',

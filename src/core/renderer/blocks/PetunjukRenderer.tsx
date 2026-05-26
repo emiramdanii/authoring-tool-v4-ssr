@@ -265,7 +265,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                   <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
                     style={{
                       background: tokens.color!(itemColor),
-                      fontSize: '8px',
+                      fontSize: '11px',
                       fontWeight: 900,
                       color: tokens.color('bg'),
                       border: '1.5px solid ' + tokens.color('bg'),

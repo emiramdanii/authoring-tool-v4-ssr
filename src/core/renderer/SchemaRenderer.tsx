@@ -529,7 +529,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {screen.sectionLabel && !hasCoverBlock && (
         <div style={{ position: 'absolute', left: safeArea.left, top: safeArea.top, zIndex: 2 }}>
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-extrabold text-[10px] uppercase"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-extrabold text-[11px] uppercase"
             style={{
               background: tokens.colorAlpha(screen.sectionColor || 'y', 0.15),
               color: tokens.color(screen.sectionColor || 'y'),
@@ -598,7 +598,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
             {/* Compression indicator (canvas mode only) */}
             {resolved.compression && isCompact && (
               <div
-                className="absolute -top-0.5 left-1 text-[7px] font-bold px-1.5 py-0.5 rounded-b-md flex items-center gap-0.5 shadow-sm"
+                className="absolute -top-0.5 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-b-md flex items-center gap-0.5 shadow-sm"
                 style={{ zIndex: 100, background: tokens.colorAlpha('y', 0.85), color: tokens.color('text') }}
               >
                 {resolved.compression.strategy === 'accordion' ? '⊞' : resolved.compression.strategy === 'reveal-set' ? '⋯' : resolved.compression.strategy === 'step-reveal' ? '▸' : '▾'}
@@ -653,7 +653,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {/* ══ GHOST BADGE — follows cursor during canvas drag ═════ */}
       {ghostInfo && isCompact && (
         <div
-          className="absolute pointer-events-none px-2 py-0.5 rounded bg-app-accent/90 text-black text-[9px] font-bold whitespace-nowrap shadow-md z-[1000]"
+          className="absolute pointer-events-none px-2 py-0.5 rounded bg-app-accent/90 text-black text-[11px] font-bold whitespace-nowrap shadow-md z-[1000]"
           style={{
             left: ghostInfo.x,
             top: ghostInfo.y,
@@ -678,7 +678,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}
       {scenePlan.totalScenes > 1 && isCompact && (
         <div
-          className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/80 text-black z-50"
+          className="absolute top-1 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/80 text-black z-50"
         >
           Scene {sceneIndex + 1}/{scenePlan.totalScenes}
         </div>
@@ -763,7 +763,7 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   // MUST be after hooks (Rules of Hooks compliance).
   if (depth > MAX_NESTING_DEPTH) {
     return (
-      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 text-[10px] font-bold">
+      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 text-[11px] font-bold">
         ⚠ Kedalaman bersarang melebihi batas ({MAX_NESTING_DEPTH}) — blok "{block.type}" tidak dirender
       </div>
     );

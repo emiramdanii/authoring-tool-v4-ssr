@@ -271,17 +271,15 @@ function KuisVariantRingkas({
                 disabled={isAnswered}
                 onClick={() => onAnswer(current, i)}
                 aria-pressed={answers[current] === i}
-                className={`px-3 py-1.5 rounded-full font-bold ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-1' : ''}`}
+                className={`px-3 py-1.5 rounded-full font-bold ${tokens.iosQuizOptionTw(!isAnswered)} ${isCompact ? 'canvas-truncate-2' : ''}`}
                 style={{
                   ...edu.body(), fontWeight: 700,
                   background: bg,
                   border: `1px solid ${bdr}`,
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis',
                   maxWidth: '100%',
                   color: edu.textColor(),
                   cursor: isAnswered ? 'default' : 'pointer',
-                  whiteSpace: 'nowrap',
                   ...edu.transition('background-color, border-color, transform', 'standard'),
                 }}
               >

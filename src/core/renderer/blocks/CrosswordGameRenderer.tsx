@@ -656,7 +656,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  style={{
  width: cellSize,
  height: cellSize,
- fontSize: isCompact ? '7px' : '9px',
+ fontSize: isCompact ? '10px' : '11px',
  background: bg,
  border: `1px solid ${bdr}`,
  color: textColor,

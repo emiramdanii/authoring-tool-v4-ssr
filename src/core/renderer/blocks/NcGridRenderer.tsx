@@ -341,7 +341,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
           background: tokens.colorAlpha(card.color, 0.2),
         }}
       >
-        <span style={{ fontSize: isCompact ? '12px' : '14px' }}>{card.icon}</span>
+        <span style={{ fontSize: isCompact ? '14px' : '18px' }}>{card.icon}</span>
       </div>
 
       {/* Title (always visible) */}

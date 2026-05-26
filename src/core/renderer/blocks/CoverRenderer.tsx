@@ -389,7 +389,7 @@ function CoverVariantC({
                   maxWidth: '100%',
                   ...edu.entrance(i, 'slideUp'),
                 }}>
-                {b.icon && <span className="flex-shrink-0" style={{ fontSize: '10px' }}>{b.icon}</span>} <span className="min-w-0">{b.text}</span>
+                {b.icon && <span className="flex-shrink-0" style={{ fontSize: '12px' }}>{b.icon}</span>} <span className="min-w-0">{b.text}</span>
               </span>
             ))}
           </div>

@@ -29,7 +29,13 @@ import dynamic from 'next/dynamic';
 const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
 
 // Schema-driven presets use this path for beautiful rendering
-const SCHEMA_DRIVEN_PRESETS = new Set(['hakikat-norma', 'macam-norma']);
+const SCHEMA_DRIVEN_PRESETS = new Set([
+  'hakikat-norma', 'macam-norma', 'perilaku-patuh', 'nilai-pancasila',
+  'bhinneka-tunggal-ika', 'ham-hak-kewajiban', 'demokrasi-pancasila',
+  'globalisasi', 'misi-penjelajah-pancasila',
+  'sistem-pernapasan', 'persamaan-linear',
+  'gerak-dasar-lokomotor', 'permainan-bola-besar', 'kebugaran-jasmani',
+]);
 
 // ── Adaptive "Langkah Selanjutnya" logic ─────────────────────────
 interface NextStep {
@@ -109,6 +115,18 @@ export default function Dashboard() {
   const presetLabels: Record<string, string> = {
     'hakikat-norma': 'Bab 3 P1: Hakikat Norma',
     'macam-norma': 'Bab 3 P2: Macam Norma',
+    'perilaku-patuh': 'Bab 3 P3: Perilaku Patuh',
+    'nilai-pancasila': 'Bab 3 P4: Nilai Pancasila',
+    'bhinneka-tunggal-ika': 'Bab 3 P5: Bhinneka Tunggal Ika',
+    'ham-hak-kewajiban': 'Bab 3 P6: HAM & Kewajiban',
+    'demokrasi-pancasila': 'Bab 3 P7: Demokrasi Pancasila',
+    'globalisasi': 'Bab 3 P8: Globalisasi',
+    'misi-penjelajah-pancasila': 'Bab 3 P9: Misi Penjelajah',
+    'sistem-pernapasan': 'IPA: Sistem Pernapasan',
+    'persamaan-linear': 'MTK: Persamaan Linear',
+    'gerak-dasar-lokomotor': 'PJOK: Gerak Dasar Lokomotor',
+    'permainan-bola-besar': 'PJOK: Permainan Bola Besar',
+    'kebugaran-jasmani': 'PJOK: Kebugaran Jasmani',
   };
 
   // ── Export JSON ────────────────────────────────────────────────
@@ -165,9 +183,25 @@ export default function Dashboard() {
 
   // ── Template data with lucide icons ────────────────────────────
   const templates = [
+    // PPKn
     { key: 'hakikat-norma', icon: Users, label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'amber' },
     { key: 'macam-norma', icon: ScrollText, label: 'Macam Norma', sub: 'PPKn VII · Bab 3 P2', color: 'cyan' },
-    { key: 'perilaku-patuhan', icon: Scale, label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
+    { key: 'perilaku-patuh', icon: Scale, label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
+    { key: 'nilai-pancasila', icon: BookOpen, label: 'Nilai Pancasila', sub: 'PPKn VII · Bab 3 P4', color: 'amber' },
+    { key: 'bhinneka-tunggal-ika', icon: Users, label: 'Bhinneka Tunggal Ika', sub: 'PPKn VII · Bab 3 P5', color: 'cyan' },
+    { key: 'ham-hak-kewajiban', icon: Scale, label: 'HAM & Kewajiban', sub: 'PPKn VII · Bab 3 P6', color: 'emerald' },
+    { key: 'demokrasi-pancasila', icon: ScrollText, label: 'Demokrasi Pancasila', sub: 'PPKn VII · Bab 3 P7', color: 'amber' },
+    { key: 'globalisasi', icon: GraduationCap, label: 'Globalisasi', sub: 'PPKn VII · Bab 3 P8', color: 'cyan' },
+    { key: 'misi-penjelajah-pancasila', icon: Rocket, label: 'Misi Penjelajah', sub: 'PPKn VII · Bab 3 P9', color: 'emerald' },
+    // IPA
+    { key: 'sistem-pernapasan', icon: BookOpen, label: 'Sistem Pernapasan', sub: 'IPA VIII', color: 'cyan' },
+    // MTK
+    { key: 'persamaan-linear', icon: ScrollText, label: 'Persamaan Linear', sub: 'MTK VIII', color: 'amber' },
+    // PJOK
+    { key: 'gerak-dasar-lokomotor', icon: Rocket, label: 'Gerak Dasar Lokomotor', sub: 'PJOK VII', color: 'emerald' },
+    { key: 'permainan-bola-besar', icon: GraduationCap, label: 'Permainan Bola Besar', sub: 'PJOK VII', color: 'cyan' },
+    { key: 'kebugaran-jasmani', icon: Users, label: 'Kebugaran Jasmani', sub: 'PJOK VII', color: 'amber' },
+    // Blank
     { key: 'blank', icon: ClipboardList, label: 'Proyek Kosong', sub: 'Isi semua manual', color: 'slate' },
   ];
 
@@ -403,8 +437,8 @@ export default function Dashboard() {
 
           {/* Template cards (inline in hero for empty state) */}
           <div className="border-t border-app-border px-6 py-5">
-            <h3 className="text-xs font-semibold text-app-secondary uppercase tracking-wider mb-3">Template PPKn</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <h3 className="text-xs font-semibold text-app-secondary uppercase tracking-wider mb-3">Template Pembelajaran</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
               {templates.map((p) => {
                 const Icon = p.icon;
                 const isCurrentPreset = isPresetMode && activePreset === p.key;
@@ -464,7 +498,7 @@ export default function Dashboard() {
         <div id="template-section">
           <h2 className="text-sm font-medium text-app-primary mb-1">Template</h2>
           <p className="text-xs text-app-muted mb-3">Pilih preset atau mulai dari proyek kosong.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {templates.map((p) => {
               const Icon = p.icon;
               const isCurrentPreset = isPresetMode && activePreset === p.key;

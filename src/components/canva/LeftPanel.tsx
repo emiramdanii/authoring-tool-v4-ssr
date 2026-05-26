@@ -173,10 +173,25 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
   const resetCanvas = useCanvaStore(s => s.resetCanvas);
 
   const availablePresets = getAvailablePresets();
-  const presetInfo: Record<string, { label: string; icon: string; desc: string }> = {
-    'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII' },
-    'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII' },
-    'perilaku-patuh': { label: 'Perilaku Patuh Norma', icon: '🛡️', desc: 'Pertemuan 3 — PPKn Kelas VII' },
+  const presetInfo: Record<string, { label: string; icon: string; desc: string; subject: string }> = {
+    // PPKn
+    'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII', subject: 'PPKn' },
+    'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII', subject: 'PPKn' },
+    'perilaku-patuh': { label: 'Perilaku Patuh Norma', icon: '🛡️', desc: 'Pertemuan 3 — PPKn Kelas VII', subject: 'PPKn' },
+    'nilai-pancasila': { label: 'Nilai-Nilai Pancasila', icon: '🏛️', desc: 'Pertemuan 4 — PPKn Kelas VII', subject: 'PPKn' },
+    'bhinneka-tunggal-ika': { label: 'Bhinneka Tunggal Ika', icon: '🤝', desc: 'Pertemuan 5 — PPKn Kelas VII', subject: 'PPKn' },
+    'ham-hak-kewajiban': { label: 'HAM & Kewajiban', icon: '✊', desc: 'Pertemuan 6 — PPKn Kelas VII', subject: 'PPKn' },
+    'demokrasi-pancasila': { label: 'Demokrasi Pancasila', icon: '🗳️', desc: 'Pertemuan 7 — PPKn Kelas VII', subject: 'PPKn' },
+    'globalisasi': { label: 'Globalisasi', icon: '🌍', desc: 'Pertemuan 8 — PPKn Kelas VII', subject: 'PPKn' },
+    'misi-penjelajah-pancasila': { label: 'Misi Penjelajah Pancasila', icon: '🚀', desc: 'Pertemuan 9 — PPKn Kelas VII', subject: 'PPKn' },
+    // IPA
+    'sistem-pernapasan': { label: 'Sistem Pernapasan', icon: '🫁', desc: 'IPA Kelas VIII', subject: 'IPA' },
+    // MTK
+    'persamaan-linear': { label: 'Persamaan Linear', icon: '📐', desc: 'MTK Kelas VIII', subject: 'MTK' },
+    // PJOK
+    'gerak-dasar-lokomotor': { label: 'Gerak Dasar Lokomotor', icon: '🏃', desc: 'PJOK Kelas VII', subject: 'PJOK' },
+    'permainan-bola-besar': { label: 'Permainan Bola Besar', icon: '⚽', desc: 'PJOK Kelas VII', subject: 'PJOK' },
+    'kebugaran-jasmani': { label: 'Kebugaran Jasmani', icon: '💪', desc: 'PJOK Kelas VII', subject: 'PJOK' },
   };
   const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
 
@@ -211,36 +226,56 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
           align="start"
           className="w-60 border border-app-border shadow-md rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
         >
-          {availablePresets.length > 0 && (
-            <>
-              <DropdownMenuLabel className="px-3 py-1.5 bg-app-info/10 border-b border-app-info/20 text-[9px] font-bold text-app-info uppercase tracking-wider">
-                Preset Schema
-              </DropdownMenuLabel>
-              {availablePresets.map(presetId => {
-                const info = presetInfo[presetId] || { label: presetId, icon: '📦', desc: 'Preset' };
-                return (
-                  <DropdownMenuItem
-                    key={presetId}
-                    onClick={async () => {
-                      setLoadingPreset(presetId);
-                      await loadSchemaPreset(presetId);
-                      setLoadingPreset(null);
-                    }}
-                    disabled={loadingPreset === presetId}
-                    className="px-3 py-2 gap-2 cursor-pointer"
-                  >
-                    <span className="text-base">{info.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-bold text-app-info truncate">{info.label}</div>
-                      <div className="text-[8px] text-app-muted">{info.desc}</div>
-                    </div>
-                  </DropdownMenuItem>
-                );
-              })}
-              <DropdownMenuSeparator className="bg-app-border/30" />
-            </>
-          )}
+          {availablePresets.length > 0 && (() => {
+            const subjectOrder = ['PPKn', 'IPA', 'MTK', 'PJOK'];
+            const subjectLabels: Record<string, string> = {
+              PPKn: 'PPKn — Pendidikan Pancasila',
+              IPA: 'IPA — Ilmu Pengetahuan Alam',
+              MTK: 'MTK — Matematika',
+              PJOK: 'PJOK — Pendidikan Jasmani',
+            };
+            const grouped = subjectOrder
+              .map(subj => ({
+                subject: subj,
+                presets: availablePresets.filter(id => (presetInfo[id]?.subject || 'Lainnya') === subj),
+              }))
+              .filter(g => g.presets.length > 0);
+            // Also catch any presets not in known subjects
+            const ungrouped = availablePresets.filter(id => !presetInfo[id]?.subject || !subjectOrder.includes(presetInfo[id].subject));
+            if (ungrouped.length > 0) grouped.push({ subject: 'Lainnya', presets: ungrouped });
 
+            return grouped.map((group, gi) => (
+              <div key={group.subject}>
+                <DropdownMenuLabel className="px-3 py-1.5 bg-app-info/10 border-b border-app-info/20 text-[9px] font-bold text-app-info uppercase tracking-wider">
+                  {subjectLabels[group.subject] || group.subject}
+                </DropdownMenuLabel>
+                {group.presets.map(presetId => {
+                  const info = presetInfo[presetId] || { label: presetId, icon: '📦', desc: 'Preset' };
+                  return (
+                    <DropdownMenuItem
+                      key={presetId}
+                      onClick={async () => {
+                        setLoadingPreset(presetId);
+                        await loadSchemaPreset(presetId);
+                        setLoadingPreset(null);
+                      }}
+                      disabled={loadingPreset === presetId}
+                      className="px-3 py-2 gap-2 cursor-pointer"
+                    >
+                      <span className="text-base">{info.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-app-info truncate">{info.label}</div>
+                        <div className="text-[8px] text-app-muted">{info.desc}</div>
+                      </div>
+                    </DropdownMenuItem>
+                  );
+                })}
+                {gi < grouped.length - 1 && <DropdownMenuSeparator className="bg-app-border/30" />}
+              </div>
+            ));
+          })()}
+
+          <DropdownMenuSeparator className="bg-app-border/30" />
           {presetCategories.map(cat => (
             <div key={cat.category}>
               <DropdownMenuLabel className="px-3 py-1 text-[8px] font-bold text-app-muted uppercase tracking-wider">

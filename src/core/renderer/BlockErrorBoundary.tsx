@@ -79,7 +79,7 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
                   {isSederhana ? 'Ada Masalah' : 'Blok Error'}
                 </span>
                 {!isSederhana && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400/80 font-mono">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400/80 font-mono">
                     {blockType}
                   </span>
                 )}
@@ -91,7 +91,7 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
                 }
               </p>
               {!isSederhana && (
-                <details className="text-[10px] text-red-400/50 mb-3">
+                <details className="text-[11px] text-red-400/50 mb-3">
                   <summary className="cursor-pointer hover:text-red-400/70 transition-colors">
                     Detail teknis
                   </summary>
@@ -103,12 +103,12 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
               <div className="flex items-center gap-2">
                 <button
                   onClick={this.handleRetry}
-                  className="px-3 py-1 text-[10px] font-bold rounded-md bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                  className="px-3 py-1 text-[11px] font-bold rounded-md bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
                 >
                   Coba Lagi
                 </button>
                 {!isSederhana && (
-                  <span className="text-[9px] text-red-400/40 font-mono">
+                  <span className="text-[10px] text-red-400/40 font-mono">
                     id: {blockId}
                   </span>
                 )}

@@ -157,7 +157,7 @@ export function StepNavigator({
                 gap: '4px',
                 padding: isCompact ? `${IOS_SPACING.tabPadding.py / 2}px ${IOS_SPACING.tabPadding.px / 2}px` : `${IOS_SPACING.tabPadding.py}px ${IOS_SPACING.tabPadding.px}px`,
                 borderRadius: '9999px',
-                fontSize: isCompact ? '10px' : '11px',
+                fontSize: isCompact ? '11px' : '12px',
                 fontWeight: 700,
                 letterSpacing: '0.03em',
                 border: `1px solid ${isActive ? accentBorder : 'transparent'}`,
@@ -171,7 +171,7 @@ export function StepNavigator({
               }}
             >
               {isPast && (
-                <span style={{ fontSize: isCompact ? '9px' : '10px' }}>&#10003;</span>
+                <span style={{ fontSize: isCompact ? '11px' : '12px' }}>&#10003;</span>
               )}
               <span>{label}</span>
             </button>
@@ -238,7 +238,7 @@ export function StepNavigator({
             gap: '4px',
             padding: isCompact ? '4px 10px' : '6px 14px',
             borderRadius: tokens ? tokens.radius('sm') : '8px',
-            fontSize: isCompact ? '10px' : '11px',
+            fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             border: `1px solid ${activeStep === 0 ? 'transparent' : accentBorder}`,
             background: activeStep === 0 ? 'transparent' : accentBg,
@@ -249,14 +249,14 @@ export function StepNavigator({
             ...(tokens ? tokens.iosTransitionStyle('background-color, border-color, color, opacity', 'fast') : { transition: 'background-color, border-color, color, opacity 150ms ease' }),
           }}
         >
-          <span style={{ fontSize: isCompact ? '10px' : '12px' }}>&#8592;</span>
+          <span style={{ fontSize: isCompact ? '11px' : '12px' }}>&#8592;</span>
           <span>Sebelumnya</span>
         </button>
 
         {/* Step counter */}
         <span
           style={{
-            fontSize: isCompact ? '9px' : '10px',
+            fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             color: mutedColor,
             letterSpacing: '0.05em',
@@ -276,7 +276,7 @@ export function StepNavigator({
             gap: '4px',
             padding: isCompact ? '4px 10px' : '6px 14px',
             borderRadius: tokens ? tokens.radius('sm') : '8px',
-            fontSize: isCompact ? '10px' : '11px',
+            fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             border: `1px solid ${activeStep === totalSteps - 1 ? 'transparent' : accentBorder}`,
             background: activeStep === totalSteps - 1 ? 'transparent' : accentBg,
@@ -288,7 +288,7 @@ export function StepNavigator({
           }}
         >
           <span>Berikutnya</span>
-          <span style={{ fontSize: isCompact ? '10px' : '12px' }}>&#8594;</span>
+          <span style={{ fontSize: isCompact ? '11px' : '12px' }}>&#8594;</span>
         </button>
       </div>
     </div>
