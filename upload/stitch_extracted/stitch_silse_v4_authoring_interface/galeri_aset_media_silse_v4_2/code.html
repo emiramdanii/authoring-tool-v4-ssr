@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SILSE Authoring - Media Asset Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Nunito+Sans:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#523200",
+                        "inverse-surface": "#2d3133",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#e29100",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary-fixed": "#002113",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary-fixed": "#6ffbbe",
+                        "secondary": "#0058be",
+                        "outline": "#6c7a71",
+                        "on-secondary-fixed": "#001a42",
+                        "surface-tint": "#006c49",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#855300",
+                        "surface-variant": "#e0e3e5",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary": "#006c49",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#191c1e",
+                        "on-primary-fixed-variant": "#005236",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#10b981",
+                        "outline-variant": "#bbcabf",
+                        "inverse-primary": "#4edea3",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#3c4a42",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#fefcff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-primary-container": "#00422b",
+                        "primary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed-variant": "#004395",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface-dim": "#d8dadc",
+                        "secondary-container": "#2170e4",
+                        "on-surface": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "gutter": "24px",
+                        "container-padding": "32px",
+                        "stack-md": "24px",
+                        "section-gap": "64px",
+                        "stack-sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-lg": ["Nunito Sans"],
+                        "display-lg-mobile": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Nunito Sans"],
+                        "body-md": ["Nunito Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                        "label-lg": ["16px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                        "display-lg": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .active-glow {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+        .liquid-progress {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md text-body-md overflow-x-hidden">
+<div id="root">
+<!-- Layout Wrapper -->
+<div class="flex min-h-screen bg-background">
+<!-- Sidebar Component -->
+<aside class="fixed inset-y-0 left-0 w-64 bg-surface-bright border-r border-outline-variant z-50 flex flex-col p-4">
+<div class="mt-4 mb-8 p-2">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Authoring Studio</h2>
+<p class="font-label-lg text-label-lg text-on-surface-variant opacity-70">SMP Education Portal</p>
+</div>
+<button class="mb-8 w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-4 rounded-xl font-bold font-label-lg text-label-lg shadow-md hover:translate-x-1 transition-all">
+<span class="material-symbols-outlined">add</span>
+                    New Project
+                </button>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-lg text-label-lg">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-lg text-label-lg">Workspace</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 active-glow" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">folder_open</span>
+<span class="font-label-lg text-label-lg font-bold">Assets</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-lg text-label-lg">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-2 pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-lg text-label-lg">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-lg text-label-lg">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 flex flex-col min-h-screen">
+<!-- Top Header Component -->
+<header class="sticky top-0 z-40 flex justify-between items-center px-gutter h-16 bg-surface-container-lowest border-b border-outline-variant">
+<div class="flex items-center gap-8">
+<span class="font-display-lg text-[24px] font-extrabold text-primary">SILSE Authoring</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-lg text-label-lg" href="#">Dashboard</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-bold font-label-lg text-label-lg" href="#">Workspace</a>
+<a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-lg text-label-lg" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all">cloud_done</button>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all">help_outline</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="px-4 py-2 text-primary font-bold font-label-lg text-label-lg hover:bg-primary-container hover:text-white rounded-xl transition-all">Preview</button>
+<button class="px-6 py-2 bg-primary text-white font-bold font-label-lg text-label-lg rounded-xl shadow-sm hover:scale-105 active:scale-95 transition-all">Publish</button>
+<img alt="Teacher Profile" class="w-10 h-10 rounded-full border-2 border-primary-container object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDgweAjaNpGEwFnvzyYIoACcBkbEiRj9Awr-0UrLCEox6Z9r6EvARAZnNDMt5iLZO9YVQZ5mUuiLgaa_kg6TyID4hAc8IVnJjK5xG2JsHstI2hsgvAzbdoyA6St6JxYWUlOuj0Uf-0KYVny1bEGTR3iPeytftyiJMbq_UOqeOKBIil1xVda4X5lfgIxlT2i3YySolYpkB463me7rE3KJTavEyAmCSR32pa98N7uZszvsYQDjAnn6aUb9gtA_r85HcN7eifq6fCYsT5"/>
+</div>
+</header>
+<main class="p-container-padding max-w-7xl mx-auto w-full">
+<!-- Title & Search Area -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-section-gap">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2">Media Asset Gallery</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Manage and organize your instructional materials. Enhancing assets with AI makes them more accessible for SMP students.</p>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-4">
+<div class="relative w-full sm:w-80">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-low border-2 border-transparent focus:border-secondary focus:ring-0 rounded-2xl font-body-md text-body-md transition-all" placeholder="Search assets..." type="text"/>
+</div>
+<button class="flex items-center gap-2 bg-secondary text-on-secondary px-6 py-4 rounded-2xl font-bold font-label-lg text-label-lg hover:shadow-lg hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined">auto_awesome</span>
+                                Upload New Asset
+                            </button>
+</div>
+</div>
+<!-- Filter Tabs Area -->
+<div class="flex flex-wrap items-center gap-3 mb-stack-md">
+<button class="bg-primary text-white px-6 py-2 rounded-full font-bold font-label-lg text-label-lg">All Assets</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-bold font-label-lg text-label-lg hover:bg-surface-variant transition-all">Images</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-bold font-label-lg text-label-lg hover:bg-surface-variant transition-all">Videos</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-bold font-label-lg text-label-lg hover:bg-surface-variant transition-all">Audio</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-bold font-label-lg text-label-lg hover:bg-surface-variant transition-all">SVGs</button>
+<div class="ml-auto flex items-center gap-2 text-on-surface-variant">
+<span class="font-label-lg text-label-lg">Sort by:</span>
+<select class="bg-transparent border-none font-bold text-primary focus:ring-0 cursor-pointer">
+<option>Recently Added</option>
+<option>Name (A-Z)</option>
+<option>File Size</option>
+</select>
+</div>
+</div>
+<!-- Asset Grid Component -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-section-gap">
+<!-- Folder Card Component -->
+<div class="group relative flex flex-col p-6 bg-white border border-outline-variant rounded-[24px] hover:border-primary cursor-pointer transition-all">
+<div class="flex items-center justify-between mb-4">
+<span class="material-symbols-outlined text-4xl text-tertiary-container" style="font-variation-settings: 'FILL' 1;">folder</span>
+<button class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</div>
+<h3 class="font-headline-md text-[18px] text-on-surface mb-1">Biology Lab Illustrations</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">24 files • 128 MB</p>
+<div class="mt-4 flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-highest"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-highest"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-highest"></div>
+</div>
+</div>
+<!-- Image Card Component -->
+<div class="group relative bg-white border border-outline-variant rounded-[24px] overflow-hidden hover:border-primary transition-all">
+<div class="h-48 overflow-hidden bg-surface-container-low relative">
+<img alt="Microscope" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbehKYUBjJxXvEvlxwVsIVcg6Ymfgs9peogkinV4q8PYFl3bieeQPoIpYw7yK2tpxkLZcgRDii0iO0TRWaxb_Y4XyQukx3oiYmEywUQj0NdyVBplrQPl5R0NI1ANmhPq7NfKxxRrUd4cKek06QoymKE03u53GySE1aZIhrPu61wzlDdUQo90iurCztPFZLwWc09ztlwX4t65f9pSg07q2E6tmcaaNeNz07oWNpJGKIOobB0IymtkG7yACoab48gLpZCjzfcdAihtVx"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+<button class="bg-white p-3 rounded-full text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined">visibility</span></button>
+<button class="bg-white p-3 rounded-full text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined">edit</span></button>
+</div>
+<span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[12px] font-bold text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">image</span>
+                                    IMAGE
+                                </span>
+</div>
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate pr-2">Lab_Microscope_01.jpg</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] cursor-pointer">star</span>
+</div>
+<div class="flex items-center justify-between">
+<p class="font-body-md text-sm text-on-surface-variant">2.4 MB • 4k Resolution</p>
+<span class="bg-primary-container/20 text-on-primary-container text-[10px] px-2 py-0.5 rounded-full font-bold">AI OPTIMIZED</span>
+</div>
+</div>
+</div>
+<!-- Video Card Component -->
+<div class="group relative bg-white border border-outline-variant rounded-[24px] overflow-hidden hover:border-primary transition-all">
+<div class="h-48 overflow-hidden bg-surface-container-low relative flex items-center justify-center">
+<img alt="Code Animation" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXXaBGc2rejyunnO_IWxQgFyvriA05FfsH61c7GiyFR29zM940kpP24Mvd8fPFOUIhj9lgXexE9NM6hu8vvD4lZxsCwbw6FnZKJPTliKUbR-zCZ_Epr5iuV9-2OxOm9agIPS1UDpBOilZud2C4s-w1xGdEcHHujcyhR6KA7gmxi0tqhbU4OEMM-oUmOhNHcup2Al1YMYPhdRfOSSWHbyfI6cC7N3w552ZsTuPGB__7n5-2YEEPjcrGsbP4xhNxH7T-iHEvzxWBzZ_-"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-white group-hover:scale-125 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[12px] font-bold text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">videocam</span>
+                                    VIDEO
+                                </span>
+<span class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white">03:45</span>
+</div>
+<div class="p-4">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate mb-1">Intro_to_Python_SMP.mp4</h3>
+<p class="font-body-md text-sm text-on-surface-variant">45.8 MB • HD</p>
+</div>
+</div>
+<!-- SVG Card Component -->
+<div class="group relative bg-white border border-outline-variant rounded-[24px] overflow-hidden hover:border-primary transition-all">
+<div class="h-48 overflow-hidden bg-surface-container flex items-center justify-center p-8">
+<span class="material-symbols-outlined text-7xl text-primary opacity-40 group-hover:scale-110 transition-transform">architecture</span>
+<span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[12px] font-bold text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">slide_library</span>
+                                    SVG
+                                </span>
+</div>
+<div class="p-4">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate mb-1">Geometry_Shapes_Kit.svg</h3>
+<p class="font-body-md text-sm text-on-surface-variant">12 KB • Vector Asset</p>
+</div>
+</div>
+<!-- Secondary Image Card Component -->
+<div class="group relative bg-white border border-outline-variant rounded-[24px] overflow-hidden hover:border-primary transition-all">
+<div class="h-48 overflow-hidden bg-surface-container-low relative">
+<img alt="Students" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8enw-bQC3xUdoO5_1_dJ1w7kk8KaWe5l6bW9_x31iAZWPZc26jpk-LVtBMAQUMPtwgOE54dYkfeLGW0ZFxXGtcL57S4H3ERYXnKStCNV3s6GF-jt7RKKNSgaexPoX0lrlCZFJB6OX9CvF06PB0tW1k86PVt1Kd4rAAre6RpBU6X23HVrj6LiO79UGygYVLfYu-lyqdFZonDVSaCH86OaTr-OS6izvTPZ35goSIvQ6WghuK2FxSydfW34NK9sJMZ_HKWejnyltNo6r"/>
+<span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[12px] font-bold text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">image</span>
+                                    IMAGE
+                                </span>
+</div>
+<div class="p-4">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate mb-1">Group_Activity_04.png</h3>
+<p class="font-body-md text-sm text-on-surface-variant">1.1 MB • Portrait</p>
+</div>
+</div>
+<!-- Secondary Folder Card Component -->
+<div class="group relative flex flex-col p-6 bg-white border border-outline-variant rounded-[24px] hover:border-primary cursor-pointer transition-all">
+<div class="flex items-center justify-between mb-4">
+<span class="material-symbols-outlined text-4xl text-secondary-container" style="font-variation-settings: 'FILL' 1;">folder</span>
+</div>
+<h3 class="font-headline-md text-[18px] text-on-surface mb-1">Math Quiz Icons</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">56 files • 4 MB</p>
+</div>
+<!-- Audio Card Component -->
+<div class="group relative bg-white border border-outline-variant rounded-[24px] overflow-hidden hover:border-primary transition-all">
+<div class="h-48 overflow-hidden bg-surface-container-low relative flex items-center justify-center">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-5xl text-tertiary">graphic_eq</span>
+<span class="mt-2 font-label-lg text-on-surface-variant">Podcast_Episode_1.mp3</span>
+</div>
+<span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[12px] font-bold text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">audio_file</span>
+                                    AUDIO
+                                </span>
+</div>
+<div class="p-4">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate mb-1">History_Podcast_SMP.mp3</h3>
+<p class="font-body-md text-sm text-on-surface-variant">12.5 MB • 12 mins</p>
+</div>
+</div>
+<!-- Dropzone Component -->
+<div class="group relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-outline-variant rounded-[24px] bg-surface-container-low hover:bg-white hover:border-primary transition-all cursor-pointer">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">upload</span>
+</div>
+<h3 class="font-label-lg text-label-lg text-on-surface text-center">Drag files here to upload</h3>
+<p class="font-body-md text-sm text-on-surface-variant text-center mt-1">Supports images, video, and audio up to 500MB</p>
+</div>
+</div>
+<!-- Bottom Stats Section Component -->
+<section class="glass-card p-container-padding rounded-[32px] border border-outline-variant flex flex-col md:flex-row items-center gap-12 mb-stack-md">
+<div class="w-full md:w-1/3">
+<div class="flex justify-between items-end mb-2">
+<span class="font-label-lg text-label-lg text-on-surface">Storage Capacity</span>
+<span class="font-body-md text-on-surface-variant text-sm">12.4 GB / 25 GB used</span>
+</div>
+<div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="liquid-progress h-full bg-primary rounded-full" style="width: 48%;"></div>
+</div>
+<p class="mt-3 font-body-md text-xs text-on-surface-variant italic">Upgrade for unlimited student collaboration storage.</p>
+</div>
+<div class="flex-grow flex justify-around w-full md:w-auto">
+<div class="flex flex-col">
+<span class="font-label-lg text-sm text-on-surface-variant">TOTAL FILES</span>
+<span class="font-display-lg text-[28px] text-primary">1,248</span>
+</div>
+<div class="w-[1px] h-12 bg-outline-variant hidden sm:block"></div>
+<div class="flex flex-col">
+<span class="font-label-lg text-sm text-on-surface-variant">AI ENHANCED</span>
+<span class="font-display-lg text-[28px] text-secondary">312</span>
+</div>
+<div class="w-[1px] h-12 bg-outline-variant hidden sm:block"></div>
+<div class="flex flex-col">
+<span class="font-label-lg text-sm text-on-surface-variant">QUIZ ASSETS</span>
+<span class="font-display-lg text-[28px] text-tertiary">84</span>
+</div>
+</div>
+<button class="w-full md:w-auto px-8 py-4 bg-surface-container-highest text-on-surface font-bold rounded-2xl hover:bg-surface-variant transition-all">
+                            Manage Subscription
+                        </button>
+</section>
+</main>
+</div>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-3xl">auto_fix_high</span>
+</button>
+</div>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Card Interactions
+            const cards = document.querySelectorAll('.group.bg-white');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-4px)';
+                    card.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.05)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'none';
+                });
+            });
+
+            // Progress Bar Animation
+            setTimeout(() => {
+                const progress = document.querySelector('.liquid-progress');
+                if(progress) progress.style.width = '48%';
+            }, 500);
+
+            // Search Interaction
+            const searchInput = document.querySelector('input[type="text"]');
+            searchInput.addEventListener('input', (e) => {
+                if(e.target.value.length > 0) {
+                    searchInput.classList.add('border-primary');
+                } else {
+                    searchInput.classList.remove('border-primary');
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -19,6 +19,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { BlockVariant } from '@/core/schema/types/base';
+import { MODERN_EDUCATOR_ACCENT_PALETTE } from './ModernEducatorContract';
 
 // ── Contract Types ──────────────────────────────────────────────
 
@@ -514,7 +515,7 @@ export function resolveContractStyle(
   const variantColors = contract.variantOverrides?.[variant] || {};
 
   // Resolve which token is the primary accent for this page type
-  const primaryAccentToken = pageAccent.accentToken || 'y';
+  const primaryAccentToken = pageAccent.accentToken || (isModernEducator ? 'e' : 'y');
 
   // ═══ BUILD THE ACCENT TOKEN MAP ═════════════════════════════════
   // This is the KEY fix. Every accent token gets a contract-compliant
@@ -534,7 +535,10 @@ export function resolveContractStyle(
   // will get #c084fc — the contract's curated purple, NOT the theme
   // default which could be a different shade.
   const accentTokenMap: Record<string, string> = {};
-  for (const [token, color] of Object.entries(CONTRACT_ACCENT_PALETTE)) {
+  // Use the Modern Educator palette if that contract is active
+  const isModernEducator = contract.id === 'modern-educator';
+  const palette = isModernEducator ? MODERN_EDUCATOR_ACCENT_PALETTE : CONTRACT_ACCENT_PALETTE;
+  for (const [token, color] of Object.entries(palette)) {
     accentTokenMap[token] = color;
   }
   // Override the primary accent token with the contract's accent (with variant)
@@ -556,7 +560,7 @@ export function resolveContractStyle(
   const resolvedAccentBorder = variantColors.accentBorder || contract.colors.accentBorder;
 
   // Resolve bgTint for this page type
-  const resolvedBgTint = pageAccent.bgTint || 'rgba(251,191,36,0.04)';
+  const resolvedBgTint = pageAccent.bgTint || (isModernEducator ? 'rgba(0,108,73,0.04)' : 'rgba(251,191,36,0.04)');
 
   return {
     background: contract.colors.background,

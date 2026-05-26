@@ -108,6 +108,9 @@ export const GoldenPageRenderer = React.memo(function GoldenPageRenderer({
   const phaseIcon = PHASE_ICONS[sceneType] || '📄';
   const progress = totalPages > 1 ? (pageIndex + 1) / totalPages : 0;
 
+  // Detect if this is a light contract (Modern Educator)
+  const isLightContract = contractStyle.background !== '#0f172a' && !contractStyle.background.startsWith('#0');
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {/* ══ PROGRESS BAR — top accent line ══════════════════════ */}
@@ -119,7 +122,7 @@ export const GoldenPageRenderer = React.memo(function GoldenPageRenderer({
           right: 0,
           height: 3,
           zIndex: 50,
-          background: tokens.colorAlpha(accentToken, 0.15),
+          background: tokens.colorAlpha(accentToken, isLightContract ? 0.12 : 0.15),
         }}
       >
         <div
@@ -147,14 +150,22 @@ export const GoldenPageRenderer = React.memo(function GoldenPageRenderer({
           alignItems: 'center',
           gap: 6,
           padding: '4px 10px',
-          borderRadius: 12,
-          background: tokens.colorAlpha(accentToken, 0.1),
-          border: `1px solid ${tokens.colorAlpha(accentToken, 0.2)}`,
+          borderRadius: isLightContract ? 16 : 12,
+          background: isLightContract
+            ? 'rgba(255,255,255,0.9)'
+            : tokens.colorAlpha(accentToken, 0.1),
+          border: `1px solid ${isLightContract
+            ? tokens.colorAlpha(accentToken, 0.15)
+            : tokens.colorAlpha(accentToken, 0.2)}`,
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: '0.04em',
           color: tokens.color(accentToken),
-          fontFamily: 'var(--font-nunito), Nunito, sans-serif',
+          fontFamily: isLightContract
+            ? 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif'
+            : 'var(--font-nunito), Nunito, sans-serif',
+          backdropFilter: isLightContract ? 'blur(12px)' : undefined,
+          WebkitBackdropFilter: isLightContract ? 'blur(12px)' : undefined,
         }}
       >
         <span style={{ fontSize: 13 }}>{phaseIcon}</span>
@@ -174,7 +185,12 @@ export const GoldenPageRenderer = React.memo(function GoldenPageRenderer({
             gap: 5,
             padding: '3px 8px',
             borderRadius: 10,
-            background: 'rgba(0,0,0,0.15)',
+            background: isLightContract
+              ? 'rgba(255,255,255,0.9)'
+              : 'rgba(0,0,0,0.15)',
+            backdropFilter: isLightContract ? 'blur(12px)' : undefined,
+            WebkitBackdropFilter: isLightContract ? 'blur(12px)' : undefined,
+            border: isLightContract ? '1px solid rgba(224,227,229,0.6)' : undefined,
           }}
         >
           {Array.from({ length: totalPages }, (_, i) => (
@@ -186,7 +202,9 @@ export const GoldenPageRenderer = React.memo(function GoldenPageRenderer({
                 borderRadius: 3,
                 background: i === pageIndex
                   ? tokens.color(accentToken)
-                  : tokens.colorAlpha('muted', 0.4),
+                  : isLightContract
+                    ? tokens.colorAlpha(accentToken, 0.25)
+                    : tokens.colorAlpha('muted', 0.4),
                 transition: 'all 0.3s ease',
               }}
             />
@@ -203,8 +221,12 @@ export const GoldenPageRenderer = React.memo(function GoldenPageRenderer({
           zIndex: 40,
           fontSize: 10,
           fontWeight: 700,
-          color: tokens.muted(0.5),
-          fontFamily: 'var(--font-nunito), Nunito, sans-serif',
+          color: isLightContract
+            ? tokens.colorAlpha(accentToken, 0.5)
+            : tokens.muted(0.5),
+          fontFamily: isLightContract
+            ? 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif'
+            : 'var(--font-nunito), Nunito, sans-serif',
           letterSpacing: '0.05em',
         }}
       >

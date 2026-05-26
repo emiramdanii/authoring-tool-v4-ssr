@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings &amp; Profile - SILSE Authoring</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Nunito+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#4edea3",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#4edea3",
+                        "secondary-container": "#2170e4",
+                        "on-secondary-fixed-variant": "#004395",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-variant": "#e0e3e5",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "background": "#f7f9fb",
+                        "on-secondary-container": "#fefcff",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#eceef0",
+                        "surface": "#f7f9fb",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-fixed-variant": "#005236",
+                        "outline-variant": "#bbcabf",
+                        "on-primary-container": "#00422b",
+                        "on-tertiary-container": "#523200",
+                        "surface-tint": "#006c49",
+                        "primary-fixed": "#6ffbbe",
+                        "surface-bright": "#f7f9fb",
+                        "secondary": "#0058be",
+                        "on-tertiary-fixed": "#2a1700",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container-low": "#f2f4f6",
+                        "tertiary": "#855300",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d8dadc",
+                        "on-background": "#191c1e",
+                        "on-primary-fixed": "#002113",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-secondary-fixed": "#001a42",
+                        "on-surface-variant": "#3c4a42",
+                        "on-surface": "#191c1e",
+                        "primary": "#006c49",
+                        "outline": "#6c7a71",
+                        "tertiary-container": "#e29100",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-container": "#10b981",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "24px",
+                        "gutter": "24px",
+                        "stack-sm": "12px",
+                        "base": "8px",
+                        "container-padding": "32px",
+                        "section-gap": "64px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Nunito Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Nunito Sans"],
+                        "body-lg": ["Nunito Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-lg": ["16px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-md": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- SideNavBar (The Anchor) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-surface-bright flex flex-col p-4 border-r border-outline-variant z-50">
+<div class="mb-8 px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Authoring Studio</h1>
+<p class="font-label-lg text-on-surface-variant opacity-70">SMP Education Portal</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-lg">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-lg">Workspace</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label-lg">Assets</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-lg">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-lg">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-xl transition-all duration-300" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-lg">Support</span>
+</a>
+<div class="mt-4 flex items-center gap-3 px-2 py-2">
+<img alt="Teacher Profile" class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of Ibu Budi, a warm and friendly Indonesian teacher in her late 30s. She is smiling gently at the camera, wearing a clean, modern batik-patterned blouse. The background is a brightly lit, soft-focus classroom interior with educational posters and plants, reflecting a professional yet playful educational environment with high-end lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUhlN_7WVO9cl6iKuX8yar8M93hsmBUX4uLE2iMP0IA13wYz9LtF2FpqMZq9pggSHdYXuBf0IOyVN-A8EatS6iCiIxsjlv--l64cXitr21HHa7NCFKyav75B1KpU3kJA3VK3q-eXYzOL_3yNleQMCYb9wt-Qw2_J5pMXoFOKH0Jc0tjFA8wcFvEUaeCkL8TWlDxu19SyJ8FIUBWRKXcdP79VTCXPydNNkzOu5--Yo3Qxgfcf4oOdpOg2QZUBbvmVMxCqd5ePaXeBk2"/>
+<div>
+<p class="font-label-lg text-on-surface leading-tight">Ibu Budi</p>
+<span class="text-xs text-primary font-bold">Premium Author</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen p-container-padding">
+<!-- TopAppBar (Simulated as content header) -->
+<header class="flex justify-between items-center mb-section-gap">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Settings</h2>
+<p class="font-body-md text-on-surface-variant">Manage your account, institutional branding, and integrations.</p>
+</div>
+<div class="flex items-center gap-stack-sm">
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2.5 rounded-full font-label-lg hover:bg-surface-container-highest transition-colors">
+                    Discard Changes
+                </button>
+<button class="bg-primary text-on-primary px-8 py-2.5 rounded-full font-label-lg border-b-2 border-[#005236] hover:scale-[1.02] transition-transform flex items-center gap-2">
+                    Save Changes
+                </button>
+</div>
+</header>
+<div class="flex gap-section-gap">
+<!-- Settings Navigation -->
+<nav class="w-64 flex flex-col gap-4 sticky top-container-padding h-fit">
+<button class="tab-btn active text-left px-6 py-4 rounded-xl font-label-lg transition-all duration-300 bg-primary text-on-primary border-b-2 border-[#005236]" id="btn-profile" onclick="switchTab('profile')">
+                    Teacher Profile
+                </button>
+<button class="tab-btn text-left px-6 py-4 rounded-xl font-label-lg transition-all duration-300 text-on-surface-variant hover:bg-surface-container-low" id="btn-branding" onclick="switchTab('branding')">
+                    Institutional Branding
+                </button>
+<button class="tab-btn text-left px-6 py-4 rounded-xl font-label-lg transition-all duration-300 text-on-surface-variant hover:bg-surface-container-low" id="btn-integrations" onclick="switchTab('integrations')">
+                    LMS Integrations
+                </button>
+<button class="tab-btn text-left px-6 py-4 rounded-xl font-label-lg transition-all duration-300 text-on-surface-variant hover:bg-surface-container-low" id="btn-subscription" onclick="switchTab('subscription')">
+                    Subscription &amp; Billing
+                </button>
+</nav>
+<!-- Settings Content -->
+<div class="flex-grow max-w-4xl space-y-stack-md">
+<!-- Profile Section -->
+<section class="tab-content block space-y-gutter animate-fade-in" id="section-profile">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-[24px] p-gutter">
+<h3 class="font-headline-md text-on-surface mb-stack-md">Personal Information</h3>
+<div class="flex items-center gap-gutter mb-gutter">
+<div class="relative group">
+<img class="w-32 h-32 rounded-full object-cover border-4 border-primary-container" data-alt="Close up profile picture of a female Indonesian educator with a friendly smile, professional attire, and clear soft-light studio lighting. The aesthetic is clean, modern, and high-end, using a professional emerald green and soft white color palette to indicate reliability and warmth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP_zZg8URjKWijCOUHbFK0L6rYWrueRax5TMRbEQEV5Pzfq6bXd1EB1qJgEdaKAaKBWc_JEUp8cvDyBIwx8p1QNGDB1jQAmEu90OwJOGk-RVUALFbsUSJ5JRg-WSBSowM9BZKXbYEKPElUnGrTcDSDxnki01YQ4DWv-xLPSIB1CG9NbWpfjTFir6I1mnksYeqgMo8U4dm1CO0EHY8HvlbS2m9ubcFaqhGPAZZfTlN3eneJDpnxEs1gxe0QSEoeiU4rO8b6syVMlxQU"/>
+<button class="absolute bottom-0 right-0 bg-primary text-on-primary p-2 rounded-full border-2 border-surface-container-lowest shadow-lg">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<div>
+<h4 class="font-label-lg text-on-surface">Profile Picture</h4>
+<p class="text-on-surface-variant text-sm max-w-xs">PNG or JPG. Maximum 2MB. A clear photo helps students recognize you.</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-stack-md">
+<div class="space-y-2">
+<label class="font-label-lg text-on-surface-variant">Full Name</label>
+<input class="w-full bg-surface-container-low border-2 border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3 font-body-md transition-all" type="text" value="Ibu Budi"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-lg text-on-surface-variant">Email Address</label>
+<input class="w-full bg-surface-container-low border-2 border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3 font-body-md transition-all" type="email" value="ibu.budi@smpedu.id"/>
+</div>
+<div class="col-span-2 space-y-2">
+<label class="font-label-lg text-on-surface-variant">Professional Bio</label>
+<textarea class="w-full bg-surface-container-low border-2 border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3 font-body-md transition-all" rows="3">Grade 8 Mathematics Teacher at SMP Education Portal. Passionate about interactive lesson authoring and gamified learning experiences.</textarea>
+</div>
+</div>
+</div>
+</section>
+<!-- Branding Section -->
+<section class="tab-content hidden space-y-gutter" id="section-branding">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-[24px] p-gutter">
+<h3 class="font-headline-md text-on-surface mb-stack-md">Institutional Identity</h3>
+<div class="grid grid-cols-1 gap-gutter">
+<div class="space-y-2">
+<label class="font-label-lg text-on-surface-variant">Institution Name</label>
+<input class="w-full bg-surface-container-low border-2 border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3 font-body-md" type="text" value="SMP Education Portal"/>
+</div>
+<div class="flex items-start gap-gutter p-gutter bg-surface-container-low rounded-[24px]">
+<div class="w-24 h-24 bg-white rounded-xl flex items-center justify-center border border-outline-variant p-4">
+<span class="material-symbols-outlined text-4xl text-primary">school</span>
+</div>
+<div>
+<h4 class="font-label-lg text-on-surface">Institution Logo</h4>
+<p class="text-on-surface-variant text-sm mb-stack-sm">This logo will appear on all student-facing materials and reports.</p>
+<button class="bg-white border-2 border-outline-variant text-on-surface px-4 py-2 rounded-full font-label-lg hover:bg-surface-container-high transition-colors">
+                                        Upload New Logo
+                                    </button>
+</div>
+</div>
+<div class="space-y-4">
+<label class="font-label-lg text-on-surface-variant">Brand Colors</label>
+<div class="flex gap-4">
+<div class="group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-primary border-4 border-surface-container-highest"></div>
+<p class="text-center text-xs mt-1 font-bold">Primary</p>
+</div>
+<div class="group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-secondary border-4 border-surface-container-lowest"></div>
+<p class="text-center text-xs mt-1">Secondary</p>
+</div>
+<div class="group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-tertiary border-4 border-surface-container-lowest"></div>
+<p class="text-center text-xs mt-1">Accent</p>
+</div>
+<button class="w-12 h-12 rounded-full border-2 border-dashed border-outline flex items-center justify-center text-outline-variant hover:border-primary hover:text-primary transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Integration Section -->
+<section class="tab-content hidden space-y-gutter" id="section-integrations">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-[24px] p-gutter">
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-headline-md text-on-surface">Learning Management Systems</h3>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Cloud Sync Active</span>
+</div>
+<div class="space-y-4">
+<!-- Google Classroom -->
+<div class="flex items-center justify-between p-stack-md border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg flex items-center justify-center bg-[#F4B400] text-white">
+<span class="material-symbols-outlined text-3xl">hub</span>
+</div>
+<div>
+<p class="font-label-lg">Google Classroom</p>
+<p class="text-sm text-on-surface-variant">Last synced: 2 hours ago</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-primary-container font-bold text-sm">CONNECTED</span>
+<button class="text-error hover:underline text-sm font-label-lg">Disconnect</button>
+</div>
+</div>
+<!-- Canvas -->
+<div class="flex items-center justify-between p-stack-md border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 opacity-60">
+<div class="w-12 h-12 rounded-lg flex items-center justify-center bg-[#E03E2D] text-white">
+<span class="material-symbols-outlined text-3xl">art_track</span>
+</div>
+<div>
+<p class="font-label-lg">Canvas LMS</p>
+<p class="text-sm text-on-surface-variant">Not configured</p>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-label-lg">Configure</button>
+</div>
+<!-- Moodle -->
+<div class="flex items-center justify-between p-stack-md border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 opacity-60">
+<div class="w-12 h-12 rounded-lg flex items-center justify-center bg-[#F98012] text-white">
+<span class="material-symbols-outlined text-3xl">dynamic_feed</span>
+</div>
+<div>
+<p class="font-label-lg">Moodle</p>
+<p class="text-sm text-on-surface-variant">Not configured</p>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-label-lg">Configure</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Subscription Section -->
+<section class="tab-content hidden space-y-gutter" id="section-subscription">
+<!-- Glassmorphism Premium Card -->
+<div class="glass-card border border-primary-container rounded-[32px] p-gutter relative overflow-hidden">
+<!-- Background Pattern -->
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-primary opacity-10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-12 -left-12 w-48 h-48 bg-secondary opacity-10 rounded-full blur-3xl"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-gutter">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary fill-current">stars</span>
+<span class="font-bold text-primary tracking-widest text-xs uppercase">Premium AI Plan</span>
+</div>
+<h3 class="font-display-lg text-on-surface leading-tight mb-2">Powering Your Creativity</h3>
+<p class="font-body-md text-on-surface-variant max-w-md">You have active access to AI Authoring, Unlimited Projects, and Advanced Analytics for your SMP Education Portal classes.</p>
+</div>
+<div class="text-right">
+<p class="text-sm text-on-surface-variant mb-1">Renewal Date</p>
+<p class="font-headline-md text-on-surface">Oct 24, 2026</p>
+<p class="text-primary font-bold">Rp 149.000 / Month</p>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="font-label-lg text-sm">Unlimited AI Generation</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="font-label-lg text-sm">4K Export Quality</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="font-label-lg text-sm">Priority Support</span>
+</div>
+</div>
+</div>
+<!-- Payment Methods -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-[24px] p-gutter">
+<h3 class="font-headline-md text-on-surface mb-stack-md">Payment Method</h3>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl">
+<div class="flex items-center gap-4">
+<div class="w-12 h-8 bg-on-background rounded flex items-center justify-center">
+<span class="text-white text-[10px] font-bold">VISA</span>
+</div>
+<div>
+<p class="font-label-lg">Visa ending in •••• 4242</p>
+<p class="text-xs text-on-surface-variant">Expires 12/28</p>
+</div>
+</div>
+<button class="text-primary font-label-lg hover:underline">Update</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<script>
+        function switchTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show target section
+            const target = document.getElementById('section-' + tabId);
+            target.classList.remove('hidden');
+            target.classList.add('animate-fade-in');
+
+            // Update button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-on-primary', 'border-b-2', 'border-[#005236]');
+                btn.classList.add('text-on-surface-variant', 'hover:bg-surface-container-low');
+            });
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-low');
+            activeBtn.classList.add('bg-primary', 'text-on-primary', 'border-b-2', 'border-[#005236]');
+        }
+
+        // Simple animation helper
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.4s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

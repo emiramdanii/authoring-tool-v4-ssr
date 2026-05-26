@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SILSE Authoring - Dashboard Guru</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Nunito+Sans:wght@400;700&amp;family=Fredoka:wght@600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- React & Tailwind 4 (using script tags for demo-able single file component architecture) -->
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "surface-variant": "#e0e3e5",
+                "primary-fixed-dim": "#4edea3",
+                "surface-bright": "#f7f9fb",
+                "on-error": "#ffffff",
+                "on-background": "#191c1e",
+                "surface-container-low": "#f2f4f6",
+                "secondary": "#0058be",
+                "on-primary-container": "#00422b",
+                "error": "#ba1a1a",
+                "background": "#f7f9fb",
+                "tertiary-fixed": "#ffddb8",
+                "tertiary-container": "#e29100",
+                "surface-dim": "#d8dadc",
+                "on-error-container": "#93000a",
+                "surface-container-highest": "#e0e3e5",
+                "on-primary": "#ffffff",
+                "on-secondary-fixed-variant": "#004395",
+                "primary": "#006c49",
+                "surface-container-lowest": "#ffffff",
+                "on-secondary-container": "#fefcff",
+                "tertiary": "#855300",
+                "inverse-on-surface": "#eff1f3",
+                "surface-container": "#eceef0",
+                "on-secondary-fixed": "#001a42",
+                "secondary-fixed-dim": "#adc6ff",
+                "error-container": "#ffdad6",
+                "surface-container-high": "#e6e8ea",
+                "outline": "#6c7a71",
+                "on-primary-fixed": "#002113",
+                "on-surface-variant": "#3c4a42",
+                "on-secondary": "#ffffff",
+                "on-tertiary-container": "#523200",
+                "inverse-surface": "#2d3133",
+                "primary-container": "#10b981",
+                "surface-tint": "#006c49",
+                "on-tertiary": "#ffffff",
+                "on-surface": "#191c1e",
+                "primary-fixed": "#6ffbbe",
+                "outline-variant": "#bbcabf",
+                "tertiary-fixed-dim": "#ffb95f",
+                "inverse-primary": "#4edea3",
+                "on-tertiary-fixed-variant": "#653e00",
+                "secondary-fixed": "#d8e2ff",
+                "on-tertiary-fixed": "#2a1700",
+                "secondary-container": "#2170e4",
+                "surface": "#f7f9fb",
+                "on-primary-fixed-variant": "#005236"
+              },
+              borderRadius: {
+                DEFAULT: "0.25rem",
+                lg: "0.5rem",
+                xl: "0.75rem",
+                full: "9999px"
+              },
+              spacing: {
+                gutter: "24px",
+                "stack-md": "24px",
+                "section-gap": "64px",
+                base: "8px",
+                "stack-sm": "12px",
+                "container-padding": "32px"
+              },
+              fontFamily: {
+                fredoka: ["Fredoka", "sans-serif"],
+                "display-lg-mobile": ["Plus Jakarta Sans"],
+                "body-md": ["Nunito Sans"],
+                "headline-md": ["Plus Jakarta Sans"],
+                "body-lg": ["Nunito Sans"],
+                "label-lg": ["Nunito Sans"],
+                "display-lg": ["Plus Jakarta Sans"],
+                "headline-lg": ["Plus Jakarta Sans"]
+              },
+              fontSize: {
+                "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                "body-md": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                "label-lg": ["16px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                "display-lg": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}]
+              }
+            }
+          }
+        };
+    </script>
+<style>
+        body { background-color: #f7f9fb; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid #E2E8F0;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<div id="root"></div>
+<script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Components
+        const SidebarItem = ({ icon, label, active = false, onClick }) => (
+            <a 
+                href="#"
+                onClick={onClick}
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:translate-x-1 font-label-lg ${
+                    active 
+                    ? 'bg-primary-container text-on-primary-container' 
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+            >
+                <span className="material-symbols-outlined" style={active ? {fontVariationSettings: "'FILL' 1"} : {}}>
+                    {icon}
+                </span>
+                {label}
+            </a>
+        );
+
+        const Sidebar = () => (
+            <aside className="fixed left-0 top-0 h-full w-64 flex flex-col p-4 border-r border-outline-variant bg-surface-bright z-50">
+                <div className="mb-8 px-4">
+                    <h1 className="font-headline-md text-headline-md font-bold text-primary">Authoring Studio</h1>
+                    <p class="text-on-surface-variant font-label-lg">SMP Education Portal</p>
+                </div>
+                
+                <button className="mb-8 w-full bg-primary-container text-on-primary-container py-4 px-6 rounded-xl flex items-center justify-center gap-2 font-label-lg hover:scale-95 transition-transform border-b-2 border-primary group">
+                    <span className="material-symbols-outlined group-hover:rotate-90 transition-transform">add_circle</span>
+                    New Project
+                </button>
+
+                <nav className="flex-1 space-y-2">
+                    <SidebarItem icon="dashboard" label="Dashboard" active />
+                    <SidebarItem icon="edit_note" label="Workspace" />
+                    <SidebarItem icon="folder_open" label="Assets" />
+                    <SidebarItem icon="analytics" label="Analytics" />
+                </nav>
+
+                <div className="mt-auto pt-4 border-t border-outline-variant space-y-2">
+                    <SidebarItem icon="settings" label="Settings" />
+                    <SidebarItem icon="contact_support" label="Support" />
+                    
+                    <div className="flex items-center gap-3 px-4 py-4">
+                        <img 
+                            alt="Teacher Avatar" 
+                            className="w-10 h-10 rounded-full bg-secondary-container object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjEaHOtzy1ft55R5VPD3ESs1Y4ubzcVUYtFuJ4O7z9l3E8ST4obM6ja3UggqJVs9mnNA4ip-tfZshzxVMKzOtEbXhJ-6wIgVuXeD89aioWQ3vwV4dwguxpJ0WjZlgu7d-IyYzLlxGSC6c-K4hIPtKZoOHhwq6wPiB0MgzpIIIQJ6WwSBzYpzQfhhnY1uf3J9rnov_eO609xSGmjHgVDHhL_GE0kHiNfEsdmOBV0DRPR8Hsia-Pp8J53lHwjfpiOrUfoZlGFfBFSFQK"
+                        />
+                        <div>
+                            <p className="font-label-lg text-on-surface">Ibu Budi</p>
+                            <p className="text-xs text-on-surface-variant">Science Guru</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        );
+
+        const ProgressBar = ({ value, colorClass = "bg-primary-container" }) => {
+            const [width, setWidth] = useState('0%');
+            
+            useEffect(() => {
+                const timer = setTimeout(() => setWidth(`${value}%`), 300);
+                return () => clearTimeout(timer);
+            }, [value]);
+
+            return (
+                <div className="w-full bg-surface-container-highest h-4 rounded-full overflow-hidden">
+                    <div 
+                        className={`${colorClass} h-full rounded-full transition-all duration-1000 ease-out`}
+                        style={{ width: width }}
+                    ></div>
+                </div>
+            );
+        };
+
+        const ProjectCard = ({ title, category, date, progress, progressColor, image, categoryColor }) => (
+            <div className="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-4px] transition-all cursor-pointer">
+                <div className="relative h-48 overflow-hidden">
+                    <img 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                        src={image} 
+                        alt={title}
+                    />
+                    <div className={`absolute top-4 left-4 ${categoryColor} text-on-primary px-3 py-1 rounded-full text-xs font-bold`}>
+                        {category}
+                    </div>
+                </div>
+                <div className="p-6">
+                    <h4 className="font-headline-md mb-2">{title}</h4>
+                    <p className="text-on-surface-variant text-sm mb-4">{date}</p>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant">
+                            <span>Penyelesaian Materi</span>
+                            <span>{progress}%</span>
+                        </div>
+                        <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                            <div 
+                                className={`h-full ${progressColor} transition-all duration-1000 ease-out`} 
+                                style={{ width: `${progress}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const Dashboard = () => {
+            return (
+                <div className="min-h-screen bg-background">
+                    <Sidebar />
+                    
+                    <main className="ml-64 p-container-padding">
+                        {/* Welcome Header */}
+                        <header className="mb-section-gap max-w-5xl">
+                            <h2 className="font-fredoka text-[40px] leading-tight text-primary mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                Selamat Pagi, Ibu Budi! Siap buat materi seru hari ini?
+                            </h2>
+                            <div className="flex items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                                <button className="flex items-center gap-3 bg-primary-container text-on-primary-container px-8 py-5 rounded-full font-label-lg shadow-sm hover:translate-y-[-2px] transition-all border-b-[3px] border-primary">
+                                    <span className="material-symbols-outlined">auto_awesome</span>
+                                    Buat Konten Baru dengan AI
+                                </button>
+                                <div className="h-12 w-[1px] bg-outline-variant mx-2"></div>
+                                <div className="flex -space-x-3">
+                                    <div className="w-10 h-10 rounded-full border-2 border-surface bg-tertiary-container flex items-center justify-center text-on-tertiary text-xs font-bold">85%</div>
+                                    <div className="px-4 py-2 bg-surface-container-high rounded-full text-sm font-bold text-on-surface-variant flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                                        Kesiapan Kurikulum Merdeka
+                                    </div>
+                                </div>
+                            </div>
+                        </header>
+
+                        {/* Stats Bento Grid */}
+                        <section className="grid grid-cols-1 md:grid-cols-3 gap-stack-md mb-section-gap">
+                            <div className="md:col-span-2 glass-card p-6 rounded-[24px] flex flex-col justify-between">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-headline-md text-on-surface">Kelengkapan Standar BSNP</h3>
+                                        <p className="text-on-surface-variant font-body-md">Sesuai standar mutu pendidikan nasional</p>
+                                    </div>
+                                    <span className="material-symbols-outlined text-tertiary text-4xl">verified</span>
+                                </div>
+                                <div className="mt-8">
+                                    <div className="flex justify-between mb-2">
+                                        <span className="font-label-lg text-primary">Progress Akreditasi Konten</span>
+                                        <span className="font-label-lg text-primary">85%</span>
+                                    </div>
+                                    <ProgressBar value={85} />
+                                </div>
+                            </div>
+                            
+                            <div className="bg-secondary-container p-6 rounded-[24px] text-on-secondary-container flex flex-col justify-center items-center text-center shadow-lg hover:scale-[1.02] transition-transform">
+                                <span className="material-symbols-outlined text-5xl mb-4">visibility</span>
+                                <p className="text-3xl font-extrabold">12.4K</p>
+                                <p className="font-label-lg opacity-80">Total Tayangan MPI</p>
+                                <div className="mt-4 flex items-center gap-1 text-primary-fixed-dim">
+                                    <span className="material-symbols-outlined">trending_up</span>
+                                    <span className="text-sm font-bold">+12% minggu ini</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Project List Section */}
+                        <section>
+                            <div className="flex justify-between items-end mb-stack-md">
+                                <div>
+                                    <h3 className="font-headline-lg text-on-surface">Proyek MPI Aktif</h3>
+                                    <p className="text-on-surface-variant font-body-md">Media Pembelajaran Interaktif yang sedang Anda kembangkan</p>
+                                </div>
+                                <button className="text-primary font-label-lg flex items-center gap-2 hover:underline group">
+                                    Lihat Semua
+                                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-stack-md">
+                                <ProjectCard 
+                                    title="IPA - Sistem Pernapasan Kelas VIII"
+                                    category="Sains"
+                                    categoryColor="bg-primary"
+                                    date="Terakhir diedit: 2 jam yang lalu"
+                                    progress={92}
+                                    progressColor="bg-primary-container"
+                                    image="https://lh3.googleusercontent.com/aida-public/AB6AXuBqzJ2vNLKrsZxTtEy3JVPpc6xDgTjN9FzzgpdVGHT03AtFIse1fM5xzDqZ-fyQPaRJv_on7qqyavWvtHQtF9v_zcR18VsBn7Oi0BYvhjlUTuWqVqpLlaMtWjlS1uFI19rxGN4-09eWe0qqcEtE_7lWVbxYlfPDZ7bxYxvU2YF-JXn7p6Ij0Wh46roJy3K9yAKQNYeAk3ecBAiGxgrW7CyLoKGJaOI31PLOcBFDj7KNElNROhoBd1G88F4WLW1BM5EoylorHixs-5SC"
+                                />
+
+                                <ProjectCard 
+                                    title="Aljabar Dasar - Sesi 3"
+                                    category="Matematika"
+                                    categoryColor="bg-secondary"
+                                    date="Terakhir diedit: Kemarin"
+                                    progress={45}
+                                    progressColor="bg-tertiary-container"
+                                    image="https://lh3.googleusercontent.com/aida-public/AB6AXuDlvBrWFp5z3C0urOVdWMTviT3gT3dnaxx2tfp8jpErzG3QFTblXwNcexA-7JhnKgKOUxdp_YLBxV4mFbsiQtApWLB4dUBKr1bVJkOr5Hb5BdMtGtbaCP76Hjuc5Njvpj4PKFMNBtk9A8wuEPHts0l1BvMWlBjA6O8XvGQfIklE8uwh77-rUCcgzOhpBlUPi61f1ss996ngiIAuabnbaYsWzHoJR2sTGNUdHg6hj4tA_koTbV7TkuE7XXUtO2E04KSNAuf2KOwEjYzX"
+                                />
+
+                                <div className="border-2 border-dashed border-outline-variant rounded-[24px] flex flex-col items-center justify-center p-8 hover:bg-surface-container-low transition-all group cursor-pointer hover:border-primary-container">
+                                    <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-sm">
+                                        <span className="material-symbols-outlined text-3xl">add</span>
+                                    </div>
+                                    <p className="font-label-lg text-on-surface-variant">Mulai dari Template</p>
+                                    <p className="text-xs text-outline text-center mt-2 px-8">Gunakan template kurikulum yang sudah tervalidasi BSNP</p>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Dashboard />);
+    </script>
+</body></html>

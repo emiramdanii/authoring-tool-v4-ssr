@@ -20,6 +20,11 @@ export {
 } from './TemplateThemeContract';
 
 export {
+  MODERN_EDUCATOR_CONTRACT,
+  MODERN_EDUCATOR_ACCENT_PALETTE,
+} from './ModernEducatorContract';
+
+export {
   type ValidationSeverity,
   type ValidationIssue,
   type ValidationResult,

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SILSE Authoring - IPA Sistem Pernapasan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Nunito+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#e0e3e5",
+                      "primary-fixed-dim": "#4edea3",
+                      "surface-bright": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "on-background": "#191c1e",
+                      "surface-container-low": "#f2f4f6",
+                      "secondary": "#0058be",
+                      "on-primary-container": "#00422b",
+                      "error": "#ba1a1a",
+                      "background": "#f7f9fb",
+                      "tertiary-fixed": "#ffddb8",
+                      "tertiary-container": "#e29100",
+                      "surface-dim": "#d8dadc",
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-primary": "#ffffff",
+                      "on-secondary-fixed-variant": "#004395",
+                      "primary": "#006c49",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#fefcff",
+                      "tertiary": "#855300",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container": "#eceef0",
+                      "on-secondary-fixed": "#001a42",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "error-container": "#ffdad6",
+                      "surface-container-high": "#e6e8ea",
+                      "outline": "#6c7a71",
+                      "on-primary-fixed": "#002113",
+                      "on-surface-variant": "#3c4a42",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-container": "#523200",
+                      "inverse-surface": "#2d3133",
+                      "primary-container": "#10b981",
+                      "surface-tint": "#006c49",
+                      "on-tertiary": "#ffffff",
+                      "on-surface": "#191c1e",
+                      "primary-fixed": "#6ffbbe",
+                      "outline-variant": "#bbcabf",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "inverse-primary": "#4edea3",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-tertiary-fixed": "#2a1700",
+                      "secondary-container": "#2170e4",
+                      "surface": "#f7f9fb",
+                      "on-primary-fixed-variant": "#005236"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "stack-md": "24px",
+                      "section-gap": "64px",
+                      "base": "8px",
+                      "stack-sm": "12px",
+                      "container-padding": "32px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Nunito Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "body-lg": ["Nunito Sans"],
+                      "label-lg": ["Nunito Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "body-md": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "label-lg": ["16px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                      "display-lg": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .canvas-bg {
+            background-image: radial-gradient(#bbcabf 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .block-active {
+            outline: 2px solid #0058be;
+            box-shadow: 0 0 0 4px rgba(0, 88, 190, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface font-body-md overflow-hidden h-screen flex flex-col">
+<div class="h-full flex flex-col" id="root">
+<!-- Header Component -->
+<header class="h-16 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-gutter shrink-0 z-40">
+<div class="flex items-center gap-6">
+<span class="font-display-lg text-display-lg font-extrabold text-primary">SILSE Authoring</span>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface leading-none">IPA - Sistem Pernapasan</span>
+<span class="text-xs text-on-surface-variant">V7.2 Last saved 2m ago</span>
+</div>
+</div>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-lg text-label-lg" href="#">Dashboard</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-bold font-label-lg text-label-lg" href="#">Workspace</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-lg text-label-lg" href="#">Analytics</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">cloud_done</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">help_outline</button>
+<div class="flex gap-2 ml-2">
+<button class="px-6 py-2 rounded-full border border-outline text-primary font-label-lg hover:bg-surface-container-high transition-all">Preview</button>
+<button class="px-6 py-2 rounded-full bg-primary-container text-on-primary-container font-label-lg hover:opacity-90 active:scale-95 transition-all">Publish</button>
+</div>
+<img alt="Teacher Profile" class="w-8 h-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbMiA4acXdujJUPa5QrAR3NV2t9zQIPXfOol46ytl8Z-0_tTJFc1jRkMMCJmEDCu_Ru0YwamWLp3dzcAvydO8kB-UnvuNUlVvYI9OY1icC-n_Ye1vwOtIz8WaElKc2V4vrWhWAROFG2_bb_YSs879m21OANlfxsTQY3BHlPl28kCLKS4jnqtGE0hMdJY1NDc4UUjSsKlAK09Sk89U8n5LJqcGQezyDACJCMVXpSqbn80rPu-KdDYvQxmNDonsQrkpi1Img8fh5IApv"/>
+</div>
+</header>
+<!-- Main Workspace Component -->
+<div class="flex-1 flex overflow-hidden">
+<!-- LeftSidebar Component -->
+<aside class="w-72 bg-surface-container-low border-r border-outline-variant flex shrink-0">
+<!-- Slim Rail Component -->
+<div class="w-16 flex flex-col items-center py-6 gap-6 border-r border-outline-variant bg-surface-bright shrink-0">
+<button class="p-2 rounded-xl bg-primary-container text-on-primary-container"><span class="material-symbols-outlined">layers</span></button>
+<button class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high"><span class="material-symbols-outlined">grid_view</span></button>
+<button class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high"><span class="material-symbols-outlined">category</span></button>
+<button class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high"><span class="material-symbols-outlined">perm_media</span></button>
+<div class="mt-auto pb-4">
+<button class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</div>
+<!-- BrowserPanel Component -->
+<div class="flex-1 flex flex-col p-4 overflow-y-auto">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Workspace</h3>
+<button class="material-symbols-outlined text-primary">add_circle</button>
+</div>
+<div class="space-y-4">
+<div class="group cursor-pointer">
+<span class="font-label-lg text-xs uppercase tracking-wider text-outline mb-2 block">Scenes</span>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-3 py-2 border border-primary/20">
+<div class="w-12 h-8 bg-black/10 rounded flex items-center justify-center text-[10px]">1</div>
+<span class="font-label-lg text-sm">Scene 1: Intro</span>
+</div>
+<div class="flex items-center gap-3 hover:bg-surface-container-high rounded-xl px-3 py-2 transition-colors">
+<div class="w-12 h-8 bg-surface-container-highest rounded flex items-center justify-center text-[10px]">2</div>
+<span class="font-label-lg text-sm text-on-surface-variant">Scene 2: Anatomi</span>
+</div>
+<div class="flex items-center gap-3 hover:bg-surface-container-high rounded-xl px-3 py-2 transition-colors">
+<div class="w-12 h-8 bg-surface-container-highest rounded flex items-center justify-center text-[10px]">3</div>
+<span class="font-label-lg text-sm text-on-surface-variant">Scene 3: Kuis</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<span class="font-label-lg text-xs uppercase tracking-wider text-outline mb-3 block">Library Blocks</span>
+<div class="grid grid-cols-2 gap-2">
+<button class="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-outline-variant hover:bg-white hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-primary mb-1">menu_book</span>
+<span class="text-[11px] font-bold">Materi</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-outline-variant hover:bg-white hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-tertiary mb-1">quiz</span>
+<span class="text-[11px] font-bold">Kuis</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-outline-variant hover:bg-white hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-secondary mb-1">sports_esports</span>
+<span class="text-[11px] font-bold">Game</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-outline-variant hover:bg-white hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-outline mb-1">add</span>
+<span class="text-[11px] font-bold">Custom</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- CanvaStage Component -->
+<main class="flex-1 bg-surface-dim relative overflow-hidden flex flex-col items-center justify-center p-8 canvas-bg">
+<!-- Canvas Frame -->
+<div class="aspect-video w-full max-w-5xl bg-white rounded-2xl shadow-2xl relative overflow-hidden flex flex-col p-12 border border-outline-variant">
+<!-- CanvasElement Component (Inactive) -->
+<div class="absolute top-8 left-8 w-[40%] bg-surface-container-low p-4 rounded-2xl border border-outline-variant opacity-60 scale-95 origin-top-left transition-all cursor-move">
+<div class="aspect-video bg-surface-container-highest rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A detailed professional medical illustration of the human respiratory system, showing the lungs and trachea in a vibrant teal and amber color scheme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7_kzCCH7TuhCC6zVpZEqIjsGWLZ16YPSEk-dvAJF5eKitY2lRTD8hVHgCpb_wxTX-ojIEJGqtM7FAhcFZReF278N770z1o5nh7BUJWWZsbhjrwq7ZxeycmhuwYm_XbyuO6XAH6yWZh4sFTe2cuVfJPxUnMlpGbRtX42ORsAFwBMvcrlSR6nMrWaFaSrw9CRaJ3Vg3QnEJxMJiRDUxJTlEv8MkWuW63sGSPKN9_v2-5_ZdIYxXKqjbuXZlVbS1yrmsqagApEiDrSVh"/>
+</div>
+<h4 class="font-headline-md text-sm mb-1">Cover Pembelajaran</h4>
+</div>
+<!-- CanvasElement Component (Active/Selected) -->
+<div class="absolute top-1/4 left-1/3 w-[50%] bg-tertiary-fixed text-on-tertiary-fixed p-6 rounded-[24px] border-2 border-tertiary block-active z-20 cursor-move transition-transform hover:scale-[1.02]">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-tertiary">info</span>
+<span class="font-bold text-xs uppercase tracking-widest text-on-tertiary-fixed-variant">Tujuan Pembelajaran</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg mb-4 text-on-tertiary-fixed">Mekanisme Pernapasan Manusia</h3>
+<ul class="space-y-2 text-on-tertiary-fixed-variant font-body-md text-sm">
+<li class="flex items-start gap-2">• Siswa dapat mengidentifikasi organ pernapasan.</li>
+<li class="flex items-start gap-2">• Memahami proses pertukaran oksigen dan CO2.</li>
+</ul>
+<!-- ComponentHandles -->
+<div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-secondary rounded-full"></div>
+<div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-secondary rounded-full"></div>
+<div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-secondary rounded-full"></div>
+<div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+<!-- CanvasElement Component (Inactive) -->
+<div class="absolute bottom-8 right-8 w-[35%] bg-primary-container/20 p-4 rounded-2xl border border-primary/30 opacity-70 scale-90 origin-bottom-right transition-all cursor-move">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm">animation</span>
+<span class="font-bold text-[10px] uppercase">Materi Interaktif</span>
+</div>
+<p class="text-xs text-on-surface-variant italic">"Bernapas adalah proses menghirup O2 dan mengeluarkan CO2..."</p>
+</div>
+<!-- FloatingToolbar Component -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant shadow-lg z-30">
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-on-surface-variant">undo</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-on-surface-variant">redo</span></button>
+<div class="w-px h-4 bg-outline-variant mx-1"></div>
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-on-surface-variant">zoom_in</span></button>
+<span class="text-xs font-bold px-2">85%</span>
+<button class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined text-on-surface-variant">zoom_out</span></button>
+<div class="w-px h-4 bg-outline-variant mx-1"></div>
+<button class="p-2 bg-primary text-white rounded-full"><span class="material-symbols-outlined">play_arrow</span></button>
+</div>
+</div>
+</main>
+<!-- RightSidebar Component -->
+<aside class="w-80 bg-white border-l border-outline-variant flex flex-col shrink-0">
+<div class="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">tune</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-base">Properties</h3>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant text-sm">close</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- PropertyGroup: Content -->
+<div class="space-y-4">
+<div>
+<label class="font-label-lg text-label-lg text-on-surface-variant mb-2 block">Judul Blok</label>
+<input class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all font-body-md text-sm" type="text" value="Mekanisme Pernapasan Manusia"/>
+</div>
+<div>
+<label class="font-label-lg text-label-lg text-on-surface-variant mb-2 block">Isi Materi</label>
+<div class="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright">
+<div class="flex gap-1 p-2 border-b border-outline-variant bg-surface-container-low">
+<button class="p-1 hover:bg-white rounded"><span class="material-symbols-outlined text-sm">format_bold</span></button>
+<button class="p-1 hover:bg-white rounded"><span class="material-symbols-outlined text-sm">format_italic</span></button>
+<button class="p-1 hover:bg-white rounded"><span class="material-symbols-outlined text-sm">format_list_bulleted</span></button>
+</div>
+<textarea class="w-full px-4 py-3 border-none bg-transparent focus:ring-0 text-sm font-body-md leading-relaxed" rows="5">Siswa dapat mengidentifikasi organ pernapasan. 
+Memahami proses pertukaran oksigen dan CO2.</textarea>
+</div>
+</div>
+</div>
+<div class="h-px bg-outline-variant"></div>
+<!-- PropertyGroup: Appearance -->
+<div class="space-y-4">
+<h4 class="font-label-lg text-xs uppercase tracking-widest text-outline">Animation &amp; Style</h4>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="text-[11px] font-bold text-on-surface-variant block mb-1">Warna Aksen</label>
+<div class="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg bg-surface-bright cursor-pointer hover:bg-white">
+<div class="w-4 h-4 rounded-full bg-tertiary"></div>
+<span class="text-xs">Amber</span>
+</div>
+</div>
+<div>
+<label class="text-[11px] font-bold text-on-surface-variant block mb-1">Corner Radius</label>
+<div class="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg bg-surface-bright">
+<span class="text-xs">24px</span>
+</div>
+</div>
+</div>
+<div>
+<label class="font-label-lg text-label-lg text-on-surface-variant mb-2 block">Animasi Masuk</label>
+<select class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright focus:border-secondary focus:ring-2 focus:ring-secondary/20 font-body-md text-sm appearance-none">
+<option>Fade In Up</option>
+<option>Slide Left</option>
+<option>Pop Reveal</option>
+<option>Bounce Subtle</option>
+</select>
+</div>
+<div class="flex items-center justify-between p-3 bg-secondary-container/10 rounded-xl border border-secondary/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">auto_awesome</span>
+<span class="text-xs font-bold text-on-secondary-fixed-variant">Auto-Layout Block</span>
+</div>
+<input checked="" class="rounded text-secondary focus:ring-secondary" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- ActionPanel Component -->
+<div class="p-6 bg-surface-container-low shrink-0 mt-auto">
+<button class="w-full py-3 bg-on-background text-white rounded-full font-label-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">delete</span>
+                        Remove Block
+                    </button>
+</div>
+</aside>
+</div>
+</div>
+<!-- Scripts -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.add('scale-95');
+                setTimeout(() => btn.classList.remove('scale-95'), 150);
+            });
+        });
+        
+        const activeBlock = document.querySelector('.block-active');
+        if(activeBlock) {
+            activeBlock.addEventListener('mousedown', () => {
+                activeBlock.style.cursor = 'grabbing';
+            });
+            window.addEventListener('mouseup', () => {
+                activeBlock.style.cursor = 'move';
+            });
+        }
+    </script>
+</body></html>

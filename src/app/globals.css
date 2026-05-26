@@ -103,89 +103,89 @@
    LIGHT MODE — :root (default when .dark class is NOT present)
    ═══════════════════════════════════════════════════════════════════ */
 :root {
-  /* ── shadcn/ui Light ──────────────────────────────────────────── */
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* ── shadcn/ui Light — Modern Educator (Emerald Green) ──────── */
+  --radius: 0.75rem;
+  --background: #f7f9fb;
+  --foreground: #191c1e;
+  --card: #ffffff;
+  --card-foreground: #191c1e;
+  --popover: #ffffff;
+  --popover-foreground: #191c1e;
+  --primary: #006c49;
+  --primary-foreground: #f7f9fb;
+  --secondary: #eceef0;
+  --secondary-foreground: #191c1e;
+  --muted: #eceef0;
+  --muted-foreground: #6c7a71;
+  --accent: #10b981;
+  --accent-foreground: #006c49;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: #e0e3e5;
+  --input: #e0e3e5;
+  --ring: #006c49;
+  --chart-1: #006c49;
+  --chart-2: #0058be;
+  --chart-3: #e29100;
+  --chart-4: #10b981;
+  --chart-5: #2170e4;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #191c1e;
+  --sidebar-primary: #006c49;
+  --sidebar-primary-foreground: #f7f9fb;
+  --sidebar-accent: rgba(0,108,73,0.08);
+  --sidebar-accent-foreground: #006c49;
+  --sidebar-border: #e0e3e5;
+  --sidebar-ring: #006c49;
 
-  /* ── Semantic Tokens — Light Mode ─────────────────────────────── */
+  /* ── Semantic Tokens — Light Mode (Modern Educator) ────────── */
   /* App Chrome */
-  --semantic-bg-app: #f8fafc;
+  --semantic-bg-app: #f7f9fb;
   --semantic-bg-surface: #ffffff;
-  --semantic-bg-elevated: #f1f5f9;
+  --semantic-bg-elevated: #f2f4f6;
   --semantic-bg-overlay: rgba(0,0,0,0.3);
 
   /* Text */
-  --semantic-text-primary: #0f172a;
-  --semantic-text-secondary: #64748b;
-  --semantic-text-muted: #94a3b8;
-  --semantic-text-inverse: #f8fafc;
+  --semantic-text-primary: #191c1e;
+  --semantic-text-secondary: #3c4a42;
+  --semantic-text-muted: #6c7a71;
+  --semantic-text-inverse: #f7f9fb;
 
   /* Borders */
-  --semantic-border-default: #e2e8f0;
-  --semantic-border-subtle: #f1f5f9;
-  --semantic-border-strong: #cbd5e1;
+  --semantic-border-default: #e0e3e5;
+  --semantic-border-subtle: #e6e8ea;
+  --semantic-border-strong: #bbcabf;
 
   /* Interactive */
-  --semantic-accent: #fbbf24;
-  --semantic-accent-hover: #f59e0b;
-  --semantic-accent-secondary: #3ecfcf;
+  --semantic-accent: #006c49;
+  --semantic-accent-hover: #005236;
+  --semantic-accent-secondary: #0058be;
 
   /* Status */
-  --semantic-success: #34d399;
-  --semantic-warning: #fbbf24;
-  --semantic-error: #f87171;
-  --semantic-info: #22d3ee;
+  --semantic-success: #10b981;
+  --semantic-warning: #e29100;
+  --semantic-error: #ba1a1a;
+  --semantic-info: #0058be;
 
-  /* Navigation — Modern active indicator */
-  --semantic-nav-active-bg: rgba(245,158,11,0.08);
-  --semantic-nav-active-border: rgba(245,158,11,0.2);
-  --semantic-nav-active-text: #b45309;
+  /* Navigation — Modern Educator active indicator */
+  --semantic-nav-active-bg: rgba(0,108,73,0.08);
+  --semantic-nav-active-border: rgba(0,108,73,0.2);
+  --semantic-nav-active-text: #006c49;
 
-  /* Glass — Now just solid surfaces */
-  --semantic-glass-bg: #ffffff;
+  /* Glass — Glassmorphism surfaces */
+  --semantic-glass-bg: rgba(255,255,255,0.9);
   --semantic-glass-bg-strong: #ffffff;
-  --semantic-glass-border: #e2e8f0;
+  --semantic-glass-border: #e0e3e5;
 
-  /* Canvas (schema renderer — uses lighter palette in light mode) */
-  --semantic-canvas-bg: #f8fafc;
-  --semantic-canvas-bg2: #f1f5f9;
+  /* Canvas (schema renderer — Modern Educator light palette) */
+  --semantic-canvas-bg: #f7f9fb;
+  --semantic-canvas-bg2: #eceef0;
   --semantic-canvas-card: #ffffff;
-  --semantic-canvas-text: #0f172a;
-  --semantic-canvas-muted: #475569;
+  --semantic-canvas-text: #191c1e;
+  --semantic-canvas-muted: #3c4a42;
 
-  /* Glow (pulseGlow animation — derived from accent) */
-  --glow-color: rgba(251, 191, 36, 0.3);
-  --glow-color-strong: rgba(251, 191, 36, 0.6);
+  /* Glow (pulseGlow animation — derived from emerald green accent) */
+  --glow-color: rgba(0, 108, 73, 0.3);
+  --glow-color-strong: rgba(0, 108, 73, 0.6);
 
   /* Spacing (mode-independent) */
   --semantic-panel-collapsed: 56px;
@@ -197,6 +197,7 @@
   /* Font variables populated by next/font/google in layout.tsx */
   --font-fredoka: var(--font-fredoka), 'Fredoka', cursive;
   --font-nunito: var(--font-nunito), 'Nunito', sans-serif;
+  --font-plus-jakarta: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -600,8 +601,8 @@
 
 /* ── Selection glow — subtle pulse for selected blocks ── */
 @keyframes selectionGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-  50% { box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 108, 73, 0); }
+  50% { box-shadow: 0 0 12px 2px rgba(0, 108, 73, 0.15); }
 }
 
 .selection-glow {
@@ -610,8 +611,8 @@
 
 /* ── Editing glow — green pulse for inline editing mode ── */
 @keyframes editingGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
-  50% { box-shadow: 0 0 14px 2px rgba(52, 211, 153, 0.2); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  50% { box-shadow: 0 0 14px 2px rgba(16, 185, 129, 0.2); }
 }
 
 .editing-glow {
@@ -630,13 +631,13 @@
 
 /* ── Drop zone highlight — for drag target area ── */
 @keyframes dropZoneShimmer {
-  0%, 100% { background-color: rgba(245, 158, 11, 0.03); }
-  50% { background-color: rgba(245, 158, 11, 0.08); }
+  0%, 100% { background-color: rgba(0, 108, 73, 0.03); }
+  50% { background-color: rgba(0, 108, 73, 0.08); }
 }
 
 .drop-zone-highlight {
   animation: dropZoneShimmer 1.2s ease-in-out infinite;
-  border: 2px dashed rgba(245, 158, 11, 0.25);
+  border: 2px dashed rgba(0, 108, 73, 0.25);
   border-radius: 8px;
 }
 
@@ -644,15 +645,19 @@
    UTILITY CLASSES — Composed from semantic tokens
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Clean Panel Surfaces (replaces glass effects) ─────────── */
+/* ── Glassmorphism Surfaces (Modern Educator) ──────────────── */
 .glass-panel {
-  background: var(--semantic-bg-surface);
-  border-right: 1px solid var(--semantic-border-subtle);
+  background: var(--semantic-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--semantic-glass-border);
 }
 
 .glass-panel-strong {
-  background: var(--semantic-bg-surface);
-  border-bottom: 1px solid var(--semantic-border-subtle);
+  background: var(--semantic-glass-bg-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--semantic-glass-border);
 }
 
 /* ── Subtle elevation for Panels ───────────────────────────── */
@@ -874,10 +879,10 @@ select {
   outline-offset: 2px;
 }
 .variant-pill.active {
-  background: #3B82F6;
-  border-color: #3B82F6;
+  background: #006c49;
+  border-color: #006c49;
   color: #ffffff;
-  box-shadow: 0 1px 4px rgba(59,130,246,0.25);
+  box-shadow: 0 1px 4px rgba(0,108,73,0.25);
 }
 .dark .variant-pill {
   background: rgba(255,255,255,0.06);
@@ -889,8 +894,8 @@ select {
   border-color: rgba(255,255,255,0.15);
 }
 .dark .variant-pill.active {
-  background: #3B82F6;
-  border-color: #3B82F6;
+  background: #10b981;
+  border-color: #10b981;
   color: #ffffff;
 }
 
