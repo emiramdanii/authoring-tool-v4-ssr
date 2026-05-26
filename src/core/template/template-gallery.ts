@@ -46,70 +46,35 @@ import { assertDocumentPurity } from '@/core/schema/session-state';
 // ═══════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE PATTERN — Learning flow archetype
+// TEMPLATE PATTERN — Re-exported from CourseTemplateRegistry (SINGLE SOURCE OF TRUTH)
 // ═══════════════════════════════════════════════════════════════════
-// Each pattern represents a pedagogical approach:
-//   - standar:     Cover → TP → Motivasi → Materi → Kuis → Refleksi → Penutup
-//   - interaktif:  Cover → TP → Skenario → Game/Diskusi → Refleksi → Penutup
-//   - eksperimen:  Cover → TP → Skenario Ilmiah → Materi → Praktikum → Kuis → Rangkuman
-//   - mini:        Cover → Materi → Kuis → Penutup (untuk pertemuan singkat)
+// Phase 2b: TemplatePattern + TEMPLATE_PATTERNS now live in
+// CourseTemplateRegistry.ts — the ONLY template source of truth.
+// This re-export preserves backward compatibility for consumers.
 
-export type TemplatePattern = 'standar' | 'interaktif' | 'eksperimen' | 'mini';
+// Import for local use (LessonTemplate.pattern) + re-export for consumers
+import type { TemplatePattern } from './CourseTemplateRegistry';
+import { TEMPLATE_PATTERNS } from './CourseTemplateRegistry';
 
-export const TEMPLATE_PATTERNS: Record<TemplatePattern, {
-  id: TemplatePattern;
-  label: string;
-  description: string;
-  icon: string;
-  color: string;
-}> = {
-  standar: {
-    id: 'standar',
-    label: 'Standar',
-    description: 'Alur lengkap pembelajaran: pembuka, materi, latihan, penutup',
-    icon: '📋',
-    color: 'sky',
-  },
-  interaktif: {
-    id: 'interaktif',
-    label: 'Interaktif',
-    description: 'Banyak aktivitas interaktif: skenario, game, diskusi',
-    icon: '🎮',
-    color: 'violet',
-  },
-  eksperimen: {
-    id: 'eksperimen',
-    label: 'Eksperimen',
-    description: 'Berbasis praktikum dan penyelidikan ilmiah',
-    icon: '🔬',
-    color: 'emerald',
-  },
-  mini: {
-    id: 'mini',
-    label: 'Mini',
-    description: 'Pertemuan singkat: materi inti + kuis cepat',
-    icon: '⚡',
-    color: 'amber',
-  },
-};
+export type { TemplatePattern };
+export { TEMPLATE_PATTERNS };
 
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE CUSTOMIZATION — User-configurable options before apply
+// TEMPLATE CUSTOMIZATION — Re-exported from CourseTemplateRegistry (SINGLE SOURCE OF TRUTH)
 // ═══════════════════════════════════════════════════════════════════
+// Phase 2b: TemplateCustomization interface now lives in
+// CourseTemplateRegistry.ts — the ONLY template source of truth.
 
-export interface TemplateCustomization {
-  /** Which pages to include (by index in template.pageTypes) */
-  enabledPages: boolean[];
-  /** Number of quiz questions (for kuis pages) */
-  jumlahKuis: number;
-  /** Variant preference */
-  variant: 'A' | 'B' | 'C';
-  /** Teacher name to inject into cover */
-  guru?: string;
-  /** School name to inject into cover */
-  sekolah?: string;
-}
+// Import for local use (getDefaultCustomization return type) + re-export for consumers
+import type { TemplateCustomization } from './CourseTemplateRegistry';
 
+export type { TemplateCustomization };
+
+/**
+ * Get default customization for a LessonTemplate.
+ * Note: CourseTemplateRegistry.getDefaultCustomization() takes CourseTemplate;
+ * this wrapper adapts for LessonTemplate's pageTypes field.
+ */
 export function getDefaultCustomization(template: LessonTemplate): TemplateCustomization {
   return {
     enabledPages: template.pageTypes.map(() => true),

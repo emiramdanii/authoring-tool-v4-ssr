@@ -226,9 +226,7 @@ export const SEMESTER_OPTIONS = [
 // ═══════════════════════════════════════════════════════════════════
 // Filosofi baru: experience → template → system
 //
-// Hanya 3 template aktif. Semua template legacy dipindahkan ke
-// ./legacy/course-templates-legacy.ts dan TIDAK didaftarkan
-// di pipeline aktif.
+// Hanya 3 template aktif. Legacy templates sudah di-purge (Phase 1).
 //
 // ❄️ template-gallery.ts — FROZEN (LESSON_TEMPLATES + SUBJECT_MOCK_DATA)
 // ❄️ marketplace-templates.ts — FROZEN (6 template definitions)

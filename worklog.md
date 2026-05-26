@@ -107,3 +107,67 @@ Stage Summary:
 - CourseTemplate now has all fields needed to replace LessonTemplate in UI
 - TemplatePattern, TEMPLATE_PATTERNS, TemplateCustomization moved from template-gallery to CourseTemplateRegistry
 - Next step: migrate 5 UI components from template-gallery/marketplace imports to CourseTemplateRegistry imports
+---
+Task ID: 1
+Agent: Main Agent
+Task: Phase 1 — Dead System Purge
+
+Work Log:
+- Deleted 8 zero-import dead files (~2,283 lines):
+  - core/template/legacy/course-templates-legacy.ts (501 lines)
+  - core/themes/education-spacing.ts (324 lines)
+  - core/themes/education-typography.ts (234 lines)
+  - core/themes/education-components.ts (401 lines)
+  - core/themes/education-motion.ts (115 lines)
+  - core/themes/education-layout-rules.ts (217 lines)
+  - core/themes/education-tokens.ts (90 lines)
+  - core/themes/visual-contract.ts (101 lines)
+- Removed empty legacy/ directory
+- Updated comment in CourseTemplateRegistry.ts about legacy purge
+
+Stage Summary:
+- ~2,283 lines of dead code removed
+- No new TypeScript errors introduced
+- All pre-existing errors remain unchanged
+
+---
+Task ID: 2a
+Agent: Main Agent
+Task: Phase 2a — Token System Lockdown
+
+Work Log:
+- Discovered dual truth: EduViewingMode (themes/) vs EduDisplayMode (edu/)
+- Found that edu-viewing-mode-slice.ts was NEVER composed into the store (dead slice)
+- Found that CanvaState already has displayMode/setDisplayMode (session-slice)
+- Deleted edu-viewing-mode-slice.ts (dead duplicate slice)
+- Rewrote ViewingModeSelector.tsx to use displayMode/setDisplayMode from main store
+- Mapped 'student-screen' → 'student' (EduDisplayMode canonical value)
+- Deleted themes/education-colors.ts (zero imports after migration)
+- Deleted themes/semantic-tokens.ts (zero imports)
+
+Stage Summary:
+- EduDisplayMode from core/edu/ = ONLY viewing mode type
+- displayMode/setDisplayMode (session-slice) = ONLY viewing mode store path
+- 3 more dead files removed (~1,186 lines)
+- Token system lockdown complete: core/edu/ = ONLY token system
+
+---
+Task ID: 2b
+Agent: Main Agent
+Task: Phase 2b — Template System Source of Truth Lockdown
+
+Work Log:
+- Identified duplicate types between CourseTemplateRegistry and template-gallery:
+  - TemplatePattern (type + TEMPLATE_PATTERNS const)
+  - TemplateCustomization (interface)
+  - getDefaultCustomization() (function with different param types)
+- Replaced duplicate definitions in template-gallery.ts with re-exports from CourseTemplateRegistry
+- Kept LessonTemplate interface and 16 LESSON_TEMPLATES in template-gallery (Phase 3 territory)
+- Fixed import issues (TemplatePattern and TemplateCustomization need local import for LessonTemplate)
+- Verified no new TypeScript errors
+
+Stage Summary:
+- CourseTemplateRegistry = SINGLE SOURCE OF TRUTH for TemplatePattern, TEMPLATE_PATTERNS, TemplateCustomization
+- template-gallery.ts re-exports from CourseTemplateRegistry (backward compatible)
+- Consumers don't need import path changes yet
+- Template System Lockdown complete
