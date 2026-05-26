@@ -307,6 +307,64 @@ function checkFontSize(
       }
     }
   }
+
+  // ═══ CHECK FOR HARDCODED HEX COLORS ═══════════════════════════
+  // Hardcoded hex colors bypass the contract's color system.
+  // All colors should come from tokens (e.g., tokens.color('y'))
+  // so that the contract can enforce consistency. Hardcoded colors
+  // break the contract because they can't be overridden.
+  if (block.style) {
+    for (const [key, value] of Object.entries(block.style)) {
+      if (typeof value === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(value)) {
+        // Check if the hardcoded color matches any contract color
+        const contractColors = [
+          contract.colors.background,
+          contract.colors.surface,
+          contract.colors.card,
+          contract.colors.text,
+          contract.colors.muted,
+          contract.colors.accent,
+          contract.colors.accentBg,
+          contract.colors.accentBorder,
+        ];
+        const isContractColor = contractColors.some(c =>
+          c.toLowerCase().replace(/[^0-9a-f]/g, '').includes(
+            value.toLowerCase().replace(/[^0-9a-f]/g, '').slice(0, 6),
+          ),
+        );
+        if (!isContractColor) {
+          warnings.push(issue(
+            'warning',
+            'hardcoded-color',
+            `Block '${block.type}' has hardcoded color '${value}' in style.${key}. Use tokens.color() instead so contract can enforce consistency.`,
+            pageType,
+            block.type,
+            block.id,
+            `Hardcoded: ${value}`,
+          ));
+        }
+      }
+    }
+  }
+
+  // ═══ CHECK borderColor FIELD ═════════════════════════════════
+  // The borderColor field on blocks should use token keys ('y', 'c', etc.)
+  // not raw hex colors. Token keys are resolved through the contract.
+  const b = block as Record<string, unknown>;
+  if ('borderColor' in b && typeof b.borderColor === 'string') {
+    const bc = b.borderColor as string;
+    if (/^#[0-9a-fA-F]{3,8}$/.test(bc)) {
+      warnings.push(issue(
+        'warning',
+        'hardcoded-border-color',
+        `Block '${block.type}' has hardcoded borderColor '${bc}'. Use a token key ('y', 'c', 'g', 'p') instead.`,
+        pageType,
+        block.type,
+        block.id,
+        `Hardcoded borderColor: ${bc}`,
+      ));
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -106,22 +106,39 @@ export class TokenResolver {
     return this.colorAlpha('text', this.minOpacity(a));
   }
 
-  /** Get a color by token key (e.g., 'y' → '#f9c12e')
+  /** Get a color by token key (e.g., 'y' → '#fbbf24')
    *  When a contract is active, contract colors OVERRIDE theme defaults.
    *  Priority: Contract > Theme token
+   *
+   *  KEY FIX (v2.1): Now uses accentTokenMap from the resolved contract,
+   *  which includes ALL accent tokens ('y', 'c', 'g', 'p', 'o', 'r').
+   *  Previously only 'y' was in the contractColorMap, meaning
+   *  tokens.color('p') on a materi page returned theme default purple
+   *  instead of the contract's curated #c084fc.
    */
   color(key: string): string {
     // Contract override: if contract is active, check contract colors first
     if (this._contractStyle) {
+      // Base structural colors from contract
       const contractColorMap: Record<string, string> = {
         bg: this._contractStyle.background,
         bg2: this._contractStyle.background, // surface used as bg2
         card: this._contractStyle.cardBg,
         text: this._contractStyle.textColor,
         muted: this._contractStyle.mutedColor,
-        y: this._contractStyle.accent, // Primary accent = 'y' in golden contract
       };
       if (key in contractColorMap) return contractColorMap[key]!;
+
+      // Accent token map — ALL accent colors from contract
+      // This is the fix: 'c', 'g', 'p', 'o', 'r' are now resolved too
+      if (key in this._contractStyle.accentTokenMap) {
+        return this._contractStyle.accentTokenMap[key]!;
+      }
+
+      // Fallback: primary accent for any unrecognized accent-ish key
+      if (key === this._contractStyle.primaryAccentToken) {
+        return this._contractStyle.accent;
+      }
     }
     const colors = this.tokens.colors as Record<string, string>;
     return colors[key] || key; // Pass through if not a token key (already a hex)
@@ -537,6 +554,14 @@ export class TokenResolver {
    *  Priority chain:
    *    TemplateThemeContract > Scene Style > Block Default
    *
+   *  KEY FIX (v2.1): Now patches ALL accent tokens ('y', 'c', 'g', 'p',
+   *  'o', 'r') using the contract's accentTokenMap. Previously only 'y'
+   *  was patched, which meant block renderers calling tokens.color('p')
+   *  on a materi page would get the theme's default purple instead of
+   *  the contract's curated #c084fc. This was the ROOT CAUSE of
+   *  "Engine Canggih Tapi Output Hollow" — accent colors leaked through
+   *  the contract because non-'y' tokens weren't patched.
+   *
    *  @param contractStyle - Resolved contract style for the current page
    */
   applyContract(contractStyle: import('@/core/template/contract/TemplateThemeContract').ContractResolvedStyle): void {
@@ -553,8 +578,26 @@ export class TokenResolver {
     colors['text'] = contractStyle.textColor;
     colors['muted'] = contractStyle.mutedColor;
 
-    // Override accent color token 'y' with contract accent
-    colors['y'] = contractStyle.accent;
+    // ═══ PATCH ALL ACCENT TOKENS ═══════════════════════════════════
+    // This is the KEY fix. Previously only 'y' was patched. Now ALL
+    // accent tokens ('y', 'c', 'g', 'p', 'o', 'r') get patched with
+    // the contract's curated colors from accentTokenMap.
+    //
+    // This ensures:
+    //   - tokens.color('y') → contract gold (#fbbf24)
+    //   - tokens.color('c') → contract blue (#2563eb)
+    //   - tokens.color('g') → contract green (#4ade80)
+    //   - tokens.color('p') → contract purple (#c084fc)
+    //   - tokens.color('o') → contract orange (#fb923c)
+    //   - tokens.color('r') → contract red (#f87171)
+    //
+    // On pages where the accent is 'p' (e.g., materi), the primary
+    // accent is resolved from the contract (not theme defaults).
+    // All 30+ block renderers that call tokens.color('c'|'g'|'p'|'o'|'r')
+    // will now get contract-compliant colors.
+    for (const [token, color] of Object.entries(contractStyle.accentTokenMap)) {
+      colors[token] = color;
+    }
 
     // Override spacing
     const spacing = raw.spacing as Record<string, number>;

@@ -364,6 +364,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'globalisasi',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -377,7 +379,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🌍', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── B. Inggris VII — Standar ────────────────────────────────
+  // ── B. Inggris VII — Standar (LEGACY) ──────────────────────
   {
     id: 'modul-bing-vii',
     name: 'Modul B. Inggris Kelas VII',
@@ -386,6 +388,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'ham-hak-kewajiban',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Learning Objectives', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -398,7 +402,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🌍', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── Seni VII — Standar ──────────────────────────────────────
+  // ── Seni VII — Standar (LEGACY) ─────────────────────────────
   {
     id: 'modul-seni-vii',
     name: 'Modul Seni Budaya Kelas VII',
@@ -407,6 +411,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'perilaku-patuh',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -419,7 +425,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🎨', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── Seni VIII — Interaktif ──────────────────────────────────
+  // ── Seni VIII — Interaktif (LEGACY) ────────────────────────
   {
     id: 'modul-seni-viii',
     name: 'Modul Seni Budaya Kelas VIII',
@@ -428,6 +434,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -440,7 +448,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🎨', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── PJOK VII — Standar ──────────────────────────────────────
+  // ── PJOK VII — Standar (LEGACY) ─────────────────────────────
   {
     id: 'modul-pjok-vii',
     name: 'Modul PJOK Kelas VII',
@@ -449,6 +457,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'nilai-pancasila',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -462,7 +472,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── PJOK VIII — Interaktif ──────────────────────────────────
+  // ── PJOK VIII — Interaktif (LEGACY) ────────────────────────
   {
     id: 'modul-pjok-viii',
     name: 'Modul PJOK Kelas VIII',
@@ -471,6 +481,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'globalisasi',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -483,7 +495,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '⚽', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── PJOK IV (SD) — Gerak Dasar ──────────────────────────────
+  // ── PJOK IV (SD) — Gerak Dasar (LEGACY) ────────────────────
   {
     id: 'modul-pjok-iv',
     name: 'Modul PJOK Kelas IV SD',
@@ -492,6 +504,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '4',
     semester: '1',
     theme: 'nilai-pancasila',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
@@ -506,7 +520,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '🏃', author: 'SILSE', version: '1.0.0' },
   },
 
-  // ── PJOK X (SMA) — Kebugaran ────────────────────────────────
+  // ── PJOK X (SMA) — Kebugaran (LEGACY) ──────────────────────
   {
     id: 'modul-pjok-x',
     name: 'Modul PJOK Kelas X SMA',
@@ -515,6 +529,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '10',
     semester: '1',
     theme: 'globalisasi',
+    contractId: 'golden-pertemuan',
+    status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },

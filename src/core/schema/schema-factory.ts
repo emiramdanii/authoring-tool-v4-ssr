@@ -32,7 +32,12 @@ import { SCHEMA_VERSION } from './validation';
 import { TEMPLATE_TO_SCENE } from '../edu/education-scene-types';
 import type { SceneType } from '../edu/education-scene-types';
 
-// ── Section Labels & Colors (mirrors TemplateAdapter) ─────────────
+// ── Section Labels & Colors — sourced from TemplateThemeContract ───
+// The section colors are the SINGLE SOURCE OF TRUTH for which accent
+// token each page type uses. These MUST match the contract's pageAccents.
+// If the contract changes, these must change too.
+
+import { getContractOrGolden } from '../template/contract/TemplateThemeContract';
 
 const SECTION_LABELS: Record<string, string> = {
   cover: 'Cover',
@@ -52,23 +57,22 @@ const SECTION_LABELS: Record<string, string> = {
   hero: 'Hero',
 };
 
-const SECTION_COLORS: Record<string, string> = {
-  cover: 'y',
-  petunjuk: 'c',
-  dokumen: 'c',
-  tujuan: 'c',
-  motivasi: 'y',
-  skenario: 'o',  // Contract: skenario → orange (was 'p')
-  materi: 'p',
-  diskusi: 'c',
-  kuis: 'g',      // Contract: kuis → green (was 'y')
-  game: 'g',
-  hasil: 'g',
-  refleksi: 'p',
-  rangkuman: 'y',  // Contract: rangkuman → gold (was 'g')
-  penutup: 'y',    // Contract: penutup → gold (was 'o')
-  hero: 'y',
-};
+/**
+ * Get the section color for a page type from the golden contract.
+ * This ensures schema-factory always uses contract-compliant accent tokens,
+ * not hardcoded values that might diverge from the contract.
+ */
+function getSectionColor(pageType: string): string {
+  const contract = getContractOrGolden(undefined);
+  const pageAccent = contract.pageAccents[pageType];
+  if (pageAccent) return pageAccent.accentToken;
+  // Fallback for page types not in the contract
+  const fallbacks: Record<string, string> = {
+    hero: 'y',
+    game: 'g',
+  };
+  return fallbacks[pageType] || 'y';
+}
 
 // ── Block Type Mapping: templateType → suggested block types ──────
 // This replaces the per-type converters in TemplateAdapter.
@@ -163,7 +167,7 @@ export function createDefaultSchemaForTemplateType(
     version: SCHEMA_VERSION,
     templateType,
     sectionLabel: SECTION_LABELS[templateType],
-    sectionColor: SECTION_COLORS[templateType],
+    sectionColor: getSectionColor(templateType),
     sceneType,
     blocks,
     background: (templateType === 'cover' || templateType === 'hero') ? {
