@@ -115,7 +115,7 @@ function NcGridCardA({ card, cardIndex, blockId, tokens, isCompact, interactive 
             background: tokens.colorAlpha(card.color, 0.2),
             boxShadow: 'none',
           }}>
-          <span style={{ fontSize: isCompact ? '15px' : '20px' }}>{card.icon}</span>
+          <span style={{ fontSize: isCompact ? '16px' : '20px' }}>{card.icon}</span>
         </div>
         <InlineTextEditor
           {...titleEditor}
@@ -341,7 +341,7 @@ function NcGridCardC({ card, cardIndex, blockId, tokens, isCompact, interactive 
           background: tokens.colorAlpha(card.color, 0.2),
         }}
       >
-        <span style={{ fontSize: isCompact ? '14px' : '18px' }}>{card.icon}</span>
+        <span style={{ fontSize: isCompact ? '16px' : '18px' }}>{card.icon}</span>
       </div>
 
       {/* Title (always visible) */}

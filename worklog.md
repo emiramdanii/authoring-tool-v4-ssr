@@ -1,25 +1,26 @@
 ---
 Task ID: 1
-Agent: Main
-Task: Wire golden template into app + Create LearningUnit types + Fix contract enforcement
+Agent: Main Agent
+Task: Implement STANDAR UTAMA SILSE UI — Fix "Engine Canggih Tapi Output Hollow"
 
 Work Log:
-- Analyzed full codebase: TemplateThemeContract, TokenResolver, CoverRenderer, SceneLayoutEngine, SchemaRenderer, PageRenderer, template-gallery
-- Found ROOT CAUSE: golden template exists (norma-golden-schema.ts) but was NOT connected to the app
-- Found secondary ROOT CAUSE: EduRenderingContext.hero() etc. ignore contract typography minimums
-- Added GOLDEN_PRESET_MAP + loadGoldenPreset() to SchemaEngine.utils.ts
-- Added loadGoldenPreset method to canva store (schema-preset-slice.ts)
-- Updated template-gallery.ts: ppkn-norma presetId → 'norma-golden', 17 pages
-- Updated TemplateGalleryPanel.tsx: golden preset loading path
-- Updated canva types.ts: added loadGoldenPreset to CanvaState
-- Created LearningUnit type system (src/core/template/compiler/LearningUnit.ts)
-- Created PageSplitCompiler (src/core/template/compiler/PageSplitCompiler.ts)
-- Created barrel export (src/core/template/compiler/index.ts)
-- Fixed EduRenderingContext to enforce contract typography minimums via applyContractMinimum()
-- Build passes successfully
+- Explored full codebase structure: types, renderers, template engine, layout engine, contract system
+- Identified key issues: golden template not wired, duplicate LearningUnit types, require() crash, font size violations
+- Wired up createPpknNormaGoldenProject() in CourseTemplateRegistry.createProjectFromTemplate() for 'modul-ppkn-vii' template
+- Consolidated duplicate LearningUnit types: added `variant` field to canonical learning-unit.ts, updated PageSplitCompiler to import from canonical
+- Fixed require() crash in getTemplateIntensityCurve() — replaced with static import
+- Verified PageRenderer properly uses contract system (resolveContractStyle, GoldenPageRenderer, TokenResolver.applyContract)
+- Verified SceneLayoutEngine cover isolation already fixed (zIndex:0 for cover-only pages)
+- Audited 8 block renderers for STANDAR font size compliance
+- Fixed 3 critical font size violations: CoverRenderer 12px→14px, NcGridRenderer 15px→16px, 14px→16px
+- Verified 1280×720 fixed canvas system (computeSceneScale + scaleTransform) already working
+- Build verified: npx next build compiled successfully
 
 Stage Summary:
-- Golden template now loads via 'norma-golden' presetId
-- Contract typography minimums enforced: body ≥ 20px, hero ≥ 48px, etc.
-- LearningUnit types + PageSplitCompiler created for future AI-generated content
-- Build succeeds with no new errors
+- **KEY FIX**: createPpknNormaGoldenProject() now used when 'modul-ppkn-vii' template selected — produces 17 STANDAR-compliant pages with real PPKn content instead of placeholder
+- **Contract enforcement pipeline confirmed working**: TemplateThemeContract → resolveContractStyle() → TokenResolver.applyContract() → all accent tokens patched → typography scale enforced
+- **GoldenPageRenderer** adds progress bar, phase badge, nav dots for all non-cover pages
+- **Font minimums enforced**: body ≥20px, caption ≥16px, micro ≥14px
+- **Cover isolation**: Cover pages use absolute positioning (full bleed), no other blocks allowed
+- **5/8 renderers fully token-based** (Tp, Kuis, DefBox, Refleksi, Cover content text)
+- **All builds pass** — no type errors in changed files

@@ -22,7 +22,8 @@ import type { CanvaPage } from '@/components/canva/types';
 import { createPage } from '@/store/canva/constants';
 import { createDefaultSchemaForTemplateType, type ProjectCreationMetadata } from '@/core/schema/schema-factory';
 import type { SceneType } from '@/core/edu/education-scene-types';
-import { TEMPLATE_TO_SCENE } from '@/core/edu/education-scene-types';
+import { TEMPLATE_TO_SCENE, SCENE_TYPES } from '@/core/edu/education-scene-types';
+import { createPpknNormaGoldenProject } from '@/presets/ppkn/norma-golden-schema';
 
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
@@ -665,6 +666,42 @@ export function createProjectFromTemplate(
     throw new Error(`Course template "${templateId}" not found`);
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  // GOLDEN TEMPLATE FAST PATH
+  // ═══════════════════════════════════════════════════════════════════
+  // STANDAR UTAMA SILSE:
+  //   "JANGAN pakai createDefaultSchemaForTemplateType() untuk golden template"
+  //
+  // Golden templates use handcrafted content — real PPKn curriculum data,
+  // no placeholder text, every block carefully authored. The schema factory
+  // generates generic defaults that produce "hollow output" — this is the
+  // #1 cause of the "Engine Canggih Tapi Output Hollow" problem.
+  //
+  // When a golden template is selected, we bypass the schema factory entirely
+  // and use the handcrafted project function instead. This gives:
+  //   - Real content (not placeholder)
+  //   - STANDAR compliant density (1 question per quiz page, max 4 TP items)
+  //   - Contract enforcement on every page
+  //   - Section labels and colors on every page
+  //   - Semantic hints on every block
+  // ═══════════════════════════════════════════════════════════════════
+
+  if (templateId === 'modul-ppkn-vii') {
+    return createPpknNormaGoldenProject({
+      title: metadata.title,
+      guru: metadata.guru,
+      sekolah: metadata.sekolah,
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FALLBACK: Schema Factory Bridge (for non-golden templates)
+  // ═══════════════════════════════════════════════════════════════════
+  // Non-golden templates still use the schema factory. This generates
+  // block defaults via BlockDefinitionRegistry.createDefault() which
+  // produces reasonable placeholder content for each block type.
+  // ═══════════════════════════════════════════════════════════════════
+
   const pages: CanvaPage[] = [];
 
   // Build ProjectCreationMetadata for the schema factory
@@ -763,7 +800,6 @@ export function resolveSceneType(spec: SceneTemplateSpec): SceneType {
 export function getTemplateIntensityCurve(templateId: string): Array<{ sceneType: SceneType; intensity: number; label: string }> {
   const template = _registry.get(templateId);
   if (!template) return [];
-  const { SCENE_TYPES } = require('@/core/edu/education-scene-types');
   return template.scenes.map(spec => {
     const st = resolveSceneType(spec);
     return {

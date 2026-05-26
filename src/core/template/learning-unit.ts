@@ -74,6 +74,8 @@ export interface LearningUnit {
   durasi?: string;
   /** Contract ID for template enforcement */
   contractId?: string;
+  /** Template variant (A/B/C) for visual differentiation */
+  variant?: 'A' | 'B' | 'C';
 }
 
 // ── Learning Flow Definition ────────────────────────────────────
@@ -112,6 +114,10 @@ export interface LearningFlowStep {
 import type { CanvaPage, SchemaCanvaPage } from '@/components/canva/types';
 import { createPage } from '@/store/canva/constants';
 import { generateBlockId } from '@/core/schema/ensure-schema';
+
+// Re-export DensityCheckResult for consumers
+export type { DensityCheckResult } from './compiler/LearningUnit';
+export { PAGE_DENSITY_RULES as CompilerDensityRules } from './compiler/LearningUnit';
 
 let _compilerIdCounter = 0;
 

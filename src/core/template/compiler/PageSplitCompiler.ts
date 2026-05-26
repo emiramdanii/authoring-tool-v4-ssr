@@ -7,7 +7,8 @@ import type { CanvaPage, SchemaCanvaPage } from '@/components/canva/types';
 import type { ScreenSchema, SchemaBlock } from '@/core/schema/types';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { createPage } from '@/store/canva/constants';
-import type { LearningUnit, DensityCheckResult } from './LearningUnit';
+import type { LearningUnit } from '../learning-unit';
+import type { DensityCheckResult } from './LearningUnit';
 import { PAGE_DENSITY_RULES } from './LearningUnit';
 
 let _compilerIdCounter = 0;
