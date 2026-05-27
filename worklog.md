@@ -359,3 +359,26 @@ Stage Summary:
   - Meta reads in AI/template panels (5 files) — could migrate but also use other authoring store features
 - useSchemaProjection() provides drop-in replacement for useAuthoringStore content reads
 - Total useAuthoringStore imports removed from canva rendering: 16 files
+
+---
+Task ID: 3
+Agent: Main
+Task: Phase 3 — Konten Panel → Schema Navigator
+
+Work Log:
+- Audited all 8 Konten tabs — ALL already migrated to schema-first reads (useSchema* hooks)
+- Audited useAuthoringStore usage across codebase — ~50 files, but Konten tabs use 0 authoring store content reads
+- Built SchemaNavigatorPanel component (596 lines) — unified tree view of all schema blocks across pages
+- Added Tab/Navigator toggle to Konten.tsx — switch between tab view and navigator view
+- Removed useAuthoringStore import from SchemaBlockTree — replaced with kontenPanelRequest canva store mechanism
+- Added kontenPanelRequest to CanvaState types, store init, reset-canvas, persistence-slice
+- Wired kontenPanelRequest subscription in AuthoringTool.tsx — auto-switches to Konten panel
+- Build verified (next build passes), committed and pushed
+
+Stage Summary:
+- Phase 3 COMPLETE: Konten panel now fully schema-aware
+- New component: SchemaNavigatorPanel — tree view with summary bar, search, block navigation
+- SchemaBlockTree now uses zero useAuthoringStore references
+- Cross-panel navigation: SchemaBlockTree pencil → kontenPanelRequest → AuthoringTool switches to Konten panel
+- All Konten tabs read from CanvaPage[].schema via useSchema* hooks
+- Remaining useAuthoringStore usages are for project metadata (meta, tp, atp) — Phase 5 territory
