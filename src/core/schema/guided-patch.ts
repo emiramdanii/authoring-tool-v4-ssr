@@ -295,18 +295,30 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
         // This is ATOMIC — the split reads the current schema state (which already
         // has our patched content) and creates a new page in a single transaction.
         // No need to navigate first; promoteSceneSplitToPage() works by pageId.
+        // Phase 4.2: Recursive auto-split — keeps splitting while the original
+        // page still has overflow (up to 5 splits max to prevent infinite loops).
         if (check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
           try {
             const { promoteSceneSplitToPage } = require('./schema-apply');
-            const splitResult = promoteSceneSplitToPage(pageId, check.scenePlan, 1);
-            if (splitResult.success && splitResult.pageUpdated) {
-              autoSplitPerformed = true;
-              newPageId = splitResult.newPageId;
-            } else {
-              console.warn(
-                `[guided-patch] Auto-split transaction failed for page "${pageId}": ${splitResult.error}. ` +
-                `Content may overflow. Manual split recommended.`
-              );
+            const MAX_SPLITS = 5;
+            let currentCheck = check;
+            for (let i = 0; i < MAX_SPLITS; i++) {
+              const splitResult = promoteSceneSplitToPage(pageId, currentCheck.scenePlan!, 1);
+              if (splitResult.success && splitResult.pageUpdated) {
+                autoSplitPerformed = true;
+                if (!newPageId) newPageId = splitResult.newPageId; // Keep first new page ID
+              } else {
+                break; // Can't split further
+              }
+              // Check if the original page still overflows after this split
+              const { useCanvaStore } = require('@/store/canva/store');
+              const updatedPages = useCanvaStore.getState().pages;
+              const updatedPage = updatedPages.find((p: any) => p.id === pageId);
+              if (!updatedPage?.schema) break;
+              const nextCheck = checkOverflowRich(updatedPage.schema, updatedPage.templateType);
+              if (!nextCheck.overflowDetected) break;
+              if (!nextCheck.canSplit || !nextCheck.scenePlan || nextCheck.scenePlan.isSingleScene) break;
+              currentCheck = nextCheck;
             }
           } catch (err) {
             console.warn(
@@ -325,6 +337,20 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
             `single scene. Content may overflow.`
           );
         }
+      }
+    } else {
+      // Phase 4: Auto-clear stale overflow status when content fits
+      // This ensures pageOverflowStatus is always accurate without
+      // requiring a manual scanAllPagesOverflow() call.
+      const overflowStore = useOverflowWarningStore.getState();
+      const currentStatus = overflowStore.pageOverflowStatus[pageId];
+      if (currentStatus?.hasOverflow) {
+        overflowStore.clearPageOverflowStatus(pageId);
+      }
+      // Also clear the banner if the warning was for this page
+      const currentWarning = overflowStore.lastWarning;
+      if (currentWarning?.pageId === pageId) {
+        overflowStore.clearWarning();
       }
     }
   }
@@ -797,7 +823,13 @@ function checkOverflowRich(schema: ScreenSchema, templateType?: string): Overflo
   }
 
   // ── Compute scene plan using real measurements ──
-  const sceneRes = getSceneResolution('16:9');
+  // Read the project's actual ratioId instead of hardcoding '16:9'
+  let ratioId = '16:9';
+  try {
+    const { useCanvaStore } = require('@/store/canva/store');
+    ratioId = useCanvaStore.getState().ratioId || '16:9';
+  } catch { /* fallback to 16:9 during SSR */ }
+  const sceneRes = getSceneResolution(ratioId);
   const hasFullPageBlock = schema.blocks.length === 1 &&
     isFullPageBlockType(schema.blocks[0].type);
   const safeArea = hasFullPageBlock
