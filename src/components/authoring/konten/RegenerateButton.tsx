@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { isEnabled } from '@/config/feature-flags';
 import { Zap, Loader2 } from 'lucide-react';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { canRegenerate, getStoredText } from '../auto-generate/regenerate';
 
 // ── Regenerate Button ────────────────────────────────────────────
@@ -31,6 +31,7 @@ export function RegenerateButton({
   className = '',
 }: RegenerateButtonProps) {
   const [loading, setLoading] = useState(false);
+  const { goToAutoGen } = useSchemaContext();
   const storedText = getStoredText();
   const showButton = canRegenerate() || hasExistingData;
 
@@ -42,7 +43,7 @@ export function RegenerateButton({
   const handleClick = async () => {
     // If no stored text, redirect to auto-generate panel
     if (!storedText) {
-      useAuthoringStore.getState().setActivePanel('autogen');
+      goToAutoGen();
       return;
     }
 

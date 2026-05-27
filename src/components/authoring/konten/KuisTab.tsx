@@ -21,10 +21,9 @@
 
 import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useAuthoringStore } from '@/store/authoring-store';
 import type { KuisItem } from '@/store/authoring-store';
-import { useSchemaKuis } from '@/hooks/use-schema-navigator';
-import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
+import { PRESETS_KUIS } from '@/store/authoring/presets/kuis-presets';
+import { useSchemaKuis, useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
@@ -44,9 +43,7 @@ export function KuisTab() {
     replaceAllQuestions,
   } = useSchemaKuis();
 
-  // Meta still comes from authoring store (not schema-represented yet)
-  const meta = useAuthoringStore((s) => s.meta);
-  const atp = useAuthoringStore((s) => s.atp);
+  const { meta, atp, goToAutoGen } = useSchemaContext();
   const listRef = useRef<HTMLDivElement>(null);
   const letters = ['A', 'B', 'C', 'D'];
 
@@ -84,7 +81,7 @@ export function KuisTab() {
       toast.success(`❓ ${newKuis.length} soal kuis berhasil digenerate ulang`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber.');
-      useAuthoringStore.getState().setActivePanel('autogen');
+      goToAutoGen();
     }
   };
 
@@ -119,10 +116,9 @@ export function KuisTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
           <button
             onClick={() => {
-              // Apply preset via authoring store, then sync to schema
-              useAuthoringStore.getState().applyKuisPreset('norma-10-soal');
-              const presetKuis = useAuthoringStore.getState().kuis;
-              replaceAllQuestions(presetKuis);
+              // Schema-first: apply preset directly to schema
+              const preset = PRESETS_KUIS['norma-10-soal'];
+              if (preset) replaceAllQuestions(preset.soal as KuisItem[]);
             }}
             className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-3 text-center hover:border-app-border transition-colors cursor-pointer"
           >
@@ -132,9 +128,8 @@ export function KuisTab() {
           </button>
           <button
             onClick={() => {
-              useAuthoringStore.getState().applyKuisPreset('blank');
-              const presetKuis = useAuthoringStore.getState().kuis;
-              replaceAllQuestions(presetKuis);
+              // Schema-first: apply blank preset directly to schema
+              replaceAllQuestions([]);
             }}
             className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-3 text-center hover:border-app-border transition-colors cursor-pointer"
           >
@@ -163,9 +158,9 @@ export function KuisTab() {
               </button>
               <button
                 onClick={() => {
-                  useAuthoringStore.getState().applyKuisPreset('norma-10-soal');
-                  const presetKuis = useAuthoringStore.getState().kuis;
-                  replaceAllQuestions(presetKuis);
+                  // Schema-first: apply preset directly to schema
+                  const preset = PRESETS_KUIS['norma-10-soal'];
+                  if (preset) replaceAllQuestions(preset.soal as KuisItem[]);
                 }}
                 className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
               >

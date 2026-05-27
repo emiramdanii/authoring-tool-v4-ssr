@@ -6,6 +6,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { Button } from '@/components/ui/button';
+import { SchemaBlockTreeCompact } from './SchemaBlockTree';
 
 // ═══════════════════════════════════════════════════════════════
 // SCENE LIST — Page navigator with thumbnails + drag reorder
@@ -120,6 +121,13 @@ export function SceneList() {
                 </div>
               </div>
             </div>
+
+            {/* Schema Block Tree — collapsible block navigator */}
+            <SchemaBlockTreeCompact
+              page={p}
+              pageIndex={i}
+              isActive={isActive}
+            />
           </button>
         );
       })}

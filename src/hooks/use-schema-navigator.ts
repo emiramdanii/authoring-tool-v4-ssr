@@ -1693,3 +1693,109 @@ function createDefaultGameBlock(blockType: string): SchemaBlock {
     ...(defaults[blockType] || { title: blockType }),
   } as unknown as SchemaBlock;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 3 — Cross-Link & Navigation Utilities
+// ═══════════════════════════════════════════════════════════════════
+// These utilities enable cross-linking between the Konten panel and
+// the Canva editor. When a user clicks a block in the Konten panel,
+// they can navigate to the corresponding page and see the block
+// selected in the right panel for editing.
+//
+// Data flow:
+//   navigateToBlock(pageId, blockId) → goPage() + selectBlock()
+//   useSchemaContext() → reads meta/tp/atp for regeneration context
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Navigate to a specific block in the Canva editor.
+ * Goes to the page containing the block and selects it for editing.
+ * Used by Konten tabs for cross-link navigation.
+ */
+export function navigateToBlock(pageId: string, blockId: string, blockType: string): void {
+  const { useCanvaStore: _useCanvaStore } = require('@/store/canva-store');
+  const { useInteractionStore: _useInteractionStore } = require('@/store/canva/interaction-store');
+
+  const canvaStore = _useCanvaStore.getState();
+  const interactionStore = _useInteractionStore.getState();
+
+  // Find the page index
+  const pageIndex = canvaStore.pages.findIndex((p: CanvaPage) => p.id === pageId);
+  if (pageIndex < 0) return;
+
+  // Navigate to the page
+  canvaStore.goPage(pageIndex);
+
+  // Select the block (shows in right panel)
+  interactionStore.selectBlock(blockId, blockType);
+}
+
+/**
+ * Schema context hook — provides project metadata needed by Konten tabs
+ * for regeneration and display purposes.
+ *
+ * NOTE: meta/tp/atp are project-level metadata, NOT page-level content.
+ * They are NOT stored in page.schema but in the authoring store.
+ * This is intentional — they describe the project, not the content.
+ * Phase 5 may move these to a dedicated project metadata store.
+ *
+ * This hook centralizes the remaining useAuthoringStore reads so they
+ * can be tracked and eventually replaced in Phase 5.
+ */
+export function useSchemaContext(): {
+  meta: import('@/store/authoring/types').MetaState;
+  tp: import('@/store/authoring/types').TpItem[];
+  atp: import('@/store/authoring/types').AtpState;
+  /** Navigate to Canva panel (for "Locate in Canva" buttons) */
+  goToCanva: () => void;
+  /** Navigate to AutoGen panel (for regeneration fallback) */
+  goToAutoGen: () => void;
+} {
+  // These reads are project-level metadata — not content.
+  // They will remain in useAuthoringStore until Phase 5 creates
+  // a dedicated project metadata store.
+  const { useAuthoringStore: _useAuthoringStore } = require('@/store/authoring-store');
+  const meta = _useAuthoringStore((s: any) => s.meta) as import('@/store/authoring/types').MetaState;
+  const tp = _useAuthoringStore((s: any) => s.tp) as import('@/store/authoring/types').TpItem[];
+  const atp = _useAuthoringStore((s: any) => s.atp) as import('@/store/authoring/types').AtpState;
+
+  const goToCanva = useCallback(() => {
+    _useAuthoringStore.getState().setActivePanel('canva');
+  }, []);
+
+  const goToAutoGen = useCallback(() => {
+    _useAuthoringStore.getState().setActivePanel('autogen');
+  }, []);
+
+  return { meta, tp, atp, goToCanva, goToAutoGen };
+}
+
+/**
+ * Get the Konten tab that corresponds to a given block type.
+ * Used for reverse navigation (from SchemaBlockTree to Konten tab).
+ */
+export function getKontenTabForBlockType(blockType: string): import('@/components/authoring/konten/shared').KontenTab | null {
+  const mapping: Record<string, import('@/components/authoring/konten/shared').KontenTab> = {
+    'materi-section': 'materi',
+    'materi-blok': 'materi',
+    'diskusi': 'diskusi',
+    'refleksi': 'refleksi',
+    'motivasi': 'motivasi',
+    'rangkuman': 'rangkuman',
+    'skenario': 'skenario',
+    'kuis': 'kuis',
+    // Game blocks → modules tab
+    'sortir-game': 'modules',
+    'roda-game': 'modules',
+    'memory-game': 'modules',
+    'matching-game': 'modules',
+    'fill-blank-game': 'modules',
+    'word-search-game': 'modules',
+    'true-false-game': 'modules',
+    'drag-drop-game': 'modules',
+    'crossword-game': 'modules',
+    'team-buzzer-game': 'modules',
+    'spinwheel-game': 'modules',
+  };
+  return mapping[blockType] || null;
+}

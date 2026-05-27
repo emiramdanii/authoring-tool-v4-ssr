@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { useSchemaMateri } from '@/hooks/use-schema-navigator';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaMateri, useSchemaContext } from '@/hooks/use-schema-navigator';
 import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
@@ -138,9 +137,7 @@ export function MateriTab() {
   // ═══ Phase 3: Schema-first reads via useSchemaMateri ═══
   const { bloks, locations, hasSections, addBlok, removeBlok, moveBlok, updateBlok, replaceAllBloks } = useSchemaMateri();
 
-  // Only use authoring store for meta reads (context for regeneration) and navigation
-  const meta = useAuthoringStore((s) => s.meta);
-  const atp = useAuthoringStore((s) => s.atp);
+  const { meta, atp, goToAutoGen } = useSchemaContext();
   const listRef = useRef<HTMLDivElement>(null);
   const jumlahPertemuan = atp.jumlahPertemuan || 1;
 
@@ -175,7 +172,7 @@ export function MateriTab() {
       toast.success(`📖 ${blokResults.length} blok materi berhasil digenerate ulang`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber.');
-      useAuthoringStore.getState().setActivePanel('autogen');
+      goToAutoGen();
     }
   };
 

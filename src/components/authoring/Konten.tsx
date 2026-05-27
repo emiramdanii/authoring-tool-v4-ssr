@@ -10,7 +10,7 @@ import { ModulesTab } from './konten/ModulesTab';
 import { KuisTab } from './konten/KuisTab';
 import { MotivasiTab } from './konten/MotivasiTab';
 import { RangkumanTab } from './konten/RangkumanTab';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { FileEdit, Puzzle, HelpCircle, BookOpen, Theater, ArrowRight, Gamepad2, ClipboardList, MessageSquare, NotebookPen, Sparkles, ListChecks } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
@@ -45,9 +45,7 @@ export default function Konten() {
 
   const currentTab = tabs.find(t => t.id === activeTab)!;
 
-  // Cross-panel continuity: show project context from Dokumen
-  const meta = useAuthoringStore((s) => s.meta);
-  const tp = useAuthoringStore((s) => s.tp);
+  const { meta, tp, goToCanva } = useSchemaContext();
   const projectContext = meta.judulPertemuan
     ? `${meta.mapel || 'Mapel'} ${meta.kelas ? '· Kelas ' + meta.kelas : ''} · ${tp.length} TP`
     : null;
@@ -110,7 +108,7 @@ export default function Konten() {
       <div className="flex-shrink-0 px-6 py-4 border-t border-app-border flex justify-end">
         <button
           onClick={() => {
-            useAuthoringStore.getState().setActivePanel('canva');
+            goToCanva();
           }}
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors inline-flex items-center gap-2"
         >

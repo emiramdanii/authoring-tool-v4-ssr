@@ -2,7 +2,6 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useSchemaModules } from '@/hooks/use-schema-navigator';
-import { useAuthoringStore } from '@/store/authoring-store';
 import type { Module } from '@/store/authoring/types';
 import { MODULE_TYPES, GAME_TYPES, ALL_MODULE_TYPES, moduleTypeInfo } from './shared';
 import ModuleEditorModal from '../ModuleEditorModal';

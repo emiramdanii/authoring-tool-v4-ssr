@@ -12,8 +12,7 @@
 
 import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useSchemaRefleksi } from '@/hooks/use-schema-navigator';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaRefleksi, useSchemaContext } from '@/hooks/use-schema-navigator';
 import { RegenerateButton } from './RegenerateButton';
 import { ItemRegenerateButton } from './ItemRegenerateButton';
 import { regenerateRefleksi, regenerateSingleRefleksiQuestion } from '../auto-generate/regenerate';
@@ -33,8 +32,7 @@ export function RefleksiTab() {
     updatePenugasan,
   } = useSchemaRefleksi();
 
-  // Meta still comes from authoring store (not schema-represented yet)
-  const meta = useAuthoringStore((s) => s.meta);
+  const { meta, goToAutoGen } = useSchemaContext();
   const listRef = useRef<HTMLDivElement>(null);
 
   const handleRegenerateRefleksi = async () => {
@@ -64,7 +62,7 @@ export function RefleksiTab() {
       toast.success(`🪞 Refleksi berhasil digenerate ulang (${newRefleksi.pertanyaan.length} pertanyaan)`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber atau tidak ada refleksi block di schema.');
-      useAuthoringStore.getState().setActivePanel('autogen');
+      goToAutoGen();
     }
   };
 

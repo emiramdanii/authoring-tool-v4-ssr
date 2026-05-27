@@ -187,3 +187,32 @@ Stage Summary:
 - **Only MateriTab remains authoring-first** (Task 8, deferred — 13+ block type conversions, most complex)
 - **ModulesTab has no schema representation** — deferred indefinitely
 - **Konten.tsx** still uses useAuthoringStore for meta/tp (context badge) and navigation (setActivePanel) — acceptable, these are metadata not content
+
+---
+Task ID: 3
+Agent: main
+Task: Phase 3 — Konten Panel → Schema Navigator
+
+Work Log:
+- Audited all Konten panel components and Canva LeftPanel
+- Built SchemaBlockTree.tsx component — navigable tree view of schema blocks per page
+- Wired SchemaBlockTreeCompact into SceneList.tsx for inline block navigation
+- Added navigateToBlock() utility and useSchemaContext() hook to use-schema-navigator.ts
+- Migrated KuisTab preset from useAuthoringStore → direct schema write via PRESETS_KUIS
+- Replaced ALL useAuthoringStore reads in Konten tabs with useSchemaContext():
+  - Konten.tsx: meta, tp, goToCanva
+  - MateriTab.tsx: meta, atp, goToAutoGen
+  - DiskusiTab.tsx: meta, tp, goToAutoGen
+  - RefleksiTab.tsx: meta, goToAutoGen
+  - KuisTab.tsx: meta, atp, goToAutoGen
+  - RegenerateButton.tsx: goToAutoGen
+  - ModulesTab.tsx: removed unused import
+- Added getKontenTabForBlockType() for reverse navigation
+- Build passes with zero regressions
+
+Stage Summary:
+- SchemaBlockTree provides block-level navigation in Canva LeftPanel
+- All Konten tabs now use useSchemaContext() instead of direct useAuthoringStore reads
+- KuisTab presets write directly to schema (no more authoring store round-trip)
+- Zero useAuthoringStore imports remain in Konten panel components
+- Cross-link: click block in SchemaBlockTree → navigate to page + select block in right panel

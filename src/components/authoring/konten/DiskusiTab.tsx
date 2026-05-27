@@ -14,8 +14,7 @@
 
 import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useSchemaDiskusi } from '@/hooks/use-schema-navigator';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaDiskusi, useSchemaContext } from '@/hooks/use-schema-navigator';
 import { RegenerateButton } from './RegenerateButton';
 import { ItemRegenerateButton } from './ItemRegenerateButton';
 import { regenerateDiskusi, regenerateSingleDiskusiQuestion } from '../auto-generate/regenerate';
@@ -34,9 +33,7 @@ export function DiskusiTab() {
     removeQuestion,
   } = useSchemaDiskusi();
 
-  // Meta still comes from authoring store (not schema-represented yet)
-  const meta = useAuthoringStore((s) => s.meta);
-  const tp = useAuthoringStore((s) => s.tp);
+  const { meta, tp, goToAutoGen } = useSchemaContext();
   const listRef = useRef<HTMLDivElement>(null);
 
   const handleRegenerateDiskusi = async () => {
@@ -66,7 +63,7 @@ export function DiskusiTab() {
       toast.success(`🗣️ Diskusi berhasil digenerate ulang (${newDiskusi.pertanyaan.length} pertanyaan)`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber atau tidak ada diskusi block di schema.');
-      useAuthoringStore.getState().setActivePanel('autogen');
+      goToAutoGen();
     }
   };
 
