@@ -61,7 +61,7 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
         const raw = localStorage.getItem('at_state_v1');
         if (raw) {
           const parsed = JSON.parse(raw);
-          isSederhana = parsed.teacherMode === 'sederhana';
+          isSederhana = parsed.teacherMode === true;
         }
       } catch { /* ignore */ }
 

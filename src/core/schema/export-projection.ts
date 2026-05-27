@@ -300,7 +300,7 @@ function materiBlokBlockToProjection(block: MateriBlokBlock): MateriBlok {
       ...item,
     })),
     // Map infoboxStyle → style for backward compat
-    style: block.infoboxStyle || block.style,
+    style: block.infoboxStyle || (typeof block.style === 'string' ? block.style : undefined),
     infoboxStyle: block.infoboxStyle,
     karakter: block.karakter,
     situasi: block.situasi,

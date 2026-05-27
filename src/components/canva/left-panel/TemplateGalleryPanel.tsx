@@ -143,7 +143,7 @@ const PAGE_TYPE_ICONS: Record<string, string> = {
 
 export default function TemplateGalleryPanel() {
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
   const loadCustomSchema = useCanvaStore(s => s.loadCustomSchema);
   const _pushHistory = useCanvaStore(s => s._pushHistory);
   const existingPages = useCanvaStore(s => s.pages);

@@ -90,7 +90,7 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     return cs;
   })();
 
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
 
   // Format timestamp for display
   const timeLabel = useCallback((): string | null => {

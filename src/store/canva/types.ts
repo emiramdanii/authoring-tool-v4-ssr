@@ -367,6 +367,14 @@ export interface CanvaState {
   /** Hash of pages at last save (for corruption detection) */
   _pagesHashAtSave: string;
 
+  // ── Educational Viewing Mode ────────────────────────────────
+  /** Current educational viewing mode — affects colors, contrast, spacing, text sizes */
+  eduViewingMode: import('@/core/themes/education-colors').EduViewingMode;
+  /** Set the educational viewing mode explicitly */
+  setEduViewingMode: (mode: import('@/core/themes/education-colors').EduViewingMode) => void;
+  /** Cycle through viewing modes: classroom → projector → print → student-screen */
+  cycleEduViewingMode: () => void;
+
   // ── Export ────────────────────────────────────────────────────
   // Legacy export methods removed — all exports now use Vite SSR pipeline
   // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts

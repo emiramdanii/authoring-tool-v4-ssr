@@ -7,12 +7,16 @@
 import { alpha } from '@/lib/color-palette';
 import type { DesignTokens } from '../themes/tokens';
 import { resolveTokens } from '../themes/tokens';
-import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_INTERACTION, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
+import { IOS_TYPOGRAPHY, IOS_CARD, IOS_SHADOW, IOS_SURFACE, IOS_SPACING, IOS_COMPOSITION, type IOS_TypographyLevel } from '../themes/ios-visual-contract';
 import { EduRenderingContext } from '../edu/EduRenderingContext';
 import type { EduDisplayMode } from '../edu/education-typography';
 import { EDU_MODE_BG } from '../edu/education-colors';
 import { EDU_PRINT_SAFE } from '../edu/education-layout-rules';
 import type { SceneType } from '../edu/education-scene-types';
+import { EDU_TYPOGRAPHY, EDU_FONT_FAMILIES, EDU_FONT_MAP, type EduTypographyLevel } from '../themes/education-typography';
+import { EDU_COMPONENT_COLORS, type EduComponentRole, type EduViewingMode } from '../themes/education-colors';
+import { EDU_MOTION } from '../edu/education-motion';
+import { IOS_INTERACTION } from '../themes/ios-visual-contract'; // Re-import for IOS_INTERACTION usage
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER MODE
@@ -724,6 +728,67 @@ export class TokenResolver {
   isProjectorMode(): boolean {
     return this._displayMode === 'projector';
   }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // EDU BRIDGE METHODS — Used by EduRenderingContext
+  // ═══════════════════════════════════════════════════════════════════
+
+  /** Get the current edu viewing mode (EduViewingMode mapping from EduDisplayMode) */
+  getEduMode(): EduViewingMode {
+    const modeMap: Record<string, EduViewingMode> = {
+      classroom: 'classroom',
+      projector: 'projector',
+      print: 'print',
+      student: 'student-screen',
+    };
+    return modeMap[this._displayMode] ?? 'classroom';
+  }
+
+  /** Set the edu viewing mode */
+  setEduMode(mode: EduViewingMode): void {
+    const reverseMap: Record<string, EduDisplayMode> = {
+      classroom: 'classroom',
+      projector: 'projector',
+      print: 'print',
+      'student-screen': 'student',
+    };
+    this._displayMode = reverseMap[mode] ?? 'classroom';
+  }
+
+  /** Get edu component colors for a pedagogical role */
+  eduComponentColors(role: EduComponentRole): { accent: string; accentSoft: string; border: string; text: string; icon: string; bg: string; cardBg: string } {
+    const mode = this.getEduMode();
+    const colorSet = EDU_COMPONENT_COLORS[role];
+    // EduComponentColorSet has per-mode colors; access the mode key
+    return (colorSet as unknown as Record<string, { accent: string; accentSoft: string; border: string; text: string; icon: string; bg: string; cardBg: string }>)[mode]
+      ?? (EDU_COMPONENT_COLORS.materi as unknown as Record<string, { accent: string; accentSoft: string; border: string; text: string; icon: string; bg: string; cardBg: string }>)[mode];
+  }
+
+  /** Get edu typography style for a level */
+  eduTypography(level: EduTypographyLevel): Record<string, string | number> {
+    const spec = EDU_TYPOGRAPHY[level];
+    return {
+      fontSize: spec.size,
+      fontWeight: spec.weight,
+      lineHeight: spec.lineHeight,
+      letterSpacing: `${spec.letterSpacing}em`,
+      fontFamily: EDU_FONT_FAMILIES[EDU_FONT_MAP[level]],
+    };
+  }
+
+  /** Get edu primary text color for current mode */
+  eduTextPrimary(): string {
+    const mode = this.getEduMode();
+    if (mode === 'print') return '#000000';
+    return this.color('text');
+  }
+
+  /** Get edu transition style for specific CSS properties */
+  eduTransitionStyle(properties: string = 'all'): Record<string, string> {
+    return {
+      transition: `${properties} ${IOS_INTERACTION.duration.standard}ms ${IOS_INTERACTION.easing.default}`,
+    };
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -816,3 +881,24 @@ export function resolveSubtleBorder(
     ? `rgba(255,255,255,${opacity})`
     : `rgba(0,0,0,${opacity})`;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// IOS → EDU TYPOGRAPHY LEVEL MAPPING
+// ═══════════════════════════════════════════════════════════════════
+// Maps iOS visual contract typography levels to educational
+// typography levels for seamless cross-contract rendering.
+// ═══════════════════════════════════════════════════════════════════
+
+export const IOS_TO_EDU_TYPOGRAPHY_MAP: Record<IOS_TypographyLevel, EduTypographyLevel> = {
+  hero: 'slideTitle',
+  title1: 'sectionTitle',
+  title2: 'sectionTitle',
+  title3: 'subsectionTitle',
+  headline: 'subsectionTitle',
+  body: 'body',
+  callToAction: 'bodyLarge',
+  subheadline: 'caption',
+  footnote: 'caption',
+  caption1: 'caption',
+  caption2: 'micro',
+};

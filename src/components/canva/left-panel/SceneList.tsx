@@ -110,7 +110,7 @@ export function SceneList() {
                   {isSchemaDriven && <Zap size={10} className="text-app-success inline" />}
                   <span className="truncate">{p.label}</span>
                   {pageOverflowStatus[p.id]?.hasOverflow && (
-                    <AlertTriangle size={9} className="text-amber-400 flex-shrink-0" title="Konten melebihi kapasitas" />
+                    <AlertTriangle size={9} className="text-amber-400 flex-shrink-0" aria-label="Konten melebihi kapasitas" />
                   )}
                 </div>
                 <div className="text-[8px] mt-0.5 flex items-center gap-1">

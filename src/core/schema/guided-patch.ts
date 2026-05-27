@@ -35,7 +35,7 @@ import type { SchemaBlock, ScreenSchema } from './types';
 import type { CanvaPage } from '@/components/canva/types';
 import { useCanvaStore } from '@/store/canva/store';
 import { ensurePageSchema, generateBlockId } from './ensure-schema';
-import { deepMergeBlock } from '@/core/editor/deep-merge';
+import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import { commitSchemaUpdate, findBlockOwner, type BlockOwner } from '@/store/canva/schema-helpers';
 import { assertDocumentPurity } from './session-state';
 import { editBus } from '@/core/editor/edit-bus';
@@ -941,7 +941,7 @@ export function previewPatchOverflow(args: GuidedPatchArgs): {
       target = schemaClone.blocks[owner.blockIndex]!.children?.[owner.childIndex] as Record<string, unknown> | undefined;
     }
     if (target) {
-      Object.assign(target, deepMergeBlock(target, patch));
+      Object.assign(target, deepMergeBlock(target as SchemaBlock, patch));
     }
   }
 

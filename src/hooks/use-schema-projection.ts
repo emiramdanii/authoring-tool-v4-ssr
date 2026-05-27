@@ -120,7 +120,7 @@ export function useSchemaProjection(): {
       if (!schema) continue;
 
       for (const block of schema.blocks) {
-        if (GAME_BLOCK_TYPES.includes(block.type)) {
+        if (GAME_BLOCK_TYPES.includes(block.type) && block.id) {
           const b = block as unknown as Record<string, unknown>;
           allModules.push({
             _id: block.id,
@@ -204,7 +204,7 @@ export function useSchemaModulesProjection(): Module[] {
       if (!schema) continue;
 
       for (const block of schema.blocks) {
-        if (GAME_BLOCK_TYPES.includes(block.type)) {
+        if (GAME_BLOCK_TYPES.includes(block.type) && block.id) {
           const b = block as unknown as Record<string, unknown>;
           allModules.push({
             _id: block.id,

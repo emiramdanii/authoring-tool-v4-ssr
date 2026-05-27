@@ -33,7 +33,7 @@ export default function BatchActionsBar() {
   const batchSetVariant = useCanvaStore(s => s.batchSetVariant);
   const _pushHistory = useCanvaStore(s => s._pushHistory);
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
 
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 

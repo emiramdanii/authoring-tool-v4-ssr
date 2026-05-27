@@ -78,7 +78,7 @@ export default function TemplateCustomizeDialog({
   isLoading = false,
 }: TemplateCustomizeDialogProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
   const meta = useAuthoringStore(s => s.meta);
   const existingPageCount = useCanvaStore(s => s.pages.length);
 

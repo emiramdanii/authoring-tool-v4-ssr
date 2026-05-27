@@ -15,7 +15,7 @@ interface AddBlockSectionProps {
 
 export function AddBlockSection({ addBlockOpen, onToggle }: AddBlockSectionProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const sectionLabel = teacherMode === 'sederhana' ? 'Tambah Konten' : 'Tambah Block';
+  const sectionLabel = teacherMode ? 'Tambah Konten' : 'Tambah Block';
 
   return (
     <div className="border border-app-border/30 rounded-xl overflow-hidden">

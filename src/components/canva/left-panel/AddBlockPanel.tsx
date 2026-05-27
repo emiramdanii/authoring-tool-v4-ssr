@@ -49,7 +49,7 @@ export default function AddBlockPanel() {
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
   const [search, setSearch] = useState('');
 
   const page = pages[currentPageIndex];

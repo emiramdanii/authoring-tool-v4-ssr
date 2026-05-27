@@ -41,7 +41,7 @@ export default function BatchOperationsBar() {
   const batchToggleCompression = useCanvaStore(s => s.batchToggleCompression);
   const selectBlock = useCanvaStore(s => s.selectBlock);
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
 
   const [showMore, setShowMore] = useState(false);
 

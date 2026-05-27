@@ -61,7 +61,7 @@ export function useSchemaBlocksByType(blockType: string): SchemaBlockLocation[] 
       if (!schema) continue;
 
       for (const block of schema.blocks) {
-        if (block.type === blockType) {
+        if (block.type === blockType && block.id) {
           results.push({
             pageId: page.id,
             blockId: block.id,
@@ -1023,7 +1023,7 @@ export function useSchemaMateri(): {
       const content = sectionWithContent.content || [];
       applyGuidedSchemaPatch({
         pageId: materiPage.id,
-        blockId: section.id,
+        blockId: section.id || '',
         patch: { content: [...content, newBlokBlock as unknown as SchemaBlock] },
         source: 'konten-tab',
       });
@@ -1108,7 +1108,7 @@ export function useSchemaMateri(): {
 
     applyGuidedSchemaPatch({
       pageId: materiPage.id,
-      blockId: section.id,
+      blockId: section.id || '',
       patch: { content: newContent },
       source: 'konten-tab',
     });
@@ -1149,7 +1149,7 @@ function materiBlokBlockToProjection(block: MateriBlokBlock): MateriBlok {
       // MateriBlok.items has optional fields, MateriBlokBlock.items has required
     })),
     // Map infoboxStyle → style for backward compat with block-editors
-    style: block.infoboxStyle || block.style,
+    style: block.infoboxStyle || (typeof block.style === 'string' ? block.style : undefined),
     infoboxStyle: block.infoboxStyle,
     karakter: block.karakter,
     situasi: block.situasi,
@@ -1179,7 +1179,7 @@ function projectionToMateriBlokBlock(blok: MateriBlok, id: string): SchemaBlock 
     pertanyaan: blok.pertanyaan,
     pesan: blok.pesan,
     infoboxStyle: blok.style || blok.infoboxStyle,
-    style: blok.style,
+    blockStyle: blok.style,
     items: blok.items?.map(item => ({
       warna: item.warna || '#3ecfcf',
       angka: item.angka || '',
@@ -1572,7 +1572,7 @@ export function useSchemaModules(): {
       if (!schema) continue;
 
       for (const block of schema.blocks) {
-        if (GAME_BLOCK_TYPES.includes(block.type)) {
+        if (GAME_BLOCK_TYPES.includes(block.type) && block.id) {
           const b = block as unknown as Record<string, unknown>;
           allModules.push({
             _id: block.id,
@@ -1608,9 +1608,9 @@ export function useSchemaModules(): {
       bgColor: '#1a1a2e',
       overlay: 0,
       elements: [],
-      templateType: blockType.replace('-game', '').replace('-set', ''),
+      templateType: 'game' as const,
       colorPalette: null,
-      navConfig: { prev: true, next: true, navbar: true },
+      navConfig: { showNavbar: true, showPrevNext: true, showScore: false, showProgress: false, navbarStyle: 'colorful' },
       templateData: {},
       pageMode: 'schema',
       schema: {

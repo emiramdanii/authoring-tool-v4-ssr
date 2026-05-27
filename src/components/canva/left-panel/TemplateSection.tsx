@@ -20,7 +20,7 @@ interface TemplateSectionProps {
 
 export function TemplateSection({ galleryOpen, onToggle }: TemplateSectionProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const sectionLabel = teacherMode === 'sederhana' ? 'Pilih Template' : 'Template Gallery';
+  const sectionLabel = teacherMode ? 'Pilih Template' : 'Template Gallery';
 
   return (
     <div className="border border-app-border/30 rounded-xl overflow-hidden" data-testid="template-gallery">

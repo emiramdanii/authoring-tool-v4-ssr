@@ -15,7 +15,7 @@
 // coupling and unnecessary re-renders (overflow state changes rarely).
 // ═══════════════════════════════════════════════════════════════════
 
-import { createStore } from 'zustand/vanilla';
+import { create } from 'zustand';
 import type { OverflowCheckResult } from '@/core/schema/guided-patch';
 
 export interface OverflowWarning {
@@ -66,7 +66,7 @@ interface OverflowWarningState {
   clearAllPageOverflowStatuses: () => void;
 }
 
-export const useOverflowWarningStore = createStore<OverflowWarningState>((set) => ({
+export const useOverflowWarningStore = create<OverflowWarningState>((set) => ({
   lastWarning: null,
   bannerVisible: false,
   pageOverflowStatus: {},

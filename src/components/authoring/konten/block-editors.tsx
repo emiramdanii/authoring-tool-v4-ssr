@@ -436,7 +436,7 @@ function InfoboxEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
     { id: 'success', label: '✅ Success', color: '#34d399' },
   ];
 
-  const currentStyle = blok.style || 'info';
+  const currentStyle = blok.style || blok.infoboxStyle || 'info';
   const currentStyleInfo = styles.find((s) => s.id === currentStyle) || styles[0];
 
   return (

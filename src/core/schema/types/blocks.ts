@@ -659,8 +659,8 @@ export interface MateriBlokBlock extends BaseBlock {
   pesan?: string;
   /** Infobox style variant: info / tips / warning / success */
   infoboxStyle?: string;
-  /** Legacy style field (maps to infoboxStyle for backward compat) */
-  style?: string;
+  /** Legacy style field (maps to infoboxStyle for backward compat) — NOT BaseBlock.style */
+  blockStyle?: string;
   items?: Array<{ warna: string; angka: string; satuan?: string; label: string; icon?: string }>;
   accentColor?: string;
   /** Pertemuan ke berapa (1-based), undefined = semua pertemuan */

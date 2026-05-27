@@ -32,7 +32,7 @@ import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 
 export default function BatchActionBar() {
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
 
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const pages = useCanvaStore(s => s.pages);

@@ -25,7 +25,7 @@ export function OfflineIndicator() {
   const [queueStatus, setQueueStatus] = useState<SyncQueueStatus>({ pending: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
   const teacherMode = useAuthoringStore(s => s.teacherMode);
-  const isSederhana = teacherMode === 'sederhana';
+  const isSederhana = teacherMode;
 
   // Poll queue status periodically when offline
   useEffect(() => {

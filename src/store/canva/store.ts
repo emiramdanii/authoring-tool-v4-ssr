@@ -33,6 +33,7 @@ import { createSchemaPresetSlice } from './schema-preset-slice';
 import { createTeacherModeSlice } from './teacher-mode-slice';
 import { createRecoverySlice } from './recovery-slice';
 import { createTabSlice } from './tab-slice';
+import { createEduViewingModeSlice } from './edu-viewing-mode-slice';
 // connectHistoryToEditBus moved to @/store/canva/init.ts
 
 // ── Performance middleware (dev-only) ──────────────────────────
@@ -133,6 +134,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     ...createTeacherModeSlice(...api),
     ...createRecoverySlice(...api),
     ...createTabSlice(...api),
+    ...createEduViewingModeSlice(...api),
   };
 }), { name: 'CanvaStore', enabled: process.env.NODE_ENV === 'development' }));
 

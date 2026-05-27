@@ -131,7 +131,7 @@ export interface SchemaPatch {
   /** Timestamp of the edit */
   timestamp: number;
   /** Optional source (for collaboration tracking) */
-  source?: 'user' | 'ai' | 'sync' | 'auto';
+  source?: 'user' | 'ai' | 'sync' | 'auto' | 'guided-form' | 'konten-tab';
   /** Immer-level patches for efficient undo/redo (when available) */
   _immerPatches?: {
     /** Forward patches scoped to the blocks array level */
