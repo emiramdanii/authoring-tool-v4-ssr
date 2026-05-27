@@ -451,3 +451,40 @@ Stage Summary:
 - 3 commits pushed to git: Phase 3 complete, Phase 4 hardening, Phase 5 in progress
 - Core architecture: Schema as Single Source of Truth, applyGuidedSchemaPatch as single write path
 - Remaining: Phase 5A (activePanel migration) is deferred as stable architecture is functional
+
+---
+Task ID: 10
+Agent: Main Agent
+Task: Phase 3 Enhancement — Schema Navigator with inline editing, quick actions, category grouping, panelRequest navigation
+
+Work Log:
+- Audited all Konten panel components for useAuthoringStore usage
+- Found 2 remaining useAuthoringStore references:
+  1. KontenOverflowBanner: useAuthoringStore.getState().setActivePanel('canva')
+  2. useSchemaContext: goToCanva/goToAutoGen using setActivePanel
+- Added panelRequest: string | null to CanvaState types (cross-panel navigation)
+- Added panelRequest initial value to store, reset-canvas, persistence-slice (3 locations)
+- Wired panelRequest subscription in AuthoringTool.tsx — auto-switches to requested panel
+- Fixed KontenOverflowBanner: replaced useAuthoringStore → useCanvaStore.panelRequest
+- Fixed useSchemaContext: goToCanva/goToAutoGen use panelRequest instead of setActivePanel
+- Enhanced SchemaNavigatorPanel from 596 → 700+ lines:
+  - Inline title editing: double-click title → InlineTitleEditor → applyGuidedSchemaPatch
+  - Quick actions on hover: delete, duplicate, move up/down per block (uses store CRUD)
+  - Category-based grouping view: toggle between by-page and by-category
+  - Search filter across all blocks
+  - Cross-panel navigation using panelRequest pattern
+  - CategorySection component for category-grouped view
+- Made Schema Navigator the default view in Konten.tsx (was 'tabs', now 'navigator')
+- Added auto-switch: kontenTabRequest now also switches viewMode to 'tabs' for editing
+- Added Phase 5 NOTE comment on useAuthoringStore import in use-schema-navigator.ts
+- Build verified: npx next build ✓
+- Git push: zero conflicts
+
+Stage Summary:
+- **SchemaNavigatorPanel is now a full editing navigator** — not just a tree view
+- **Inline editing** lets teachers edit block titles directly in the navigator
+- **Quick actions** (delete, duplicate, reorder) available on hover without switching views
+- **Category grouping** provides alternative view organized by content type
+- **panelRequest** pattern replaces all useAuthoringStore.setActivePanel calls in Konten area
+- **Navigator is the default view** — schema-first approach from the start
+- **Zero useAuthoringStore DATA reads** in Konten panel (meta/tp/atp are metadata, Phase 5)
