@@ -14,6 +14,7 @@ import {
   MATERI_RAKIT_TYPES,
 } from '@/lib/canva-constants';
 import { ensureModuleIds } from '@/lib/module-resolver';
+import { PAGE_DENSITY_RULES } from '@/core/template/compiler/LearningUnit';
 // FASE 3: Schema-native page creation — no more buildTemplateData()
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
 import { assertDocumentPurity } from '@/core/schema/session-state';
@@ -267,7 +268,8 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
 
       // Kuis pages — split by soalPerHalaman, with pertemuan filtering
       if (blueprint.includeKuis && kuis.length > 0) {
-        const perPage = blueprint.soalPerHalaman || 5;
+        // Phase 4: Use density rules as default, allow blueprint override
+        const perPage = blueprint.soalPerHalaman || PAGE_DENSITY_RULES.defaultQuizQuestionsPerPage;
 
         // Filter kuis by pertemuan when perPertemuan is enabled
         const kuisForPert = perPertemuan

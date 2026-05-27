@@ -60,6 +60,9 @@ export const PAGE_DENSITY_RULES = {
   minBodyFontSize: 20,
   minCoverTitleFontSize: 48,
   minWhitespaceRatio: 0.30,
+  /** Maximum quiz questions per page (STRICT — 1 question = 1 page for BSNP compliance) */
   maxQuizQuestionsPerPage: 1,
+  /** Default quiz questions per page for auto-generate (teacher-friendly default, can be overridden) */
+  defaultQuizQuestionsPerPage: 3,
   maxTPItemsPerPage: 4,
 } as const;

@@ -43,6 +43,7 @@ import { produceWithPatches } from 'immer';
 import { computeScenePlan, type ScenePlan } from '@/core/layout/SceneOverflowEngine';
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/scene/SceneLayoutEngine';
 import { isFullPageBlockType, isBlockTypeCompressionCapable } from './capability-registry';
+import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 // Lazy import to avoid circular dependency:
 //   guided-patch ← schema-apply ← store ← ... (would cause SSR crash)
 //   guided-patch ← TemplateThemeContract ← ModernEducatorContract ← ... (similar)
@@ -137,7 +138,12 @@ export interface GuidedPatchResult {
  *   })
  */
 export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult {
-  const { pageId, blockId, patch, overflowPolicy = 'none', source = 'user' } = args;
+  // Phase 4: Konten tab edits default to 'warn' overflow policy.
+  // This ensures teachers see overflow warnings when adding content
+  // that exceeds page capacity, without blocking the edit.
+  const resolvedOverflowPolicy = args.overflowPolicy
+    ?? (args.source === 'konten-tab' ? 'warn' : 'none');
+  const { pageId, blockId, patch, overflowPolicy = resolvedOverflowPolicy, source = 'user' } = args;
 
   const store = useCanvaStore.getState();
   const pages = [...store.pages];
@@ -258,6 +264,16 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
     overflowDetails = check;
 
     if (overflowDetected) {
+      // Phase 4: Emit overflow warning to the UI store so Konten tabs
+      // and other components can show the OverflowWarningBanner.
+      useOverflowWarningStore.getState().setWarning({
+        pageId,
+        blockId,
+        source,
+        details: check,
+        timestamp: Date.now(),
+      });
+
       if (overflowPolicy === 'warn') {
         console.warn(
           `[guided-patch] Overflow detected on page "${pageId}" after patching block "${blockId}". ` +

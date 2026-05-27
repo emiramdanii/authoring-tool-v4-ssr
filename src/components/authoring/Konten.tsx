@@ -11,6 +11,7 @@ import { KuisTab } from './konten/KuisTab';
 import { MotivasiTab } from './konten/MotivasiTab';
 import { RangkumanTab } from './konten/RangkumanTab';
 import { SchemaNavigatorPanel } from './konten/SchemaNavigatorPanel';
+import { KontenOverflowBanner } from './konten/KontenOverflowBanner';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { FileEdit, Puzzle, HelpCircle, BookOpen, Theater, ArrowRight, Gamepad2, ClipboardList, MessageSquare, NotebookPen, Sparkles, ListChecks, Layers } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -140,6 +141,11 @@ export default function Konten() {
           </div>
         </div>
       )}
+
+      {/* Phase 4: Overflow warning banner */}
+      <div className="flex-shrink-0 px-6">
+        <KontenOverflowBanner />
+      </div>
 
       {/* Content Area — switches between Tab Content and Schema Navigator */}
       <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 custom-scrollbar">
