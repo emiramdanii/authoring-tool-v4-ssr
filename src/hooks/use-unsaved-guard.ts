@@ -16,6 +16,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { isAnyDirty } from '@/lib/save-utils';
 import {
   setDirtyExitFlag,
   clearDirtyExitFlag,
@@ -54,8 +55,7 @@ export function useUnsavedGuard() {
 
   // ── Check if there are unsaved changes ────────────────────────
   const hasUnsavedChanges = useCallback((): boolean => {
-    return useAuthoringStore.getState().dirty ||
-      useCanvaStore.getState()._saveStatus === 'unsaved';
+    return isAnyDirty();
   }, []);
 
   // ── Confirm navigation away (in-app) ──────────────────────────

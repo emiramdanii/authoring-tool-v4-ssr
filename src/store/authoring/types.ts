@@ -297,8 +297,6 @@ export interface KuisPreset {
 export interface AuthoringState {
   // Navigation
   activePanel: PanelId;
-  /** Active tab in the Konten panel — set from SchemaBlockTree for cross-navigation */
-  kontenTab: string | null;
 
   // Mode tracking
   activePreset: string | null;
@@ -332,8 +330,6 @@ export interface AuthoringState {
 
   // Navigation actions
   setActivePanel: (panel: PanelId) => void;
-  /** Set the active tab in the Konten panel and switch to it */
-  setKontenTab: (tab: string) => void;
 
   // Meta actions
   updateMeta: (key: keyof MetaState, value: string) => void;
