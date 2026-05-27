@@ -1,45 +1,60 @@
 'use client';
 
+// ═══════════════════════════════════════════════════════════════
+// RANGKUMAN TAB — Schema-First (Phase 3)
+// ═══════════════════════════════════════════════════════════════
+// MIGRATION STATUS:
+//   READ:  useSchemaRangkuman() ← CanvaStore.pages[].schema.blocks
+//   WRITE: applyGuidedSchemaPatch() ← single write path to schema
+//   SYNC:  No sync needed — writes go directly to schema
+//
+// SHAPE BRIDGE:
+//   RangkumanBlock.concepts[] → RangkumanData.poin[] (structured → flat)
+//   RangkumanBlock.closingStatement → RangkumanData.tips + .closingStatement
+//   RangkumanBlock has no `intro` → updateIntro is a no-op
+// ═══════════════════════════════════════════════════════════════
+
 import { useRef, useCallback } from 'react';
 import { ListChecks, BookMarked, Quote, Plus, Trash2 } from 'lucide-react';
-import { useAuthoringStore } from '@/store/authoring-store';
-import type { RangkumanData } from '@/store/authoring/types';
+import { useSchemaRangkuman } from '@/hooks/use-schema-navigator';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY } from './shared';
 
-// ── Rangkuman Tab — Edit summary/conclusion section with dynamic poin list ──
+// ── Rangkuman Tab — Schema-first edit with dynamic poin list ──
 export function RangkumanTab() {
-  const rangkuman = useAuthoringStore((s) => s.rangkuman);
-  const updateRangkuman = useAuthoringStore((s) => s.updateRangkuman);
+  const {
+    data: rangkuman,
+    locations,
+    updateTitle,
+    updateIntro,
+    addPoin,
+    removePoin,
+    updatePoin,
+    updateTips,
+    updateClosingStatement,
+  } = useSchemaRangkuman();
+
   const poinListRef = useRef<HTMLDivElement>(null);
 
-  // ── Poin (key points) array helpers ──
   const handleAddPoin = useCallback(() => {
-    const newPoin = [...rangkuman.poin, ''];
-    updateRangkuman({ poin: newPoin });
+    addPoin();
     setTimeout(() => {
       const el = poinListRef.current?.lastElementChild;
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
-  }, [rangkuman.poin, updateRangkuman]);
+  }, [addPoin]);
 
-  const handleRemovePoin = useCallback((index: number) => {
-    const newPoin = rangkuman.poin.filter((_, i) => i !== index);
-    updateRangkuman({ poin: newPoin });
-  }, [rangkuman.poin, updateRangkuman]);
-
-  const handleUpdatePoin = useCallback((index: number, value: string) => {
-    const newPoin = [...rangkuman.poin];
-    newPoin[index] = value;
-    updateRangkuman({ poin: newPoin });
-  }, [rangkuman.poin, updateRangkuman]);
-
-  // Accent color options for the closing statement
-  const ACCENT_COLORS = [
-    { key: 'teal', label: 'Teal', class: 'bg-teal-500/15 border-teal-500/30 text-teal-400' },
-    { key: 'amber', label: 'Amber', class: 'bg-amber-500/15 border-amber-500/30 text-amber-400' },
-    { key: 'rose', label: 'Rose', class: 'bg-rose-500/15 border-rose-500/30 text-rose-400' },
-    { key: 'emerald', label: 'Emerald', class: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' },
-  ];
+  // No schema blocks → show empty state
+  if (locations.length === 0) {
+    return (
+      <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
+        <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mx-auto mb-3">
+          <ListChecks size={24} className="text-teal-400" />
+        </div>
+        <p className="text-sm font-medium text-app-primary mb-1">Belum ada blok rangkuman</p>
+        <p className="text-xs text-app-muted">Tambahkan halaman rangkuman di Canva untuk mengedit di sini.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -57,7 +72,7 @@ export function RangkumanTab() {
             maxLength={MAX_TITLE}
             placeholder="Rangkuman"
             value={rangkuman.title}
-            onChange={(e) => updateRangkuman({ title: e.target.value })}
+            onChange={(e) => updateTitle(e.target.value)}
           />
         </div>
         <div>
@@ -68,8 +83,11 @@ export function RangkumanTab() {
             maxLength={MAX_BODY}
             placeholder="Pengantar untuk rangkuman materi..."
             value={rangkuman.intro}
-            onChange={(e) => updateRangkuman({ intro: e.target.value })}
+            onChange={(e) => updateIntro(e.target.value)}
           />
+          <p className="text-[0.65rem] text-app-muted/60 mt-1">
+            Catatan: Pengantar tidak tersimpan di schema blok saat ini.
+          </p>
         </div>
       </div>
 
@@ -108,10 +126,10 @@ export function RangkumanTab() {
                   maxLength={MAX_BODY}
                   placeholder={`Poin ${i + 1}...`}
                   value={poin}
-                  onChange={(e) => handleUpdatePoin(i, e.target.value)}
+                  onChange={(e) => updatePoin(i, e.target.value)}
                 />
                 <button
-                  onClick={() => handleRemovePoin(i)}
+                  onClick={() => removePoin(i)}
                   className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all mt-1.5"
                 >
                   <Trash2 size={14} />
@@ -149,7 +167,7 @@ export function RangkumanTab() {
           maxLength={MAX_BODY}
           placeholder="Tulis tips atau pengingat untuk siswa..."
           value={rangkuman.tips}
-          onChange={(e) => updateRangkuman({ tips: e.target.value })}
+          onChange={(e) => updateTips(e.target.value)}
         />
       </div>
 
@@ -170,7 +188,7 @@ export function RangkumanTab() {
           maxLength={MAX_BODY}
           placeholder="Pernyataan penutup untuk memotivasi siswa..."
           value={rangkuman.closingStatement || ''}
-          onChange={(e) => updateRangkuman({ closingStatement: e.target.value })}
+          onChange={(e) => updateClosingStatement(e.target.value)}
         />
       </div>
     </div>

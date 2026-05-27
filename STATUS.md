@@ -27,7 +27,7 @@
 | 4. Guided form di Right Panel (UI redesign) | ✅ DONE | Phase 2 |
 | 5. Guided form di Right Panel (functional) | ✅ DONE | Phase 2 |
 | 6. Konten.tsx → Schema Navigator (DiskusiTab + RefleksiTab) | ✅ DONE | Phase 3 |
-| 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ⬜ PENDING | Phase 3 |
+| 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ✅ DONE | Phase 3 |
 | 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ⬜ PENDING | Phase 3 |
 | 9. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
 | 10. Cleanup dual source | ⬜ PENDING | Phase 5 |
@@ -106,6 +106,16 @@
 
 ### Phase 3 — Konten → Schema Navigator
 **Goal**: Konten panel baca dari schema, bukan authoring store
+
+**Completed**:
+- Task 6: DiskusiTab + RefleksiTab → useSchemaDiskusi/useSchemaRefleksi (done in earlier session)
+- Task 7: MotivasiTab → useSchemaMotivasi, RangkumanTab → useSchemaRangkuman, KuisTab → useSchemaKuis
+  - Removed syncKuisToSchema() forward sync from KuisTab (no longer needed)
+  - Shape bridges: MotivasiBlock.hookQuestion↔intro/pertanyaanPemicu, connections[]↔koneksi, transition↔aktivitas
+  - Shape bridges: RangkumanBlock.concepts[]↔poin[], closingStatement↔tips
+  - KuisTab: All CRUD + drag-sort + presets go through schema hook, no authoring store content writes
+  - Each tab shows empty state when no matching schema block exists
+- Task 8: MateriTab → deferred (most complex: 13+ block type conversions, needs dedicated session)
 
 ### Phase 4 — Safe Page Split
 **Goal**: Auto-split konten panjang, overflow policy

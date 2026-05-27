@@ -139,3 +139,51 @@ Stage Summary:
 - **startProjectionSync()** auto-derives authoring store from schema — Konten tabs don't need to write to authoring store
 - Remaining tabs for Phase 3: KuisTab, MotivasiTab, RangkumanTab, MateriTab (progressively harder)
 - ModulesTab requires schema representation that doesn't exist yet — deferred
+---
+Task ID: 5
+Agent: main
+Task: Phase 3 (Task 7) — Migrate MotivasiTab, RangkumanTab, KuisTab to schema-first
+
+Work Log:
+- Audited current Konten panel: 6 tabs still using useAuthoringStore for content data reads
+- Identified shape mismatches between schema types and authoring types:
+  - MotivasiBlock.hookQuestion ↔ MotivasiData.intro + pertanyaanPemicu
+  - MotivasiBlock.connections[] ↔ MotivasiData.koneksi (structured ↔ flat text)
+  - MotivasiBlock.transition ↔ MotivasiData.aktivitas
+  - RangkumanBlock.concepts[] ↔ RangkumanData.poin[] (structured ↔ flat)
+  - RangkumanBlock.closingStatement ↔ RangkumanData.tips + closingStatement
+  - KuisBlock.questions[] ↔ KuisItem[] (near 1:1 with _id/pertemuan extras)
+- Added 3 new hooks to use-schema-navigator.ts:
+  - useSchemaMotivasi() — reads MotivasiBlock, writes via applyGuidedSchemaPatch()
+    - Bridge: koneksi flat text ↔ structured connections[] with line parsing
+    - Bridge: visual string ↔ visual.emoji (preserves bgGradient)
+    - Bridge: intro/pertanyaanPemicu both map to hookQuestion
+  - useSchemaRangkuman() — reads RangkumanBlock, writes via applyGuidedSchemaPatch()
+    - Bridge: poin[] ↔ concepts[] with "title: body" parse logic
+    - Bridge: tips/closingStatement both map to closingStatement (pre-existing projection behavior)
+    - rebuildConceptsFromPoin() preserves icon/color from existing schema when available
+  - useSchemaKuis() — reads KuisBlock.questions, writes via applyGuidedSchemaPatch()
+    - Flat KuisItem[] built from all kuis blocks across pages
+    - locateFlatIndex() helper maps flat index → block + question index
+    - CRUD: addQuestion, deleteQuestion, updateQuestion, updateQuestionOpt
+    - Drag-sort: reorderQuestions() within same block
+    - Presets: replaceAllQuestions() replaces entire question list
+    - Includes pertemuan field support (extensible schema)
+- Rewrote MotivasiTab.tsx — schema-first, no useAuthoringStore for content data
+- Rewrote RangkumanTab.tsx — schema-first, no useAuthoringStore for content data
+- Rewrote KuisTab.tsx — schema-first:
+  - REMOVED: syncKuisToSchema() useEffect (forward sync no longer needed)
+  - REMOVED: useAuthoringStore for kuis content reads/writes
+  - ADDED: useSchemaKuis() for all content operations
+  - Preset applyKuisPreset still uses authoring store, then immediately syncs to schema via replaceAllQuestions()
+  - meta/atp still read from authoring store (metadata, not content)
+- Each tab shows empty state when no matching schema block exists
+- Build verified: npx next build ✓
+- Updated STATUS.md: Task 7 marked DONE
+
+Stage Summary:
+- **5 of 6 Konten tabs are now schema-first**: Diskusi, Refleksi, Motivasi, Rangkuman, Kuis
+- **syncKuisToSchema() is no longer called** by KuisTab — eliminated a deprecated forward sync
+- **Only MateriTab remains authoring-first** (Task 8, deferred — 13+ block type conversions, most complex)
+- **ModulesTab has no schema representation** — deferred indefinitely
+- **Konten.tsx** still uses useAuthoringStore for meta/tp (context badge) and navigation (setActivePanel) — acceptable, these are metadata not content

@@ -1,17 +1,52 @@
 'use client';
 
+// ═══════════════════════════════════════════════════════════════
+// MOTIVASI TAB — Schema-First (Phase 3)
+// ═══════════════════════════════════════════════════════════════
+// MIGRATION STATUS:
+//   READ:  useSchemaMotivasi() ← CanvaStore.pages[].schema.blocks
+//   WRITE: applyGuidedSchemaPatch() ← single write path to schema
+//   SYNC:  No sync needed — writes go directly to schema
+//
+// SHAPE BRIDGE:
+//   MotivasiBlock.hookQuestion → MotivasiData.intro + .pertanyaanPemicu
+//   MotivasiBlock.connections[] → MotivasiData.koneksi (flat text)
+//   MotivasiBlock.transition → MotivasiData.aktivitas
+//   MotivasiBlock.visual.emoji → MotivasiData.visual
+// ═══════════════════════════════════════════════════════════════
+
 import { Sparkles, Lightbulb, Link2, Activity } from 'lucide-react';
-import { useAuthoringStore } from '@/store/authoring-store';
-import type { MotivasiData } from '@/store/authoring/types';
+import { useSchemaMotivasi } from '@/hooks/use-schema-navigator';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
 // ── Emoji options for visual picker ──
 const VISUAL_OPTIONS = ['🤔', '💡', '🔥', '🎯', '🔄', '💪', '✨', '🌟'];
 
-// ── Motivasi Tab — Edit apersepsi/motivasi section ──
+// ── Motivasi Tab — Schema-first edit ──
 export function MotivasiTab() {
-  const motivasi = useAuthoringStore((s) => s.motivasi);
-  const updateMotivasi = useAuthoringStore((s) => s.updateMotivasi);
+  const {
+    data: motivasi,
+    locations,
+    updateTitle,
+    updateIntro,
+    updatePertanyaanPemicu,
+    updateKoneksi,
+    updateAktivitas,
+    updateVisual,
+  } = useSchemaMotivasi();
+
+  // No schema blocks → show empty state
+  if (locations.length === 0) {
+    return (
+      <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
+        <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
+          <Sparkles size={24} className="text-amber-400" />
+        </div>
+        <p className="text-sm font-medium text-app-primary mb-1">Belum ada blok motivasi</p>
+        <p className="text-xs text-app-muted">Tambahkan halaman motivasi di Canva untuk mengedit di sini.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -29,7 +64,7 @@ export function MotivasiTab() {
             maxLength={MAX_TITLE}
             placeholder="Motivasi"
             value={motivasi.title}
-            onChange={(e) => updateMotivasi({ title: e.target.value })}
+            onChange={(e) => updateTitle(e.target.value)}
           />
         </div>
         <div>
@@ -40,7 +75,7 @@ export function MotivasiTab() {
             maxLength={MAX_BODY}
             placeholder="Pengantar untuk memotivasi siswa..."
             value={motivasi.intro}
-            onChange={(e) => updateMotivasi({ intro: e.target.value })}
+            onChange={(e) => updateIntro(e.target.value)}
           />
         </div>
       </div>
@@ -62,7 +97,7 @@ export function MotivasiTab() {
           maxLength={MAX_BODY}
           placeholder="Tulis pertanyaan yang memicu rasa ingin tahu siswa..."
           value={motivasi.pertanyaanPemicu}
-          onChange={(e) => updateMotivasi({ pertanyaanPemicu: e.target.value })}
+          onChange={(e) => updatePertanyaanPemicu(e.target.value)}
         />
       </div>
 
@@ -83,7 +118,7 @@ export function MotivasiTab() {
           maxLength={MAX_BODY}
           placeholder="Jelaskan koneksi ke pengetahuan atau pengalaman sebelumnya..."
           value={motivasi.koneksi}
-          onChange={(e) => updateMotivasi({ koneksi: e.target.value })}
+          onChange={(e) => updateKoneksi(e.target.value)}
         />
       </div>
 
@@ -104,7 +139,7 @@ export function MotivasiTab() {
           maxLength={MAX_BODY}
           placeholder="Saran aktivitas singkat yang bisa dilakukan siswa..."
           value={motivasi.aktivitas}
-          onChange={(e) => updateMotivasi({ aktivitas: e.target.value })}
+          onChange={(e) => updateAktivitas(e.target.value)}
         />
       </div>
 
@@ -123,7 +158,7 @@ export function MotivasiTab() {
           {VISUAL_OPTIONS.map((emoji) => (
             <button
               key={emoji}
-              onClick={() => updateMotivasi({ visual: emoji })}
+              onClick={() => updateVisual(emoji)}
               className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-colors ${
                 motivasi.visual === emoji
                   ? 'bg-app-accent/15 border-2 border-app-accent/50'
@@ -139,7 +174,7 @@ export function MotivasiTab() {
             maxLength={MAX_SHORT_TEXT}
             placeholder="..."
             value={motivasi.visual && !VISUAL_OPTIONS.includes(motivasi.visual) ? motivasi.visual : ''}
-            onChange={(e) => updateMotivasi({ visual: e.target.value })}
+            onChange={(e) => updateVisual(e.target.value)}
           />
         </div>
       </div>
