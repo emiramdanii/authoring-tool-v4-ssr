@@ -96,7 +96,7 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
     // they're stale for the new pages that will be measured fresh.
     clearCompressedHeightCache();
 
-    set({ pages: newPages, currentPageIndex: 0, kontenTabRequest: null, kontenPanelRequest: false, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    set({ pages: newPages, currentPageIndex: 0, kontenTabRequest: null, kontenPanelRequest: false, panelRequest: null, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
     // Save new pages to localStorage immediately so loadFromStorage()
     // on next mount will get the fresh pages, not stale data.

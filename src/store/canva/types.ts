@@ -77,6 +77,10 @@ export interface CanvaState {
   /** Phase 3: Ephemeral cross-panel navigation — SchemaBlockTree → switch to Konten panel.
    *  Set alongside kontenTabRequest, consumed by AuthoringTool.tsx, then cleared. */
   kontenPanelRequest: boolean;
+  /** Phase 3: General cross-panel navigation request — set by any component,
+   *  consumed by AuthoringTool.tsx which calls setActivePanel(), then cleared.
+   *  Replaces direct useAuthoringStore.getState().setActivePanel() calls. */
+  panelRequest: string | null;
   selectedElId: string | null;
   // Phase 4: Multi-select — array of selected element IDs
   selectedElIds: string[];

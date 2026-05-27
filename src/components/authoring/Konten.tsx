@@ -23,7 +23,8 @@ type KontenViewMode = 'tabs' | 'navigator';
 
 export default function Konten() {
   const [activeTab, setActiveTab] = useState<KontenTab>('materi');
-  const [viewMode, setViewMode] = useState<KontenViewMode>('tabs');
+  // Phase 3: Navigator is the new default view — schema-first approach
+  const [viewMode, setViewMode] = useState<KontenViewMode>('navigator');
   const { isSederhana } = useTeacherMode();
 
   // Mode-aware tab configuration
@@ -57,7 +58,11 @@ export default function Konten() {
   const storeKontenTab = useCanvaStore((s) => s.kontenTabRequest);
   if (storeKontenTab && storeKontenTab !== activeTab) {
     const isValid = tabs.find(t => t.id === storeKontenTab);
-    if (isValid) setActiveTab(storeKontenTab as KontenTab);
+    if (isValid) {
+      setActiveTab(storeKontenTab as KontenTab);
+      // When navigating from SchemaBlockTree, switch to tabs view to show the editing tab
+      setViewMode('tabs');
+    }
     // Clear after consumption to avoid re-triggering
     useCanvaStore.setState({ kontenTabRequest: null });
   }

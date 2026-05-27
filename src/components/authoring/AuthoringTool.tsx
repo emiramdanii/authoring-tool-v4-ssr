@@ -282,6 +282,22 @@ function AuthoringToolInner() {
     return unsub;
   }, [setActivePanel]);
 
+  // ── Phase 3: General cross-panel navigation request ──
+  // Any component can set useCanvaStore.setState({ panelRequest: 'canva' })
+  // This effect consumes it and switches to the requested panel
+  useEffect(() => {
+    const unsub = useCanvaStore.subscribe(
+      (s) => s.panelRequest,
+      (requested) => {
+        if (requested) {
+          setActivePanel(requested as any);
+          useCanvaStore.setState({ panelRequest: null });
+        }
+      }
+    );
+    return unsub;
+  }, [setActivePanel]);
+
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();
     const c = useCanvaStore.getState();

@@ -1,30 +1,31 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════
-// SCHEMA NAVIGATOR PANEL — Unified tree view of all schema blocks
+// SCHEMA NAVIGATOR PANEL — Enhanced tree view with inline editing
 // ═══════════════════════════════════════════════════════════════════
 // Phase 3 centerpiece: Shows a unified, cross-page tree of all schema
-// blocks across all pages, enabling instant navigation from any block
-// to both its Konten editing tab AND its canvas location.
+// blocks across all pages, enabling:
+//
+//   1. NAVIGATION: Click block → navigate to Konten tab + canvas page
+//   2. INLINE EDITING: Double-click title → inline edit via applyGuidedSchemaPatch
+//   3. QUICK ACTIONS: Delete, duplicate, move up/down per block
+//   4. CATEGORY GROUPING: Toggle between page-grouped and category-grouped views
+//   5. SEARCH: Filter blocks by title, type, or page label
 //
 // Architecture:
 //   READ:  CanvaStore.pages[].schema.blocks → flat + nested tree
-//   NAV:   kontenTabRequest + goPage() + selectBlock() → dual navigation
-//   NO useAuthoringStore — pure canva store for all navigation
-//
-// UX:
-//   - Summary bar: total pages, total blocks, type distribution
-//   - Per-page collapsible section with block list
-//   - Nested blocks (materi-section → materi-blok) expandable
-//   - Click → navigate to Konten tab + canvas page + select block
-//   - Color-coded by block type using BLOCK_DISPLAY
+//   NAV:   kontenTabRequest + panelRequest + goPage() + selectBlock()
+//   WRITE: applyGuidedSchemaPatch() for title edits
+//          useCanvaStore.deleteBlock/duplicateBlock/moveBlockUp/moveBlockDown
+//   NO useAuthoringStore — pure canva store for all operations
 // ═══════════════════════════════════════════════════════════════════
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractionStore } from '@/store/canva/interaction-store';
 import { getPageBlocks } from '@/core/schema/ensure-schema';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
+import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
 import type { SchemaBlock } from '@/core/schema/types';
 import {
@@ -34,6 +35,15 @@ import {
   BookOpen,
   Search,
   FileText,
+  Trash2,
+  Copy,
+  ArrowUp,
+  ArrowDown,
+  Pencil,
+  LayoutGrid,
+  List,
+  Check,
+  X,
 } from 'lucide-react';
 
 // ── Block Type Display Map ──────────────────────────────────────
@@ -53,7 +63,7 @@ const BLOCK_DISPLAY: Record<string, { icon: string; label: string; color: string
   'flashcard-set':     { icon: '🃏', label: 'Flashcard',        color: '#a78bfa' },
   'ftab':              { icon: '📑', label: 'Tab',              color: '#3ecfcf' },
   'nk-card':           { icon: '📖', label: 'Kartu',            color: '#a78bfa' },
-  'diskusi':           { icon: '💬', label: 'Diskusi',          color: '#34d399' },
+  'diskusi':           { icon: '💬', label: 'Diskusi',           color: '#34d399' },
   'kuis':              { icon: '❓', label: 'Kuis',             color: '#f5c842' },
   'motivasi':          { icon: '💡', label: 'Motivasi',         color: '#fb923c' },
   'refleksi':          { icon: '🪞', label: 'Refleksi',         color: '#a78bfa' },
@@ -146,6 +156,10 @@ const CATEGORY_META: Record<ContentCategory, { icon: string; label: string; colo
   'refleksi':   { icon: '🪞', label: 'Refleksi',     color: '#34d399' },
 };
 
+// ── View mode ──────────────────────────────────────────────────
+
+type ViewMode = 'by-page' | 'by-category';
+
 // ── Page Block Data ────────────────────────────────────────────
 
 interface PageBlockData {
@@ -154,6 +168,75 @@ interface PageBlockData {
   pageLabel: string;
   templateType: string;
   blocks: SchemaBlock[];
+}
+
+// ── Category Group ─────────────────────────────────────────────
+
+interface CategoryGroupData {
+  category: ContentCategory;
+  meta: typeof CATEGORY_META[ContentCategory];
+  blocks: Array<{ block: SchemaBlock; pageId: string; pageIndex: number }>;
+}
+
+// ── Inline Title Editor ────────────────────────────────────────
+
+function InlineTitleEditor({
+  block,
+  pageId,
+  onSave,
+  onCancel,
+}: {
+  block: SchemaBlock;
+  pageId: string;
+  onSave: (newTitle: string) => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(getBlockTitle(block));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSave(title);
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onCancel();
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1 flex-1 min-w-0">
+      <input
+        ref={inputRef}
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => onSave(title)}
+        className="flex-1 min-w-0 bg-app-elevated border border-app-accent/30 rounded px-1.5 py-0.5 text-xs text-app-primary focus:outline-none focus:ring-1 focus:ring-app-accent/50"
+      />
+      <button
+        onClick={() => onSave(title)}
+        className="flex-shrink-0 text-app-success hover:text-app-success/80 p-0.5"
+        title="Simpan"
+      >
+        <Check size={10} />
+      </button>
+      <button
+        onClick={onCancel}
+        className="flex-shrink-0 text-app-muted hover:text-app-danger p-0.5"
+        title="Batal"
+      >
+        <X size={10} />
+      </button>
+    </div>
+  );
 }
 
 // ── Block Row ──────────────────────────────────────────────────
@@ -169,12 +252,18 @@ interface BlockRowProps {
 
 function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate }: BlockRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const children = getChildBlocks(block);
   const hasChildren = children.length > 0;
   const isSelected = selectedBlockId === block.id;
   const display = getBlockDisplay(block.type);
   const title = getBlockTitle(block);
   const kontenTab = getKontenTabForBlockType(block.type);
+  const deleteBlock = useCanvaStore(s => s.deleteBlock);
+  const duplicateBlock = useCanvaStore(s => s.duplicateBlock);
+  const moveBlockUp = useCanvaStore(s => s.moveBlockUp);
+  const moveBlockDown = useCanvaStore(s => s.moveBlockDown);
 
   const handleClick = useCallback(() => {
     if (hasChildren) {
@@ -183,63 +272,139 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
     onNavigate(pageIndex, pageId, block.id || '', block.type);
   }, [hasChildren, pageIndex, pageId, block.id, block.type, onNavigate]);
 
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTitle(true);
+  }, []);
+
+  const handleTitleSave = useCallback((newTitle: string) => {
+    if (newTitle.trim() && newTitle !== getBlockTitle(block)) {
+      applyGuidedSchemaPatch({
+        pageId,
+        blockId: block.id || '',
+        patch: { title: newTitle.trim() },
+        source: 'user',
+      });
+    }
+    setEditingTitle(false);
+  }, [pageId, block]);
+
+  const handleTitleCancel = useCallback(() => {
+    setEditingTitle(false);
+  }, []);
+
   return (
     <div>
-      <button
-        onClick={handleClick}
-        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all duration-150 group ${
-          isSelected
-            ? 'bg-app-accent/10 text-app-accent ring-1 ring-app-accent/20'
-            : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
-        }`}
-        style={{ paddingLeft: `${depth * 16 + 8}px` }}
-        title={`${title} — ${display.label}`}
+      <div
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
       >
-        {/* Expand/collapse chevron */}
-        {hasChildren ? (
-          <ChevronRight
-            size={12}
-            className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
-          />
-        ) : (
-          <span className="w-3 flex-shrink-0" />
-        )}
-
-        {/* Block type icon with color dot */}
-        <span
-          className="text-sm flex-shrink-0 relative"
-          style={{ filter: isSelected ? 'none' : undefined }}
+        <button
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+          className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all duration-150 group ${
+            isSelected
+              ? 'bg-app-accent/10 text-app-accent ring-1 ring-app-accent/20'
+              : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
+          }`}
+          style={{ paddingLeft: `${depth * 16 + 8}px` }}
+          title={`${title} — ${display.label}${kontenTab ? ` (Edit di tab ${kontenTab})` : ''}`}
         >
-          {display.icon}
-        </span>
+          {/* Expand/collapse chevron */}
+          {hasChildren ? (
+            <ChevronRight
+              size={12}
+              className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+            />
+          ) : (
+            <span className="w-3 flex-shrink-0" />
+          )}
 
-        {/* Block title */}
-        <span className="truncate flex-1 text-xs font-medium">{title}</span>
-
-        {/* Type badge */}
-        <span
-          className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-wide"
-          style={{
-            backgroundColor: display.color + '18',
-            color: display.color,
-          }}
-        >
-          {display.label}
-        </span>
-
-        {/* Konten tab indicator */}
-        {kontenTab && (
-          <span
-            className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-            title={`Edit di tab ${kontenTab}`}
-          >
-            <FileText size={10} className="text-app-accent/60" />
+          {/* Block type icon with color dot */}
+          <span className="text-sm flex-shrink-0">
+            {display.icon}
           </span>
-        )}
 
-        {/* Schema indicator */}
-        <Zap size={8} className="flex-shrink-0 text-app-success/30" />
-      </button>
+          {/* Block title — inline edit or display */}
+          {editingTitle ? (
+            <InlineTitleEditor
+              block={block}
+              pageId={pageId}
+              onSave={handleTitleSave}
+              onCancel={handleTitleCancel}
+            />
+          ) : (
+            <span className="truncate flex-1 text-xs font-medium">{title}</span>
+          )}
+
+          {/* Quick actions — visible on hover */}
+          {showActions && !editingTitle && (
+            <div className="flex-shrink-0 flex items-center gap-0.5">
+              <button
+                onClick={(e) => { e.stopPropagation(); setEditingTitle(true); }}
+                className="p-0.5 rounded text-app-muted hover:text-app-primary hover:bg-app-elevated/80 transition-colors"
+                title="Edit judul"
+              >
+                <Pencil size={9} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id || ''); }}
+                className="p-0.5 rounded text-app-muted hover:text-app-primary hover:bg-app-elevated/80 transition-colors"
+                title="Pindah ke atas"
+              >
+                <ArrowUp size={9} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); moveBlockDown(block.id || ''); }}
+                className="p-0.5 rounded text-app-muted hover:text-app-primary hover:bg-app-elevated/80 transition-colors"
+                title="Pindah ke bawah"
+              >
+                <ArrowDown size={9} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id || ''); }}
+                className="p-0.5 rounded text-app-muted hover:text-app-accent hover:bg-app-elevated/80 transition-colors"
+                title="Duplikat blok"
+              >
+                <Copy size={9} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); deleteBlock(block.id || ''); }}
+                className="p-0.5 rounded text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                title="Hapus blok"
+              >
+                <Trash2 size={9} />
+              </button>
+            </div>
+          )}
+
+          {/* Type badge — hidden when actions visible */}
+          {!showActions && (
+            <span
+              className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-wide"
+              style={{
+                backgroundColor: display.color + '18',
+                color: display.color,
+              }}
+            >
+              {display.label}
+            </span>
+          )}
+
+          {/* Konten tab indicator */}
+          {kontenTab && !showActions && (
+            <span
+              className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              title={`Edit di tab ${kontenTab}`}
+            >
+              <FileText size={10} className="text-app-accent/60" />
+            </span>
+          )}
+
+          {/* Schema indicator */}
+          <Zap size={8} className="flex-shrink-0 text-app-success/30" />
+        </button>
+      </div>
 
       {/* Children */}
       {hasChildren && expanded && (
@@ -344,6 +509,69 @@ function PageSection({ data, isActive, selectedBlockId, onNavigate }: PageSectio
   );
 }
 
+// ── Category Section ───────────────────────────────────────────
+
+interface CategorySectionProps {
+  data: CategoryGroupData;
+  selectedBlockId: string | null;
+  onNavigate: (pageIndex: number, pageId: string, blockId: string, blockType: string) => void;
+}
+
+function CategorySection({ data, selectedBlockId, onNavigate }: CategorySectionProps) {
+  const [expanded, setExpanded] = useState(true);
+  const { meta, category } = data;
+
+  return (
+    <div className="rounded-xl border border-app-border/50 bg-app-surface overflow-hidden">
+      {/* Category header */}
+      <button
+        onClick={() => setExpanded(prev => !prev)}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-app-elevated/40 transition-colors"
+      >
+        <ChevronRight
+          size={14}
+          className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+        />
+        <span className="text-base flex-shrink-0">{meta.icon}</span>
+        <span className="text-sm font-semibold truncate flex-1 text-app-primary">
+          {meta.label}
+        </span>
+        <span
+          className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md"
+          style={{
+            backgroundColor: meta.color + '18',
+            color: meta.color,
+          }}
+        >
+          {data.blocks.length}
+        </span>
+      </button>
+
+      {/* Block list */}
+      {expanded && (
+        <div className="px-1.5 pb-2 space-y-0.5 border-t border-app-border/30">
+          {data.blocks.map(({ block, pageId, pageIndex }, i) => (
+            <BlockRow
+              key={block.id || `${category}-block-${i}`}
+              block={block}
+              pageId={pageId}
+              pageIndex={pageIndex}
+              depth={0}
+              selectedBlockId={selectedBlockId}
+              onNavigate={onNavigate}
+            />
+          ))}
+          {data.blocks.length === 0 && (
+            <div className="text-center py-3">
+              <span className="text-xs text-app-muted">Tidak ada blok dalam kategori ini</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Summary Bar ────────────────────────────────────────────────
 
 interface SummaryBarProps {
@@ -425,6 +653,9 @@ export function SchemaNavigatorPanel() {
   const selectBlock = useInteractionStore(s => s.selectBlock);
   const selectedBlockId = useInteractionStore(s => s.selectedBlockId);
 
+  // ── View mode: by-page or by-category ──
+  const [viewMode, setViewMode] = useState<ViewMode>('by-page');
+
   // ── Search / filter state ──
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -442,7 +673,7 @@ export function SchemaNavigatorPanel() {
   }, [pages]);
 
   // ── Summary stats ──
-  const { totalBlocks, categoryDistribution, filteredData } = useMemo(() => {
+  const { totalBlocks, categoryDistribution, filteredPageData, filteredCategoryData } = useMemo(() => {
     const distribution: Record<ContentCategory, number> = {
       'struktur': 0,
       'materi': 0,
@@ -474,7 +705,9 @@ export function SchemaNavigatorPanel() {
 
     // Filter by search query
     const q = searchQuery.toLowerCase().trim();
-    const filtered = q
+
+    // Filtered page data
+    const filteredPage = q
       ? pageBlockData.map(d => {
           const matchingBlocks = d.blocks.filter(block => {
             const display = getBlockDisplay(block.type);
@@ -490,10 +723,49 @@ export function SchemaNavigatorPanel() {
         }).filter(d => d.blocks.length > 0)
       : pageBlockData;
 
+    // Build category-grouped data
+    const categoryBlocks: Record<ContentCategory, Array<{ block: SchemaBlock; pageId: string; pageIndex: number }>> = {
+      'struktur': [],
+      'materi': [],
+      'interaktif': [],
+      'evaluasi': [],
+      'refleksi': [],
+    };
+
+    function collectBlocks(blocks: SchemaBlock[], pageId: string, pageIndex: number) {
+      for (const block of blocks) {
+        const cat = getContentCategory(block.type);
+        if (!q || (() => {
+          const display = getBlockDisplay(block.type);
+          const title = getBlockTitle(block);
+          return title.toLowerCase().includes(q) || display.label.toLowerCase().includes(q) || block.type.toLowerCase().includes(q);
+        })()) {
+          categoryBlocks[cat].push({ block, pageId, pageIndex });
+        }
+        const children = getChildBlocks(block);
+        if (children.length > 0) {
+          collectBlocks(children, pageId, pageIndex);
+        }
+      }
+    }
+
+    for (const d of pageBlockData) {
+      collectBlocks(d.blocks, d.pageId, d.pageIndex);
+    }
+
+    const filteredCategory: CategoryGroupData[] = Object.entries(categoryBlocks)
+      .filter(([, blocks]) => blocks.length > 0)
+      .map(([cat, blocks]) => ({
+        category: cat as ContentCategory,
+        meta: CATEGORY_META[cat as ContentCategory],
+        blocks,
+      }));
+
     return {
       totalBlocks: total,
       categoryDistribution: distribution,
-      filteredData: filtered,
+      filteredPageData: filteredPage,
+      filteredCategoryData: filteredCategory,
     };
   }, [pageBlockData, searchQuery]);
 
@@ -546,7 +818,7 @@ export function SchemaNavigatorPanel() {
             Navigasi Skema
           </h3>
           <p className="text-[10px] text-app-muted">
-            Klik blok untuk navigasi ke tab &amp; canva
+            Klik navigasi, double-klik edit judul
           </p>
         </div>
       </div>
@@ -558,32 +830,78 @@ export function SchemaNavigatorPanel() {
         categoryDistribution={categoryDistribution}
       />
 
-      {/* Search filter */}
-      <div className="relative">
-        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted/60" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Cari blok…"
-          className="w-full bg-app-elevated border border-app-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-app-primary placeholder:text-app-muted/50 focus:outline-none focus:ring-2 focus:ring-app-accent/30 focus:border-app-accent/30 transition-colors"
-        />
+      {/* Search + view mode toggle */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted/60" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari blok…"
+            className="w-full bg-app-elevated border border-app-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-app-primary placeholder:text-app-muted/50 focus:outline-none focus:ring-2 focus:ring-app-accent/30 focus:border-app-accent/30 transition-colors"
+          />
+        </div>
+        <div className="flex items-center gap-0.5 bg-app-surface border border-app-border rounded-lg p-0.5 flex-shrink-0">
+          <button
+            onClick={() => setViewMode('by-page')}
+            className={`p-1.5 rounded-md transition-colors ${
+              viewMode === 'by-page'
+                ? 'bg-app-elevated text-app-primary shadow-sm'
+                : 'text-app-muted hover:text-app-secondary'
+            }`}
+            title="Kelompokkan per halaman"
+          >
+            <List size={12} />
+          </button>
+          <button
+            onClick={() => setViewMode('by-category')}
+            className={`p-1.5 rounded-md transition-colors ${
+              viewMode === 'by-category'
+                ? 'bg-app-elevated text-app-primary shadow-sm'
+                : 'text-app-muted hover:text-app-secondary'
+            }`}
+            title="Kelompokkan per kategori"
+          >
+            <LayoutGrid size={12} />
+          </button>
+        </div>
       </div>
 
-      {/* Page sections */}
-      <div className="space-y-2 max-h-[calc(100vh-420px)] overflow-y-auto custom-scrollbar pr-0.5">
-        {filteredData.map(data => (
-          <PageSection
-            key={data.pageId}
-            data={data}
-            isActive={data.pageIndex === currentPageIndex}
-            selectedBlockId={selectedBlockId}
-            onNavigate={handleNavigate}
-          />
-        ))}
+      {/* Block list — switches between page-grouped and category-grouped */}
+      <div className="space-y-2 max-h-[calc(100vh-460px)] overflow-y-auto custom-scrollbar pr-0.5">
+        {viewMode === 'by-page' ? (
+          // Page-grouped view
+          filteredPageData.map(data => (
+            <PageSection
+              key={data.pageId}
+              data={data}
+              isActive={data.pageIndex === currentPageIndex}
+              selectedBlockId={selectedBlockId}
+              onNavigate={handleNavigate}
+            />
+          ))
+        ) : (
+          // Category-grouped view
+          filteredCategoryData.map(data => (
+            <CategorySection
+              key={data.category}
+              data={data}
+              selectedBlockId={selectedBlockId}
+              onNavigate={handleNavigate}
+            />
+          ))
+        )}
 
         {/* No results for search */}
-        {filteredData.length === 0 && searchQuery && (
+        {(viewMode === 'by-page' && filteredPageData.length === 0 && searchQuery) && (
+          <div className="text-center py-6">
+            <p className="text-xs text-app-muted">
+              Tidak ada blok yang cocok dengan &quot;{searchQuery}&quot;
+            </p>
+          </div>
+        )}
+        {(viewMode === 'by-category' && filteredCategoryData.length === 0 && searchQuery) && (
           <div className="text-center py-6">
             <p className="text-xs text-app-muted">
               Tidak ada blok yang cocok dengan &quot;{searchQuery}&quot;

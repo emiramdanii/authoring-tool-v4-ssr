@@ -25,6 +25,10 @@
 
 import { useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+// Phase 3 NOTE: useAuthoringStore is ONLY used by useSchemaContext() for meta/tp/atp reads.
+// These are project-level metadata (not content), which will be moved to a dedicated
+// project store in Phase 5. All content reads go through CanvaStore.pages[].schema.
+// Navigation calls use CanvaStore.panelRequest instead of setActivePanel.
 import { useAuthoringStore } from '@/store/authoring-store';
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
@@ -1826,11 +1830,13 @@ export function useSchemaContext(): {
   const atp = useAuthoringStore((s: any) => s.atp) as import('@/store/authoring/types').AtpState;
 
   const goToCanva = useCallback(() => {
-    useAuthoringStore.getState().setActivePanel('canva');
+    // Phase 3: Use CanvaStore panelRequest instead of useAuthoringStore.setActivePanel
+    useCanvaStore.setState({ panelRequest: 'canva' });
   }, []);
 
   const goToAutoGen = useCallback(() => {
-    useAuthoringStore.getState().setActivePanel('autogen');
+    // Phase 3: Use CanvaStore panelRequest instead of useAuthoringStore.setActivePanel
+    useCanvaStore.setState({ panelRequest: 'autogen' });
   }, []);
 
   return { meta, tp, atp, goToCanva, goToAutoGen };

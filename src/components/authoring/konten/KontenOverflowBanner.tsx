@@ -18,7 +18,7 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { AlertTriangle, X, ArrowRight, Minimize2, SplitSquareHorizontal } from 'lucide-react';
 
 export function KontenOverflowBanner() {
@@ -32,8 +32,8 @@ export function KontenOverflowBanner() {
   }, [clearWarning]);
 
   const handleGoToCanvas = useCallback(() => {
-    // Navigate to canvas panel to see the overflow
-    useAuthoringStore.getState().setActivePanel('canva');
+    // Phase 3: Use CanvaStore panelRequest instead of useAuthoringStore.setActivePanel
+    useCanvaStore.setState({ panelRequest: 'canva' });
     hideBanner();
   }, [hideBanner]);
 

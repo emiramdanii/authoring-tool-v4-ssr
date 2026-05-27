@@ -90,6 +90,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     leftTab: 'pages',
     kontenTabRequest: null, // Phase 3: ephemeral cross-panel nav (consumed by Konten.tsx)
     kontenPanelRequest: false, // Phase 3: switch to Konten panel (consumed by AuthoringTool.tsx)
+    panelRequest: null, // Phase 3: general cross-panel nav (consumed by AuthoringTool.tsx)
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
     selectedBlockId: null, // Schema block selection for editing overlay
