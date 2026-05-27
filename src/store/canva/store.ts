@@ -87,6 +87,7 @@ export const useCanvaStore = create<CanvaState>()(devtools(subscribeWithSelector
     fitZoom: 0.5, // Updated by Stage's ResizeObserver — initial fallback
     tool: 'select',
     leftTab: 'pages',
+    kontenTabRequest: null, // Phase 3: ephemeral cross-panel nav (consumed by Konten.tsx)
     selectedElId: null,
     selectedElIds: [], // Phase 4: Multi-select
     selectedBlockId: null, // Schema block selection for editing overlay

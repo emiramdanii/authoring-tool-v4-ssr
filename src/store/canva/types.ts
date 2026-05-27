@@ -70,6 +70,10 @@ export interface CanvaState {
   fitZoom: number;
   tool: Tool;
   leftTab: LeftTab;
+  /** Ephemeral cross-panel navigation: SchemaBlockTree → Konten tab switch.
+   *  Set by SchemaBlockTree pencil icon, consumed by Konten.tsx, then cleared.
+   *  Moved here from useAuthoringStore.kontenTab (Phase 3 — eliminate authoring store reads). */
+  kontenTabRequest: string | null;
   selectedElId: string | null;
   // Phase 4: Multi-select — array of selected element IDs
   selectedElIds: string[];

@@ -251,3 +251,27 @@ Stage Summary:
 - **Cross-link UX complete**: Konten → Canva (LocateInCanvaButton) and Canva → Konten (SchemaBlockTree Pencil icon)
 - **useSchemaContext() and navigateToBlock() cleaned up** — no more require() calls
 - **Phase 3 is COMPLETE** — Konten Panel is now a true Schema Navigator
+---
+Task ID: 7
+Agent: main
+Task: Phase 3 (Cleanup) — Remove useAuthoringStore.kontenTab from Konten panel + SchemaBlockTree
+
+Work Log:
+- Audited all remaining useAuthoringStore reads in Konten panel and SchemaBlockTree
+- Found only 3 remaining useAuthoringStore reads for navigation (not content):
+  1. Konten.tsx:50 — useAuthoringStore(s => s.kontenTab) for tab navigation sync
+  2. Konten.tsx:55 — useAuthoringStore.setState({ kontenTab: null }) to clear after consumption
+  3. SchemaBlockTree.tsx:181 — useAuthoringStore.getState().setKontenTab(tab) for cross-panel navigation
+- Added kontenTabRequest: string | null to CanvaState types (canva/types.ts)
+- Added kontenTabRequest: null initial value to canva store (canva/store.ts)
+- Added kontenTabRequest: null to reset paths: factoryReset, loadFromStorage, loadFromDB, resetCanvas
+- Updated Konten.tsx: replaced useAuthoringStore.kontenTab → useCanvaStore.kontenTabRequest
+- Updated SchemaBlockTree.tsx: replaced useAuthoringStore.setKontenTab() → useCanvaStore.setState({ kontenTabRequest: tab })
+  - Still uses useAuthoringStore.setActivePanel('konten') for panel switch (legitimate cross-panel navigation)
+- Build verified: npx next build ✓ (zero errors, zero regressions)
+
+Stage Summary:
+- **Konten.tsx no longer imports useAuthoringStore** — uses useCanvaStore.kontenTabRequest instead
+- **SchemaBlockTree only uses useAuthoringStore.setActivePanel('konten')** — a legitimate panel switch action, not content data
+- **kontenTabRequest** is ephemeral UI navigation state stored in CanvaStore (not persisted)
+- Phase 3 Konten Panel → Schema Navigator is now COMPLETE with clean separation

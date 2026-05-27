@@ -311,6 +311,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           pages: cleanPages,
           ratioId: data.ratioId || '9:16',
           currentPageIndex: 0,
+          kontenTabRequest: null, // Phase 3: reset ephemeral nav
           selectedElId: null,
           selectedElIds: [], // Phase 4: Reset multi-select on load
           selectedBlockIds: [], // Reset block multi-select on load
@@ -454,6 +455,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           pages: cleanPages,
           ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
+          kontenTabRequest: null,
           selectedElId: null,
           selectedElIds: [],
           selectedBlockIds: [],
@@ -499,6 +501,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     set({
       pages: [],
       currentPageIndex: -1,
+      kontenTabRequest: null,
       selectedElId: null,
       selectedElIds: [],
       selectedBlockId: null,

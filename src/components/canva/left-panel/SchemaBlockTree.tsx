@@ -18,7 +18,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractionStore } from '@/store/canva/interaction-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useAuthoringStore } from '@/store/authoring-store'; // only for setActivePanel cross-panel nav
 import { ensurePageSchema, getPageBlocks } from '@/core/schema/ensure-schema';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
 import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
@@ -178,7 +178,9 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
               e.stopPropagation();
               const tab = getKontenTabForBlockType(block.type);
               if (tab) {
-                useAuthoringStore.getState().setKontenTab(tab);
+                // Phase 3: Use canva store for tab navigation, authoring store only for panel switch
+                useCanvaStore.setState({ kontenTabRequest: tab });
+                useAuthoringStore.getState().setActivePanel('konten');
               }
             }}
             className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-app-muted hover:text-app-accent transition-opacity cursor-pointer"
