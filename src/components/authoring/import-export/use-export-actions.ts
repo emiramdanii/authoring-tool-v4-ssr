@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -47,10 +48,12 @@ export function useExportActions() {
 
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();
+    const canvaState = useCanvaStore.getState();
+    // Phase 5: Content data from schema (single source of truth)
+    const schemaPayload = deriveExportPayloadFromSchema(canvaState.pages);
     const data = {
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-      skenario: s.skenario, kuis: s.kuis, modules: s.modules,
-      games: s.games, materi: s.materi,
+      ...schemaPayload,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -65,12 +68,14 @@ export function useExportActions() {
   /** Export student HTML — now uses Vite SSR pipeline (same as preview) */
   const exportStudentHtml = useCallback(async () => {
     const s = useAuthoringStore.getState();
+    const canvaState = useCanvaStore.getState();
 
-    // Pre-export validation warnings
+    // Pre-export validation warnings (Phase 5: kuis from schema)
     if (!s.meta.judulPertemuan?.trim()) {
       toast.warning('Judul pertemuan kosong. Isi terlebih dahulu di panel Dokumen.');
     }
-    if (s.kuis.length === 0) {
+    const schemaPayload = deriveExportPayloadFromSchema(canvaState.pages);
+    if (schemaPayload.allKuis.length === 0) {
       toast.warning('Belum ada soal kuis.');
     }
 

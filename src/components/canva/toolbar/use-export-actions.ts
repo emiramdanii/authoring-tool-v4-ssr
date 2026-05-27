@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 import { useViteExport } from '@/lib/use-vite-export';
 import { useExportActions as useSharedExportActions } from '@/components/authoring/import-export/use-export-actions';
 import { toast } from 'sonner';
@@ -51,24 +52,19 @@ export function useExportActions() {
     toast.loading(`Membuat SCORM (${canvaState.pages.length} halaman)...`, { id: 'export-scorm' });
 
     try {
+      // Phase 5: Content data from schema (single source of truth)
+      const schemaPayload = deriveExportPayloadFromSchema(canvaState.pages);
+
       const payload = {
         pages: canvaState.pages,
         ratioId: canvaState.ratioId,
         meta: authState.meta,
-        allKuis: authState.kuis,
-        allModules: authState.modules,
-        games: authState.games,
         cp: authState.cp,
         tp: authState.tp,
         atp: authState.atp,
         alur: authState.alur,
-        materi: authState.materi,
-        skenario: authState.skenario,
-        petunjuk: authState.petunjuk,
-        diskusi: authState.diskusi,
-        refleksi: authState.refleksi,
-        penutup: authState.penutup,
         suara: authState.suara,
+        ...schemaPayload,
       };
 
       const response = await fetch('/api/export/scorm', {

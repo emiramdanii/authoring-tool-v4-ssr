@@ -22,6 +22,8 @@ import {
 import { Button } from '@/components/ui/button';
 import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
+import { useSchemaKuisProjection, useSchemaModulesProjection } from '@/hooks/use-schema-projection';
+import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 import { COLORS } from '@/lib/color-palette';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
@@ -88,10 +90,26 @@ export default function Dashboard() {
   const tp = useAuthoringStore((s) => s.tp);
   const atp = useAuthoringStore((s) => s.atp);
   const alur = useAuthoringStore((s) => s.alur);
-  const kuis = useAuthoringStore((s) => s.kuis);
-  const modules = useAuthoringStore((s) => s.modules);
-  const games = useAuthoringStore((s) => s.games);
-  const materi = useAuthoringStore((s) => s.materi);
+  // Phase 5: Content data from schema (single source of truth)
+  const kuis = useSchemaKuisProjection();
+  const modules = useSchemaModulesProjection();
+  const games = modules; // Game = Module (same type, filtered elsewhere)
+  // materi completeness derived from schema pages
+  const pages = useCanvaStore((s) => s.pages);
+  const materiBloks = React.useMemo(() => {
+    let count = 0;
+    for (const page of pages) {
+      if (page.schema?.blocks) {
+        for (const block of page.schema.blocks) {
+          if (block.type === 'materi-section') {
+            const content = (block as any).content || [];
+            count += content.filter((b: any) => b.type === 'materi-blok').length;
+          }
+        }
+      }
+    }
+    return count;
+  }, [pages]);
   const activePreset = useAuthoringStore((s) => s.activePreset);
   const calcCompleteness = useAuthoringStore((s) => s.calcCompleteness);
   const applyFullPreset = useAuthoringStore((s) => s.applyFullPreset);
@@ -104,9 +122,9 @@ export default function Dashboard() {
   // Get canva pages length for adaptive guidance
   const pagesLength = useCanvaStore((s) => s.pages.length);
 
-  const completeness = calcCompleteness();
+  const completeness = calcCompleteness(); // Phase 5: still uses authoring store internally — will be migrated later
   const isPresetMode = activePreset !== null;
-  const hasData = meta.judulPertemuan || tp.length > 0 || kuis.length > 0;
+  const hasData = meta.judulPertemuan || tp.length > 0 || kuis.length > 0 || materiBloks > 0;
 
   // Compute next step for adaptive guidance
   const nextStep = React.useMemo(
@@ -137,10 +155,12 @@ export default function Dashboard() {
   // ── Export JSON ────────────────────────────────────────────────
   const exportJSON = () => {
     const s = useAuthoringStore.getState();
+    const canvaState = useCanvaStore.getState();
+    // Phase 5: Content data derived from schema (single source of truth)
+    const schemaPayload = deriveExportPayloadFromSchema(canvaState.pages);
     const data = {
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-      skenario: s.skenario, kuis: s.kuis, modules: s.modules,
-      games: s.games, materi: s.materi,
+      ...schemaPayload,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -441,6 +461,7 @@ export default function Dashboard() {
                     { label: 'TP', val: tp.length },
                     { label: 'Kuis', val: kuis.length },
                     { label: 'Game', val: games.length },
+                    { label: 'Materi', val: materiBloks },
                   ].map((s) => (
                     <div key={s.label} className="text-center bg-[#f2f4f6] rounded-lg py-1.5">
                       <div className="text-sm font-bold text-[#191c1e]">{s.val}</div>
