@@ -240,8 +240,10 @@ export interface CanvaState {
   moveBlockToPage: (blockId: string, targetPageIndex: number) => void;
   /** Split the current page's schema at a block boundary, creating a new page */
   splitPageAtBlock: (blockId: string) => void;
-  /** Merge the current page's schema with the next page's schema */
+  /** Merge the current page's schema with the next page's schema (with overflow guard) */
   mergeWithNextPage: () => void;
+  /** Internal: Perform merge without overflow check (used after user confirms) */
+  _performMergeUnchecked: (pageIndex: number) => void;
   /** Move a schema block to a container (root, materi-section, ftab tab, or children) */
   moveBlockToContainer: (blockId: string, targetContainer: import('@/core/schema/immutable').ContainerRef, toIndex?: number) => void;
   /** Add a new schema block into a container (root, materi-section, ftab tab, or children) */

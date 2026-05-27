@@ -21,13 +21,14 @@
 //   - Sections: divider + uppercase tracking-widest header
 // ═══════════════════════════════════════════════════════════════
 
-import { useMemo, useCallback } from 'react';
-import type { GuidedEditorSchema, GuidedFieldDef } from '@/core/schema/guided-patch';
+import { useMemo, useCallback, useState } from 'react';
+import type { GuidedEditorSchema, GuidedFieldDef, OverflowCheckResult } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import { useCanvaStore } from '@/store/canva-store';
 import { PropertyGroup } from './PropertyGroup';
 import { renderGuidedField } from './guided-field-renderer';
+import { OverflowWarningBanner } from './OverflowWarningBanner';
 
 interface GuidedFormEditorProps {
   /** The block being edited */
@@ -44,13 +45,20 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
   const b = block as unknown as Record<string, unknown>;
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
+  // ── Overflow state ──
+  // Tracks whether the last edit caused overflow, so we can
+  // show the OverflowWarningBanner with action buttons.
+  const [overflowDetails, setOverflowDetails] = useState<OverflowCheckResult | null>(null);
+
   // Create the write handler that uses applyGuidedSchemaPatch
   // This is the SINGLE WRITE PATH — no updateSchemaBlock() here
+  // Phase 4: Now passes overflowPolicy: 'warn' to detect overflow
   const handleUpdate = useCallback((updates: Record<string, unknown>) => {
     const result = applyGuidedSchemaPatch({
       pageId,
       blockId,
       patch: updates,
+      overflowPolicy: 'warn',  // Phase 4: detect overflow, warn + show UI
       source: 'guided-form',
     });
 
@@ -58,9 +66,11 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
       console.warn(`[GuidedFormEditor] Patch failed: ${result.error}`);
     }
 
-    if (result.overflowDetected) {
-      // TODO: Phase 4 — show overflow warning UI
-      console.warn(`[GuidedFormEditor] Overflow detected after patching "${blockId}"`);
+    if (result.overflowDetected && result.overflowDetails) {
+      setOverflowDetails(result.overflowDetails);
+    } else {
+      // Clear overflow state if edit no longer overflows
+      setOverflowDetails(null);
     }
   }, [pageId, blockId]);
 
@@ -110,6 +120,15 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
 
   return (
     <div className="space-y-4" role="region" aria-label={`Guided Editor: ${guidedSchema.displayName}`}>
+      {/* ── Overflow warning banner (Phase 4) ── */}
+      {overflowDetails && overflowDetails.overflowDetected && (
+        <OverflowWarningBanner
+          details={overflowDetails}
+          pageId={pageId}
+          onDismiss={() => setOverflowDetails(null)}
+        />
+      )}
+
       {/* ── Block description (teacher mode) ── */}
       {teacherMode && guidedSchema.description && (
         <div className="px-4 py-2.5 rounded-xl bg-primary-container/10 border border-primary/15 text-[12px] text-on-surface-variant leading-relaxed">

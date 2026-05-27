@@ -40,6 +40,20 @@ import { commitSchemaUpdate, findBlockOwner, type BlockOwner } from '@/store/can
 import { assertDocumentPurity } from './session-state';
 import { editBus } from '@/core/editor/edit-bus';
 import { produceWithPatches } from 'immer';
+import { computeScenePlan, type ScenePlan } from '@/core/layout/SceneOverflowEngine';
+import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/scene/SceneLayoutEngine';
+import { isFullPageBlockType, isBlockTypeCompressionCapable } from './capability-registry';
+// Lazy import to avoid circular dependency:
+//   guided-patch ← schema-apply ← store ← ... (would cause SSR crash)
+//   guided-patch ← TemplateThemeContract ← ModernEducatorContract ← ... (similar)
+// Instead, we resolve the contract at runtime via a helper that does lazy loading.
+let _getContractOrGolden: typeof import('@/core/template/contract/TemplateThemeContract').getContractOrGolden | null = null;
+function getContractLazy() {
+  if (!_getContractOrGolden) {
+    _getContractOrGolden = require('@/core/template/contract/TemplateThemeContract').getContractOrGolden;
+  }
+  return _getContractOrGolden!;
+}
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -58,6 +72,22 @@ export interface GuidedPatchArgs {
   source?: 'user' | 'ai' | 'sync' | 'guided-form' | 'konten-tab';
 }
 
+/** Rich overflow check result from SceneOverflowEngine */
+export interface OverflowCheckResult {
+  /** Whether overflow was detected */
+  overflowDetected: boolean;
+  /** The computed scene plan (null if schema has no blocks) */
+  scenePlan: ScenePlan | null;
+  /** Whether the page type allows splitting (from contract) */
+  canSplit: boolean;
+  /** Whether any overflowing blocks are compression-capable */
+  canCompress: boolean;
+  /** How many scenes would be needed */
+  totalScenes: number;
+  /** Human-readable summary */
+  summary: string;
+}
+
 export interface GuidedPatchResult {
   /** Whether the patch was applied successfully */
   success: boolean;
@@ -73,6 +103,8 @@ export interface GuidedPatchResult {
   pageId: string;
   /** The block ID that was updated */
   blockId: string;
+  /** Rich overflow details (when overflowDetected or overflowPolicy !== 'none') */
+  overflowDetails?: OverflowCheckResult;
 }
 
 // ── Main Function ──────────────────────────────────────────────
@@ -218,15 +250,18 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
   let overflowDetected = false;
   let autoSplitPerformed = false;
   let newPageId: string | undefined;
+  let overflowDetails: OverflowCheckResult | undefined;
 
   if (overflowPolicy !== 'none') {
-    overflowDetected = checkOverflow(newSchema);
+    const check = checkOverflowRich(newSchema, page.templateType);
+    overflowDetected = check.overflowDetected;
+    overflowDetails = check;
 
     if (overflowDetected) {
       if (overflowPolicy === 'warn') {
         console.warn(
           `[guided-patch] Overflow detected on page "${pageId}" after patching block "${blockId}". ` +
-          `Consider splitting the content.`
+          `${check.summary}`
         );
       } else if (overflowPolicy === 'reject') {
         // Revert the patch — restore original state
@@ -237,14 +272,49 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
           overflowDetected: true,
           pageId,
           blockId,
+          overflowDetails: check,
         };
       } else if (overflowPolicy === 'auto-split') {
-        // Auto-split: delegate to the existing promoteSceneSplitToPage
-        // For now, just warn — full auto-split integration is Phase 4
-        console.warn(
-          `[guided-patch] Overflow detected on page "${pageId}". ` +
-          `Auto-split is not yet implemented (Phase 4). Content may overflow.`
-        );
+        // Auto-split: delegate to the canva store's promoteSceneSplit action.
+        // We don't call promoteSceneSplitToPage() directly to avoid circular dependencies
+        // (schema-apply → canva-store → ... → guided-patch).
+        // Instead, we navigate to the page and let the store handle the split.
+        if (check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
+          // Navigate to the overflowing page first
+          const store = useCanvaStore.getState();
+          const pageIdx = store.pages.findIndex(p => p.id === pageId);
+          if (pageIdx >= 0 && store.currentPageIndex !== pageIdx) {
+            useCanvaStore.setState({ currentPageIndex: pageIdx });
+          }
+          // Now promote the split via the store action
+          // Note: This works because promoteSceneSplit re-computes the scene plan
+          // from the CURRENT page state (which already has our patched content)
+          try {
+            store.promoteSceneSplit(1);
+            autoSplitPerformed = true;
+            // The split creates a new page — read the new page ID from the updated store
+            const updatedPages = useCanvaStore.getState().pages;
+            const nextPage = updatedPages[pageIdx + 1];
+            if (nextPage) {
+              newPageId = nextPage.id;
+            }
+          } catch (err) {
+            console.warn(
+              `[guided-patch] Auto-split failed for page "${pageId}": ${err}. ` +
+              `Content may overflow. Manual split recommended.`
+            );
+          }
+        } else if (!check.canSplit) {
+          console.warn(
+            `[guided-patch] Overflow on page "${pageId}" but page type "${page.templateType}" ` +
+            `does not allow splitting. Content may overflow. Consider shortening content.`
+          );
+        } else {
+          console.warn(
+            `[guided-patch] Overflow detected on page "${pageId}" but scene plan indicates ` +
+            `single scene. Content may overflow.`
+          );
+        }
       }
     }
   }
@@ -256,6 +326,7 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
     newPageId,
     pageId,
     blockId,
+    overflowDetails,
   };
 }
 
@@ -692,44 +763,93 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
 // ── Overflow Detection ─────────────────────────────────────────
 
 /**
- * Simple overflow detection based on word count and block count.
- * This is a HEURISTIC — the real overflow detection uses SceneOverflowEngine
- * which needs measured heights. This is a fast approximation.
+ * Rich overflow detection using SceneOverflowEngine.
+ * Replaces the old word-count heuristic with real scene plan computation.
  *
- * Returns true if the page likely overflows.
+ * Returns detailed overflow information including:
+ *   - Whether overflow is detected
+ *   - The computed scene plan
+ *   - Whether the page type allows splitting
+ *   - Whether compression is available
+ *   - Total scenes needed
+ *   - Human-readable summary
  */
-function checkOverflow(schema: ScreenSchema): boolean {
-  let totalWords = 0;
+function checkOverflowRich(schema: ScreenSchema, templateType?: string): OverflowCheckResult {
+  if (!schema.blocks || schema.blocks.length === 0) {
+    return {
+      overflowDetected: false,
+      scenePlan: null,
+      canSplit: false,
+      canCompress: false,
+      totalScenes: 1,
+      summary: 'Tidak ada konten',
+    };
+  }
 
-  for (const block of schema.blocks) {
-    const b = block as Record<string, unknown>;
+  // ── Compute scene plan using real measurements ──
+  const sceneRes = getSceneResolution('16:9');
+  const hasFullPageBlock = schema.blocks.length === 1 &&
+    isFullPageBlockType(schema.blocks[0].type);
+  const safeArea = hasFullPageBlock
+    ? DEFAULT_SAFE_AREA
+    : computeSafeArea({ showTopNav: false, showBottomNav: false, isCompact: true, pagePadding: 16 });
 
-    // Count words in text fields
-    const textFields = ['title', 'subtitle', 'content', 'body', 'text', 'intro', 'hookQuestion', 'closingStatement'];
-    for (const field of textFields) {
-      if (field in b && typeof b[field] === 'string') {
-        totalWords += (b[field] as string).replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length;
-      }
-    }
+  const scenePlan = computeScenePlan(schema, sceneRes, safeArea, { isCompact: true });
 
-    // Count words in array fields
-    const arrayFields = ['questions', 'objectives', 'cards', 'concepts', 'items'];
-    for (const field of arrayFields) {
-      if (field in b && Array.isArray(b[field])) {
-        for (const item of b[field] as Record<string, unknown>[]) {
-          for (const tf of ['teks', 'text', 'body', 'q', 'isi', 'description', 'petunjuk']) {
-            if (tf in item && typeof item[tf] === 'string') {
-              totalWords += (item[tf] as string).replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length;
-            }
-          }
-        }
+  // ── Check contract canSplit ──
+  const contract = getContractLazy()(undefined);
+  const pageLayout = templateType
+    ? contract.pageLayouts[templateType]
+    : undefined;
+  const canSplit = pageLayout?.canSplit ?? true; // Default: allow split
+
+  // ── Check if any overflowing blocks are compression-capable ──
+  let canCompress = false;
+  if (!scenePlan.isSingleScene) {
+    for (const block of schema.blocks) {
+      if (isBlockTypeCompressionCapable(block.type)) {
+        canCompress = true;
+        break;
       }
     }
   }
 
-  // Rough heuristic: more than 90 words on a single page = likely overflow
-  // This matches PAGE_DENSITY_RULES.maxWords
-  return totalWords > 90;
+  const overflowDetected = !scenePlan.isSingleScene;
+
+  // ── Human-readable summary ──
+  let summary: string;
+  if (!overflowDetected) {
+    summary = 'Konten muat dalam satu halaman';
+  } else {
+    const scenesNeeded = scenePlan.totalScenes;
+    const overflowBlocks = scenePlan.scenes
+      .slice(1) // Blocks in scene 1+ overflow
+      .reduce((acc, s) => acc + s.blockIds.length, 0);
+    summary = `Konten melebihi kapasitas — butuh ${scenesNeeded} halaman (${overflowBlocks} blok overflow)`;
+    if (!canSplit) {
+      summary += '. Tipe halaman ini tidak bisa di-split — persingkat konten.';
+    }
+    if (canCompress) {
+      summary += ' Kompresi tersedia.';
+    }
+  }
+
+  return {
+    overflowDetected,
+    scenePlan,
+    canSplit,
+    canCompress,
+    totalScenes: scenePlan.totalScenes,
+    summary,
+  };
+}
+
+/**
+ * Simple boolean overflow check (backward-compatible wrapper).
+ * Uses the rich check internally.
+ */
+export function checkOverflow(schema: ScreenSchema): boolean {
+  return checkOverflowRich(schema).overflowDetected;
 }
 
 // ── Convenience: Patch and get fresh projection ────────────────

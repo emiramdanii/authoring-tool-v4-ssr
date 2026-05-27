@@ -22,10 +22,11 @@ import { findBlockOwner, commitSchemaUpdate } from './schema-helpers';
 import { assertValidSchema } from '@/core/schema/validation';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { saveCrashCheckpoint, transactionRollback } from '@/core/recovery';
+import { isFullPageBlockType } from '@/core/schema/capability-registry';
 
 export type PageOpsSlice = Pick<
   CanvaState,
-  | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage'
+  | 'moveBlockToPage' | 'splitPageAtBlock' | 'mergeWithNextPage' | '_performMergeUnchecked'
   | 'moveBlockToContainer'
   | 'rebalanceCurrentPage' | 'promoteSceneSplit' | 'mergeWithAdjacentPage'
   | 'splitMateriContent'
@@ -168,9 +169,80 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const targetSchema = ensurePageSchema!(targetPage);
     if (!sourceSchema || !targetSchema) { toast.warning('Tidak bisa merge — salah satu halaman tidak memiliki schema'); return; }
 
+    // ── Phase 4: Pre-merge overflow check ──
+    // Before merging, compute what the merged schema would look like
+    // and check if it would overflow. If yes, warn the user with options.
+    const mergedBlocks = [...sourceSchema.blocks, ...targetSchema.blocks];
+    const mergedSchemaPreview: import('@/core/schema/types').ScreenSchema = {
+      ...sourceSchema,
+      blocks: mergedBlocks,
+    };
+    const sceneRes = getSceneResolution('16:9');
+    const hasFullPageBlock = mergedBlocks.length === 1 &&
+      isFullPageBlockType(mergedBlocks[0]!.type);
+    const safeArea = hasFullPageBlock
+      ? DEFAULT_SAFE_AREA
+      : computeSafeArea({ showTopNav: false, showBottomNav: false, isCompact: true, pagePadding: 16 });
+    const scenePlan = computeScenePlan(mergedSchemaPreview, sceneRes, safeArea, { isCompact: true });
+
+    if (!scenePlan.isSingleScene) {
+      // ── Overflow detected after merge ──
+      // Lazy load contract to avoid circular dependency
+      const { getContractOrGolden } = require('@/core/template/contract/TemplateThemeContract');
+      const contract = getContractOrGolden(undefined);
+      const pageLayout = sourcePage.templateType
+        ? contract.pageLayouts[sourcePage.templateType]
+        : undefined;
+      const canSplit = pageLayout?.canSplit ?? true;
+      const overflowBlockCount = scenePlan.scenes
+        .slice(1)
+        .reduce((acc, s) => acc + s.blockIds.length, 0);
+
+      // Warn with options
+      toast.warning(
+        `Merge akan menyebabkan overflow (${scenePlan.totalScenes} halaman, ${overflowBlockCount} blok overflow).`,
+        {
+          duration: 8000,
+          action: canSplit
+            ? {
+                label: 'Merge + Split',
+                onClick: () => {
+                  // Perform merge first, then auto-split
+                  get()._performMergeUnchecked(currentPageIndex);
+                  // After merge, promote scene split
+                  get().promoteSceneSplit(1);
+                },
+              }
+            : {
+                label: 'Merge Saja',
+                onClick: () => {
+                  get()._performMergeUnchecked(currentPageIndex);
+                },
+              },
+        }
+      );
+      return; // Don't auto-merge — wait for user decision
+    }
+
+    // No overflow — safe to merge
+    get()._performMergeUnchecked(currentPageIndex);
+  },
+
+  // ── Internal: Perform merge without overflow check ────────────
+  // Used by mergeWithNextPage after overflow guard passes,
+  // or when user explicitly confirms merge despite overflow.
+  _performMergeUnchecked: (pageIndex: number) => {
+    const { pages } = get();
+    const sourcePage = pages[pageIndex];
+    const targetPage = pages[pageIndex + 1];
+    if (!sourcePage || !targetPage) return;
+    const sourceSchema = ensurePageSchema!(sourcePage);
+    const targetSchema = ensurePageSchema!(targetPage);
+    if (!sourceSchema || !targetSchema) return;
+
     get()._pushHistory();
 
-       // ── FASE 6: Crash checkpoint before merge ────────────────
+    // ── FASE 6: Crash checkpoint before merge ────────────────
     saveCrashCheckpoint(pages, get().ratioId, 'merge-page');
     const txId = transactionRollback.checkpoint(pages, get().ratioId, 'merge-page');
 
@@ -183,18 +255,18 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     }
 
     const newPages = [...pages];
-    newPages[currentPageIndex] = { ...sourcePage, schema: commitSchemaUpdate(sourceSchema, result.schema.blocks) };
-    newPages.splice(currentPageIndex + 1, 1);
+    newPages[pageIndex] = { ...sourcePage, schema: commitSchemaUpdate(sourceSchema, result.schema.blocks) };
+    newPages.splice(pageIndex + 1, 1);
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
     // [UNDO-03] Emit as 'cross-page' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
       type: 'cross-page',
       operation: 'mergeWithNextPage',
-      pageIndex: currentPageIndex,
+      pageIndex,
       blockId: 'merge',
       blockType: 'merge',
-      details: { _mergedWith: currentPageIndex + 1 },
+      details: { _mergedWith: pageIndex + 1 },
     });
 
     // FASE 6: Commit transaction checkpoint — merge succeeded
