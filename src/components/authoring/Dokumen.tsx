@@ -1,5 +1,24 @@
 'use client';
 
+// ═══════════════════════════════════════════════════════════════════
+// DOKUMEN PANEL — Project metadata editor (NOT canvas content)
+// ═══════════════════════════════════════════════════════════════════
+// DESIGN NOTE (Phase 5):
+//   Unlike Konten tabs (diskusi, kuis, materi, etc.) which write to
+//   schema via applyGuidedSchemaPatch(), Dokumen writes to the
+//   authoring store directly. This is INTENTIONAL because:
+//
+//   - meta, cp, tp, atp, alur are PROJECT METADATA, not canvas content
+//   - They describe the lesson plan structure, not what renders on pages
+//   - Auto-generate reads them as context for content generation
+//   - They don't correspond 1:1 to schema blocks on specific pages
+//
+//   Future: When CpBlock/AtpBlock schema types are added, some of
+//   these writes can migrate to schema patches. But tp and alur are
+//   planning data that gets PROJECTED into pages during generation,
+//   not directly rendered.
+// ═══════════════════════════════════════════════════════════════════
+
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';

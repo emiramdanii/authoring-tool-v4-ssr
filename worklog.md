@@ -382,3 +382,40 @@ Stage Summary:
 - Cross-panel navigation: SchemaBlockTree pencil → kontenPanelRequest → AuthoringTool switches to Konten panel
 - All Konten tabs read from CanvaPage[].schema via useSchema* hooks
 - Remaining useAuthoringStore usages are for project metadata (meta, tp, atp) — Phase 5 territory
+
+---
+Task ID: 9
+Agent: main
+Task: Phase 3 Completion + Phase 4 + Phase 5 (Partial) — Push to git, continue dev
+
+Work Log:
+- Pushed to git (rebase resolved, zero conflicts)
+- Audited Konten panel: ALL 8 tabs already migrated to schema-first (useSchemaXxx hooks)
+- Updated STATUS.md: Task 8 (MateriTab) marked DONE, Phase 3 declared COMPLETE
+- Phase 4: Safe Page Split / Overflow Policy
+  - Added previewPatchOverflow() — pre-flight overflow check without writing to store
+  - Fixed auto-split atomicity — uses promoteSceneSplitToPage() directly instead of navigate+split
+  - Added per-page overflow status to useOverflowWarningStore (pageOverflowStatus with batch set)
+  - Upgraded KontenOverflowBanner — direct Compress/Split/Lihat action buttons
+  - Added scanAllPagesOverflow() — post-generate overflow scan with optional auto-split
+  - Added SceneList overflow indicator — amber AlertTriangle on overflowing pages
+  - Build pass confirmed, pushed to git
+- Phase 5: Cleanup Dual Source (Partial)
+  - Audited all useAuthoringStore usage across codebase (~50 files)
+  - Identified 32 write actions in 5 Tier 1 slices that should go through schema
+  - Added @deprecated + console.warn() to all 32 write actions:
+    - kuis-slice: 5 actions
+    - materi-slice: 4 actions
+    - skenario-slice: 13 actions
+    - diskusi-refleksi-slice: 8 actions
+    - motivasi-rangkuman-slice: 2 actions
+  - Added design note to Dokumen.tsx: meta/cp/tp/atp/alur are PROJECT METADATA (not canvas content), intentionally stays in authoring store
+  - Documented remaining Phase 5 work in STATUS.md
+  - Build pass confirmed, pushed to git
+
+Stage Summary:
+- **Phase 3: COMPLETE** — All 8 Konten tabs read from schema via useSchemaXxx hooks
+- **Phase 4: COMPLETE** — previewPatchOverflow, atomic auto-split, per-page overflow status, KontenOverflowBanner upgrade, scanAllPagesOverflow, SceneList indicator
+- **Phase 5: PARTIAL** — 32 deprecated write actions with console.warn(), Dokumen.tsx documented as project metadata
+- **Remaining Phase 5**: Convert Dokumen.tsx (needs CpBlock/AtpBlock schema types), auto-generate, import/restore, UI state extraction
+- All builds pass, all pushes successful
