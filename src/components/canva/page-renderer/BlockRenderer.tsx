@@ -3,7 +3,7 @@
 import React, { useCallback } from 'react';
 import type { CanvaElement } from '../types';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaModulesProjection } from '@/hooks/use-schema-projection';
 import { resolveModule } from '@/lib/module-resolver';
 import { isInteractiveElementType } from '@/core/schema/capability-registry';
 import QuizWidget from '../QuizWidget';
@@ -153,7 +153,7 @@ function toModuleCardMode(mode: BlockRendererMode): 'canvas' | 'export' {
 }
 
 function ModuleBlock({ element, compact, mode }: { element: CanvaElement; compact: boolean; mode: BlockRendererMode }) {
-  const modules = useAuthoringStore((s) => s.modules);
+  const modules = useSchemaModulesProjection();
   const mod = resolveModule(element, modules);
 
   if (!mod) {

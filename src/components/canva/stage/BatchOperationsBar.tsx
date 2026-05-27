@@ -18,7 +18,6 @@
 
 import { useCallback, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import {
   Trash2,
   X,
@@ -41,7 +40,7 @@ export default function BatchOperationsBar() {
   const batchMoveBlocks = useCanvaStore(s => s.batchMoveBlocks);
   const batchToggleCompression = useCanvaStore(s => s.batchToggleCompression);
   const selectBlock = useCanvaStore(s => s.selectBlock);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
 
   const [showMore, setShowMore] = useState(false);

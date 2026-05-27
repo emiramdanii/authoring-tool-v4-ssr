@@ -8,8 +8,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
-import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import type { PageTemplateType } from './types';
 import { RATIOS } from './types';
 import { getPresetsGroupedByCategory, type PagePreset } from '@/core/preset/PagePresetRegistry';

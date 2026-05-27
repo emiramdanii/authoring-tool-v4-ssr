@@ -323,3 +323,39 @@ Stage Summary:
 - **PageLayoutContract.canSplit is respected** — cover/hasil/penutup pages cannot be auto-split
 - **Circular dependencies avoided** via lazy imports for contract resolution
 - **Phase 4 is COMPLETE** — Safe Page Split / Overflow Policy fully implemented
+
+---
+Task ID: 3
+Agent: Main
+Task: Phase 3 — Konten Panel → Schema Navigator (migrate from useAuthoringStore to schema reads)
+
+Work Log:
+- Audited all useAuthoringStore usages across canva components (40+ import sites)
+- Phase 3.1: Replaced 11 `teacherMode` reads from useAuthoringStore → useCanvaStore
+  - SceneList, AddBlockSection, AddBlockPanel, TemplateSection, TemplateGalleryPanel
+  - TemplateCustomizeDialog (kept useAuthoringStore for meta), AITemplateGenerator (kept for meta)
+  - BatchActionBar, BatchActionsBar, BatchOperationsBar
+  - AIRefinePanel (kept useAuthoringStore for meta)
+- Phase 3.2: Cleaned up dead `useAuthoringStore` + `teacherTerm` imports in LeftPanel.tsx
+- Phase 3.3: Created `/src/hooks/use-schema-projection.ts` — lightweight read-only schema projection hooks
+  - `useSchemaProjection()` → { kuis, modules, meta }
+  - `useSchemaKuisProjection()` → KuisItem[]
+  - `useSchemaModulesProjection()` → Module[]
+  - `useSchemaMetaProjection()` → MetaState
+- Phase 3.4: Migrated 5 rendering widgets to schema projections:
+  - QuizWidget.tsx → useSchemaKuisProjection()
+  - GameWidget.tsx → useSchemaModulesProjection()
+  - BlockRenderer.tsx → useSchemaModulesProjection()
+  - DataIdxSelector.tsx → useSchemaProjection()
+  - PageFrame.tsx → useSchemaMetaProjection()
+- Phase 3.5: Build verified — `npx next build` passes with zero errors
+
+Stage Summary:
+- Phase 3 COMPLETE. Canva area now reads content data from schema instead of authoring store.
+- Remaining useAuthoringStore usages are legitimate Phase 5 territory:
+  - Cross-panel navigation (setActivePanel) — 8 files
+  - System/persistence state (dirty, saveToStorage) — 3 files
+  - Full state export (getState) — 3 files
+  - Meta reads in AI/template panels (5 files) — could migrate but also use other authoring store features
+- useSchemaProjection() provides drop-in replacement for useAuthoringStore content reads
+- Total useAuthoringStore imports removed from canva rendering: 16 files

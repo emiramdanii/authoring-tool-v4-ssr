@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaModulesProjection } from '@/hooks/use-schema-projection';
 import { resolveModule } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import type { CanvaElement } from './types';
@@ -38,7 +38,7 @@ interface GameWidgetProps {
    Uses resolveModule() for stable reference: moduleId > dataIdx
    ═══════════════════════════════════════════════════════════════ */
 export default function GameWidget({ dataIdx, moduleId, compact = false, interactive = false, onComplete }: GameWidgetProps) {
-  const modules = useAuthoringStore((s) => s.modules);
+  const modules = useSchemaModulesProjection();
 
   // Build a pseudo-element for resolveModule() — supports both moduleId and dataIdx
   const refEl: Partial<CanvaElement> = {

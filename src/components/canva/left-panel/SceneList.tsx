@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Copy, Trash2, Zap, Plus } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { Button } from '@/components/ui/button';
 import { SchemaBlockTreeCompact } from './SchemaBlockTree';
@@ -39,7 +38,7 @@ export function SceneList() {
   const reorderPage = useCanvaStore(s => s.reorderPage);
   const addPage = useCanvaStore(s => s.addPage);
   const ratio = useCanvaStore(s => s.currentRatio());
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 

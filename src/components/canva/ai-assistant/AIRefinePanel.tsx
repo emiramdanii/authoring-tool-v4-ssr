@@ -117,7 +117,7 @@ const REFINEMENT_OPTIONS: RefinementOption[] = [
 ];
 
 export default function AIRefinePanel() {
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
   const meta = useAuthoringStore(s => s.meta);
 

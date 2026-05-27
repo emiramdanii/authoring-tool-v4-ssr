@@ -21,7 +21,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Search, BookOpen, Loader2, FileText, Sparkles, Settings2, LayoutGrid, Wand2 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
 import {
@@ -143,7 +142,7 @@ const PAGE_TYPE_ICONS: Record<string, string> = {
 // ═══════════════════════════════════════════════════════════════════
 
 export default function TemplateGalleryPanel() {
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
   const loadCustomSchema = useCanvaStore(s => s.loadCustomSchema);
   const _pushHistory = useCanvaStore(s => s._pushHistory);

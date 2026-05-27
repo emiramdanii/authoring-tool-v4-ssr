@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
-import { useAuthoringStore } from '@/store/authoring-store';
 
 export default function BatchActionsBar() {
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
@@ -33,7 +32,7 @@ export default function BatchActionsBar() {
   const batchDuplicateBlocks = useCanvaStore(s => s.batchDuplicateBlocks);
   const batchSetVariant = useCanvaStore(s => s.batchSetVariant);
   const _pushHistory = useCanvaStore(s => s._pushHistory);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
 
   const [showVariantPicker, setShowVariantPicker] = useState(false);

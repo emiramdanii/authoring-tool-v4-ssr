@@ -16,7 +16,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, Blocks, ArrowDownToLine, Zap, Star } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
 import {
   getAllBlockDefinitions,
@@ -49,7 +48,7 @@ export default function AddBlockPanel() {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
   const [search, setSearch] = useState('');
 

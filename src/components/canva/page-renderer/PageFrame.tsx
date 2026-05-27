@@ -5,7 +5,7 @@ import type { CanvaPage, NavConfig } from '../types';
 import { DEFAULT_NAV_CONFIG } from '../types';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaMetaProjection } from '@/hooks/use-schema-projection';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
 import { TokenResolver } from '@/core/renderer/SchemaRenderer';
 import { alpha } from '@/lib/color-palette';
@@ -374,7 +374,7 @@ export const PageFrame = React.memo(function PageFrame({
 
   // Navigation — use shared navSync hook for dual-store sync
   const { goNext, goPrev, goToPage, goReset } = useNavSync();
-  const meta = useAuthoringStore((s) => s.meta);
+  const meta = useSchemaMetaProjection();
   const pages = useCanvaStore((s) => s.pages);
   const isPageComplete = useInteractiveStore((s) => s.isPageComplete);
 

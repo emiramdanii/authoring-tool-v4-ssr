@@ -26,13 +26,12 @@ import {
   Layers,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 
 export default function BatchActionBar() {
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
 
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);

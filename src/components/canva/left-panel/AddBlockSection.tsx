@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import AddBlockPanel from './AddBlockPanel';
 
@@ -14,7 +14,7 @@ interface AddBlockSectionProps {
 }
 
 export function AddBlockSection({ addBlockOpen, onToggle }: AddBlockSectionProps) {
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const sectionLabel = teacherMode === 'sederhana' ? 'Tambah Konten' : 'Tambah Block';
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaProjection } from '@/hooks/use-schema-projection';
 import { GAME_TYPES } from '@/lib/canva-constants';
 import { GAME_TYPE_ICON_MAP, MODULE_TYPE_ICON_MAP } from '@/lib/canva-icon-maps';
 
@@ -9,14 +9,14 @@ export default function DataIdxSelector({ elementType, currentIdx, onChange }: {
   currentIdx: number;
   onChange: (idx: number, stableId?: string) => void;
 }) {
-  const modules = useAuthoringStore((s) => s.modules);
-  const kuis = useAuthoringStore((s) => s.kuis.filter(k => k.q.trim()));
+  const { modules, kuis } = useSchemaProjection();
+  const kuisWithText = kuis.filter(k => k.q.trim());
 
   // Build options based on element type
   let options: { idx: number; label: string; icon: string; stableId?: string }[] = [];
 
   if (elementType === 'kuis') {
-    options = [{ idx: -1, label: `Semua soal (${kuis.length})`, icon: '?' }];
+    options = [{ idx: -1, label: `Semua soal (${kuisWithText.length})`, icon: '?' }];
   } else if (elementType === 'game') {
     const gameModules = modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type as string));
     options = gameModules.map((m) => {

@@ -70,7 +70,7 @@ interface AITemplateGeneratorProps {
 }
 
 export default function AITemplateGenerator({ onTemplateGenerated, onClose }: AITemplateGeneratorProps) {
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode === 'sederhana';
   const meta = useAuthoringStore(s => s.meta);
   const loadCustomSchema = useCanvaStore(s => s.loadCustomSchema);

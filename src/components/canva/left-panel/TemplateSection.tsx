@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -19,7 +19,7 @@ interface TemplateSectionProps {
 }
 
 export function TemplateSection({ galleryOpen, onToggle }: TemplateSectionProps) {
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const sectionLabel = teacherMode === 'sederhana' ? 'Pilih Template' : 'Template Gallery';
 
   return (

@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { CheckCircle2, XCircle, Lightbulb } from 'lucide-react';
-import { useAuthoringStore, type KuisItem } from '@/store/authoring-store';
+import { type KuisItem } from '@/store/authoring-store';
+import { useSchemaKuisProjection } from '@/hooks/use-schema-projection';
 import { resolveKuis } from '@/lib/module-resolver';
 import { playSound } from '@/lib/sounds';
 import type { CanvaElement } from './types';
@@ -19,7 +20,7 @@ interface QuizWidgetProps {
 const LETTERS = ['A', 'B', 'C', 'D'];
 
 export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, interactive = false, onComplete }: QuizWidgetProps) {
-  const kuis = useAuthoringStore((s) => s.kuis);
+  const kuis = useSchemaKuisProjection();
 
   // Resolve kuis data — priority: kuisIds (multi) > kuisId (single) > dataIdx > all
   let allQuestions: KuisItem[];
