@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { useSchemaMateri } from '@/hooks/use-schema-navigator';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
@@ -8,7 +9,6 @@ import { BlockEditor } from './block-editors';
 import { Trash2, FileEdit, BookOpen, Zap, RefreshCw } from 'lucide-react';
 import { RegenerateButton } from './RegenerateButton';
 import { regenerateMateri, regenerateMateriSchema, regenerateSingleMateriBlok } from '../auto-generate/regenerate';
-import { syncMateriToSchema } from '@/core/schema/sync-projection';
 import { toast } from 'sonner';
 
 // ── Blok Card ──────────────────────────────────────────────────
@@ -96,7 +96,7 @@ function BlokCard({
             </button>
           </div>
 
-          {/* Editor form */}
+          {/* Editor form — schema-driven writes */}
           <BlockEditor blok={blok} idx={idx} />
 
           {/* Pertemuan tag — same pattern as KuisTab */}
@@ -135,33 +135,27 @@ function BlokCard({
 
 // ── Materi Tab ─────────────────────────────────────────────────
 export function MateriTab() {
-  const materi = useAuthoringStore((s) => s.materi);
+  // ═══ Phase 3: Schema-first reads via useSchemaMateri ═══
+  const { bloks, locations, hasSections, addBlok, removeBlok, moveBlok, updateBlok, replaceAllBloks } = useSchemaMateri();
+
+  // Only use authoring store for meta reads (context for regeneration) and navigation
   const meta = useAuthoringStore((s) => s.meta);
   const atp = useAuthoringStore((s) => s.atp);
-  const addMateriBlok = useAuthoringStore((s) => s.addMateriBlok);
-  const removeMateriBlok = useAuthoringStore((s) => s.removeMateriBlok);
-  const moveMateriBlok = useAuthoringStore((s) => s.moveMateriBlok);
   const listRef = useRef<HTMLDivElement>(null);
   const jumlahPertemuan = atp.jumlahPertemuan || 1;
 
-  // ── Phase 18.3d: Projection Live Sync ──────────────────────────
-  const prevMateriRef = useRef(materi);
-  useEffect(() => {
-    if (materi !== prevMateriRef.current && materi.blok.length > 0) {
-      syncMateriToSchema(materi);
-    }
-    prevMateriRef.current = materi;
-  }, [materi]);
+  // NOTE: syncMateriToSchema useEffect REMOVED — schema is now the source of truth.
+  // Writes go directly through applyGuidedSchemaPatch via useSchemaMateri.updateBlok.
 
   const handleAdd = useCallback(
     (tipe: string) => {
-      addMateriBlok(tipe);
+      addBlok(tipe);
       setTimeout(() => {
         const el = listRef.current?.lastElementChild;
         el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     },
-    [addMateriBlok],
+    [addBlok],
   );
 
   const handleRegenerateMateri = async () => {
@@ -170,36 +164,40 @@ export function MateriTab() {
       judulPertemuan: meta.judulPertemuan,
       namaBab: meta.namaBab,
     });
-    // Also regenerate authoring store data (projection for Konten editor)
-    const bloks = regenerateMateri({
+    // Also regenerate authoring store data (projection for backward compat)
+    const blokResults = regenerateMateri({
       judulPertemuan: meta.judulPertemuan,
       namaBab: meta.namaBab,
     });
-    if (bloks) {
-      useAuthoringStore.setState({ materi: { blok: bloks as MateriBlok[] }, dirty: true });
-      toast.success(`📖 ${bloks.length} blok materi berhasil digenerate ulang`);
+    if (blokResults) {
+      // Write to schema via the hook's replaceAllBloks
+      replaceAllBloks(blokResults as MateriBlok[]);
+      toast.success(`📖 ${blokResults.length} blok materi berhasil digenerate ulang`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber.');
       useAuthoringStore.getState().setActivePanel('autogen');
     }
   };
 
+  // Empty state — show when no materi-section exists or no materi-blok blocks
+  const isEmpty = bloks.length === 0;
+
   return (
     <div className="space-y-4">
       {/* Header with Regenerate button */}
       <div className="flex items-center justify-between">
         <div className="text-xs text-app-muted">
-          {materi.blok.length} blok materi
+          {bloks.length} blok materi
         </div>
         <RegenerateButton
           label="Materi"
           onRegenerate={handleRegenerateMateri}
-          hasExistingData={materi.blok.length > 0}
+          hasExistingData={bloks.length > 0}
         />
       </div>
 
       {/* Empty state */}
-      {materi.blok.length === 0 ? (
+      {isEmpty ? (
         <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
           <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mx-auto mb-3">
             <BookOpen size={24} className="text-teal-400" />
@@ -224,39 +222,35 @@ export function MateriTab() {
       ) : (
         /* Block list */
         <div ref={listRef} className="space-y-3">
-          {materi.blok.map((blok, i) => (
+          {bloks.map((blok, i) => (
             <BlokCard
-              key={i}
+              key={locations[i]?.blokBlock?.id || i}
               blok={blok}
               idx={i}
-              total={materi.blok.length}
-              onMoveUp={() => moveMateriBlok(i, i - 1)}
-              onMoveDown={() => moveMateriBlok(i, i + 1)}
-              onRemove={() => removeMateriBlok(i)}
+              total={bloks.length}
+              onMoveUp={() => moveBlok(i, i - 1)}
+              onMoveDown={() => moveBlok(i, i + 1)}
+              onRemove={() => removeBlok(i)}
               onRegenerate={() => {
                 const newBlok = regenerateSingleMateriBlok(i, {
                   judulPertemuan: meta.judulPertemuan,
                   namaBab: meta.namaBab,
                 });
                 if (newBlok) {
-                  const newBloks = [...materi.blok];
-                  newBloks[i] = newBlok as MateriBlok;
-                  useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
+                  // Update individual blok via schema patch
+                  updateBlok(i, 'judul', newBlok.judul);
+                  updateBlok(i, 'isi', newBlok.isi);
+                  if (newBlok.butir) updateBlok(i, 'butir', newBlok.butir);
+                  if (newBlok.baris) updateBlok(i, 'baris', newBlok.baris);
+                  if (newBlok.langkah) updateBlok(i, 'langkah', newBlok.langkah);
+                  if (newBlok.items) updateBlok(i, 'items', newBlok.items);
                   toast.success(`🔄 Blok materi ${i + 1} berhasil digenerate ulang`);
                 } else {
                   toast.error('Gagal regenerate — tidak ada teks sumber.');
                 }
               }}
-              onUpdatePertemuan={(val) => {
-                const newBloks = [...materi.blok];
-                newBloks[i] = { ...newBloks[i], pertemuan: val };
-                useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
-              }}
-              onUpdateTabGroup={(val) => {
-                const newBloks = [...materi.blok];
-                newBloks[i] = { ...newBloks[i], tabGroup: val };
-                useAuthoringStore.setState({ materi: { blok: newBloks }, dirty: true });
-              }}
+              onUpdatePertemuan={(val) => updateBlok(i, 'pertemuan', val)}
+              onUpdateTabGroup={(val) => updateBlok(i, 'tabGroup', val)}
               jumlahPertemuan={jumlahPertemuan}
             />
           ))}

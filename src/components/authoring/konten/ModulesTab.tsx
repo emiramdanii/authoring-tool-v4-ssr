@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { useSchemaModules } from '@/hooks/use-schema-navigator';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { Module } from '@/store/authoring/types';
 import { MODULE_TYPES, GAME_TYPES, ALL_MODULE_TYPES, moduleTypeInfo } from './shared';
@@ -186,11 +187,8 @@ function ModuleCard({
 
 // ── Modules Tab ────────────────────────────────────────────────
 export function ModulesTab() {
-  const modules = useAuthoringStore((s) => s.modules);
-  const addModule = useAuthoringStore((s) => s.addModule);
-  const removeModule = useAuthoringStore((s) => s.removeModule);
-  const moveModule = useAuthoringStore((s) => s.moveModule);
-  const updateModuleField = useAuthoringStore((s) => s.updateModuleField);
+  // ═══ Phase 3: Schema-first reads via useSchemaModules ═══
+  const { modules, locations, addModule, removeModule, moveModule, updateModuleField } = useSchemaModules();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editorIndex, setEditorIndex] = useState<number | null>(null);
@@ -206,7 +204,7 @@ export function ModulesTab() {
   }, [addModule]);
 
   const handleRemove = useCallback((i: number) => {
-    if (confirm(`Hapus modul "${modules[i]!.title || moduleTypeInfo(modules[i]!.type).label}"?`)) {
+    if (confirm(`Hapus modul "${modules[i]?.title || moduleTypeInfo(modules[i]?.type || '').label}"?`)) {
       removeModule(i);
       if (editorIndex === i) setEditorIndex(null);
     }
@@ -237,7 +235,7 @@ export function ModulesTab() {
         <div ref={listRef} className="space-y-2">
           {modules.map((mod, i) => (
             <ModuleCard
-              key={i}
+              key={locations[i]?.blockId || i}
               mod={mod}
               idx={i}
               total={modules.length}

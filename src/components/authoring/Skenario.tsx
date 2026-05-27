@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaSkenario } from '@/hooks/use-schema-navigator';
+import type { SkenarioChapter } from '@/store/authoring/types';
 import { Drama, Trash2, Pencil, Zap } from 'lucide-react';
 import { COLORS } from '@/lib/color-palette';
 import { RegenerateButton } from './konten/RegenerateButton';
@@ -57,54 +59,6 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
-// ── Type helpers ────────────────────────────────────────────────
-interface SetupItem {
-  speaker: string;
-  text: string;
-}
-
-interface ConsequenceItem {
-  icon: string;
-  text: string;
-}
-
-interface ChoiceItem {
-  icon: string;
-  label: string;
-  detail: string;
-  good: boolean;
-  pts: number;
-  level: string;
-  norma: string;
-  resultTitle: string;
-  resultBody: string;
-  consequences: ConsequenceItem[];
-}
-
-interface ChapterData {
-  title: string;
-  bg: string;
-  charEmoji: string;
-  charColor: string;
-  charPants: string;
-  choicePrompt: string;
-  setup: SetupItem[];
-  choices: ChoiceItem[];
-}
-
-function toChapter(raw: Record<string, unknown>): ChapterData {
-  return {
-    title: (raw.title as string) || '',
-    bg: (raw.bg as string) || 'sbg-kampung',
-    charEmoji: (raw.charEmoji as string) || '🧑',
-    charColor: (raw.charColor as string) || COLORS.choiceD,
-    charPants: (raw.charPants as string) || COLORS.faseSosial,
-    choicePrompt: (raw.choicePrompt as string) || '',
-    setup: (Array.isArray(raw.setup) ? raw.setup : []) as SetupItem[],
-    choices: (Array.isArray(raw.choices) ? raw.choices : []) as ChoiceItem[],
-  };
-}
-
 // ── Chapter List Card ───────────────────────────────────────────
 function ChapterCard({
   chapter,
@@ -112,7 +66,7 @@ function ChapterCard({
   onEdit,
   onRemove,
 }: {
-  chapter: ChapterData;
+  chapter: SkenarioChapter;
   index: number;
   onEdit: () => void;
   onRemove: () => void;
@@ -165,10 +119,8 @@ function ChapterCard({
 
 // ── Setup Dialog Editor ─────────────────────────────────────────
 function SetupEditor({ chapterIndex }: { chapterIndex: number }) {
-  const chapter = useAuthoringStore((s) => toChapter(s.skenario[chapterIndex] || {}));
-  const addSetup = useAuthoringStore((s) => s.addSkenarioSetup);
-  const removeSetup = useAuthoringStore((s) => s.removeSkenarioSetup);
-  const updateSetup = useAuthoringStore((s) => s.updateSkenarioSetup);
+  const { chapters, addSetup, removeSetup, updateSetup } = useSchemaSkenario();
+  const chapter = chapters[chapterIndex];
   const listRef = useRef<HTMLDivElement>(null);
 
   const handleAdd = useCallback(() => {
@@ -178,6 +130,8 @@ function SetupEditor({ chapterIndex }: { chapterIndex: number }) {
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   }, [chapterIndex, addSetup]);
+
+  if (!chapter) return null;
 
   return (
     <div className="space-y-3">
@@ -228,13 +182,10 @@ function ChoiceEditor({
   chapterIndex: number;
   choiceIndex: number;
 }) {
-  const chapter = useAuthoringStore((s) => toChapter(s.skenario[chapterIndex] || {}));
-  const choice = chapter.choices[choiceIndex] || {} as ChoiceItem;
-  const updateChoice = useAuthoringStore((s) => s.updateSkenarioChoice);
-  const addConsequence = useAuthoringStore((s) => s.addSkenarioConsequence);
-  const removeConsequence = useAuthoringStore((s) => s.removeSkenarioConsequence);
-  const updateConsequence = useAuthoringStore((s) => s.updateSkenarioConsequence);
-  const consequences: ConsequenceItem[] = Array.isArray(choice.consequences) ? choice.consequences : [];
+  const { chapters, updateChoice, addConsequence, removeConsequence, updateConsequence } = useSchemaSkenario();
+  const chapter = chapters[chapterIndex];
+  const choice = chapter?.choices[choiceIndex] || {} as SkenarioChapter['choices'][number];
+  const consequences = Array.isArray(choice.consequences) ? choice.consequences : [];
 
   const levelColor = LEVEL_COLORS[choice.level] || LEVEL_COLORS.mid;
 
@@ -420,11 +371,12 @@ function ChapterDetail({
   chapterIndex: number;
   onBack: () => void;
 }) {
-  const chapter = useAuthoringStore((s) => toChapter(s.skenario[chapterIndex] || {}));
-  const updateChapter = useAuthoringStore((s) => s.updateSkenarioChapter);
-  const addChoice = useAuthoringStore((s) => s.addSkenarioChoice);
-  const removeChoice = useAuthoringStore((s) => s.removeSkenarioChoice);
+  const { chapters, updateChapter, addChoice, removeChoice } = useSchemaSkenario();
+  const chapter = chapters[chapterIndex];
   const listRef = useRef<HTMLDivElement>(null);
+
+  if (!chapter) return null;
+
   const bgInfo = bgThemeInfo(chapter.bg);
 
   const handleAddChoice = useCallback(() => {
@@ -584,39 +536,35 @@ function ChapterDetail({
 
 // ── Main Skenario Component ─────────────────────────────────────
 export default function Skenario() {
-  const skenario = useAuthoringStore((s) => s.skenario);
+  const { chapters, addChapter, removeChapter, replaceAllChapters } = useSchemaSkenario();
   const meta = useAuthoringStore((s) => s.meta);
-  const addSkenarioChapter = useAuthoringStore((s) => s.addSkenarioChapter);
-  const removeSkenarioChapter = useAuthoringStore((s) => s.removeSkenarioChapter);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const handleAdd = useCallback(() => {
-    addSkenarioChapter();
+    addChapter();
     setTimeout(() => {
       const el = listRef.current?.lastElementChild;
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
     toast.success('✅ Bab baru ditambahkan');
-  }, [addSkenarioChapter]);
+  }, [addChapter]);
 
   const handleRemove = useCallback(
     (index: number) => {
-      removeSkenarioChapter(index);
+      removeChapter(index);
       if (editingIndex === index) setEditingIndex(null);
       else if (editingIndex !== null && editingIndex > index) setEditingIndex(editingIndex - 1);
       toast.success('🗑️ Bab dihapus');
     },
-    [removeSkenarioChapter, editingIndex],
+    [removeChapter, editingIndex],
   );
 
   const handleRegenerateSkenario = async () => {
-    const chapters = regenerateSkenario({ namaBab: meta.namaBab });
-    if (chapters) {
-      useAuthoringStore.getState().setSkenario(
-        chapters as unknown as import('@/store/authoring/types').SkenarioChapter[],
-      );
-      toast.success(`🎭 ${chapters.length} bab skenario berhasil digenerate ulang`);
+    const chaptersResult = regenerateSkenario({ namaBab: meta.namaBab });
+    if (chaptersResult) {
+      replaceAllChapters(chaptersResult as unknown as SkenarioChapter[]);
+      toast.success(`🎭 ${chaptersResult.length} bab skenario berhasil digenerate ulang`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber.');
       useAuthoringStore.getState().setActivePanel('autogen');
@@ -624,7 +572,7 @@ export default function Skenario() {
   };
 
   // Editing mode
-  if (editingIndex !== null && editingIndex < skenario.length) {
+  if (editingIndex !== null && editingIndex < chapters.length) {
     return (
       <div className="p-6 space-y-4 max-w-5xl">
         <ChapterDetail
@@ -650,17 +598,17 @@ export default function Skenario() {
       {/* Chapter count + Regenerate button */}
       <div className="flex items-center justify-between">
         <div className="text-xs text-app-muted">
-          {skenario.length} bab skenario
+          {chapters.length} bab skenario
         </div>
         <RegenerateButton
           label="Skenario"
           onRegenerate={handleRegenerateSkenario}
-          hasExistingData={skenario.length > 0}
+          hasExistingData={chapters.length > 0}
         />
       </div>
 
       {/* Empty state */}
-      {skenario.length === 0 ? (
+      {chapters.length === 0 ? (
         <div className="text-center py-10 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
           <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
             <Drama size={24} className="text-purple-400/70" />
@@ -686,10 +634,10 @@ export default function Skenario() {
         <>
           {/* Chapter list */}
           <div ref={listRef} className="space-y-3">
-            {skenario.map((raw, i) => (
+            {chapters.map((ch, i) => (
               <ChapterCard
                 key={i}
-                chapter={toChapter(raw)}
+                chapter={ch}
                 index={i}
                 onEdit={() => setEditingIndex(i)}
                 onRemove={() => handleRemove(i)}
@@ -708,7 +656,7 @@ export default function Skenario() {
       )}
 
       {/* Tips */}
-      {skenario.length > 0 && (
+      {chapters.length > 0 && (
         <div className="bg-app-surface border border-app-border rounded-xl p-4">
           <h4 className="text-sm font-semibold text-app-primary mb-2">💡 Tips Membuat Skenario</h4>
           <ul className="text-xs text-app-secondary space-y-1.5">

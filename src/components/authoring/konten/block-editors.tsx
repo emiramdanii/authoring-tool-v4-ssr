@@ -1,18 +1,28 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaMateri } from '@/hooks/use-schema-navigator';
 import type { MateriBlok } from '@/store/authoring-store';
 import { FieldLabel, INPUT_CLS, TEXTAREA_CLS, CompareSideForm } from './shared';
 import { ImageUploader } from './ImageUploader';
 import { MediaLibrary } from './MediaLibrary';
 import { FolderOpen } from 'lucide-react';
 
+// ═══════════════════════════════════════════════════════════════════
+// BLOCK EDITORS — Schema-First (Phase 3)
+// ═══════════════════════════════════════════════════════════════════
+// All editors now write through useSchemaMateri().updateBlok(),
+// which calls applyGuidedSchemaPatch() — the single write path.
+//
+// Previously: updateMateriBlok(idx, key, value) → authoring store
+// Now:        updateBlok(idx, key, value) → schema → projection sync
+// ═══════════════════════════════════════════════════════════════════
+
 // ── Block Editor Forms ─────────────────────────────────────────
 
 /** 1. teks – Paragraph text */
 function TeksEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   return (
     <div className="space-y-3">
       <div>
@@ -29,7 +39,7 @@ function TeksEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 2. definisi – Definition box */
 function DefinisiEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   return (
     <div className="space-y-3">
       <div>
@@ -46,7 +56,7 @@ function DefinisiEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 3. poin – Bullet points */
 function PoinEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const butir = blok.butir || [''];
 
   const addButir = useCallback(() => {
@@ -103,7 +113,7 @@ function PoinEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 4. tabel – Table */
 function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const baris = blok.baris || [['', ''], ['', '']];
   const cols = baris[0]?.length || 2;
 
@@ -187,7 +197,7 @@ function TabelEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 5. kutipan – Quote */
 function KutipanEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   return (
     <div className="space-y-3">
       <div>
@@ -204,7 +214,7 @@ function KutipanEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 6. gambar – Image with upload support */
 function GambarEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const url = blok.isi || '';
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
 
@@ -277,7 +287,7 @@ function GambarEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 7. timeline – Timeline */
 function TimelineEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const langkah = blok.langkah || [{ icon: '📌', judul: '', isi: '' }];
 
   const addLangkah = useCallback(() => {
@@ -354,7 +364,7 @@ function TimelineEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 8. highlight – Highlight card */
 function HighlightEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   return (
     <div className="space-y-3">
       <div>
@@ -389,7 +399,7 @@ function HighlightEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 9. compare – Comparison */
 function CompareEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const kiri = blok.kiri || { icon: '', judul: '', isi: '' };
   const kanan = blok.kanan || { icon: '', judul: '', isi: '' };
 
@@ -418,7 +428,7 @@ function CompareEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 10. infobox – Info / Tips Box */
 function InfoboxEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const styles = [
     { id: 'info', label: 'ℹ️ Info', color: '#60a5fa' },
     { id: 'tips', label: '💡 Tips', color: '#f9c82e' },
@@ -470,7 +480,7 @@ function InfoboxEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 11. checklist – Checklist */
 function ChecklistEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const butir = blok.butir || [''];
 
   const addButir = useCallback(() => {
@@ -529,7 +539,7 @@ function ChecklistEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 12. statistik – Statistics */
 function StatistikEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   const items = blok.items || [{ icon: '📊', angka: '', label: '', warna: '#3ecfcf' }];
 
   const addItem = useCallback(() => {
@@ -597,7 +607,7 @@ function StatistikEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
 
 /** 13. studi – Case study */
 function StudiEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
-  const update = useAuthoringStore((s) => s.updateMateriBlok);
+  const { updateBlok: update } = useSchemaMateri();
   return (
     <div className="space-y-3">
       <div>

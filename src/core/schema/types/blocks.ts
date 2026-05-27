@@ -657,7 +657,14 @@ export interface MateriBlokBlock extends BaseBlock {
   situasi?: string;
   pertanyaan?: string;
   pesan?: string;
+  /** Infobox style variant: info / tips / warning / success */
   infoboxStyle?: string;
+  /** Legacy style field (maps to infoboxStyle for backward compat) */
+  style?: string;
   items?: Array<{ warna: string; angka: string; satuan?: string; label: string; icon?: string }>;
   accentColor?: string;
+  /** Pertemuan ke berapa (1-based), undefined = semua pertemuan */
+  pertemuan?: number;
+  /** Group name for tab organization — blocks with same tabGroup go into the same tab */
+  tabGroup?: string;
 }

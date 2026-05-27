@@ -12,10 +12,15 @@
 //   WRITE: applyGuidedSchemaPatch({ pageId, blockId, patch }) → schema updated
 //          → startProjectionSync() auto-derives → authoring store updated (read-only)
 //
-// Currently supports:
-//   - diskusi: 1:1 mapping (cleanest)
-//   - refleksi: 1:1 mapping (cleanest)
-//   - More block types will be added progressively
+// Currently supports ALL Konten tabs (Phase 3 complete):
+//   - diskusi: 1:1 mapping
+//   - refleksi: 1:1 mapping
+//   - motivasi: structured → flat projection
+//   - rangkuman: structured → flat projection
+//   - kuis: flat array with block boundary tracking
+//   - materi: materi-blok blocks inside materi-section.content[]
+//   - skenario: SkenarioBlock.chapters → SkenarioChapter[]
+//   - modules: game blocks across pages → Module[]
 // ═══════════════════════════════════════════════════════════════
 
 import { useMemo, useCallback } from 'react';
@@ -23,7 +28,11 @@ import { useCanvaStore } from '@/store/canva-store';
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
-import type { DiskusiData, RefleksiData, MotivasiData, RangkumanData, KuisItem } from '@/store/authoring/types';
+import type { DiskusiData, RefleksiData, MotivasiData, RangkumanData, KuisItem, MateriBlok, Module, SkenarioChapter } from '@/store/authoring/types';
+import type { MateriBlokBlock, SkenarioBlock } from '@/core/schema/types/blocks';
+import { generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
+import type { CanvaPage } from '@/components/canva/types';
+import { nanoid } from 'nanoid';
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -857,4 +866,830 @@ export function useSchemaKuis(): {
     reorderQuestions,
     replaceAllQuestions,
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 3 — Schema Navigator for Materi, Skenario, Modules
+// ═══════════════════════════════════════════════════════════════════
+// These hooks complete the migration of Konten Panel from
+// useAuthoringStore reads → schema reads.
+//
+// Data flow:
+//   READ:  CanvaStore.pages[].schema → find materi-section / skenario / game blocks
+//   WRITE: applyGuidedSchemaPatch() → single write path
+//   SYNC:  startProjectionSync() auto-derives → authoring store updated (read-only)
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Materi Hook ─────────────────────────────────────────────────
+
+/**
+ * Extended location for nested materi-blok blocks inside materi-section.
+ * Tracks both the parent (materi-section) and the child index within content[].
+ */
+interface MateriBlokLocation {
+  /** Page containing the materi-section */
+  pageId: string;
+  /** materi-section block ID — target for applyGuidedSchemaPatch */
+  sectionBlockId: string;
+  /** materi-section block (the parent) */
+  sectionBlock: SchemaBlock;
+  /** Index of this materi-blok within the section's content[] */
+  contentIndex: number;
+  /** The materi-blok block itself */
+  blokBlock: MateriBlokBlock;
+}
+
+/**
+ * Schema-first hook for Materi (content blocks) section.
+ *
+ * Architecture:
+ *   Materi data lives as `materi-blok` blocks inside `materi-section.content[]`.
+ *   Each materi-blok block preserves the EXACT shape of the authoring store's MateriBlok,
+ *   making the Konten editor a direct schema editor — no lossy conversion needed.
+ *
+ *   Previously, syncMateriToSchema() converted MateriBlok → various schema block types
+ *   (def-box, nc-grid, tabel, etc.), which was lossy and fragile.
+ *   Now, materi-blok blocks are stored directly, and MateriBlokRenderer handles rendering.
+ *
+ * Shape mapping (MateriBlokBlock ↔ MateriBlok):
+ *   Nearly 1:1 mapping. The only difference is:
+ *     - MateriBlok.style → MateriBlokBlock.infoboxStyle (backward compat)
+ *     - MateriBlokBlock has accentColor (not in MateriBlok)
+ *   Both fields are preserved in the schema.
+ */
+export function useSchemaMateri(): {
+  /** Projected MateriBlok[] from all materi-blok blocks across pages */
+  bloks: MateriBlok[];
+  /** Locations for each blok (page + parent section + content index) */
+  locations: MateriBlokLocation[];
+  /** Whether any materi-section exists in schema */
+  hasSections: boolean;
+  /** Add a new materi-blok to the first materi-section */
+  addBlok: (tipe: string) => void;
+  /** Remove a materi-blok by flat index */
+  removeBlok: (flatIndex: number) => void;
+  /** Move a materi-blok from one position to another */
+  moveBlok: (fromIndex: number, toIndex: number) => void;
+  /** Update a single field on a materi-blok */
+  updateBlok: (flatIndex: number, key: string, value: unknown) => void;
+  /** Replace all bloks (used by regenerate) */
+  replaceAllBloks: (newBloks: MateriBlok[]) => void;
+} {
+  const pages = useCanvaStore(s => s.pages);
+
+  // Find all materi-blok blocks inside all materi-section blocks
+  const { bloks, locations, hasSections } = useMemo(() => {
+    const allBloks: MateriBlok[] = [];
+    const allLocations: MateriBlokLocation[] = [];
+    let foundSection = false;
+
+    for (const page of pages) {
+      const schema = ensurePageSchema(page);
+      if (!schema) continue;
+
+      for (const block of schema.blocks) {
+        if (block.type === 'materi-section') {
+          foundSection = true;
+          const section = block as unknown as {
+            id: string;
+            content?: SchemaBlock[];
+          };
+          const content = section.content || [];
+
+          for (let i = 0; i < content.length; i++) {
+            const child = content[i]!;
+            if (child.type === 'materi-blok') {
+              const blokBlock = child as unknown as MateriBlokBlock;
+              allLocations.push({
+                pageId: page.id,
+                sectionBlockId: section.id,
+                sectionBlock: block,
+                contentIndex: i,
+                blokBlock,
+              });
+              // Project MateriBlokBlock → MateriBlok
+              allBloks.push(materiBlokBlockToProjection(blokBlock));
+            }
+          }
+        }
+      }
+    }
+
+    return { bloks: allBloks, locations: allLocations, hasSections: foundSection };
+  }, [pages]);
+
+  // ── Helper: patch the content[] of a materi-section ──
+  const patchSectionContent = useCallback((
+    loc: MateriBlokLocation,
+    newContent: SchemaBlock[],
+  ) => {
+    applyGuidedSchemaPatch({
+      pageId: loc.pageId,
+      blockId: loc.sectionBlockId,
+      patch: { content: newContent },
+      source: 'konten-tab',
+    });
+  }, []);
+
+  // ── Helper: get current content[] for a materi-section ──
+  const getSectionContent = useCallback((loc: MateriBlokLocation): SchemaBlock[] => {
+    const section = loc.sectionBlock as unknown as { content?: SchemaBlock[] };
+    return section.content || [];
+  }, []);
+
+  const addBlok = useCallback((tipe: string) => {
+    if (locations.length === 0) {
+      // No materi-section exists — need to find or create a materi page
+      // For now, just find the first materi page and add to its section
+      const materiPage = pages.find(p => p.templateType === 'materi');
+      if (!materiPage?.schema) return;
+
+      const section = materiPage.schema.blocks.find(b => b.type === 'materi-section');
+      if (!section) return;
+
+      const newBlokBlock: MateriBlokBlock = {
+        type: 'materi-blok',
+        id: generateBlockId(),
+        tipe: tipe as MateriBlokBlock['tipe'],
+        ...(tipe === 'teks' ? { isi: '' } : {}),
+        ...(tipe === 'poin' ? { butir: [''] } : {}),
+        ...(tipe === 'tabel' ? { baris: [['', ''], ['', '']] } : {}),
+        ...(tipe === 'timeline' ? { langkah: [{ icon: '📌', judul: '', isi: '' }] } : {}),
+        ...(tipe === 'statistik' ? { items: [{ warna: '#3ecfcf', angka: '', label: '', icon: '📊' }] } : {}),
+      };
+
+      const sectionWithContent = section as unknown as { content?: SchemaBlock[] };
+      const content = sectionWithContent.content || [];
+      applyGuidedSchemaPatch({
+        pageId: materiPage.id,
+        blockId: section.id,
+        patch: { content: [...content, newBlokBlock as unknown as SchemaBlock] },
+        source: 'konten-tab',
+      });
+      return;
+    }
+
+    // Add to the last known materi-section
+    const lastLoc = locations[locations.length - 1]!;
+    const content = getSectionContent(lastLoc);
+
+    const newBlokBlock: MateriBlokBlock = {
+      type: 'materi-blok',
+      id: generateBlockId(),
+      tipe: tipe as MateriBlokBlock['tipe'],
+      ...(tipe === 'teks' ? { isi: '' } : {}),
+      ...(tipe === 'poin' ? { butir: [''] } : {}),
+      ...(tipe === 'tabel' ? { baris: [['', ''], ['', '']] } : {}),
+      ...(tipe === 'timeline' ? { langkah: [{ icon: '📌', judul: '', isi: '' }] } : {}),
+      ...(tipe === 'statistik' ? { items: [{ warna: '#3ecfcf', angka: '', label: '', icon: '📊' }] } : {}),
+    };
+
+    patchSectionContent(lastLoc, [...content, newBlokBlock as unknown as SchemaBlock]);
+  }, [locations, pages, getSectionContent, patchSectionContent]);
+
+  const removeBlok = useCallback((flatIndex: number) => {
+    const loc = locations[flatIndex];
+    if (!loc) return;
+
+    const content = getSectionContent(loc);
+    const newContent = content.filter((_, i) => i !== loc.contentIndex);
+    patchSectionContent(loc, newContent);
+  }, [locations, getSectionContent, patchSectionContent]);
+
+  const moveBlok = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+
+    const fromLoc = locations[fromIndex];
+    const toLoc = locations[toIndex];
+    if (!fromLoc || !toLoc) return;
+
+    // Only support reordering within the same materi-section
+    if (fromLoc.sectionBlockId !== toLoc.sectionBlockId) return;
+
+    const content = getSectionContent(fromLoc);
+    const newContent = [...content];
+    const [moved] = newContent.splice(fromLoc.contentIndex, 1);
+    newContent.splice(toLoc.contentIndex, 0, moved!);
+    patchSectionContent(fromLoc, newContent);
+  }, [locations, getSectionContent, patchSectionContent]);
+
+  const updateBlok = useCallback((flatIndex: number, key: string, value: unknown) => {
+    const loc = locations[flatIndex];
+    if (!loc) return;
+
+    const content = getSectionContent(loc);
+    const target = content[loc.contentIndex];
+    if (!target) return;
+
+    const newContent = [...content];
+    // Map MateriBlok field names to MateriBlokBlock field names
+    const schemaKey = key === 'style' ? 'infoboxStyle' : key;
+    newContent[loc.contentIndex] = {
+      ...target,
+      [schemaKey]: value,
+    } as SchemaBlock;
+
+    patchSectionContent(loc, newContent);
+  }, [locations, getSectionContent, patchSectionContent]);
+
+  const replaceAllBloks = useCallback((newBloks: MateriBlok[]) => {
+    // Find the first materi-section and replace its entire content
+    const materiPage = pages.find(p => p.templateType === 'materi');
+    if (!materiPage?.schema) return;
+
+    const section = materiPage.schema.blocks.find(b => b.type === 'materi-section');
+    if (!section) return;
+
+    const newContent: SchemaBlock[] = newBloks.map(blok => {
+      const existing = locations.find(l => l.blokBlock.id);
+      return projectionToMateriBlokBlock(blok, existing?.blokBlock.id || generateBlockId());
+    });
+
+    applyGuidedSchemaPatch({
+      pageId: materiPage.id,
+      blockId: section.id,
+      patch: { content: newContent },
+      source: 'konten-tab',
+    });
+  }, [pages, locations]);
+
+  return {
+    bloks,
+    locations,
+    hasSections,
+    addBlok,
+    removeBlok,
+    moveBlok,
+    updateBlok,
+    replaceAllBloks,
+  };
+}
+
+// ── MateriBlokBlock ↔ MateriBlok projection helpers ──
+
+function materiBlokBlockToProjection(block: MateriBlokBlock): MateriBlok {
+  return {
+    tipe: block.tipe,
+    judul: block.judul,
+    isi: block.isi,
+    icon: block.icon,
+    warna: block.warna,
+    butir: block.butir,
+    baris: block.baris,
+    langkah: block.langkah?.map(l => ({
+      icon: l.icon || '📌',
+      judul: l.judul,
+      isi: l.isi || '',
+    })),
+    kiri: block.kiri,
+    kanan: block.kanan,
+    items: block.items?.map(item => ({
+      ...item,
+      // MateriBlok.items has optional fields, MateriBlokBlock.items has required
+    })),
+    // Map infoboxStyle → style for backward compat with block-editors
+    style: block.infoboxStyle || block.style,
+    infoboxStyle: block.infoboxStyle,
+    karakter: block.karakter,
+    situasi: block.situasi,
+    pertanyaan: block.pertanyaan,
+    pesan: block.pesan,
+    pertemuan: block.pertemuan,
+    tabGroup: block.tabGroup,
+  };
+}
+
+function projectionToMateriBlokBlock(blok: MateriBlok, id: string): SchemaBlock {
+  return {
+    type: 'materi-blok',
+    id,
+    tipe: blok.tipe,
+    judul: blok.judul,
+    isi: blok.isi,
+    butir: blok.butir,
+    baris: blok.baris,
+    karakter: blok.karakter,
+    warna: blok.warna,
+    icon: blok.icon,
+    kiri: blok.kiri,
+    kanan: blok.kanan,
+    langkah: blok.langkah,
+    situasi: blok.situasi,
+    pertanyaan: blok.pertanyaan,
+    pesan: blok.pesan,
+    infoboxStyle: blok.style || blok.infoboxStyle,
+    style: blok.style,
+    items: blok.items?.map(item => ({
+      warna: item.warna || '#3ecfcf',
+      angka: item.angka || '',
+      satuan: item.satuan,
+      label: item.label || '',
+      icon: item.icon,
+    })),
+    pertemuan: blok.pertemuan,
+    tabGroup: blok.tabGroup,
+  } as unknown as SchemaBlock;
+}
+
+// ── Skenario Hook ──────────────────────────────────────────────
+
+/**
+ * Schema-first hook for Skenario (Interactive Scenario) section.
+ *
+ * Architecture:
+ *   Skenario data lives as SkenarioBlock (type: 'skenario') in the schema.
+ *   The block has a `chapters[]` array that maps closely to SkenarioChapter[].
+ *
+ * Shape mapping (SkenarioBlock.chapters ↔ SkenarioChapter[]):
+ *   Nearly 1:1 mapping. Differences:
+ *     - SkenarioBlock.chapters[].id → not in SkenarioChapter
+ *     - SkenarioChapter.bg, charColor, charPants → not in SkenarioBlock.chapters[]
+ *       (stored as extra fields via the index signature)
+ */
+export function useSchemaSkenario(): {
+  /** Projected SkenarioChapter[] from all skenario blocks */
+  chapters: SkenarioChapter[];
+  /** Locations of skenario blocks */
+  locations: SchemaBlockLocation[];
+  /** Add a new chapter */
+  addChapter: () => void;
+  /** Remove a chapter by index */
+  removeChapter: (index: number) => void;
+  /** Update a chapter field */
+  updateChapter: (chapterIndex: number, key: string, value: unknown) => void;
+  /** Add a setup dialog line to a chapter */
+  addSetup: (chapterIndex: number) => void;
+  /** Remove a setup dialog line */
+  removeSetup: (chapterIndex: number, setupIndex: number) => void;
+  /** Update a setup dialog field */
+  updateSetup: (chapterIndex: number, setupIndex: number, key: string, value: unknown) => void;
+  /** Add a choice to a chapter */
+  addChoice: (chapterIndex: number) => void;
+  /** Remove a choice from a chapter */
+  removeChoice: (chapterIndex: number, choiceIndex: number) => void;
+  /** Update a choice field */
+  updateChoice: (chapterIndex: number, choiceIndex: number, key: string, value: unknown) => void;
+  /** Add a consequence to a choice */
+  addConsequence: (chapterIndex: number, choiceIndex: number) => void;
+  /** Remove a consequence */
+  removeConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number) => void;
+  /** Update a consequence field */
+  updateConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => void;
+  /** Replace all chapters (for regenerate) */
+  replaceAllChapters: (chapters: SkenarioChapter[]) => void;
+} {
+  const locations = useSchemaBlocksByType('skenario');
+
+  // Project SkenarioBlock.chapters → SkenarioChapter[]
+  const chapters = useMemo<SkenarioChapter[]>(() => {
+    if (locations.length === 0) return [];
+
+    const block = locations[0]!.block as unknown as SkenarioBlock;
+    return (block.chapters || []).map(ch => ({
+      id: ch.id,
+      title: ch.title || '',
+      bg: (ch as unknown as Record<string, unknown>).bg as string || 'sbg-kampung',
+      charEmoji: ch.charEmoji || '🧑',
+      charColor: (ch as unknown as Record<string, unknown>).charColor as string || '#60a5fa',
+      charPants: (ch as unknown as Record<string, unknown>).charPants as string || '#34d399',
+      choicePrompt: ch.choicePrompt || '',
+      setup: (ch.setup || []).map(s => ({ speaker: s.speaker || '', text: s.text || '' })),
+      choices: (ch.choices || []).map(c => ({
+        icon: c.icon || '🔍',
+        label: c.label || '',
+        detail: c.detail || '',
+        good: c.good ?? false,
+        pts: c.pts ?? 0,
+        level: c.level || 'mid',
+        norma: (c as unknown as Record<string, unknown>).norma as string || '',
+        resultTitle: c.resultTitle || '',
+        resultBody: c.resultBody || '',
+        consequences: (c.consequences || []).map(con => ({ icon: con.icon || '📌', text: con.text || '' })),
+      })),
+    }));
+  }, [locations]);
+
+  // ── Helper: patch the skenario block's chapters ──
+  const patchChapters = useCallback((newChapters: unknown[]) => {
+    if (locations.length === 0) return;
+    const loc = locations[0]!;
+    applyGuidedSchemaPatch({
+      pageId: loc.pageId,
+      blockId: loc.blockId,
+      patch: { chapters: newChapters },
+      source: 'konten-tab',
+    });
+  }, [locations]);
+
+  // ── Helper: get current chapters from schema ──
+  const getCurrentChapters = useCallback((): unknown[] => {
+    if (locations.length === 0) return [];
+    const block = locations[0]!.block as unknown as Record<string, unknown>;
+    return (block.chapters as unknown[]) || [];
+  }, [locations]);
+
+  const addChapter = useCallback(() => {
+    const current = getCurrentChapters();
+    const newChapter = {
+      id: nanoid(8),
+      title: '',
+      charEmoji: '🧑',
+      setup: [{ speaker: 'NARRATOR', text: '' }],
+      choicePrompt: '',
+      choices: [{
+        icon: '🔍', label: '', detail: '', good: false, pts: 0, level: 'mid',
+        resultTitle: '', resultBody: '', consequences: [],
+      }],
+    };
+    patchChapters([...current, newChapter]);
+  }, [getCurrentChapters, patchChapters]);
+
+  const removeChapter = useCallback((index: number) => {
+    const current = getCurrentChapters();
+    if (index < 0 || index >= current.length) return;
+    patchChapters(current.filter((_, i) => i !== index));
+  }, [getCurrentChapters, patchChapters]);
+
+  const updateChapter = useCallback((chapterIndex: number, key: string, value: unknown) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...(newChapters[chapterIndex] as Record<string, unknown>), [key]: value };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const addSetup = useCallback((chapterIndex: number) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const setup = (chapter.setup as unknown[]) || [];
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, setup: [...setup, { speaker: 'NARRATOR', text: '' }] };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const removeSetup = useCallback((chapterIndex: number, setupIndex: number) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const setup = (chapter.setup as unknown[]) || [];
+    if (setupIndex < 0 || setupIndex >= setup.length) return;
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, setup: setup.filter((_, i) => i !== setupIndex) };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const updateSetup = useCallback((chapterIndex: number, setupIndex: number, key: string, value: unknown) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const setup = [...((chapter.setup as unknown[]) || [])];
+    if (setupIndex < 0 || setupIndex >= setup.length) return;
+    setup[setupIndex] = { ...(setup[setupIndex] as Record<string, unknown>), [key]: value };
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, setup };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const addChoice = useCallback((chapterIndex: number) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const choices = (chapter.choices as unknown[]) || [];
+    const newChapters = [...current];
+    newChapters[chapterIndex] = {
+      ...chapter,
+      choices: [...choices, {
+        icon: '🔍', label: '', detail: '', good: false, pts: 0, level: 'mid',
+        resultTitle: '', resultBody: '', consequences: [],
+      }],
+    };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const removeChoice = useCallback((chapterIndex: number, choiceIndex: number) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const choices = (chapter.choices as unknown[]) || [];
+    if (choiceIndex < 0 || choiceIndex >= choices.length) return;
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, choices: choices.filter((_, i) => i !== choiceIndex) };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const updateChoice = useCallback((chapterIndex: number, choiceIndex: number, key: string, value: unknown) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const choices = [...((chapter.choices as unknown[]) || [])];
+    if (choiceIndex < 0 || choiceIndex >= choices.length) return;
+    choices[choiceIndex] = { ...(choices[choiceIndex] as Record<string, unknown>), [key]: value };
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, choices };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const addConsequence = useCallback((chapterIndex: number, choiceIndex: number) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const choices = [...((chapter.choices as unknown[]) || [])];
+    if (choiceIndex < 0 || choiceIndex >= choices.length) return;
+    const choice = choices[choiceIndex] as Record<string, unknown>;
+    const consequences = [...((choice.consequences as unknown[]) || []), { icon: '📌', text: '' }];
+    choices[choiceIndex] = { ...choice, consequences };
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, choices };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const removeConsequence = useCallback((chapterIndex: number, choiceIndex: number, consIndex: number) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const choices = [...((chapter.choices as unknown[]) || [])];
+    if (choiceIndex < 0 || choiceIndex >= choices.length) return;
+    const choice = choices[choiceIndex] as Record<string, unknown>;
+    const consequences = ((choice.consequences as unknown[]) || []).filter((_, i) => i !== consIndex);
+    choices[choiceIndex] = { ...choice, consequences };
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, choices };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const updateConsequence = useCallback((chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => {
+    const current = getCurrentChapters();
+    if (chapterIndex < 0 || chapterIndex >= current.length) return;
+    const chapter = current[chapterIndex] as Record<string, unknown>;
+    const choices = [...((chapter.choices as unknown[]) || [])];
+    if (choiceIndex < 0 || choiceIndex >= choices.length) return;
+    const choice = choices[choiceIndex] as Record<string, unknown>;
+    const consequences = [...((choice.consequences as unknown[]) || [])];
+    if (consIndex < 0 || consIndex >= consequences.length) return;
+    consequences[consIndex] = { ...(consequences[consIndex] as Record<string, unknown>), [key]: value };
+    choices[choiceIndex] = { ...choice, consequences };
+    const newChapters = [...current];
+    newChapters[chapterIndex] = { ...chapter, choices };
+    patchChapters(newChapters);
+  }, [getCurrentChapters, patchChapters]);
+
+  const replaceAllChapters = useCallback((newChapters: SkenarioChapter[]) => {
+    const schemaChapters = newChapters.map(ch => ({
+      id: (ch as unknown as Record<string, unknown>).id || nanoid(8),
+      title: ch.title,
+      charEmoji: ch.charEmoji,
+      charColor: ch.charColor,
+      charPants: ch.charPants,
+      bg: ch.bg,
+      choicePrompt: ch.choicePrompt,
+      setup: ch.setup,
+      choices: ch.choices.map(c => ({
+        icon: c.icon,
+        label: c.label,
+        detail: c.detail,
+        good: c.good,
+        pts: c.pts,
+        level: c.level,
+        norma: c.norma,
+        resultTitle: c.resultTitle,
+        resultBody: c.resultBody,
+        consequences: c.consequences,
+      })),
+    }));
+    patchChapters(schemaChapters);
+  }, [patchChapters]);
+
+  return {
+    chapters,
+    locations,
+    addChapter,
+    removeChapter,
+    updateChapter,
+    addSetup,
+    removeSetup,
+    updateSetup,
+    addChoice,
+    removeChoice,
+    updateChoice,
+    addConsequence,
+    removeConsequence,
+    updateConsequence,
+    replaceAllChapters,
+  };
+}
+
+// ── Modules Hook ───────────────────────────────────────────────
+
+/** Game module block types that appear in schema */
+const GAME_BLOCK_TYPES = [
+  'flashcard-set', 'roda-game', 'memory-game', 'matching-game',
+  'sortir-game', 'fill-blank-game', 'word-search-game', 'true-false-game',
+  'drag-drop-game', 'crossword-game', 'team-buzzer-game',
+  'nk-card', // NormaKartu as a module too
+];
+
+/** Map game block type → Module type string */
+function gameBlockTypeToModuleType(blockType: string): string {
+  const map: Record<string, string> = {
+    'flashcard-set': 'flashcard',
+    'roda-game': 'roda',
+    'memory-game': 'memory',
+    'matching-game': 'matching',
+    'sortir-game': 'sortir',
+    'fill-blank-game': 'fill-blank',
+    'word-search-game': 'word-search',
+    'true-false-game': 'true-false',
+    'drag-drop-game': 'drag-drop',
+    'crossword-game': 'crossword',
+    'team-buzzer-game': 'team-buzzer',
+    'nk-card': 'norma-kartu',
+  };
+  return map[blockType] || blockType;
+}
+
+/** Map Module type string → game block type */
+function moduleTypeToGameBlockType(moduleType: string): string {
+  const map: Record<string, string> = {
+    'flashcard': 'flashcard-set',
+    'roda': 'roda-game',
+    'memory': 'memory-game',
+    'matching': 'matching-game',
+    'sortir': 'sortir-game',
+    'fill-blank': 'fill-blank-game',
+    'word-search': 'word-search-game',
+    'true-false': 'true-false-game',
+    'drag-drop': 'drag-drop-game',
+    'crossword': 'crossword-game',
+    'team-buzzer': 'team-buzzer-game',
+    'norma-kartu': 'nk-card',
+  };
+  return map[moduleType] || moduleType;
+}
+
+/**
+ * Schema-first hook for Modules & Games section.
+ *
+ * Architecture:
+ *   Each module/game is a top-level SchemaBlock on a page.
+ *   The hook finds all game-type blocks across pages and projects
+ *   them to Module[] format for the Konten editor.
+ *
+ *   When adding a module, a new page is created with the game block.
+ *   When editing, applyGuidedSchemaPatch targets the specific game block.
+ */
+export function useSchemaModules(): {
+  /** Projected Module[] from all game blocks across pages */
+  modules: Module[];
+  /** Location info for each module */
+  locations: Array<{ pageId: string; blockId: string; pageIndex: number }>;
+  /** Add a new module (creates a new page with the game block) */
+  addModule: (typeId: string) => void;
+  /** Remove a module by index */
+  removeModule: (index: number) => void;
+  /** Move a module (reorder pages) */
+  moveModule: (fromIndex: number, toIndex: number) => void;
+  /** Update a module field */
+  updateModuleField: (index: number, key: string, value: unknown) => void;
+} {
+  const pages = useCanvaStore(s => s.pages);
+
+  // Find all game blocks across pages
+  const { modules, locations } = useMemo(() => {
+    const allModules: Module[] = [];
+    const allLocations: Array<{ pageId: string; blockId: string; pageIndex: number }> = [];
+
+    for (let pi = 0; pi < pages.length; pi++) {
+      const page = pages[pi]!;
+      const schema = ensurePageSchema(page);
+      if (!schema) continue;
+
+      for (const block of schema.blocks) {
+        if (GAME_BLOCK_TYPES.includes(block.type)) {
+          const b = block as unknown as Record<string, unknown>;
+          allModules.push({
+            _id: block.id,
+            type: gameBlockTypeToModuleType(block.type),
+            title: (b.title as string) || block.type,
+            layoutVariant: (b.layoutVariant as string) || 'A',
+            ...b, // Spread all game-specific fields
+          });
+          allLocations.push({
+            pageId: page.id,
+            blockId: block.id,
+            pageIndex: pi,
+          });
+        }
+      }
+    }
+
+    return { modules: allModules, locations: allLocations };
+  }, [pages]);
+
+  const addModule = useCallback((typeId: string) => {
+    const blockType = moduleTypeToGameBlockType(typeId);
+    const store = useCanvaStore.getState();
+    const newPageId = generatePageId();
+
+    // Create default block content based on type
+    const defaultBlock = createDefaultGameBlock(blockType);
+
+    const newPage: CanvaPage = {
+      id: newPageId,
+      label: `Game: ${typeId}`,
+      bgDataUrl: null,
+      bgColor: '#1a1a2e',
+      overlay: 0,
+      elements: [],
+      templateType: blockType.replace('-game', '').replace('-set', ''),
+      colorPalette: null,
+      navConfig: { prev: true, next: true, navbar: true },
+      templateData: {},
+      pageMode: 'schema',
+      schema: {
+        id: newPageId,
+        version: 1,
+        templateType: blockType.replace('-game', '').replace('-set', ''),
+        blocks: [defaultBlock],
+      },
+    };
+
+    store._pushHistory();
+    useCanvaStore.setState({ pages: [...store.pages, newPage] });
+  }, []);
+
+  const removeModule = useCallback((index: number) => {
+    const loc = locations[index];
+    if (!loc) return;
+
+    // Remove the entire page that contains this game block
+    const store = useCanvaStore.getState();
+    const newPages = store.pages.filter((_, i) => i !== loc.pageIndex);
+    store._pushHistory();
+    useCanvaStore.setState({ pages: newPages });
+  }, [locations]);
+
+  const moveModule = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const fromLoc = locations[fromIndex];
+    const toLoc = locations[toIndex];
+    if (!fromLoc || !toLoc) return;
+
+    // Swap the pages
+    const store = useCanvaStore.getState();
+    const newPages = [...store.pages];
+    const fromPageIndex = fromLoc.pageIndex;
+    const toPageIndex = toLoc.pageIndex;
+    [newPages[fromPageIndex], newPages[toPageIndex]] = [newPages[toPageIndex], newPages[fromPageIndex]];
+
+    store._pushHistory();
+    useCanvaStore.setState({ pages: newPages });
+  }, [locations]);
+
+  const updateModuleField = useCallback((index: number, key: string, value: unknown) => {
+    const loc = locations[index];
+    if (!loc) return;
+
+    applyGuidedSchemaPatch({
+      pageId: loc.pageId,
+      blockId: loc.blockId,
+      patch: { [key]: value },
+      source: 'konten-tab',
+    });
+  }, [locations]);
+
+  return {
+    modules,
+    locations,
+    addModule,
+    removeModule,
+    moveModule,
+    updateModuleField,
+  };
+}
+
+/** Create a default game block of the given type */
+function createDefaultGameBlock(blockType: string): SchemaBlock {
+  const id = generateBlockId();
+
+  const defaults: Record<string, Record<string, unknown>> = {
+    'flashcard-set': { title: 'Flashcard', cards: [{ q: '', a: '' }] },
+    'roda-game': { title: 'Roda Keberuntungan', questions: [{ q: '', opts: [{ text: '', correct: false }] }] },
+    'memory-game': { title: 'Memory Game', pairs: [{ left: '', right: '' }] },
+    'matching-game': { title: 'Matching', pairs: [{ left: '', right: '' }] },
+    'sortir-game': { title: 'Sortir', pool: [], kolom: [] },
+    'fill-blank-game': { title: 'Isian', questions: [{ text: '', answer: '' }] },
+    'word-search-game': { title: 'Cari Kata', words: [] },
+    'true-false-game': { title: 'Benar/Salah', questions: [{ text: '', correct: true }] },
+    'drag-drop-game': { title: 'Drag & Drop', items: [], targets: [] },
+    'crossword-game': { title: 'Teka-Teki Silang', words: [] },
+    'team-buzzer-game': { title: 'Buzzer Tim', teamA: 'Tim A', teamB: 'Tim B', questions: [] },
+    'nk-card': { title: 'Kartu Norma', normaType: 'agama', icon: '⚖️', label: '', definition: '', characteristics: [], sanksi: { title: '', items: [] }, contoh: '' },
+  };
+
+  return {
+    type: blockType,
+    id,
+    ...(defaults[blockType] || { title: blockType }),
+  } as unknown as SchemaBlock;
 }
