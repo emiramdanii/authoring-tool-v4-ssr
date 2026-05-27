@@ -216,3 +216,38 @@ Stage Summary:
 - KuisTab presets write directly to schema (no more authoring store round-trip)
 - Zero useAuthoringStore imports remain in Konten panel components
 - Cross-link: click block in SchemaBlockTree → navigate to page + select block in right panel
+
+---
+Task ID: 6
+Agent: main
+Task: Phase 3 Completion — Final cleanup: Skenario, ModuleEditorModal, cross-link UX, reverse navigation
+
+Work Log:
+- Audited ALL remaining useAuthoringStore reads in Konten panel area (18 files total)
+- Fixed Skenario.tsx: replaced direct useAuthoringStore import with useSchemaContext() for meta + goToAutoGen
+- Fixed ModuleEditorModal.tsx: completely refactored from store-direct reads to props-based pattern:
+  - Old: read modules[index], updateModuleField, addModuleItem, removeModuleItem, updateModuleItem from useAuthoringStore
+  - New: accept mod, updateField, add, remove, update as props from parent
+  - Updated ModulesTab.tsx to pass schema-based functions from useSchemaModules()
+- Added 3 nested item CRUD functions to useSchemaModules() hook:
+  - addModuleItem(index, arrayKey, item) — appends to nested array via applyGuidedSchemaPatch
+  - removeModuleItem(index, arrayKey, itemIndex) — removes item from nested array
+  - updateModuleItem(index, arrayKey, itemIndex, key, value) — updates a field on a nested array item
+- Fixed RefleksiEditor.tsx: replaced useAuthoringStore.getState() with useSchemaContext() for meta + goToAutoGen
+- Fixed DiskusiEditor.tsx: replaced useAuthoringStore.getState() with useSchemaContext() for meta, tp, goToAutoGen
+- Cleaned up useSchemaContext(): replaced require() with proper import of useAuthoringStore at module level
+- Cleaned up navigateToBlock(): replaced require() with dynamic import() for interaction store
+- Added LocateInCanvaButton component to shared.tsx — cross-link UX that navigates from Konten → Canva page
+- Added reverse navigation: SchemaBlockTree → Konten tab:
+  - Added kontenTab + setKontenTab to authoring store navigation slice
+  - Added AuthoringState types: kontenTab, setKontenTab
+  - Updated Konten.tsx to sync with store-driven navigation
+  - Added Pencil icon to SchemaBlockTree TreeNode — click → switches to Konten panel + correct tab
+- Build verified: npx next build ✓ (zero errors)
+
+Stage Summary:
+- **Zero useAuthoringStore imports remain in Konten panel components** (Skenario.tsx, MateriTab, DiskusiTab, RefleksiTab, MotivasiTab, RangkumanTab, KuisTab, ModulesTab)
+- **ModuleEditorModal is now fully schema-driven** — reads/writes via props from useSchemaModules
+- **Cross-link UX complete**: Konten → Canva (LocateInCanvaButton) and Canva → Konten (SchemaBlockTree Pencil icon)
+- **useSchemaContext() and navigateToBlock() cleaned up** — no more require() calls
+- **Phase 3 is COMPLETE** — Konten Panel is now a true Schema Navigator

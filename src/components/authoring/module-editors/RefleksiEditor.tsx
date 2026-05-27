@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { regenerateRefleksi } from '../auto-generate/regenerate';
 import { Zap, Loader2, Lightbulb } from 'lucide-react';
 import { canRegenerate } from '../auto-generate/regenerate';
@@ -12,10 +12,9 @@ export function RefleksiEditor({ mod, uf, ai, ri, ui }: EdProps) {
   const pertanyaan = (mod.pertanyaan as Array<Record<string, unknown>>) || [];
   const [regenerating, setRegenerating] = useState(false);
   const showRegenBtn = canRegenerate() || pertanyaan.length > 0;
+  const { meta, goToAutoGen } = useSchemaContext();
 
   const handleRegenerate = async () => {
-    const store = useAuthoringStore.getState();
-    const meta = store.meta;
     setRegenerating(true);
     try {
       const data = regenerateRefleksi({
@@ -30,7 +29,7 @@ export function RefleksiEditor({ mod, uf, ai, ri, ui }: EdProps) {
         toast.success(`🪞 ${data.pertanyaan.length} pertanyaan refleksi digenerate ulang`);
       } else {
         toast.error('Gagal regenerate — tidak ada teks sumber.');
-        useAuthoringStore.getState().setActivePanel('autogen');
+        goToAutoGen();
       }
     } finally {
       setRegenerating(false);

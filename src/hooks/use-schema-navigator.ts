@@ -25,6 +25,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
@@ -1549,8 +1550,14 @@ export function useSchemaModules(): {
   removeModule: (index: number) => void;
   /** Move a module (reorder pages) */
   moveModule: (fromIndex: number, toIndex: number) => void;
-  /** Update a module field */
+  /** Update a module field (top-level key on the block) */
   updateModuleField: (index: number, key: string, value: unknown) => void;
+  /** Add an item to a nested array field (e.g., add a card to kartu[]) */
+  addModuleItem: (index: number, arrayKey: string, item: Record<string, unknown>) => void;
+  /** Remove an item from a nested array field */
+  removeModuleItem: (index: number, arrayKey: string, itemIndex: number) => void;
+  /** Update a field on a nested array item */
+  updateModuleItem: (index: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => void;
 } {
   const pages = useCanvaStore(s => s.pages);
 
@@ -1658,6 +1665,65 @@ export function useSchemaModules(): {
     });
   }, [locations]);
 
+  // ── Nested array item CRUD ──
+
+  /** Helper: get current block data for a module index */
+  const getModuleBlock = useCallback((index: number): Record<string, unknown> | null => {
+    const loc = locations[index];
+    if (!loc) return null;
+    // Re-read from current pages to get latest data
+    const page = useCanvaStore.getState().pages.find(p => p.id === loc.pageId);
+    if (!page?.schema) return null;
+    const block = page.schema.blocks.find(b => b.id === loc.blockId);
+    return (block as unknown as Record<string, unknown>) || null;
+  }, [locations]);
+
+  const addModuleItem = useCallback((index: number, arrayKey: string, item: Record<string, unknown>) => {
+    const loc = locations[index];
+    if (!loc) return;
+    const block = getModuleBlock(index);
+    if (!block) return;
+    const arr = (block[arrayKey] as Array<Record<string, unknown>>) || [];
+    applyGuidedSchemaPatch({
+      pageId: loc.pageId,
+      blockId: loc.blockId,
+      patch: { [arrayKey]: [...arr, item] },
+      source: 'konten-tab',
+    });
+  }, [locations, getModuleBlock]);
+
+  const removeModuleItem = useCallback((index: number, arrayKey: string, itemIndex: number) => {
+    const loc = locations[index];
+    if (!loc) return;
+    const block = getModuleBlock(index);
+    if (!block) return;
+    const arr = (block[arrayKey] as Array<Record<string, unknown>>) || [];
+    if (itemIndex < 0 || itemIndex >= arr.length) return;
+    applyGuidedSchemaPatch({
+      pageId: loc.pageId,
+      blockId: loc.blockId,
+      patch: { [arrayKey]: arr.filter((_, i) => i !== itemIndex) },
+      source: 'konten-tab',
+    });
+  }, [locations, getModuleBlock]);
+
+  const updateModuleItem = useCallback((index: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => {
+    const loc = locations[index];
+    if (!loc) return;
+    const block = getModuleBlock(index);
+    if (!block) return;
+    const arr = (block[arrayKey] as Array<Record<string, unknown>>) || [];
+    if (itemIndex < 0 || itemIndex >= arr.length) return;
+    const newArr = [...arr];
+    newArr[itemIndex] = { ...newArr[itemIndex], [key]: value };
+    applyGuidedSchemaPatch({
+      pageId: loc.pageId,
+      blockId: loc.blockId,
+      patch: { [arrayKey]: newArr },
+      source: 'konten-tab',
+    });
+  }, [locations, getModuleBlock]);
+
   return {
     modules,
     locations,
@@ -1665,6 +1731,9 @@ export function useSchemaModules(): {
     removeModule,
     moveModule,
     updateModuleField,
+    addModuleItem,
+    removeModuleItem,
+    updateModuleItem,
   };
 }
 
@@ -1713,11 +1782,7 @@ function createDefaultGameBlock(blockType: string): SchemaBlock {
  * Used by Konten tabs for cross-link navigation.
  */
 export function navigateToBlock(pageId: string, blockId: string, blockType: string): void {
-  const { useCanvaStore: _useCanvaStore } = require('@/store/canva-store');
-  const { useInteractionStore: _useInteractionStore } = require('@/store/canva/interaction-store');
-
-  const canvaStore = _useCanvaStore.getState();
-  const interactionStore = _useInteractionStore.getState();
+  const canvaStore = useCanvaStore.getState();
 
   // Find the page index
   const pageIndex = canvaStore.pages.findIndex((p: CanvaPage) => p.id === pageId);
@@ -1726,8 +1791,10 @@ export function navigateToBlock(pageId: string, blockId: string, blockType: stri
   // Navigate to the page
   canvaStore.goPage(pageIndex);
 
-  // Select the block (shows in right panel)
-  interactionStore.selectBlock(blockId, blockType);
+  // Select the block (shows in right panel) — lazy import to avoid circular deps
+  import('@/store/canva/interaction-store').then(({ useInteractionStore }) => {
+    useInteractionStore.getState().selectBlock(blockId, blockType);
+  });
 }
 
 /**
@@ -1754,17 +1821,16 @@ export function useSchemaContext(): {
   // These reads are project-level metadata — not content.
   // They will remain in useAuthoringStore until Phase 5 creates
   // a dedicated project metadata store.
-  const { useAuthoringStore: _useAuthoringStore } = require('@/store/authoring-store');
-  const meta = _useAuthoringStore((s: any) => s.meta) as import('@/store/authoring/types').MetaState;
-  const tp = _useAuthoringStore((s: any) => s.tp) as import('@/store/authoring/types').TpItem[];
-  const atp = _useAuthoringStore((s: any) => s.atp) as import('@/store/authoring/types').AtpState;
+  const meta = useAuthoringStore((s: any) => s.meta) as import('@/store/authoring/types').MetaState;
+  const tp = useAuthoringStore((s: any) => s.tp) as import('@/store/authoring/types').TpItem[];
+  const atp = useAuthoringStore((s: any) => s.atp) as import('@/store/authoring/types').AtpState;
 
   const goToCanva = useCallback(() => {
-    _useAuthoringStore.getState().setActivePanel('canva');
+    useAuthoringStore.getState().setActivePanel('canva');
   }, []);
 
   const goToAutoGen = useCallback(() => {
-    _useAuthoringStore.getState().setActivePanel('autogen');
+    useAuthoringStore.getState().setActivePanel('autogen');
   }, []);
 
   return { meta, tp, atp, goToCanva, goToAutoGen };

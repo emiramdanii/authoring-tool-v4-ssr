@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuthoringStore } from '@/store/authoring-store';
 import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/preset-module-card';
 import { FieldLabel, INPUT_CLS } from './module-editors/shared';
-import type { EdProps } from './module-editors/shared';
+import type { Fn, FnAI, FnRI, FnUI } from './module-editors/shared';
+import type { Module } from '@/store/authoring/types';
 import { Pencil, Eye } from 'lucide-react';
 import {
   VideoEditor,
@@ -43,24 +43,27 @@ import {
 interface Props {
   open: boolean;
   onClose: () => void;
-  moduleIndex: number;
+  /** The module data (read from schema, passed by parent) */
+  mod: Module | null;
+  /** Update a top-level field on the module */
+  updateField: (key: string, value: unknown) => void;
+  /** Add an item to a nested array field */
+  add: (arrayKey: string, item: Record<string, unknown>) => void;
+  /** Remove an item from a nested array field */
+  remove: (arrayKey: string, itemIndex: number) => void;
+  /** Update a field on a nested array item */
+  update: (arrayKey: string, itemIndex: number, key: string, value: unknown) => void;
 }
 
-export default function ModuleEditorModal({ open, onClose, moduleIndex }: Props) {
-  const mod = useAuthoringStore((s) => s.modules[moduleIndex]);
-  const updateField = useAuthoringStore((s) => s.updateModuleField);
-  const add = useAuthoringStore((s) => s.addModuleItem);
-  const remove = useAuthoringStore((s) => s.removeModuleItem);
-  const update = useAuthoringStore((s) => s.updateModuleItem);
-
+export default function ModuleEditorModal({ open, onClose, mod, updateField, add, remove, update }: Props) {
   if (!open || !mod) return null;
 
   const t = mod.type; // Already typed as string
 
-  const uf = (key: string, value: unknown) => updateField(moduleIndex, key, value);
-  const ai = (arrayKey: string, item: Record<string, unknown>) => add(moduleIndex, arrayKey, item);
-  const ri = (arrayKey: string, itemIndex: number) => remove(moduleIndex, arrayKey, itemIndex);
-  const ui = (arrayKey: string, itemIndex: number, key: string, value: unknown) => update(moduleIndex, arrayKey, itemIndex, key, value);
+  const uf: Fn = (key, value) => updateField(key, value);
+  const ai: FnAI = (arrayKey, item) => add(arrayKey, item);
+  const ri: FnRI = (arrayKey, itemIndex) => remove(arrayKey, itemIndex);
+  const ui: FnUI = (arrayKey, itemIndex, key, value) => update(arrayKey, itemIndex, key, value);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>

@@ -2,8 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useAuthoringStore } from '@/store/authoring-store';
-import { useSchemaSkenario } from '@/hooks/use-schema-navigator';
+import { useSchemaSkenario, useSchemaContext } from '@/hooks/use-schema-navigator';
 import type { SkenarioChapter } from '@/store/authoring/types';
 import { Drama, Trash2, Pencil, Zap } from 'lucide-react';
 import { COLORS } from '@/lib/color-palette';
@@ -537,7 +536,7 @@ function ChapterDetail({
 // ── Main Skenario Component ─────────────────────────────────────
 export default function Skenario() {
   const { chapters, addChapter, removeChapter, replaceAllChapters } = useSchemaSkenario();
-  const meta = useAuthoringStore((s) => s.meta);
+  const { meta, goToAutoGen } = useSchemaContext();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -567,7 +566,7 @@ export default function Skenario() {
       toast.success(`🎭 ${chaptersResult.length} bab skenario berhasil digenerate ulang`);
     } else {
       toast.error('Gagal regenerate — tidak ada teks sumber.');
-      useAuthoringStore.getState().setActivePanel('autogen');
+      goToAutoGen();
     }
   };
 

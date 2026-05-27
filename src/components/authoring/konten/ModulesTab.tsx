@@ -187,7 +187,7 @@ function ModuleCard({
 // ── Modules Tab ────────────────────────────────────────────────
 export function ModulesTab() {
   // ═══ Phase 3: Schema-first reads via useSchemaModules ═══
-  const { modules, locations, addModule, removeModule, moveModule, updateModuleField } = useSchemaModules();
+  const { modules, locations, addModule, removeModule, moveModule, updateModuleField, addModuleItem, removeModuleItem, updateModuleItem } = useSchemaModules();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editorIndex, setEditorIndex] = useState<number | null>(null);
@@ -268,7 +268,17 @@ export function ModulesTab() {
 
       {/* Modals */}
       <ModulePickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={handlePick} />
-      <ModuleEditorModal open={editorIndex !== null} moduleIndex={editorIndex ?? 0} onClose={() => setEditorIndex(null)} />
+      {editorIndex !== null && (
+        <ModuleEditorModal
+          open={true}
+          mod={modules[editorIndex] ?? null}
+          onClose={() => setEditorIndex(null)}
+          updateField={(key, value) => updateModuleField(editorIndex, key, value)}
+          add={(arrayKey, item) => addModuleItem(editorIndex, arrayKey, item)}
+          remove={(arrayKey, itemIndex) => removeModuleItem(editorIndex, arrayKey, itemIndex)}
+          update={(arrayKey, itemIndex, key, value) => updateModuleItem(editorIndex, arrayKey, itemIndex, key, value)}
+        />
+      )}
     </div>
   );
 }

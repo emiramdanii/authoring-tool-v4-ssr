@@ -1,5 +1,8 @@
 'use client';
 
+import { navigateToBlock } from '@/hooks/use-schema-navigator';
+import { ExternalLink } from 'lucide-react';
+
 // ── Sub-tab type ─────────────────────────────────────────────────
 export type KontenTab = 'materi' | 'diskusi' | 'refleksi' | 'skenario' | 'modules' | 'kuis' | 'motivasi' | 'rangkuman';
 
@@ -210,5 +213,38 @@ export function CompareSideForm({
         <textarea className={TEXTAREA_CLS} rows={3} maxLength={MAX_BODY} placeholder={`Isi ${label.toLowerCase()}…`} value={data.isi || ''} onChange={(e) => onUpdate(side, 'isi', e.target.value)} />
       </div>
     </div>
+  );
+}
+
+// ── Cross-link: Locate in Canva button ─────────────────────────
+/**
+ * A small button that navigates from a Konten tab block to the
+ * corresponding page in the Canva editor. Uses the schema location
+ * (pageId, blockId, blockType) to perform the navigation.
+ *
+ * This is the key UX feature of the "Schema Navigator" concept —
+ * it bridges the Konten editing experience with the Canva visual
+ * editor, allowing teachers to see where their content appears.
+ */
+export function LocateInCanvaButton({
+  pageId,
+  blockId,
+  blockType,
+  label = 'Lihat di Canva',
+}: {
+  pageId: string;
+  blockId: string;
+  blockType: string;
+  label?: string;
+}) {
+  return (
+    <button
+      onClick={() => navigateToBlock(pageId, blockId, blockType)}
+      className="inline-flex items-center gap-1 px-2 py-1 text-xs text-app-muted hover:text-app-accent rounded-md hover:bg-app-accent/10 transition-colors"
+      title="Buka halaman ini di editor Canva"
+    >
+      <ExternalLink size={11} />
+      {label}
+    </button>
   );
 }

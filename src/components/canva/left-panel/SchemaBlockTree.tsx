@@ -18,11 +18,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractionStore } from '@/store/canva/interaction-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { ensurePageSchema, getPageBlocks } from '@/core/schema/ensure-schema';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
+import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
 import type { SchemaBlock } from '@/core/schema/types';
 import type { CanvaPage } from '@/components/canva/types';
-import { ChevronRight, Zap } from 'lucide-react';
+import { ChevronRight, Zap, Pencil } from 'lucide-react';
 
 // ── Block Type Display Map ──────────────────────────────────────
 // Maps schema block types to human-readable labels and icons.
@@ -168,6 +170,23 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
 
         {/* Block title */}
         <span className="truncate flex-1 font-medium">{title}</span>
+
+        {/* Edit in Konten button — only for content blocks that have a Konten tab */}
+        {getKontenTabForBlockType(block.type) && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              const tab = getKontenTabForBlockType(block.type);
+              if (tab) {
+                useAuthoringStore.getState().setKontenTab(tab);
+              }
+            }}
+            className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-app-muted hover:text-app-accent transition-opacity cursor-pointer"
+            title="Edit di Konten"
+          >
+            <Pencil size={8} />
+          </span>
+        )}
 
         {/* Schema badge for schema-driven blocks */}
         <Zap size={8} className="flex-shrink-0 text-app-success/40" />

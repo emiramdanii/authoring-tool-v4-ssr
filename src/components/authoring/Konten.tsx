@@ -13,6 +13,7 @@ import { RangkumanTab } from './konten/RangkumanTab';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { FileEdit, Puzzle, HelpCircle, BookOpen, Theater, ArrowRight, Gamepad2, ClipboardList, MessageSquare, NotebookPen, Sparkles, ListChecks } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { useAuthoringStore } from '@/store/authoring-store';
 
 // ── Main Konten Panel ──────────────────────────────────────────
 export default function Konten() {
@@ -44,6 +45,15 @@ export default function Konten() {
       ];
 
   const currentTab = tabs.find(t => t.id === activeTab)!;
+
+  // Sync with store-driven navigation (from SchemaBlockTree "Edit in Konten")
+  const storeKontenTab = useAuthoringStore((s) => s.kontenTab);
+  if (storeKontenTab && storeKontenTab !== activeTab) {
+    const isValid = tabs.find(t => t.id === storeKontenTab);
+    if (isValid) setActiveTab(storeKontenTab as KontenTab);
+    // Clear after consumption to avoid re-triggering
+    useAuthoringStore.setState({ kontenTab: null });
+  }
 
   const { meta, tp, goToCanva } = useSchemaContext();
   const projectContext = meta.judulPertemuan
