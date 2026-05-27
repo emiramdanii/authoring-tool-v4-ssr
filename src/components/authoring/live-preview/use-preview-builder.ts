@@ -1,8 +1,24 @@
 'use client';
 
+// ═══════════════════════════════════════════════════════════════════
+// USE PREVIEW BUILDER — Schema-first preview/export pipeline
+// ═══════════════════════════════════════════════════════════════════
+// Phase 3: Migrated from useAuthoringStore reads to schema-derived data.
+//
+// Data flow:
+//   CONTENT:  CanvaStore.pages[].schema → deriveExportPayloadFromSchema()
+//             → kuis, modules, games, materi, diskusi, refleksi, penutup,
+//               petunjuk, skenario (all derived from schema, single source)
+//   PROJECT:  useAuthoringStore → meta, cp, tp, atp, alur, suara
+//             (project-level metadata, Phase 5 territory)
+//   WRITE:    /api/export receives the same data shapes as before
+//             → backward compatible, just the source changed
+// ═══════════════════════════════════════════════════════════════════
+
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 import type { PreviewMode, LayoutTheme } from './types';
 import { simpleHash } from './constants';
 import { logger } from '@/core/utils/logger';
@@ -20,6 +36,11 @@ export interface UsePreviewBuilderReturn {
  * Preview builder — now uses Vite SSR Export pipeline for ALL preview modes.
  * Instead of generating HTML client-side (which was always different from export),
  * we call /api/export with the same data — guaranteeing preview === export.
+ *
+ * Phase 3: Content data is derived from CanvaPage[].schema instead of
+ * useAuthoringStore. This eliminates the dual source of truth that caused
+ * "Engine Canggih Tapi Output Hollow" — edits via applyGuidedSchemaPatch()
+ * are now immediately reflected in the preview.
  */
 export function usePreviewBuilder(
   previewMode: PreviewMode,
@@ -35,26 +56,23 @@ export function usePreviewBuilder(
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cachedHashRef = useRef<string>('');
 
-  // ── Authoring store subscriptions ──────────────────────────
+  // ── Canva store subscriptions ──────────────────────────────
+  const canvaPages = useCanvaStore((s) => s.pages);
+  const canvaRatioId = useCanvaStore((s) => s.ratioId);
+
+  // ── Project-level metadata from authoring store (Phase 5 territory) ──
   const meta = useAuthoringStore((s) => s.meta);
   const cp = useAuthoringStore((s) => s.cp);
   const tp = useAuthoringStore((s) => s.tp);
   const atp = useAuthoringStore((s) => s.atp);
   const alur = useAuthoringStore((s) => s.alur);
-  const skenario = useAuthoringStore((s) => s.skenario);
-  const kuis = useAuthoringStore((s) => s.kuis);
-  const materi = useAuthoringStore((s) => s.materi);
-  const modules = useAuthoringStore((s) => s.modules);
-  const games = useAuthoringStore((s) => s.games);
-  const petunjuk = useAuthoringStore((s) => s.petunjuk);
-  const diskusi = useAuthoringStore((s) => s.diskusi);
-  const refleksi = useAuthoringStore((s) => s.refleksi);
-  const penutup = useAuthoringStore((s) => s.penutup);
   const suara = useAuthoringStore((s) => s.suara);
 
-  // ── Canva store subscriptions ──────────────────────────────
-  const canvaPages = useCanvaStore((s) => s.pages);
-  const canvaRatioId = useCanvaStore((s) => s.ratioId);
+  // ── Derive content from schema (single source of truth) ────
+  const schemaPayload = useMemo(
+    () => deriveExportPayloadFromSchema(canvaPages),
+    [canvaPages],
+  );
 
   // ── Compute dataHash ───────────────────────────────────────
   // Exclude bgDataUrl from hash — base64 images are huge and slow down stringify.
@@ -73,18 +91,25 @@ export function usePreviewBuilder(
       JSON.stringify({
         pages: pagesLite,
         ratioId: canvaRatioId,
-        meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
-        petunjuk, diskusi, refleksi, penutup, suara, layoutTheme, previewMode,
+        // Project-level metadata
+        meta, cp, tp, atp, alur, suara,
+        // Schema-derived content
+        ...schemaPayload,
+        layoutTheme, previewMode,
       })
     );
-  }, [canvaPages, canvaRatioId, meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games, petunjuk, diskusi, refleksi, penutup, suara, layoutTheme, previewMode]);
+  }, [canvaPages, canvaRatioId, meta, cp, tp, atp, alur, suara, schemaPayload, layoutTheme, previewMode]);
 
   // ── Build HTML content via Vite SSR Export API ─────────────
   const rebuildHTML = useCallback(async () => {
     setBuilding(true);
     try {
-      const authStore = useAuthoringStore.getState();
+      // Read current state at build time (not from stale closures)
       const canvaStore = useCanvaStore.getState();
+      const authStore = useAuthoringStore.getState();
+
+      // Derive content from schema at build time (same logic as subscription)
+      const payload = deriveExportPayloadFromSchema(canvaStore.pages);
 
       const response = await fetch('/api/export', {
         method: 'POST',
@@ -92,21 +117,23 @@ export function usePreviewBuilder(
         body: JSON.stringify({
           pages: canvaStore.pages,
           ratioId: canvaStore.ratioId,
+          // Project-level metadata (Phase 5 territory)
           meta: authStore.meta,
-          allKuis: authStore.kuis,
-          allModules: authStore.modules,
-          games: authStore.games,
           cp: authStore.cp,
           tp: authStore.tp,
           atp: authStore.atp,
           alur: authStore.alur,
-          materi: authStore.materi,
-          skenario: authStore.skenario,
-          petunjuk: authStore.petunjuk,
-          diskusi: authStore.diskusi,
-          refleksi: authStore.refleksi,
-          penutup: authStore.penutup,
           suara: authStore.suara,
+          // Schema-derived content (single source of truth)
+          allKuis: payload.allKuis,
+          allModules: payload.allModules,
+          games: payload.games,
+          materi: payload.materi,
+          skenario: payload.skenario,
+          petunjuk: payload.petunjuk,
+          diskusi: payload.diskusi,
+          refleksi: payload.refleksi,
+          penutup: payload.penutup,
         }),
       });
 
