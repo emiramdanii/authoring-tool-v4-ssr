@@ -275,3 +275,51 @@ Stage Summary:
 - **SchemaBlockTree only uses useAuthoringStore.setActivePanel('konten')** — a legitimate panel switch action, not content data
 - **kontenTabRequest** is ephemeral UI navigation state stored in CanvaStore (not persisted)
 - Phase 3 Konten Panel → Schema Navigator is now COMPLETE with clean separation
+
+---
+Task ID: 8
+Agent: main
+Task: Phase 4 — Safe Page Split / Overflow Policy
+
+Work Log:
+- Audited all overflow-related code: checkOverflow(), SceneOverflowEngine, OverflowIndicator, OverflowDialog, CompressionEngine, capability-registry, PageLayoutContract, splitPageAtBlock, mergeWithNextPage, promoteSceneSplitToPage, schema-apply
+- Identified 7 key gaps: auto-split stubbed, word-count heuristic, no overflowPolicy in GuidedFormEditor, no overflow UI, mergeWithNextPage no overflow check, contract canSplit never checked during editing, CompressionHints unused
+- Upgraded checkOverflow() from naive 90-word heuristic to SceneOverflowEngine-based real measurements:
+  - New checkOverflowRich() returns OverflowCheckResult with: overflowDetected, scenePlan, canSplit (from contract), canCompress, totalScenes, summary
+  - Backward-compatible checkOverflow() wrapper still returns boolean
+- Implemented auto-split in applyGuidedSchemaPatch:
+  - overflowPolicy='auto-split' now calls store.promoteSceneSplit(1) via canva store
+  - Checks PageLayoutContract.canSplit before attempting split
+  - Navigates to the overflowing page first, then promotes the split
+  - Fails gracefully with console.warn if split fails
+- Wired overflowPolicy='warn' from GuidedFormEditor:
+  - GuidedFormEditor now passes overflowPolicy: 'warn' to applyGuidedSchemaPatch
+  - Tracks overflow state in useState<OverflowCheckResult | null>
+  - Shows OverflowWarningBanner when overflow detected, clears when resolved
+- Built OverflowWarningBanner component:
+  - Shows overflow details with human-readable Indonesian summary
+  - 3 action buttons: "Kompakkan" (rebalanceCurrentPage), "Split ke Halaman Baru" (promoteSceneSplit), "Tetap Simpan" (dismiss)
+  - Respects PageLayoutContract.canSplit — shows info text for non-splittable pages
+  - Shows compression availability
+- Added overflow guard to mergeWithNextPage:
+  - Pre-merge overflow check: computes ScenePlan for merged schema preview
+  - If overflow: warns with toast containing "Merge + Split" (if canSplit) or "Merge Saja" button
+  - Safe merges (no overflow) proceed automatically
+  - Extracted _performMergeUnchecked() internal method for confirmed merges
+- Fixed circular dependency issues:
+  - TemplateThemeContract.getContractOrGolden causes circular dep when imported from guided-patch.ts or page-ops-slice.ts
+  - Solution: lazy import via require() at call site in page-ops-slice.ts
+  - Solution: lazy import helper in guided-patch.ts (getContractLazy())
+  - Used store.promoteSceneSplit() instead of direct promoteSceneSplitToPage import
+- Added _performMergeUnchecked to CanvaState types and PageOpsSlice
+- Build verified: npx next build ✓ (zero errors, zero regressions)
+- Git push: zero conflicts
+
+Stage Summary:
+- **Overflow detection now uses real SceneOverflowEngine** instead of word-count heuristic
+- **auto-split policy is implemented** — applies patch + auto-splits page when overflowPolicy='auto-split'
+- **GuidedFormEditor shows OverflowWarningBanner** when content exceeds page capacity
+- **mergeWithNextPage has overflow guard** — warns before creating overflowing merged page
+- **PageLayoutContract.canSplit is respected** — cover/hasil/penutup pages cannot be auto-split
+- **Circular dependencies avoided** via lazy imports for contract resolution
+- **Phase 4 is COMPLETE** — Safe Page Split / Overflow Policy fully implemented
