@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Copy, Trash2, Zap, Plus } from 'lucide-react';
+import { Copy, Trash2, Zap, Plus, AlertTriangle } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { Button } from '@/components/ui/button';
 import { SchemaBlockTreeCompact } from './SchemaBlockTree';
@@ -39,6 +40,7 @@ export function SceneList() {
   const addPage = useCanvaStore(s => s.addPage);
   const ratio = useCanvaStore(s => s.currentRatio());
   const teacherMode = useCanvaStore(s => s.teacherMode);
+  const pageOverflowStatus = useOverflowWarningStore(s => s.pageOverflowStatus);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
@@ -107,6 +109,9 @@ export function SceneList() {
                 <div className="text-[10px] font-bold text-app-primary truncate flex items-center gap-1">
                   {isSchemaDriven && <Zap size={10} className="text-app-success inline" />}
                   <span className="truncate">{p.label}</span>
+                  {pageOverflowStatus[p.id]?.hasOverflow && (
+                    <AlertTriangle size={9} className="text-amber-400 flex-shrink-0" title="Konten melebihi kapasitas" />
+                  )}
                 </div>
                 <div className="text-[8px] mt-0.5 flex items-center gap-1">
                   <span className={`inline-flex items-center px-1.5 py-0 rounded text-[7px] font-bold uppercase tracking-wider border ${badgeColor}`}>

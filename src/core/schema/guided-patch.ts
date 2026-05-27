@@ -291,28 +291,22 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
           overflowDetails: check,
         };
       } else if (overflowPolicy === 'auto-split') {
-        // Auto-split: delegate to the canva store's promoteSceneSplit action.
-        // We don't call promoteSceneSplitToPage() directly to avoid circular dependencies
-        // (schema-apply → canva-store → ... → guided-patch).
-        // Instead, we navigate to the page and let the store handle the split.
+        // Phase 4: Auto-split using promoteSceneSplitToPage() directly.
+        // This is ATOMIC — the split reads the current schema state (which already
+        // has our patched content) and creates a new page in a single transaction.
+        // No need to navigate first; promoteSceneSplitToPage() works by pageId.
         if (check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
-          // Navigate to the overflowing page first
-          const store = useCanvaStore.getState();
-          const pageIdx = store.pages.findIndex(p => p.id === pageId);
-          if (pageIdx >= 0 && store.currentPageIndex !== pageIdx) {
-            useCanvaStore.setState({ currentPageIndex: pageIdx });
-          }
-          // Now promote the split via the store action
-          // Note: This works because promoteSceneSplit re-computes the scene plan
-          // from the CURRENT page state (which already has our patched content)
           try {
-            store.promoteSceneSplit(1);
-            autoSplitPerformed = true;
-            // The split creates a new page — read the new page ID from the updated store
-            const updatedPages = useCanvaStore.getState().pages;
-            const nextPage = updatedPages[pageIdx + 1];
-            if (nextPage) {
-              newPageId = nextPage.id;
+            const { promoteSceneSplitToPage } = require('./schema-apply');
+            const splitResult = promoteSceneSplitToPage(pageId, check.scenePlan, 1);
+            if (splitResult.success && splitResult.pageUpdated) {
+              autoSplitPerformed = true;
+              newPageId = splitResult.newPageId;
+            } else {
+              console.warn(
+                `[guided-patch] Auto-split transaction failed for page "${pageId}": ${splitResult.error}. ` +
+                `Content may overflow. Manual split recommended.`
+              );
             }
           } catch (err) {
             console.warn(
@@ -868,6 +862,98 @@ export function checkOverflow(schema: ScreenSchema): boolean {
   return checkOverflowRich(schema).overflowDetected;
 }
 
+// ── Pre-Flight Overflow Preview ────────────────────────────────
+
+/**
+ * Preview what would happen if a patch were applied — WITHOUT writing to the store.
+ *
+ * This is a "dry run" that:
+ *   1. Clones the current page's schema
+ *   2. Applies the patch to the clone
+ *   3. Runs checkOverflowRich() on the cloned schema
+ *   4. Returns the overflow result + the patched schema (for inspection)
+ *   5. NEVER mutates the real store
+ *
+ * Use cases:
+ *   - Konten tab: Show "This edit would cause overflow" BEFORE applying
+ *   - Guided form: Pre-validate a field change
+ *   - AI regenerate: Check if generated content fits before committing
+ *
+ * @param args - Same args as applyGuidedSchemaPatch
+ * @returns Overflow check result + patched schema preview
+ */
+export function previewPatchOverflow(args: GuidedPatchArgs): {
+  overflowCheck: OverflowCheckResult;
+  /** The schema as it would look after the patch (read-only preview) */
+  previewSchema: ScreenSchema | null;
+} {
+  const { pageId, blockId, patch } = args;
+  const store = useCanvaStore.getState();
+  const page = store.pages.find(p => p.id === pageId);
+
+  if (!page?.schema) {
+    return {
+      overflowCheck: {
+        overflowDetected: false,
+        scenePlan: null,
+        canSplit: false,
+        canCompress: false,
+        totalScenes: 1,
+        summary: 'Halaman tidak ditemukan atau tidak memiliki schema',
+      },
+      previewSchema: null,
+    };
+  }
+
+  // Clone the schema to avoid mutating the real store
+  const schemaClone: ScreenSchema = JSON.parse(JSON.stringify(page.schema));
+
+  // Find the target block in the clone
+  const owner = findBlockOwner(schemaClone.blocks, blockId);
+  if (!owner) {
+    return {
+      overflowCheck: {
+        overflowDetected: false,
+        scenePlan: null,
+        canSplit: false,
+        canCompress: false,
+        totalScenes: 1,
+        summary: `Block "${blockId}" tidak ditemukan`,
+      },
+      previewSchema: null,
+    };
+  }
+
+  // Apply the patch to the clone (same logic as applyGuidedSchemaPatch)
+  if (owner.kind === 'top-level') {
+    const merged = deepMergeBlock(schemaClone.blocks[owner.index]!, patch);
+    schemaClone.blocks[owner.index] = { ...schemaClone.blocks[owner.index], ...merged } as SchemaBlock;
+  } else {
+    // Nested block (materi-section content, ftab tab, children)
+    let target: Record<string, unknown> | undefined;
+    if (owner.kind === 'ftab-tab') {
+      const ft = schemaClone.blocks[owner.blockIndex] as unknown as { tabs?: Array<{ content?: SchemaBlock[] }> };
+      target = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex] as Record<string, unknown> | undefined;
+    } else if (owner.kind === 'materi-section') {
+      const ms = schemaClone.blocks[owner.blockIndex] as unknown as { content?: SchemaBlock[] };
+      target = ms.content?.[owner.childIndex] as Record<string, unknown> | undefined;
+    } else if (owner.kind === 'children') {
+      target = schemaClone.blocks[owner.blockIndex]!.children?.[owner.childIndex] as Record<string, unknown> | undefined;
+    }
+    if (target) {
+      Object.assign(target, deepMergeBlock(target, patch));
+    }
+  }
+
+  // Run overflow check on the patched clone
+  const overflowCheck = checkOverflowRich(schemaClone, page.templateType);
+
+  return {
+    overflowCheck,
+    previewSchema: schemaClone,
+  };
+}
+
 // ── Convenience: Patch and get fresh projection ────────────────
 
 /**
@@ -902,4 +988,81 @@ export function applyGuidedSchemaPatchWithProjection<T>(
 
   const projection = projectionDeriver(updatedPage);
   return { ...result, projection };
+}
+
+// ── Batch Overflow Scan ─────────────────────────────────────────
+
+/**
+ * Scan all pages for overflow and update the overflow warning store.
+ *
+ * This is the "post-generate overflow scan" — after auto-generate or
+ * bulk content changes, run this to detect any pages that overflow.
+ *
+ * Results are written to useOverflowWarningStore.pageOverflowStatus
+ * so the UI can show red dots on overflowing pages in the scene list,
+ * export warnings, etc.
+ *
+ * @param options.autoSplit - If true, automatically split overflowing pages
+ * @returns Summary of the scan
+ */
+export function scanAllPagesOverflow(options?: {
+  autoSplit?: boolean;
+}): {
+  totalPages: number;
+  overflowingPages: number;
+  autoSplitResults: Array<{ pageId: string; success: boolean; newPageId?: string }>;
+} {
+  const store = useCanvaStore.getState();
+  const pages = store.pages;
+  const now = Date.now();
+
+  const statuses: Record<string, import('@/store/overflow-warning-store').PageOverflowStatus> = {};
+  let overflowingPages = 0;
+  const autoSplitResults: Array<{ pageId: string; success: boolean; newPageId?: string }> = [];
+
+  for (const page of pages) {
+    if (!page.schema?.blocks || page.schema.blocks.length === 0) {
+      statuses[page.id] = {
+        hasOverflow: false,
+        details: null,
+        lastChecked: now,
+      };
+      continue;
+    }
+
+    const check = checkOverflowRich(page.schema, page.templateType);
+    statuses[page.id] = {
+      hasOverflow: check.overflowDetected,
+      details: check,
+      lastChecked: now,
+    };
+
+    if (check.overflowDetected) {
+      overflowingPages++;
+
+      // Auto-split if requested and possible
+      if (options?.autoSplit && check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
+        try {
+          const { promoteSceneSplitToPage } = require('./schema-apply');
+          const splitResult = promoteSceneSplitToPage(page.id, check.scenePlan, 1);
+          autoSplitResults.push({
+            pageId: page.id,
+            success: splitResult.success && splitResult.pageUpdated,
+            newPageId: splitResult.newPageId,
+          });
+        } catch {
+          autoSplitResults.push({ pageId: page.id, success: false });
+        }
+      }
+    }
+  }
+
+  // Write all statuses to the store in one batch
+  useOverflowWarningStore.getState().batchSetPageOverflowStatus(statuses);
+
+  return {
+    totalPages: pages.length,
+    overflowingPages,
+    autoSplitResults,
+  };
 }

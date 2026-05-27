@@ -29,7 +29,7 @@
 | 6. Konten.tsx → Schema Navigator (DiskusiTab + RefleksiTab) | ✅ DONE | Phase 3 |
 | 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ✅ DONE | Phase 3 |
 | 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ✅ DONE | Phase 3 |
-| 9. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
+| 9. Safe Page Split / Overflow Policy | ✅ DONE | Phase 4 |
 | 10. Cleanup dual source | ⬜ PENDING | Phase 5 |
 
 ---
@@ -118,8 +118,32 @@
 
 **Phase 3 COMPLETE** — All 8 Konten tabs now read from schema via useSchemaXxx hooks and write via applyGuidedSchemaPatch(). Zero useAuthoringStore content reads remain in konten/ directory.
 
-### Phase 4 — Safe Page Split
+### Phase 4 — Safe Page Split ✅ DONE
 **Goal**: Auto-split konten panjang, overflow policy
+
+**Completed**:
+- `previewPatchOverflow()` — pre-flight overflow check tanpa write ke store
+  - Clones schema, applies patch to clone, runs checkOverflowRich()
+  - Returns OverflowCheckResult + previewSchema (read-only)
+  - Used by Konten tabs to show "This edit would cause overflow" BEFORE applying
+- Auto-split atomic fix — uses `promoteSceneSplitToPage()` directly instead of navigate+split
+  - No longer fragile: single transaction instead of navigate-then-split
+  - Uses `require('./schema-apply')` lazy import to avoid circular deps
+- Per-page overflow status store — `useOverflowWarningStore.pageOverflowStatus`
+  - Record<pageId, PageOverflowStatus> — tracks hasOverflow, details, lastChecked
+  - Batch set: `batchSetPageOverflowStatus()` for post-generate scan
+  - Auto-updated by `setWarning()` when overflow detected
+- KontenOverflowBanner upgrade — direct action buttons
+  - Kompakkan (Compress): rebalanceCurrentPage() if canCompress
+  - Split Halaman: promoteSceneSplitToPage() if canSplit
+  - Lihat: navigate to canvas for manual fix
+  - Dismiss: hide banner
+- `scanAllPagesOverflow()` — post-generate overflow scan
+  - Scans all pages for overflow after auto-generate
+  - Optional `autoSplit` parameter to auto-split overflowing pages
+  - Writes results to pageOverflowStatus store
+- SceneList overflow indicator — amber AlertTriangle icon on overflowing pages
+  - Reads from pageOverflowStatus store
 
 ### Phase 5 — Cleanup
 **Goal**: Hapus old write paths, schema-only untuk save/export

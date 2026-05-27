@@ -217,17 +217,21 @@ export {
   applyGuidedSchemaPatch,
   applyGuidedSchemaPatchBatch,
   applyGuidedSchemaPatchWithProjection,
+  previewPatchOverflow,
+  scanAllPagesOverflow,
   getEditableSchemaBlocks,
   getEditableSchemaBlocksByPageId,
   getSchemaBlockById,
   getGuidedEditorSchema,
   hasGuidedEditor,
+  checkOverflow,
 } from './guided-patch';
 
 export type {
   GuidedPatchArgs,
   GuidedPatchResult,
   OverflowPolicy,
+  OverflowCheckResult,
   GuidedFieldDef,
   GuidedEditorSchema,
 } from './guided-patch';
