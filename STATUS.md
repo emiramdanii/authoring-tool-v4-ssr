@@ -28,7 +28,7 @@
 | 5. Guided form di Right Panel (functional) | ✅ DONE | Phase 2 |
 | 6. Konten.tsx → Schema Navigator (DiskusiTab + RefleksiTab) | ✅ DONE | Phase 3 |
 | 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ✅ DONE | Phase 3 |
-| 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ⬜ PENDING | Phase 3 |
+| 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ✅ DONE | Phase 3 |
 | 9. Safe Page Split / Overflow Policy | ⬜ PENDING | Phase 4 |
 | 10. Cleanup dual source | ⬜ PENDING | Phase 5 |
 
@@ -61,15 +61,10 @@
 
 ## Masalah yang Belum Diperbaiki
 
-### Dual Source of Truth (AKAR MASALAH)
-- **Arah sekarang**: Konten Tab → AuthoringStore (TULIS) → sync → Schema (BACA)
-- **Arah yang benar**: Konten Tab → Schema (TULIS) → deriveProjection → AuthoringStore (BACA saja)
-- **Impact**: Edit di Konten tab kadang tidak muncul di canvas karena sync gagal
-
-### Konten.tsx Masih Authoring-First
-- `useAuthoringStore` sebagai sumber utama (line 13, 49-52)
-- Setiap tab (MateriTab, KuisTab, dll) baca/tulis ke authoring store
-- sync-projection.ts adalah bridge tapi arahnya terbalik
+### Dual Source of Truth (SEMI-RESOLVED)
+- **Arah sekarang**: Konten Tab → Schema (TULIS via applyGuidedSchemaPatch) → startProjectionSync → AuthoringStore (auto-derived, READ-ONLY)
+- **Sisa masalah**: AuthoringStore masih writable — code lama bisa langsung tulis ke situ, bypassing schema
+- **Phase 5 target**: AuthoringStore jadi fully derived (read-only mirror of schema)
 
 ---
 
@@ -115,7 +110,13 @@
   - Shape bridges: RangkumanBlock.concepts[]↔poin[], closingStatement↔tips
   - KuisTab: All CRUD + drag-sort + presets go through schema hook, no authoring store content writes
   - Each tab shows empty state when no matching schema block exists
-- Task 8: MateriTab → deferred (most complex: 13+ block type conversions, needs dedicated session)
+- Task 8: MateriTab → useSchemaMateri (materi-blok inside materi-section)
+  - 13 block editor forms all write via useSchemaMateri().updateBlok()
+  - syncMateriToSchema() removed — no longer needed
+  - Nearly 1:1 mapping: MateriBlokBlock ↔ MateriBlok (style↔infoboxStyle)
+  - Also added: useSchemaSkenario (chapter/choice/consequence CRUD), useSchemaModules (game blocks→Module[])
+
+**Phase 3 COMPLETE** — All 8 Konten tabs now read from schema via useSchemaXxx hooks and write via applyGuidedSchemaPatch(). Zero useAuthoringStore content reads remain in konten/ directory.
 
 ### Phase 4 — Safe Page Split
 **Goal**: Auto-split konten panjang, overflow policy
