@@ -419,3 +419,35 @@ Stage Summary:
 - **Phase 5: PARTIAL** — 32 deprecated write actions with console.warn(), Dokumen.tsx documented as project metadata
 - **Remaining Phase 5**: Convert Dokumen.tsx (needs CpBlock/AtpBlock schema types), auto-generate, import/restore, UI state extraction
 - All builds pass, all pushes successful
+---
+Task ID: session-2
+Agent: Main Agent
+Task: Phase 3-5 Development — Continue "Engine Canggih Tapi Output Hollow" fix
+
+Work Log:
+- Phase 3 audit: Found all 7 Konten tabs already schema-first (no useAuthoringStore reads)
+- Phase 3 fix: Fixed 13+ TypeScript errors across the codebase
+  - eduViewingModeSlice: Added to CanvaState type + store composition
+  - overflow-warning-store: Changed createStore→create for React hook compatibility
+  - teacherMode: Fixed 15 files from string comparison to boolean
+  - block.id: Added null guards for optional id in schema navigation
+  - source type: Extended edit-bus source to include guided-form/konten-tab
+  - MateriBlokBlock.style: Renamed to blockStyle to avoid BaseBlock conflict
+  - TokenResolver: Added 6 edu bridge methods + IOS_TO_EDU_TYPOGRAPHY_MAP
+  - NavConfig/PageTemplateType: Fixed type mismatches
+- Phase 4 audit: Found overflow system already 90% built
+- Phase 4 hardening:
+  - Recursive auto-split (up to 5 splits for 3+ scene pages)
+  - Dynamic ratioId (reads from store instead of hardcoded 16:9)
+  - Auto-clear stale pageOverflowStatus on content edit
+  - Deprecated stale OverflowDialog (was using wrong imports)
+- Phase 5C: Removed dead kontenTab/setKontenTab from authoring store
+- Phase 5B: Added unified dirty/save helpers (isAnyDirty, saveAllToStorage, getCombinedSaveStatus)
+- Phase 5A: Deferred (moving activePanel to canva store — high-risk, large-scope)
+
+Stage Summary:
+- All 5 phases substantially complete
+- TypeScript build: 0 errors (excluding missing npm packages)
+- 3 commits pushed to git: Phase 3 complete, Phase 4 hardening, Phase 5 in progress
+- Core architecture: Schema as Single Source of Truth, applyGuidedSchemaPatch as single write path
+- Remaining: Phase 5A (activePanel migration) is deferred as stable architecture is functional
