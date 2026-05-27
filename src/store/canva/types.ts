@@ -74,6 +74,9 @@ export interface CanvaState {
    *  Set by SchemaBlockTree pencil icon, consumed by Konten.tsx, then cleared.
    *  Moved here from useAuthoringStore.kontenTab (Phase 3 — eliminate authoring store reads). */
   kontenTabRequest: string | null;
+  /** Phase 3: Ephemeral cross-panel navigation — SchemaBlockTree → switch to Konten panel.
+   *  Set alongside kontenTabRequest, consumed by AuthoringTool.tsx, then cleared. */
+  kontenPanelRequest: boolean;
   selectedElId: string | null;
   // Phase 4: Multi-select — array of selected element IDs
   selectedElIds: string[];

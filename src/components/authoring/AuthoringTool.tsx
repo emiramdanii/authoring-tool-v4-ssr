@@ -266,6 +266,22 @@ function AuthoringToolInner() {
     }
   }, [activePanel]);
 
+  // ── Phase 3: Cross-panel navigation from SchemaBlockTree → Konten panel ──
+  // When SchemaBlockTree pencil icon is clicked, it sets kontenPanelRequest=true
+  // This effect consumes it and switches to the Konten panel
+  useEffect(() => {
+    const unsub = useCanvaStore.subscribe(
+      (s) => s.kontenPanelRequest,
+      (requested) => {
+        if (requested) {
+          setActivePanel('konten');
+          useCanvaStore.setState({ kontenPanelRequest: false });
+        }
+      }
+    );
+    return unsub;
+  }, [setActivePanel]);
+
   const exportJSON = useCallback(() => {
     const s = useAuthoringStore.getState();
     const c = useCanvaStore.getState();
