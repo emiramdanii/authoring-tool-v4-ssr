@@ -12,14 +12,18 @@ export const createMotivasiRangkumanSlice: StateCreator<AuthoringState, [], [], 
   motivasi: { ...DEFAULT_MOTIVASI },
   rangkuman: { ...DEFAULT_RANGKUMAN },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMotivasi() hooks instead. Content writes should go through schema. */
   updateMotivasi: (data: Partial<MotivasiData>) => {
+    console.warn('[deprecated] updateMotivasi() — Use useSchemaMotivasi() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       motivasi: { ...s.motivasi, ...data },
       dirty: true,
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaRangkuman() hooks instead. Content writes should go through schema. */
   updateRangkuman: (data: Partial<RangkumanData>) => {
+    console.warn('[deprecated] updateRangkuman() — Use useSchemaRangkuman() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       rangkuman: { ...s.rangkuman, ...data },
       dirty: true,

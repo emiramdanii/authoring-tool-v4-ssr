@@ -16,21 +16,27 @@ export const createDiskusiRefleksiSlice: StateCreator<AuthoringState, [], [], Di
   diskusi: { ...DEFAULT_DISKUSI },
   refleksi: { ...DEFAULT_REFLEKSI },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaDiskusi() hooks instead. Content writes should go through schema. */
   updateDiskusi: (data: Partial<DiskusiData>) => {
+    console.warn('[deprecated] updateDiskusi() — Use useSchemaDiskusi() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       diskusi: { ...s.diskusi, ...data },
       dirty: true,
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaRefleksi() hooks instead. Content writes should go through schema. */
   updateRefleksi: (data: Partial<RefleksiData>) => {
+    console.warn('[deprecated] updateRefleksi() — Use useSchemaRefleksi() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       refleksi: { ...s.refleksi, ...data },
       dirty: true,
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaDiskusi() hooks instead. Content writes should go through schema. */
   addDiskusiPertanyaan: () => {
+    console.warn('[deprecated] addDiskusiPertanyaan() — Use useSchemaDiskusi().addQuestion() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       diskusi: {
         ...s.diskusi,
@@ -43,7 +49,9 @@ export const createDiskusiRefleksiSlice: StateCreator<AuthoringState, [], [], Di
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaDiskusi() hooks instead. Content writes should go through schema. */
   removeDiskusiPertanyaan: (index: number) => {
+    console.warn('[deprecated] removeDiskusiPertanyaan() — Use useSchemaDiskusi().removeQuestion() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       diskusi: {
         ...s.diskusi,
@@ -53,7 +61,9 @@ export const createDiskusiRefleksiSlice: StateCreator<AuthoringState, [], [], Di
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaDiskusi() hooks instead. Content writes should go through schema. */
   updateDiskusiPertanyaan: (index: number, data: Partial<DiskusiPertanyaan>) => {
+    console.warn('[deprecated] updateDiskusiPertanyaan() — Use useSchemaDiskusi().updateQuestion() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       diskusi: {
         ...s.diskusi,
@@ -63,7 +73,9 @@ export const createDiskusiRefleksiSlice: StateCreator<AuthoringState, [], [], Di
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaRefleksi() hooks instead. Content writes should go through schema. */
   addRefleksiPertanyaan: () => {
+    console.warn('[deprecated] addRefleksiPertanyaan() — Use useSchemaRefleksi().addQuestion() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       refleksi: {
         ...s.refleksi,
@@ -76,7 +88,9 @@ export const createDiskusiRefleksiSlice: StateCreator<AuthoringState, [], [], Di
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaRefleksi() hooks instead. Content writes should go through schema. */
   removeRefleksiPertanyaan: (index: number) => {
+    console.warn('[deprecated] removeRefleksiPertanyaan() — Use useSchemaRefleksi().removeQuestion() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       refleksi: {
         ...s.refleksi,
@@ -86,7 +100,9 @@ export const createDiskusiRefleksiSlice: StateCreator<AuthoringState, [], [], Di
     }));
   },
 
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaRefleksi() hooks instead. Content writes should go through schema. */
   updateRefleksiPertanyaan: (index: number, data: Partial<RefleksiPertanyaan>) => {
+    console.warn('[deprecated] updateRefleksiPertanyaan() — Use useSchemaRefleksi().updateQuestion() or applyGuidedSchemaPatch() instead');
     set((s) => ({
       refleksi: {
         ...s.refleksi,

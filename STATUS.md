@@ -145,5 +145,22 @@
 - SceneList overflow indicator — amber AlertTriangle icon on overflowing pages
   - Reads from pageOverflowStatus store
 
-### Phase 5 — Cleanup
+### Phase 5 — Cleanup Dual Source (IN PROGRESS)
 **Goal**: Hapus old write paths, schema-only untuk save/export
+
+**Completed**:
+- 32 write actions in 5 Tier 1 authoring store slices marked @deprecated
+  - kuis-slice: addKuis, deleteKuis, updateKuis, updateKuisOpt, reorderKuis
+  - materi-slice: addMateriBlok, removeMateriBlok, updateMateriBlok, moveMateriBlok
+  - skenario-slice: setSkenario + 12 chapter/choice/consequence actions
+  - diskusi-refleksi-slice: updateDiskusi/Refleksi + 6 pertanyaan CRUD actions
+  - motivasi-rangkuman-slice: updateMotivasi, updateRangkuman
+- Each deprecated action has console.warn() pointing to schema-first alternative
+- Konten tabs already bypass these deprecated actions (using useSchemaXxx hooks)
+
+**Remaining (Future Work)**:
+- Convert Dokumen.tsx writes (meta, tp, alur) to schema patches — needs CpBlock/AtpBlock schema types
+- Convert auto-generate setSkenario() to schema write
+- Convert import/restore bulk writes to schema-first
+- Make AuthoringStore fully read-only for Tier 1 fields (remove write actions after all consumers migrated)
+- Extract UI state (activePanel, dirty, teacherMode) to separate UI store

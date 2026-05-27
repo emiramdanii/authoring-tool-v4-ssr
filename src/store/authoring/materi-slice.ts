@@ -7,7 +7,9 @@ export type MateriSlice = Pick<AuthoringState, 'materi' | 'addMateriBlok' | 'rem
 
 export const createMateriSlice: StateCreator<AuthoringState, [], [], MateriSlice> = (set) => ({
   materi: { ...DEFAULT_MATERI },
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
   addMateriBlok: (tipe: string) => {
+    console.warn('[deprecated] addMateriBlok() — Use useSchemaMateri().addBlock() or applyGuidedSchemaPatch() instead');
     const base: MateriBlok = { tipe };
     switch (tipe) {
       case 'teks':      base.judul = ''; base.isi = ''; break;
@@ -26,17 +28,23 @@ export const createMateriSlice: StateCreator<AuthoringState, [], [], MateriSlice
     }
     set((s) => ({ materi: { blok: [...s.materi.blok, base] }, dirty: true }));
   },
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
   removeMateriBlok: (index: number) => {
+    console.warn('[deprecated] removeMateriBlok() — Use useSchemaMateri().removeBlock() or applyGuidedSchemaPatch() instead');
     set((s) => ({ materi: { blok: s.materi.blok.filter((_, i) => i !== index) }, dirty: true }));
   },
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
   updateMateriBlok: (index: number, key: string, value: unknown) => {
+    console.warn('[deprecated] updateMateriBlok() — Use useSchemaMateri().updateBlock() or applyGuidedSchemaPatch() instead');
     set((s) => {
       const blok = [...s.materi.blok];
       blok[index] = { ...blok[index], [key]: value };
       return { materi: { blok }, dirty: true };
     });
   },
+  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
   moveMateriBlok: (fromIndex: number, toIndex: number) => {
+    console.warn('[deprecated] moveMateriBlok() — Use useSchemaMateri().moveBlock() or applyGuidedSchemaPatch() instead');
     set((s) => {
       const blok = [...s.materi.blok];
       const [moved] = blok.splice(fromIndex, 1);
