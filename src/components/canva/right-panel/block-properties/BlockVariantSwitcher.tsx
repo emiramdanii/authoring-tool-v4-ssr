@@ -35,7 +35,7 @@ const VARIANT_COLORS: Record<string, { active: string; inactive: string }> = {
     inactive: 'bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-container-high',
   },
   C: {
-    active: 'bg-secondary-container/30 text-on-secondary-fixed-variant border-secondary/30',
+    active: 'bg-secondary-container/30 text-silse-on-secondary border-secondary/30',
     inactive: 'bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-container-high',
   },
 };

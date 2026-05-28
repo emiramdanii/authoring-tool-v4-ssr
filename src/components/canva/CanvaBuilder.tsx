@@ -130,7 +130,7 @@ export default function CanvaBuilder() {
   if (appMode === 'preview') {
     return (
       <MobileGuard>
-        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-[#f7f9fb] text-[#191c1e]">
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface">
           <UndoRedoToast />
           <CanvaAutoSaveSync />
           <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
@@ -147,7 +147,7 @@ export default function CanvaBuilder() {
   // ── EDIT mode: Full 3-panel layout ───────────────────────────
   return (
     <MobileGuard>
-      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-[#f7f9fb] text-[#191c1e] focus-ring" id="main-content" data-testid="canva-builder">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring" id="main-content" data-testid="canva-builder">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
@@ -167,8 +167,8 @@ export default function CanvaBuilder() {
             className="flex-shrink-0 overflow-hidden shadow-app-panel"
             style={{
               width: leftPanelOpen
-                ? 'var(--semantic-panel-default)'
-                : 'var(--semantic-panel-collapsed)',
+                ? '288px'
+                : '64px',
             }}
             data-tour="left-panel"
             data-testid="left-panel"
@@ -181,7 +181,7 @@ export default function CanvaBuilder() {
           </div>
 
           {/* Stage Canvas Area — flex-1 zoom-to-fit */}
-          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden bg-[#f7f9fb]" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
+          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
             <ProfilerWrapper id="Stage">
               <Stage />
             </ProfilerWrapper>
@@ -191,7 +191,7 @@ export default function CanvaBuilder() {
           <div
             className="flex-shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out shadow-app-panel-left"
             style={{
-              width: rightPanelOpen ? 'var(--semantic-panel-expanded)' : '0px',
+              width: rightPanelOpen ? '320px' : '0px',
             }}
             data-tour="right-panel"
             data-testid="right-panel"

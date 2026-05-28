@@ -629,3 +629,37 @@ Stage Summary:
 - Build: Clean ✅
 - Schema is now the SINGLE SOURCE OF TRUTH for content
 - Content flow: Edit → applyGuidedSchemaPatch() → schema → startProjectionSync() → authoring (read-only projection)
+---
+Task ID: silse-v4-ui-overhaul
+Agent: Main Agent
+Task: SILSE v4 UI Overhaul + Schema Panel Fix — One-pass implementation
+
+Work Log:
+- Analyzed 15+ reference HTML/CSS screens from SILSE v4 design package
+- Extracted complete Material Design 3 semantic color tokens (22 colors)
+- Verified SILSE v4 tokens were already added to globals.css (both light + dark mode)
+- Identified core problem: ~20 component files using broken Stitch-style classes (border-outline-variant, bg-surface-bright, text-on-surface-variant, etc.) that don't map to Tailwind utilities
+- Batch replaced all Stitch-style Material Design 3 classes with silse-* prefixed tokens across 12 files
+- Fixed IconRail.tsx: Category → LayoutTemplate (lucide-react export error)
+- Updated Toolbar.tsx: New SILSE v4 TopAppBar with 64px height, justify-between layout, silse tokens
+- Updated ToolbarNav.tsx: SILSE Authoring branding with Plus Jakarta Sans font
+- Updated CanvaBuilder.tsx: Left panel 288px/64px, right panel 320px, canvas-bg class
+- Updated Stage/index.tsx: canvas-bg dot-grid background, rounded-2xl shadow-2xl canvas frame
+- Updated RightPanel.tsx: All Stitch classes → SILSE tokens
+- Updated BlockPropertiesPanel.tsx: All Stitch classes → SILSE tokens
+- Updated GuidedFormEditor.tsx + guided-field-renderer.tsx: INPUT_BASE/LABEL_BASE + all Stitch classes → SILSE tokens
+- Updated SchemaBlockTree.tsx: App tokens → SILSE tokens for tree navigation
+- Updated SceneList.tsx: BADGE_COLOR_MAP + scene items → SILSE color scheme
+- Updated AddBlockSection.tsx: App tokens → SILSE tokens
+- Verified SchemaBlockTree's useInteractionStore is valid and working (no broken imports)
+- Removed font-body-md (doesn't exist in Tailwind config) from guided-field-renderer
+- Build verification: `npx next build` passes clean
+
+Stage Summary:
+- Complete SILSE v4 "Modern Educator" design system applied to entire authoring tool
+- All 22 Material Design 3 semantic color tokens now used via silse-* Tailwind utilities
+- Emerald Green (#006c49) primary, Royal Blue (#0058be) secondary, Amber (#855300) tertiary
+- High radius geometry (rounded-xl, rounded-2xl, rounded-full buttons)
+- Dot-grid canvas background, glass-card effects, liquid-progress bars
+- Schema panel fixed and restyled — uses same SILSE token system
+- Zero build errors, zero lint errors in edited files

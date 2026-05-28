@@ -23,8 +23,8 @@ import type { GuidedFieldDef } from '@/core/schema/guided-patch';
 
 // ── Shared Stitch Styles ──────────────────────────────────────
 
-const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-md text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all duration-200';
-const LABEL_BASE = 'text-[12px] font-bold text-on-surface-variant mb-2 block';
+const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-silse-on-surface text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200';
+const LABEL_BASE = 'text-[12px] font-bold text-silse-on-surface-variant mb-2 block';
 
 // ── Main Render Dispatch ──────────────────────────────────────
 
@@ -154,7 +154,7 @@ function GuidedLabel({ fieldDef, fieldId, icon }: {
       <span className="flex items-center gap-1.5">
         {icon} {fieldDef.label}
         {fieldDef.required && (
-          <Asterisk size={10} className="text-tertiary-container" />
+          <Asterisk size={10} className="text-silse-tertiary-container" />
         )}
       </span>
     </label>
@@ -165,7 +165,7 @@ function GuidedLabel({ fieldDef, fieldId, icon }: {
 
 function HelpText({ text, id }: { text?: string; id?: string }) {
   if (!text) return null;
-  return <span id={id} className="text-[10px] text-on-surface-variant mt-1.5 block leading-relaxed">{text}</span>;
+  return <span id={id} className="text-[10px] text-silse-on-surface-variant mt-1.5 block leading-relaxed">{text}</span>;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -181,7 +181,7 @@ function GuidedTextField({ fieldDef, value, onChange, fieldId }: {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
   return (
     <div>
-      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<Type size={14} className="text-on-surface-variant" />} />
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<Type size={14} className="text-silse-on-surface-variant" />} />
       <input
         id={fieldId}
         type="text"
@@ -205,7 +205,7 @@ function GuidedTextareaField({ fieldDef, value, onChange, fieldId }: {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
   return (
     <div>
-      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<AlignLeft size={14} className="text-on-surface-variant" />} />
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<AlignLeft size={14} className="text-silse-on-surface-variant" />} />
       <textarea
         id={fieldId}
         value={value}
@@ -213,7 +213,7 @@ function GuidedTextareaField({ fieldDef, value, onChange, fieldId }: {
         placeholder={fieldDef.placeholder}
         rows={4}
         aria-describedby={helpId}
-        className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-md text-sm leading-relaxed focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all duration-200 resize-y"
+        className="w-full px-4 py-3 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-silse-on-surface text-sm leading-relaxed focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 resize-y"
       />
       <HelpText text={fieldDef.helpText} id={helpId} />
     </div>
@@ -240,13 +240,13 @@ function GuidedRichtextField({ fieldDef, value, onChange, fieldId }: {
 
   return (
     <div>
-      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<AlignLeft size={14} className="text-on-surface-variant" />} />
-      <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all duration-200">
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<AlignLeft size={14} className="text-silse-on-surface-variant" />} />
+      <div className="border border-silse-outline-variant rounded-xl overflow-hidden bg-silse-surface-bright focus-within:border-silse-secondary focus-within:ring-2 focus-within:ring-silse-secondary/20 transition-all duration-200">
         {/* Mini toolbar — stitch spec */}
-        <div className="flex gap-1 p-2 border-b border-outline-variant bg-surface-container-low">
+        <div className="flex gap-1 p-2 border-b border-silse-outline-variant bg-surface-container-low">
           <button
             onClick={() => insertMarkup('<strong>', '</strong>')}
-            className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+            className="p-1.5 hover:bg-white rounded-lg transition-colors text-silse-on-surface-variant hover:text-silse-on-surface"
             title="Tebal"
             type="button"
           >
@@ -254,7 +254,7 @@ function GuidedRichtextField({ fieldDef, value, onChange, fieldId }: {
           </button>
           <button
             onClick={() => insertMarkup('<em>', '</em>')}
-            className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+            className="p-1.5 hover:bg-white rounded-lg transition-colors text-silse-on-surface-variant hover:text-silse-on-surface"
             title="Miring"
             type="button"
           >
@@ -262,7 +262,7 @@ function GuidedRichtextField({ fieldDef, value, onChange, fieldId }: {
           </button>
           <button
             onClick={() => insertMarkup('<ul>\n<li>', '</li>\n</ul>')}
-            className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+            className="p-1.5 hover:bg-white rounded-lg transition-colors text-silse-on-surface-variant hover:text-silse-on-surface"
             title="Daftar"
             type="button"
           >
@@ -276,7 +276,7 @@ function GuidedRichtextField({ fieldDef, value, onChange, fieldId }: {
           placeholder={fieldDef.placeholder}
           rows={5}
           aria-describedby={helpId}
-          className="w-full px-4 py-3 border-none bg-transparent focus:ring-0 focus:outline-none text-sm font-body-md leading-relaxed text-on-surface resize-y"
+          className="w-full px-4 py-3 border-none bg-transparent focus:ring-0 focus:outline-none text-sm leading-relaxed text-silse-on-surface resize-y"
         />
       </div>
       <HelpText text={fieldDef.helpText} id={helpId} />
@@ -293,7 +293,7 @@ function GuidedNumberField({ fieldDef, value, onChange, fieldId }: {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
   return (
     <div>
-      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<Hash size={14} className="text-on-surface-variant" />} />
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<Hash size={14} className="text-silse-on-surface-variant" />} />
       <input
         id={fieldId}
         type="number"
@@ -340,8 +340,8 @@ function GuidedColorField({ fieldDef, value, onChange, fieldId }: {
     <div>
       <label className={LABEL_BASE} id={fieldId}>
         <span className="flex items-center gap-1.5">
-          <Palette size={14} className="text-on-surface-variant" /> {fieldDef.label}
-          {fieldDef.required && <Asterisk size={10} className="text-tertiary-container" />}
+          <Palette size={14} className="text-silse-on-surface-variant" /> {fieldDef.label}
+          {fieldDef.required && <Asterisk size={10} className="text-silse-tertiary-container" />}
         </span>
         {currentToken && (
           <span className={`inline-flex items-center gap-1.5 ml-3 px-2.5 py-1 rounded-lg ${currentToken.activeBg} ${currentToken.activeText} text-[11px] font-bold ring-1 ${currentToken.ring}`}>
@@ -362,7 +362,7 @@ function GuidedColorField({ fieldDef, value, onChange, fieldId }: {
               className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 ${
                 isActive
                   ? `${tokenInfo.activeBg} ${tokenInfo.activeText} border-current/30 ring-2 ring-current/20`
-                  : 'bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:border-on-surface-variant/30'
+                  : 'bg-silse-surface-bright border-silse-outline-variant text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:border-on-surface-variant/30'
               }`}
               title={tokenInfo.label}
               type="button"
@@ -391,7 +391,7 @@ function GuidedSelectField({ fieldDef, value, onChange, fieldId }: {
 
   return (
     <div>
-      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<ChevronDown size={14} className="text-on-surface-variant" />} />
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<ChevronDown size={14} className="text-silse-on-surface-variant" />} />
       <div className="relative">
         <select
           id={fieldId}
@@ -404,7 +404,7 @@ function GuidedSelectField({ fieldDef, value, onChange, fieldId }: {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-silse-on-surface-variant pointer-events-none" />
       </div>
       <HelpText text={fieldDef.helpText} id={helpId} />
     </div>
@@ -422,10 +422,10 @@ function GuidedBooleanField({ fieldDef, value, onChange, fieldId }: {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
   return (
     <div>
-      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary-container/10 border border-secondary/20">
+      <div className="flex items-center justify-between p-3 rounded-xl bg-silse-secondary-container/10 border border-secondary/20">
         <div className="flex items-center gap-2">
-          <ToggleLeft size={16} className="text-secondary" />
-          <span className="text-[12px] font-bold text-on-secondary-fixed-variant">{fieldDef.label}</span>
+          <ToggleLeft size={16} className="text-silse-secondary" />
+          <span className="text-[12px] font-bold text-silse-on-secondary">{fieldDef.label}</span>
         </div>
         <button
           id={fieldId}
@@ -456,9 +456,9 @@ function GuidedIconField({ fieldDef, value, onChange, fieldId }: {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
   return (
     <div>
-      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<Palette size={14} className="text-on-surface-variant" />} />
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<Palette size={14} className="text-silse-on-surface-variant" />} />
       <div className="flex items-center gap-2">
-        <span className="text-2xl w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low border border-outline-variant/50">
+        <span className="text-2xl w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low border border-silse-outline-variant/50">
           {value || '🏠'}
         </span>
         <input
@@ -525,8 +525,8 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
       <div className="flex items-center justify-between">
         <label className={LABEL_BASE.replace('mb-2', 'mb-0')}>
           <span className="flex items-center gap-1.5">
-            <List size={14} className="text-on-surface-variant" /> {fieldDef.label}
-            <span className="text-on-surface-variant font-normal">
+            <List size={14} className="text-silse-on-surface-variant" /> {fieldDef.label}
+            <span className="text-silse-on-surface-variant font-normal">
               ({items.length}{maxItems ? `/${maxItems}` : ''})
             </span>
           </span>
@@ -534,7 +534,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
         <button
           onClick={addItem}
           disabled={isAtLimit}
-          className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-secondary hover:bg-secondary/10 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-silse-secondary hover:bg-silse-secondary/10 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           type="button"
         >
           <Plus size={12} /> Tambah
@@ -543,28 +543,28 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
 
       {/* Max items warning */}
       {isAtLimit && (
-        <div className="px-3 py-2 rounded-lg bg-tertiary-container/10 border border-tertiary/20 text-[11px] text-on-surface-variant flex items-center gap-2">
-          <span className="text-tertiary font-bold">STANDAR:</span> {fieldDef.helpText || `Maksimal ${maxItems} item per halaman`}
+        <div className="px-3 py-2 rounded-lg bg-silse-tertiary-container/10 border border-tertiary/20 text-[11px] text-silse-on-surface-variant flex items-center gap-2">
+          <span className="text-silse-tertiary font-bold">STANDAR:</span> {fieldDef.helpText || `Maksimal ${maxItems} item per halaman`}
         </div>
       )}
 
       {/* Items */}
       <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-1">
         {items.map((item, idx) => (
-          <div key={idx} className="bg-surface-container-low rounded-xl border border-outline-variant/50 p-3 space-y-2.5">
+          <div key={idx} className="bg-surface-container-low rounded-xl border border-silse-outline-variant/50 p-3 space-y-2.5">
             {/* Item header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <GripVertical size={14} className="text-on-surface-variant/40 cursor-grab" />
-                <span className="text-[12px] font-bold text-on-surface-variant">#{idx + 1}</span>
+                <GripVertical size={14} className="text-silse-on-surface-variant/40 cursor-grab" />
+                <span className="text-[12px] font-bold text-silse-on-surface-variant">#{idx + 1}</span>
                 <div className="flex gap-0.5">
                   {idx > 0 && (
-                    <button onClick={() => moveItem(idx, 'up')} className="p-1 rounded hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Pindah ke atas" type="button">
+                    <button onClick={() => moveItem(idx, 'up')} className="p-1 rounded hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke atas" type="button">
                       <span className="text-[10px]">↑</span>
                     </button>
                   )}
                   {idx < items.length - 1 && (
-                    <button onClick={() => moveItem(idx, 'down')} className="p-1 rounded hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Pindah ke bawah" type="button">
+                    <button onClick={() => moveItem(idx, 'down')} className="p-1 rounded hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke bawah" type="button">
                       <span className="text-[10px]">↓</span>
                     </button>
                   )}
@@ -585,7 +585,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
               <div key={subField.key}>
                 {subField.type === 'boolean' ? (
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-[12px] text-on-surface-variant">{subField.label}</span>
+                    <span className="text-[12px] text-silse-on-surface-variant">{subField.label}</span>
                     <button
                       onClick={() => updateItem(idx, subField.key, !item[subField.key])}
                       className={`relative w-9 h-5 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-secondary' : 'bg-outline-variant'}`}
@@ -602,7 +602,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   />
                 ) : subField.type === 'color' ? (
                   <div>
-                    <label className="text-[11px] font-bold text-on-surface-variant block mb-1">
+                    <label className="text-[11px] font-bold text-silse-on-surface-variant block mb-1">
                       {subField.label}
                     </label>
                     <InlineColorPicker
@@ -613,25 +613,25 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   </div>
                 ) : subField.type === 'textarea' ? (
                   <div>
-                    <label className="text-[11px] font-bold text-on-surface-variant block mb-1">
+                    <label className="text-[11px] font-bold text-silse-on-surface-variant block mb-1">
                       {subField.label}
-                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-tertiary-container" />}
+                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-silse-tertiary-container" />}
                     </label>
                     <textarea
                       value={String(item[subField.key] || '')}
                       onChange={e => updateItem(idx, subField.key, e.target.value)}
                       placeholder={subField.placeholder}
                       rows={2}
-                      className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-bright text-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 focus:outline-none transition-all resize-y"
+                      className="w-full px-3 py-2 rounded-lg border border-silse-outline-variant bg-silse-surface-bright text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-1 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y"
                     />
                   </div>
                 ) : subField.type === 'select' && subField.options ? (
                   <div>
-                    <label className="text-[11px] font-bold text-on-surface-variant block mb-1">{subField.label}</label>
+                    <label className="text-[11px] font-bold text-silse-on-surface-variant block mb-1">{subField.label}</label>
                     <select
                       value={String(item[subField.key] || '')}
                       onChange={e => updateItem(idx, subField.key, e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-bright text-sm text-on-surface focus:border-secondary focus:outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-silse-outline-variant bg-silse-surface-bright text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
                     >
                       {subField.options.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -640,9 +640,9 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   </div>
                 ) : (
                   <div>
-                    <label className="text-[11px] font-bold text-on-surface-variant block mb-1">
+                    <label className="text-[11px] font-bold text-silse-on-surface-variant block mb-1">
                       {subField.label}
-                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-tertiary-container" />}
+                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-silse-tertiary-container" />}
                     </label>
                     <input
                       type={subField.type === 'number' ? 'number' : 'text'}
@@ -651,7 +651,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                       placeholder={subField.placeholder}
                       min={subField.min}
                       max={subField.max}
-                      className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-bright text-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 focus:outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-silse-outline-variant bg-silse-surface-bright text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-1 focus:ring-silse-secondary/20 focus:outline-none transition-all"
                     />
                   </div>
                 )}
@@ -662,7 +662,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
 
         {/* Empty state */}
         {items.length === 0 && (
-          <div className="text-[12px] text-on-surface-variant italic text-center py-4 bg-surface-container-low rounded-xl border border-dashed border-outline-variant">
+          <div className="text-[12px] text-silse-on-surface-variant italic text-center py-4 bg-surface-container-low rounded-xl border border-dashed border-silse-outline-variant">
             Belum ada item. Klik &ldquo;Tambah&rdquo; untuk menambah.
           </div>
         )}
@@ -696,7 +696,7 @@ function InlineColorPicker({ value, options, onChange }: {
           className={`w-7 h-7 rounded-full transition-all duration-200 border-2 ${
             value === t
               ? 'ring-2 ring-secondary ring-offset-2 ring-offset-surface-bright border-secondary/50 scale-110'
-              : 'border-outline-variant/30 hover:scale-105'
+              : 'border-silse-outline-variant/30 hover:scale-105'
           } ${TOKEN_SWATCHES[t] || 'bg-gray-400'}`}
           title={TOKEN_COLORS[t]?.label || t}
           type="button"
@@ -749,14 +749,14 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
   return (
     <div className="mt-1">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-bold text-on-surface-variant flex items-center gap-1">
-          <GripVertical size={10} className="text-on-surface-variant/40" />
+        <span className="text-[11px] font-bold text-silse-on-surface-variant flex items-center gap-1">
+          <GripVertical size={10} className="text-silse-on-surface-variant/40" />
           {fieldDef.label} ({items.length})
         </span>
         <button
           onClick={addNested}
           disabled={maxItems ? items.length >= maxItems : false}
-          className="flex items-center gap-0.5 text-[10px] font-bold text-secondary hover:bg-secondary/10 px-2 py-1 rounded-md transition-colors disabled:opacity-40"
+          className="flex items-center gap-0.5 text-[10px] font-bold text-silse-secondary hover:bg-silse-secondary/10 px-2 py-1 rounded-md transition-colors disabled:opacity-40"
           type="button"
         >
           <Plus size={10} /> Tambah
@@ -764,15 +764,15 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
       </div>
       <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
         {items.map((item, idx) => (
-          <div key={idx} className="bg-surface-bright rounded-lg border border-outline-variant/30 p-2 space-y-1.5">
+          <div key={idx} className="bg-silse-surface-bright rounded-lg border border-silse-outline-variant/30 p-2 space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-on-surface-variant">#{idx + 1}</span>
+                <span className="text-[10px] font-bold text-silse-on-surface-variant">#{idx + 1}</span>
                 {idx > 0 && (
-                  <button onClick={() => moveNested(idx, 'up')} className="text-[9px] text-on-surface-variant hover:text-secondary transition-colors" title="Atas" type="button">↑</button>
+                  <button onClick={() => moveNested(idx, 'up')} className="text-[9px] text-silse-on-surface-variant hover:text-silse-secondary transition-colors" title="Atas" type="button">↑</button>
                 )}
                 {idx < items.length - 1 && (
-                  <button onClick={() => moveNested(idx, 'down')} className="text-[9px] text-on-surface-variant hover:text-secondary transition-colors" title="Bawah" type="button">↓</button>
+                  <button onClick={() => moveNested(idx, 'down')} className="text-[9px] text-silse-on-surface-variant hover:text-silse-secondary transition-colors" title="Bawah" type="button">↓</button>
                 )}
               </div>
               <button
@@ -788,7 +788,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
               <div key={subField.key}>
                 {subField.type === 'boolean' ? (
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-on-surface-variant">{subField.label}</span>
+                    <span className="text-[10px] text-silse-on-surface-variant">{subField.label}</span>
                     <button
                       onClick={() => updateNested(idx, subField.key, !item[subField.key])}
                       className={`relative w-7 h-4 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-secondary' : 'bg-outline-variant'}`}
@@ -799,7 +799,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-on-surface-variant w-16 shrink-0">{subField.label}</span>
+                    <span className="text-[10px] text-silse-on-surface-variant w-16 shrink-0">{subField.label}</span>
                     {subField.type === 'color' ? (
                       <InlineColorPicker
                         value={String(item[subField.key] || 'y')}
@@ -811,7 +811,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
                         value={String(item[subField.key] || '')}
                         onChange={e => updateNested(idx, subField.key, e.target.value)}
                         rows={1}
-                        className="flex-1 px-2 py-1 rounded-md border border-outline-variant/30 bg-surface-bright text-[11px] text-on-surface focus:border-secondary focus:outline-none transition-all resize-y min-w-0"
+                        className="flex-1 px-2 py-1 rounded-md border border-silse-outline-variant/30 bg-silse-surface-bright text-[11px] text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all resize-y min-w-0"
                       />
                     ) : (
                       <input
@@ -819,7 +819,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
                         value={String(item[subField.key] || '')}
                         onChange={e => updateNested(idx, subField.key, subField.type === 'number' ? Number(e.target.value) : e.target.value)}
                         placeholder={subField.placeholder}
-                        className="flex-1 px-2 py-1 rounded-md border border-outline-variant/30 bg-surface-bright text-[11px] text-on-surface focus:border-secondary focus:outline-none transition-all min-w-0"
+                        className="flex-1 px-2 py-1 rounded-md border border-silse-outline-variant/30 bg-silse-surface-bright text-[11px] text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all min-w-0"
                       />
                     )}
                   </div>
@@ -829,7 +829,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-[10px] text-on-surface-variant italic text-center py-2">Belum ada item</div>
+          <div className="text-[10px] text-silse-on-surface-variant italic text-center py-2">Belum ada item</div>
         )}
       </div>
     </div>

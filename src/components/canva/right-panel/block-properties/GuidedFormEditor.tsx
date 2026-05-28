@@ -131,7 +131,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
 
       {/* ── Block description (teacher mode) ── */}
       {teacherMode && guidedSchema.description && (
-        <div className="px-4 py-2.5 rounded-xl bg-primary-container/10 border border-primary/15 text-[12px] text-on-surface-variant leading-relaxed">
+        <div className="px-4 py-2.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary/15 text-[12px] text-silse-on-surface-variant leading-relaxed">
           {guidedSchema.description}
         </div>
       )}

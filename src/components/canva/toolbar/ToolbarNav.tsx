@@ -1,36 +1,44 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
-// TOOLBAR NAV — Project name + back button
+// TOOLBAR NAV — SILSE v4 Brand + Project Name
 // ═══════════════════════════════════════════════════════════════
-// Phase 3: Migrated setActivePanel → panelRequest (no useAuthoringStore)
-// Teacher-mode aware: back button label "Beranda" vs "Dashboard"
+// SILSE v4 spec:
+//   - "SILSE Authoring" in Plus Jakarta Sans, extrabold, primary color
+//   - Divider line
+//   - Project name + auto-save subtitle
+// ═══════════════════════════════════════════════════════════════
 
 export function ToolbarNav() {
-  // PERF: Subscribe to only the current page label, not the full pages[] array
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const label = useCanvaStore((s) => s.pages[s.currentPageIndex]?.label || 'Untitled');
   const { isSederhana } = useTeacherMode();
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 text-app-muted hover:text-app-primary"
+    <div className="flex items-center gap-4">
+      <button
         onClick={() => useCanvaStore.setState({ panelRequest: 'dashboard' })}
+        className="flex items-center gap-1 text-silse-on-surface-variant hover:text-silse-primary transition-colors"
         title={isSederhana ? 'Kembali ke Beranda' : 'Kembali ke Dashboard'}
       >
-        <ChevronLeft size={14} />
-      </Button>
-      <span className="text-[11px] font-semibold text-app-primary min-w-0 truncate max-w-[160px]">
-        {label}
+        <ChevronLeft size={16} />
+      </button>
+      <span className="font-[family-name:var(--font-plus-jakarta)] text-xl font-extrabold text-silse-primary tracking-tight">
+        SILSE Authoring
       </span>
+      <div className="h-6 w-px bg-silse-outline-variant" />
+      <div className="flex flex-col">
+        <span className="text-sm font-bold text-silse-on-surface leading-none max-w-[200px] truncate">
+          {label}
+        </span>
+        <span className="text-[10px] text-silse-on-surface-variant">
+          Disimpan otomatis
+        </span>
+      </div>
     </div>
   );
 }

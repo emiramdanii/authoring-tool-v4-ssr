@@ -18,10 +18,10 @@ export function AddBlockSection({ addBlockOpen, onToggle }: AddBlockSectionProps
   const sectionLabel = teacherMode ? 'Tambah Konten' : 'Tambah Block';
 
   return (
-    <div className="border border-app-border/30 rounded-xl overflow-hidden">
+    <div className="border border-silse-outline-variant rounded-xl overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-app-accent-secondary uppercase tracking-wider bg-app-accent-secondary/5 hover:bg-app-accent-secondary/10 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-silse-secondary uppercase tracking-wider bg-silse-secondary/5 hover:bg-silse-secondary/10 transition-colors"
       >
         <span className="flex items-center gap-1.5">
           <Plus size={10} />
@@ -30,7 +30,7 @@ export function AddBlockSection({ addBlockOpen, onToggle }: AddBlockSectionProps
         {addBlockOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
       </button>
       {addBlockOpen && (
-        <div className="p-2 border-t border-app-border/20">
+        <div className="p-2 border-t border-silse-outline-variant/20">
           <AddBlockPanel />
         </div>
       )}

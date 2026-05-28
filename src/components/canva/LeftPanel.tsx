@@ -101,24 +101,37 @@ export default function LeftPanel() {
   };
 
   return (
-    <div className="flex h-full bg-app-surface overflow-hidden">
+    <div className="flex h-full bg-silse-surface-container-lowest overflow-hidden">
       {/* Icon Rail — Always visible */}
       <IconRail activeTab={activeTab} onTabChange={handleTabChange} expanded={expanded} />
 
-      {/* Expandable Content */}
+      {/* Expandable Content Panel */}
       <div
-        className="overflow-hidden transition-[width] duration-200 ease-in-out border-r border-app-border"
-        style={{ width: expanded ? 'calc(var(--semantic-panel-default) - var(--semantic-panel-collapsed))' : '0px' }}
+        className="overflow-hidden transition-[width] duration-200 ease-in-out border-r border-silse-outline-variant bg-silse-surface-container-low"
+        style={{ width: expanded ? '224px' : '0px' }}
       >
-        <div className="w-[184px] h-full flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="px-3 py-2 border-b border-app-border bg-app-surface/50 flex-shrink-0">
-            <div className="text-[10px] font-bold text-app-secondary uppercase tracking-wider">
-              {activeTab === 'pages' && 'Halaman'}
-              {activeTab === 'add-block' && `Tambah ${blockLabel}`}
-              {activeTab === 'templates' && 'Template'}
-              {activeTab === 'history' && 'Riwayat'}
-              {activeTab === 'settings' && 'Pengaturan'}
+        <div className="w-[224px] h-full flex flex-col overflow-hidden">
+          {/* Header — SILSE v4 Workspace style */}
+          <div className="px-4 py-3 border-b border-silse-outline-variant bg-silse-surface-container-low flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <span className="font-[Plus_Jakarta_Sans] text-base font-bold text-silse-on-surface">Workspace</span>
+              <button
+                onClick={() => {
+                  useCanvaStore.getState().setLeftTab('add-block');
+                  if (!expanded) toggleLeftPanel();
+                }}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary-container hover:bg-silse-surface-container-high transition-colors"
+                aria-label="Tambah baru"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+            <div className="text-[10px] font-bold text-silse-outline uppercase tracking-wider mt-1">
+              {activeTab === 'pages' && 'SCENES'}
+              {activeTab === 'add-block' && 'LIBRARY BLOCKS'}
+              {activeTab === 'templates' && 'TEMPLATE'}
+              {activeTab === 'history' && 'RIWAYAT'}
+              {activeTab === 'settings' && 'PENGATURAN'}
             </div>
           </div>
 

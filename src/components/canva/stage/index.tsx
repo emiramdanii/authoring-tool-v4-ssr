@@ -371,11 +371,9 @@ export default function Stage() {
     <div
       ref={canvasAreaRef}
       id="cm-canvas-area"
-      className="flex-1 w-full bg-app-surface overflow-hidden flex items-center justify-center"
+      className="flex-1 w-full bg-silse-surface-dim canvas-bg overflow-hidden flex items-center justify-center"
       style={{
         cursor: cursorStyle,
-        backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)',
-        backgroundSize: '20px 20px',
       }}
       onMouseMove={(e) => {
         onAreaMouseMove(e);
@@ -400,7 +398,7 @@ export default function Stage() {
         <div
           ref={stageWrapRef}
           id="cm-stage-wrap"
-          className="relative overflow-hidden shadow-md shadow-black/50"
+          className="relative overflow-hidden rounded-2xl shadow-2xl border border-silse-outline-variant"
           style={{
             width: ratio!.w,
             height: ratio!.h,

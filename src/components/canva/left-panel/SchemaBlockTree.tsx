@@ -147,10 +147,10 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
           }
           onSelect(pageId, block.id!, block.type);
         }}
-        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-md text-left transition-colors text-[10px] group ${
+        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-lg text-left transition-colors text-[10px] group ${
           isSelected
-            ? 'bg-app-accent/10 text-app-accent'
-            : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
+            ? 'bg-silse-primary-container/15 text-silse-primary'
+            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50 hover:text-silse-on-surface'
         }`}
         style={{ paddingLeft: `${depth * 12 + 6}px` }}
         title={title}
@@ -159,7 +159,7 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
         {hasChildren ? (
           <ChevronRight
             size={10}
-            className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+            className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
           />
         ) : (
           <span className="w-[10px] flex-shrink-0" />
@@ -182,7 +182,7 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
                 useCanvaStore.setState({ kontenTabRequest: tab, kontenPanelRequest: true });
               }
             }}
-            className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-app-muted hover:text-app-accent transition-opacity cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-silse-on-surface-variant hover:text-silse-primary transition-opacity cursor-pointer"
             title="Edit di Konten"
           >
             <Pencil size={8} />
@@ -190,7 +190,7 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
         )}
 
         {/* Schema badge for schema-driven blocks */}
-        <Zap size={8} className="flex-shrink-0 text-app-success/40" />
+        <Zap size={8} className="flex-shrink-0 text-silse-primary-container/40" />
       </button>
 
       {/* Children */}
@@ -233,16 +233,16 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
   }
 
   return (
-    <div className="border-l border-app-border/30 ml-2">
+    <div className="border-l border-silse-outline-variant/30 ml-2">
       {/* Toggle button */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] text-app-muted hover:text-app-secondary transition-colors ${
-          isActive ? 'text-app-accent' : ''
+        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] text-silse-on-surface-variant hover:text-silse-on-surface-variant transition-colors ${
+          isActive ? 'text-silse-primary' : ''
         }`}
       >
         <ChevronRight size={8} className={`transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} />
-        <Zap size={7} className="text-app-success/60" />
+        <Zap size={7} className="text-silse-primary-container/60" />
         <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
       </button>
 
@@ -305,7 +305,7 @@ export function SchemaBlockTree() {
 
   return (
     <div className="space-y-0.5">
-      <div className="text-[8px] font-bold text-app-muted uppercase tracking-wider px-2 py-1">
+      <div className="text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-wider px-2 py-1">
         Schema Navigator
       </div>
       {schemaPages.map(({ page, index }) => (
@@ -354,10 +354,10 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
     <div className="ml-5">
       <button
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        className="flex items-center gap-1 text-[8px] text-app-muted hover:text-app-accent transition-colors py-0.5"
+        className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5"
       >
         <ChevronRight size={7} className={`transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} />
-        <Zap size={7} className="text-app-success/60" />
+        <Zap size={7} className="text-silse-primary-container/60" />
         <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
       </button>
 

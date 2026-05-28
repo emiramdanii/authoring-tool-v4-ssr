@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, Plus, Sparkles, History, Settings } from 'lucide-react';
+import { Layers, Grid3X3, LayoutTemplate, Image, Settings } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import {
@@ -10,16 +10,14 @@ import {
 } from '@/components/ui/tooltip';
 
 // ═══════════════════════════════════════════════════════════════
-// ICON RAIL v2 — Teacher-Mode-Aware Vertical Icon Strip
+// ICON RAIL v4 — SILSE v4 Material Design 3 Vertical Icon Strip
 // ═══════════════════════════════════════════════════════════════
-// 56px always-visible vertical icon strip.
-// Clicking an icon expands the panel and shows the corresponding
-// tab content. Active tab has amber accent indicator.
-//
-// Teacher-mode aware:
-//   Sederhana: 3 primary tabs (Halaman, Tambah Konten, Template)
-//              + 2 secondary tabs (Riwayat, Pengaturan) at bottom
-//   Lengkap: all 5 tabs in a single column
+// 64px always-visible vertical icon strip.
+// SILSE v4 spec:
+//   - bg-silse-surface-container-lowest (white)
+//   - border-r border-silse-outline-variant
+//   - Active: bg-silse-primary-container text-silse-on-primary-container rounded-xl
+//   - Inactive: text-silse-on-surface-variant hover:bg-silse-surface-container-high rounded-xl
 // ═══════════════════════════════════════════════════════════════
 
 export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings' | 'sisipkan';
@@ -30,24 +28,23 @@ interface IconRailProps {
   expanded: boolean;
 }
 
-// Primary tabs — always shown at the top
+// Primary tabs — always shown at the top (SILSE v4 icons: layers, grid_view, category, perm_media)
 const PRIMARY_RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }[] = [
-  { id: 'pages', icon: FileText, labelKey: 'Halaman' },
-  { id: 'add-block', icon: Plus, labelKey: 'Block' },
-  { id: 'templates', icon: Sparkles, labelKey: 'Template' },
+  { id: 'pages', icon: Layers, labelKey: 'Halaman' },
+  { id: 'add-block', icon: Grid3X3, labelKey: 'Block' },
+  { id: 'templates', icon: LayoutTemplate, labelKey: 'Template' },
 ];
 
-// Secondary tabs — shown at bottom with visual separator in teacher mode,
-// or inline in advanced mode
+// Secondary tabs — shown at bottom with visual separator
 const SECONDARY_RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }[] = [
-  { id: 'history', icon: History, labelKey: 'Riwayat' },
+  { id: 'history', icon: Image, labelKey: 'Riwayat' },
   { id: 'settings', icon: Settings, labelKey: 'Pengaturan' },
 ];
 
 export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
-  // Render a single rail button
+  // Render a single rail button — SILSE v4 style
   const renderRailButton = (item: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }) => {
     const Icon = item.icon;
     const isActive = activeTab === item.id;
@@ -60,19 +57,15 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
         <TooltipTrigger asChild>
           <button
             onClick={() => onTabChange(item.id)}
-            className={`relative w-10 h-10 flex items-center justify-center rounded-lg transition-[background-color,border-color,color] duration-200 ${
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-[background-color,color] duration-200 ${
               isActive
-                ? 'bg-app-accent/10 text-app-accent'
-                : 'text-app-muted hover:text-app-secondary hover:bg-app-elevated/50'
+                ? 'bg-silse-primary-container text-silse-on-primary-container'
+                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high'
             }`}
             aria-label={label}
             aria-pressed={isActive}
           >
-            {/* Amber accent indicator on left */}
-            {isActive && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-app-accent" />
-            )}
-            <Icon size={18} />
+            <Icon size={20} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="right" className="text-[10px]">
@@ -84,8 +77,8 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
 
   return (
     <div
-      className="flex flex-col items-center py-2 gap-1 border-r border-app-border bg-app-surface flex-shrink-0"
-      style={{ width: 'var(--semantic-panel-collapsed)' }}
+      className="flex flex-col items-center py-3 gap-1 border-r border-silse-outline-variant bg-silse-surface-container-lowest flex-shrink-0"
+      style={{ width: '64px' }}
     >
       {/* Primary tabs — always visible at top */}
       {PRIMARY_RAIL_ITEMS.map(renderRailButton)}
@@ -96,7 +89,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
           {/* Spacer pushes secondary tabs to the bottom */}
           <div className="flex-1" />
           {/* Subtle divider line */}
-          <div className="w-6 h-px bg-app-border/50 my-0.5" />
+          <div className="w-6 h-px bg-silse-outline-variant my-1" />
           {SECONDARY_RAIL_ITEMS.map(renderRailButton)}
         </>
       ) : (

@@ -73,22 +73,22 @@ export default function BlockPropertiesPanel() {
     return (
       <div className="flex flex-col h-full">
         {/* Header — stitch style */}
-        <div className="p-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest shrink-0">
+        <div className="p-4 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal size={18} className="text-tertiary" />
-            <h3 className="text-[14px] font-bold text-on-surface">Properties</h3>
+            <SlidersHorizontal size={18} className="text-silse-tertiary" />
+            <h3 className="text-[14px] font-bold text-silse-on-surface">Properties</h3>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => selectBlock(null)}
-            className="h-7 w-7 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg"
+            className="h-7 w-7 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg"
           >
             <X size={14} />
           </Button>
         </div>
         <div className="p-6 text-center">
-          <div className="text-[12px] text-on-surface-variant italic">Block ini tidak dapat diedit</div>
+          <div className="text-[12px] text-silse-on-surface-variant italic">Block ini tidak dapat diedit</div>
         </div>
       </div>
     );
@@ -96,15 +96,15 @@ export default function BlockPropertiesPanel() {
 
   return (
     <div className="flex flex-col h-full" data-testid="block-properties-panel">
-      {/* ═══ Header — Stitch spec ═══════════════════════════════ */}
-      <div className="p-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest shrink-0">
+      {/* ═══ Header — SILSE v4 spec ═══════════════════════════════ */}
+      <div className="p-4 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
         <div className="flex items-center gap-2">
           {useGuidedForm ? (
-            <BookOpen size={18} className="text-primary-container" />
+            <BookOpen size={18} className="text-silse-primary-container" />
           ) : (
-            <SlidersHorizontal size={18} className="text-tertiary" />
+            <SlidersHorizontal size={18} className="text-silse-tertiary" />
           )}
-          <h3 className="text-[14px] font-bold text-on-surface">
+          <h3 className="text-[14px] font-bold text-silse-on-surface">
             {useGuidedForm ? 'Edit Konten' : 'Properties'}
           </h3>
         </div>
@@ -112,7 +112,7 @@ export default function BlockPropertiesPanel() {
           variant="ghost"
           size="icon"
           onClick={() => { selectBlock(null); stopEditing(); }}
-          className="h-7 w-7 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg"
+          className="h-7 w-7 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg"
         >
           <X size={14} />
         </Button>
@@ -120,17 +120,17 @@ export default function BlockPropertiesPanel() {
 
       {/* ═══ Scrollable Content ═══════════════════════════════════ */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
-        {/* Block Type Badge — Stitch style */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50">
+        {/* Block Type Badge — SILSE v4 style */}
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/50">
           <span className="text-2xl">{guidedSchema?.icon || definition?.icon || '📦'}</span>
           <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-bold text-on-surface truncate">
+            <div className="text-[13px] font-bold text-silse-on-surface truncate">
               {useGuidedForm
                 ? (guidedSchema?.displayName || teacherTerm(definition?.name || selectedBlockType, teacherMode))
                 : teacherTerm(definition?.name || selectedBlockType, teacherMode)
               }
             </div>
-            <div className="text-[11px] text-on-surface-variant">
+            <div className="text-[11px] text-silse-on-surface-variant">
               {teacherMode
                 ? (guidedSchema?.description?.split('.')[0] || definition?.category || '')
                 : `${definition?.category || 'unknown'} · ${selectedBlockType}`
@@ -171,12 +171,12 @@ export default function BlockPropertiesPanel() {
         {!teacherMode && definition && (
           <>
             <details className="group">
-              <summary className="flex items-center gap-1 text-[11px] font-bold text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-on-surface transition-colors list-none">
+              <summary className="flex items-center gap-1 text-[11px] font-bold text-silse-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-silse-on-surface transition-colors list-none">
                 <span className="transition-transform group-open:rotate-90">▶</span>
                 {' '}Kemampuan Editor
               </summary>
               <div className="grid grid-cols-2 gap-1.5 mt-2">
-                <CapabilityBadge label="Dapat Diedit" value={definition.capabilities.editable} />
+
                 <CapabilityBadge label="Dapat Diubah Ukuran" value={definition.capabilities.resizable} />
                 <CapabilityBadge label="Dapat Dipindah" value={definition.capabilities.movable} />
                 <CapabilityBadge label="Interaktif" value={definition.capabilities.interactive} />
@@ -186,12 +186,12 @@ export default function BlockPropertiesPanel() {
             </details>
 
             <details className="group">
-              <summary className="flex items-center gap-1 text-[11px] font-bold text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-on-surface transition-colors list-none">
+              <summary className="flex items-center gap-1 text-[11px] font-bold text-silse-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-silse-on-surface transition-colors list-none">
                 <span className="transition-transform group-open:rotate-90">▶</span>
                 {' '}Layout
               </summary>
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-[12px] text-on-surface-variant">Posisi</span>
+                <span className="text-[12px] text-silse-on-surface-variant">Posisi</span>
                 <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${
                   definition.defaultLayout.position === 'flow'
                     ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/20'
@@ -203,19 +203,19 @@ export default function BlockPropertiesPanel() {
             </details>
 
             {/* Block ID — dev only */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/30">
-              <span className="text-[10px] text-on-surface-variant font-bold w-8">ID</span>
-              <span className="text-[10px] text-on-surface-variant font-mono truncate flex-1">{selectedBlockId}</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-low border border-silse-outline-variant/30">
+              <span className="text-[10px] text-silse-on-surface-variant font-bold w-8">ID</span>
+              <span className="text-[10px] text-silse-on-surface-variant font-mono truncate flex-1">{selectedBlockId}</span>
             </div>
           </>
         )}
       </div>
 
       {/* ═══ Footer Action — Stitch spec ═══════════════════════════ */}
-      <div className="p-4 bg-surface-container-low border-t border-outline-variant shrink-0">
+      <div className="p-4 bg-surface-container-low border-t border-silse-outline-variant shrink-0">
         <button
           onClick={handleRemoveBlock}
-          className="w-full py-3 bg-on-background/90 text-white rounded-full text-[13px] font-bold hover:bg-on-background active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 bg-silse-on-surface text-white rounded-full text-[13px] font-bold hover:bg-silse-on-surface active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <Trash2 size={16} />
           Hapus {teacherMode ? 'Konten' : 'Block'}

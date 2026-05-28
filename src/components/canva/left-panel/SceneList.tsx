@@ -14,20 +14,20 @@ import { SchemaBlockTreeCompact } from './SchemaBlockTree';
 
 // Badge color map using semantic tokens instead of hardcoded Tailwind colors
 const BADGE_COLOR_MAP: Record<string, string> = {
-  cover: 'bg-app-accent/20 text-app-accent border-app-accent/30',
+  cover: 'bg-silse-primary-container/20 text-silse-primary border-silse-primary-container/30',
   petunjuk: 'bg-app-info/20 text-app-info border-app-info/30',
   dokumen: 'bg-app-info/20 text-app-info border-app-info/30',
   hero: 'bg-app-warning/20 text-app-warning border-app-warning/30',
-  materi: 'bg-app-accent-secondary/20 text-app-accent-secondary border-app-accent-secondary/30',
+  materi: 'bg-app-accent-secondary/20 text-silse-primary-secondary border-app-accent-secondary/30',
   skenario: 'bg-app-error/20 text-app-error border-app-error/30',
-  kuis: 'bg-app-accent/20 text-app-accent border-app-accent/30',
+  kuis: 'bg-silse-primary-container/20 text-silse-primary border-silse-primary-container/30',
   game: 'bg-app-info/20 text-app-info border-app-info/30',
-  diskusi: 'bg-app-success/20 text-app-success border-app-success/30',
-  hasil: 'bg-app-success/20 text-app-success border-app-success/30',
-  refleksi: 'bg-app-accent-secondary/20 text-app-accent-secondary border-app-accent-secondary/30',
+  diskusi: 'bg-silse-primary-container/20 text-silse-primary-container border-app-success/30',
+  hasil: 'bg-silse-primary-container/20 text-silse-primary-container border-app-success/30',
+  refleksi: 'bg-app-accent-secondary/20 text-silse-primary-secondary border-app-accent-secondary/30',
   penutup: 'bg-app-warning/20 text-app-warning border-app-warning/30',
   tujuan: 'bg-app-info/20 text-app-info border-app-info/30',
-  custom: 'bg-app-elevated/50 text-app-muted border-app-border/30',
+  custom: 'bg-silse-surface-container/50 text-silse-on-surface-variant border-silse-outline-variant/30',
 };
 
 export function SceneList() {
@@ -90,14 +90,14 @@ export function SceneList() {
               dragIdx === i
                 ? 'opacity-40 scale-95'
                 : dragOverIdx === i
-                  ? 'ring-2 ring-app-accent/60 ring-offset-1 ring-offset-app-surface translate-y-0.5'
+                  ? 'ring-2 ring-silse-primary-container/60 ring-offset-1 ring-offset-silse-surface-container-low translate-y-0.5'
                   : isActive
-                    ? 'ring-2 ring-app-accent ring-offset-2 ring-offset-app-surface'
-                    : 'hover:ring-1 hover:ring-app-border-strong'
+                    ? 'bg-silse-primary-container/10 ring-2 ring-silse-primary-container ring-offset-2 ring-offset-silse-surface-container-low'
+                    : 'hover:bg-silse-surface-container-high hover:ring-1 hover:ring-silse-outline-variant'
             }`}
           >
             <div className="flex items-center gap-2 p-2">
-              <div className="w-5 text-[9px] font-bold text-app-muted text-center flex-shrink-0">{i + 1}</div>
+              <div className="w-5 text-[9px] font-bold text-silse-on-surface-variant text-center flex-shrink-0">{i + 1}</div>
               <div
                 className="w-12 h-8 rounded-lg flex-shrink-0 overflow-hidden relative"
                 style={{ ...bgStyle, aspectRatio: `${ratio.w}/${ratio.h}` }}
@@ -106,8 +106,8 @@ export function SceneList() {
                 <div className="absolute top-0 right-0 text-[6px]! p-0.5">{badge!.icon}</div>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold text-app-primary truncate flex items-center gap-1">
-                  {isSchemaDriven && <Zap size={10} className="text-app-success inline" />}
+                <div className="text-[10px] font-bold text-silse-on-surface truncate flex items-center gap-1">
+                  {isSchemaDriven && <Zap size={10} className="text-silse-primary-container inline" />}
                   <span className="truncate">{p.label}</span>
                   {pageOverflowStatus[p.id]?.hasOverflow && (
                     <AlertTriangle size={9} className="text-amber-400 flex-shrink-0" aria-label="Konten melebihi kapasitas" />
@@ -118,7 +118,7 @@ export function SceneList() {
                     {badge!.name}
                   </span>
                   {p.label?.includes('— P') && (
-                    <span className="inline-flex items-center px-1 py-0 rounded text-[6px] font-bold bg-app-accent/15 text-app-accent border border-app-accent/20">
+                    <span className="inline-flex items-center px-1 py-0 rounded text-[6px] font-bold bg-silse-primary-container/15 text-silse-primary border border-silse-primary-container/20">
                       {p.label.match(/— P(\d+)/)?.[1] ? `P${p.label.match(/— P(\d+)/)![1]}` : ''}
                     </span>
                   )}
@@ -147,7 +147,7 @@ export function SceneList() {
               if (pages.length <= 1) return;
               if (confirm(`Hapus "${pages[currentPageIndex]!.label}"?`)) deletePage();
             }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-app-error/70 hover:text-app-error hover:bg-app-error/10"
+            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-destructive/70 hover:text-destructive bg-destructive/10"
           >
             <Trash2 size={10} /> Hapus
           </Button>
@@ -157,14 +157,14 @@ export function SceneList() {
       {/* Add page button */}
       <button
         onClick={() => addPage()}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-app-border/40 hover:border-app-accent/40 bg-app-elevated/20 hover:bg-app-accent/5 text-app-muted hover:text-app-accent text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
       >
         <Plus size={12} /> Tambah Halaman
       </button>
 
       {/* Drag hint */}
       {pages.length > 1 && (
-        <div className="text-[7px] text-app-muted/50 text-center pt-0.5">
+        <div className="text-[7px] text-silse-on-surface-variant/50 text-center pt-0.5">
           Drag halaman untuk mengubah urutan
         </div>
       )}
