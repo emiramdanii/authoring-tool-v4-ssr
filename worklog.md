@@ -488,3 +488,37 @@ Stage Summary:
 - **panelRequest** pattern replaces all useAuthoringStore.setActivePanel calls in Konten area
 - **Navigator is the default view** — schema-first approach from the start
 - **Zero useAuthoringStore DATA reads** in Konten panel (meta/tp/atp are metadata, Phase 5)
+---
+Task ID: 3
+Agent: Main
+Task: Phase 3 — Konten Panel → Schema Navigator (setActivePanel + meta migration)
+
+Work Log:
+- Audited entire codebase for useAuthoringStore reads: found Konten tabs already migrated, identified remaining setActivePanel() calls in 16 components and meta reads in 6 AI panels
+- Migrated all setActivePanel() calls → useCanvaStore.setState({ panelRequest: 'X' }) pattern in 16 files:
+  - CommandPalette.tsx (10 nav actions)
+  - ToolbarNav.tsx, ToolbarNavNew.tsx (back button)
+  - ToolbarExport.tsx (Live Preview nav)
+  - CanvasEmptyState.tsx (Auto-Generate entry)
+  - auto-generate/index.tsx + use-auto-generate.ts (6 calls)
+  - stage/index.tsx (Auto-Generate button)
+  - LivePreview.tsx (4 navigation buttons + Esc key)
+  - WorkflowStepIndicator.tsx (5 step buttons)
+  - BsnpCompliancePanel.tsx (navigate handler + empty state)
+  - Dashboard.tsx (local wrapper)
+  - Dokumen.tsx (Next Step button)
+  - TemplateWizard.tsx (post-create navigation)
+  - TemplateMarketplace.tsx (post-apply navigation)
+- Migrated all useAuthoringStore(s => s.meta) → useSchemaContext().meta in 6 AI panels:
+  - AIRefinePanel.tsx, AIGenerateLessonPanel.tsx, AIAssistantPanel.tsx
+  - AIRefineSection.tsx, AITemplateGenerator.tsx, TemplateCustomizeDialog.tsx
+- Removed unused useAuthoringStore imports where no other reads remain
+- Build verification: next build ✅ zero new errors
+- Git push: zero conflicts
+
+Stage Summary:
+- Phase 3 core (Konten tabs + SchemaNavigatorPanel + SchemaBlockTree) was already done in prior session
+- Phase 3 nav migration: 16 components migrated from setActivePanel → panelRequest
+- Phase 3 meta migration: 6 AI panels migrated from direct useAuthoringStore → useSchemaContext()
+- Remaining useAuthoringStore reads are intentional: AuthoringTool.tsx (panel router), Dashboard/Dokumen (content data), LivePreview (dirty/activePreset), BsnpCompliancePanel (content data), sync infrastructure
+- Phase 4 (Safe Page Split / Overflow Policy) is next
