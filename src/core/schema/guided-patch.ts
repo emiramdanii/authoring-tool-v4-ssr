@@ -355,7 +355,7 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
               // Check if the original page still overflows after this split
               const { useCanvaStore } = require('@/store/canva/store');
               const updatedPages = useCanvaStore.getState().pages;
-              const updatedPage = updatedPages.find((p: any) => p.id === pageId);
+              const updatedPage = updatedPages.find((p: CanvaPage) => p.id === pageId);
               if (!updatedPage?.schema) break;
               const nextCheck = checkOverflowRich(updatedPage.schema, updatedPage.templateType);
               if (!nextCheck.overflowDetected) break;
