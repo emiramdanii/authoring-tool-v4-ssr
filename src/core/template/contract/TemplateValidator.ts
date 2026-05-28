@@ -55,28 +55,9 @@ const isFullPageBlockTypeCheck = isFullPageBlockType;
 //              kecil yang stabil."
 // ═══════════════════════════════════════════════════════════════════
 
-export const PAGE_DENSITY_RULES = {
-  /** Maximum visible words per page before it feels overwhelming */
-  maxWords: 90,
-  /** Maximum bullet points per block before it becomes a wall of text */
-  maxBulletPoints: 5,
-  /** Maximum cards per nc-grid block */
-  maxCards: 4,
-  /** Maximum active colors per page (1 main + 1 accent + 1 feedback) */
-  maxActiveColors: 3,
-  /** Maximum main blocks per page — STANDAR: 1 block = 1 focus */
-  maxMainBlocks: 2,
-  /** Minimum body font size — anything below is unreadable on projection */
-  minBodyFontSize: 20,
-  /** Minimum cover title font size */
-  minCoverTitleFontSize: 48,
-  /** Minimum whitespace ratio (30% of page must be breathing room) */
-  minWhitespaceRatio: 0.30,
-  /** Quiz: maximum questions per page — STANDAR: 1 question = 1 page */
-  maxQuizQuestionsPerPage: 1,
-  /** TP: maximum items per page — split if more */
-  maxTPItemsPerPage: 4,
-} as const;
+// Phase 4: Import + re-export from single source — src/core/template/density-rules.ts
+import { PAGE_DENSITY_RULES } from '../density-rules';
+export { PAGE_DENSITY_RULES };
 
 /** Placeholder patterns that indicate unfinished content */
 const PLACEHOLDER_PATTERNS = [

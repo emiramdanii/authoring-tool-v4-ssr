@@ -177,8 +177,13 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
     return { success: false, error: `Block "${blockId}" not found in page "${pageId}"`, pageId, blockId };
   }
 
-  // Push history for undo BEFORE mutation
-  store._pushHistory();
+  // Phase 4: Defer history push until after overflow check for 'reject' policy.
+  // For other policies, push before mutation as usual.
+  // If overflowPolicy === 'reject', we push history only after confirming the patch is accepted.
+  const shouldDeferHistory = overflowPolicy === 'reject';
+  if (!shouldDeferHistory) {
+    store._pushHistory();
+  }
 
   // Apply the patch based on block ownership (top-level vs nested)
   let newBlocks: SchemaBlock[];
@@ -258,6 +263,27 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
   let newPageId: string | undefined;
   let overflowDetails: OverflowCheckResult | undefined;
 
+  // Phase 4: For 'reject' policy, push history only after confirming the patch is accepted.
+  // This avoids ghost undo entries when a patch is rejected.
+  if (shouldDeferHistory) {
+    // Preview overflow before committing history
+    const previewCheck = checkOverflowRich(newSchema, page.templateType);
+    if (previewCheck.overflowDetected && overflowPolicy === 'reject') {
+      // Revert: restore original pages without pushing history
+      useCanvaStore.setState({ pages: store.pages });
+      return {
+        success: false,
+        error: 'Patch rejected: would cause content overflow',
+        overflowDetected: true,
+        pageId,
+        blockId,
+        overflowDetails: previewCheck,
+      };
+    }
+    // Patch accepted — now push history (snapshot = state BEFORE our mutation)
+    useCanvaStore.getState()._pushHistory();
+  }
+
   if (overflowPolicy !== 'none') {
     const check = checkOverflowRich(newSchema, page.templateType);
     overflowDetected = check.overflowDetected;
@@ -280,7 +306,8 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
           `${check.summary}`
         );
       } else if (overflowPolicy === 'reject') {
-        // Revert the patch — restore original state
+        // Phase 4: This branch should no longer be reached — reject is handled
+        // above before history push. Keeping as safety net.
         useCanvaStore.setState({ pages: store.pages });
         return {
           success: false,
@@ -297,11 +324,20 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
         // No need to navigate first; promoteSceneSplitToPage() works by pageId.
         // Phase 4.2: Recursive auto-split — keeps splitting while the original
         // page still has overflow (up to 5 splits max to prevent infinite loops).
+        //
+        // BATCH UNDO: All splits in the loop are grouped under the single
+        // _pushHistory() call above. Each split internally calls _pushHistory(),
+        // so we set _skipHistory=true during the loop to prevent intermediate
+        // snapshots. The single undo of the original patch will restore the
+        // entire pre-split state.
         if (check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
           try {
             const { promoteSceneSplitToPage } = require('./schema-apply');
             const MAX_SPLITS = 5;
             let currentCheck = check;
+            // Phase 4: Skip intermediate history pushes during auto-split loop
+            // so that a single undo reverts the entire patch + all splits
+            useCanvaStore.setState({ _skipHistory: true });
             for (let i = 0; i < MAX_SPLITS; i++) {
               const splitResult = promoteSceneSplitToPage(pageId, currentCheck.scenePlan!, 1);
               if (splitResult.success && splitResult.pageUpdated) {
@@ -320,7 +356,11 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
               if (!nextCheck.canSplit || !nextCheck.scenePlan || nextCheck.scenePlan.isSingleScene) break;
               currentCheck = nextCheck;
             }
+            // Phase 4: Restore history tracking after auto-split loop
+            useCanvaStore.setState({ _skipHistory: false });
           } catch (err) {
+            // Phase 4: Always restore history tracking, even on error
+            useCanvaStore.setState({ _skipHistory: false });
             console.warn(
               `[guided-patch] Auto-split failed for page "${pageId}": ${err}. ` +
               `Content may overflow. Manual split recommended.`

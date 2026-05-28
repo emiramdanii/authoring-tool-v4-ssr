@@ -177,7 +177,8 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
       ...sourceSchema,
       blocks: mergedBlocks,
     };
-    const sceneRes = getSceneResolution('16:9');
+    // Phase 4: Use store's ratioId instead of hardcoded '16:9'
+    const sceneRes = getSceneResolution(get().ratioId || '16:9');
     const hasFullPageBlock = mergedBlocks.length === 1 &&
       isFullPageBlockType(mergedBlocks[0]!.type);
     const safeArea = hasFullPageBlock
@@ -347,7 +348,8 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const page = pages[currentPageIndex];
     if (!page?.schema) { toast.info('Halaman ini tidak memiliki schema'); return; }
 
-    const sceneRes = getSceneResolution('16:9');
+    // Phase 4: Use store's ratioId instead of hardcoded '16:9'
+    const sceneRes = getSceneResolution(get().ratioId || '16:9');
     const hasCoverBlock = page.schema.blocks.length === 1 &&
       page.schema.blocks.some(b => b.type === 'cover' || b.type === 'hero');
     const safeArea = hasCoverBlock ? DEFAULT_SAFE_AREA

@@ -19,6 +19,7 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { promoteSceneSplitToPage } from '@/core/schema/schema-apply';
 import { AlertTriangle, X, ArrowRight, Minimize2, SplitSquareHorizontal } from 'lucide-react';
 
 export function KontenOverflowBanner() {
@@ -37,10 +38,9 @@ export function KontenOverflowBanner() {
     hideBanner();
   }, [hideBanner]);
 
-  const handleCompress = useCallback(async () => {
+  const handleCompress = useCallback(() => {
     if (!warning) return;
     try {
-      const { useCanvaStore } = await import('@/store/canva/store');
       const store = useCanvaStore.getState();
       // Navigate to the overflowing page first
       const pageIdx = store.pages.findIndex(p => p.id === warning.pageId);
@@ -55,10 +55,9 @@ export function KontenOverflowBanner() {
     }
   }, [warning, clearWarning]);
 
-  const handleSplit = useCallback(async () => {
+  const handleSplit = useCallback(() => {
     if (!warning?.details.scenePlan) return;
     try {
-      const { promoteSceneSplitToPage } = await import('@/core/schema/schema-apply');
       const result = promoteSceneSplitToPage(
         warning.pageId,
         warning.details.scenePlan,

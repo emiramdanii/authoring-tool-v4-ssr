@@ -50,19 +50,5 @@ export interface DensityCheckResult {
   warnings: string[];
 }
 
-/** PAGE_DENSITY_RULES — STANDAR UTAMA SILSE */
-export const PAGE_DENSITY_RULES = {
-  maxWords: 90,
-  maxBulletPoints: 5,
-  maxCards: 4,
-  maxActiveColors: 3,
-  maxMainBlocks: 2,
-  minBodyFontSize: 20,
-  minCoverTitleFontSize: 48,
-  minWhitespaceRatio: 0.30,
-  /** Maximum quiz questions per page (STRICT — 1 question = 1 page for BSNP compliance) */
-  maxQuizQuestionsPerPage: 1,
-  /** Default quiz questions per page for auto-generate (teacher-friendly default, can be overridden) */
-  defaultQuizQuestionsPerPage: 3,
-  maxTPItemsPerPage: 4,
-} as const;
+// Phase 4: Re-export from single source — src/core/template/density-rules.ts
+export { PAGE_DENSITY_RULES } from '../density-rules';
