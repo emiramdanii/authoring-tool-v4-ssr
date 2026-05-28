@@ -56,11 +56,12 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// LEFT PANEL v6 — Icon Rail + Expandable Panel
+// LEFT PANEL v7 — SILSE v4 Layout: Icon Rail + Always-visible Content
 // ═══════════════════════════════════════════════════════════════
-// Structure:
-//   [Icon Rail 56px] | [Expandable Content ~184px]
-//   Always visible    | Shows tab content when expanded
+// Structure (matches SILSE v4 workspace_editor reference):
+//   [Icon Rail 64px] | [Content Panel ~224px]
+//   Always visible    | Always visible, tab-switched content
+// Reference: w-72 total = w-16 rail + flex-1 content
 // ═══════════════════════════════════════════════════════════════
 
 export default function LeftPanel() {
@@ -71,104 +72,127 @@ export default function LeftPanel() {
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
 
-  // Sync expanded state with store's leftPanelOpen
-  const expanded = useCanvaStore(s => s.leftPanelOpen);
-  const toggleLeftPanel = useCanvaStore(s => s.toggleLeftPanel);
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const blockLabel = teacherMode ? 'Konten' : 'Block';
 
   // When store leftTab changes (e.g., from CommandPalette or Stage buttons),
-  // sync local activeTab and open the panel if needed
+  // sync local activeTab
   const prevStoreTab = useRef(storeLeftTab);
   useEffect(() => {
     if (storeLeftTab !== prevStoreTab.current) {
       prevStoreTab.current = storeLeftTab;
       setActiveTab(storeLeftTab as LeftTab);
-      if (!expanded) toggleLeftPanel();
     }
-  }, [storeLeftTab, expanded, toggleLeftPanel]);
+  }, [storeLeftTab]);
 
   const handleTabChange = (tab: LeftTab) => {
-    if (activeTab === tab && expanded) {
-      // Clicking same tab collapses the panel
-      toggleLeftPanel();
-    } else {
-      setActiveTab(tab);
-      // Sync store so other components (CommandPalette, Stage) can read current tab
-      useCanvaStore.getState().setLeftTab(tab);
-      if (!expanded) toggleLeftPanel();
-    }
+    setActiveTab(tab);
+    // Sync store so other components (CommandPalette, Stage) can read current tab
+    useCanvaStore.getState().setLeftTab(tab);
   };
 
   return (
-    <div className="flex h-full bg-silse-surface-container-lowest overflow-hidden">
-      {/* Icon Rail — Always visible */}
-      <IconRail activeTab={activeTab} onTabChange={handleTabChange} expanded={expanded} />
+    <div className="flex h-full bg-silse-surface-container-low overflow-hidden">
+      {/* ── Icon Rail — Always visible, 64px ── */}
+      <IconRail activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Expandable Content Panel */}
-      <div
-        className="overflow-hidden transition-[width] duration-200 ease-in-out border-r border-silse-outline-variant bg-silse-surface-container-low"
-        style={{ width: expanded ? '224px' : '0px' }}
-      >
-        <div className="w-[224px] h-full flex flex-col overflow-hidden">
-          {/* Header — SILSE v4 Workspace style */}
-          <div className="px-4 py-3 border-b border-silse-outline-variant bg-silse-surface-container-low flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <span className="font-[Plus_Jakarta_Sans] text-base font-bold text-silse-on-surface">Workspace</span>
-              <button
-                onClick={() => {
-                  useCanvaStore.getState().setLeftTab('add-block');
-                  if (!expanded) toggleLeftPanel();
-                }}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary-container hover:bg-silse-surface-container-high transition-colors"
-                aria-label="Tambah baru"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            <div className="text-[10px] font-bold text-silse-outline uppercase tracking-wider mt-1">
-              {activeTab === 'pages' && 'SCENES'}
-              {activeTab === 'add-block' && 'LIBRARY BLOCKS'}
-              {activeTab === 'templates' && 'TEMPLATE'}
-              {activeTab === 'history' && 'RIWAYAT'}
-              {activeTab === 'settings' && 'PENGATURAN'}
-            </div>
-          </div>
-
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar page-transition">
-            <div className="p-3 space-y-3">
-              {activeTab === 'pages' && (
-                <>
-                  <SceneList />
-                  <AddSceneButton onOpenWizard={() => setWizardOpen(true)} />
-                </>
-              )}
-
-              {activeTab === 'add-block' && (
-                <AddBlockSection addBlockOpen={addBlockOpen} onToggle={() => setAddBlockOpen(!addBlockOpen)} />
-              )}
-
-              {activeTab === 'templates' && (
-                <>
-                  <TemplateSection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
-                  <PageTypeCreator />
-                </>
-              )}
-
-              {activeTab === 'history' && (
-                <HistoryPanel />
-              )}
-
-              {activeTab === 'settings' && (
-                <SettingsSection />
-              )}
-            </div>
-          </div>
-
-          {/* Template Wizard Modal */}
-          <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+      {/* ── Content Panel — Always visible, flex-1 (~224px) ── */}
+      <div className="flex-1 flex flex-col overflow-hidden border-r border-silse-outline-variant bg-silse-surface-container-low">
+        {/* Header — SILSE v4 Workspace style */}
+        <div className="px-4 py-4 flex items-center justify-between flex-shrink-0">
+          <h3
+            className="text-base font-bold text-silse-on-surface"
+            style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+          >
+            Workspace
+          </h3>
+          <button
+            onClick={() => handleTabChange('add-block')}
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-silse-primary hover:bg-silse-surface-container-high transition-colors"
+            aria-label="Tambah baru"
+          >
+            <Plus size={18} />
+          </button>
         </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="p-3 space-y-4">
+            {/* ── Pages tab: Scenes + Library Blocks (SILSE v4 reference layout) ── */}
+              {activeTab === 'pages' && (
+              <>
+                {/* Scene Navigation Section */}
+                <div>
+                  <span className="text-xs uppercase tracking-wider text-silse-outline font-bold mb-2 block px-1">
+                    Scenes
+                  </span>
+                  <div className="flex flex-col gap-1.5">
+                    <SceneList />
+                  </div>
+                </div>
+
+                {/* Library Blocks Section — 2x2 dashed grid matching SILSE v4 reference */}
+                <div className="pt-3 border-t border-silse-outline-variant">
+                  <span className="text-xs uppercase tracking-wider text-silse-outline font-bold mb-3 block px-1">
+                    Library Blocks
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleTabChange('add-block')}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-primary transition-all group"
+                    >
+                      <span className="material-symbols-outlined text-silse-primary mb-1" style={{ fontSize: '20px' }}>menu_book</span>
+                      <span className="text-[11px] font-bold text-silse-on-surface-variant group-hover:text-silse-primary">Materi</span>
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('add-block')}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-tertiary transition-all group"
+                    >
+                      <span className="material-symbols-outlined text-silse-tertiary mb-1" style={{ fontSize: '20px' }}>quiz</span>
+                      <span className="text-[11px] font-bold text-silse-on-surface-variant group-hover:text-silse-tertiary">Kuis</span>
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('add-block')}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-secondary transition-all group"
+                    >
+                      <span className="material-symbols-outlined text-silse-secondary mb-1" style={{ fontSize: '20px' }}>sports_esports</span>
+                      <span className="text-[11px] font-bold text-silse-on-surface-variant group-hover:text-silse-secondary">Game</span>
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('templates')}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-on-surface-variant transition-all group"
+                    >
+                      <span className="material-symbols-outlined text-silse-on-surface-variant mb-1" style={{ fontSize: '20px' }}>dashboard</span>
+                      <span className="text-[11px] font-bold text-silse-on-surface-variant">Custom</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'add-block' && (
+              <AddBlockSection addBlockOpen={addBlockOpen} onToggle={() => setAddBlockOpen(!addBlockOpen)} />
+            )}
+
+            {activeTab === 'templates' && (
+              <>
+                <TemplateSection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
+                <PageTypeCreator />
+              </>
+            )}
+
+            {activeTab === 'history' && (
+              <HistoryPanel />
+            )}
+
+            {activeTab === 'settings' && (
+              <SettingsSection />
+            )}
+          </div>
+        </div>
+
+        {/* Template Wizard Modal */}
+        <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
       </div>
     </div>
   );
@@ -220,7 +244,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
       <button
         data-testid="add-blank-page-btn"
         onClick={() => { useCanvaStore.getState().addPage(); }}
-        className="w-full py-2 rounded-xl border border-dashed border-app-border hover:border-app-accent/30 text-[11px] text-app-secondary hover:text-app-accent transition-colors flex items-center justify-center gap-1"
+        className="w-full py-2 rounded-xl border border-dashed border-silse-outline-variant hover:border-silse-primary/30 text-[11px] text-silse-on-surface-variant hover:text-silse-primary transition-colors flex items-center justify-center gap-1"
       >
         <Plus size={12} />
         Halaman Kosong
@@ -236,7 +260,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-60 border border-app-border shadow-md rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
+          className="w-60 border border-silse-outline-variant shadow-md rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
         >
           {availablePresets.length > 0 && (() => {
             const subjectOrder = ['PPKn', 'IPA', 'MTK', 'PJOK'];
@@ -252,13 +276,12 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
                 presets: availablePresets.filter(id => (presetInfo[id]?.subject || 'Lainnya') === subj),
               }))
               .filter(g => g.presets.length > 0);
-            // Also catch any presets not in known subjects
             const ungrouped = availablePresets.filter(id => !presetInfo[id]?.subject || !subjectOrder.includes(presetInfo[id].subject));
             if (ungrouped.length > 0) grouped.push({ subject: 'Lainnya', presets: ungrouped });
 
             return grouped.map((group, gi) => (
               <div key={group.subject}>
-                <DropdownMenuLabel className="px-3 py-1.5 bg-app-info/10 border-b border-app-info/20 text-[9px] font-bold text-app-info uppercase tracking-wider">
+                <DropdownMenuLabel className="px-3 py-1.5 bg-silse-secondary/10 border-b border-silse-secondary/20 text-[9px] font-bold text-silse-secondary uppercase tracking-wider">
                   {subjectLabels[group.subject] || group.subject}
                 </DropdownMenuLabel>
                 {group.presets.map(presetId => {
@@ -276,21 +299,21 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
                     >
                       <span className="text-base">{info.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] font-bold text-app-info truncate">{info.label}</div>
-                        <div className="text-[8px] text-app-muted">{info.desc}</div>
+                        <div className="text-[10px] font-bold text-silse-primary truncate">{info.label}</div>
+                        <div className="text-[8px] text-silse-on-surface-variant">{info.desc}</div>
                       </div>
                     </DropdownMenuItem>
                   );
                 })}
-                {gi < grouped.length - 1 && <DropdownMenuSeparator className="bg-app-border/30" />}
+                {gi < grouped.length - 1 && <DropdownMenuSeparator className="bg-silse-outline-variant/30" />}
               </div>
             ));
           })()}
 
-          <DropdownMenuSeparator className="bg-app-border/30" />
+          <DropdownMenuSeparator className="bg-silse-outline-variant/30" />
           {presetCategories.map(cat => (
             <div key={cat.category}>
-              <DropdownMenuLabel className="px-3 py-1 text-[8px] font-bold text-app-muted uppercase tracking-wider">
+              <DropdownMenuLabel className="px-3 py-1 text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-wider">
                 {categoryLabels[cat.category] || cat.category}
               </DropdownMenuLabel>
               {cat.presets.map(p => (
@@ -301,8 +324,8 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
                 >
                   <span className="text-base">{p.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-bold text-app-primary truncate">{p.label}</div>
-                    <div className="text-[8px] text-app-muted">{p.description}</div>
+                    <div className="text-[10px] font-bold text-silse-primary truncate">{p.label}</div>
+                    <div className="text-[8px] text-silse-on-surface-variant">{p.description}</div>
                   </div>
                 </DropdownMenuItem>
               ))}
@@ -313,7 +336,7 @@ function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
 
       <button
         onClick={onOpenWizard}
-        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-app-success/10 border border-app-success/20 hover:border-app-success/40 hover:bg-app-success/20 text-app-success text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95"
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary-container/20 hover:border-silse-primary-container/40 hover:bg-silse-primary-container/20 text-silse-primary text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95"
       >
         <Sparkles size={10} className="inline" />
         Buat dari Template Wizard

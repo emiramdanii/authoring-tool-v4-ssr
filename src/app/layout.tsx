@@ -80,6 +80,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SILSE" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        {/* Material Symbols Outlined — SILSE v4 icon system */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

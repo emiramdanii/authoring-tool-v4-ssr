@@ -12,7 +12,7 @@ import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
+import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal, X } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
@@ -87,11 +87,32 @@ export default function RightPanel() {
   const hasBlockSelection = selectedBlockId != null;
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
+  const toggleRightPanel = useCanvaStore(s => s.toggleRightPanel);
 
   if (!rightPanelOpen) return null;
 
   return (
     <div className="w-80 bg-silse-surface-container-lowest border-l border-silse-outline-variant flex flex-col shrink-0 overflow-hidden">
+      {/* ── Properties Header — SILSE v4 reference style ── */}
+      <div className="p-4 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '20px' }}>tune</span>
+          <h3
+            className="text-base font-bold text-silse-on-surface"
+            style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+          >
+            Properties
+          </h3>
+        </div>
+        <button
+          onClick={toggleRightPanel}
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high transition-colors"
+          aria-label="Tutup panel"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
       {/* ── Tab Bar — SILSE v4 style ────────────────────────── */}
       <div className="flex items-center border-b border-silse-outline-variant px-1 pt-1 shrink-0 bg-silse-surface-container-lowest">
         {TABS.map((tab) => {

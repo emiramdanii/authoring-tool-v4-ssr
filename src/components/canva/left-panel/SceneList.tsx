@@ -6,7 +6,6 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { Button } from '@/components/ui/button';
-import { SchemaBlockTreeCompact } from './SchemaBlockTree';
 
 // ═══════════════════════════════════════════════════════════════
 // SCENE LIST — Page navigator with thumbnails + drag reorder
@@ -56,7 +55,7 @@ export function SceneList() {
   }, [currentPageIndex]);
 
   return (
-    <div className="space-y-1.5">
+    <div className="flex flex-col gap-2">
       {pages.map((p, i) => {
         const isActive = i === currentPageIndex;
         const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;
@@ -86,52 +85,40 @@ export function SceneList() {
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`w-full text-left card-hover relative rounded-xl overflow-hidden transition-[transform,background-color,border-color] ${
+            className={`w-full text-left flex items-center gap-3 rounded-xl px-3 py-2 transition-all ${
               dragIdx === i
                 ? 'opacity-40 scale-95'
                 : dragOverIdx === i
-                  ? 'ring-2 ring-silse-primary-container/60 ring-offset-1 ring-offset-silse-surface-container-low translate-y-0.5'
+                  ? 'ring-2 ring-silse-primary/40 bg-silse-surface-container-high'
                   : isActive
-                    ? 'bg-silse-primary-container/10 ring-2 ring-silse-primary-container ring-offset-2 ring-offset-silse-surface-container-low'
-                    : 'hover:bg-silse-surface-container-high hover:ring-1 hover:ring-silse-outline-variant'
+                    ? 'bg-silse-primary-container text-silse-on-primary-container border border-silse-primary/20'
+                    : 'hover:bg-silse-surface-container-high text-silse-on-surface-variant'
             }`}
           >
-            <div className="flex items-center gap-2 p-2">
-              <div className="w-5 text-[9px] font-bold text-silse-on-surface-variant text-center flex-shrink-0">{i + 1}</div>
-              <div
-                className="w-12 h-8 rounded-lg flex-shrink-0 overflow-hidden relative"
-                style={{ ...bgStyle, aspectRatio: `${ratio.w}/${ratio.h}` }}
-              >
-                <div className="absolute inset-0 bg-black/30" />
-                <div className="absolute top-0 right-0 text-[6px]! p-0.5">{badge!.icon}</div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold text-silse-on-surface truncate flex items-center gap-1">
-                  {isSchemaDriven && <Zap size={10} className="text-silse-primary-container inline" />}
-                  <span className="truncate">{p.label}</span>
-                  {pageOverflowStatus[p.id]?.hasOverflow && (
-                    <AlertTriangle size={9} className="text-amber-400 flex-shrink-0" aria-label="Konten melebihi kapasitas" />
-                  )}
-                </div>
-                <div className="text-[8px] mt-0.5 flex items-center gap-1">
-                  <span className={`inline-flex items-center px-1.5 py-0 rounded text-[7px] font-bold uppercase tracking-wider border ${badgeColor}`}>
-                    {badge!.name}
-                  </span>
-                  {p.label?.includes('— P') && (
-                    <span className="inline-flex items-center px-1 py-0 rounded text-[6px] font-bold bg-silse-primary-container/15 text-silse-primary border border-silse-primary-container/20">
-                      {p.label.match(/— P(\d+)/)?.[1] ? `P${p.label.match(/— P(\d+)/)![1]}` : ''}
-                    </span>
-                  )}
-                </div>
-              </div>
+            {/* Scene Number Thumbnail — SILSE v4 reference style */}
+            <div
+              className={`w-12 h-8 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
+                isActive
+                  ? 'bg-black/10'
+                  : 'bg-silse-surface-container-highest'
+              }`}
+              style={isActive ? {} : bgStyle}
+            >
+              {isActive ? <span className="font-bold">{i + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{i + 1}</span>}
             </div>
 
-            {/* Schema Block Tree — collapsible block navigator */}
-            <SchemaBlockTreeCompact
-              page={p}
-              pageIndex={i}
-              isActive={isActive}
-            />
+            {/* Scene Label */}
+            <div className="flex-1 min-w-0">
+              <span className={`text-sm font-medium truncate block ${
+                isActive ? 'font-bold' : ''
+              }`}>
+                {isSchemaDriven && <Zap size={10} className="inline mr-0.5" />}
+                Scene {i + 1}: {p.label}
+                {pageOverflowStatus[p.id]?.hasOverflow && (
+                  <AlertTriangle size={9} className="inline ml-1 text-amber-400" aria-label="Konten melebihi kapasitas" />
+                )}
+              </span>
+            </div>
           </button>
         );
       })}

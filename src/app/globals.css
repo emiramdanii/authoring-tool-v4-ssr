@@ -929,6 +929,11 @@ select {
   background-size: 24px 24px;
 }
 
+/* ── SILSE v4 Material Symbols Outlined icon font ── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
 /* ── SILSE v4 Block active selection ── */
 .block-active {
   outline: 2px solid var(--silse-secondary);

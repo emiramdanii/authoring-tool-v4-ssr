@@ -56,7 +56,6 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
-  const leftPanelOpen = useCanvaStore((s) => s.leftPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
   const commandPalette = useCommandPalette();
 
@@ -162,14 +161,10 @@ export default function CanvaBuilder() {
 
         {/* Main builder row — 3-column Canva-style layout */}
         <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-          {/* Left Panel — Icon Rail + Expandable */}
+          {/* Left Panel — SILSE v4: Always w-72 (Icon Rail + Content), no collapse */}
           <div
-            className="flex-shrink-0 overflow-hidden shadow-app-panel"
-            style={{
-              width: leftPanelOpen
-                ? '288px'
-                : '64px',
-            }}
+            className="flex-shrink-0 overflow-hidden border-r border-silse-outline-variant"
+            style={{ width: '288px' }}
             data-tour="left-panel"
             data-testid="left-panel"
             role="complementary"
