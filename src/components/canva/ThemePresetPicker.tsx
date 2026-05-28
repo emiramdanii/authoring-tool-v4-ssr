@@ -44,7 +44,7 @@ export function ThemePresetPicker() {
   if (!mounted) {
     return (
       <button
-        className="flex items-center justify-center h-6 w-6 rounded-md text-app-muted opacity-50"
+        className="flex items-center justify-center h-6 w-6 rounded-md text-silse-on-surface-variant opacity-50"
         disabled
       >
         <Palette size={12} />
@@ -56,7 +56,7 @@ export function ThemePresetPicker() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="flex items-center justify-center h-6 w-6 rounded-md text-app-muted hover:text-app-accent hover:bg-app-accent/10 transition-colors"
+          className="flex items-center justify-center h-6 w-6 rounded-md text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary/10 transition-colors"
           title="Preset tema"
         >
           <Palette size={12} />
@@ -66,9 +66,9 @@ export function ThemePresetPicker() {
       <PopoverContent
         align="end"
         side="top"
-        className="w-60 p-1.5 bg-app-surface border border-app-border shadow-lg"
+        className="w-60 p-1.5 bg-silse-surface-container-lowest border border-silse-outline-variant shadow-lg"
       >
-        <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider px-2 py-1.5 mb-1 flex items-center gap-1.5">
+        <div className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider px-2 py-1.5 mb-1 flex items-center gap-1.5">
           <Palette size={10} />
           Theme Presets
         </div>
@@ -86,8 +86,8 @@ export function ThemePresetPicker() {
                   w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-[background-color,border-color] text-[11px]
                   ${
                     isActive
-                      ? 'bg-app-accent/15 text-app-accent border border-app-accent/25'
-                      : 'text-app-primary hover:bg-app-elevated/60 border border-transparent'
+                      ? 'bg-silse-primary/15 text-silse-primary border border-silse-primary/25'
+                      : 'text-silse-on-surface hover:bg-silse-surface-container-low/60 border border-transparent'
                   }
                 `}
               >
@@ -116,7 +116,7 @@ export function ThemePresetPicker() {
 
                 {/* Active indicator */}
                 {isActive && (
-                  <Check size={12} className="text-app-accent flex-shrink-0" />
+                  <Check size={12} className="text-silse-primary flex-shrink-0" />
                 )}
               </button>
             );

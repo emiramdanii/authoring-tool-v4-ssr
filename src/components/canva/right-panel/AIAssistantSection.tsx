@@ -145,13 +145,13 @@ export default function AIAssistantSection() {
         onToggle={handleToggle}
       >
         {/* Tab bar */}
-        <div className="flex gap-0.5 mb-3 bg-app-elevated/30 rounded-lg p-0.5">
+        <div className="flex gap-0.5 mb-3 bg-silse-surface-container-low/30 rounded-lg p-0.5">
           <button
             onClick={() => setActiveTab('generate')}
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'generate'
                 ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
-                : 'text-app-muted hover:text-app-secondary border border-transparent'
+                : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant border border-transparent'
             }`}
           >
             <span className="text-[10px]">✨</span>
@@ -162,7 +162,7 @@ export default function AIAssistantSection() {
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'content'
                 ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
-                : 'text-app-muted hover:text-app-secondary border border-transparent'
+                : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant border border-transparent'
             }`}
           >
             <span className="text-[10px]">🤖</span>
@@ -173,7 +173,7 @@ export default function AIAssistantSection() {
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[8px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'refine'
                 ? 'bg-violet-500/15 text-violet-300 border border-violet-500/20'
-                : 'text-app-muted hover:text-app-secondary border border-transparent'
+                : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant border border-transparent'
             }`}
           >
             <span className="text-[10px]">🪄</span>

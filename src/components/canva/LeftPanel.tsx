@@ -39,7 +39,7 @@ import dynamic from 'next/dynamic';
 
 const TemplateGalleryPanel = dynamic(() => import('./left-panel/TemplateGalleryPanel'), {
   ssr: false,
-  loading: () => <div className="h-32 animate-pulse bg-app-elevated/20 rounded-lg" />,
+  loading: () => <div className="h-32 animate-pulse bg-silse-surface-container-high/20 rounded-lg" />,
 });
 
 import { getAvailablePresets } from '@/core/engine/SchemaEngine';
@@ -48,7 +48,7 @@ import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 
 const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), {
   ssr: false,
-  loading: () => <div className="h-8 animate-pulse bg-app-elevated/20 rounded-lg" />,
+  loading: () => <div className="h-8 animate-pulse bg-silse-surface-container-high/20 rounded-lg" />,
 });
 const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
   ssr: false,

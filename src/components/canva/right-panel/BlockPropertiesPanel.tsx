@@ -22,7 +22,6 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
 import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-patch';
-import { SlidersHorizontal, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './block-properties/use-selected-block';
 import { GuidedFormEditor } from './block-properties/GuidedFormEditor';
@@ -75,7 +74,7 @@ export default function BlockPropertiesPanel() {
         {/* Header — stitch style */}
         <div className="p-6 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal size={18} className="text-silse-tertiary" />
+            <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '18px' }}>tune</span>
             <h3 className="text-sm font-bold text-silse-on-surface">Properties</h3>
           </div>
           <Button
@@ -100,9 +99,9 @@ export default function BlockPropertiesPanel() {
       <div className="p-6 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
         <div className="flex items-center gap-2">
           {useGuidedForm ? (
-            <BookOpen size={18} className="text-silse-primary-container" />
+            <span className="material-symbols-outlined text-silse-primary-container" style={{ fontSize: '18px' }}>menu_book</span>
           ) : (
-            <SlidersHorizontal size={18} className="text-silse-tertiary" />
+            <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '18px' }}>tune</span>
           )}
           <h3 className="text-sm font-bold text-silse-on-surface">
             {useGuidedForm ? 'Edit Konten' : 'Properties'}
@@ -203,7 +202,7 @@ export default function BlockPropertiesPanel() {
             </details>
 
             {/* Block ID — dev only */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-low border border-silse-outline-variant/30">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-silse-surface-container-low border border-silse-outline-variant/30">
               <span className="text-[10px] text-silse-on-surface-variant font-bold w-8">ID</span>
               <span className="text-[10px] text-silse-on-surface-variant font-mono truncate flex-1">{selectedBlockId}</span>
             </div>
@@ -212,7 +211,7 @@ export default function BlockPropertiesPanel() {
       </div>
 
       {/* ═══ Footer Action — Stitch spec ═══════════════════════════ */}
-      <div className="p-6 bg-surface-container-low border-t border-silse-outline-variant shrink-0">
+      <div className="p-6 bg-silse-surface-container-low border-t border-silse-outline-variant shrink-0">
         <button
           onClick={handleRemoveBlock}
           className="w-full py-3 bg-silse-on-surface text-white rounded-full text-[13px] font-bold hover:bg-silse-on-surface active:scale-[0.98] transition-all flex items-center justify-center gap-2"

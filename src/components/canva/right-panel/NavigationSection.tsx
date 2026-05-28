@@ -54,7 +54,7 @@ export default function NavigationSection() {
           onChange={e => updateNavConfig({ showNavbar: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Navbar</span>
+        <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Navbar</span>
       </label>
 
       <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
@@ -64,7 +64,7 @@ export default function NavigationSection() {
           onChange={e => updateNavConfig({ showPrevNext: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Tombol Prev/Next</span>
+        <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Tombol Prev/Next</span>
       </label>
 
       <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
@@ -74,7 +74,7 @@ export default function NavigationSection() {
           onChange={e => updateNavConfig({ showScore: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Tampilkan Skor</span>
+        <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Tampilkan Skor</span>
       </label>
 
       <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer group">
@@ -84,12 +84,12 @@ export default function NavigationSection() {
           onChange={e => updateNavConfig({ showProgress: e.target.checked })}
           className="accent-amber-500 w-3 h-3"
         />
-        <span className="text-[9px] text-app-secondary group-hover:text-app-primary transition-colors">Progress Bar</span>
+        <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Progress Bar</span>
       </label>
 
       {/* Navbar style — visual selector */}
       <div className="mt-2">
-        <label className="text-[9px] text-app-muted block mb-1.5">Style Navbar</label>
+        <label className="text-[9px] text-silse-on-surface-variant block mb-1.5">Style Navbar</label>
         <div className="flex flex-col gap-1.5">
           {NAVBAR_STYLES.map(style => {
             const isActive = currentStyle === style.value;
@@ -100,7 +100,7 @@ export default function NavigationSection() {
                 className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-[background-color,border-color] text-left ${
                   isActive
                     ? 'bg-amber-500/10 border border-amber-500/30'
-                    : 'bg-app-elevated/50 border border-transparent hover:border-app-border/30'
+                    : 'bg-silse-surface-container-low/50 border border-transparent hover:border-silse-outline-variant/30'
                 }`}
               >
                 {/* Gradient preview swatch */}
@@ -113,10 +113,10 @@ export default function NavigationSection() {
                   }}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className={`text-[9px] font-bold ${isActive ? 'text-amber-400' : 'text-app-primary'}`}>
+                  <div className={`text-[9px] font-bold ${isActive ? 'text-amber-400' : 'text-silse-on-surface'}`}>
                     {style.label}
                   </div>
-                  <div className="text-[7px] text-app-muted truncate">
+                  <div className="text-[7px] text-silse-on-surface-variant truncate">
                     {style.desc}
                   </div>
                 </div>

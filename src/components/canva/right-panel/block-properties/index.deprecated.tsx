@@ -68,13 +68,13 @@ export default function BlockPropertiesPanel() {
             variant="ghost"
             size="icon"
             onClick={() => selectBlock(null)}
-            className="ml-auto h-5 w-5 text-app-muted hover:text-app-secondary"
+            className="ml-auto h-5 w-5 text-silse-on-surface-variant hover:text-silse-on-surface-variant"
           >
             <X size={10} />
           </Button>
         </div>
         <div className="px-3 pb-3 pt-2">
-          <div className="text-[9px] text-app-muted italic">Block ini tidak dapat diedit</div>
+          <div className="text-[9px] text-silse-on-surface-variant italic">Block ini tidak dapat diedit</div>
         </div>
       </div>
     );
@@ -90,7 +90,7 @@ export default function BlockPropertiesPanel() {
           variant="ghost"
           size="icon"
           onClick={() => { selectBlock(null); stopEditing(); }}
-          className="ml-auto h-5 w-5 text-app-muted hover:text-app-secondary"
+          className="ml-auto h-5 w-5 text-silse-on-surface-variant hover:text-silse-on-surface-variant"
         >
           <X size={10} />
         </Button>
@@ -101,8 +101,8 @@ export default function BlockPropertiesPanel() {
         <div className="flex items-center gap-2">
           <span className="text-lg">{definition?.icon || '📦'}</span>
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-bold text-app-primary truncate">{teacherTerm(definition?.name || selectedBlockType, teacherMode)}</div>
-            <div className="text-[9px] text-app-muted">{teacherMode ? (definition?.category || '') : `${definition?.category || 'unknown'} · ${selectedBlockType}`}</div>
+            <div className="text-[11px] font-bold text-silse-on-surface truncate">{teacherTerm(definition?.name || selectedBlockType, teacherMode)}</div>
+            <div className="text-[9px] text-silse-on-surface-variant">{teacherMode ? (definition?.category || '') : `${definition?.category || 'unknown'} · ${selectedBlockType}`}</div>
           </div>
           {editingBlockId === selectedBlockId && (
             <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
@@ -117,8 +117,8 @@ export default function BlockPropertiesPanel() {
         {/* Block ID — hidden in teacher mode (not meaningful for teachers) */}
         {!teacherMode && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-app-muted w-14">ID</span>
-            <span className="text-[10px] text-app-secondary font-mono truncate flex-1">{selectedBlockId}</span>
+            <span className="text-[10px] text-silse-on-surface-variant w-14">ID</span>
+            <span className="text-[10px] text-silse-on-surface-variant font-mono truncate flex-1">{selectedBlockId}</span>
           </div>
         )}
 
@@ -134,7 +134,7 @@ export default function BlockPropertiesPanel() {
         {/* Capabilities — hidden in teacher mode, shown in advanced mode */}
         {!teacherMode && definition && (
           <details className="mt-2">
-            <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
+            <summary className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider cursor-pointer hover:text-silse-on-surface-variant">
               Kemampuan Editor
             </summary>
             <div className="grid grid-cols-2 gap-1 mt-1">
@@ -151,7 +151,7 @@ export default function BlockPropertiesPanel() {
         {/* Derived Capabilities — hidden in teacher mode */}
         {!teacherMode && (
           <details className="mt-1">
-            <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
+            <summary className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider cursor-pointer hover:text-silse-on-surface-variant">
               Kemampuan Layout
             </summary>
             <div className="grid grid-cols-2 gap-1 mt-1">
@@ -166,7 +166,7 @@ export default function BlockPropertiesPanel() {
               {(() => {
                 const info: BlockCapabilityInfo = getDerivedCapabilities({ type: selectedBlockType } as import('@/core/schema/types').SchemaBlock);
                 return Object.entries(info.sources).map(([cap, source]) => (
-                  <div key={cap} className="flex items-center gap-1 text-[8px] text-app-muted">
+                  <div key={cap} className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant">
                     <span className={`w-1.5 h-1.5 rounded-full ${
                       source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500 dark:bg-gray-600'
                     }`} />
@@ -182,15 +182,15 @@ export default function BlockPropertiesPanel() {
         {/* Layout info — hidden in teacher mode */}
         {!teacherMode && definition && (
           <details className="mt-1">
-            <summary className="text-[9px] font-bold text-app-muted uppercase tracking-wider cursor-pointer hover:text-app-secondary">
+            <summary className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider cursor-pointer hover:text-silse-on-surface-variant">
               Layout
             </summary>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-app-muted">Posisi</span>
+              <span className="text-[10px] text-silse-on-surface-variant">Posisi</span>
               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                 definition.defaultLayout.position === 'flow'
                   ? 'bg-emerald-500/20 text-emerald-300'
-                  : 'bg-app-accent/20 text-app-accent'
+                  : 'bg-silse-primary/20 text-silse-primary'
               }`}>
                 {definition.defaultLayout.position}
               </span>

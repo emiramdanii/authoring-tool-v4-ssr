@@ -5,7 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { ToolbarNav } from './toolbar/ToolbarNav';
 import { useExportActions } from './toolbar/use-export-actions';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Edit3, Eye } from 'lucide-react';
+// No lucide imports — all icons use Material Symbols Outlined
 import { triggerCanvaTour } from '@/components/shared/CanvaTour';
 import { triggerCanvaOrientation } from '@/components/shared/CanvaOrientationTooltip';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -142,8 +142,8 @@ export default function Toolbar() {
         className="flex items-center gap-1 px-4 bg-silse-surface-container-lowest border-b border-silse-outline-variant select-none"
         style={{ height: '48px' }}
       >
-        <span className="w-2 h-2 rounded-full bg-app-success pulse-dot" />
-        <span className="text-xs font-semibold text-app-success min-w-0 truncate max-w-[140px]">
+        <span className="w-2 h-2 rounded-full bg-silse-primary pulse-dot" />
+        <span className="text-xs font-semibold text-silse-primary min-w-0 truncate max-w-[140px]">
           {label}
         </span>
         <div className="h-5 w-px bg-silse-outline-variant mx-1" />
@@ -158,7 +158,7 @@ export default function Toolbar() {
           className="focus-ring"
           title="Tutup mode interaktif (Esc)"
         >
-          <ChevronLeft size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_left</span>
           <span className="hidden sm:inline">Tutup</span>
         </Button>
       </div>
@@ -182,7 +182,7 @@ export default function Toolbar() {
           onClick={() => setAppMode('edit')}
           className="focus-ring text-silse-primary hover:text-silse-primary/80 h-7 px-2 gap-1"
         >
-          <Edit3 size={14} />
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
           <span className="text-[10px] font-semibold">Edit</span>
         </Button>
         <span className="text-xs font-semibold text-silse-on-surface min-w-0 truncate max-w-[120px]">
@@ -192,7 +192,7 @@ export default function Toolbar() {
           {currentPageIndex + 1}/{pagesLength}
         </span>
         <div className="flex-1" />
-        <Eye size={12} className="text-silse-secondary" />
+        <span className="material-symbols-outlined text-silse-secondary" style={{ fontSize: '14px' }}>visibility</span>
         <span className="text-[10px] font-semibold text-silse-secondary">Preview</span>
         <span className="text-[10px] text-silse-on-surface-variant ml-1">Esc → Edit</span>
       </div>

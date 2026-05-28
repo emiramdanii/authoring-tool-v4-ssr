@@ -37,10 +37,10 @@ export default function PaletteSection() {
       {/* CSS variable mapping */}
       <div className="space-y-1">
         {Object.entries(colorPalette.mapping).map(([key, value]) => (
-          <div key={key} className="flex items-center gap-1.5 rounded-md bg-app-elevated px-1.5 py-1">
+          <div key={key} className="flex items-center gap-1.5 rounded-md bg-silse-surface-container-low px-1.5 py-1">
             <div className="w-4 h-4 rounded border border-white/20 flex-shrink-0" style={{ background: value as string }} />
-            <span className="text-[8px] text-app-muted flex-1">{key}</span>
-            <span className="text-[7px] text-app-muted">{value as string}</span>
+            <span className="text-[8px] text-silse-on-surface-variant flex-1">{key}</span>
+            <span className="text-[7px] text-silse-on-surface-variant">{value as string}</span>
           </div>
         ))}
       </div>

@@ -4,6 +4,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { RATIOS } from '@/components/canva/types';
 import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap, GraduationCap, Monitor, Projector, Printer, Laptop } from 'lucide-react';
+// Note: lucide icons kept for small 10-11px status bar inline icons — Material Symbols at this size are blurry
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
@@ -54,7 +55,7 @@ function DisplayModeSelector() {
   const setDisplayMode = useCanvaStore((s) => s.setDisplayMode);
 
   return (
-    <div className="flex items-center gap-0.5 rounded-md bg-app-muted/10 px-0.5 py-0.5" title="Mode tampilan konten">
+    <div className="flex items-center gap-0.5 rounded-md bg-silse-surface-container/50 px-0.5 py-0.5" title="Mode tampilan konten">
       {DISPLAY_MODES.map((m) => {
         const isActive = displayMode === m.key;
         return (
@@ -63,8 +64,8 @@ function DisplayModeSelector() {
             onClick={() => setDisplayMode(m.key)}
             className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded transition-colors text-[9px] font-bold ${
               isActive
-                ? 'bg-app-accent/15 text-app-accent'
-                : 'text-app-muted hover:text-app-muted/80 hover:bg-app-muted/5'
+                ? 'bg-silse-primary/15 text-silse-primary'
+                : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant/80 hover:bg-silse-surface-container-high/50'
             }`}
             title={m.label}
             aria-label={`Mode tampilan: ${m.label}`}
@@ -82,24 +83,24 @@ function DisplayModeSelector() {
 // Module-level constant — moved from render
 const SAVE_INDICATOR_CONFIG: Record<SaveStatus, { icon: React.ReactNode; label: string; className: string }> = {
   unsaved: {
-    icon: <span className="inline-block w-2 h-2 rounded-full bg-app-error/60" />,
+    icon: <span className="inline-block w-2 h-2 rounded-full bg-silse-error/60" />,
     label: 'Belum tersimpan',
-    className: 'text-app-error/60',
+    className: 'text-silse-error/60',
   },
   saving: {
-    icon: <Loader2 size={10} className="animate-spin" />,
+    icon: <Loader2 size={10} className="animate-spin text-silse-tertiary" />,
     label: 'Menyimpan...',
-    className: 'text-app-warning/60',
+    className: 'text-silse-tertiary/60',
   },
   saved: {
-    icon: <CheckCircle2 size={10} />,
+    icon: <CheckCircle2 size={10} className="text-silse-primary" />,
     label: 'Tersimpan',
-    className: 'text-app-success/50',
+    className: 'text-silse-primary/50',
   },
   error: {
-    icon: <AlertCircle size={10} />,
+    icon: <AlertCircle size={10} className="text-silse-error" />,
     label: 'Gagal simpan',
-    className: 'text-app-error/60',
+    className: 'text-silse-error/60',
   },
 };
 
@@ -173,26 +174,26 @@ export default function StatusBar() {
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-1.5 bg-app-surface border-t border-app-border text-xs text-app-muted select-none"
+      className="flex items-center gap-3 px-4 py-1.5 bg-silse-surface-container-lowest border-t border-silse-outline-variant text-xs text-silse-on-surface-variant select-none"
       style={{ height: 'var(--semantic-statusbar-height)' }}
     >
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
-        <Ratio size={11} className="text-app-muted" />
+        <Ratio size={11} className="text-silse-on-surface-variant" />
         <span className="font-mono">{ratio!.w}×{ratio!.h}</span>
       </span>
 
       {/* Element count — teacher-friendly label */}
       <span className="flex items-center gap-1.5">
-        <Box size={11} className="text-app-muted" />
+        <Box size={11} className="text-silse-on-surface-variant" />
         <span>{totalElements} {teacherMode ? 'konten' : 'elemen'}</span>
       </span>
 
       {/* Page info with template type + scene type */}
       <span className="flex items-center gap-1.5">
-        <FileText size={11} className="text-app-muted" />
+        <FileText size={11} className="text-silse-on-surface-variant" />
         <span>{currentPageIndex + 1}/{pagesLength}</span>
-        <span className="text-[8px] text-app-muted">
+        <span className="text-[8px] text-silse-on-surface-variant">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
         </span>
         {/* Scene Type indicator — shows which Learning Scene this page is */}
@@ -211,7 +212,7 @@ export default function StatusBar() {
             rangkuman: 'text-blue-500',
           };
           return (
-            <span className={`text-[7px] font-bold ${sceneColors[colorKey] ?? 'text-app-muted'}`} title={`Scene: ${def.labelId} — ${def.description}`}>
+            <span className={`text-[7px] font-bold ${sceneColors[colorKey] ?? 'text-silse-on-surface-variant'}`} title={`Scene: ${def.labelId} — ${def.description}`}>
               ● {def.labelId}
             </span>
           );
@@ -221,16 +222,16 @@ export default function StatusBar() {
       {/* Scene indicator */}
       {sceneTotal > 1 && (
         <span className="flex items-center gap-1">
-          <Layers size={11} className="text-app-success/60" />
-          <span className="text-app-success/70 font-medium">{teacherMode ? 'Halaman' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
+          <Layers size={11} className="text-silse-primary/60" />
+          <span className="text-silse-primary/70 font-medium">{teacherMode ? 'Halaman' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
         </span>
       )}
 
       {/* Block selection feedback — shown in both modes */}
       {selectedBlockId && selectedBlockType && (
         <span className="flex items-center gap-1">
-          <Zap size={11} className="text-app-accent/60" />
-          <span className="text-app-accent/70 font-medium">
+          <Zap size={11} className="text-silse-primary/60" />
+          <span className="text-silse-primary/70 font-medium">
             {teacherTerm(BLOCK_DEFINITIONS[selectedBlockType]?.name || selectedBlockType, teacherMode)}
           </span>
         </span>
@@ -239,8 +240,8 @@ export default function StatusBar() {
       {/* Canvas preview mode indicator */}
       {canvasPreview && (
         <span className="flex items-center gap-1">
-          <Eye size={11} className="text-app-info/60" />
-          <span className="text-app-info/70 font-medium">Preview</span>
+          <Eye size={11} className="text-silse-secondary/60" />
+          <span className="text-silse-secondary/70 font-medium">Preview</span>
         </span>
       )}
 
@@ -262,7 +263,7 @@ export default function StatusBar() {
             // Force re-save by triggering the auto-save hook
             useCanvaStore.getState().saveToStorage();
           }}
-          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-app-error/10 text-app-error hover:bg-app-error/20 transition-colors"
+          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-silse-error/10 text-silse-error hover:bg-silse-error/20 transition-colors"
           title="Coba simpan lagi"
         >
           Coba Lagi
@@ -282,7 +283,7 @@ export default function StatusBar() {
         )}
         <ThemePresetPicker />
         <ThemeToggle />
-        <Layers size={10} className="text-app-muted" />
+        <Layers size={10} className="text-silse-on-surface-variant" />
         {/* Zoom slider — hidden in teacher mode (simpler), show only fit button + percentage */}
         {!teacherMode && (
           <input
@@ -292,12 +293,12 @@ export default function StatusBar() {
             step={5}
             value={zoomPercent}
             onChange={e => setZoom(parseInt(e.target.value) / 100)}
-            className="w-16 h-1 accent-app-accent"
+            className="w-16 h-1 accent-silse-primary"
           />
         )}
         <button
           onClick={zoomToFit}
-          className="font-mono text-[9px] text-app-muted hover:text-app-accent transition-colors w-12 text-right"
+          className="font-mono text-[9px] text-silse-on-surface-variant hover:text-silse-primary transition-colors w-12 text-right"
           title="Sesuaikan layar"
         >
           {storeZoom === -1 ? `Pas ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}

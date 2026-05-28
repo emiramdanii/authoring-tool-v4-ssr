@@ -432,15 +432,15 @@ export default function Stage() {
               : page.elements.length === 0
           ) && (
             <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: Z.CANVAS_OVERLAY }}>
-              <div className="bg-app-surface/90 backdrop-blur-sm border border-app-accent/20 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center shadow-lg">
-                <div className="w-14 h-14 rounded-2xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
-                  <Layout size={24} className="text-app-accent/60" />
+              <div className="bg-silse-surface-container-lowest/90 backdrop-blur-sm border border-silse-primary/20 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center shadow-lg">
+                <div className="w-14 h-14 rounded-2xl bg-silse-primary/10 border border-silse-primary/20 flex items-center justify-center">
+                  <Layout size={24} className="text-silse-primary/60" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-app-primary/80 mb-1">
+                  <p className="text-sm font-bold text-silse-on-surface/80 mb-1">
                     Halaman Kosong
                   </p>
-                  <p className="text-xs text-app-muted/70">
+                  <p className="text-xs text-silse-on-surface-variant/70">
                     Mulai tambahkan konten atau generate otomatis dengan AI
                   </p>
                 </div>
@@ -450,7 +450,7 @@ export default function Stage() {
                       useCanvaStore.getState().setLeftTab('add-block');
                       if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
                     }}
-                    className="flex-1 px-3 py-2.5 bg-app-accent/10 hover:bg-app-accent/20 border border-app-accent/25 text-app-accent text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
+                    className="flex-1 px-3 py-2.5 bg-silse-primary/10 hover:bg-silse-primary/20 border border-silse-primary/25 text-silse-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
                   >
                     <Plus size={13} /> Tambah Block
                   </button>
@@ -462,13 +462,13 @@ export default function Stage() {
                   </button>
                 </div>
                 {/* Keyboard shortcuts hint */}
-                <div className="w-full border-t border-app-border/20 pt-3 space-y-1">
-                  <div className="flex items-center gap-2 text-[8px] text-app-muted">
-                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 border border-app-border/30 font-mono text-[7px] font-bold">Ctrl+Z</kbd>
+                <div className="w-full border-t border-silse-outline-variant/20 pt-3 space-y-1">
+                  <div className="flex items-center gap-2 text-[8px] text-silse-on-surface-variant">
+                    <kbd className="px-1.5 py-0.5 rounded bg-silse-surface-container-low/60 border border-silse-outline-variant/30 font-mono text-[7px] font-bold">Ctrl+Z</kbd>
                     <span>Undo</span>
                   </div>
-                  <div className="flex items-center gap-2 text-[8px] text-app-muted">
-                    <kbd className="px-1.5 py-0.5 rounded bg-app-elevated/60 border border-app-border/30 font-mono text-[7px] font-bold">Del</kbd>
+                  <div className="flex items-center gap-2 text-[8px] text-silse-on-surface-variant">
+                    <kbd className="px-1.5 py-0.5 rounded bg-silse-surface-container-low/60 border border-silse-outline-variant/30 font-mono text-[7px] font-bold">Del</kbd>
                     <span>Hapus block terpilih</span>
                   </div>
                 </div>
@@ -546,7 +546,7 @@ export default function Stage() {
             <div className={`absolute top-2 right-2 px-2.5 py-1 rounded-lg text-[9px] font-bold border pointer-events-none flex items-center gap-1 ${
               isSchemaDriven
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                : 'bg-app-accent/20 text-app-accent border-app-accent/30'
+                : 'bg-silse-primary/20 text-silse-primary border-silse-primary/30'
             }`} style={{ zIndex: Z.INFO_BADGE }}>
               <Zap size={10} /> {isSchemaDriven ? 'SCHEMA' : page.templateType}
             </div>
@@ -554,7 +554,7 @@ export default function Stage() {
 
           {/* Multi-select info badge (elements) */}
           {selectedElIds.length > 1 && !selectedBlockId && (
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-app-accent/20 text-app-accent border border-app-accent/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg text-[9px] font-bold bg-silse-primary/20 text-silse-primary border border-silse-primary/30 pointer-events-none" style={{ zIndex: Z.INFO_BADGE }}>
               {selectedElIds.length} elemen terpilih • Shift+klik untuk tambah • Del untuk hapus
             </div>
           )}

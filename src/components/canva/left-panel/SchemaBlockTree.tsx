@@ -25,7 +25,6 @@ import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/sc
 import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
 import type { SchemaBlock } from '@/core/schema/types';
 import type { CanvaPage } from '@/components/canva/types';
-import { ChevronRight, Zap, Pencil } from 'lucide-react';
 
 // ── Block Type Display Map ──────────────────────────────────────
 // Maps schema block types to human-readable labels and icons.
@@ -154,10 +153,10 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
       >
         {/* Expand/collapse chevron */}
         {hasChildren ? (
-          <ChevronRight
-            size={10}
-            className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
-          />
+          <span
+            className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+            style={{ fontSize: '12px' }}
+          >chevron_right</span>
         ) : (
           <span className="w-[10px] flex-shrink-0" />
         )}
@@ -181,12 +180,12 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
             className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-silse-on-surface-variant hover:text-silse-primary transition-opacity cursor-pointer"
             title="Edit di Konten"
           >
-            <Pencil size={8} />
+            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>edit</span>
           </span>
         )}
 
         {/* Schema badge for schema-driven blocks */}
-        <Zap size={8} className="flex-shrink-0 text-silse-primary-container/40" />
+        <span className="material-symbols-outlined flex-shrink-0 text-silse-primary-container/40" style={{ fontSize: '10px' }}>bolt</span>
       </button>
 
       {/* Children */}
@@ -236,8 +235,8 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
           isActive ? 'text-silse-primary font-bold' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high'
         }`}
       >
-        <ChevronRight size={8} className={`transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} />
-        <Zap size={7} className="text-silse-primary-container/60" />
+        <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '10px' }}>chevron_right</span>
+        <span className="material-symbols-outlined text-silse-primary-container/60" style={{ fontSize: '9px' }}>bolt</span>
         <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
       </button>
 
@@ -349,8 +348,8 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
         className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
-        <ChevronRight size={7} className={`transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} />
-        <Zap size={7} className="text-silse-primary-container/60" />
+        <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '9px' }}>chevron_right</span>
+        <span className="material-symbols-outlined text-silse-primary-container/60" style={{ fontSize: '9px' }}>bolt</span>
         <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
       </button>
 

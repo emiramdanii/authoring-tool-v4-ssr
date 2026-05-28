@@ -40,7 +40,7 @@ export default function DataIdxSelector({ elementType, currentIdx, onChange }: {
 
   return (
     <div className="mb-2">
-      <label className="text-[10px] text-app-muted block mb-1">Pilih Data</label>
+      <label className="text-[10px] text-silse-on-surface-variant block mb-1">Pilih Data</label>
       <select
         value={currentIdx}
         onChange={e => {
@@ -48,7 +48,7 @@ export default function DataIdxSelector({ elementType, currentIdx, onChange }: {
           const opt = options.find(o => o.idx === idx);
           onChange(idx, opt?.stableId);
         }}
-        className="w-full h-8 px-2 text-[11px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none focus-ring"
+        className="w-full h-8 px-2 text-[11px] text-silse-on-surface bg-silse-surface-container-low/60 border border-silse-outline-variant/30 rounded-lg focus:border-silse-primary/50 focus:outline-none focus-ring"
       >
         {options.map(opt => (
           <option key={opt.idx} value={opt.idx}>
@@ -57,7 +57,7 @@ export default function DataIdxSelector({ elementType, currentIdx, onChange }: {
         ))}
       </select>
       {currentIdx === -1 && elementType !== 'kuis' && (
-        <div className="text-[8px] text-app-accent/60 mt-1">
+        <div className="text-[8px] text-silse-primary/60 mt-1">
           Pilih modul spesifik atau tambah data di panel Konten
         </div>
       )}

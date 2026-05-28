@@ -19,7 +19,7 @@ export default function PageInfo() {
     <div className="mt-auto">
       <div className="section-divider" />
       <div className="p-2">
-        <div className="text-[9px] text-app-muted">
+        <div className="text-[9px] text-silse-on-surface-variant">
           Halaman {currentPageIndex + 1}/{totalPages} &middot; {TEMPLATE_BADGE_MAP[page.templateType]?.name || page.templateType}
         </div>
       </div>

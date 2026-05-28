@@ -2,25 +2,6 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import {
-  LayoutDashboard,
-  FileEdit,
-  FolderOpen,
-  BarChart3,
-  Settings,
-  LifeBuoy,
-  PlusCircle,
-  ArrowLeft,
-  Save,
-  Download,
-  Eye,
-  Palette,
-  MapPin,
-  GraduationCap,
-  ArrowLeftRight,
-  Clock,
-  Sparkles,
-} from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
@@ -57,16 +38,16 @@ const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard')
 // ── Navigation items ─────────────────────────────────────────────
 interface NavItem {
   id: PanelId;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: string; // Material Symbols Outlined icon name
   label: string;
 }
 
 // ═══ SILSE v4 Navigation — Unified nav (mode-aware labels) ════════
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { id: 'dokumen', icon: FileEdit, label: 'Workspace' },
-  { id: 'konten', icon: FolderOpen, label: 'Assets' },
-  { id: 'canva', icon: BarChart3, label: 'Analytics' },
+  { id: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
+  { id: 'dokumen', icon: 'edit_note', label: 'Workspace' },
+  { id: 'konten', icon: 'folder_open', label: 'Assets' },
+  { id: 'canva', icon: 'analytics', label: 'Analytics' },
 ];
 
 // Panel titles — mode-aware
@@ -356,7 +337,7 @@ function AuthoringToolInner() {
             onClick={() => setWizardOpen(true)}
             className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold border-b-2 border-silse-primary hover:scale-95 transition-transform"
           >
-            <PlusCircle size={18} />
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_circle</span>
             New Project
           </button>
         </div>
@@ -364,7 +345,6 @@ function AuthoringToolInner() {
         {/* ── Navigation ── */}
         <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
           {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
             const isActive = getActiveNavId() === item.id;
             return (
               <button
@@ -379,7 +359,7 @@ function AuthoringToolInner() {
                 }`}
                 title={item.label}
               >
-                <Icon size={20} className={`flex-shrink-0 ${isActive ? '[fill:currentColor]' : ''}`} />
+                <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '20px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}>{item.icon}</span>
                 <span style={{ fontFamily: 'var(--font-nunito), Nunito Sans, sans-serif' }}>{item.label}</span>
               </button>
             );
@@ -389,13 +369,12 @@ function AuthoringToolInner() {
           <div className="section-divider my-3" />
 
           {[
-            { id: 'autogen' as PanelId, icon: Sparkles, label: isSederhana ? 'Buat AI' : 'Auto-Generate' },
-            { id: 'projects' as PanelId, icon: FolderOpen, label: isSederhana ? 'Proyek' : 'Projects' },
-            { id: 'import' as PanelId, icon: ArrowLeftRight, label: isSederhana ? 'Impor/Ekspor' : 'Import/Export' },
-            { id: 'preview' as PanelId, icon: Eye, label: isSederhana ? 'Pratinjau' : 'Preview' },
-            { id: 'versions' as PanelId, icon: Clock, label: isSederhana ? 'Versi' : 'Versions' },
+            { id: 'autogen' as PanelId, icon: 'auto_awesome', label: isSederhana ? 'Buat AI' : 'Auto-Generate' },
+            { id: 'projects' as PanelId, icon: 'folder_open', label: isSederhana ? 'Proyek' : 'Projects' },
+            { id: 'import' as PanelId, icon: 'swap_horiz', label: isSederhana ? 'Impor/Ekspor' : 'Import/Export' },
+            { id: 'preview' as PanelId, icon: 'visibility', label: isSederhana ? 'Pratinjau' : 'Preview' },
+            { id: 'versions' as PanelId, icon: 'schedule', label: isSederhana ? 'Versi' : 'Versions' },
           ].map((item) => {
-            const Icon = item.icon;
             const isActive = activePanel === item.id;
             return (
               <button
@@ -410,7 +389,7 @@ function AuthoringToolInner() {
                 }`}
                 title={item.label}
               >
-                <Icon size={18} className="flex-shrink-0" />
+                <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}>{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             );
@@ -420,18 +399,18 @@ function AuthoringToolInner() {
         {/* ── Bottom Section ── */}
         <div className="border-t border-silse-outline-variant px-3 py-3 space-y-1">
           <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1 transition-all">
-            <Settings size={18} className="flex-shrink-0" />
+            <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>settings</span>
             <span>Settings</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1 transition-all">
-            <LifeBuoy size={18} className="flex-shrink-0" />
+            <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>contact_support</span>
             <span>Support</span>
           </button>
 
           {/* User profile */}
           <div className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl">
             <div className="w-9 h-9 rounded-full bg-silse-primary-container flex items-center justify-center flex-shrink-0">
-              <GraduationCap size={18} className="text-silse-on-primary-container" />
+              <span className="material-symbols-outlined text-silse-on-primary-container" style={{ fontSize: '18px' }}>school</span>
             </div>
             <div className="min-w-0">
               <div className="text-xs font-semibold text-silse-on-surface truncate">Guru PPKn</div>
@@ -448,14 +427,14 @@ function AuthoringToolInner() {
             disabled={saving}
             className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 w-full text-xs inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition-colors disabled:opacity-50"
           >
-            <Save size={14} className={saving ? 'animate-spin' : ''} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
             {saving ? 'Menyimpan...' : 'Simpan Semua'}
           </button>
           <button
             onClick={exportJSON}
             className="text-silse-on-surface-variant border border-silse-outline-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface w-full text-xs inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition-colors"
           >
-            <Download size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span>
             Export JSON
           </button>
         </div>
@@ -471,7 +450,7 @@ function AuthoringToolInner() {
             onClick={() => setActivePanel('dashboard')}
             className="bg-silse-surface-container-lowest/90 border border-silse-outline-variant shadow-sm text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-sm"
           >
-            <ArrowLeft size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_back</span>
             {isSederhana ? 'Beranda' : 'Dashboard'}
           </Button>
         </div>
@@ -486,7 +465,7 @@ function AuthoringToolInner() {
             onClick={() => setActivePanel('dashboard')}
             className="bg-silse-surface-container-lowest/90 border border-silse-outline-variant shadow-sm text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-sm"
           >
-            <ArrowLeft size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_back</span>
             {isSederhana ? 'Beranda' : 'Dashboard'}
           </Button>
         </div>
@@ -525,7 +504,7 @@ function AuthoringToolInner() {
                 onClick={() => setActivePanel('preview')}
                 className="text-silse-primary border-silse-outline-variant hover:bg-silse-surface-container-high hover:text-silse-primary"
               >
-                <Eye size={14} />
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility</span>
                 {isSederhana ? 'Pratinjau' : 'Preview'}
               </Button>
               <Button
@@ -534,7 +513,7 @@ function AuthoringToolInner() {
                 onClick={() => setActivePanel('canva')}
                 className="text-silse-on-surface-variant hover:text-silse-on-surface"
               >
-                <Palette size={14} />
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>palette</span>
                 {isSederhana ? 'Desain' : 'Canva'}
               </Button>
               <Button
@@ -543,7 +522,7 @@ function AuthoringToolInner() {
                 disabled={saving}
                 className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 disabled:opacity-50 font-medium"
               >
-                <Save size={14} className={saving ? 'animate-spin' : ''} />
+                <span className="material-symbols-outlined" style={{ fontSize: '14px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
                 {saving ? '...' : 'Simpan'}
               </Button>
             </div>
@@ -574,13 +553,13 @@ function AuthoringToolInner() {
       {/* ── Guided Tour Overlay ────────────────────────────── */}
       {showTour && activePanel === 'dashboard' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-silse-on-surface/40 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-sm mx-4 page-transition">
             <div className="bg-silse-surface-container-lowest border border-silse-outline-variant/50 rounded-2xl shadow-2xl overflow-hidden">
               <div className="bg-silse-primary-container/10 px-5 pt-5 pb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-silse-primary-container/20 flex items-center justify-center">
-                    <MapPin size={20} className="text-silse-primary" />
+                    <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '20px' }}>location_on</span>
                   </div>
                   <div>
                     <div className="text-xs font-medium text-silse-primary/70">

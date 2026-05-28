@@ -1,7 +1,6 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { ChevronLeft } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
@@ -27,7 +26,7 @@ export function ToolbarNav() {
         className="flex items-center gap-1 text-silse-on-surface-variant hover:text-silse-primary transition-colors"
         title={isSederhana ? 'Kembali ke Beranda' : 'Kembali ke Dashboard'}
       >
-        <ChevronLeft size={16} />
+        <span className="material-symbols-outlined text-silse-on-surface-variant hover:text-silse-primary" style={{ fontSize: '20px' }}>chevron_left</span>
       </button>
 
       {/* Brand name */}

@@ -20,16 +20,16 @@ export default function Section({
       <div className="section-divider" />
       <button
         onClick={onToggle}
-        className="w-full px-3 py-2 flex items-center justify-between hover:bg-app-elevated transition-colors duration-150"
+        className="w-full px-3 py-2 flex items-center justify-between hover:bg-silse-surface-container-low transition-colors duration-150"
       >
         <div className="flex items-center gap-1.5">
-          <span className="text-app-muted">{icon}</span>
-          <span className="text-[10px] font-bold text-app-secondary uppercase tracking-widest">{title}</span>
+          <span className="text-silse-on-surface-variant">{icon}</span>
+          <span className="text-[10px] font-bold text-silse-on-surface-variant uppercase tracking-widest">{title}</span>
         </div>
         {isCollapsed ? (
-          <ChevronRight size={12} className="text-app-muted" />
+          <ChevronRight size={12} className="text-silse-on-surface-variant" />
         ) : (
-          <ChevronDown size={12} className="text-app-muted" />
+          <ChevronDown size={12} className="text-silse-on-surface-variant" />
         )}
       </button>
       {!isCollapsed && (

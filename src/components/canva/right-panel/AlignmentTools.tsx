@@ -45,8 +45,8 @@ export default function AlignmentTools() {
   };
 
   return (
-    <div className="px-3 py-2 border-b border-app-border">
-      <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider mb-1.5">Align & Distribusi</div>
+    <div className="px-3 py-2 border-b border-silse-outline-variant">
+      <div className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider mb-1.5">Align & Distribusi</div>
       <div className="grid grid-cols-6 gap-1">
         <Button onClick={() => handleAlign('left')} variant="ghost" size="icon" className="focus-ring p-1 h-7 w-7" title="Align Left">
           <AlignStartHorizontal size={13} />

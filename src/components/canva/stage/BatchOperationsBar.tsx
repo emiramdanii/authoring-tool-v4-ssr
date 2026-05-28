@@ -105,14 +105,14 @@ export default function BatchOperationsBar() {
         <div className="flex items-center gap-0.5">
           <button
             onClick={handleMoveUp}
-            className="p-1 rounded-md text-app-muted hover:text-app-accent hover:bg-app-elevated/60 transition-colors"
+            className="p-1 rounded-md text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-surface-container-low/60 transition-colors"
             title="Pindah atas"
           >
             <ChevronUp size={12} />
           </button>
           <button
             onClick={handleMoveDown}
-            className="p-1 rounded-md text-app-muted hover:text-app-accent hover:bg-app-elevated/60 transition-colors"
+            className="p-1 rounded-md text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-surface-container-low/60 transition-colors"
             title="Pindah bawah"
           >
             <ChevronDown size={12} />
@@ -137,12 +137,12 @@ export default function BatchOperationsBar() {
 
         {/* Variant buttons */}
         <div className="flex items-center gap-1">
-          <Palette size={10} className="text-app-muted" />
+          <Palette size={10} className="text-silse-on-surface-variant" />
           {(['A', 'B', 'C'] as const).map(v => (
             <button
               key={v}
               onClick={() => handleSetVariant(v)}
-              className="px-2 py-0.5 rounded-md text-[9px] font-bold border border-app-border/30 bg-app-elevated/40 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[background-color,border-color]"
+              className="px-2 py-0.5 rounded-md text-[9px] font-bold border border-silse-outline-variant/30 bg-silse-surface-container-low/40 text-silse-on-surface-variant hover:text-silse-primary hover:border-silse-primary/30 transition-[background-color,border-color]"
             >
               V{v}
             </button>
@@ -155,7 +155,7 @@ export default function BatchOperationsBar() {
         {/* More actions toggle */}
         <button
           onClick={() => setShowMore(!showMore)}
-          className={`p-1 rounded-md transition-colors ${showMore ? 'text-amber-400 bg-amber-500/10' : 'text-app-muted hover:text-app-primary hover:bg-app-elevated/60'}`}
+          className={`p-1 rounded-md transition-colors ${showMore ? 'text-amber-400 bg-amber-500/10' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-low/60'}`}
           title="Tindakan lainnya"
         >
           <Layers size={12} />
@@ -173,7 +173,7 @@ export default function BatchOperationsBar() {
         {/* Clear selection button */}
         <button
           onClick={handleClearSelection}
-          className="flex items-center justify-center p-1 rounded-md text-app-muted hover:text-app-primary hover:bg-app-elevated/60 transition-colors"
+          className="flex items-center justify-center p-1 rounded-md text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-low/60 transition-colors"
           title="Batal pilih"
         >
           <X size={12} />
@@ -185,8 +185,8 @@ export default function BatchOperationsBar() {
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/5 border border-amber-500/15 backdrop-blur-md shadow-lg shadow-amber-500/5">
           {/* Compression priority */}
           <div className="flex items-center gap-1">
-            <Minimize2 size={10} className="text-app-muted" />
-            <span className="text-[8px] text-app-muted font-semibold">Prioritas:</span>
+            <Minimize2 size={10} className="text-silse-on-surface-variant" />
+            <span className="text-[8px] text-silse-on-surface-variant font-semibold">Prioritas:</span>
             <button
               onClick={() => handleSetCompression('high')}
               className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-amber-500/20 bg-amber-500/5 text-amber-300 hover:bg-amber-500/15 transition-[background-color,border-color]"
@@ -213,7 +213,7 @@ export default function BatchOperationsBar() {
           <div className="w-px h-4 bg-amber-500/15" />
 
           {/* Hint */}
-          <span className="text-[7px] text-app-muted">
+          <span className="text-[7px] text-silse-on-surface-variant">
             Prioritas kompresi mengatur block mana yang dipangkas saat halaman penuh
           </span>
         </div>
