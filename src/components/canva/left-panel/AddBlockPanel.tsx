@@ -228,7 +228,7 @@ export default function AddBlockPanel() {
       {/* ── Paling Sering Digunakan (Sederhana only) ── */}
       {isSederhana && popularBlocks.length > 0 && !search.trim() && (
         <div className="space-y-1.5">
-          <div className="text-[8px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+          <div className="text-[8px] font-bold text-silse-tertiary uppercase tracking-wider flex items-center gap-1">
             <Star size={8} />
             Paling Sering Digunakan
           </div>
@@ -252,7 +252,7 @@ export default function AddBlockPanel() {
 
       {/* Quick Insert Fragments — Phase F.4 */}
       <div className="space-y-2">
-        <div className="text-[8px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+        <div className="text-[8px] font-bold text-silse-tertiary uppercase tracking-wider flex items-center gap-1">
           <Zap size={8} />
           {isSederhana ? 'Sisipkan Cepat' : 'Quick Insert'}
           <span className="text-app-muted">({filteredFragments.length})</span>
@@ -291,7 +291,7 @@ export default function AddBlockPanel() {
             onClick={() => setFragmentFilter('all')}
             className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-[background-color,border-color,color] ${
               fragmentFilter === 'all'
-                ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                ? 'bg-silse-tertiary-container/15 border border-silse-tertiary-container/30 text-silse-tertiary'
                 : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
             }`}
           >
@@ -305,7 +305,7 @@ export default function AddBlockPanel() {
                 onClick={() => setFragmentFilter(catKey)}
                 className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-[background-color,border-color,color] flex items-center gap-0.5 ${
                   fragmentFilter === catKey
-                    ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                    ? 'bg-silse-tertiary-container/15 border border-silse-tertiary-container/30 text-silse-tertiary'
                     : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
                 }`}
               >

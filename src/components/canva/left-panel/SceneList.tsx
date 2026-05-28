@@ -98,7 +98,7 @@ export function SceneList() {
             <div
               className={`w-12 h-8 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
                 isActive
-                  ? 'bg-black/10'
+                  ? 'bg-silse-on-surface/10'
                   : 'bg-silse-surface-container-highest'
               }`}
               style={isActive ? {} : bgStyle}
@@ -114,7 +114,7 @@ export function SceneList() {
                 {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}
                 Scene {i + 1}: {p.label}
                 {pageOverflowStatus[p.id]?.hasOverflow && (
-                  <span className="material-symbols-outlined inline ml-1 text-amber-400" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
+                  <span className="material-symbols-outlined inline ml-1 text-silse-tertiary" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
                 )}
               </span>
             </div>
@@ -133,7 +133,7 @@ export function SceneList() {
               if (pages.length <= 1) return;
               if (confirm(`Hapus "${pages[currentPageIndex]!.label}"?`)) deletePage();
             }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-destructive/70 hover:text-destructive bg-destructive/10"
+            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span> Hapus
           </Button>

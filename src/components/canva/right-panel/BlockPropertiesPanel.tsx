@@ -137,7 +137,7 @@ export default function BlockPropertiesPanel() {
             </div>
           </div>
           {editingBlockId === selectedBlockId && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-600 border border-emerald-500/20">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-silse-primary-container/15 text-silse-primary border border-silse-primary-container/30">
               EDITING
             </span>
           )}
@@ -193,8 +193,8 @@ export default function BlockPropertiesPanel() {
                 <span className="text-[12px] text-silse-on-surface-variant">Posisi</span>
                 <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${
                   definition.defaultLayout.position === 'flow'
-                    ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/20'
-                    : 'bg-amber-500/15 text-amber-600 border border-amber-500/20'
+                    ? 'bg-silse-primary-container/15 text-silse-primary border border-silse-primary-container/30'
+                    : 'bg-silse-tertiary-container/15 text-silse-tertiary border border-silse-tertiary-container/30'
                 }`}>
                   {definition.defaultLayout.position}
                 </span>
@@ -214,7 +214,7 @@ export default function BlockPropertiesPanel() {
       <div className="p-6 bg-silse-surface-container-low border-t border-silse-outline-variant shrink-0">
         <button
           onClick={handleRemoveBlock}
-          className="w-full py-3 bg-silse-on-surface text-white rounded-full text-[13px] font-bold hover:bg-silse-on-surface active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 bg-silse-error text-silse-on-error rounded-full text-[13px] font-bold hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
           Hapus {teacherMode ? 'Konten' : 'Block'}

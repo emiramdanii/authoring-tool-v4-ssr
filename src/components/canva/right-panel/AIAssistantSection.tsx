@@ -150,7 +150,7 @@ export default function AIAssistantSection() {
             onClick={() => setActiveTab('generate')}
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'generate'
-                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
+                ? 'bg-silse-tertiary-container/15 text-silse-tertiary border border-silse-tertiary-container/20'
                 : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant border border-transparent'
             }`}
           >
@@ -161,7 +161,7 @@ export default function AIAssistantSection() {
             onClick={() => setActiveTab('content')}
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               activeTab === 'content'
-                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
+                ? 'bg-silse-tertiary-container/15 text-silse-tertiary border border-silse-tertiary-container/20'
                 : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant border border-transparent'
             }`}
           >
@@ -202,14 +202,14 @@ export default function AIAssistantSection() {
           }}
           onClick={dismissHint}
         >
-          <div className="relative bg-amber-500/90 text-amber-950 px-4 py-3 rounded-xl shadow-lg shadow-amber-500/20 max-w-[260px] cursor-pointer border border-amber-400/30">
+          <div className="relative bg-silse-tertiary-container/90 text-silse-on-tertiary px-4 py-3 rounded-xl shadow-lg max-w-[260px] cursor-pointer border border-silse-tertiary/30">
             <div className="text-[11px] font-bold leading-tight">
               💡 Gunakan AI Assistant untuk mengisi konten secara otomatis
             </div>
-            <div className="text-[9px] text-amber-800/70 mt-1">
+            <div className="text-[9px] text-silse-on-tertiary/70 mt-1">
               Klik tombol AI di toolbar, atau tekan Ctrl+I
             </div>
-            <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-amber-500/90" />
+            <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-silse-tertiary-container/90" />
           </div>
         </div>,
         document.body,

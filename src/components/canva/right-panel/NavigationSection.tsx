@@ -52,7 +52,7 @@ export default function NavigationSection() {
           type="checkbox"
           checked={navConfig?.showNavbar ?? true}
           onChange={e => updateNavConfig({ showNavbar: e.target.checked })}
-          className="accent-amber-500 w-3 h-3"
+          className="accent-silse-tertiary w-3 h-3"
         />
         <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Navbar</span>
       </label>
@@ -62,7 +62,7 @@ export default function NavigationSection() {
           type="checkbox"
           checked={navConfig?.showPrevNext ?? true}
           onChange={e => updateNavConfig({ showPrevNext: e.target.checked })}
-          className="accent-amber-500 w-3 h-3"
+          className="accent-silse-tertiary w-3 h-3"
         />
         <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Tombol Prev/Next</span>
       </label>
@@ -72,7 +72,7 @@ export default function NavigationSection() {
           type="checkbox"
           checked={navConfig?.showScore ?? true}
           onChange={e => updateNavConfig({ showScore: e.target.checked })}
-          className="accent-amber-500 w-3 h-3"
+          className="accent-silse-tertiary w-3 h-3"
         />
         <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Tampilkan Skor</span>
       </label>
@@ -82,7 +82,7 @@ export default function NavigationSection() {
           type="checkbox"
           checked={navConfig?.showProgress ?? true}
           onChange={e => updateNavConfig({ showProgress: e.target.checked })}
-          className="accent-amber-500 w-3 h-3"
+          className="accent-silse-tertiary w-3 h-3"
         />
         <span className="text-[9px] text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">Progress Bar</span>
       </label>
@@ -99,7 +99,7 @@ export default function NavigationSection() {
                 onClick={() => updateNavConfig({ navbarStyle: style.value })}
                 className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-[background-color,border-color] text-left ${
                   isActive
-                    ? 'bg-amber-500/10 border border-amber-500/30'
+                    ? 'bg-silse-tertiary-container/10 border border-silse-tertiary-container/30'
                     : 'bg-silse-surface-container-low/50 border border-transparent hover:border-silse-outline-variant/30'
                 }`}
               >
@@ -113,7 +113,7 @@ export default function NavigationSection() {
                   }}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className={`text-[9px] font-bold ${isActive ? 'text-amber-400' : 'text-silse-on-surface'}`}>
+                  <div className={`text-[9px] font-bold ${isActive ? 'text-silse-tertiary' : 'text-silse-on-surface'}`}>
                     {style.label}
                   </div>
                   <div className="text-[7px] text-silse-on-surface-variant truncate">
@@ -121,7 +121,7 @@ export default function NavigationSection() {
                   </div>
                 </div>
                 {isActive && (
-                  <span className="text-[8px] text-amber-400 flex-shrink-0">✓</span>
+                  <span className="text-[8px] text-silse-tertiary flex-shrink-0">✓</span>
                 )}
               </button>
             );

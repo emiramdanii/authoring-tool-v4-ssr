@@ -227,7 +227,7 @@ function InlineTitleEditor({
       />
       <button
         onClick={() => onSave(title)}
-        className="flex-shrink-0 text-emerald-500 hover:text-emerald-600 p-0.5"
+        className="flex-shrink-0 text-silse-primary hover:text-silse-primary/80 p-0.5"
         title="Simpan"
       >
         <Check size={10} />
@@ -598,7 +598,7 @@ function SummaryBar({ totalPages, totalBlocks, categoryDistribution }: SummaryBa
           <span className="text-[10px] text-silse-on-surface-variant">halaman</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Zap size={13} className="text-emerald-500/70" />
+          <Zap size={13} className="text-silse-primary-container/70" />
           <span className="text-xs font-bold text-silse-on-surface">{totalBlocks}</span>
           <span className="text-[10px] text-silse-on-surface-variant">blok</span>
         </div>

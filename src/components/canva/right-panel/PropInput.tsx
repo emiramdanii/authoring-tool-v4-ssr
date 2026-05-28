@@ -16,7 +16,7 @@ export default function PropInput({ label, value, min, max, onChange }: {
         min={min}
         max={max}
         onChange={e => onChange(parseFloat(e.target.value) || 0)}
-        className="flex-1 h-7 px-2 text-[10px] text-silse-on-surface bg-silse-surface-container-low border border-silse-outline-variant rounded-lg focus:border-amber-500/50 focus:outline-none focus-ring"
+        className="flex-1 h-7 px-2 text-[10px] text-silse-on-surface bg-silse-surface-container-low border border-silse-outline-variant rounded-lg focus:border-silse-primary/50 focus:outline-none focus-ring"
       />
     </div>
   );

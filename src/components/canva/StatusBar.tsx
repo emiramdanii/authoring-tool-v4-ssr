@@ -202,7 +202,7 @@ export default function StatusBar() {
           const def = SCENE_TYPES[st];
           const colorKey = SCENE_PRIMARY_COLOR[st];
           const sceneColors: Record<string, string> = {
-            tujuan: 'text-amber-500',
+            tujuan: 'text-silse-tertiary',
             materi: 'text-cyan-500',
             contoh: 'text-green-500',
             aktivitas: 'text-orange-500',
@@ -276,7 +276,7 @@ export default function StatusBar() {
         <DisplayModeSelector />
         {/* Teacher mode badge — always visible so teachers know their mode */}
         {teacherMode && (
-          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-[8px] font-bold text-emerald-400">
+          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-silse-primary-container/10 text-[8px] font-bold text-silse-primary-container">
             <GraduationCap size={8} />
             Mode Guru
           </span>

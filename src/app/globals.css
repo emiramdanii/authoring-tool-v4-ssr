@@ -122,6 +122,12 @@
   --color-silse-outline-variant: var(--silse-outline-variant);
   --color-silse-inverse-surface: var(--silse-inverse-surface);
   --color-silse-inverse-on-surface: var(--silse-inverse-on-surface);
+  --color-silse-error: var(--silse-error);
+  --color-silse-error-container: var(--silse-error-container);
+  --color-silse-on-error: var(--silse-on-error);
+  --color-silse-on-error-container: var(--silse-on-error-container);
+  --color-silse-on-secondary-container: var(--silse-on-secondary-container);
+  --color-silse-surface-variant: var(--silse-surface-variant);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -230,6 +236,12 @@
   --silse-on-surface-variant: #3c4a42;
   --silse-outline: #6c7a71;
   --silse-outline-variant: #bbcabf;
+  --silse-error: #ba1a1a;
+  --silse-error-container: #ffdad6;
+  --silse-on-error: #ffffff;
+  --silse-on-error-container: #93000a;
+  --silse-on-secondary-container: #fefcff;
+  --silse-surface-variant: #e0e3e5;
   --silse-inverse-surface: #2d3133;
   --silse-inverse-on-surface: #eff1f3;
 
@@ -355,6 +367,12 @@
   --silse-on-surface-variant: #a1a1aa;
   --silse-outline: #71717a;
   --silse-outline-variant: #3f3f46;
+  --silse-error: #ffb4ab;
+  --silse-error-container: #93000a;
+  --silse-on-error: #690005;
+  --silse-on-error-container: #ffdad6;
+  --silse-on-secondary-container: #d5e3ff;
+  --silse-surface-variant: #3f3f46;
   --silse-inverse-surface: #e8eaed;
   --silse-inverse-on-surface: #191c1e;
 

@@ -81,7 +81,7 @@ function RightActions() {
         className="flex items-center justify-center h-8 w-8 rounded-lg text-silse-on-surface-variant hover:text-silse-primary transition-colors"
         title="Tersimpan di cloud"
       >
-        <span className="material-symbols-outlined text-emerald-500" style={{ fontSize: '20px' }}>cloud_done</span>
+        <span className="material-symbols-outlined text-silse-primary-container" style={{ fontSize: '20px' }}>cloud_done</span>
       </button>
 
       {/* Help button */}
