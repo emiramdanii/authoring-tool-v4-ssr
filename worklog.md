@@ -766,3 +766,28 @@ Stage Summary:
 - **Typography upgraded** — Brand text-2xl, subtitle text-sm font-bold, Workspace header text-xl
 - **Dashboard polished** — Upward-lift AI button, larger BSNP/stats icons, circular template card
 - **31 gaps identified, 18 P0+P1 gaps fixed** — Remaining P2 items: floating canvas toolbar, animation section, rich text toolbar
+
+---
+Task ID: silse-v4-design-unification
+Agent: Main Agent
+Task: SILSE v4 Design Unification — Complete app-* → silse-* token migration + Material Symbols icons
+
+Work Log:
+- StatusBar.tsx: All app-* tokens migrated to silse-* (surface, outline-variant, primary, secondary, error)
+- SceneList.tsx: Badge colors migrated from app-info/warning/error/accent-secondary to silse MD3 tokens
+- ToolbarNav.tsx: ChevronLeft lucide → chevron_left Material Symbol
+- Toolbar.tsx: Eye/Edit3 lucide → visibility/edit Material Symbols, app-success → silse-primary
+- BlockPropertiesPanel.tsx: SlidersHorizontal/BookOpen lucide → tune/menu_book Material Symbols
+- AuthoringTool.tsx: All 17 lucide icons replaced with Material Symbols Outlined (dashboard, edit_note, folder_open, analytics, auto_awesome, swap_horiz, visibility, schedule, settings, contact_support, school, add_circle, save, download, arrow_back, location_on)
+- SchemaBlockTree.tsx: ChevronRight/Zap/Pencil lucide → chevron_right/bolt/edit Material Symbols
+- LeftPanel.tsx: TemplateGallery/PageTypeCreator loading skeleton app-elevated → silse-surface-container-high
+- Bulk migration: 16 right-panel + stage files migrated from app-* to silse-* tokens
+- bg-app-overlay → bg-silse-on-surface/40 in AuthoringTool tour overlay
+- Build verified: npx next build zero errors
+- Git push: commit 2f94ee0
+
+Stage Summary:
+- **Complete token unification** — all primary workspace components now use silse-* MD3 tokens exclusively
+- **Material Symbols unified** — ToolbarNav, Toolbar, BlockPropertiesPanel, AuthoringTool sidebar, SchemaBlockTree all use Material Symbols Outlined
+- **24 files changed** — 229 insertions, 252 deletions (net reduction = cleaner code)
+- **Remaining app-* tokens** exist in: TemplateWizard, PlayOverlay, PageTypeCreator, TemplateMarketplace, authoring panels (Riwayat, BsnpCompliance, LivePreview, import-export, auto-generate) — these are lower priority secondary panels
