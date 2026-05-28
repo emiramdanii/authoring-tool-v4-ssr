@@ -22,7 +22,7 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
 import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-patch';
-import { SlidersHorizontal, X, Trash2, BookOpen } from 'lucide-react';
+import { SlidersHorizontal, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './block-properties/use-selected-block';
 import { GuidedFormEditor } from './block-properties/GuidedFormEditor';
@@ -73,10 +73,10 @@ export default function BlockPropertiesPanel() {
     return (
       <div className="flex flex-col h-full">
         {/* Header — stitch style */}
-        <div className="p-4 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
+        <div className="p-6 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
           <div className="flex items-center gap-2">
             <SlidersHorizontal size={18} className="text-silse-tertiary" />
-            <h3 className="text-[14px] font-bold text-silse-on-surface">Properties</h3>
+            <h3 className="text-sm font-bold text-silse-on-surface">Properties</h3>
           </div>
           <Button
             variant="ghost"
@@ -84,7 +84,7 @@ export default function BlockPropertiesPanel() {
             onClick={() => selectBlock(null)}
             className="h-7 w-7 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg"
           >
-            <X size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
           </Button>
         </div>
         <div className="p-6 text-center">
@@ -97,14 +97,14 @@ export default function BlockPropertiesPanel() {
   return (
     <div className="flex flex-col h-full" data-testid="block-properties-panel">
       {/* ═══ Header — SILSE v4 spec ═══════════════════════════════ */}
-      <div className="p-4 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
+      <div className="p-6 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest shrink-0">
         <div className="flex items-center gap-2">
           {useGuidedForm ? (
             <BookOpen size={18} className="text-silse-primary-container" />
           ) : (
             <SlidersHorizontal size={18} className="text-silse-tertiary" />
           )}
-          <h3 className="text-[14px] font-bold text-silse-on-surface">
+          <h3 className="text-sm font-bold text-silse-on-surface">
             {useGuidedForm ? 'Edit Konten' : 'Properties'}
           </h3>
         </div>
@@ -114,12 +114,12 @@ export default function BlockPropertiesPanel() {
           onClick={() => { selectBlock(null); stopEditing(); }}
           className="h-7 w-7 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg"
         >
-          <X size={14} />
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
         </Button>
       </div>
 
       {/* ═══ Scrollable Content ═══════════════════════════════════ */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
         {/* Block Type Badge — SILSE v4 style */}
         <div className="flex items-center gap-3 p-3 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/50">
           <span className="text-2xl">{guidedSchema?.icon || definition?.icon || '📦'}</span>
@@ -212,12 +212,12 @@ export default function BlockPropertiesPanel() {
       </div>
 
       {/* ═══ Footer Action — Stitch spec ═══════════════════════════ */}
-      <div className="p-4 bg-surface-container-low border-t border-silse-outline-variant shrink-0">
+      <div className="p-6 bg-surface-container-low border-t border-silse-outline-variant shrink-0">
         <button
           onClick={handleRemoveBlock}
           className="w-full py-3 bg-silse-on-surface text-white rounded-full text-[13px] font-bold hover:bg-silse-on-surface active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
-          <Trash2 size={16} />
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
           Hapus {teacherMode ? 'Konten' : 'Block'}
         </button>
       </div>

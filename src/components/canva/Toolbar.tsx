@@ -5,7 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { ToolbarNav } from './toolbar/ToolbarNav';
 import { useExportActions } from './toolbar/use-export-actions';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Edit3, Eye, CloudCheck, HelpCircle, GraduationCap } from 'lucide-react';
+import { ChevronLeft, Edit3, Eye } from 'lucide-react';
 import { triggerCanvaTour } from '@/components/shared/CanvaTour';
 import { triggerCanvaOrientation } from '@/components/shared/CanvaOrientationTooltip';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -81,7 +81,7 @@ function RightActions() {
         className="flex items-center justify-center h-8 w-8 rounded-lg text-silse-on-surface-variant hover:text-silse-primary transition-colors"
         title="Tersimpan di cloud"
       >
-        <CloudCheck size={18} className="text-emerald-500" />
+        <span className="material-symbols-outlined text-emerald-500" style={{ fontSize: '20px' }}>cloud_done</span>
       </button>
 
       {/* Help button */}
@@ -96,7 +96,7 @@ function RightActions() {
         className="flex items-center justify-center h-8 w-8 rounded-lg text-silse-on-surface-variant hover:text-silse-primary transition-colors"
         title={isSederhana ? 'Bantuan — tampilkan panduan' : 'Help — restart tour'}
       >
-        <HelpCircle size={18} />
+        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>help_outline</span>
       </button>
 
       {/* Preview + Publish buttons */}
@@ -118,7 +118,7 @@ function RightActions() {
 
       {/* Teacher Profile Avatar — SILSE v4 reference */}
       <div className="w-8 h-8 rounded-full bg-silse-primary-container border border-silse-outline-variant flex items-center justify-center ml-2">
-        <GraduationCap size={14} className="text-silse-on-primary-container" />
+        <span className="material-symbols-outlined text-silse-on-primary-container" style={{ fontSize: '16px' }}>school</span>
       </div>
     </div>
   );

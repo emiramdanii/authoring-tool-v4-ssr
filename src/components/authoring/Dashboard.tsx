@@ -285,7 +285,7 @@ export default function Dashboard() {
                 {/* AI Content Button */}
                 <button
                   onClick={() => setActivePanel('autogen')}
-                  className="flex items-center gap-2 px-8 py-5 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary hover:scale-95 transition-transform"
+                  className="flex items-center gap-2 px-8 py-5 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
                 >
                   <AutoAwesome size={18} />
                   Buat Konten Baru dengan AI
@@ -324,13 +324,13 @@ export default function Dashboard() {
             <div className="sm:col-span-2 glass-card rounded-[24px] p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <span className="text-xs font-semibold text-silse-on-surface-variant uppercase tracking-wider">Kelengkapan BSNP</span>
+                  <span className="text-sm font-bold text-silse-on-surface-variant uppercase tracking-wider">Kelengkapan Standar BSNP</span>
                   <p className="text-[0.65rem] text-silse-on-surface-variant mt-0.5">
                     {hasData ? 'Standar BSNP compliance' : 'Mulai proyek untuk cek'}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-2xl bg-silse-secondary-container/10 flex items-center justify-center">
-                  <Check size={18} className="text-silse-secondary-container" />
+                <div className="w-12 h-12 rounded-2xl bg-silse-secondary-container/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '28px' }}>verified</span>
                 </div>
               </div>
               <div className="text-4xl font-bold text-silse-on-surface" style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}>
@@ -366,7 +366,7 @@ export default function Dashboard() {
             {/* Views/Status Card — 1-col */}
             <div className="bg-silse-secondary-container/10 rounded-[24px] p-6 flex flex-col items-center justify-center text-center">
               <div className="w-14 h-14 rounded-2xl bg-silse-secondary-container/20 flex items-center justify-center mb-3">
-                <BarChart3 size={24} className="text-silse-secondary-container" />
+                <span className="material-symbols-outlined text-silse-secondary-container" style={{ fontSize: '32px' }}>visibility</span>
               </div>
               <div className="flex items-center gap-2 mb-1">
                 <span className={`w-2 h-2 rounded-full ${isPresetMode ? 'bg-silse-primary' : hasData ? 'bg-silse-primary' : 'bg-silse-on-surface-variant'}`} />
@@ -458,9 +458,9 @@ export default function Dashboard() {
               {/* Mulai dari Template dashed card */}
               <button
                 onClick={() => setWizardOpen(true)}
-                className="rounded-[24px] p-4 text-center border-2 border-dashed border-silse-outline-variant bg-transparent hover:border-silse-primary/30 hover:bg-silse-primary/3 transition-colors cursor-pointer"
+                className="rounded-[24px] p-4 text-center border-2 border-dashed border-silse-outline-variant bg-transparent hover:border-silse-primary/30 hover:bg-silse-primary/5 group transition-colors cursor-pointer"
               >
-                <div className="w-full h-20 rounded-2xl mb-3 flex items-center justify-center bg-silse-primary/5 text-silse-primary">
+                <div className="w-16 h-16 rounded-full mb-3 mx-auto flex items-center justify-center bg-silse-primary/5 text-silse-primary group-hover:bg-silse-primary-container transition-colors">
                   <Plus size={28} />
                 </div>
                 <div className="text-xs font-semibold text-silse-on-surface-variant">Mulai dari Template</div>

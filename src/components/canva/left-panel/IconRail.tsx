@@ -1,6 +1,5 @@
 'use client';
 
-import { Layers, Grid3X3, LayoutTemplate, Image, Settings } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import {
@@ -25,28 +24,27 @@ export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'se
 interface IconRailProps {
   activeTab: LeftPanelTab;
   onTabChange: (tab: LeftPanelTab) => void;
-  expanded: boolean;
+  expanded?: boolean;
 }
 
-// Primary tabs — always shown at the top (SILSE v4 icons: layers, grid_view, category, perm_media)
-const PRIMARY_RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }[] = [
-  { id: 'pages', icon: Layers, labelKey: 'Halaman' },
-  { id: 'add-block', icon: Grid3X3, labelKey: 'Block' },
-  { id: 'templates', icon: LayoutTemplate, labelKey: 'Template' },
+// Primary tabs — always shown at the top (SILSE v4: Material Symbols Outlined)
+const PRIMARY_RAIL_ITEMS: { id: LeftPanelTab; icon: string; labelKey: string }[] = [
+  { id: 'pages', icon: 'layers', labelKey: 'Halaman' },
+  { id: 'add-block', icon: 'grid_view', labelKey: 'Block' },
+  { id: 'templates', icon: 'category', labelKey: 'Template' },
 ];
 
 // Secondary tabs — shown at bottom with visual separator
-const SECONDARY_RAIL_ITEMS: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }[] = [
-  { id: 'history', icon: Image, labelKey: 'Riwayat' },
-  { id: 'settings', icon: Settings, labelKey: 'Pengaturan' },
+const SECONDARY_RAIL_ITEMS: { id: LeftPanelTab; icon: string; labelKey: string }[] = [
+  { id: 'history', icon: 'perm_media', labelKey: 'Riwayat' },
+  { id: 'settings', icon: 'settings', labelKey: 'Pengaturan' },
 ];
 
 export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
-  // Render a single rail button — SILSE v4 style
-  const renderRailButton = (item: { id: LeftPanelTab; icon: React.ComponentType<{ size?: number; className?: string }>; labelKey: string }) => {
-    const Icon = item.icon;
+  // Render a single rail button — SILSE v4 style with Material Symbols
+  const renderRailButton = (item: { id: LeftPanelTab; icon: string; labelKey: string }) => {
     const isActive = activeTab === item.id;
     // "Tambah Block" → "Tambah Konten" in sederhana mode
     const label = item.id === 'add-block'
@@ -57,7 +55,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
         <TooltipTrigger asChild>
           <button
             onClick={() => onTabChange(item.id)}
-            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-[background-color,color] duration-200 ${
+            className={`w-12 h-12 flex items-center justify-center rounded-xl transition-[background-color,color] duration-200 ${
               isActive
                 ? 'bg-silse-primary-container text-silse-on-primary-container'
                 : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high'
@@ -65,7 +63,12 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
             aria-label={label}
             aria-pressed={isActive}
           >
-            <Icon size={20} />
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '24px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
+            >
+              {item.icon}
+            </span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="right" className="text-[10px]">
@@ -77,7 +80,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
 
   return (
     <div
-      className="flex flex-col items-center py-3 gap-1 border-r border-silse-outline-variant bg-silse-surface-container-lowest flex-shrink-0"
+      className="flex flex-col items-center py-6 gap-6 border-r border-silse-outline-variant bg-silse-surface-container-lowest flex-shrink-0"
       style={{ width: '64px' }}
     >
       {/* Primary tabs — always visible at top */}

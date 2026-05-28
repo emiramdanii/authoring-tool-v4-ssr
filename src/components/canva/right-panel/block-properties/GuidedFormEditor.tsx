@@ -113,7 +113,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
   const sectionOrder = guidedSchema.sections?.map(s => s.key) ?? [];
 
   return (
-    <div className="space-y-4" role="region" aria-label={`Guided Editor: ${guidedSchema.displayName}`}>
+    <div className="space-y-5 p-6" role="region" aria-label={`Guided Editor: ${guidedSchema.displayName}`}>
       {/* ── Overflow warning banner ── */}
       {overflowDetails && overflowDetails.overflowDetected && (
         <OverflowWarningBanner

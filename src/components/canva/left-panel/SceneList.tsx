@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Copy, Trash2, Zap, Plus, AlertTriangle } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
@@ -112,10 +111,10 @@ export function SceneList() {
               <span className={`text-sm font-medium truncate block ${
                 isActive ? 'font-bold' : ''
               }`}>
-                {isSchemaDriven && <Zap size={10} className="inline mr-0.5" />}
+                {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}
                 Scene {i + 1}: {p.label}
                 {pageOverflowStatus[p.id]?.hasOverflow && (
-                  <AlertTriangle size={9} className="inline ml-1 text-amber-400" aria-label="Konten melebihi kapasitas" />
+                  <span className="material-symbols-outlined inline ml-1 text-amber-400" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
                 )}
               </span>
             </div>
@@ -126,7 +125,7 @@ export function SceneList() {
       {pages.length > 0 && (
         <div className="flex gap-1 pt-1">
           <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[10px] gap-1">
-            <Copy size={10} /> Duplikat
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>content_copy</span> Duplikat
           </Button>
           <Button
             variant="ghost"
@@ -136,7 +135,7 @@ export function SceneList() {
             }}
             className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-destructive/70 hover:text-destructive bg-destructive/10"
           >
-            <Trash2 size={10} /> Hapus
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span> Hapus
           </Button>
         </div>
       )}
@@ -146,7 +145,7 @@ export function SceneList() {
         onClick={() => addPage()}
         className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
       >
-        <Plus size={12} /> Tambah Halaman
+        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span> Tambah Halaman
       </button>
 
       {/* Drag hint */}

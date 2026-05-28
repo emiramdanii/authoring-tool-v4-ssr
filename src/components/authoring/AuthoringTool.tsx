@@ -340,12 +340,12 @@ function AuthoringToolInner() {
         {/* ── Brand / Logo ── */}
         <div className="px-6 pt-6 pb-4">
           <div
-            className="text-xl font-bold text-silse-primary tracking-tight"
+            className="text-2xl font-bold text-silse-primary tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Authoring Studio
           </div>
-          <div className="text-xs text-silse-on-surface-variant mt-1">
+          <div className="text-sm font-bold text-silse-on-surface-variant mt-1">
             SMP Education Portal
           </div>
         </div>

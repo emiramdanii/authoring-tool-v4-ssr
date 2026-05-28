@@ -12,7 +12,7 @@ import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal, X } from 'lucide-react';
+import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
@@ -94,11 +94,11 @@ export default function RightPanel() {
   return (
     <div className="w-80 bg-silse-surface-container-lowest border-l border-silse-outline-variant flex flex-col shrink-0 overflow-hidden">
       {/* ── Properties Header — SILSE v4 reference style ── */}
-      <div className="p-4 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
+      <div className="p-6 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '20px' }}>tune</span>
           <h3
-            className="text-base font-bold text-silse-on-surface"
+            className="text-lg font-bold text-silse-on-surface"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Properties
@@ -109,7 +109,7 @@ export default function RightPanel() {
           className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high transition-colors"
           aria-label="Tutup panel"
         >
-          <X size={16} />
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
         </button>
       </div>
 

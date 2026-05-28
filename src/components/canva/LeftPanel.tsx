@@ -94,14 +94,14 @@ export default function LeftPanel() {
   return (
     <div className="flex h-full bg-silse-surface-container-low overflow-hidden">
       {/* ── Icon Rail — Always visible, 64px ── */}
-      <IconRail activeTab={activeTab} onTabChange={handleTabChange} />
+      <IconRail activeTab={activeTab} onTabChange={handleTabChange} expanded />
 
       {/* ── Content Panel — Always visible, flex-1 (~224px) ── */}
       <div className="flex-1 flex flex-col overflow-hidden border-r border-silse-outline-variant bg-silse-surface-container-low">
         {/* Header — SILSE v4 Workspace style */}
-        <div className="px-4 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="px-6 py-4 flex items-center justify-between flex-shrink-0">
           <h3
-            className="text-base font-bold text-silse-on-surface"
+            className="text-xl font-bold text-silse-on-surface"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Workspace
@@ -117,7 +117,7 @@ export default function LeftPanel() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="p-3 space-y-4">
+          <div className="p-4 space-y-4">
             {/* ── Pages tab: Scenes + Library Blocks (SILSE v4 reference layout) ── */}
               {activeTab === 'pages' && (
               <>
