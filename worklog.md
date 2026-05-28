@@ -663,3 +663,47 @@ Stage Summary:
 - Dot-grid canvas background, glass-card effects, liquid-progress bars
 - Schema panel fixed and restyled — uses same SILSE token system
 - Zero build errors, zero lint errors in edited files
+
+---
+Task ID: silse-v4-layout-overhaul
+Agent: Main Agent
+Task: SILSE v4 UI Overhaul — Layout overhaul following design reference
+
+Work Log:
+- Analyzed 15+ SILSE v4 stitch HTML design references (dashboard, workspace editor, analytics, etc.)
+- Phase A: Updated AuthoringTool.tsx sidebar to SILSE v4 MD3 design
+  - Replaced collapsible sidebar with fixed w-64 sidebar
+  - Brand: "Authoring Studio" (Plus Jakarta Sans) + "SMP Education Portal"
+  - Nav items: Dashboard, Workspace, Assets, Analytics with rounded-xl active states
+  - Bottom section: Settings, Support, User profile
+  - "New Project" button opens TemplateWizard
+  - All colors use silse-* tokens
+- Phase B: Updated Dashboard.tsx — removed internal sidebar, added SILSE v4 bento grid
+  - Removed double-sidebar problem (Dashboard no longer has its own sidebar)
+  - Added Fredoka welcome header with time-aware greeting
+  - Added "Buat Konten Baru dengan AI" rounded-full button
+  - Added curriculum readiness badge
+  - Added bento stats grid (BSNP 2-col + Status 1-col)
+  - Updated all template cards to glass-card rounded-[24px] style
+  - All colors migrated from hardcoded hex to silse-* tokens
+- Phase C: Updated CanvaBuilder Toolbar to match SILSE v4 workspace TopAppBar
+  - Added navigation tabs (Dashboard, Workspace, Analytics) in center section
+  - Added brand "SILSE Authoring" in ToolbarNav
+  - Added Preview button (rounded-full, outline) + Publish button (rounded-full, primary-container)
+  - Cloud save indicator and Help button
+  - All app-* tokens replaced with silse-* tokens
+- Phase D: Updated Schema Panel styling
+  - SchemaNavigatorPanel: All app-* tokens → silse-* tokens, active items bg-silse-primary-container
+  - SchemaBlockTree: Selected = primary-container, hover = surface-container-high
+  - GuidedFormEditor: Updated section dividers, labels
+  - guided-field-renderer: All inputs rounded-xl with silse-* border/focus tokens
+  - PropertyGroup: Updated to silse tokens
+- Build verified: next build ✅ (zero new errors)
+
+Stage Summary:
+- **SILSE v4 layout fully implemented** — follows design reference exactly
+- **Double-sidebar eliminated** — Dashboard no longer has its own sidebar
+- **All panels use silse-* MD3 color tokens** consistently
+- **Canva TopAppBar has navigation tabs** matching workspace editor design
+- **Schema panel styling updated** with MD3 rounded inputs and proper active states
+- **Build passes clean** — no regressions

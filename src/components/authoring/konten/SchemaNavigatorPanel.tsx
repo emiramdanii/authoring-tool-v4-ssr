@@ -18,6 +18,12 @@
 //   WRITE: applyGuidedSchemaPatch() for title edits
 //          useCanvaStore.deleteBlock/duplicateBlock/moveBlockUp/moveBlockDown
 //   NO useAuthoringStore — pure canva store for all operations
+//
+// SILSE v4 styling:
+//   - Background: bg-silse-surface-container-low
+//   - Section headers: text-xs uppercase tracking-wider text-silse-outline font-bold
+//   - Active items: bg-silse-primary-container text-silse-on-primary-container rounded-xl
+//   - Inactive items: hover:bg-silse-surface-container-high rounded-xl
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
@@ -182,12 +188,10 @@ interface CategoryGroupData {
 
 function InlineTitleEditor({
   block,
-  pageId,
   onSave,
   onCancel,
 }: {
   block: SchemaBlock;
-  pageId: string;
   onSave: (newTitle: string) => void;
   onCancel: () => void;
 }) {
@@ -219,18 +223,18 @@ function InlineTitleEditor({
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={() => onSave(title)}
-        className="flex-1 min-w-0 bg-app-elevated border border-app-accent/30 rounded px-1.5 py-0.5 text-xs text-app-primary focus:outline-none focus:ring-1 focus:ring-app-accent/50"
+        className="flex-1 min-w-0 bg-silse-surface-bright border border-silse-secondary/30 rounded-lg px-2 py-0.5 text-xs text-silse-on-surface focus:outline-none focus:ring-1 focus:ring-silse-secondary/50"
       />
       <button
         onClick={() => onSave(title)}
-        className="flex-shrink-0 text-app-success hover:text-app-success/80 p-0.5"
+        className="flex-shrink-0 text-emerald-500 hover:text-emerald-600 p-0.5"
         title="Simpan"
       >
         <Check size={10} />
       </button>
       <button
         onClick={onCancel}
-        className="flex-shrink-0 text-app-muted hover:text-app-danger p-0.5"
+        className="flex-shrink-0 text-silse-on-surface-variant hover:text-red-400 p-0.5"
         title="Batal"
       >
         <X size={10} />
@@ -302,10 +306,10 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
         <button
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
-          className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all duration-150 group ${
+          className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left transition-all duration-150 group ${
             isSelected
-              ? 'bg-app-accent/10 text-app-accent ring-1 ring-app-accent/20'
-              : 'text-app-secondary hover:bg-app-elevated/60 hover:text-app-primary'
+              ? 'bg-silse-primary-container text-silse-on-primary-container'
+              : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface'
           }`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
           title={`${title} — ${display.label}${kontenTab ? ` (Edit di tab ${kontenTab})` : ''}`}
@@ -314,7 +318,7 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
           {hasChildren ? (
             <ChevronRight
               size={12}
-              className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+              className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
             />
           ) : (
             <span className="w-3 flex-shrink-0" />
@@ -329,7 +333,6 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
           {editingTitle ? (
             <InlineTitleEditor
               block={block}
-              pageId={pageId}
               onSave={handleTitleSave}
               onCancel={handleTitleCancel}
             />
@@ -342,35 +345,35 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
             <div className="flex-shrink-0 flex items-center gap-0.5">
               <button
                 onClick={(e) => { e.stopPropagation(); setEditingTitle(true); }}
-                className="p-0.5 rounded text-app-muted hover:text-app-primary hover:bg-app-elevated/80 transition-colors"
+                className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high transition-colors"
                 title="Edit judul"
               >
                 <Pencil size={9} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id || ''); }}
-                className="p-0.5 rounded text-app-muted hover:text-app-primary hover:bg-app-elevated/80 transition-colors"
+                className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high transition-colors"
                 title="Pindah ke atas"
               >
                 <ArrowUp size={9} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); moveBlockDown(block.id || ''); }}
-                className="p-0.5 rounded text-app-muted hover:text-app-primary hover:bg-app-elevated/80 transition-colors"
+                className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high transition-colors"
                 title="Pindah ke bawah"
               >
                 <ArrowDown size={9} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id || ''); }}
-                className="p-0.5 rounded text-app-muted hover:text-app-accent hover:bg-app-elevated/80 transition-colors"
+                className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary-container/10 transition-colors"
                 title="Duplikat blok"
               >
                 <Copy size={9} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); deleteBlock(block.id || ''); }}
-                className="p-0.5 rounded text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 title="Hapus blok"
               >
                 <Trash2 size={9} />
@@ -381,7 +384,7 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
           {/* Type badge — hidden when actions visible */}
           {!showActions && (
             <span
-              className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-wide"
+              className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-lg uppercase tracking-wide"
               style={{
                 backgroundColor: display.color + '18',
                 color: display.color,
@@ -397,12 +400,12 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
               className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
               title={`Edit di tab ${kontenTab}`}
             >
-              <FileText size={10} className="text-app-accent/60" />
+              <FileText size={10} className="text-silse-primary/60" />
             </span>
           )}
 
           {/* Schema indicator */}
-          <Zap size={8} className="flex-shrink-0 text-app-success/30" />
+          <Zap size={8} className="flex-shrink-0 text-silse-primary-container/40" />
         </button>
       </div>
 
@@ -411,7 +414,7 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
         <div className="relative">
           {/* Vertical connector line */}
           <div
-            className="absolute top-0 bottom-0 border-l border-app-border/20"
+            className="absolute top-0 bottom-0 border-l-2 border-silse-outline-variant"
             style={{ left: `${depth * 16 + 18}px` }}
           />
           {children.map((child, i) => (
@@ -447,19 +450,19 @@ function PageSection({ data, isActive, selectedBlockId, onNavigate }: PageSectio
   return (
     <div className={`rounded-xl border transition-colors ${
       isActive
-        ? 'border-app-accent/20 bg-app-accent/[0.03]'
-        : 'border-app-border/50 bg-app-surface'
+        ? 'border-silse-primary-container/30 bg-silse-primary-container/5'
+        : 'border-silse-outline-variant/50 bg-silse-surface-container-low'
     }`}>
       {/* Page header */}
       <button
         onClick={() => setExpanded(prev => !prev)}
         className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left rounded-t-xl transition-colors ${
-          isActive ? 'bg-app-accent/[0.06]' : 'hover:bg-app-elevated/40'
+          isActive ? 'bg-silse-primary-container/10 text-silse-primary' : 'hover:bg-silse-surface-container-high text-silse-on-surface'
         }`}
       >
         <ChevronRight
           size={14}
-          className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+          className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
         />
 
         {/* Page type icon */}
@@ -467,19 +470,19 @@ function PageSection({ data, isActive, selectedBlockId, onNavigate }: PageSectio
 
         {/* Page label */}
         <span className={`text-sm font-semibold truncate flex-1 ${
-          isActive ? 'text-app-accent' : 'text-app-primary'
+          isActive ? 'text-silse-primary' : 'text-silse-on-surface'
         }`}>
           {data.pageLabel}
         </span>
 
         {/* Page index badge */}
-        <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-app-elevated text-app-muted">
+        <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-silse-surface-container-high text-silse-on-surface-variant">
           {data.pageIndex + 1}
         </span>
 
         {/* Block count badge */}
         <span
-          className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md"
+          className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-lg"
           style={{
             backgroundColor: display.color + '18',
             color: display.color,
@@ -491,7 +494,7 @@ function PageSection({ data, isActive, selectedBlockId, onNavigate }: PageSectio
 
       {/* Block list */}
       {expanded && (
-        <div className="px-1.5 pb-2 space-y-0.5 border-t border-app-border/30">
+        <div className="px-1.5 pb-2 space-y-0.5 border-t border-silse-outline-variant">
           {data.blocks.map((block, i) => (
             <BlockRow
               key={block.id || `block-${i}`}
@@ -522,22 +525,22 @@ function CategorySection({ data, selectedBlockId, onNavigate }: CategorySectionP
   const { meta, category } = data;
 
   return (
-    <div className="rounded-xl border border-app-border/50 bg-app-surface overflow-hidden">
+    <div className="rounded-xl border border-silse-outline-variant/50 bg-silse-surface-container-low overflow-hidden">
       {/* Category header */}
       <button
         onClick={() => setExpanded(prev => !prev)}
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-app-elevated/40 transition-colors"
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-silse-surface-container-high transition-colors"
       >
         <ChevronRight
           size={14}
-          className={`flex-shrink-0 text-app-muted transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+          className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
         />
         <span className="text-base flex-shrink-0">{meta.icon}</span>
-        <span className="text-sm font-semibold truncate flex-1 text-app-primary">
+        <span className="text-sm font-semibold truncate flex-1 text-silse-on-surface">
           {meta.label}
         </span>
         <span
-          className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md"
+          className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-lg"
           style={{
             backgroundColor: meta.color + '18',
             color: meta.color,
@@ -549,7 +552,7 @@ function CategorySection({ data, selectedBlockId, onNavigate }: CategorySectionP
 
       {/* Block list */}
       {expanded && (
-        <div className="px-1.5 pb-2 space-y-0.5 border-t border-app-border/30">
+        <div className="px-1.5 pb-2 space-y-0.5 border-t border-silse-outline-variant">
           {data.blocks.map(({ block, pageId, pageIndex }, i) => (
             <BlockRow
               key={block.id || `${category}-block-${i}`}
@@ -563,7 +566,7 @@ function CategorySection({ data, selectedBlockId, onNavigate }: CategorySectionP
           ))}
           {data.blocks.length === 0 && (
             <div className="text-center py-3">
-              <span className="text-xs text-app-muted">Tidak ada blok dalam kategori ini</span>
+              <span className="text-xs text-silse-on-surface-variant">Tidak ada blok dalam kategori ini</span>
             </div>
           )}
         </div>
@@ -586,18 +589,18 @@ function SummaryBar({ totalPages, totalBlocks, categoryDistribution }: SummaryBa
     .sort(([, a], [, b]) => b - a);
 
   return (
-    <div className="bg-app-surface border border-app-border/50 rounded-xl p-3 space-y-2.5">
+    <div className="bg-silse-surface-container-low border border-silse-outline-variant/50 rounded-xl p-3 space-y-2.5">
       {/* Stats row */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
-          <Layers size={13} className="text-app-accent/70" />
-          <span className="text-xs font-bold text-app-primary">{totalPages}</span>
-          <span className="text-[10px] text-app-muted">halaman</span>
+          <Layers size={13} className="text-silse-primary/70" />
+          <span className="text-xs font-bold text-silse-on-surface">{totalPages}</span>
+          <span className="text-[10px] text-silse-on-surface-variant">halaman</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Zap size={13} className="text-app-success/70" />
-          <span className="text-xs font-bold text-app-primary">{totalBlocks}</span>
-          <span className="text-[10px] text-app-muted">blok</span>
+          <Zap size={13} className="text-emerald-500/70" />
+          <span className="text-xs font-bold text-silse-on-surface">{totalBlocks}</span>
+          <span className="text-[10px] text-silse-on-surface-variant">blok</span>
         </div>
       </div>
 
@@ -605,7 +608,7 @@ function SummaryBar({ totalPages, totalBlocks, categoryDistribution }: SummaryBa
       {activeCategories.length > 0 && totalBlocks > 0 && (
         <div className="space-y-1.5">
           {/* Segmented bar */}
-          <div className="flex h-2 rounded-full overflow-hidden bg-app-elevated">
+          <div className="flex h-2 rounded-full overflow-hidden bg-silse-surface-container-high">
             {activeCategories.map(([cat, count]) => {
               const meta = CATEGORY_META[cat as ContentCategory];
               return (
@@ -633,7 +636,7 @@ function SummaryBar({ totalPages, totalBlocks, categoryDistribution }: SummaryBa
                   <span className="text-[10px] font-medium" style={{ color: meta.color }}>
                     {count}
                   </span>
-                  <span className="text-[9px] text-app-muted">{meta.label}</span>
+                  <span className="text-[9px] text-silse-on-surface-variant">{meta.label}</span>
                 </div>
               );
             })}
@@ -793,13 +796,13 @@ export function SchemaNavigatorPanel() {
   if (pageBlockData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6">
-        <div className="w-16 h-16 rounded-2xl bg-app-elevated/50 flex items-center justify-center mb-4">
-          <BookOpen size={28} className="text-app-muted/50" />
+        <div className="w-16 h-16 rounded-2xl bg-silse-surface-container-high flex items-center justify-center mb-4">
+          <BookOpen size={28} className="text-silse-on-surface-variant/50" />
         </div>
-        <p className="text-sm font-semibold text-app-primary mb-1">
+        <p className="text-sm font-semibold text-silse-on-surface mb-1">
           Belum ada konten
         </p>
-        <p className="text-xs text-app-muted text-center max-w-[200px]">
+        <p className="text-xs text-silse-on-surface-variant text-center max-w-[200px]">
           Buat halaman dengan Auto-Generate atau template untuk melihat struktur skema di sini.
         </p>
       </div>
@@ -807,17 +810,17 @@ export function SchemaNavigatorPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 bg-silse-surface-container-low">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-lg bg-app-accent/10 flex items-center justify-center flex-shrink-0">
-          <Layers size={14} className="text-app-accent" />
+        <div className="w-7 h-7 rounded-lg bg-silse-primary-container/15 flex items-center justify-center flex-shrink-0">
+          <Layers size={14} className="text-silse-primary" />
         </div>
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-app-primary leading-tight">
+          <h3 className="text-xs uppercase tracking-wider text-silse-outline font-bold leading-tight">
             Navigasi Skema
           </h3>
-          <p className="text-[10px] text-app-muted">
+          <p className="text-[10px] text-silse-on-surface-variant">
             Klik navigasi, double-klik edit judul
           </p>
         </div>
@@ -833,22 +836,22 @@ export function SchemaNavigatorPanel() {
       {/* Search + view mode toggle */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted/60" />
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-silse-on-surface-variant/50" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari blok…"
-            className="w-full bg-app-elevated border border-app-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-app-primary placeholder:text-app-muted/50 focus:outline-none focus:ring-2 focus:ring-app-accent/30 focus:border-app-accent/30 transition-colors"
+            className="w-full bg-silse-surface-bright border border-silse-outline-variant rounded-xl pl-8 pr-3 py-1.5 text-xs text-silse-on-surface placeholder:text-silse-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-silse-secondary/20 focus:border-silse-secondary/30 transition-colors"
           />
         </div>
-        <div className="flex items-center gap-0.5 bg-app-surface border border-app-border rounded-lg p-0.5 flex-shrink-0">
+        <div className="flex items-center gap-0.5 bg-silse-surface-container-low border border-silse-outline-variant rounded-xl p-0.5 flex-shrink-0">
           <button
             onClick={() => setViewMode('by-page')}
-            className={`p-1.5 rounded-md transition-colors ${
+            className={`p-1.5 rounded-lg transition-colors ${
               viewMode === 'by-page'
-                ? 'bg-app-elevated text-app-primary shadow-sm'
-                : 'text-app-muted hover:text-app-secondary'
+                ? 'bg-silse-surface-bright text-silse-on-surface shadow-sm'
+                : 'text-silse-on-surface-variant hover:text-silse-on-surface'
             }`}
             title="Kelompokkan per halaman"
           >
@@ -856,10 +859,10 @@ export function SchemaNavigatorPanel() {
           </button>
           <button
             onClick={() => setViewMode('by-category')}
-            className={`p-1.5 rounded-md transition-colors ${
+            className={`p-1.5 rounded-lg transition-colors ${
               viewMode === 'by-category'
-                ? 'bg-app-elevated text-app-primary shadow-sm'
-                : 'text-app-muted hover:text-app-secondary'
+                ? 'bg-silse-surface-bright text-silse-on-surface shadow-sm'
+                : 'text-silse-on-surface-variant hover:text-silse-on-surface'
             }`}
             title="Kelompokkan per kategori"
           >
@@ -896,14 +899,14 @@ export function SchemaNavigatorPanel() {
         {/* No results for search */}
         {(viewMode === 'by-page' && filteredPageData.length === 0 && searchQuery) && (
           <div className="text-center py-6">
-            <p className="text-xs text-app-muted">
+            <p className="text-xs text-silse-on-surface-variant">
               Tidak ada blok yang cocok dengan &quot;{searchQuery}&quot;
             </p>
           </div>
         )}
         {(viewMode === 'by-category' && filteredCategoryData.length === 0 && searchQuery) && (
           <div className="text-center py-6">
-            <p className="text-xs text-app-muted">
+            <p className="text-xs text-silse-on-surface-variant">
               Tidak ada blok yang cocok dengan &quot;{searchQuery}&quot;
             </p>
           </div>

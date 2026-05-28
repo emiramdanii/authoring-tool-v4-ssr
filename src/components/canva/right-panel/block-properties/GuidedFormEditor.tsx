@@ -1,7 +1,7 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════
-// GUIDED FORM EDITOR — Stitch v4 Teacher-Friendly Form
+// GUIDED FORM EDITOR — SILSE v4 Teacher-Friendly Form
 // ═══════════════════════════════════════════════════════════════
 // This is the PRIMARY editor for teacher mode.
 // It uses GuidedEditorSchema (content-focused, teacher-friendly)
@@ -14,11 +14,11 @@
 //   - Each section = collapsible group with uppercase header
 //   - Fields without a section = primary content (shown first)
 //
-// Stitch spec:
-//   - Large labels (Label-LG), 12px bold
-//   - px-4 py-3 rounded-xl inputs
-//   - 2px Royal Blue focus border + glow
-//   - Sections: divider + uppercase tracking-widest header
+// SILSE v4 spec:
+//   - Input fields: rounded-xl border-silse-outline-variant bg-silse-surface-bright
+//     focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20
+//   - Labels: text-sm font-bold text-silse-on-surface-variant
+//   - Section dividers: border-silse-outline-variant
 // ═══════════════════════════════════════════════════════════════
 
 import { useMemo, useCallback, useState } from 'react';
@@ -46,19 +46,15 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
   // ── Overflow state ──
-  // Tracks whether the last edit caused overflow, so we can
-  // show the OverflowWarningBanner with action buttons.
   const [overflowDetails, setOverflowDetails] = useState<OverflowCheckResult | null>(null);
 
   // Create the write handler that uses applyGuidedSchemaPatch
-  // This is the SINGLE WRITE PATH — no updateSchemaBlock() here
-  // Phase 4: Now passes overflowPolicy: 'warn' to detect overflow
   const handleUpdate = useCallback((updates: Record<string, unknown>) => {
     const result = applyGuidedSchemaPatch({
       pageId,
       blockId,
       patch: updates,
-      overflowPolicy: 'warn',  // Phase 4: detect overflow, warn + show UI
+      overflowPolicy: 'warn',
       source: 'guided-form',
     });
 
@@ -69,7 +65,6 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
     if (result.overflowDetected && result.overflowDetails) {
       setOverflowDetails(result.overflowDetails);
     } else {
-      // Clear overflow state if edit no longer overflows
       setOverflowDetails(null);
     }
   }, [pageId, blockId]);
@@ -92,7 +87,6 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
     // Classify each field
     for (const field of guidedSchema.fields) {
       if (sectionedKeys.has(field.key)) {
-        // Will be grouped into a section later
         continue;
       }
       ungrouped.push(field);
@@ -120,7 +114,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
 
   return (
     <div className="space-y-4" role="region" aria-label={`Guided Editor: ${guidedSchema.displayName}`}>
-      {/* ── Overflow warning banner (Phase 4) ── */}
+      {/* ── Overflow warning banner ── */}
       {overflowDetails && overflowDetails.overflowDetected && (
         <OverflowWarningBanner
           details={overflowDetails}
@@ -131,7 +125,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
 
       {/* ── Block description (teacher mode) ── */}
       {teacherMode && guidedSchema.description && (
-        <div className="px-4 py-2.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary/15 text-[12px] text-silse-on-surface-variant leading-relaxed">
+        <div className="px-4 py-2.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary/15 text-sm text-silse-on-surface-variant leading-relaxed">
           {guidedSchema.description}
         </div>
       )}

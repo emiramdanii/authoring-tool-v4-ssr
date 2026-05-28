@@ -24,14 +24,14 @@ export function QuickActions() {
 
   return (
     <div className="flex items-center gap-1">
-      {/* Undo / Redo — always visible, disabled when nothing to undo/redo */}
+      {/* Undo / Redo */}
       <button
         onClick={undo}
         disabled={!canUndo()}
-        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-[background-color,border-color,color] ${
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-colors ${
           canUndo()
-            ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated/50'
-            : 'text-app-muted/30 cursor-not-allowed'
+            ? 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high'
+            : 'text-silse-outline-variant/40 cursor-not-allowed'
         }`}
         title="Undo (Ctrl+Z)"
       >
@@ -40,41 +40,41 @@ export function QuickActions() {
       <button
         onClick={redo}
         disabled={!canRedo()}
-        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-[background-color,border-color,color] ${
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-colors ${
           canRedo()
-            ? 'text-app-secondary hover:text-app-primary hover:bg-app-elevated/50'
-            : 'text-app-muted/30 cursor-not-allowed'
+            ? 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high'
+            : 'text-silse-outline-variant/40 cursor-not-allowed'
         }`}
         title="Redo (Ctrl+Y)"
       >
         <Redo2 size={14} />
       </button>
 
-      <div className="section-divider h-5 w-px mx-0.5" />
+      <div className="h-5 w-px bg-silse-outline-variant mx-0.5" />
 
       {/* Teacher Mode Toggle */}
       <TeacherModeToggle />
 
-      {/* Auto-save indicator — hidden in teacher mode (shown in StatusBar instead) */}
+      {/* Auto-save indicator */}
       {!teacherMode && <AutoSaveIndicator />}
       <SaveNowButton />
 
-      <div className="section-divider h-5 w-px mx-1" />
+      <div className="h-5 w-px bg-silse-outline-variant mx-1" />
 
       {/* Toggle Right Panel */}
       <button
         onClick={toggleRightPanel}
-        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-[background-color,border-color,color] ${
+        className={`flex items-center justify-center h-7 w-7 rounded-lg transition-colors ${
           rightPanelOpen
-            ? 'bg-app-accent/10 text-app-accent hover:bg-app-accent/20'
-            : 'text-app-muted hover:text-app-secondary hover:bg-app-elevated/50'
+            ? 'bg-silse-primary-container/20 text-silse-primary hover:bg-silse-primary-container/30'
+            : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high'
         }`}
         title={rightPanelOpen ? 'Tutup panel properti' : 'Buka panel properti'}
       >
         {rightPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
       </button>
 
-      {/* Bantuan / Help — re-trigger Canva Tour or Orientation */}
+      {/* Help */}
       <button
         onClick={() => {
           if (isSederhana) {
@@ -83,17 +83,17 @@ export function QuickActions() {
             triggerCanvaTour();
           }
         }}
-        className="flex items-center justify-center h-7 w-7 rounded-lg text-app-muted hover:text-app-accent hover:bg-app-accent/10 transition-[background-color,border-color,color]"
+        className="flex items-center justify-center h-7 w-7 rounded-lg text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary-container/10 transition-colors"
         title={isSederhana ? 'Bantuan — tampilkan panduan' : 'Help — restart tour'}
       >
         <HelpCircle size={14} />
       </button>
 
-      {/* One-click HTML Export — prominent CTA for teachers */}
+      {/* Export HTML */}
       <button
         onClick={exportHtml}
         disabled={isExporting}
-        className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-app-success/90 hover:bg-app-success text-white text-[10px] font-bold transition-[background-color,border-color] shadow-sm hover:shadow disabled:opacity-50"
+        className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-silse-primary-container text-silse-on-primary-container text-[10px] font-bold transition-all hover:opacity-90 active:scale-95 shadow-sm disabled:opacity-50"
         title="Unduh HTML — siap dibagikan ke siswa"
       >
         {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}

@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 /**
- * PropertyGroup — Collapsible section matching stitch v4 design.
+ * PropertyGroup — Collapsible section matching SILSE v4 design.
  *
- * Stitch spec:
- *   - Section header: uppercase tracking-widest text-[11px] font-bold text-outline
- *   - Thin divider line above (h-px bg-outline-variant)
+ * SILSE v4 spec:
+ *   - Section header: uppercase tracking-wider text-xs font-bold text-silse-on-surface-variant
+ *   - Thin divider line above (h-px bg-silse-outline-variant)
  *   - Content area with generous spacing
  */
 export function PropertyGroup({ label, defaultCollapsed = false, children }: {
@@ -21,7 +21,7 @@ export function PropertyGroup({ label, defaultCollapsed = false, children }: {
   return (
     <div className="pt-2">
       {/* Divider */}
-      <div className="h-px bg-outline-variant/40 mb-4" />
+      <div className="h-px bg-silse-outline-variant mb-4" />
 
       {/* Section header */}
       <button
@@ -32,10 +32,11 @@ export function PropertyGroup({ label, defaultCollapsed = false, children }: {
       >
         <ChevronDown
           size={14}
-          className={`text-outline transition-transform duration-200 ${collapsed ? '-rotate-90' : ''}`}
+          className="text-silse-on-surface-variant transition-transform duration-200 ${collapsed ? '-rotate-90' : ''}"
           aria-hidden="true"
+          style={{ transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 200ms' }}
         />
-        <span className="text-[11px] font-bold text-outline uppercase tracking-widest group-hover:text-on-surface-variant transition-colors">
+        <span className="text-xs uppercase tracking-wider font-bold text-silse-on-surface-variant group-hover:text-silse-on-surface transition-colors">
           {label}
         </span>
       </button>

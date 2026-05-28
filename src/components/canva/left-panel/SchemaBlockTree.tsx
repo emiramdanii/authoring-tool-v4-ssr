@@ -11,15 +11,16 @@
 //   NAV:   goPage() + selectBlock() → navigate & edit
 //   CROSS: Click block → navigate to page + show in right panel
 //
-// This replaces the flat page-only view with a navigable block tree
-// that makes the schema structure visible and accessible.
+// SILSE v4 styling:
+//   - Selected block: bg-silse-primary-container text-silse-on-primary-container rounded-xl
+//   - Hover: hover:bg-silse-surface-container-high rounded-xl
+//   - Indent with left border: border-l-2 border-silse-outline-variant
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractionStore } from '@/store/canva/interaction-store';
-// Phase 3: Removed useAuthoringStore import — cross-panel nav now uses useCanvaStore only
-import { ensurePageSchema, getPageBlocks } from '@/core/schema/ensure-schema';
+import { getPageBlocks } from '@/core/schema/ensure-schema';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
 import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
 import type { SchemaBlock } from '@/core/schema/types';
@@ -44,7 +45,7 @@ const BLOCK_DISPLAY: Record<string, { icon: string; label: string; color: string
   'flashcard-set':     { icon: '🃏', label: 'Flashcard',        color: '#a78bfa' },
   'ftab':              { icon: '📑', label: 'Tab',              color: '#3ecfcf' },
   'nk-card':           { icon: '📖', label: 'Kartu',            color: '#a78bfa' },
-  'diskusi':           { icon: '💬', label: 'Diskusi',          color: '#34d399' },
+  'diskusi':           { icon: '💬', label: 'Diskusi',           color: '#34d399' },
   'kuis':              { icon: '❓', label: 'Kuis',             color: '#f5c842' },
   'motivasi':          { icon: '💡', label: 'Motivasi',         color: '#fb923c' },
   'refleksi':          { icon: '🪞', label: 'Refleksi',         color: '#a78bfa' },
@@ -81,10 +82,8 @@ function getBlockDisplay(type: string): { icon: string; label: string; color: st
 
 function getBlockTitle(block: SchemaBlock): string {
   const b = block as Record<string, unknown>;
-  // Check common title fields
   if (typeof b.title === 'string' && b.title) return b.title as string;
   if (typeof b.label === 'string' && b.label) return b.label as string;
-  // Fallback to type display label
   return getBlockDisplay(block.type).label;
 }
 
@@ -93,7 +92,6 @@ function getBlockTitle(block: SchemaBlock): string {
 function getChildBlocks(block: SchemaBlock): SchemaBlock[] {
   const children: SchemaBlock[] = [];
 
-  // Try container descriptor first (capability registry)
   if (isCompositeBlockType(block.type)) {
     const descriptor = getCompositeContainerDescriptor(block.type);
     if (descriptor) {
@@ -112,7 +110,6 @@ function getChildBlocks(block: SchemaBlock): SchemaBlock[] {
     }
   }
 
-  // Generic BaseBlock.children[]
   if (block.children && Array.isArray(block.children)) {
     children.push(...block.children);
   }
@@ -147,10 +144,10 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
           }
           onSelect(pageId, block.id!, block.type);
         }}
-        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-lg text-left transition-colors text-[10px] group ${
+        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-xl text-left transition-colors text-[10px] group ${
           isSelected
-            ? 'bg-silse-primary-container/15 text-silse-primary'
-            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50 hover:text-silse-on-surface'
+            ? 'bg-silse-primary-container text-silse-on-primary-container'
+            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface'
         }`}
         style={{ paddingLeft: `${depth * 12 + 6}px` }}
         title={title}
@@ -178,7 +175,6 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
               e.stopPropagation();
               const tab = getKontenTabForBlockType(block.type);
               if (tab) {
-                // Phase 3: Pure canva-store navigation — no useAuthoringStore needed
                 useCanvaStore.setState({ kontenTabRequest: tab, kontenPanelRequest: true });
               }
             }}
@@ -195,7 +191,7 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
 
       {/* Children */}
       {hasChildren && expanded && (
-        <div>
+        <div className="border-l-2 border-silse-outline-variant ml-3">
           {children.map((child, i) => (
             <TreeNode
               key={child.id || `${block.id}-child-${i}`}
@@ -228,17 +224,16 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
   const isSchemaDriven = !!page.schema;
 
   if (!isSchemaDriven || blocks.length === 0) {
-    // Non-schema pages or empty pages: no block tree to show
     return null;
   }
 
   return (
-    <div className="border-l border-silse-outline-variant/30 ml-2">
+    <div className="border-l-2 border-silse-outline-variant ml-2">
       {/* Toggle button */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] text-silse-on-surface-variant hover:text-silse-on-surface-variant transition-colors ${
-          isActive ? 'text-silse-primary' : ''
+        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] transition-colors rounded-lg ${
+          isActive ? 'text-silse-primary font-bold' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high'
         }`}
       >
         <ChevronRight size={8} className={`transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} />
@@ -279,12 +274,10 @@ export function SchemaBlockTree() {
     const pageIndex = pages.findIndex(p => p.id === pageId);
     if (pageIndex < 0) return;
 
-    // Navigate to the page first
     if (pageIndex !== currentPageIndex) {
       goPage(pageIndex);
     }
 
-    // Then select the block (shows in right panel)
     selectBlock(blockId, blockType);
   }, [pages, currentPageIndex, goPage, selectBlock]);
 
@@ -354,7 +347,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
     <div className="ml-5">
       <button
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5"
+        className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
         <ChevronRight size={7} className={`transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} />
         <Zap size={7} className="text-silse-primary-container/60" />
@@ -362,7 +355,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
       </button>
 
       {expanded && (
-        <div className="space-y-0">
+        <div className="space-y-0 border-l-2 border-silse-outline-variant">
           {blocks.map((block, i) => (
             <TreeNode
               key={block.id || `block-${i}`}

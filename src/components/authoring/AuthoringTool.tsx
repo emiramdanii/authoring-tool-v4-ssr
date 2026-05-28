@@ -3,23 +3,23 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import {
-  Home,
-  FileText,
-  BookOpen,
-  Palette,
-  Sparkles,
+  LayoutDashboard,
+  FileEdit,
   FolderOpen,
+  BarChart3,
+  Settings,
+  LifeBuoy,
+  PlusCircle,
   ArrowLeft,
-  ArrowLeftRight,
-  Clock,
   Save,
   Download,
-  PanelLeftClose,
-  PanelLeftOpen,
   Eye,
+  Palette,
   MapPin,
   GraduationCap,
-  ChevronDown,
+  ArrowLeftRight,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
@@ -51,6 +51,9 @@ const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
   loading: () => <PanelSkeleton />,
 });
 
+// Lazy-load TemplateWizard
+const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
+
 // ── Navigation items ─────────────────────────────────────────────
 interface NavItem {
   id: PanelId;
@@ -58,38 +61,12 @@ interface NavItem {
   label: string;
 }
 
-// ═══ Navigation items — mode-aware labels ══════════════════
-// In sederhana mode, labels are teacher-friendly (Indonesian SMP teachers)
-// In lengkap mode, labels are technical/standard
-
-const NAV_ITEMS_SEDERHANA: NavItem[] = [
-  { id: 'dashboard', icon: Home, label: 'Beranda' },
-  { id: 'konten', icon: BookOpen, label: 'Materi' },
-  { id: 'canva', icon: Palette, label: 'Desain' },
-];
-
-const NAV_ITEMS_LENGKAP: NavItem[] = [
-  { id: 'dashboard', icon: Home, label: 'Dashboard' },
-  { id: 'dokumen', icon: FileText, label: 'Dokumen' },
-  { id: 'konten', icon: BookOpen, label: 'Konten' },
-  { id: 'canva', icon: Palette, label: 'Canva' },
-  { id: 'autogen', icon: Sparkles, label: 'Auto-Generate' },
-];
-
-const NAV_ITEMS_2_SEDERHANA: NavItem[] = [
-  { id: 'dokumen', icon: FileText, label: 'RPP' },
-  { id: 'autogen', icon: Sparkles, label: 'Buat AI' },
-  { id: 'projects', icon: FolderOpen, label: 'Proyek' },
-  { id: 'import', icon: ArrowLeftRight, label: 'Impor/Ekspor' },
-  { id: 'preview', icon: Eye, label: 'Pratinjau' },
-  { id: 'versions', icon: Clock, label: 'Versi' },
-];
-
-const NAV_ITEMS_2_LENGKAP: NavItem[] = [
-  { id: 'projects', icon: FolderOpen, label: 'Proyek' },
-  { id: 'import', icon: ArrowLeftRight, label: 'Import/Export' },
-  { id: 'preview', icon: Eye, label: 'Live Preview' },
-  { id: 'versions', icon: Clock, label: 'Riwayat' },
+// ═══ SILSE v4 Navigation — Unified nav (mode-aware labels) ════════
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { id: 'dokumen', icon: FileEdit, label: 'Workspace' },
+  { id: 'konten', icon: FolderOpen, label: 'Assets' },
+  { id: 'canva', icon: BarChart3, label: 'Analytics' },
 ];
 
 // Panel titles — mode-aware
@@ -122,8 +99,8 @@ function PanelSkeleton() {
   return (
     <div className="flex-1 flex items-center justify-center h-full">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-accent border-t-transparent" />
-        <p className="text-sm text-app-muted">Memuat...</p>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-silse-primary border-t-transparent" />
+        <p className="text-sm text-silse-on-surface-variant">Memuat...</p>
       </div>
     </div>
   );
@@ -158,42 +135,36 @@ const TOUR_STEPS = [
 
 // ── Inner Component (needs ProjectProvider context) ─────────────
 function AuthoringToolInner() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showMoreNav, setShowMoreNav] = useState(false); // Collapsible "Lainnya" section
   const [showTour, setShowTour] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('at_tour_done') === null;
   });
   const [tourStep, setTourStep] = useState(0);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const activePanel = useAuthoringStore((s) => s.activePanel);
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
-  const dirty = useDirtyStore((s) => s.dirty);  // Phase 5: migrated from useAuthoringStore
+  const dirty = useDirtyStore((s) => s.dirty);
   const meta = useAuthoringStore((s) => s.meta);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
   const { saveProject, currentProjectId, saving } = useProjectManager();
-  const { isSederhana, toggle: toggleTeacherMode } = useTeacherMode();
+  const { isSederhana } = useTeacherMode();
 
-  // Mode-aware navigation items
-  const navItems = isSederhana ? NAV_ITEMS_SEDERHANA : NAV_ITEMS_LENGKAP;
-  const navItems2 = isSederhana ? NAV_ITEMS_2_SEDERHANA : NAV_ITEMS_2_LENGKAP;
+  // Mode-aware panel titles
   const panelTitles = isSederhana ? PANEL_TITLES_SEDERHANA : PANEL_TITLES_LENGKAP;
 
   // Load from storage on mount (authoring + canva)
   useEffect(() => {
     loadFromStorage();
-    // Also load canva state from localStorage on first app mount
     useCanvaStore.getState().loadFromStorage();
-    // Clear dirty exit flag after successful load
     clearDirtyExitFlag();
   }, [loadFromStorage]);
 
-  // ── Dirty exit flag + browser confirmation: set on beforeunload if unsaved changes ──
+  // ── Dirty exit flag + browser confirmation ──
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const isDirty = useDirtyStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
       if (isDirty) {
         setDirtyExitFlag();
-        // Show browser confirmation dialog to prevent accidental data loss
         e.preventDefault();
         e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
       }
@@ -202,31 +173,28 @@ function AuthoringToolInner() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // ── Tour: dismiss / advance ────────────────────────────────
+  // ── Tour: dismiss / advance ──
   const dismissTour = useCallback(() => {
     setShowTour(false);
     localStorage.setItem('at_tour_done', '1');
   }, []);
 
-  // Auto-dismiss tour when user navigates away from dashboard (e.g. clicks preset)
-  useEffect(() => {
-    if (activePanel !== 'dashboard' && showTour) {
-      dismissTour();
-    }
-  }, [activePanel, showTour, dismissTour]);
+  // Auto-dismiss tour when navigating away from dashboard
+  if (activePanel !== 'dashboard' && showTour) {
+    dismissTour();
+  }
 
-  // Unified save helper — saves to DB if project is loaded, else localStorage
+  // Unified save helper
   const saveAll = useCallback(() => {
     if (currentProjectId) {
       saveProject();
     } else {
-      // Fallback: save to localStorage only
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
     }
   }, [currentProjectId, saveProject]);
 
-  // ── Unified keyboard shortcuts via registry ───────────────────
+  // ── Unified keyboard shortcuts via registry ──
   useKeyboardShortcuts([
     {
       id: 'global.save',
@@ -256,7 +224,7 @@ function AuthoringToolInner() {
     },
   ], [saveAll]);
 
-  // ── Context switching for keyboard shortcuts ───────────────────
+  // ── Context switching for keyboard shortcuts ──
   useEffect(() => {
     if (activePanel === 'canva') {
       keyboardManager.setContext('canvas');
@@ -267,9 +235,7 @@ function AuthoringToolInner() {
     }
   }, [activePanel]);
 
-  // ── Phase 3: Cross-panel navigation from SchemaBlockTree → Konten panel ──
-  // When SchemaBlockTree pencil icon is clicked, it sets kontenPanelRequest=true
-  // This effect consumes it and switches to the Konten panel
+  // ── Cross-panel navigation from SchemaBlockTree → Konten panel ──
   useEffect(() => {
     const unsub = useCanvaStore.subscribe(
       (s) => s.kontenPanelRequest,
@@ -283,9 +249,7 @@ function AuthoringToolInner() {
     return unsub;
   }, [setActivePanel]);
 
-  // ── Phase 3: General cross-panel navigation request ──
-  // Any component can set useCanvaStore.setState({ panelRequest: 'canva' })
-  // This effect consumes it and switches to the requested panel
+  // ── General cross-panel navigation request ──
   useEffect(() => {
     const unsub = useCanvaStore.subscribe(
       (s) => s.panelRequest,
@@ -354,187 +318,147 @@ function AuthoringToolInner() {
     }
   }, [tourStep, dismissTour]);
 
+  // ── Map active panel to sidebar nav id for highlight ──
+  const getActiveNavId = (): string => {
+    if (activePanel === 'dashboard') return 'dashboard';
+    if (activePanel === 'dokumen') return 'dokumen';
+    if (activePanel === 'konten' || activePanel === 'autogen') return 'konten';
+    if (activePanel === 'canva' || activePanel === 'preview') return 'canva';
+    return activePanel;
+  };
+
   return (
-    <div className="h-screen w-screen flex bg-app-surface text-app-primary overflow-hidden">
-      {/* ── Sidebar — Hidden in Canva mode (CanvaBuilder has its own icon rail) ── */}
-      {!isCanva && (
+    <div className="h-screen w-screen flex bg-silse-surface-bright text-silse-on-surface overflow-hidden">
+      {/* ── SILSE v4 Sidebar — Fixed w-64, hidden in Canva mode ── */}
+      {!isCanva && !isPreview && (
       <aside
         role="navigation"
         aria-label="Menu utama"
-        className={`${
-          sidebarOpen ? 'w-60' : 'w-16'
-        } flex-shrink-0 bg-app-surface border-r border-app-border flex flex-col transition-all duration-300 ease-in-out`}
+        className="w-64 flex-shrink-0 bg-silse-surface-bright border-r border-silse-outline-variant flex flex-col"
         style={{ minHeight: '100vh' }}
       >
-        {/* Logo */}
-        <div className="px-4 py-5">
-          {sidebarOpen ? (
-            <div>
-              <div className="text-base font-semibold text-app-primary tracking-tight">Authoring Tool</div>
-              <div className="text-xs text-app-muted mt-1">Media Pembelajaran Interaktif</div>
-              <span className="inline-block mt-2 bg-app-accent/10 text-app-accent px-2 py-0.5 rounded-md text-[0.65rem] font-medium">
-                v4.0
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <span className="text-lg text-app-accent font-bold">Z</span>
-            </div>
-          )}
+        {/* ── Brand / Logo ── */}
+        <div className="px-6 pt-6 pb-4">
+          <div
+            className="text-xl font-bold text-silse-primary tracking-tight"
+            style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+          >
+            Authoring Studio
+          </div>
+          <div className="text-xs text-silse-on-surface-variant mt-1">
+            SMP Education Portal
+          </div>
         </div>
 
-        <div className="section-divider mx-3" />
+        {/* ── New Project Button ── */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => setWizardOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold border-b-2 border-silse-primary hover:scale-95 transition-transform"
+          >
+            <PlusCircle size={18} />
+            New Project
+          </button>
+        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          {/* ── Primary navigation (mode-aware) ── */}
-          {navItems.map((item) => {
+        {/* ── Navigation ── */}
+        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
+          {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
+            const isActive = getActiveNavId() === item.id;
             return (
               <button
                 key={item.id}
                 data-testid={`nav-${item.id}`}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
-                  activePanel === item.id
-                    ? 'nav-active font-medium'
-                    : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
+                className={`w-full flex items-center rounded-xl px-4 py-3 gap-3 text-sm font-medium transition-all focus-ring hover:translate-x-1 ${
+                  isActive
+                    ? 'bg-silse-primary-container text-silse-on-primary-container'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high'
                 }`}
                 title={item.label}
               >
-                <Icon size={18} className="flex-shrink-0" />
-                {sidebarOpen && <span>{item.label}</span>}
+                <Icon size={20} className={`flex-shrink-0 ${isActive ? '[fill:currentColor]' : ''}`} />
+                <span style={{ fontFamily: 'var(--font-nunito), Nunito Sans, sans-serif' }}>{item.label}</span>
               </button>
             );
           })}
 
-          {/* Divider */}
+          {/* ── Secondary nav items ── */}
           <div className="section-divider my-3" />
 
-          {/* ── Secondary navigation (mode-aware) ── */}
-          {/* In sederhana mode, these are collapsible under "Lainnya" */}
-          {isSederhana && sidebarOpen ? (
-            <>
+          {[
+            { id: 'autogen' as PanelId, icon: Sparkles, label: isSederhana ? 'Buat AI' : 'Auto-Generate' },
+            { id: 'projects' as PanelId, icon: FolderOpen, label: isSederhana ? 'Proyek' : 'Projects' },
+            { id: 'import' as PanelId, icon: ArrowLeftRight, label: isSederhana ? 'Impor/Ekspor' : 'Import/Export' },
+            { id: 'preview' as PanelId, icon: Eye, label: isSederhana ? 'Pratinjau' : 'Preview' },
+            { id: 'versions' as PanelId, icon: Clock, label: isSederhana ? 'Versi' : 'Versions' },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = activePanel === item.id;
+            return (
               <button
-                onClick={() => setShowMoreNav(!showMoreNav)}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[9px] font-bold text-app-muted uppercase tracking-wider hover:text-app-secondary transition-colors"
-              >
-                <span>Lainnya</span>
-                <ChevronDown
-                  size={12}
-                  className={`transition-transform duration-200 ${showMoreNav ? 'rotate-180' : ''}`}
-                />
-              </button>
-              {/* Collapsible secondary nav items */}
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  showMoreNav ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'
+                key={item.id}
+                data-testid={`nav-${item.id}`}
+                onClick={() => setActivePanel(item.id)}
+                onMouseEnter={() => handleNavHover(item.id)}
+                className={`w-full flex items-center rounded-xl px-4 py-2.5 gap-3 text-[13px] transition-all focus-ring hover:translate-x-1 ${
+                  isActive
+                    ? 'bg-silse-primary-container text-silse-on-primary-container font-medium'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high'
                 }`}
+                title={item.label}
               >
-                <div className="space-y-1">
-                  {navItems2.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        data-testid={`nav-${item.id}`}
-                        onClick={() => setActivePanel(item.id)}
-                        onMouseEnter={() => handleNavHover(item.id)}
-                        className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
-                          activePanel === item.id
-                            ? 'nav-active font-medium'
-                            : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
-                        }`}
-                        title={item.label}
-                      >
-                        <Icon size={18} className="flex-shrink-0" />
-                        {sidebarOpen && <span>{item.label}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {isSederhana && !sidebarOpen ? null : (
-                <div className="text-[9px] font-bold text-app-muted uppercase tracking-wider px-3 mb-1">
-                  Lainnya
-                </div>
-              )}
-              {navItems2.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    data-testid={`nav-${item.id}`}
-                    onClick={() => setActivePanel(item.id)}
-                    onMouseEnter={() => handleNavHover(item.id)}
-                    className={`w-full flex items-center rounded-lg px-3 py-2.5 gap-3 text-[13px] transition-colors focus-ring ${
-                      activePanel === item.id
-                        ? 'nav-active font-medium'
-                        : 'text-app-secondary hover:bg-app-elevated/50 hover:text-app-primary'
-                    }`}
-                    title={item.label}
-                  >
-                    <Icon size={18} className="flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </button>
-                );
-              })}
-            </>
-          )}
+                <Icon size={18} className="flex-shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Bottom Actions */}
-        {sidebarOpen ? (
-          <div className="px-3 py-4 space-y-2">
-            <div className="section-divider mb-3" />
-            <TeacherModeToggle />
-            <button
-              onClick={saveAll}
-              disabled={saving}
-              className="bg-app-accent text-app-inverse hover:bg-app-accent-hover w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-semibold transition-colors disabled:opacity-50"
-            >
-              <Save size={14} className={saving ? 'animate-spin' : ''} />
-              {saving ? 'Menyimpan...' : 'Simpan Semua'}
-            </button>
-            <button
-              onClick={exportJSON}
-              className="text-app-secondary border border-app-border hover:bg-app-elevated/50 hover:text-app-primary w-full text-xs inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
-            >
-              <Download size={14} />
-              Export JSON
-            </button>
+        {/* ── Bottom Section ── */}
+        <div className="border-t border-silse-outline-variant px-3 py-3 space-y-1">
+          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1 transition-all">
+            <Settings size={18} className="flex-shrink-0" />
+            <span>Settings</span>
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1 transition-all">
+            <LifeBuoy size={18} className="flex-shrink-0" />
+            <span>Support</span>
+          </button>
+
+          {/* User profile */}
+          <div className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl">
+            <div className="w-9 h-9 rounded-full bg-silse-primary-container flex items-center justify-center flex-shrink-0">
+              <GraduationCap size={18} className="text-silse-on-primary-container" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-silse-on-surface truncate">Guru PPKn</div>
+              <div className="text-[0.65rem] text-silse-on-surface-variant">Mode {isSederhana ? 'Sederhana' : 'Lengkap'}</div>
+            </div>
           </div>
-        ) : (
-          <div className="px-2 py-3 space-y-2 flex flex-col items-center">
-            <div className="section-divider w-full mb-2" />
-            <button
-              onClick={toggleTeacherMode}
-              className="tooltip-trigger focus-ring"
-              data-tip={isSederhana ? 'Mode Guru' : 'Mode Lanjutan'}
-            >
-              <GraduationCap size={16} className="text-emerald-400" />
-            </button>
-            <button
-              onClick={saveAll}
-              disabled={saving}
-              className="tooltip-trigger focus-ring"
-              data-tip="Simpan"
-            >
-              <Save size={16} className={`text-app-accent ${saving ? 'animate-spin' : ''}`} />
-            </button>
-            <button
-              onClick={exportJSON}
-              className="tooltip-trigger focus-ring"
-              data-tip="Export JSON"
-            >
-              <Download size={16} className="text-app-muted" />
-            </button>
-          </div>
-        )}
+        </div>
+
+        {/* ── Teacher Mode Toggle + Save/Export ── */}
+        <div className="px-3 py-3 space-y-2 border-t border-silse-outline-variant">
+          <TeacherModeToggle />
+          <button
+            onClick={saveAll}
+            disabled={saving}
+            className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 w-full text-xs inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition-colors disabled:opacity-50"
+          >
+            <Save size={14} className={saving ? 'animate-spin' : ''} />
+            {saving ? 'Menyimpan...' : 'Simpan Semua'}
+          </button>
+          <button
+            onClick={exportJSON}
+            className="text-silse-on-surface-variant border border-silse-outline-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface w-full text-xs inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition-colors"
+          >
+            <Download size={14} />
+            Export JSON
+          </button>
+        </div>
       </aside>
       )}
 
@@ -545,7 +469,22 @@ function AuthoringToolInner() {
             variant="ghost"
             size="sm"
             onClick={() => setActivePanel('dashboard')}
-            className="bg-app-surface/90 border border-app-border shadow-sm text-app-secondary hover:text-app-primary gap-1.5 backdrop-blur-sm"
+            className="bg-silse-surface-container-lowest/90 border border-silse-outline-variant shadow-sm text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-sm"
+          >
+            <ArrowLeft size={14} />
+            {isSederhana ? 'Beranda' : 'Dashboard'}
+          </Button>
+        </div>
+      )}
+
+      {/* ── Preview mode: Floating back button ──── */}
+      {isPreview && (
+        <div className="fixed top-3 left-3 z-50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActivePanel('dashboard')}
+            className="bg-silse-surface-container-lowest/90 border border-silse-outline-variant shadow-sm text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-sm"
           >
             <ArrowLeft size={14} />
             {isSederhana ? 'Beranda' : 'Dashboard'}
@@ -555,37 +494,28 @@ function AuthoringToolInner() {
 
       {/* ── Main Area ───────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-        {/* ── Header ───────────────────────────────────────── */}
+        {/* ── Thin Header Bar (breadcrumb + actions) ── */}
         {!isCanva && !isPreview && (
-          <header className="h-14 flex-shrink-0 bg-app-surface border-b border-app-border flex items-center gap-3 px-5">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-app-muted hover:text-app-primary"
-            >
-              {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-            </Button>
-
-            <div className="text-sm font-medium text-app-primary">
+          <header className="h-12 flex-shrink-0 bg-silse-surface-container-lowest border-b border-silse-outline-variant flex items-center gap-3 px-5">
+            <div className="text-sm font-medium text-silse-on-surface">
               {panelTitles[activePanel]}
-              <span className="text-app-muted font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
+              <span className="text-silse-on-surface-variant font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
-            {/* Dirty indicator + save status */}
+            {/* Dirty indicator */}
             <div className="flex items-center gap-1.5">
               <div
                 className={`w-2 h-2 rounded-full flex-shrink-0 transition-opacity duration-300 ${
-                  dirty ? 'bg-app-accent pulse-dot opacity-100' : 'bg-app-success/50 opacity-0'
+                  dirty ? 'bg-silse-primary pulse-dot opacity-100' : 'bg-silse-primary/50 opacity-0'
                 }`}
                 title={dirty ? 'Perubahan belum disimpan' : 'Tersimpan'}
               />
               {dirty && (
-                <span className="text-[9px] text-app-muted font-medium">Belum simpan</span>
+                <span className="text-[9px] text-silse-on-surface-variant font-medium">Belum simpan</span>
               )}
             </div>
 
-            {/* Workflow step indicator — compact progress */}
+            {/* Workflow step indicator */}
             <WorkflowStepIndicator />
 
             <div className="ml-auto flex items-center gap-2">
@@ -593,7 +523,7 @@ function AuthoringToolInner() {
                 variant="outline"
                 size="sm"
                 onClick={() => setActivePanel('preview')}
-                className="text-app-success border-app-border hover:bg-app-elevated/50 hover:text-app-success"
+                className="text-silse-primary border-silse-outline-variant hover:bg-silse-surface-container-high hover:text-silse-primary"
               >
                 <Eye size={14} />
                 {isSederhana ? 'Pratinjau' : 'Preview'}
@@ -602,25 +532,16 @@ function AuthoringToolInner() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setActivePanel('canva')}
-                className="text-app-secondary"
+                className="text-silse-on-surface-variant hover:text-silse-on-surface"
               >
                 <Palette size={14} />
                 {isSederhana ? 'Desain' : 'Canva'}
               </Button>
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setActivePanel('import')}
-                className="text-app-secondary"
-              >
-                <ArrowLeftRight size={14} />
-                Import
-              </Button>
-              <Button
                 size="sm"
                 onClick={saveAll}
                 disabled={saving}
-                className="bg-app-accent text-app-inverse hover:bg-app-accent-hover disabled:opacity-50 font-medium"
+                className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 disabled:opacity-50 font-medium"
               >
                 <Save size={14} className={saving ? 'animate-spin' : ''} />
                 {saving ? '...' : 'Simpan'}
@@ -634,12 +555,15 @@ function AuthoringToolInner() {
           key={activePanel}
           role="main"
           className={`flex-1 flex flex-col min-h-0 anim-enter-fade ${
-            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-app-surface'
+            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-silse-surface-bright'
           }`}
         >
           {renderPanel()}
         </div>
       </div>
+
+      {/* ── Template Wizard Modal ── */}
+      <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
       {/* ── Dev Performance Monitor (only in development) ── */}
       <PerformanceMonitor />
@@ -650,51 +574,41 @@ function AuthoringToolInner() {
       {/* ── Guided Tour Overlay ────────────────────────────── */}
       {showTour && activePanel === 'dashboard' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" />
-
-          {/* Tooltip Card */}
           <div className="relative z-10 w-full max-w-sm mx-4 page-transition">
-            <div className="bg-app-surface border border-app-border/50 rounded-2xl shadow-2xl overflow-hidden">
-              {/* Step icon + badge */}
-              <div className="bg-app-accent/10 px-5 pt-5 pb-3">
+            <div className="bg-silse-surface-container-lowest border border-silse-outline-variant/50 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="bg-silse-primary-container/10 px-5 pt-5 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-app-accent/20 flex items-center justify-center">
-                    <MapPin size={20} className="text-app-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-silse-primary-container/20 flex items-center justify-center">
+                    <MapPin size={20} className="text-silse-primary" />
                   </div>
                   <div>
-                    <div className="text-xs font-medium text-app-accent/70">
+                    <div className="text-xs font-medium text-silse-primary/70">
                       Langkah {tourStep + 1} dari {TOUR_STEPS.length}
                     </div>
-                    <h3 className="text-base font-bold text-app-primary">
+                    <h3 className="text-base font-bold text-silse-on-surface">
                       {TOUR_STEPS[tourStep]!.title}
                     </h3>
                   </div>
                 </div>
               </div>
-
-              {/* Description */}
               <div className="px-5 py-4">
-                <p className="text-sm text-app-secondary leading-relaxed">
+                <p className="text-sm text-silse-on-surface-variant leading-relaxed">
                   {TOUR_STEPS[tourStep]!.desc}
                 </p>
               </div>
-
-              {/* Step dots */}
               <div className="px-5 pb-2 flex justify-center gap-1.5">
                 {TOUR_STEPS.map((_, i) => (
                   <span
                     key={i}
                     className={`block h-1.5 rounded-full transition-all duration-300 ${
                       i === tourStep
-                        ? 'w-5 bg-app-accent'
-                        : 'w-1.5 bg-app-elevated'
+                        ? 'w-5 bg-silse-primary'
+                        : 'w-1.5 bg-silse-surface-container-high'
                     }`}
                   />
                 ))}
               </div>
-
-              {/* Actions */}
               <div className="px-5 pb-5 pt-3 flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -705,7 +619,7 @@ function AuthoringToolInner() {
                 </Button>
                 <Button
                   onClick={nextTourStep}
-                  className="flex-1 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
+                  className="flex-1 bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 shadow-sm hover:shadow-md hover:-translate-y-px"
                 >
                   {tourStep < TOUR_STEPS.length - 1 ? 'Berikutnya →' : 'Mulai ✨'}
                 </Button>
