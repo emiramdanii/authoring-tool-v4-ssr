@@ -707,3 +707,32 @@ Stage Summary:
 - **Canva TopAppBar has navigation tabs** matching workspace editor design
 - **Schema panel styling updated** with MD3 rounded inputs and proper active states
 - **Build passes clean** — no regressions
+
+---
+Task ID: silse-v4-layout-overhaul-v2
+Agent: Main Agent
+Task: SILSE v4 Layout Overhaul v2 — Follow reference design structure closely
+
+Work Log:
+- Deep-compared SILSE v4 design reference HTML files with current implementation
+- Identified 5 key layout gaps between reference and current code
+- CanvaBuilder.tsx: Left panel width changed from dynamic (64-288px) to fixed 288px
+- LeftPanel.tsx: Removed collapse/expand logic — icon rail + content always visible side by side
+- LeftPanel.tsx: Added Scenes + Library Blocks (2x2 dashed grid) in single scrollable view matching reference
+- RightPanel.tsx: Added Properties header with tune icon (Material Symbols) + close button
+- Toolbar.tsx: Added teacher profile avatar (GraduationCap) at far right
+- SceneList.tsx: Restyled to SILSE v4 reference — numbered thumbnails, primary-container active state, Scene N: label format
+- layout.tsx: Added Material Symbols Outlined font link for icon system
+- globals.css: Added .material-symbols-outlined CSS with font-variation-settings
+- SchemaNavigatorPanel.tsx: Verified already uses SILSE v4 tokens, no changes needed
+- Dashboard.tsx: Verified already closely matches reference layout, no changes needed
+- Build: Zero errors, clean build
+
+Stage Summary:
+- Commit 73a0874: SILSE v4 layout overhaul following reference design
+- **Left panel always shows both icon rail + content** (no collapse) — matches reference exactly
+- **Scenes + Library Blocks in single scrollable view** — 2x2 dashed grid matching reference
+- **Right panel has Properties header** with tune icon + close button — matches reference
+- **Toolbar has profile avatar** — matches reference
+- **SceneList uses SILSE v4 numbered thumbnail style** — matches reference
+- All silse-* MD3 tokens used consistently
