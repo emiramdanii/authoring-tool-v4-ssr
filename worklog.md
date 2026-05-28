@@ -546,3 +546,23 @@ Stage Summary:
 - Auto-split sequence is now batch-undoable as single operation
 - Multi-ratio (9:16, 1:1, A4, 4:3) support for merge+promote operations
 - Phase 5 (Cleanup Dual Source) is next
+---
+Task ID: 4
+Agent: main
+Task: Phase 4 — Safe Page Split / Overflow Policy (Integration Layer)
+
+Work Log:
+- Audited entire overflow system: guided-patch.ts, SceneOverflowEngine, schema-apply.ts, overflow-warning-store.ts, OverflowWarningBanner, KontenOverflowBanner, SceneList, GuidedFormEditor
+- Discovered core overflow system was already comprehensive from previous sessions — 4 overflow policies, scene-plan based detection, auto-split, batch scan, UI components all present
+- Identified critical gap: auto-generate and regenerate flows used raw applyBlocksToPages() which bypasses overflow checking entirely
+- Added applyBlocksToPagesWithOverflowScan() and applyBlockToPagesWithOverflowScan() in schema-apply.ts — wrappers that apply blocks then scan + auto-split
+- Wired scanAllPagesOverflow({ autoSplit: true }) into use-auto-generate.ts: handleApply(), handleGenerateFullLesson(), handleGeneratePertemuan()
+- Wired scanAllPagesOverflow({ autoSplit: true }) into regenerate.ts: regenerateAllToSchema()
+- Added overflow warning toast feedback after generation — teacher sees "X halaman melebihi kapasitas" warning
+- Build passes clean, committed as 401b4ca, pushed to GitHub
+
+Stage Summary:
+- Phase 4 integration layer complete
+- All auto-generate flows now have overflow-aware writes
+- New exported functions: applyBlocksToPagesWithOverflowScan(), applyBlockToPagesWithOverflowScan(), ApplyWithOverflowResult type
+- Commit: 401b4ca on main
