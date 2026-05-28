@@ -791,3 +791,39 @@ Stage Summary:
 - **Material Symbols unified** — ToolbarNav, Toolbar, BlockPropertiesPanel, AuthoringTool sidebar, SchemaBlockTree all use Material Symbols Outlined
 - **24 files changed** — 229 insertions, 252 deletions (net reduction = cleaner code)
 - **Remaining app-* tokens** exist in: TemplateWizard, PlayOverlay, PageTypeCreator, TemplateMarketplace, authoring panels (Riwayat, BsnpCompliance, LivePreview, import-export, auto-generate) — these are lower priority secondary panels
+
+---
+Task ID: silse-v4-token-completion
+Agent: Main Agent
+Task: SILSE v4 Token Completion — Missing MD3 tokens + canva workspace panel migration
+
+Work Log:
+- Audited entire codebase for missing silse-* tokens and hardcoded Tailwind colors
+- Added 7 missing MD3 semantic tokens to globals.css (both light + dark mode):
+  - silse-error (#ba1a1a light / #ffb4ab dark)
+  - silse-error-container (#ffdad6 light / #93000a dark)
+  - silse-on-error (#ffffff light / #690005 dark)
+  - silse-on-error-container (#93000a light / #ffdad6 dark)
+  - silse-on-secondary-container (#fefcff light / #d5e3ff dark)
+  - silse-surface-variant (#e0e3e5 light / #3f3f46 dark)
+- Added corresponding @theme inline mappings in globals.css
+- Migrated 10 canva workspace component files from hardcoded emerald/amber to silse-* tokens:
+  - BlockPropertiesPanel: EDITING badge, layout position, Hapus Block button
+  - SceneList: overflow warning, active thumbnail, delete button
+  - Toolbar: cloud_done icon
+  - StatusBar: teacher mode badge, scene type indicator
+  - PropInput: focus border
+  - NavigationSection: checkbox accent, style selector, check marks
+  - AIAssistantSection: tab bar, floating hint
+  - AddBlockPanel: section headers, filter chips
+  - KontenOverflowBanner: complete rewrite (all amber → silse-tertiary)
+  - SchemaNavigatorPanel: save button, stats icon
+- Build verified: npx next build ✓
+- Git push: d88f691 on main
+
+Stage Summary:
+- **SILSE v4 token system is now COMPLETE** — 29 MD3 semantic tokens defined in both light and dark modes
+- **All canva workspace panels use silse-* tokens** — zero hardcoded emerald/amber in core workspace
+- **Error/destructive states** now properly use silse-error + silse-error-container
+- **Warning/tertiary states** use silse-tertiary + silse-tertiary-container
+- **Remaining hardcoded colors** are in: game components (intentional), AI assistant sub-panels (lower priority), import/export, BsnpCompliancePanel
