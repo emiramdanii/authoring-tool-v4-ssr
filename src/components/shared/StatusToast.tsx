@@ -17,6 +17,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { Save, Check, AlertCircle, Loader2, RotateCcw, Undo2, Redo2, Clock } from 'lucide-react';
 
 // ── Undo/Redo Toast ─────────────────────────────────────────────
@@ -76,7 +77,7 @@ type SaveStatus = 'unsaved' | 'saving' | 'saved' | 'error';
 
 export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator() {
   const canvaStatus = useCanvaStore(s => s._saveStatus as SaveStatus | undefined);
-  const authoringDirty = useAuthoringStore(s => s.dirty);
+  const authoringDirty = useDirtyStore(s => s.dirty);  // Phase 5: migrated from useAuthoringStore
   const lastSavedAt = useCanvaStore(s => s._lastSavedAt);
   const teacherMode = useAuthoringStore(s => s.teacherMode);
 

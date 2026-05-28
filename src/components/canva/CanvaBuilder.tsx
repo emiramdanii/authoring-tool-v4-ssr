@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { getCanvaShortcuts } from '@/core/shortcuts';
@@ -79,7 +80,7 @@ export default function CanvaBuilder() {
   // ── Warn before unload if unsaved changes exist ────────────
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const authDirty = useAuthoringStore.getState().dirty;
+      const authDirty = useDirtyStore.getState().dirty;
       const canvaUnsaved = useCanvaStore.getState()._saveStatus === 'unsaved';
       if (authDirty || canvaUnsaved) {
         setDirtyExitFlag(); // Set flag so RecoveryDialog can detect dirty exit

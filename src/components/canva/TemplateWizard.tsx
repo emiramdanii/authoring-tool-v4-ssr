@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { useProjectManager } from '@/hooks/use-project-manager';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -176,7 +177,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
       if (subject) authoringStore.updateMeta('mapel', subject);
       if (grade) authoringStore.updateMeta('kelas', grade);
       // Mark as dirty so user is prompted to save
-      useAuthoringStore.setState({ dirty: true });
+      useDirtyStore.getState().markDirty();
 
       // Persist to database via ProjectManager
       try {

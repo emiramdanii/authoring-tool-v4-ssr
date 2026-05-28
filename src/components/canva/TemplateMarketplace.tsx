@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import {
   getAllCourseTemplates,
   getCourseTemplatesFiltered,
@@ -540,7 +541,7 @@ export default function TemplateMarketplace({
       authoringStore.updateMeta('judulPertemuan', template.name);
       if (template.subject !== '*') authoringStore.updateMeta('mapel', template.subject);
       if (template.grade !== '*') authoringStore.updateMeta('kelas', template.grade);
-      useAuthoringStore.setState({ dirty: true });
+      useDirtyStore.getState().markDirty();
 
       // Save to localStorage as fallback
       useCanvaStore.getState().saveToStorage();

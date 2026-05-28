@@ -24,6 +24,7 @@ import {
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { Button } from '@/components/ui/button';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -166,7 +167,7 @@ function AuthoringToolInner() {
   const [tourStep, setTourStep] = useState(0);
   const activePanel = useAuthoringStore((s) => s.activePanel);
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
-  const dirty = useAuthoringStore((s) => s.dirty);
+  const dirty = useDirtyStore((s) => s.dirty);  // Phase 5: migrated from useAuthoringStore
   const meta = useAuthoringStore((s) => s.meta);
   const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
   const { saveProject, currentProjectId, saving } = useProjectManager();
@@ -189,7 +190,7 @@ function AuthoringToolInner() {
   // ── Dirty exit flag + browser confirmation: set on beforeunload if unsaved changes ──
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const isDirty = useAuthoringStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
+      const isDirty = useDirtyStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
       if (isDirty) {
         setDirtyExitFlag();
         // Show browser confirmation dialog to prevent accidental data loss

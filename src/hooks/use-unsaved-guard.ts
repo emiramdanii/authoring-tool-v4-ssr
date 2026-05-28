@@ -15,7 +15,7 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { isAnyDirty } from '@/lib/save-utils';
 import {
   setDirtyExitFlag,

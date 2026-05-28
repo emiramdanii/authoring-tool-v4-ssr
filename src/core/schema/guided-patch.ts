@@ -243,6 +243,12 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
   pages[pageIndex] = { ...page, schema: newSchema };
   useCanvaStore.setState({ pages });
 
+  // Phase 5: Mark dirty via useDirtyStore — any schema content edit means unsaved changes
+  try {
+    const { useDirtyStore } = require('@/store/dirty-store');
+    useDirtyStore.getState().markDirty();
+  } catch { /* SSR guard */ }
+
   // Emit edit bus event for audit trail
   editBus.emit({
     type: 'patch',

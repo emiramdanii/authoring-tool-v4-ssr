@@ -8,6 +8,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import type { CanvaState } from './types';
 import type { PageTypeDefinition } from '@/store/page-types';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import type { Module } from '@/store/authoring/types';
 import {
   GAME_TYPES,
@@ -174,8 +175,8 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
         const modulesWithIds = ensureModuleIds(newModules) as Module[];
         useAuthoringStore.setState({
           modules: [...authStore.modules, ...modulesWithIds],
-          dirty: true,
         });
+        useDirtyStore.getState().markDirty();
         toast.success(`🤖 Auto-generate: ${newModules.length} modul dibuat dari data yang ada`);
       }
       // Re-read after merge

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import {
   RefreshCw,
   Loader2,
@@ -47,8 +48,8 @@ export default function LivePreview() {
   const initialDetectDone = useRef(false);
 
   // ── Store subscriptions ────────────────────────────────────
-  // Phase 3: setActivePanel migrated → panelRequest; dirty/activePreset stay until Phase 5
-  const dirty = useAuthoringStore((s) => s.dirty);
+  // Phase 5: dirty migrated to useDirtyStore; activePreset stays until Phase 5 cleanup
+  const dirty = useDirtyStore((s) => s.dirty);
   const activePreset = useAuthoringStore((s) => s.activePreset);
 
   // ── Canva store subscriptions ──────────────────────────────

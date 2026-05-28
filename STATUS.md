@@ -1,5 +1,5 @@
 # STATUS.md — Sumber Kebenaran Proyek SILSE
-> Terakhir diperbarui: 2026-05-27
+> Terakhir diperbarui: 2026-05-28
 > Prinsip: **Selesai satu, baru lanjut satu. Tidak numpuk.**
 
 ---
@@ -30,7 +30,7 @@
 | 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ✅ DONE | Phase 3 |
 | 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ✅ DONE | Phase 3 |
 | 9. Safe Page Split / Overflow Policy | ✅ DONE | Phase 4 |
-| 10. Cleanup dual source | ⬜ PENDING | Phase 5 |
+| 10. Cleanup dual source | 🔄 IN PROGRESS | Phase 5 |
 
 ---
 
@@ -157,10 +157,20 @@
   - motivasi-rangkuman-slice: updateMotivasi, updateRangkuman
 - Each deprecated action has console.warn() pointing to schema-first alternative
 - Konten tabs already bypass these deprecated actions (using useSchemaXxx hooks)
+- **Phase 5-A: Extract dirty flag to standalone useDirtyStore**
+  - `useDirtyStore` — standalone Zustand store at `src/store/dirty-store.ts`
+  - Bridge: AuthoringStore.dirty changes auto-sync to useDirtyStore via subscription
+  - Migrated READ consumers: StatusToast, StatusBar, LivePreview, AuthoringTool, RecoveryDialog, CanvaBuilder, use-auto-save, use-unsaved-guard
+  - Migrated WRITE consumers: TemplateWizard, TemplateMarketplace, auto-generate.ts, applyGuidedSchemaPatch()
+  - `isAnyDirty()` and `getCombinedSaveStatus()` in save-utils.ts now read from useDirtyStore
+  - `saveAllToStorage()` now clears useDirtyStore after saving
+- **Phase 5-B: activePanel partial migration**
+  - Phase 3's panelRequest pattern works for cross-panel navigation
+  - Direct reads/writes still in AuthoringStore (requires AuthoringTool.tsx refactor)
 
 **Remaining (Future Work)**:
 - Convert Dokumen.tsx writes (meta, tp, alur) to schema patches — needs CpBlock/AtpBlock schema types
 - Convert auto-generate setSkenario() to schema write
 - Convert import/restore bulk writes to schema-first
 - Make AuthoringStore fully read-only for Tier 1 fields (remove write actions after all consumers migrated)
-- Extract UI state (activePanel, dirty, teacherMode) to separate UI store
+- Full activePanel extraction from AuthoringStore to dedicated navigation store

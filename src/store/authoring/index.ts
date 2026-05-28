@@ -38,3 +38,31 @@ export const useAuthoringStore = create<AuthoringState>()(devtools((...a) => ({
   ...createSystemSlice(...a),
   ...createPresetSlice(...a),
 }), { name: 'AuthoringStore', enabled: process.env.NODE_ENV === 'development' }));
+
+// ═══════════════════════════════════════════════════════════════════
+// DIRTY BRIDGE — Sync AuthoringStore.dirty → useDirtyStore
+// ═══════════════════════════════════════════════════════════════════
+// Phase 5: Any time AuthoringStore sets dirty=true (from any slice),
+// the change propagates to useDirtyStore so UI components can
+// subscribe to useDirtyStore instead of coupling to AuthoringStore.
+//
+// This bridge ensures backward compatibility — existing slice writes
+// like `set({ kuis: newKuis, dirty: true })` still work, while
+// new code should use useDirtyStore.getState().markDirty() directly.
+// ═══════════════════════════════════════════════════════════════════
+
+if (typeof window !== 'undefined') {
+  // Lazy import to avoid circular dependency at module init
+  const { useDirtyStore } = require('@/store/dirty-store');
+  let prevDirty = useAuthoringStore.getState().dirty;
+  useAuthoringStore.subscribe((state) => {
+    if (state.dirty !== prevDirty) {
+      prevDirty = state.dirty;
+      if (state.dirty) {
+        useDirtyStore.getState().markDirty();
+      } else {
+        useDirtyStore.getState().markClean();
+      }
+    }
+  });
+}

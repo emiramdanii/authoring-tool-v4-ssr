@@ -24,6 +24,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
 import {
   AlertTriangle,
@@ -294,7 +295,7 @@ export default function RecoveryDialog() {
     // beforeunload — only set dirty flag if there are ACTUAL unsaved changes
     const handleBeforeUnload = () => {
       const isDirty =
-        useAuthoringStore.getState().dirty ||
+        useDirtyStore.getState().dirty ||
         useCanvaStore.getState()._saveStatus === 'unsaved';
       if (isDirty) {
         setDirtyExitFlag();

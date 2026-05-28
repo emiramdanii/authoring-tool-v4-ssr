@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { logger } from '@/core/utils/logger';
 import { toast } from 'sonner';
 import { enqueueSave, type SyncPayload } from '@/lib/offline-sync';
@@ -80,7 +81,8 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
 
       // Always save to localStorage as a backup
       useCanvaStore.getState().saveToStorage();
-      useAuthoringStore.getState().saveToStorage();
+      useAuthoringStore.getState().saveToStorage();  // Phase 5: still saves authoring data to localStorage
+      useDirtyStore.getState().markClean();  // Phase 5: clear dirty flag via new store
 
       // If projectId and saveProject are available, save to DB via the unified path
       if (projectId && saveProject) {
@@ -193,8 +195,8 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
 
     // Subscribe to authoring store — no subscribeWithSelector middleware,
     // so we subscribe to every change and manually check `dirty`.
-    let prevDirty = useAuthoringStore.getState().dirty;
-    const unsubscribeAuth = useAuthoringStore.subscribe((state) => {
+    let prevDirty = useDirtyStore.getState().dirty;
+    const unsubscribeDirty = useDirtyStore.subscribe((state) => {
       if (state.dirty && state.dirty !== prevDirty) {
         prevDirty = state.dirty;
         scheduleSave();
@@ -204,7 +206,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
     // [G.4] Fixed: proper cleanup of both store subscriptions and debounce timer
     return () => {
       unsubscribeCanva();
-      unsubscribeAuth();
+      unsubscribeDirty();
       if (debounceTimer) clearTimeout(debounceTimer);
       if (maxWaitTimer) clearTimeout(maxWaitTimer);
     };

@@ -1,5 +1,5 @@
 import type { CanvaPage } from '@/components/canva/types';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { useCanvaStore } from '@/store/canva-store';
 
 /**
@@ -54,21 +54,23 @@ export function canvaPagesToSavePages(pages: CanvaPage[]) {
 
 /**
  * Check if ANY part of the project has unsaved changes.
- * Combines both stores' dirty indicators.
+ * Combines dirty-store and canva-store save status.
  */
 export function isAnyDirty(): boolean {
   return (
-    useAuthoringStore.getState().dirty ||
+    useDirtyStore.getState().dirty ||
     useCanvaStore.getState()._saveStatus === 'unsaved'
   );
 }
 
 /**
  * Save both stores to their respective storage backends.
+ * Also clears the dirty flag.
  */
 export function saveAllToStorage(): void {
-  useAuthoringStore.getState().saveToStorage();
+  // Save to both storage backends then clear dirty flag
   useCanvaStore.getState().saveToStorage();
+  useDirtyStore.getState().markClean();
 }
 
 /**
@@ -76,10 +78,10 @@ export function saveAllToStorage(): void {
  */
 export function getCombinedSaveStatus(): 'saved' | 'saving' | 'unsaved' | 'error' {
   const canvaStatus = useCanvaStore.getState()._saveStatus;
-  const authoringDirty = useAuthoringStore.getState().dirty;
+  const dirty = useDirtyStore.getState().dirty;
 
   if (canvaStatus === 'saving') return 'saving';
   if (canvaStatus === 'error') return 'error';
-  if (authoringDirty || canvaStatus === 'unsaved') return 'unsaved';
+  if (dirty || canvaStatus === 'unsaved') return 'unsaved';
   return 'saved';
 }

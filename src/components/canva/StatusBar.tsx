@@ -1,7 +1,7 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { RATIOS } from '@/components/canva/types';
 import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap, GraduationCap, Monitor, Projector, Printer, Laptop } from 'lucide-react';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
@@ -134,7 +134,7 @@ export default function StatusBar() {
   // ── Unified save indicator ────────────────────────────────────
   const canvaStatus = useCanvaStore((s) => s._saveStatus as SaveStatus | undefined);
   const canvaLastSaved = useCanvaStore((s) => s._lastSavedAt);
-  const authoringDirty = useAuthoringStore((s) => s.dirty);
+  const authoringDirty = useDirtyStore((s) => s.dirty);  // Phase 5: migrated from useAuthoringStore
 
   const saveStatus: SaveStatus = (() => {
     const cs = canvaStatus || 'unsaved';

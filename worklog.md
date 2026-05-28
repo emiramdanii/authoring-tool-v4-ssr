@@ -566,3 +566,33 @@ Stage Summary:
 - All auto-generate flows now have overflow-aware writes
 - New exported functions: applyBlocksToPagesWithOverflowScan(), applyBlockToPagesWithOverflowScan(), ApplyWithOverflowResult type
 - Commit: 401b4ca on main
+
+---
+Task ID: 5-A
+Agent: Main Agent
+Task: Phase 5-A: Extract dirty flag to standalone useDirtyStore
+
+Work Log:
+- Created `/src/store/dirty-store.ts` — standalone Zustand store with dirty/markDirty/markClean
+- Added subscription bridge in `src/store/authoring/index.ts` — auto-syncs AuthoringStore.dirty → useDirtyStore
+- Updated `src/lib/save-utils.ts` — isAnyDirty(), saveAllToStorage(), getCombinedSaveStatus() now use useDirtyStore
+- Migrated READ consumers (8 files):
+  - StatusToast.tsx: useAuthoringStore(s => s.dirty) → useDirtyStore(s => s.dirty)
+  - StatusBar.tsx: useAuthoringStore(s => s.dirty) → useDirtyStore(s => s.dirty)
+  - LivePreview.tsx: useAuthoringStore(s => s.dirty) → useDirtyStore(s => s.dirty)
+  - AuthoringTool.tsx: useAuthoringStore(s => s.dirty) → useDirtyStore(s => s.dirty)
+  - RecoveryDialog.tsx: useAuthoringStore.getState().dirty → useDirtyStore.getState().dirty
+  - CanvaBuilder.tsx: useAuthoringStore.getState().dirty → useDirtyStore.getState().dirty
+  - use-auto-save.ts: subscribe to useDirtyStore instead of useAuthoringStore
+  - use-unsaved-guard.ts: replaced useAuthoringStore with useDirtyStore
+- Migrated WRITE consumers (4 files):
+  - TemplateWizard.tsx: useAuthoringStore.setState({ dirty: true }) → useDirtyStore.markDirty()
+  - TemplateMarketplace.tsx: useAuthoringStore.setState({ dirty: true }) → useDirtyStore.markDirty()
+  - auto-generate.ts: separated dirty from modules setState, added useDirtyStore.markDirty()
+  - guided-patch.ts: added useDirtyStore.markDirty() to applyGuidedSchemaPatch()
+- Build passes clean
+
+Stage Summary:
+- Dirty flag is now a standalone concern — UI components no longer couple to AuthoringStore for dirty state
+- Bridge ensures backward compatibility — existing AuthoringStore dirty writes still propagate to useDirtyStore
+- This is the first concrete step toward making AuthoringStore content-only (no UI state)
