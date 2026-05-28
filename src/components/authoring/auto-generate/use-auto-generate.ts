@@ -240,15 +240,19 @@ export function useAutoGenerate() {
 
   const handleApply = useCallback(
     (preview: PreviewData) => {
-      // ═══ Helper: Schema-first apply + projection compat ═══
-      const applySchemaFirst = (
-        schemaWrite: () => void,
-        projectionWrite: () => void,
-      ) => {
-        // 1. Write to schema tree FIRST (authority)
+      // ═══ Phase 5: Schema-only apply ══════════════════════════════
+      // Phase 5: Removed dual-write pattern. Now schema-first only.
+      // The startProjectionSync() in init.ts auto-derives projection
+      // from schema → authoring store. No need to manually push.
+      //
+      // Types WITH schema blocks (tp, alur, kuis, skenario, flashcard,
+      // materi, diskusi, refleksi): only write schema, skip projection.
+      //
+      // Types WITHOUT schema blocks (cp, atp, matching, truefalse):
+      // still write projection directly (no schema to derive from).
+      const applySchemaOnly = (schemaWrite: () => void) => {
         schemaWrite();
-        // 2. Write to projection SECOND (compatibility for Konten panel)
-        projectionWrite();
+        // Projection sync handles the rest automatically via init.ts
       };
 
       // Track successful apply for NextStepBanner
@@ -276,8 +280,8 @@ export function useAutoGenerate() {
         }
         case 'tp': {
           const tpData = preview.data as TpItem[];
-          applySchemaFirst(
-            // PRIMARY: Write schema to canvas
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const tpBlock = genTpSchema(parsed, settings);
@@ -285,8 +289,6 @@ export function useAutoGenerate() {
                 applyBlockToPages('tujuan', [tpBlock]);
               }
             },
-            // SECONDARY: Write projection for Konten panel compat
-            () => store.setState({ tp: tpData, dirty: true }),
           );
           toast.success(`🎯 ${tpData.length} TP diterapkan`);
           applySucceeded = true;
@@ -309,14 +311,14 @@ export function useAutoGenerate() {
         }
         case 'alur': {
           const alurData = preview.data as AlurItem[];
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const alurBlock = genAlurSchema(parsed, settings, meta);
                 applyBlockToPages('dokumen', [alurBlock]);
               }
             },
-            () => store.setState({ alur: alurData, dirty: true }),
           );
           toast.success(`🗺️ ${alurData.length} langkah alur diterapkan`);
           applySucceeded = true;
@@ -324,14 +326,14 @@ export function useAutoGenerate() {
         }
         case 'kuis': {
           const kuisData = preview.data as KuisItem[];
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const kuisBlock = genKuisSchema(parsed, settings.jumlahKuis, settings.pertemuan);
                 applyBlockToPages('kuis', kuisBlock);
               }
             },
-            () => store.setState({ kuis: kuisData, dirty: true }),
           );
           toast.success(`❓ ${kuisData.length} soal kuis diterapkan`);
           applySucceeded = true;
@@ -339,14 +341,14 @@ export function useAutoGenerate() {
         }
         case 'skenario': {
           const skenarioData = preview.data as SkenarioChapter[];
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const skenarioBlock = genSkenarioSchema(parsed, meta);
                 applyBlockToPages('skenario', [skenarioBlock]);
               }
             },
-            () => store.getState().setSkenario(skenarioData as unknown as import('@/store/authoring/types').SkenarioChapter[]),
           );
           toast.success(`🎭 ${skenarioData.length} bab skenario diterapkan`);
           applySucceeded = true;
@@ -354,22 +356,12 @@ export function useAutoGenerate() {
         }
         case 'flashcard': {
           const flashData = preview.data as FlashcardItem[];
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const flashcardBlock = genFlashcardSchema(parsed);
                 applyBlockToPages('materi', [flashcardBlock]);
-              }
-            },
-            () => {
-              const s = store.getState();
-              const existingIdx = s.modules.findIndex((m) => m.type === 'flashcard');
-              if (existingIdx >= 0) s.removeModule(existingIdx);
-              s.addModule('flashcard');
-              const newIdx = store.getState().modules.findIndex((m) => m.type === 'flashcard');
-              if (newIdx >= 0) {
-                store.getState().updateModuleField(newIdx, 'kartu', flashData);
-                store.getState().updateModuleField(newIdx, 'title', 'Flashcard');
               }
             },
           );
@@ -410,14 +402,14 @@ export function useAutoGenerate() {
         }
         case 'materi': {
           const materiData = preview.data as MateriBlok[];
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const schemaBlocks = genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
                 applyBlocksToPages('materi', schemaBlocks);
               }
             },
-            () => store.setState({ materi: { blok: materiData }, dirty: true }),
           );
           toast.success(`📖 ${materiData.length} blok materi diterapkan`);
           applySucceeded = true;
@@ -425,14 +417,14 @@ export function useAutoGenerate() {
         }
         case 'diskusi': {
           const diskusiData = preview.data as DiskusiData;
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const diskusiBlock = genDiskusiSchema(parsed, store.getState().tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
                 applyBlockToPages('diskusi', [diskusiBlock]);
               }
             },
-            () => store.setState({ diskusi: diskusiData, dirty: true }),
           );
           toast.success(`💬 ${diskusiData.pertanyaan.length} pertanyaan diskusi diterapkan`);
           applySucceeded = true;
@@ -440,14 +432,14 @@ export function useAutoGenerate() {
         }
         case 'refleksi': {
           const refleksiData = preview.data as RefleksiData;
-          applySchemaFirst(
+          // Phase 5: Schema-only — projection sync derives from schema automatically
+          applySchemaOnly(
             () => {
               if (parsed) {
                 const refleksiBlock = genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
                 applyBlockToPages('refleksi', [refleksiBlock]);
               }
             },
-            () => store.setState({ refleksi: refleksiData, dirty: true }),
           );
           toast.success(`🪞 ${refleksiData.pertanyaan.length} pertanyaan refleksi diterapkan`);
           applySucceeded = true;
@@ -671,12 +663,15 @@ export function useAutoGenerate() {
         if (lessonSchema.hasil) { applyBlockToPages('hasil', [lessonSchema.hasil]); pageCount++; }
         if (lessonSchema.penutup) { applyBlockToPages('penutup', [lessonSchema.penutup]); pageCount++; }
 
-        // 3. Write projections to authoring store for Konten panel compat
-        // TP
-        const tpData = genTP(parsed, settings);
-        store.setState({ tp: tpData, dirty: true });
+        // 3. Write projections to authoring store
+        // Phase 5: Content projections (tp, kuis, materi, diskusi, refleksi, alur)
+        // are now auto-derived from schema by startProjectionSync() in init.ts.
+        // Only write projection-only types (atp) that have no schema blocks.
+        // TP, kuis, materi, diskusi, refleksi, alur projections will sync
+        // automatically within 300ms via the projection subscription.
 
-        // ATP
+        // ATP — projection-only, no schema block type yet
+        const tpData = genTP(parsed, settings);
         const atpData = genATP(tpData, meta, settings.pertemuan);
         store.setState({
           atp: {
@@ -685,26 +680,6 @@ export function useAutoGenerate() {
             pertemuan: atpData.pertemuan as import('@/store/authoring-store').AtpPertemuan[],
           },
         });
-
-        // Kuis
-        const kuisData = genKuis(parsed, settings.jumlahKuis, settings.pertemuan);
-        store.setState({ kuis: kuisData });
-
-        // Materi
-        const materiData = genMateri(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-        store.setState({ materi: { blok: materiData } });
-
-        // Diskusi
-        const diskusiData = genDiskusi(parsed, authState.tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-        store.setState({ diskusi: diskusiData });
-
-        // Refleksi
-        const refleksiData = genRefleksi(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-        store.setState({ refleksi: refleksiData });
-
-        // Alur
-        const alurData = genAlur(tpData, meta);
-        store.setState({ alur: alurData });
 
         // 4. Navigate to canvas — first page with schema content
         const canvaPages = useCanvaStore.getState().pages;
@@ -792,22 +767,10 @@ export function useAutoGenerate() {
           if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis]); pageCount++; }
           if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi]); pageCount++; }
 
-          // 3. Write projections to authoring store for Konten panel
-          // Materi
-          const materiData = genMateri(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-          store.setState({ materi: { blok: materiData } });
-
-          // Diskusi
-          const diskusiData = genDiskusi(parsed, authState.tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-          store.setState({ diskusi: diskusiData });
-
-          // Kuis (tagged for this pertemuan)
-          const allKuis = genKuis(parsed, settings.jumlahKuis, settings.pertemuan);
-          store.setState({ kuis: allKuis });
-
-          // Refleksi
-          const refleksiData = genRefleksi(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-          store.setState({ refleksi: refleksiData, dirty: true });
+          // 3. Projections auto-derived from schema by startProjectionSync()
+          // Phase 5: Removed manual projection writes — the init.ts subscription
+          // automatically derives materi, diskusi, kuis, refleksi from schema
+          // within 300ms. No need to manually push to authoring store.
 
           // 4. Navigate to canvas
           useCanvaStore.setState({ panelRequest: 'canva' });

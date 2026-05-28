@@ -146,21 +146,19 @@ export function startAutoSync(syncFn: () => void) {
   if (_unsubscribe) return; // Already subscribed
 
   _unsubscribe = useAuthoringStore.subscribe((state) => {
-    // Only sync when relevant data changes (modules, kuis, meta, materi, cp, tp, etc.)
+    // Phase 5: Narrowed sync scope — only watch fields that can trigger
+    // orphan cleanup or element ID re-sync. Content fields (materi, diskusi,
+    // refleksi, skenario, alur, penutup, petunjuk, motivasi, rangkuman)
+    // are now auto-derived from schema by startProjectionSync() in init.ts,
+    // so watching them here would create a wasteful sync loop:
+    //   schema → projection → authoring → autoSync → pages → schema → ...
     const hash = JSON.stringify({
       m: state.modules,
       k: state.kuis,
       mt: state.meta,
-      ma: state.materi,
       cp: state.cp,
       tp: state.tp,
       atp: state.atp,
-      pet: state.petunjuk,
-      disk: state.diskusi,
-      ref: state.refleksi,
-      pen: state.penutup,
-      sk: state.skenario,
-      al: state.alur,
     });
 
     if (hash !== _lastSyncHash) {
