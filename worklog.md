@@ -736,3 +736,33 @@ Stage Summary:
 - **Toolbar has profile avatar** — matches reference
 - **SceneList uses SILSE v4 numbered thumbnail style** — matches reference
 - All silse-* MD3 tokens used consistently
+
+---
+Task ID: silse-v4-ui-polish
+Agent: Main Agent
+Task: SILSE v4 UI Polish — Material Symbols, spacing, typography fixes
+
+Work Log:
+- Deep-compared SILSE v4 design references with current implementation (31 gaps identified)
+- P0: IconRail.tsx — Replaced all lucide-react icons with Material Symbols Outlined
+  - layers, grid_view, category, perm_media, settings (matching reference exactly)
+  - Added font-variation-settings FILL=1 for active state
+  - Fixed spacing: py-3→py-6, gap-1→gap-6 (matches reference generous vertical rhythm)
+  - Button size: w-10 h-10→w-12 h-12 with fontSize: 24px
+- P0: Toolbar.tsx — Replaced CloudCheck→cloud_done, HelpCircle→help_outline, GraduationCap→school
+- P1: RightPanel.tsx — Header p-4→p-6, title text-base→text-lg, X→close (Material Symbols)
+- P1: BlockPropertiesPanel.tsx — Header/content/footer p-4/p-5→p-6, X→close, Trash2→delete
+- P1: AuthoringTool.tsx sidebar — Brand text-xl→text-2xl, subtitle text-xs→text-sm font-bold
+- P1: LeftPanel.tsx — Workspace header text-base→text-xl, content padding p-3→p-4
+- P1: SceneList.tsx — Replaced Copy/Trash2/Plus/Zap/AlertTriangle with Material Symbols equivalents
+- P1: Dashboard.tsx — AI button hover scale-95→translate-y-[-2px], BSNP header enlarged,
+  Check→verified (28px), BarChart3→visibility (32px), template card rounded-full icon
+- Build verified: npx next build ✓ (zero errors)
+- Git push: commit 7b530f5, zero conflicts
+
+Stage Summary:
+- **Icon system unified** — Workspace editor area now uses Material Symbols Outlined exclusively
+- **Spacing matches reference** — Icon rail generous py-6 gap-6, right panel p-6 throughout
+- **Typography upgraded** — Brand text-2xl, subtitle text-sm font-bold, Workspace header text-xl
+- **Dashboard polished** — Upward-lift AI button, larger BSNP/stats icons, circular template card
+- **31 gaps identified, 18 P0+P1 gaps fixed** — Remaining P2 items: floating canvas toolbar, animation section, rich text toolbar
