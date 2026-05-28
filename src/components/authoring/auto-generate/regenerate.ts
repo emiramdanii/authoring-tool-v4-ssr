@@ -27,6 +27,7 @@ import {
   genSkenarioSchema,
 } from '@/core/schema/generators';
 import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
+import { scanAllPagesOverflow } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
 
 /** localStorage key used by the auto-generate hook */
@@ -354,6 +355,10 @@ export function regenerateAllToSchema(opts: {
 
   const refleksiBlock = genRefleksiSchema(parsed, opts.meta);
   applyBlocksToPages('refleksi', [refleksiBlock]);
+
+  // Phase 4: Post-regenerate overflow scan
+  // After bulk writing content, scan all pages for overflow and auto-split.
+  scanAllPagesOverflow({ autoSplit: true });
 
   // Return authoring store data for backward compat (projection)
   return {

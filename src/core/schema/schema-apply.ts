@@ -32,6 +32,7 @@ import { computeScenePlan, type ScenePlan } from '../layout/SceneOverflowEngine'
 import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
 import { getBlockMeta } from '../registry/BlockDefinitionRegistry';
+import { scanAllPagesOverflow } from './guided-patch';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK TYPE → TEMPLATE TYPE MAPPING
@@ -344,6 +345,104 @@ export function findPageIdByType(templateType: string): string | null {
 export function findPageIdsByType(templateType: string): string[] {
   const pages = useCanvaStore.getState().pages;
   return pages.filter(p => p.templateType === templateType).map(p => p.id);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// OVERFLOW-AWARE BULK APPLY
+// ═══════════════════════════════════════════════════════════════════
+// Phase 4: Wraps applyBlocksToPages / applyBlockToPages with a
+// post-write overflow scan. Used by auto-generate and regenerate
+// flows to ensure that bulk content writes don't silently produce
+// overflowing pages.
+//
+// Strategy:
+//   1. Write blocks to pages (existing function, unchanged)
+//   2. Scan all pages for overflow
+//   3. Optionally auto-split overflowing pages
+//   4. Return overflow summary so the UI can show feedback
+// ═══════════════════════════════════════════════════════════════════
+
+export interface ApplyWithOverflowResult {
+  /** Number of pages updated by the bulk write */
+  updatedCount: number;
+  /** Total pages in the project after the write + optional auto-split */
+  totalPages: number;
+  /** Number of pages that have overflow (after write, before auto-split) */
+  overflowingPages: number;
+  /** Auto-split results (only if autoSplit was requested) */
+  autoSplitResults: Array<{ pageId: string; success: boolean; newPageId?: string }>;
+}
+
+/**
+ * Apply blocks to pages and then scan for overflow.
+ *
+ * This is the Phase 4 integration point — auto-generate and regenerate
+ * should use this instead of raw applyBlocksToPages() to ensure that
+ * overflowing pages are detected and optionally auto-split.
+ *
+ * @param templateType - The page template type to match
+ * @param blocks - The new schema blocks to apply
+ * @param options - Apply options + overflow options
+ */
+export function applyBlocksToPagesWithOverflowScan(
+  templateType: string,
+  blocks: SchemaBlock[],
+  options?: {
+    /** Only update the first matching page */
+    firstOnly?: boolean;
+    /** Create a new page if no match found */
+    createIfMissing?: boolean;
+    /** Whether to auto-split overflowing pages after the write */
+    autoSplit?: boolean;
+  },
+): ApplyWithOverflowResult {
+  // Step 1: Write blocks (unchanged behavior)
+  const updatedCount = applyBlocksToPages(templateType, blocks, {
+    firstOnly: options?.firstOnly,
+    createIfMissing: options?.createIfMissing,
+  });
+
+  // Step 2: Scan all pages for overflow
+  const scanResult = scanAllPagesOverflow({
+    autoSplit: options?.autoSplit,
+  });
+
+  return {
+    updatedCount,
+    totalPages: scanResult.totalPages,
+    overflowingPages: scanResult.overflowingPages,
+    autoSplitResults: scanResult.autoSplitResults,
+  };
+}
+
+/**
+ * Apply block(s) to pages by type and then scan for overflow.
+ *
+ * Same as applyBlocksToPagesWithOverflowScan, but uses the
+ * replace-by-type strategy of applyBlockToPages().
+ */
+export function applyBlockToPagesWithOverflowScan(
+  templateType: string,
+  newBlocks: SchemaBlock | SchemaBlock[],
+  options?: {
+    /** Whether to auto-split overflowing pages after the write */
+    autoSplit?: boolean;
+  },
+): ApplyWithOverflowResult {
+  // Step 1: Write blocks
+  const updatedCount = applyBlockToPages(templateType, newBlocks);
+
+  // Step 2: Scan all pages for overflow
+  const scanResult = scanAllPagesOverflow({
+    autoSplit: options?.autoSplit,
+  });
+
+  return {
+    updatedCount,
+    totalPages: scanResult.totalPages,
+    overflowingPages: scanResult.overflowingPages,
+    autoSplitResults: scanResult.autoSplitResults,
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -49,6 +49,7 @@ import {
   genFullLessonSchema,
 } from '@/core/schema/generators';
 import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
+import { scanAllPagesOverflow } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
 import { useCanvaStore } from '@/store/canva-store';
 
@@ -457,6 +458,19 @@ export function useAutoGenerate() {
       if (applySucceeded) {
         setAppliedCount((c) => c + 1);
 
+        // ═══ Phase 4: Post-apply overflow scan ═══════════════════════
+        // After writing content to schema, scan all pages for overflow.
+        // This updates pageOverflowStatus so the SceneList shows red dots
+        // on overflowing pages and the teacher gets a warning toast.
+        const overflowScan = scanAllPagesOverflow({ autoSplit: true });
+        if (overflowScan.overflowingPages > 0) {
+          // Some pages still overflow even after auto-split — warn the teacher
+          toast.warning(
+            `${overflowScan.overflowingPages} halaman melebihi kapasitas. Klik halaman dengan ikon ⚠ untuk kompakkan atau split.`,
+            { duration: 8000 },
+          );
+        }
+
         // ═══ Navigate to Canva after apply ═══════════════════════
         // Guide the teacher to see their generated content on the canvas.
         // Find the first page with schema content, or default to page 0.
@@ -700,8 +714,15 @@ export function useAutoGenerate() {
         useCanvaStore.setState({ panelRequest: 'canva' });
         useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
 
+        // Phase 4: Post-generate overflow scan — detect and auto-split
+        // overflowing pages so the teacher doesn't see clipped content.
+        const overflowScan = scanAllPagesOverflow({ autoSplit: true });
+        const overflowWarning = overflowScan.overflowingPages > 0
+          ? ` ${overflowScan.overflowingPages} halaman perlu perhatian (melebihi kapasitas).`
+          : '';
+
         setAppliedCount((c) => c + 1);
-        toast.success(`✅ Full lesson berhasil! ${pageCount} halaman BSNP siap.`, {
+        toast.success(`✅ Full lesson berhasil! ${pageCount} halaman BSNP siap.${overflowWarning}`, {
           duration: 6000,
           action: {
             label: 'Lihat di Canva',
@@ -794,8 +815,14 @@ export function useAutoGenerate() {
           const targetIdx = canvaPages.findIndex(p => p.label?.startsWith(`Pertemuan ${nomor}`));
           useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
 
+          // Phase 4: Post-generate overflow scan
+          const overflowScan = scanAllPagesOverflow({ autoSplit: true });
+          const overflowNote = overflowScan.overflowingPages > 0
+            ? ` ${overflowScan.overflowingPages} halaman melebihi kapasitas.`
+            : '';
+
           setAppliedCount((c) => c + 1);
-          toast.success(`✅ Pertemuan ${nomor} berhasil! ${pageCount} halaman dibuat.`);
+          toast.success(`✅ Pertemuan ${nomor} berhasil! ${pageCount} halaman dibuat.${overflowNote}`);
         } catch (err) {
           logger.error('AutoGenerate:pertemuan', err);
           toast.error(`Gagal generate Pertemuan ${nomor}: ${(err as Error).message}`);

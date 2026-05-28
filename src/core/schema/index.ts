@@ -135,7 +135,12 @@ export {
   mergePagesTransaction,
   // Scene plan → transaction bridge
   rebalanceFromScenePlan,
+  // Phase 4: Overflow-aware bulk apply
+  applyBlocksToPagesWithOverflowScan,
+  applyBlockToPagesWithOverflowScan,
 } from './schema-apply';
+
+export type { ApplyWithOverflowResult } from './schema-apply';
 
 // ── Schema Projection (Schema → Store) ───────────────────────────
 export {
