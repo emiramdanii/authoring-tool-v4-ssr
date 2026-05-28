@@ -596,3 +596,36 @@ Stage Summary:
 - Dirty flag is now a standalone concern — UI components no longer couple to AuthoringStore for dirty state
 - Bridge ensures backward compatibility — existing AuthoringStore dirty writes still propagate to useDirtyStore
 - This is the first concrete step toward making AuthoringStore content-only (no UI state)
+---
+Task ID: phase-4-5
+Agent: Super Z (main)
+Task: Phase 4 + Phase 5 — Safe Page Split / Overflow Policy + Cleanup Dual Source
+
+Work Log:
+- Phase 4 Audit: Discovered overflow policy system is already FULLY IMPLEMENTED
+  - OverflowPolicy type (none/warn/auto-split/reject) ✅
+  - applyGuidedSchemaPatch() with full overflow handling ✅
+  - checkOverflowRich() via SceneOverflowEngine ✅
+  - previewPatchOverflow() dry-run ✅
+  - scanAllPagesOverflow() batch scan ✅
+  - Auto-split recursive loop (max 5) ✅
+  - Reject policy (deferred history + revert) ✅
+  - OverflowWarningStore ✅
+  - OverflowWarningBanner in GuidedFormEditor ✅
+  - KontenOverflowBanner in Konten.tsx ✅
+  - TemplateThemeContract canSplit per page type ✅
+  - CompressionEngine compression-first strategy ✅
+- Phase 4 Fix: Replaced (p: any) with (p: CanvaPage) in auto-split loop
+- Phase 5: Eliminated dual-write pattern in auto-generate
+  - Replaced applySchemaFirst() with applySchemaOnly()
+  - Removed manual projection writes for 8 content types with schema blocks
+  - Kept projection-only writes for types without schema (cp, atp, matching, truefalse)
+- Phase 5: Narrowed startAutoSync watch scope to prevent sync loops
+- Phase 5: Marked all dead content actions as @deprecated
+
+Stage Summary:
+- Commit e3f1187: Phase 4 complete (type fix)
+- Commit c57e4a8: Phase 5 complete (dual source cleanup)
+- Build: Clean ✅
+- Schema is now the SINGLE SOURCE OF TRUTH for content
+- Content flow: Edit → applyGuidedSchemaPatch() → schema → startProjectionSync() → authoring (read-only projection)
